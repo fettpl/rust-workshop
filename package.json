@@ -15,7 +15,11 @@
     "content:rust": "node --import tsx scripts/verify-rust.ts",
     "postinstall": "node scripts/setup-assets.mjs",
     "content:audit": "node --import tsx scripts/audit-sources.ts",
-    "format": "prettier --write src scripts tests *.ts *.mjs"
+    "format": "prettier --write src scripts tests *.ts *.mjs",
+    "content:packages": "node --import tsx scripts/build-project-assets.ts",
+    "predev": "npm run content:packages",
+    "prebuild": "npm run content:packages",
+    "content:cargo": "npm run content:packages && node --import tsx scripts/verify-packages.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -37,6 +41,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.5",
     "fake-indexeddb": "^6.2.5",
+    "fflate": "^0.8.3",
     "prettier": "^3.9.6",
     "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3",

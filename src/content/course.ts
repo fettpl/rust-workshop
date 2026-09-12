@@ -1,5 +1,22 @@
 import * as ownership from "./catalog";
 import {
+  cargoLessons,
+  cargoConcepts,
+  cargoCompetencies,
+  cargoSources,
+  cargoReviewExercises,
+  cargoModule,
+} from "./modules-cargo";
+import {
+  ioLessons,
+  ioConcepts,
+  ioCompetencies,
+  ioSources,
+  ioReviewExercises,
+  ioModule,
+} from "./io";
+import { todoCliPackage } from "./projects/todo-cli";
+import {
   todoModule,
   todoLessons,
   todoConcepts,
@@ -52,6 +69,8 @@ export const modules = [
   collectionsModule,
   errorsModule,
   todoModule,
+  cargoModule,
+  ioModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -64,6 +83,8 @@ export const lessons = [
   ...collectionsLessons,
   ...errorsLessons,
   ...todoLessons,
+  ...cargoLessons,
+  ...ioLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -72,6 +93,8 @@ export const concepts = [
   ...collectionsConcepts,
   ...errorsConcepts,
   ...todoConcepts,
+  ...cargoConcepts,
+  ...ioConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -80,6 +103,8 @@ export const competencies = [
   ...collectionsCompetencies,
   ...errorsCompetencies,
   ...todoCompetencies,
+  ...cargoCompetencies,
+  ...ioCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -88,6 +113,8 @@ export const sources = [
   ...collectionsSources,
   ...errorsSources,
   ...todoSources,
+  ...cargoSources,
+  ...ioSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -96,9 +123,45 @@ export const reviewExercises = {
   ...collectionsReviewExercises,
   ...errorsReviewExercises,
   ...todoReviewExercises,
+  ...cargoReviewExercises,
+  ...ioReviewExercises,
 };
 export const { traces, project } = ownership;
-export const projects = [project, todoProject];
+export const projects = [
+  project,
+  {
+    ...todoProject,
+    objective:
+      "Zbuduj Todo CLI od parsera i stanu w pamięci do pakietu Cargo, który zachowuje zadania między uruchomieniami i jawnie obsługuje błędy wejścia oraz plików.",
+    lessonIds: [
+      ...todoProject.lessonIds!,
+      ...ioLessons.map((lesson) => lesson.id),
+    ],
+    reviewConceptIds: [
+      ...todoProject.reviewConceptIds!,
+      ...ioConcepts.map((concept) => concept.id),
+    ],
+    requiredBehaviors: [
+      ...todoProject.requiredBehaviors,
+      "Plik zachowuje kolejność, tytuły Unicode i stan wykonania. CLI odczytuje go po ponownym uruchomieniu.",
+      "Uszkodzony plik i nieudany zapis dają jawny błąd. List nie zapisuje pliku.",
+    ],
+    requiredEvidence: [
+      ...todoProject.requiredEvidence,
+      "Testy prawdziwych plików sprawdzają zapis, odczyt i zachowanie oryginału przy błędzie.",
+      "Pakiet Cargo ma testy osobnego procesu: stdin, stdout, stderr, kody zakończenia i ponowne uruchomienie.",
+    ],
+    constraints: [
+      ...todoProject.constraints.slice(0, 2),
+      "Nie traktuj uszkodzonego pliku jako pustej listy. Nie zastępuj istniejącego pliku przed ukończeniem nowego zapisu.",
+      "Pobranie projektu nie zalicza ćwiczeń. Polecenia Cargo uruchamiasz lokalnie według README.",
+    ],
+    adversarialLessonId: "todo-file-persistence",
+    adversarialInject:
+      "Program działa dla poprawnego pliku. Teraz plik jest uszkodzony albo istnieje już plik .tmp. Zachowaj wcześniejsze dane i zwróć błąd zamiast raportować nieutrwalony sukces.",
+    package: todoCliPackage,
+  },
+];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
   { title: "Zmienne, typy, funkcje i wyrażenia", status: "available" },
@@ -110,12 +173,20 @@ export const roadmap = [
   },
   { title: "Kolekcje oraz Result i obsługa błędów", status: "available" },
   { title: "Rdzeń Todo CLI: parser, kolekcja i sesje", status: "available" },
-  { title: "Moduły, crates, generics i traits", status: "planned" },
+  {
+    title: "Moduły, widoczność, importy i podstawy Cargo",
+    status: "available",
+  },
+  {
+    title: "Todo: format pliku, zapis i pobierany projekt CLI",
+    status: "available",
+  },
+  { title: "Generics i traits", status: "planned" },
   { title: "Lifetimes, closures i iterators", status: "planned" },
   { title: "Testowanie, rustfmt i Clippy w projekcie", status: "planned" },
   { title: "Smart pointers, threads i async", status: "planned" },
   {
-    title: "Todo CLI, Log Analyzer, Mini grep i projekt końcowy",
+    title: "Log Analyzer, Mini grep i projekt końcowy",
     status: "planned",
   },
   {

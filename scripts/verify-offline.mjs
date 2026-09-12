@@ -1,4 +1,5 @@
 import { chromium, expect } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 (async () => {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -63,6 +64,44 @@ import { chromium, expect } from "@playwright/test";
       'fn main() { println!("offline draft"); }',
     );
     console.log("Offline runner honest, draft preserved");
+    await context.setOffline(false);
+    await page.getByRole("button", { name: "Projekt", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: /Todo CLI/ })
+      .click();
+    const downloadLink = page.getByRole("link", {
+      name: "Pobierz pakiet startowy",
+    });
+    await expect(downloadLink).toBeVisible();
+    const archiveUrl = await downloadLink.getAttribute("href");
+    await page.waitForFunction(
+      async (path) => !!(await caches.match(path)),
+      archiveUrl,
+    );
+    const onlineBytes = await page.evaluate(
+      async (path) =>
+        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
+      archiveUrl,
+    );
+    expect(onlineBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
+    await context.setOffline(true);
+    await page.reload();
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: /Todo CLI/ })
+      .click();
+    const started = page.waitForEvent("download");
+    await downloadLink.click();
+    const download = await started;
+    expect(await download.failure()).toBeNull();
+    expect(Array.from(await readFile(await download.path()))).toEqual(
+      onlineBytes,
+    );
+    console.log(
+      "Cargo starter download works offline after reload, bytes unchanged",
+    );
+    expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {
     await browser.close();

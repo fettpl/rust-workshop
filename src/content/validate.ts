@@ -1,3 +1,4 @@
+import { validateProjectPackage } from "../domain/project-package";
 import type {
   Competency,
   Concept,
@@ -377,7 +378,8 @@ export function validateContent(content: ContentBundle): string[] {
   for (const source of content.sources) {
     if (
       !source.url.startsWith("https://doc.rust-lang.org/") &&
-      !source.url.startsWith("https://play.rust-lang.org/")
+      !source.url.startsWith("https://play.rust-lang.org/") &&
+      !source.url.startsWith("https://github.com/rust-lang/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewedAt))
@@ -393,6 +395,19 @@ export function validateContent(content: ContentBundle): string[] {
     errors,
   );
   for (const project of projects) {
+    if (project.package) {
+      errors.push(
+        ...validateProjectPackage(project.package).map(
+          (error) => `project ${project.id}: ${error}`,
+        ),
+      );
+      for (const ref of project.package.revealStepRefs) {
+        if (!stepsByRef.has(`${ref.lessonId}/${ref.stepId}`))
+          errors.push(
+            `project ${project.id} package has unknown solution task: ${ref.lessonId}/${ref.stepId}`,
+          );
+      }
+    }
     for (const id of [
       project.lessonId,
       project.adversarialLessonId,

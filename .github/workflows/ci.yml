@@ -18,6 +18,7 @@ jobs:
       - run: npm test
       - run: npm run content:check
       - run: npm run content:rust
+      - run: npm run content:cargo
       - run: npm run content:audit
       - run: npm run build
       - run: npx playwright install --with-deps chromium

@@ -1,10 +1,10 @@
 # Rust Workshop
 
-Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej od zera z Rust. Dostępnych jest 28 lekcji w sześciu modułach: 5 lekcji fundamentów Rust, 8 pamięci, ownership i podstaw borrowing, 6 modelowania danych, 3 kolekcji, 3 obsługi błędów oraz 3 rdzenia Todo CLI. Curriculum zawiera 32 pojęcia, 6 śladów pamięci i 34 wpisy źródłowe. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnego projektu.
+Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej od zera z Rust. Dostępnych jest 35 lekcji w ośmiu modułach: 5 lekcji fundamentów Rust, 8 pamięci, ownership i podstaw borrowing, 6 modelowania danych, 3 kolekcji, 3 obsługi błędów, 3 rdzenia Todo CLI, 4 modułów i Cargo oraz 3 formatu pliku, zapisu i terminala. Curriculum zawiera 39 pojęć, 6 śladów pamięci i 56 wpisów źródłowych. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnego projektu.
 
 ## Uruchomienie lokalne
 
-Wymagania: Node.js 22 lub nowszy i npm. Stable Rust jest potrzebny do developerskiej weryfikacji materiału; aplikacja nie uruchamia kodu użytkownika lokalnym rustc.
+Wymagania: Node.js 22 lub nowszy i npm. Stable Rust jest potrzebny do developerskiej weryfikacji materiału i uruchomienia pobranego projektu Cargo; aplikacja nie uruchamia szkiców użytkownika lokalnym rustc.
 
 ```sh
 npm ci
@@ -28,15 +28,16 @@ Po pierwszym otwarciu i pobraniu zasobów Service Worker zapisuje powłokę apli
 
 - Onboarding i cztery działania diagnostyczne bez blokowania dostępu do lekcji.
 - Dashboard z dokładnie wznowioną sesją, powtórkami, projektem, stanami pojęć i przekrojowymi kompetencjami.
-- Mapa sześciu modułów z kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań.
+- Mapa ośmiu modułów z kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań.
 - Edytor Monaco serwowany lokalnie, alternatywny edytor tekstowy, wykonanie i testy Rust 2024.
 - Oryginalny stderr kompilatora oraz osobny Compiler Coach z progresywnymi wskazówkami.
 - Modele stack/heap z krokami move, Copy, clone, pożyczania i końca zakresu.
-- Wybór dwóch projektów: mini-projektu komunikatu Number Guessing i rdzenia Todo CLI działającego w pamięci. Todo obejmuje parser `add/done/list`, stan w `Vec`, sesję tolerancyjną i ścisłą oraz oceniane zadanie od pustej kartki. Projekty mają oddzielnie zapisane notatki i retrospektywy kierujące powtórki do właściwych pojęć.
+- Wybór dwóch projektów: mini-projektu komunikatu Number Guessing i Todo CLI. Todo prowadzi od parsera `add/done/list`, stanu w `Vec` i dwóch polityk sesji do prawdziwych plików oraz programu terminalowego. Karta projektu udostępnia 11-plikowy pakiet Cargo bez zewnętrznych zależności: starter i rozwiązanie referencyjne, z testami plików oraz osobnego procesu CLI. Projekty mają oddzielne notatki i retrospektywy; wznowienie wraca do bieżącej lekcji projektu albo pierwszej nieukończonej.
+- Otworzenie lub pobranie rozwiązania referencyjnego jest pomocą dla odpowiednich zadań Todo i nie zalicza ćwiczeń. Niezależne zadania notatnika, z innym formatem, API i poleceniami, pozostają dostępne jako dowód transferu.
 - Powtórki łączą odtwarzanie pojęć, przewidywanie i krótkie naprawy błędów uruchamiane w kompilatorze, także dla kolekcji i Todo.
 - Wersjonowany zapis, dokładne wznowienie, notatki, zakładki, eksport/import, motywy i Focus Mode.
 
-Treści kolejnych działów są pokazane jako roadmapa. Do wdrożenia pozostają pełna gra Number Guessing+, wejście terminalowe i pliki w Todo, działy 9–18 oraz zaawansowana praktyka Rust. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani poziomu zawodowego.
+Treści kolejnych działów są pokazane jako roadmapa. Podstawy części 9 — moduły, widoczność, importy, crates i pakiety Cargo — są zaimplementowane. Do rozwinięcia pozostają zaawansowane Cargo, workspaces, features i MSRV, części 10–18 poza dostępnym projektem Todo, pełna gra Number Guessing+, Log Analyzer, Mini grep i projekt końcowy. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani poziomu zawodowego.
 
 ## Architektura
 
@@ -57,6 +58,8 @@ Definicja ćwiczenia i evaluator są rozdzielone. Źródło programu ze szkicu l
 
 Przycisk Uruchom wysyła kod i testy do serwerowej trasy, a następnie do Rust Playground. Nie wysyłamy notatek, nazwiska, całego postępu ani ustawień. Wykonanie odbywa się w sandboxie dostawcy; lokalny serwer Next nie wykonuje nieznanego Rust. Limity i zachowanie awarii opisuje [docs/runner.md](docs/runner.md).
 
+Ćwiczenia modułów używają jednego źródła Rust, a testy IO tworzą rzeczywiste pliki w katalogach tymczasowych runnera. Przeglądarka nie udostępnia interaktywnego stdin, wieloplikowego Cargo ani trwałego dysku użytkownika. Pobrany pakiet uruchamiasz samodzielnie: po uzupełnieniu pięciu funkcji wykonaj `cargo test --offline`, a następnie `cargo run --offline -- tasks.todo`. Jego plik zachowuje stan po ponownym uruchomieniu. Starter celowo nie przechodzi wszystkich testów przed implementacją; pobranie ani lokalna lista kontrolna nie stanowią automatycznego dowodu zaliczenia w aplikacji. Zapis używa własnego pliku tymczasowego, lecz nie obiecuje pełnej odporności na utratę zasilania ani równoczesnych autorów zmian.
+
 Testy dodatkowe są schowane w doświadczeniu ucznia, lecz ich źródło jest częścią otwartego curriculum. To narzędzie nauki, nie zabezpieczony egzamin. Ograniczenie `clone()` to jawna kontrola składni, nie pełna analiza AST. Ocena wolnego wyjaśnienia jest samooceną według rubric i sama nie nadaje najwyższego mastery. Ślady pamięci są przygotowanym modelem dydaktycznym konkretnego przykładu, nie debuggerem dowolnego kodu.
 
 ## Weryfikacja
@@ -67,6 +70,7 @@ npm run typecheck
 npm test
 npm run content:check
 npm run content:rust
+npm run content:cargo
 npm run content:audit
 npm run build
 npx playwright install chromium
@@ -74,6 +78,8 @@ npm run test:e2e
 ```
 
 `content:rust` kompiluje i wykonuje wyłącznie zaufane, autorskie przykłady w repozytorium. Sprawdza poprawne startery, oczekiwane klasy błędów, rozwiązania z testami zadeklarowanymi w evaluatorze, ślady i powtórki. Nie przekazuj temu skryptowi importowanych szkiców użytkownika.
+
+`content:packages` buduje archiwa ZIP startera i rozwiązania z autorskich danych projektu; działa również przed `dev` i `build`. `content:cargo` sprawdza te zaufane pakiety przez Cargo, w tym testy plików i uruchomionego procesu CLI. Nie służy do wykonywania dowolnego kodu lub ścieżek dostarczonych przez użytkownika.
 
 `npm run content:audit -- --check-links` dodatkowo sprawdza dostępność źródeł przez sieć. Raport wskazuje informacje dynamiczne i daty przeglądu, brakujące powtórki oraz brakujące powiązania źródeł. Zmiany diagnostyki wykrywa kompilacja bieżącym stable Rust. CI odtwarza walidację i testy przeglądarkowe.
 

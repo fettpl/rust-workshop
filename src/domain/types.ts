@@ -170,6 +170,19 @@ export interface ProjectContract {
   adversarialLessonId: string;
   adversarialInject: string;
   retrospective: string[];
+  package?: ProjectPackage;
+}
+export interface ProjectPackage {
+  id: string;
+  title: string;
+  description: string;
+  instructions: string[];
+  revealStepRefs: ModuleGateTaskRef[];
+  files: {
+    path: string;
+    starter: string;
+    solution?: string;
+  }[];
 }
 export interface EvidenceEvent {
   id: string;

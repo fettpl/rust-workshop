@@ -26,6 +26,7 @@ import { dueReviews, moduleGate } from "@/engine/learning";
 import { stepKey } from "@/persistence/state";
 import { Eyebrow, MasteryBadge, ProgressLine } from "./ui";
 import type { Lesson, ProjectContract } from "@/domain/types";
+import { ProjectPackage } from "./project-package";
 export function useOpenLesson() {
   const { update } = useLearning();
   return (id: string, stepIndex?: number) =>
@@ -485,8 +486,8 @@ export function CourseMap() {
           Pełna ścieżka kursu — co jest dostępne, co przed nami?
         </summary>
         <p>
-          Fundamenty oraz moduł ownership są gotowe do nauki. Pozostałe części
-          rozwijamy kolejno.
+          Dostępne moduły mają własne zadania i kryteria samodzielności. Kolejne
+          części rozwijamy według poniższej ścieżki.
         </p>
         <ol>
           {roadmap.map((item) => (
@@ -544,6 +545,11 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
   const projectLessons = lessons.filter((lesson) =>
     projectLessonIds.includes(lesson.id),
   );
+  const resumeLessonId = projectLessonIds.includes(state.resume.lessonId)
+    ? state.resume.lessonId
+    : (projectLessons.find(
+        (lesson) => lessonProgress(lesson, state.steps) < lesson.steps.length,
+      )?.id ?? project.lessonId);
   const completed = projectLessons.reduce(
     (total, lesson) => total + lessonProgress(lesson, state.steps),
     0,
@@ -604,11 +610,14 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
             label="Ukończone kroki projektu"
           />
         </div>
-        <button className="primary" onClick={() => open(project.lessonId)}>
+        <button className="primary" onClick={() => open(resumeLessonId)}>
           Pracuj nad projektem
           <ArrowRight size={18} />
         </button>
       </div>
+      {project.package && (
+        <ProjectPackage key={project.package.id} project={project.package} />
+      )}
       <section className="adversarial">
         <Eyebrow>ZMIANA WYMAGAŃ</Eyebrow>
         <h2>A jeśli warunki się zmienią?</h2>

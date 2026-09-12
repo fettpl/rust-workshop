@@ -149,3 +149,27 @@ test("opens the expanded map and retains a new collection solution", async ({
     fullPage: true,
   });
 });
+
+test("continues the current lesson of a multi-stage project", async ({
+  page,
+}) => {
+  const lesson = lessons.find((item) => item.id === "todo-state-invariants")!;
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .locator(".module-picker")
+    .getByRole("button", { name: /Todo CLI: polecenia i sesje/ })
+    .click();
+  await page
+    .locator(".lesson-list-item")
+    .filter({ hasText: lesson.title })
+    .click();
+  await page.locator('[aria-label="Kroki lekcji"] button').nth(2).click();
+  await page.getByRole("button", { name: "Projekt", exact: true }).click();
+  await page.getByRole("button", { name: "Pracuj nad projektem" }).click();
+  await expect(
+    page.getByRole("heading", { name: lesson.steps[2].title, exact: true }),
+  ).toBeVisible();
+});
