@@ -9,6 +9,8 @@ for (const [moduleId, prerequisite] of [
   ["lifetimes", "traits"],
   ["closures", "lifetimes"],
   ["iterators", "closures"],
+  ["testing-quality", "iterators"],
+  ["log-analyzer", "testing-quality"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

@@ -1,4 +1,22 @@
 import {
+  testingLessons,
+  testingModule,
+  testingConcepts,
+  testingCompetencies,
+  testingSources,
+  testingReviewExercises,
+} from "./testing";
+import {
+  logAnalyzerLessons,
+  logAnalyzerModule,
+  logAnalyzerConcepts,
+  logAnalyzerCompetencies,
+  logAnalyzerSources,
+  logAnalyzerReviewExercises,
+  logAnalyzerProject,
+} from "./log-analyzer";
+import { logAnalyzerPackage } from "./projects/log-analyzer";
+import {
   iteratorsLessons,
   iteratorsConcepts,
   iteratorsCompetencies,
@@ -116,6 +134,8 @@ export const modules = [
   lifetimesModule,
   closuresModule,
   iteratorsModule,
+  testingModule,
+  logAnalyzerModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -135,6 +155,8 @@ export const lessons = [
   ...lifetimesLessons,
   ...closuresLessons,
   ...iteratorsLessons,
+  ...testingLessons,
+  ...logAnalyzerLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -150,6 +172,8 @@ export const concepts = [
   ...lifetimesConcepts,
   ...closuresConcepts,
   ...iteratorsConcepts,
+  ...testingConcepts,
+  ...logAnalyzerConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -165,6 +189,8 @@ export const competencies = [
   ...lifetimesCompetencies,
   ...closuresCompetencies,
   ...iteratorsCompetencies,
+  ...testingCompetencies,
+  ...logAnalyzerCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -180,6 +206,8 @@ export const sources = [
   ...lifetimesSources,
   ...closuresSources,
   ...iteratorsSources,
+  ...testingSources,
+  ...logAnalyzerSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -195,6 +223,8 @@ export const reviewExercises = {
   ...lifetimesReviewExercises,
   ...closuresReviewExercises,
   ...iteratorsReviewExercises,
+  ...testingReviewExercises,
+  ...logAnalyzerReviewExercises,
 };
 export const { traces, project } = ownership;
 export const projects = [
@@ -231,6 +261,7 @@ export const projects = [
       "Program działa dla poprawnego pliku. Teraz plik jest uszkodzony albo istnieje już plik .tmp. Zachowaj wcześniejsze dane i zwróć błąd zamiast raportować nieutrwalony sukces.",
     package: todoCliPackage,
   },
+  { ...logAnalyzerProject, package: logAnalyzerPackage },
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -256,10 +287,14 @@ export const roadmap = [
     status: "available",
   },
   { title: "Lifetimes, closures i iterators", status: "available" },
-  { title: "Testowanie, rustfmt i Clippy w projekcie", status: "planned" },
+  {
+    title: "Podstawy testowania, rustfmt i Clippy w projekcie",
+    status: "available",
+  },
+  { title: "Log Analyzer: parser, strumień i pakiet CLI", status: "available" },
   { title: "Smart pointers, threads i async", status: "planned" },
   {
-    title: "Log Analyzer, Mini grep i projekt końcowy",
+    title: "Mini grep i projekt końcowy",
     status: "planned",
   },
   {

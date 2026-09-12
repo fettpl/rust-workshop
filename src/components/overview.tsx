@@ -282,8 +282,8 @@ export function Dashboard() {
                 <strong>{competency.title}</strong>
                 <small>
                   {result.proven} / {result.total} pojęć z dowodem rozumienia ·{" "}
-                  {result.independentTasks} samodzielnych zadań w{" "}
-                  {result.lessonCount} lekcjach
+                  samodzielne zadania: {result.independentTasks} · lekcje:{" "}
+                  {result.lessonCount}
                 </small>
               </div>
               <MasteryBadge level={result.level} />
@@ -338,7 +338,7 @@ export function CourseMap() {
             </span>
             <strong>{module.title}</strong>
             <small>
-              {module.lessonIds.length} lekcji ·{" "}
+              Lekcje: {module.lessonIds.length} ·{" "}
               {moduleGate(state, lessons, module).passed
                 ? "Samodzielność potwierdzona"
                 : "Dostępny"}

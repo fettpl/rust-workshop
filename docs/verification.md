@@ -1,25 +1,28 @@
-# Weryfikacja etapu: lifetimes, closures i iteratory
+# Weryfikacja etapu: testowanie i Log Analyzer
 
-Data: 12 września 2026. Dostępne są 52 lekcje w 13 modułach, 55 pojęć, 6 śladów pamięci i 95 wpisów źródłowych. Etap dodał 10 lekcji, 21 zadań z evidence gate, 3 zadania od pustej kartki i 9 kodowych powtórek. Środowisko: macOS, Node.js 22+, Next.js 16.3.5, Rust 1.98.1 stable, edition 2024, Chromium z Playwright.
+Data: 12 września 2026. Dostępnych jest 58 lekcji w 15 modułach, 61 pojęć, 6 śladów pamięci, 106 wpisów źródłowych i 3 projekty. Ten etap dodał 6 lekcji, 13 zadań z evidence gate, 2 zadania od pustej kartki i 6 kodowych powtórek. Środowisko: macOS, Node.js 26.7.0, Next.js 16.3.5, Rust 1.98.1 stable, edition 2024, Chromium z Playwright.
 
-## Wyniki wykonanych kontroli
+## Wyniki kontroli
 
 | Sprawdzenie | Wynik |
 | --- | --- |
-| ESLint i TypeScript strict | Bez błędów; końcowy build także sprawdza typy |
-| Vitest | 95/95 testów w 16 plikach |
-| Walidacja curriculum | 52 lekcje, 13 modułów, 55 pojęć, 6 śladów pamięci |
-| Rzeczywisty rustc | 722/722 autorskich przypadków: kompilacja, wykonanie, oczekiwane błędy, rozwiązania z testami i odrzucanie niezmienionych starterów |
-| Pakiet Todo Cargo | Starter przechodzi fmt/check i oczekiwanie oblewa nieuzupełnione funkcje; rozwiązanie przechodzi fmt/check/test/clippy z zakazem ostrzeżeń |
-| Playwright | 20/20 scenariuszy, w tym nowe testy wyborów, powtórek oraz szkicu iteratora |
+| ESLint i TypeScript strict | Bez błędów; końcowy build także sprawdził typy |
+| Vitest | 98/98 testów w 17 plikach |
+| Walidacja curriculum | 58 lekcji, 61 pojęć i 6 śladów; poprawne relacje modułów i projektów |
+| Rzeczywisty rustc | 810/810 autorskich przypadków: kompilacja, wykonanie, oczekiwane błędy, rozwiązania z testami i odrzucanie niezmienionych starterów |
+| Końcowe wzmocnienie testów Log Analyzer | 46/46 przypadków po dodaniu awarii odczytu w dwóch alternatywach; rozwiązania ukrywające błąd IO zostały celowo podstawione i odrzucone |
+| Pakiety Cargo | Todo i Log Analyzer przechodzą fmt/check; startery oczekiwanie oblewają nieuzupełnione zachowanie; referencje przechodzą testy i Clippy z zakazem ostrzeżeń |
+| Log Analyzer — testy pakietu | 19/19: 11 jednostkowych, 5 integracyjnych, 2 procesu CLI i 1 doctest |
+| Eksperyment jakości w terminalu | Błędna asercja, zmienione wcięcie i `len_zero` wywołały odpowiednio błąd testu, różnicę rustfmt i błąd Clippy. Po naprawie formatowanie, testy, dokumentacja i Clippy przeszły |
+| Playwright | 23/23 scenariusze, w tym 3 nowe dla testów, wyboru pakietu i wznawiania pustego raportu |
 | Produkcyjny build Webpack | Poprawny |
-| Audyt źródeł z kontrolą HTTP | 95/95 wpisów z HTTP 200; brak uszkodzonych relacji, pojęć bez aktywnych powtórek i lekcji bez evidence gate |
-| Rzeczywisty Playground przez API aplikacji | 13/13 prób: po jednym rozwiązaniu z każdej z 10 nowych lekcji oraz diagnostyki E0106, E0502 i E0382; łącznie 13 testów Rust z wieloprzypadkowymi asercjami |
-| Produkcyjny offline | Cache rust-workshop-v8; dokładny krok, szkic i notatka przeżyły odłączenie sieci i reload. ZIP Cargo pobrany offline ma identyczne bajty. Kompilator sygnalizuje brak połączenia i zachowuje szkic. |
-| Dostępność i mobile | Regresja axe, skip link, klawiatura i mobilne zakładki przechodzą. Ręczny podgląd nowego zadania przy 390 px oraz desktop w obu motywach potwierdza czytelność i widoczny fokus. |
-| Konsola | Brak page errors w teście offline; brak błędów i ostrzeżeń w ręcznie sprawdzonym podglądzie produkcyjnym |
+| Audyt źródeł HTTP | 106/106 wpisów z HTTP 200; brak uszkodzonych relacji, pojęć bez aktywnych powtórek i lekcji bez evidence gate |
+| Offline | Cache `rust-workshop-v9`; szkic, notatka i dokładny krok zachowane po odłączeniu sieci i reload; startery Todo oraz Log Analyzer pobrane offline mają identyczne bajty jak online |
+| Dostępność i mobile | Nowy pakiet przeszedł axe przy 390 px, kontrolę braku poziomego przepełnienia i fokusu podglądu pliku. Ręczny podgląd lekcji potwierdził czytelność w obu motywach i widoczny fokus klawiatury |
+| Konsola | Brak page errors w offline i scenariuszu pakietu; brak błędów i ostrzeżeń w ręcznie sprawdzanym podglądzie produkcyjnym |
+| Zewnętrzny Playground | Nie wykonano smoke nowych lekcji. Automatyczna kontrola uprawnień odrzuciła transmisję przykładów do zewnętrznej usługi; oczekuje ona na wyraźną zgodę użytkownika |
 
-Odtwarzanie głównego zestawu:
+Odtwarzanie zestawu lokalnego:
 
 ```sh
 npm run lint
@@ -33,37 +36,24 @@ npm run build
 npm run test:e2e
 ```
 
-Przy działającym produkcyjnym serwerze na porcie 3002:
+Przy serwerze produkcyjnym na porcie 3002: `npm run test:offline`. Skrypt `node --import tsx scripts/smoke-testing-log.ts` przygotowano do osobnej kontroli zewnętrznego runnera po uzyskaniu zgody. Wysyła sześć rozwiązań autorskich oraz jeden nieuzupełniony helper, którego testy powinny nie przejść.
 
-```sh
-node --import tsx scripts/smoke-borrowed-pipelines.ts
-npm run test:offline
-```
+E2E używa kontrolowanych odpowiedzi runnera dla powtarzalności. Nie potwierdza dostępności zewnętrznego Playgrounda. Lokalne rustc i Cargo wykonują wyłącznie przejrzane przykłady repozytorium, bez szkiców ucznia i importowanego kodu.
 
-E2E używa kontrolowanych odpowiedzi runnera dla powtarzalności. Osobny smoke wysyła wyłącznie autorskie przykłady repozytorium do izolowanego Playgrounda. Sprawdzono pełną zawartość tych żądań: przykładowe funkcje, fikcyjne napisy i liczby oraz testy, bez szkiców ucznia, notatek, sekretów i danych użytkownika. Lokalne rustc i Cargo wykonują wyłącznie zaufane przykłady kursu. Testy Vitest weryfikatora również wymagają lokalnego Rust.
+## Przegląd kontraktów
 
-## Przegląd materiału
+- **Testowanie:** uczeń pisze helpery z asercjami i tabelami przypadków. Ukryty harness podaje poprawną implementację oraz błędne warianty. Sprawdzono, że helper badający wyłącznie dodatnią liczbę oraz tabela pomijająca górną granicę 10 nie zaliczają zadania. Pokaz pierwszego `#[test]` rzeczywiście ma błędną asercję i wymaga jej poprawy; nie zastępuje testów wypisaniem komunikatu sukcesu.
+- **Log Analyzer:** parser zachowuje pożyczony komunikat, Unicode i spacje. Testy strumienia obejmują duplikaty, filtr niezależny od poprawności, koniec bez LF i awarię odczytu. Testy porównują pełny raport, kolejność, zera, filtr i końcowy LF. Alternatywy i powtórki używają innych API i domen.
+- **Pakiet:** czytnik zachowuje najwyżej 4096 bajtów linii przed LF, wliczając końcowy CR. Dłuższa linia jest pomijana do końca i liczona raz; test generuje 100 000 bajtów i poprawny kolejny rekord. Nie są gromadzone rekordy ani nieograniczona lista błędów. Błędny UTF-8 zwiększa licznik niepoprawnych linii. Awaria IO przerywa analizę, a CLI nie wypisuje częściowego raportu.
+- **Samodzielność:** odsłonięcie referencji Log Analyzer oznacza pomoc dla trzech powiązanych zadań, zachowując szkic. Nie ujawnia Todo i nie zalicza modułu. Każde kryterium modułu można spełnić świeżą alternatywą; wymaga ono jednego samodzielnego zadania z dostępnej pary. Pobranie i terminalowa lista kontrolna są ekspozycją lub samooceną.
+- **Dane i interfejs:** oddzielne notatki, widok startera i pliki projektów nie mieszają się przy przełączaniu. E2E rozpakowuje ZIP i porównuje wszystkie 10 plików ze starterem. Pusty raport, surowy wynik błędnego testu i poprawiony szkic odtwarzają się po reload. Schemat zapisu pozostaje v3; wcześniejsze identyfikatory zachowano.
 
-- **Lifetimes:** problem E0106 poprzedza adnotacje. Testy sprawdzają niezależne zakresy źródła i pomocniczego wejścia, pochodzenie widoku, struktury pożyczające, E0597/E0515 oraz wynik owned używany po zniszczeniu źródła. Po review startery wymagają naprawy kontraktu, zamiast podawać poprawne lifetime z góry.
-- **Closures:** przechwytywanie, konflikty pożyczek, move, Fn/FnMut/FnOnce i zwracanie impl Fn. Zadania wymagają zmiany mutowalności, kolejności pożyczek i ograniczeń callbacku. Testy sprawdzają liczbę i kolejność wywołań, pustkę oraz przeniesienie własnego typu bez Clone. Instrukcje i podpowiedzi są zgodne z faktycznym starterem.
-- **Iteratory:** własność Item, map/filter/collect/fold/find, leniwość i Iterator/IntoIterator. Testy leniwości obserwują stan przed pobraniem, po pojedynczym next i po odrzuceniu niepobranej reszty. Osobne kryterium modułu wymaga takiego dowodu. Dodatkowa asercja pochodzenia buforów odrzuca rozwiązanie kopiujące etykiety zamiast je przenosić; celowo klonujący wariant oblał test. Po tej końcowej zmianie ponownie przeszły wszystkie 54 przypadki weryfikatora dla iteratorów. Cell ma objaśnienie i oficjalne źródło; zakres kwadratów jest ograniczony jawnie, aby uniknąć przepełnienia i32.
-- **Samodzielność:** każde nowe pojęcie ma co najmniej dwa niezależne zadania. Test integracyjny pokazuje, że odsłonięte rozwiązania nie zaliczają modułu, a świeży drugi wariant pozwala spełnić kryterium. Trzy zadania zaczynają się bez startera: owned etykieta, callback pipeline i własny iterator.
-- **Czytelność:** długi materiał o potokach podzielono na składanie i konsumpcję oraz osobną lekcję o leniwości. Szacunki 20 i 18 minut zastąpiły jedno przeciążone zadanie; dwie dłuższe lekcje praktyczne nadal mają jawne 22 i 25 minut. Wszystkie szacunki wymagają pilotażu.
+Przeglądy niezależnych agentów uzupełniły kontrolę głównego autora. Poprawiono m.in. zbyt słabe mutanty, brak propagacji IO w testach alternatywnych, niezgodne podpowiedzi i nieprecyzyjny opis kryteriów. Instrukcje projektu uproszczono językowo.
 
-Przeglądy niezależnych agentów uzupełnił przegląd głównego autora. Wykryte niespójności między celami, starterami, podpowiedziami i testami poprawiono przed commitem. Testy oceniają kontrakt i zachowanie, nie jakość dowolnej implementacji ani jej styl tak dobrze jak człowiek.
+## Pozostały zakres
 
-## Wybory i zachowanie danych
+Przeglądarkowe ćwiczenia z `read_line` mogą przechować całą pojedynczą linię; limit 4096 bajtów należy do pakietu Cargo. Pakiet nie zawiera jeszcze benchmarków, profili ani testów property/fuzz. Nie zastępuje pełnego zaawansowanego kontraktu projektu.
 
-W początkowych modułach poprawna odpowiedź często zajmowała pierwszą pozycję. Prezentacja pytań wyboru stosuje teraz deterministyczne przestawienie zależne od identyfikatora pytania. Nie zależy ono od klucza odpowiedzi ani stanu ucznia. Identyfikatory i tekst odpowiedzi pozostają bez zmian; zadania porządkowania zachowują znaczącą kolejność.
+Pełne curriculum pozostaje otwarte: m.in. `while`/`loop`/`break`, zaawansowane Cargo, publiczne API, variance/HRTB, smart pointers, współbieżność, async, unsafe/FFI, Mini grep i capstone. [Audyt wymagań](requirements-audit.md) i [mapa kursu](advanced-curriculum.md) zachowują ten zakres.
 
-Testy jednostkowe sprawdzają brak dominującej poprawnej pozycji we wcześniejszych modułach, stabilność, niezmienność źródła i niezależność od klucza. Dwa scenariusze E2E sprawdzają zaznaczenie odpowiedzi i odtworzenie tej samej kolejności po reload, w lekcji oraz powtórce. Trzeci potwierdza surowy komunikat lifetime po otwarciu Coach i dokładne odtworzenie niezależnego szkicu iteratora.
-
-Schemat zapisu pozostaje v3. Nie zmieniono wcześniej opublikowanych identyfikatorów, migracji, notatek ani dowodów. Regresja obejmuje onboarding, diagnostykę, light/dark, Focus Mode, notatki, zakładki, import/export, powtórki, nawigację oraz pakiet i retrospektywę Todo. Zatrzymany serwer developerski odtworzono podczas weryfikacji; końcowy komplet E2E przeszedł na odpowiadającym serwerze.
-
-## Pozostałe ograniczenia
-
-Nie przeprowadzono pilotażu z uczącymi się. Testy techniczne nie dowodzą skuteczności nauczania ani gotowości zawodowej. Potrzebne są samodzielne rozwiązania nowych problemów, uzasadnienia decyzji i transfer po ponad dobie.
-
-Pełne curriculum pozostaje otwarte. Variance, HRTB, rozbudowany warsztat testowania, smart pointers, współbieżność, async, pełne projekty i praktyka utrzymania systemów wymagają dalszej implementacji. [Audyt wymagań](requirements-audit.md) rozróżnia wykonane i brakujące elementy, a [mapa zaawansowanego kursu](advanced-curriculum.md) zachowuje dalszy zakres.
-
-Wykonanie kodu w przeglądarce wymaga internetu i dostępności sandboxa. Ślady pamięci są przygotowanym modelem dydaktycznym. Otwarte testy i lokalny zapis nie stanowią uwierzytelnionego egzaminu; kontrola wzorców źródła nie zastępuje AST. Ręczny test czytnikiem ekranu pozostaje do wykonania. Pakiet Todo nadal zakłada jednego autora, bez gwarancji trwałości po awarii zasilania; praca poza aplikacją nie jest automatycznie oceniana.
+Nie przeprowadzono pilotażu z uczącymi się ani ręcznego testu czytnikiem ekranu. Techniczne kontrole nie dowodzą skuteczności nauczania ani gotowości zawodowej. Potrzebne są niezależne rozwiązania nowych problemów i transfer po ponad dobie. Otwarte testy i lokalny zapis są narzędziem nauki, nie uwierzytelnionym egzaminem.

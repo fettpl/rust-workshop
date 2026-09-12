@@ -133,7 +133,9 @@ function AppShell() {
             </span>
             <span>
               {currentModule.title}
-              <small>{currentLessons.length} lekcji · Twój bieżący moduł</small>
+              <small>
+                Lekcje: {currentLessons.length} · Twój bieżący moduł
+              </small>
             </span>
             <ArrowUpRight size={16} />
           </button>
