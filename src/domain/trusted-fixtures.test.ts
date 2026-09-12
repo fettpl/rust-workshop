@@ -20,6 +20,25 @@ const plain: LessonStep = {
 const target = "cargo-tokio-runtime-1.53.1" as const;
 
 describe("authored fixture compiler contract", () => {
+  it("requires the Cargo profile for Stream-only examples, aliases and hidden tests", () => {
+    for (const source of [
+      "fn values() { let _ = tokio_stream::iter([1, 2]); }",
+      "use tokio_stream as streams;",
+      "extern crate tokio_stream;",
+    ]) {
+      for (const authored of [
+        { code: source },
+        { solution: source },
+        { evaluator: { kind: "tests" as const, tests: source } },
+      ]) {
+        const step = { ...plain, ...authored };
+        expect(() => getTrustedFixtureTarget(step)).toThrow(/requires/);
+        expect(
+          getTrustedFixtureTarget({ ...step, trustedFixtureTarget: target }),
+        ).toBe(target);
+      }
+    }
+  });
   it("keeps existing std fixtures on rustc and requires an explicit Tokio target", () => {
     expect(getTrustedFixtureTarget(plain)).toBe("rustc-2024");
     const tokio = {

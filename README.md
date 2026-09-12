@@ -1,6 +1,6 @@
 # Rust Workshop
 
-Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej Rust od zera. Dostępnych jest 95 lekcji w 26 modułach, 98 pojęć, 7 śladów pamięci, 180 wpisów źródłowych i 5 projektów. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnych projektów. Najnowszy etap dodaje przepływ Tokio: bounded kanały, rezerwację i anulowanie, timeout, `select!` oraz łagodne zamknięcie.
+Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej Rust od zera. Dostępne są 102 lekcje w 28 modułach, 105 pojęć, 7 śladów pamięci, 193 wpisy źródłowe i 5 projektów. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnych projektów. Najnowszy etap dodaje częściowe I/O, ramki z limitem, zachowanie postępu po anulowaniu, strumienie oraz odpowiedzialność za pracę blokującą Tokio.
 
 ## Uruchomienie lokalne
 
@@ -28,7 +28,7 @@ Po pierwszym otwarciu i pobraniu zasobów Service Worker zapisuje powłokę apli
 
 - Onboarding i cztery działania diagnostyczne bez blokowania dostępu do lekcji.
 - Dashboard z dokładnie wznowioną sesją, powtórkami, projektem, stanami pojęć i przekrojowymi kompetencjami.
-- Mapa 26 modułów z wyszukiwaniem tematów lekcji, kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań. Wyszukiwanie ignoruje wielkość liter i polskie znaki, zachowując wybór modułu oraz miejsce nauki.
+- Mapa 28 modułów z wyszukiwaniem tematów lekcji, kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań. Wyszukiwanie ignoruje wielkość liter i polskie znaki, zachowując wybór modułu oraz miejsce nauki.
 - Edytor Monaco serwowany lokalnie, alternatywny edytor tekstowy, wykonanie i testy Rust 2024.
 - Oryginalny stderr kompilatora oraz osobny Compiler Coach z progresywnymi wskazówkami.
 - Modele stack/heap z krokami move, Copy, clone, pożyczania, końca zakresu oraz życia wartości i alokacji `Rc`/`Weak`.
@@ -46,7 +46,7 @@ Po pierwszym otwarciu i pobraniu zasobów Service Worker zapisuje powłokę apli
 - Powtórki łączą odtwarzanie pojęć, przewidywanie i krótkie naprawy błędów uruchamiane w kompilatorze, także dla kolekcji, Todo, generics i traitów.
 - Wersjonowany zapis, dokładne wznowienie, notatki, zakładki, eksport/import, motywy i Focus Mode.
 
-Treści kolejnych działów są pokazane jako roadmapa. Dostępne są pętle z części 2, jednowątkowy zakres części 15 oraz podstawowy zakres części 16: wątki, scope, kanały, Send/Sync, `Arc`/`Mutex`, atomiki, podstawy orderingów i małe laboratorium Loom. Dostępny zakres atomików i Loom nie jest pełnym dowodem modelu pamięci ani gwarancją postępu lub wydajności. Część 17 obejmuje Future, await, własność i anulowanie przez Drop, runtime Tokio, zadania oraz bounded flow z timeout, `select!` i graceful shutdown. Laboratorium pipeline jest pakietem dydaktycznym, nie serwerem produkcyjnym. Do rozwinięcia pozostają streamy, sieć i blokujące API Tokio, zaawansowane Cargo, workspaces, features i MSRV, projektowanie publicznego API i pomiary kosztów abstrakcji, property/fuzz testing, benchmarki, variance, HRTB oraz dalsze części 16–18. Pełna gra Number Guessing+, Mini grep i projekt końcowy nadal są w planie. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani gotowości zawodowej.
+Treści kolejnych działów są pokazane jako roadmapa. Dostępne są pętle z części 2, jednowątkowy zakres części 15 oraz podstawowy zakres części 16: wątki, scope, kanały, Send/Sync, `Arc`/`Mutex`, atomiki, podstawy orderingów i małe laboratorium Loom. Dostępny zakres atomików i Loom nie jest pełnym dowodem modelu pamięci ani gwarancją postępu lub wydajności. Część 17 obejmuje Future, await, własność i anulowanie przez Drop, runtime Tokio, zadania oraz bounded flow z timeout, `select!` i graceful shutdown. Laboratorium pipeline jest pakietem dydaktycznym, nie serwerem produkcyjnym. Dostępne są także częściowe I/O, ramki z limitem, postęp po anulowaniu, Stream i spawn_blocking. Do rozwinięcia pozostają sieć Tokio i integracja większego systemu, zaawansowane Cargo, workspaces, features i MSRV, projektowanie publicznego API i pomiary kosztów abstrakcji, property/fuzz testing, benchmarki, variance, HRTB oraz dalsze części 16–18. Pełna gra Number Guessing+, Mini grep i projekt końcowy nadal są w planie. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani gotowości zawodowej.
 
 ## Architektura
 

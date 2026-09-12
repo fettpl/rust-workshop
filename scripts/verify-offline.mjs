@@ -242,6 +242,35 @@ import { readFile } from "node:fs/promises";
     console.log(
       "Previously unvisited Tokio flow gate, draft and hint resume offline",
     );
+    for (const title of ["Tokio: I/O i strumienie", "Tokio: praca blokująca"]) {
+      await page
+        .getByRole("button", { name: "Mapa nauki", exact: true })
+        .click();
+      await page
+        .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+        .fill(title);
+      await page
+        .locator(".module-picker > button")
+        .filter({ hasText: title })
+        .click();
+      await page.locator(".gate-action").first().click();
+      const heading = await page.locator(".task-pane h1").innerText();
+      const draft = `${await editor.inputValue()}\n// Szkic ${title}, zachowany offline.\n`;
+      await editor.fill(draft);
+      await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+      await expect(
+        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await expect(page.locator(".task-pane h1")).toHaveText(heading);
+      await expect(editor).toHaveValue(draft);
+      await expect(
+        page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+      ).toBeVisible();
+      console.log(
+        `${title}: previously unvisited gate, draft and hint resume offline`,
+      );
+    }
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

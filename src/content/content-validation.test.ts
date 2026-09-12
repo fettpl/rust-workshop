@@ -63,11 +63,19 @@ describe("curriculum content contract", () => {
       check("https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html"),
     ).toEqual([]);
     expect(check("https://tokio.rs/tokio/tutorial/spawning")).toEqual([]);
+    expect(
+      check(
+        "https://docs.rs/tokio-stream/0.1.19/tokio_stream/trait.StreamExt.html",
+      ),
+    ).toEqual([]);
     for (const url of [
       "https://docs.rs/tokio/latest/tokio/",
       "https://docs.rs/tokio/1.53.0/tokio/",
       "https://tokio.rs.example.org/",
       "https://docs.rs/unrelated/1.53.1/tokio/",
+      "https://docs.rs/tokio-stream/latest/tokio_stream/",
+      "https://docs.rs/tokio-stream/0.1.18/tokio_stream/",
+      "https://docs.rs.example.org/tokio-stream/0.1.19/tokio_stream/",
     ])
       expect(check(url), url).not.toEqual([]);
   });

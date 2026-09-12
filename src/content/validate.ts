@@ -429,6 +429,9 @@ export function validateContent(content: ContentBundle): string[] {
       !source.url.startsWith("https://github.com/rust-lang/") &&
       !source.url.startsWith("https://docs.rs/loom/0.7.2/loom/") &&
       !source.url.startsWith("https://docs.rs/tokio/1.53.1/tokio/") &&
+      !source.url.startsWith(
+        "https://docs.rs/tokio-stream/0.1.19/tokio_stream/",
+      ) &&
       !source.url.startsWith("https://tokio.rs/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);

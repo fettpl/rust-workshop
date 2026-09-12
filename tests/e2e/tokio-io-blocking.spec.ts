@@ -1,0 +1,103 @@
+import { test, expect } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { lessons, modules } from "../../src/content/course";
+
+for (const moduleId of ["tokio-io-streams", "tokio-blocking-work"]) {
+  test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    const stage = modules.find((item) => item.id === moduleId)!;
+    expect(stage).toBeDefined();
+    const [first, fresh] = stage.gateCriteria![0].taskRefs;
+    const lesson = lessons.find((item) => item.id === first.lessonId)!;
+    const step = lesson.steps.find((item) => item.id === first.stepId)!;
+    const blank = lesson.steps.find((item) => item.id === fresh.stepId)!;
+    expect(blank.kind).toBe("blank");
+    expect(blank.code).toBeUndefined();
+    await page.goto("/");
+    await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+    await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(stage.title);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: stage.title })
+      .click();
+    await page.locator(".gate-action").first().click();
+    await expect(page.locator(".task-pane h1")).toHaveText(step.title);
+    await page
+      .getByRole("button", { name: "Prosty edytor", exact: true })
+      .click();
+    const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    const draft = `${step.code}\n// Mój szkic kontraktu.\n`;
+    await editor.fill(draft);
+    const diagnostic =
+      "assertion failed: observable resource contract\ntest result: FAILED. 2 passed; 1 failed;";
+    await page.route("**/api/run", async (route) => {
+      expect(route.request().postDataJSON()).toEqual({
+        code: draft,
+        mode: "test",
+        tests:
+          step.evaluator?.kind === "tests" ? step.evaluator.tests : undefined,
+      });
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "test-failure",
+          stdout: diagnostic,
+          stderr: "",
+          diagnostics: [],
+          durationMs: 1,
+          tests: { passed: 2, failed: 1 },
+        }),
+      });
+    });
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await expect(
+      page.getByRole("region", { name: "Wynik kompilatora" }),
+    ).toContainText(diagnostic);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.reload();
+    await expect(editor).toHaveValue(draft);
+    await expect(page.locator(".task-pane h1")).toHaveText(step.title);
+    await expect(
+      page.getByRole("region", { name: "Wynik kompilatora" }),
+    ).toContainText(diagnostic);
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await page
+      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+      .click();
+    await expect(editor).toHaveValue(draft);
+
+    await page.getByRole("button", { name: stage.title, exact: true }).click();
+    await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
+    // The criterion opens the fresh alternative after the first reference was exposed.
+    await page.locator(".gate-action").first().click();
+    await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
+    await expect(editor).toHaveValue("");
+    await expect(
+      page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+    ).toHaveCount(0);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await editor.focus();
+    await expect(editor).toBeFocused();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+}

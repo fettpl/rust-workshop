@@ -9,12 +9,13 @@ import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
 import { getTrustedFixtureTarget } from "../src/domain/trusted-fixtures";
 type Verification = { id: string; passed: boolean; detail: string };
-const TIMEOUT = 8000;
-function command(cmd: string, args: string[], cwd: string) {
+const COMPILE_TIMEOUT = 60_000;
+const EXECUTION_TIMEOUT = 8_000;
+function command(cmd: string, args: string[], cwd: string, timeout: number) {
   return spawnSync(cmd, args, {
     cwd,
     encoding: "utf8",
-    timeout: TIMEOUT,
+    timeout,
     maxBuffer: 1024 * 1024,
   });
 }
@@ -69,6 +70,7 @@ export function verifyTrustedRust(
         binary,
       ],
       dir,
+      COMPILE_TIMEOUT,
     );
     if (options.error || options.diagnostic) {
       const passed =
@@ -138,7 +140,7 @@ export function verifyTrustedRust(
       results.push({ id, passed: true, detail: "kompiluje się (biblioteka)" });
       return;
     }
-    const execution = command(binary, [], dir);
+    const execution = command(binary, [], dir, EXECUTION_TIMEOUT);
     if (options.expectStarterRejection) {
       const counts = execution.stdout.match(
         /test result:.*?\. (\d+) passed; (\d+) failed;/,

@@ -15,9 +15,10 @@ export function trustedFixtureIssues(step: LessonStep): string[] {
     step.solution,
     step.evaluator?.kind === "tests" ? step.evaluator.tests : "",
   ].join("\n");
-  const usesTokio = /\btokio\s*::|\b(?:extern\s+crate|use)\s+tokio\b/.test(
-    source,
-  );
+  const usesTokio =
+    /\btokio(?:_stream)?\s*::|\b(?:extern\s+crate|use)\s+tokio(?:_stream)?\b/.test(
+      source,
+    );
   if (usesTokio && target !== TOKIO_FIXTURE_TARGET)
     return [`Tokio fixture requires ${TOKIO_FIXTURE_TARGET}`];
   if (!usesTokio && target === TOKIO_FIXTURE_TARGET)

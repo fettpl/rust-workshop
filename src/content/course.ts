@@ -1,3 +1,25 @@
+import { tokioIoModule, tokioBlockingModule } from "./tokio-io-modules";
+import {
+  tokioIoLessons,
+  tokioIoConcepts,
+  tokioIoCompetencies,
+  tokioIoSources,
+  tokioIoReviewExercises,
+} from "./tokio-io";
+import {
+  tokioStreamLessons,
+  tokioStreamConcepts,
+  tokioStreamCompetencies,
+  tokioStreamSources,
+  tokioStreamReviewExercises,
+} from "./tokio-streams";
+import {
+  tokioBlockingLessons,
+  tokioBlockingConcepts,
+  tokioBlockingCompetencies,
+  tokioBlockingSources,
+  tokioBlockingReviewExercises,
+} from "./tokio-blocking";
 import { tokioPipelineProject } from "./projects/tokio-pipeline";
 import { tokioFlowModule } from "./tokio-flow-control";
 import {
@@ -252,6 +274,8 @@ export const modules = [
   asyncFoundationsModule,
   tokioRuntimeModule,
   tokioFlowModule,
+  tokioIoModule,
+  tokioBlockingModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -286,6 +310,9 @@ export const lessons = [
   ...tokioChannelLessons,
   ...tokioTimeLessons,
   ...tokioShutdownLessons,
+  ...tokioIoLessons,
+  ...tokioStreamLessons,
+  ...tokioBlockingLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -316,6 +343,9 @@ export const concepts = [
   ...tokioChannelConcepts,
   ...tokioTimeConcepts,
   ...tokioShutdownConcepts,
+  ...tokioIoConcepts,
+  ...tokioStreamConcepts,
+  ...tokioBlockingConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -346,6 +376,9 @@ export const competencies = [
   ...tokioChannelCompetencies,
   ...tokioTimeCompetencies,
   ...tokioShutdownCompetencies,
+  ...tokioIoCompetencies,
+  ...tokioStreamCompetencies,
+  ...tokioBlockingCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -376,6 +409,9 @@ export const sources = [
   ...tokioChannelSources,
   ...tokioTimeSources,
   ...tokioShutdownSources,
+  ...tokioIoSources,
+  ...tokioStreamSources,
+  ...tokioBlockingSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -406,6 +442,9 @@ export const reviewExercises = {
   ...tokioChannelReviewExercises,
   ...tokioTimeReviewExercises,
   ...tokioShutdownReviewExercises,
+  ...tokioIoReviewExercises,
+  ...tokioStreamReviewExercises,
+  ...tokioBlockingReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -506,7 +545,11 @@ export const roadmap = [
     status: "planned",
   },
   {
-    title: "Async w praktyce: streamy, sieć i blokujące operacje",
+    title: "Tokio: I/O, ramki, streamy i operacje blokujące",
+    status: "available",
+  },
+  {
+    title: "Serwis sieciowy Tokio i integracja większego systemu",
     status: "planned",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },

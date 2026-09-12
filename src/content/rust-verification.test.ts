@@ -117,5 +117,5 @@ describe("authored Rust starter verification", () => {
       "verifier-fixtures/ignored-tests/starter-rejected",
       "verifier-fixtures/ignored-tests/solution",
     ]);
-  }, 30_000);
+  }, 90_000);
 });
