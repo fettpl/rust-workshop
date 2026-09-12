@@ -1,6 +1,6 @@
 # Rust Workshop
 
-Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej od zera z Rust. Dostępne są 58 lekcji w 15 modułach: 5 lekcji fundamentów Rust, 8 pamięci, ownership i podstaw borrowing, 6 modelowania danych, 3 kolekcji, 3 obsługi błędów, 3 rdzenia Todo CLI, 4 modułów i Cargo, 3 formatu pliku, zapisu i terminala, 3 generics, 4 traitów, 3 lifetimes, 3 closures, 4 iteratorów, 3 testowania oraz 3 Log Analyzer. Curriculum zawiera 61 pojęć, 6 śladów pamięci i 106 wpisów źródłowych. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnych projektów.
+Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej od zera z Rust. Dostępne są 67 lekcji w 18 modułach: 5 lekcji fundamentów Rust, 3 lekcje o pętlach i sterowaniu, 8 pamięci, ownership i podstaw borrowing, 6 modelowania danych, 3 kolekcji, 3 obsługi błędów, 3 rdzenia Todo CLI, 4 modułów i Cargo, 3 formatu pliku, zapisu i terminala, 3 generics, 4 traitów, 3 lifetimes, 3 closures, 4 iteratorów, 3 testowania, 3 Log Analyzer, 3 wartości opakowanych oraz 3 współdzielonej własności. Curriculum zawiera 70 pojęć, 7 śladów pamięci, 123 wpisy źródłowe i 3 projekty. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnych projektów.
 
 ## Uruchomienie lokalne
 
@@ -28,13 +28,13 @@ Po pierwszym otwarciu i pobraniu zasobów Service Worker zapisuje powłokę apli
 
 - Onboarding i cztery działania diagnostyczne bez blokowania dostępu do lekcji.
 - Dashboard z dokładnie wznowioną sesją, powtórkami, projektem, stanami pojęć i przekrojowymi kompetencjami.
-- Mapa piętnastu modułów z kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań.
+- Mapa osiemnastu modułów z kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań.
 - Edytor Monaco serwowany lokalnie, alternatywny edytor tekstowy, wykonanie i testy Rust 2024.
 - Oryginalny stderr kompilatora oraz osobny Compiler Coach z progresywnymi wskazówkami.
-- Modele stack/heap z krokami move, Copy, clone, pożyczania i końca zakresu.
+- Modele stack/heap z krokami move, Copy, clone, pożyczania, końca zakresu oraz życia wartości i alokacji `Rc`/`Weak`.
 - Wybór trzech projektów: mini-projektu komunikatu Number Guessing, Todo CLI i Log Analyzer. Todo prowadzi od parsera `add/done/list`, stanu w `Vec` i dwóch polityk sesji do prawdziwych plików oraz programu terminalowego. Log Analyzer prowadzi przez pożyczony rekord, analizę strumieniową i deterministyczny raport; jego 10-plikowy pakiet Cargo używa tylko biblioteki standardowej i zawiera 19 testów: 11 jednostkowych, 5 integracyjnych, 2 procesu CLI i 1 doctest. Projekty mają oddzielne notatki i retrospektywy; wznowienie wraca do bieżącej lekcji projektu albo pierwszej nieukończonej.
 - Otworzenie lub pobranie rozwiązania referencyjnego jest pomocą dla odpowiednich zadań Todo albo Log Analyzer i nie zalicza ćwiczeń. Alternatywy z innym formatem, API i poleceniami pozostają dostępne jako dowód samodzielności.
-- Lifetimes zaczynają od błędów E0106/E0597/E0515 i prowadzą do projektowania pożyczających oraz owned API. Closures obejmują przechwytywanie, move i Fn/FnMut/FnOnce; iteratory — własność elementów, leniwość, krótkie zakończenie i własny kontrakt next. Każde nowe pojęcie ma kodową powtórkę i niezależne zadania.
+- Pętle prowadzą przez warunek i aktualizację w `while`, wartość z `loop` i `break`, a także `continue` oraz etykiety. Smart pointers obejmują `Box`, `Deref`, `Drop`, `Rc`, `RefCell` i `Weak` oraz ślad życia wartości i liczników uchwytów. Lifetimes zaczynają od błędów E0106/E0597/E0515 i prowadzą do projektowania pożyczających oraz owned API. Closures obejmują przechwytywanie, move i Fn/FnMut/FnOnce; iteratory — własność elementów, leniwość, krótkie zakończenie i własny kontrakt next. Każde nowe pojęcie ma kodową powtórkę i niezależne zadania.
 - Pytania wyboru mają stabilną kolejność zależną od identyfikatora pytania; wcześniejsze odpowiedzi zachowują znaczenie po odświeżeniu.
 - Generics obejmują parametry `T`/`U`, `impl<T>`, pożyczanie i przenoszenie danych oraz minimalne ograniczenia `PartialEq` i `where`. Traity wprowadzają własne kontrakty, metody domyślne i nadpisania, generycznych konsumentów, typy powiązane oraz pożyczone `&dyn Trait` i granicę zgodności z `dyn`.
 - Każde z siedmiu pojęć generics i traitów ma dwa niezależne zadania kodowe z innym kontraktem; po odsłonięciu jednego rozwiązania drugi wariant pozostaje dostępny jako dowód samodzielności. Etap zawiera także trzy zadania od pustej kartki — ograniczenia generyczne, własny trait `Measure` z `Output` i listę reporterów — oraz siedem kodowych powtórek z testami.
@@ -43,7 +43,7 @@ Po pierwszym otwarciu i pobraniu zasobów Service Worker zapisuje powłokę apli
 - Powtórki łączą odtwarzanie pojęć, przewidywanie i krótkie naprawy błędów uruchamiane w kompilatorze, także dla kolekcji, Todo, generics i traitów.
 - Wersjonowany zapis, dokładne wznowienie, notatki, zakładki, eksport/import, motywy i Focus Mode.
 
-Treści kolejnych działów są pokazane jako roadmapa. Podstawy części 9–14 — moduły/Cargo, generics, traity, lifetimes, closures, iteratory i testowanie — oraz podstawowy Log Analyzer są zaimplementowane. Do rozwinięcia pozostają zaawansowane Cargo, workspaces, features i MSRV, projektowanie publicznego API i pomiary kosztów abstrakcji, property/fuzz testing, benchmarki, variance, HRTB oraz dalsze części 15–18. Pełna gra Number Guessing+, Mini grep i projekt końcowy nadal są w planie. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani gotowości zawodowej.
+Treści kolejnych działów są pokazane jako roadmapa. Dostępne są pętle z części 2 oraz jednowątkowy zakres części 15: `Box`, `Deref`, `Drop`, `Rc`, `RefCell` i `Weak`. Współbieżność z wątkami, `Arc`/`Mutex` i async pozostaje przyszłym zakresem. Do rozwinięcia pozostają zaawansowane Cargo, workspaces, features i MSRV, projektowanie publicznego API i pomiary kosztów abstrakcji, property/fuzz testing, benchmarki, variance, HRTB oraz dalsze części 16–18. Pełna gra Number Guessing+, Mini grep i projekt końcowy nadal są w planie. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani gotowości zawodowej.
 
 ## Architektura
 
@@ -95,7 +95,7 @@ Testy ścieżki lekcji E2E zastępują zewnętrzne wykonanie przewidywalnym wyni
 
 ## Zmiana schematu
 
-Aktualny zapis ma `schemaVersion: 3`; istnieją migracje v1 i v2. Pola dodawane opcjonalnie są kompatybilne ze starszymi wersjami. Import sprawdza pełną strukturę i metadane, zanim użytkownik zatwierdzi zastąpienie stanu. Nieznanej wersji nie resetujemy. Przy dodaniu transformacji zmień wersję i dopisz test zachowania postępu, szkiców i notatek.
+Aktualny zapis ma `schemaVersion: 3`; istnieją migracje v1 i v2. Nowe lekcje zachowują wcześniejsze identyfikatory, a pola dodawane opcjonalnie są kompatybilne ze starszymi wersjami. Import sprawdza pełną strukturę i metadane, zanim użytkownik zatwierdzi zastąpienie stanu. Nieznanej wersji nie resetujemy. Przy dodaniu transformacji zmień wersję i dopisz test zachowania postępu, szkiców i notatek.
 
 Dowody wykonania są oddzielone od ukończenia ekranu. Nieudana próba kieruje pojęcie do kolejki; odtworzenie tej samej odpowiedzi wielokrotnie nie mnoży kompetencji. Utrwalenie wymaga poprawnego aktywnego odtworzenia po przerwie, po wcześniejszych niezależnych dowodach rozumienia.
 

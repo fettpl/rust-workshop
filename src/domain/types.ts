@@ -66,9 +66,19 @@ export interface TraceFrame {
   stack: {
     name: string;
     value: string;
-    state: "owner" | "copied" | "moved" | "shared" | "mutable" | "dropped";
+    state:
+      "owner" | "copied" | "moved" | "shared" | "mutable" | "weak" | "dropped";
   }[];
-  heap: { id: string; value: string; owner: string; dropped?: boolean }[];
+  heap: {
+    id: string;
+    value: string;
+    owner: string;
+    dropped?: boolean;
+    valueDropped?: boolean;
+    /** Visible handles in the teaching model, not allocator internals. */
+    strongHandles?: number;
+    weakHandles?: number;
+  }[];
 }
 export interface Trace {
   title: string;

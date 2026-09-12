@@ -4,6 +4,7 @@ import { createInitialState } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
 
 for (const [moduleId, prerequisite] of [
+  ["loops-control", "rust-foundations"],
   ["generics", "todo-io"],
   ["traits", "generics"],
   ["lifetimes", "traits"],
@@ -11,6 +12,8 @@ for (const [moduleId, prerequisite] of [
   ["iterators", "closures"],
   ["testing-quality", "iterators"],
   ["log-analyzer", "testing-quality"],
+  ["boxed-values", "log-analyzer"],
+  ["shared-ownership", "boxed-values"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

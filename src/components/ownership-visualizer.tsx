@@ -7,7 +7,8 @@ const labels = {
   moved: "przeniesiono",
   shared: "współdzielone &",
   mutable: "wyłączne &mut",
-  dropped: "koniec zakresu",
+  weak: "słaby uchwyt",
+  dropped: "koniec życia zmiennej",
 };
 export function OwnershipVisualizer({
   trace,
@@ -70,15 +71,23 @@ export function OwnershipVisualizer({
             frame.heap.map((item) => (
               <div
                 key={item.id}
-                className={`heap-value ${item.dropped ? "dropped" : ""}`}
+                className={`heap-value ${item.dropped ? "dropped" : item.valueDropped ? "value-dropped" : ""}`}
               >
                 <span>{item.id}</span>
-                <code>{item.value}</code>
+                <code>
+                  {item.valueDropped ? "Wartość niedostępna" : item.value}
+                </code>
                 <small>
                   {item.dropped
                     ? "Zwolniono pamięć"
-                    : `Właściciel: ${item.owner}`}
+                    : item.valueDropped
+                      ? "Wartość zakończyła życie; alokacja pozostaje"
+                      : `Właściciel: ${item.owner}`}
                 </small>
+                {item.strongHandles !== undefined &&
+                  item.weakHandles !== undefined && (
+                    <small>{`Jawne uchwyty Rc: ${item.strongHandles} · Weak: ${item.weakHandles}`}</small>
+                  )}
               </div>
             ))
           )}

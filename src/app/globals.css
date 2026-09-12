@@ -2019,6 +2019,14 @@ button svg {
   opacity: 0.7;
   background: var(--surface-2);
 }
+.heap-value.value-dropped,
+.memory-variable.weak {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.heap-value.value-dropped > small {
+  color: var(--muted);
+}
 .trace-explanation {
   padding: 0 20px;
   font-size: 0.79rem;

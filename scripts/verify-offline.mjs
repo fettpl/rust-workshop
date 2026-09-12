@@ -104,6 +104,35 @@ import { readFile } from "node:fs/promises";
         `${archiveUrl}: starter download works offline after reload, bytes unchanged`,
       );
     }
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .locator(".module-picker")
+      .getByRole("button", { name: /Współdzielenie: Rc, RefCell i Weak/ })
+      .click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Weak: graf bez silnego cyklu" })
+      .click();
+    await page.locator('[aria-label="Kroki lekcji"] button').nth(2).click();
+    const visualizer = page.locator(".visualizer");
+    for (let i = 0; i < 4; i++) {
+      await visualizer.getByRole("button", { name: "Następna linia" }).click();
+    }
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(visualizer).toContainText("Jawne uchwyty Rc: 0 · Weak: 1");
+    await expect(visualizer).toContainText(
+      "Wartość zakończyła życie; alokacja pozostaje",
+    );
+    await expect(visualizer).not.toContainText("Zwolniono pamięć");
+    await visualizer.getByRole("button", { name: "Następna linia" }).click();
+    await visualizer.getByRole("button", { name: "Następna linia" }).click();
+    await expect(visualizer).toContainText("Zwolniono pamięć");
+    console.log(
+      "New Weak lesson opens offline and resumes the exact trace frame",
+    );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

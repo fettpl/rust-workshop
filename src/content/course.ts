@@ -1,3 +1,28 @@
+import { rcLifetimeTrace } from "./rc-trace";
+import {
+  sharedOwnershipLessons,
+  sharedOwnershipConcepts,
+  sharedOwnershipCompetencies,
+  sharedOwnershipSources,
+  sharedOwnershipReviewExercises,
+  sharedOwnershipModule,
+} from "./shared-ownership";
+import {
+  boxedValuesLessons,
+  boxedValuesConcepts,
+  boxedValuesCompetencies,
+  boxedValuesSources,
+  boxedValuesReviewExercises,
+  boxedValuesModule,
+} from "./boxed-values";
+import {
+  loopsLessons,
+  loopsConcepts,
+  loopsCompetencies,
+  loopsSources,
+  loopsReviewExercises,
+  loopsModule,
+} from "./loops";
 import {
   testingLessons,
   testingModule,
@@ -122,6 +147,7 @@ export const ownershipModule = {
 };
 export const modules = [
   foundationsModule,
+  loopsModule,
   ownershipModule,
   modelingModule,
   collectionsModule,
@@ -136,9 +162,12 @@ export const modules = [
   iteratorsModule,
   testingModule,
   logAnalyzerModule,
+  boxedValuesModule,
+  sharedOwnershipModule,
 ];
 export const lessons = [
   ...foundationsLessons,
+  ...loopsLessons,
   ...ownership.lessons.map((lesson) =>
     lesson.id === "memory-intro"
       ? { ...lesson, prerequisites: [foundationsLessons.at(-1)!.id] }
@@ -157,9 +186,12 @@ export const lessons = [
   ...iteratorsLessons,
   ...testingLessons,
   ...logAnalyzerLessons,
+  ...boxedValuesLessons,
+  ...sharedOwnershipLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
+  ...loopsConcepts,
   ...ownership.concepts,
   ...modelingConcepts,
   ...collectionsConcepts,
@@ -174,9 +206,12 @@ export const concepts = [
   ...iteratorsConcepts,
   ...testingConcepts,
   ...logAnalyzerConcepts,
+  ...boxedValuesConcepts,
+  ...sharedOwnershipConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
+  ...loopsCompetencies,
   ...ownership.competencies,
   ...modelingCompetencies,
   ...collectionsCompetencies,
@@ -191,9 +226,12 @@ export const competencies = [
   ...iteratorsCompetencies,
   ...testingCompetencies,
   ...logAnalyzerCompetencies,
+  ...boxedValuesCompetencies,
+  ...sharedOwnershipCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
+  ...loopsSources,
   ...ownership.sources,
   ...modelingSources,
   ...collectionsSources,
@@ -208,9 +246,12 @@ export const sources = [
   ...iteratorsSources,
   ...testingSources,
   ...logAnalyzerSources,
+  ...boxedValuesSources,
+  ...sharedOwnershipSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
+  ...loopsReviewExercises,
   ...ownership.reviewExercises,
   ...modelingReviewExercises,
   ...collectionsReviewExercises,
@@ -225,8 +266,14 @@ export const reviewExercises = {
   ...iteratorsReviewExercises,
   ...testingReviewExercises,
   ...logAnalyzerReviewExercises,
+  ...boxedValuesReviewExercises,
+  ...sharedOwnershipReviewExercises,
 };
-export const { traces, project } = ownership;
+export const { project } = ownership;
+export const traces: typeof ownership.traces = {
+  ...ownership.traces,
+  "trace-rc-weak": rcLifetimeTrace,
+};
 export const projects = [
   project,
   {
@@ -292,7 +339,8 @@ export const roadmap = [
     status: "available",
   },
   { title: "Log Analyzer: parser, strumień i pakiet CLI", status: "available" },
-  { title: "Smart pointers, threads i async", status: "planned" },
+  { title: "Box, Deref, Drop oraz Rc, RefCell i Weak", status: "available" },
+  { title: "Threads, Arc/Mutex i async", status: "planned" },
   {
     title: "Mini grep i projekt końcowy",
     status: "planned",
