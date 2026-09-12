@@ -133,6 +133,33 @@ import { readFile } from "node:fs/promises";
     console.log(
       "New Weak lesson opens offline and resumes the exact trace frame",
     );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("mutex");
+    await page
+      .locator(".module-picker")
+      .getByRole("button", { name: /Wspólny stan: Send, Arc i Mutex/ })
+      .click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Send i Sync: granice wątku" })
+      .click();
+    await page
+      .locator('[aria-label="Kroki lekcji"]')
+      .getByRole("button", { name: "02 Zaobserwuj", exact: true })
+      .click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { name: "Zobacz E0277 dla Rc", exact: true }),
+    ).toBeVisible();
+    await expect(editor).toHaveValue(/use std::rc::Rc;/);
+    console.log(
+      "Module topic search and an unvisited concurrency lesson work offline; exact step resumes",
+    );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

@@ -1,5 +1,29 @@
 import { rcLifetimeTrace } from "./rc-trace";
 import {
+  threadsLessons,
+  threadsConcepts,
+  threadsCompetencies,
+  threadsSources,
+  threadsReviewExercises,
+  threadsModule,
+} from "./threads";
+import {
+  channelsLessons,
+  channelsConcepts,
+  channelsCompetencies,
+  channelsSources,
+  channelsReviewExercises,
+  channelsModule,
+} from "./channels";
+import {
+  synchronizedStateLessons,
+  synchronizedStateConcepts,
+  synchronizedStateCompetencies,
+  synchronizedStateSources,
+  synchronizedStateReviewExercises,
+  synchronizedStateModule,
+} from "./synchronized-state";
+import {
   sharedOwnershipLessons,
   sharedOwnershipConcepts,
   sharedOwnershipCompetencies,
@@ -164,6 +188,9 @@ export const modules = [
   logAnalyzerModule,
   boxedValuesModule,
   sharedOwnershipModule,
+  threadsModule,
+  channelsModule,
+  synchronizedStateModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -188,6 +215,9 @@ export const lessons = [
   ...logAnalyzerLessons,
   ...boxedValuesLessons,
   ...sharedOwnershipLessons,
+  ...threadsLessons,
+  ...channelsLessons,
+  ...synchronizedStateLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -208,6 +238,9 @@ export const concepts = [
   ...logAnalyzerConcepts,
   ...boxedValuesConcepts,
   ...sharedOwnershipConcepts,
+  ...threadsConcepts,
+  ...channelsConcepts,
+  ...synchronizedStateConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -228,6 +261,9 @@ export const competencies = [
   ...logAnalyzerCompetencies,
   ...boxedValuesCompetencies,
   ...sharedOwnershipCompetencies,
+  ...threadsCompetencies,
+  ...channelsCompetencies,
+  ...synchronizedStateCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -248,6 +284,9 @@ export const sources = [
   ...logAnalyzerSources,
   ...boxedValuesSources,
   ...sharedOwnershipSources,
+  ...threadsSources,
+  ...channelsSources,
+  ...synchronizedStateSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -268,6 +307,9 @@ export const reviewExercises = {
   ...logAnalyzerReviewExercises,
   ...boxedValuesReviewExercises,
   ...sharedOwnershipReviewExercises,
+  ...threadsReviewExercises,
+  ...channelsReviewExercises,
+  ...synchronizedStateReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -340,7 +382,8 @@ export const roadmap = [
   },
   { title: "Log Analyzer: parser, strumień i pakiet CLI", status: "available" },
   { title: "Box, Deref, Drop oraz Rc, RefCell i Weak", status: "available" },
-  { title: "Threads, Arc/Mutex i async", status: "planned" },
+  { title: "Wątki, kanały, Send/Sync oraz Arc/Mutex", status: "available" },
+  { title: "Async i futures: wprowadzenie", status: "planned" },
   {
     title: "Mini grep i projekt końcowy",
     status: "planned",

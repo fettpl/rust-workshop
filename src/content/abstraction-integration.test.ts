@@ -14,6 +14,9 @@ for (const [moduleId, prerequisite] of [
   ["log-analyzer", "testing-quality"],
   ["boxed-values", "log-analyzer"],
   ["shared-ownership", "boxed-values"],
+  ["threads", "shared-ownership"],
+  ["channels", "threads"],
+  ["synchronized-state", "channels"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

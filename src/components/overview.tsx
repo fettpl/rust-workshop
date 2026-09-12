@@ -27,6 +27,7 @@ import { stepKey } from "@/persistence/state";
 import { Eyebrow, MasteryBadge, ProgressLine } from "./ui";
 import type { Lesson, ProjectContract } from "@/domain/types";
 import { ProjectPackage } from "./project-package";
+import { ModulePicker } from "./module-picker";
 export function useOpenLesson() {
   const { update } = useLearning();
   return (id: string, stepIndex?: number) =>
@@ -325,27 +326,7 @@ export function CourseMap() {
         Zacznij od fundamentów albo wróć do konkretnego problemu. Każda lekcja
         jest dostępna.
       </p>
-      <div className="module-picker" aria-label="Wybierz moduł">
-        {modules.map((module, i) => (
-          <button
-            key={module.id}
-            className={module.id === selectedModule.id ? "selected" : ""}
-            aria-pressed={module.id === selectedModule.id}
-            onClick={() => setSelected(module.id)}
-          >
-            <span className="micro">
-              MODUŁ {String(i + 1).padStart(2, "0")}
-            </span>
-            <strong>{module.title}</strong>
-            <small>
-              Lekcje: {module.lessonIds.length} ·{" "}
-              {moduleGate(state, lessons, module).passed
-                ? "Samodzielność potwierdzona"
-                : "Dostępny"}
-            </small>
-          </button>
-        ))}
-      </div>
+      <ModulePicker selectedId={selectedModule.id} onSelect={setSelected} />
       <div className="module-summary">
         <h2>{selectedModule.title}</h2>
         <p className="lede">{selectedModule.whyItMatters}</p>

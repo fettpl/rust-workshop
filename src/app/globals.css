@@ -1018,6 +1018,31 @@ button svg {
   color: var(--muted);
   font-size: 0.76rem;
 }
+.module-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+}
+.module-search label {
+  flex: 1 1 260px;
+  max-width: 620px;
+}
+.module-search > button {
+  min-height: 46px;
+}
+.module-results {
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+.module-selection-note {
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  font-size: 0.92rem;
+}
 .module-picker {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
