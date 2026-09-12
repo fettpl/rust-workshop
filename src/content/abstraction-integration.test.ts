@@ -19,6 +19,7 @@ for (const [moduleId, prerequisite] of [
   ["synchronized-state", "channels"],
   ["atomic-state", "synchronized-state"],
   ["memory-ordering", "atomic-state"],
+  ["async-foundations", "memory-ordering"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

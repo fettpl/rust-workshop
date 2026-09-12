@@ -66,7 +66,11 @@ import { readFile } from "node:fs/promises";
     console.log("Offline runner honest, draft preserved");
     await context.setOffline(false);
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
-    for (const projectName of [/Todo CLI/, /Log Analyzer/, /Laboratorium: protokoły atomowe/]) {
+    for (const projectName of [
+      /Todo CLI/,
+      /Log Analyzer/,
+      /Laboratorium: protokoły atomowe/,
+    ]) {
       await context.setOffline(false);
       await page
         .getByRole("navigation", { name: "Wybierz projekt" })
@@ -159,6 +163,32 @@ import { readFile } from "node:fs/promises";
     await expect(editor).toHaveValue(/use std::rc::Rc;/);
     console.log(
       "Module topic search and an unvisited concurrency lesson work offline; exact step resumes",
+    );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("async");
+    const asyncModule = page.locator(".module-picker > button").filter({
+      hasText: "Podstawy async: Future, await i anulowanie",
+    });
+    await expect(asyncModule).toHaveCount(1);
+    await asyncModule.click();
+    await page.locator(".gate-action").first().click();
+    const asyncHeading = await page.locator(".task-pane h1").innerText();
+    const asyncDraft = `${await editor.inputValue()}\n// Szkic Future zachowany bez sieci.\n`;
+    await editor.fill(asyncDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(asyncHeading);
+    await expect(editor).toHaveValue(asyncDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited async gate, draft and hint resume offline",
     );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
