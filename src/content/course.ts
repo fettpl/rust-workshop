@@ -1,3 +1,20 @@
+import { concurrencyLabProject } from "./projects/concurrency-lab";
+import {
+  atomicStateLessons,
+  atomicStateConcepts,
+  atomicStateCompetencies,
+  atomicStateSources,
+  atomicStateReviewExercises,
+  atomicStateModule,
+} from "./atomic-state";
+import {
+  memoryOrderingLessons,
+  memoryOrderingConcepts,
+  memoryOrderingCompetencies,
+  memoryOrderingSources,
+  memoryOrderingReviewExercises,
+  memoryOrderingModule,
+} from "./memory-ordering";
 import { rcLifetimeTrace } from "./rc-trace";
 import {
   threadsLessons,
@@ -191,6 +208,8 @@ export const modules = [
   threadsModule,
   channelsModule,
   synchronizedStateModule,
+  atomicStateModule,
+  memoryOrderingModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -218,6 +237,8 @@ export const lessons = [
   ...threadsLessons,
   ...channelsLessons,
   ...synchronizedStateLessons,
+  ...atomicStateLessons,
+  ...memoryOrderingLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -241,6 +262,8 @@ export const concepts = [
   ...threadsConcepts,
   ...channelsConcepts,
   ...synchronizedStateConcepts,
+  ...atomicStateConcepts,
+  ...memoryOrderingConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -264,6 +287,8 @@ export const competencies = [
   ...threadsCompetencies,
   ...channelsCompetencies,
   ...synchronizedStateCompetencies,
+  ...atomicStateCompetencies,
+  ...memoryOrderingCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -287,6 +312,8 @@ export const sources = [
   ...threadsSources,
   ...channelsSources,
   ...synchronizedStateSources,
+  ...atomicStateSources,
+  ...memoryOrderingSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -310,6 +337,8 @@ export const reviewExercises = {
   ...threadsReviewExercises,
   ...channelsReviewExercises,
   ...synchronizedStateReviewExercises,
+  ...atomicStateReviewExercises,
+  ...memoryOrderingReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -351,6 +380,7 @@ export const projects = [
     package: todoCliPackage,
   },
   { ...logAnalyzerProject, package: logAnalyzerPackage },
+  concurrencyLabProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -383,6 +413,10 @@ export const roadmap = [
   { title: "Log Analyzer: parser, strumień i pakiet CLI", status: "available" },
   { title: "Box, Deref, Drop oraz Rc, RefCell i Weak", status: "available" },
   { title: "Wątki, kanały, Send/Sync oraz Arc/Mutex", status: "available" },
+  {
+    title: "Atomics, porządkowanie pamięci i laboratorium Loom",
+    status: "available",
+  },
   { title: "Async i futures: wprowadzenie", status: "planned" },
   {
     title: "Mini grep i projekt końcowy",

@@ -66,7 +66,7 @@ import { readFile } from "node:fs/promises";
     console.log("Offline runner honest, draft preserved");
     await context.setOffline(false);
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
-    for (const projectName of [/Todo CLI/, /Log Analyzer/]) {
+    for (const projectName of [/Todo CLI/, /Log Analyzer/, /Laboratorium: protokoły atomowe/]) {
       await context.setOffline(false);
       await page
         .getByRole("navigation", { name: "Wybierz projekt" })

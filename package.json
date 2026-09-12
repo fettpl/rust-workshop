@@ -19,7 +19,9 @@
     "content:packages": "node --import tsx scripts/build-project-assets.ts",
     "predev": "npm run content:packages",
     "prebuild": "npm run content:packages",
-    "content:cargo": "npm run content:packages && node --import tsx scripts/verify-packages.ts"
+    "content:cargo": "npm run content:packages && node --import tsx scripts/verify-packages.ts",
+    "precontent:models": "npm run content:packages",
+    "content:models": "node --import tsx scripts/verify-models.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

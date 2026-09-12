@@ -29,6 +29,23 @@ const bundle: ContentBundle = {
 };
 
 describe("curriculum content contract", () => {
+  it("accepts pinned Loom documentation but rejects unrelated sources", () => {
+    const checkSource = (url: string) =>
+      validateContent({
+        ...bundle,
+        sources: [{ ...sources[0], url }, ...sources.slice(1)],
+      }).filter((error) => error.includes("official Rust source"));
+    expect(checkSource("https://docs.rs/loom/0.7.2/loom/")).toEqual([]);
+    expect(
+      checkSource("https://docs.rs/loom/0.7.2/loom/model/struct.Builder.html"),
+    ).toEqual([]);
+    expect(checkSource("https://docs.rs/unrelated/0.7.2/loom/")).not.toEqual(
+      [],
+    );
+    expect(
+      checkSource("https://docs.rs.example.org/loom/0.7.2/loom/"),
+    ).not.toEqual([]);
+  });
   it("ships a valid, connected learning graph", () => {
     expect(validateContent(bundle)).toEqual([]);
     expect(lessons.length).toBeGreaterThanOrEqual(6);

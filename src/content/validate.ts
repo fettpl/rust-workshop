@@ -379,7 +379,8 @@ export function validateContent(content: ContentBundle): string[] {
     if (
       !source.url.startsWith("https://doc.rust-lang.org/") &&
       !source.url.startsWith("https://play.rust-lang.org/") &&
-      !source.url.startsWith("https://github.com/rust-lang/")
+      !source.url.startsWith("https://github.com/rust-lang/") &&
+      !source.url.startsWith("https://docs.rs/loom/0.7.2/loom/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewedAt))
