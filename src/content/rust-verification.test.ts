@@ -102,6 +102,11 @@ describe("authored Rust starter verification", () => {
     }
     expect(
       results.filter((result) => !result.passed).map((result) => result.id),
+      JSON.stringify(
+        results.filter((result) => !result.passed),
+        null,
+        2,
+      ),
     ).toEqual([
       "verifier-fixtures/already-correct/starter-rejected",
       "verifier-fixtures/no-test-report/starter-rejected",

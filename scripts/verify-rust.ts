@@ -180,14 +180,19 @@ export function verifyTrustedRust(
       const failed = execution.stdout.match(
         /test result: FAILED.*?(\d+) passed; (\d+) failed;/,
       );
+      const passed =
+        !execution.error &&
+        !execution.signal &&
+        execution.status !== null &&
+        execution.status !== 0 &&
+        !!failed &&
+        Number(failed[2]) > 0;
       results.push({
         id,
-        passed:
-          !execution.error &&
-          execution.status !== 0 &&
-          !!failed &&
-          Number(failed[2]) > 0,
-        detail: "zmieniona implementacja nie omija asercji testów",
+        passed,
+        detail: passed
+          ? "zmieniona implementacja nie omija asercji testów"
+          : `oczekiwano nieprzechodzącej asercji; status=${execution.status}, signal=${execution.signal}, error=${execution.error?.message ?? "brak"}; stdout=${execution.stdout.slice(0, 900)}; stderr=${execution.stderr.slice(0, 900)}`,
       });
       return;
     }
