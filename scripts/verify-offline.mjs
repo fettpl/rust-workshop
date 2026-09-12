@@ -70,6 +70,7 @@ import { readFile } from "node:fs/promises";
       /Todo CLI/,
       /Log Analyzer/,
       /Laboratorium: protokoły atomowe/,
+      /Laboratorium: pipeline Tokio/,
     ]) {
       await context.setOffline(false);
       await page
@@ -215,6 +216,31 @@ import { readFile } from "node:fs/promises";
     ).toBeVisible();
     console.log(
       "Previously unvisited Tokio gate, draft and hint resume offline",
+    );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Tokio");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Tokio: przepływ i zamknięcie" })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const flowHeading = await page.locator(".task-pane h1").innerText();
+    const flowDraft = `${await editor.inputValue()}\n// Zachowany szkic bounded mpsc, bez wykonania.\n`;
+    await editor.fill(flowDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(flowHeading);
+    await expect(editor).toHaveValue(flowDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited Tokio flow gate, draft and hint resume offline",
     );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);

@@ -1,5 +1,7 @@
 # Trusted Tokio fixture profile
 
-This package fixes the dependencies used to verify repository-authored Tokio lessons. It is not an execution service and never accepts learner drafts, imports, paths or manifests. Tokio is pinned to 1.53.1 with only macros, rt and sync; a separate future stage will add timer/network APIs deliberately.
+This package fixes the dependencies used to verify repository-authored Tokio lessons. It is not an execution service and never accepts learner drafts, imports, paths or manifests. Tokio is pinned to 1.53.1 with `macros`, `rt`, `sync`, `time` and `test-util`. This is the minimal feature set for the registered runtime, channel, paused-clock timeout, `select!` and shutdown fixtures; it does not add network APIs.
+
+The feature choice is read-only source-backed: Tokio's [1.53.1 Cargo manifest](https://raw.githubusercontent.com/tokio-rs/tokio/tokio-1.53.1/tokio/Cargo.toml) defines `test-util` in terms of `rt`, `sync` and `time`. The [generated Rust Playground compiler manifest](https://github.com/rust-lang/rust-playground/blob/master/compiler/base/Cargo.toml) also pins Tokio to 1.53.1 and includes the profile-relevant runtime, sync, time and test-util support alongside its wider service feature set. Neither source inspection executes code or sends learner data.
 
 The verifier copies this manifest and Cargo.lock into a new temporary directory, writes reviewed lesson sources there and invokes fixed Cargo commands with --offline --locked. Maintainers may run the dedicated verifier with --fetch once to populate Cargo's dependency cache from this exact lockfile. The browser continues to use the fixed external Playground prelude and does not send this manifest or select a dependency profile.

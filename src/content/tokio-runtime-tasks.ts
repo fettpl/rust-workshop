@@ -1,3 +1,4 @@
+import { choose, tokioRun, tokioError, tokioExercise } from "./tokio-helpers";
 import type {
   Competency,
   Concept,
@@ -8,130 +9,6 @@ import type {
 } from "@/domain/types";
 
 const reviewedAt = "2026-09-12";
-const tokioTarget = "cargo-tokio-runtime-1.53.1" as const;
-
-function choose(
-  id: string,
-  kind: "predict" | "explain" | "recall",
-  title: string,
-  prompt: string,
-  correct: number,
-  answers: [string, string, string],
-  explanations: [string, string, string],
-): LessonStep {
-  return {
-    id,
-    kind,
-    title,
-    prompt,
-    choices: answers.map((label, index) => ({ id: String(index), label })),
-    evaluator: {
-      kind: "choice",
-      correct: String(correct),
-      explanations: Object.fromEntries(
-        explanations.map((explanation, index) => [String(index), explanation]),
-      ),
-    },
-    evidenceKind:
-      kind === "predict"
-        ? "prediction"
-        : kind === "recall"
-          ? "recall"
-          : "exposure",
-  };
-}
-
-function tokioRun(
-  id: string,
-  title: string,
-  prompt: string,
-  code: string,
-  expected: string,
-): LessonStep {
-  return {
-    id,
-    kind: "run",
-    title,
-    prompt,
-    code,
-    solution: code,
-    evaluator: { kind: "exact-output", expected },
-    expectedStatus: "success",
-    evidenceKind: "exposure",
-    trustedFixtureTarget: tokioTarget,
-  };
-}
-
-function tokioError(
-  id: string,
-  title: string,
-  prompt: string,
-  code: string,
-  solution: string,
-  expected: { code?: string; diagnostic?: string },
-): LessonStep {
-  return {
-    id,
-    kind: "observe",
-    title,
-    prompt,
-    code,
-    solution,
-    evaluator: {
-      kind: "expected-error",
-      ...(expected.code === undefined ? {} : { code: expected.code }),
-      ...(expected.diagnostic === undefined
-        ? {}
-        : { diagnostic: expected.diagnostic }),
-    },
-    expectedStatus: "compile-error",
-    ...(expected.code === undefined ? {} : { expectedError: expected.code }),
-    ...(expected.diagnostic === undefined
-      ? {}
-      : { expectedDiagnostic: expected.diagnostic }),
-    evidenceKind: "exposure",
-    trustedFixtureTarget: tokioTarget,
-  };
-}
-
-function tokioExercise(options: {
-  id: string;
-  kind: "modify" | "apply" | "debug" | "blank";
-  title: string;
-  prompt: string;
-  code?: string;
-  solution: string;
-  tests: string;
-  hints: [string, string];
-  forbiddenPatterns?: string[];
-  gate?: boolean;
-}): LessonStep {
-  return {
-    id: options.id,
-    kind: options.kind,
-    title: options.title,
-    prompt: options.prompt,
-    ...(options.code === undefined ? {} : { code: options.code }),
-    solution: options.solution,
-    hints: options.hints,
-    evaluator: {
-      kind: "tests",
-      tests: options.tests,
-      forbiddenPatterns: [
-        "unsafe",
-        "std::thread",
-        ...(options.forbiddenPatterns ?? []),
-      ],
-    },
-    ...(options.code === undefined
-      ? {}
-      : { expectedStatus: "success" as const }),
-    evidenceKind: options.kind === "blank" ? "assessment" : "transfer",
-    evidenceGate: options.gate ?? false,
-    trustedFixtureTarget: tokioTarget,
-  };
-}
-
 export const tokioRuntimeSources: Source[] = [
   {
     id: "tokio-runtime-builder",
@@ -1512,7 +1389,7 @@ export const tokioRuntimeModule: CourseModule = {
     "Każdy JoinHandle ma wynik; JoinError jednego nie ukrywa pozostałych, a Drop handle odłącza zadanie zamiast go anulować.",
   ],
   projectConnection:
-    "Następny etap doda kanały bounded, backpressure, timeout/select oraz graceful shutdown. Będzie opierał się na tych samych decyzjach: gdzie działa Future, kto posiada zadanie, jak przekazywane są dane przez granicę spawn i kto odbiera każdy wynik.",
+    "Kolejny moduł o przepływie i zamknięciu oraz laboratorium pipeline łączą te decyzje z kanałami bounded, backpressure, timeout/select i graceful shutdown: gdzie działa Future, kto odpowiada za zadanie, jak przekazujemy dane i kto odbiera każdy wynik.",
   assessmentId: "tokio-join-outcomes/tokio-join-outcomes-blank",
   gateCriteria: [
     {

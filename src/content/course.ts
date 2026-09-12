@@ -1,3 +1,26 @@
+import { tokioPipelineProject } from "./projects/tokio-pipeline";
+import { tokioFlowModule } from "./tokio-flow-control";
+import {
+  tokioChannelLessons,
+  tokioChannelConcepts,
+  tokioChannelCompetencies,
+  tokioChannelSources,
+  tokioChannelReviewExercises,
+} from "./tokio-channels";
+import {
+  tokioTimeLessons,
+  tokioTimeConcepts,
+  tokioTimeCompetencies,
+  tokioTimeSources,
+  tokioTimeReviewExercises,
+} from "./tokio-time-select";
+import {
+  tokioShutdownLessons,
+  tokioShutdownConcepts,
+  tokioShutdownCompetencies,
+  tokioShutdownSources,
+  tokioShutdownReviewExercises,
+} from "./tokio-shutdown";
 import { concurrencyLabProject } from "./projects/concurrency-lab";
 import {
   tokioRuntimeLessons,
@@ -228,6 +251,7 @@ export const modules = [
   memoryOrderingModule,
   asyncFoundationsModule,
   tokioRuntimeModule,
+  tokioFlowModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -259,6 +283,9 @@ export const lessons = [
   ...memoryOrderingLessons,
   ...asyncFoundationsLessons,
   ...tokioRuntimeLessons,
+  ...tokioChannelLessons,
+  ...tokioTimeLessons,
+  ...tokioShutdownLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -286,6 +313,9 @@ export const concepts = [
   ...memoryOrderingConcepts,
   ...asyncFoundationsConcepts,
   ...tokioRuntimeConcepts,
+  ...tokioChannelConcepts,
+  ...tokioTimeConcepts,
+  ...tokioShutdownConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -313,6 +343,9 @@ export const competencies = [
   ...memoryOrderingCompetencies,
   ...asyncFoundationsCompetencies,
   ...tokioRuntimeCompetencies,
+  ...tokioChannelCompetencies,
+  ...tokioTimeCompetencies,
+  ...tokioShutdownCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -340,6 +373,9 @@ export const sources = [
   ...memoryOrderingSources,
   ...asyncFoundationsSources,
   ...tokioRuntimeSources,
+  ...tokioChannelSources,
+  ...tokioTimeSources,
+  ...tokioShutdownSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -367,6 +403,9 @@ export const reviewExercises = {
   ...memoryOrderingReviewExercises,
   ...asyncFoundationsReviewExercises,
   ...tokioRuntimeReviewExercises,
+  ...tokioChannelReviewExercises,
+  ...tokioTimeReviewExercises,
+  ...tokioShutdownReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -409,6 +448,7 @@ export const projects = [
   },
   { ...logAnalyzerProject, package: logAnalyzerPackage },
   concurrencyLabProject,
+  tokioPipelineProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -454,6 +494,10 @@ export const roadmap = [
     status: "available",
   },
   {
+    title: "Tokio: bounded kanały, timeout, select i zamknięcie",
+    status: "available",
+  },
+  {
     title: "Mini grep i projekt końcowy",
     status: "planned",
   },
@@ -462,7 +506,7 @@ export const roadmap = [
     status: "planned",
   },
   {
-    title: "Async w praktyce: anulowanie, limity, backpressure i shutdown",
+    title: "Async w praktyce: streamy, sieć i blokujące operacje",
     status: "planned",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },
