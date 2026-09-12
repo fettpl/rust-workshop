@@ -1,5 +1,13 @@
 import { concurrencyLabProject } from "./projects/concurrency-lab";
 import {
+  asyncFoundationsLessons,
+  asyncFoundationsConcepts,
+  asyncFoundationsCompetencies,
+  asyncFoundationsSources,
+  asyncFoundationsReviewExercises,
+  asyncFoundationsModule,
+} from "./async-foundations";
+import {
   atomicStateLessons,
   atomicStateConcepts,
   atomicStateCompetencies,
@@ -210,6 +218,7 @@ export const modules = [
   synchronizedStateModule,
   atomicStateModule,
   memoryOrderingModule,
+  asyncFoundationsModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -239,6 +248,7 @@ export const lessons = [
   ...synchronizedStateLessons,
   ...atomicStateLessons,
   ...memoryOrderingLessons,
+  ...asyncFoundationsLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -264,6 +274,7 @@ export const concepts = [
   ...synchronizedStateConcepts,
   ...atomicStateConcepts,
   ...memoryOrderingConcepts,
+  ...asyncFoundationsConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -289,6 +300,7 @@ export const competencies = [
   ...synchronizedStateCompetencies,
   ...atomicStateCompetencies,
   ...memoryOrderingCompetencies,
+  ...asyncFoundationsCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -314,6 +326,7 @@ export const sources = [
   ...synchronizedStateSources,
   ...atomicStateSources,
   ...memoryOrderingSources,
+  ...asyncFoundationsSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -339,6 +352,7 @@ export const reviewExercises = {
   ...synchronizedStateReviewExercises,
   ...atomicStateReviewExercises,
   ...memoryOrderingReviewExercises,
+  ...asyncFoundationsReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -417,7 +431,10 @@ export const roadmap = [
     title: "Atomics, porządkowanie pamięci i laboratorium Loom",
     status: "available",
   },
-  { title: "Async i futures: wprowadzenie", status: "planned" },
+  {
+    title: "Podstawy async: Future, await, własność i anulowanie",
+    status: "available",
+  },
   {
     title: "Mini grep i projekt końcowy",
     status: "planned",
