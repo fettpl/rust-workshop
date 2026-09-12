@@ -1,3 +1,27 @@
+import {
+  iteratorsLessons,
+  iteratorsConcepts,
+  iteratorsCompetencies,
+  iteratorsReviewExercises,
+  iteratorsModule,
+  iteratorsSources,
+} from "./iterators";
+import {
+  closuresLessons,
+  closuresConcepts,
+  closuresCompetencies,
+  closuresReviewExercises,
+  closuresModule,
+  closuresSources,
+} from "./closures";
+import {
+  lifetimesLessons,
+  lifetimesConcepts,
+  lifetimesCompetencies,
+  lifetimesReviewExercises,
+  lifetimesModule,
+  lifetimesSources,
+} from "./lifetimes";
 import * as ownership from "./catalog";
 import {
   genericsLessons,
@@ -89,6 +113,9 @@ export const modules = [
   ioModule,
   genericsModule,
   traitsModule,
+  lifetimesModule,
+  closuresModule,
+  iteratorsModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -105,6 +132,9 @@ export const lessons = [
   ...ioLessons,
   ...genericsLessons,
   ...traitsLessons,
+  ...lifetimesLessons,
+  ...closuresLessons,
+  ...iteratorsLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -117,6 +147,9 @@ export const concepts = [
   ...ioConcepts,
   ...genericsConcepts,
   ...traitsConcepts,
+  ...lifetimesConcepts,
+  ...closuresConcepts,
+  ...iteratorsConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -129,6 +162,9 @@ export const competencies = [
   ...ioCompetencies,
   ...genericsCompetencies,
   ...traitsCompetencies,
+  ...lifetimesCompetencies,
+  ...closuresCompetencies,
+  ...iteratorsCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -141,6 +177,9 @@ export const sources = [
   ...ioSources,
   ...genericsSources,
   ...traitsSources,
+  ...lifetimesSources,
+  ...closuresSources,
+  ...iteratorsSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -153,6 +192,9 @@ export const reviewExercises = {
   ...ioReviewExercises,
   ...genericsReviewExercises,
   ...traitsReviewExercises,
+  ...lifetimesReviewExercises,
+  ...closuresReviewExercises,
+  ...iteratorsReviewExercises,
 };
 export const { traces, project } = ownership;
 export const projects = [
@@ -213,7 +255,7 @@ export const roadmap = [
     title: "Generics, własne traity, typy powiązane i dyn",
     status: "available",
   },
-  { title: "Lifetimes, closures i iterators", status: "planned" },
+  { title: "Lifetimes, closures i iterators", status: "available" },
   { title: "Testowanie, rustfmt i Clippy w projekcie", status: "planned" },
   { title: "Smart pointers, threads i async", status: "planned" },
   {

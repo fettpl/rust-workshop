@@ -16,6 +16,7 @@ import { useLearning } from "./learning-provider";
 import { lessons, traces, sources, modules } from "@/content/course";
 import { createStepProgress, stepKey } from "@/persistence/state";
 import { evaluate } from "@/engine/evaluate";
+import { choicesForStep } from "@/engine/choices";
 import { recordEvidence, recordLessonExposure } from "@/engine/learning";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
 import { LearningText } from "./learning-text";
@@ -408,7 +409,7 @@ export function LessonWorkspace() {
               {step.choices ? (
                 <fieldset>
                   <legend>Twoja decyzja</legend>
-                  {step.choices.map((choice) => (
+                  {choicesForStep(step, lesson.id).map((choice) => (
                     <label
                       className={`choice ${progress.answer === choice.id ? "selected" : ""}`}
                       key={choice.id}

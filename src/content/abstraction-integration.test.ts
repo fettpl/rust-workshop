@@ -6,6 +6,9 @@ import { moduleGate, recordEvidence } from "../engine/learning";
 for (const [moduleId, prerequisite] of [
   ["generics", "todo-io"],
   ["traits", "generics"],
+  ["lifetimes", "traits"],
+  ["closures", "lifetimes"],
+  ["iterators", "closures"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

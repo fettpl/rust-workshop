@@ -15,6 +15,7 @@ import {
 } from "@/engine/learning";
 import { reviewSessionKey, startReviewSession } from "@/engine/review-session";
 import { evaluate } from "@/engine/evaluate";
+import { choicesForStep } from "@/engine/choices";
 import { createStepProgress } from "@/persistence/state";
 import type { RunResult, StepProgress } from "@/domain/types";
 import { Eyebrow, MasteryBadge } from "./ui";
@@ -429,18 +430,20 @@ export function ReviewView() {
               ) : step.choices ? (
                 <fieldset>
                   <legend>Twoja decyzja</legend>
-                  {step.choices.map((choice) => (
-                    <label className="choice" key={choice.id}>
-                      <input
-                        type="radio"
-                        name="review-answer"
-                        disabled={pending || completed}
-                        checked={progress.answer === choice.id}
-                        onChange={() => patch({ answer: choice.id })}
-                      />
-                      {choice.label}
-                    </label>
-                  ))}
+                  {choicesForStep(step, `review/${concept.id}`).map(
+                    (choice) => (
+                      <label className="choice" key={choice.id}>
+                        <input
+                          type="radio"
+                          name="review-answer"
+                          disabled={pending || completed}
+                          checked={progress.answer === choice.id}
+                          onChange={() => patch({ answer: choice.id })}
+                        />
+                        {choice.label}
+                      </label>
+                    ),
+                  )}
                 </fieldset>
               ) : (
                 <label>

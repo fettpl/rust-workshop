@@ -4,7 +4,10 @@ import { lessons } from "../src/content/course";
 import { evaluate } from "../src/engine/evaluate";
 import type { LessonStep, RunResult } from "../src/domain/types";
 
-async function main() {
+export async function smokeLessons(
+  lessonIds: string[],
+  diagnosticLessonIds: string[],
+) {
   const base = (
     process.env.RUST_WORKSHOP_URL ?? "http://127.0.0.1:3002"
   ).replace(/\/$/, "");
@@ -55,15 +58,7 @@ async function main() {
       `ok ${lessonId}/${step.id}/${starter ? "starter" : "solution"}: ${result.status}; ${result.tests?.passed ?? 0} tests; ${result.durationMs}ms`,
     );
   }
-  for (const id of [
-    "generic-values",
-    "generic-impl",
-    "generic-bounds",
-    "trait-contracts",
-    "trait-consumers",
-    "associated-types",
-    "trait-dispatch",
-  ]) {
+  for (const id of lessonIds) {
     const lesson = lessons.find((item) => item.id === id);
     assert.ok(lesson, `Missing lesson ${id}`);
     const gate = lesson.steps.find(
@@ -71,7 +66,7 @@ async function main() {
     );
     assert.ok(gate, `No tested gate for ${id}`);
     await run(id, gate, false);
-    if (id === "generic-bounds" || id === "trait-dispatch") {
+    if (diagnosticLessonIds.includes(id)) {
       const broken = lesson.steps.find(
         (step) => step.expectedStatus === "compile-error" && step.expectedError,
       );
@@ -79,11 +74,21 @@ async function main() {
       await run(id, broken, true);
     }
   }
-  console.log(
-    `${cases} live abstraction cases verified; ${tests} tests passed.`,
-  );
+  console.log(`${cases} live lesson cases verified; ${tests} tests passed.`);
 }
-void main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (process.argv[1]?.endsWith("smoke-abstractions.ts"))
+  void smokeLessons(
+    [
+      "generic-values",
+      "generic-impl",
+      "generic-bounds",
+      "trait-contracts",
+      "trait-consumers",
+      "associated-types",
+      "trait-dispatch",
+    ],
+    ["generic-bounds", "trait-dispatch"],
+  ).catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
