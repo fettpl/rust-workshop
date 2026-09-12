@@ -1,5 +1,13 @@
 import { concurrencyLabProject } from "./projects/concurrency-lab";
 import {
+  tokioRuntimeLessons,
+  tokioRuntimeConcepts,
+  tokioRuntimeCompetencies,
+  tokioRuntimeSources,
+  tokioRuntimeReviewExercises,
+  tokioRuntimeModule,
+} from "./tokio-runtime-tasks";
+import {
   asyncFoundationsLessons,
   asyncFoundationsConcepts,
   asyncFoundationsCompetencies,
@@ -219,6 +227,7 @@ export const modules = [
   atomicStateModule,
   memoryOrderingModule,
   asyncFoundationsModule,
+  tokioRuntimeModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -249,6 +258,7 @@ export const lessons = [
   ...atomicStateLessons,
   ...memoryOrderingLessons,
   ...asyncFoundationsLessons,
+  ...tokioRuntimeLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -275,6 +285,7 @@ export const concepts = [
   ...atomicStateConcepts,
   ...memoryOrderingConcepts,
   ...asyncFoundationsConcepts,
+  ...tokioRuntimeConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -301,6 +312,7 @@ export const competencies = [
   ...atomicStateCompetencies,
   ...memoryOrderingCompetencies,
   ...asyncFoundationsCompetencies,
+  ...tokioRuntimeCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -327,6 +339,7 @@ export const sources = [
   ...atomicStateSources,
   ...memoryOrderingSources,
   ...asyncFoundationsSources,
+  ...tokioRuntimeSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -353,6 +366,7 @@ export const reviewExercises = {
   ...atomicStateReviewExercises,
   ...memoryOrderingReviewExercises,
   ...asyncFoundationsReviewExercises,
+  ...tokioRuntimeReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -433,6 +447,10 @@ export const roadmap = [
   },
   {
     title: "Podstawy async: Future, await, własność i anulowanie",
+    status: "available",
+  },
+  {
+    title: "Tokio: runtime, zadania, Send i wyniki JoinHandle",
     status: "available",
   },
   {

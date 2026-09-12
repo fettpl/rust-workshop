@@ -7,6 +7,7 @@ import { lessons, reviewExercises, traces } from "../src/content/course";
 import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
+import { getTrustedFixtureTarget } from "../src/domain/trusted-fixtures";
 type Verification = { id: string; passed: boolean; detail: string };
 const TIMEOUT = 8000;
 function command(cmd: string, args: string[], cwd: string) {
@@ -32,6 +33,7 @@ export function verifyTrustedRust(
     code: string,
     options: {
       error?: string;
+      diagnostic?: string;
       tests?: string;
       expectedOutput?: string;
       solutionStep?: LessonStep;
@@ -68,18 +70,22 @@ export function verifyTrustedRust(
       ],
       dir,
     );
-    if (options.error) {
+    if (options.error || options.diagnostic) {
       const passed =
         !compile.error &&
+        !compile.signal &&
+        compile.status !== null &&
         compile.status !== 0 &&
-        (options.error === "any" ||
-          compile.stderr.includes(`error[${options.error}]`));
+        (!options.error ||
+          options.error === "any" ||
+          compile.stderr.includes(`error[${options.error}]`)) &&
+        (!options.diagnostic || compile.stderr.includes(options.diagnostic));
       results.push({
         id,
         passed,
         detail: passed
-          ? `przewidziany błąd ${options.error}`
-          : `oczekiwano ${options.error}: ${compile.error?.message ?? compile.stderr.slice(0, 700)}`,
+          ? `przewidziany błąd ${options.diagnostic ?? options.error}`
+          : `oczekiwano ${options.diagnostic ?? options.error}: ${compile.error?.message ?? compile.stderr.slice(0, 700)}`,
       });
       return;
     }
@@ -248,6 +254,7 @@ export function verifyTrustedRust(
     });
   }
   function stepCases(prefix: string, step: LessonStep) {
+    if (getTrustedFixtureTarget(step) !== "rustc-2024") return;
     if (step.evaluator?.kind === "tests")
       verify(`${prefix}/${step.id}/reject-empty-implementation`, "", {
         tests: step.evaluator.tests,
@@ -258,6 +265,10 @@ export function verifyTrustedRust(
         error:
           step.expectedStatus === "compile-error"
             ? step.expectedError
+            : undefined,
+        diagnostic:
+          step.expectedStatus === "compile-error"
+            ? step.expectedDiagnostic
             : undefined,
         run: step.expectedStatus !== "runtime-error",
       });

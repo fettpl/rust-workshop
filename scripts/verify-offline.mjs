@@ -190,6 +190,32 @@ import { readFile } from "node:fs/promises";
     console.log(
       "Previously unvisited async gate, draft and hint resume offline",
     );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Tokio");
+    const tokioModule = page.locator(".module-picker > button").filter({
+      hasText: "Tokio: runtime i odpowiedzialność za zadania",
+    });
+    await expect(tokioModule).toHaveCount(1);
+    await tokioModule.click();
+    await page.locator(".gate-action").first().click();
+    const tokioHeading = await page.locator(".task-pane h1").innerText();
+    const tokioDraft = `${await editor.inputValue()}\n// Lokalny szkic runtime Tokio, bez uruchamiania kodu.\n`;
+    await editor.fill(tokioDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(tokioHeading);
+    await expect(editor).toHaveValue(tokioDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited Tokio gate, draft and hint resume offline",
+    );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

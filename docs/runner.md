@@ -17,6 +17,12 @@ The route accepts `POST` JSON only. If an `Origin` header is supplied, its host 
 
 ## Verification
 
+Tokio lessons use a maintainer-only `trustedFixtureTarget`. It is never sent as a runner parameter: browser requests still contain only code, mode and optional tests, and the Playground adapter keeps its fixed payload. The reviewed prelude's public `/meta/crates` listing contained Tokio 1.53.1 on 2026-09-12; its features and future versions are controlled by the Playground. No new Tokio code was posted to the public service during this milestone's automated verification.
+
+For reproducible authoring checks, `scripts/fixtures/tokio-runtime-1.53.1` owns an exact Tokio dependency, minimal macros/rt/sync features and Cargo.lock. `npm run content:tokio -- --fetch` performs a controlled fetch of this fixed lockfile and then verifies registered repository examples in a temporary directory with offline, locked Cargo commands. Subsequent `npm run content:tokio` needs only the cached dependencies. This covers visible examples, expected compiler diagnostics, unfinished starters, reference solutions, blank-page tasks and review exercises. The std-only `content:rust` verifier rejects unknown targets and leaves declared Tokio fixtures to this separate check; CI requires both.
+
+The authoring verifier accepts neither source nor paths on its command line and is never called by an application request. A dependency failure, timeout, missing executable or zero-test run is a verification failure, not evidence that a wrong solution was rejected. Code-less compiler errors are checked against an actual Rust diagnostic on the authored source; the learning UI preserves that message without inventing an E-code.
+
 Deterministic adapter tests use a fetch boundary fixture and assert the serialized request, status mapping, output preservation, limits, timeout, and HTTPS validation. Run them with:
 
 ```sh

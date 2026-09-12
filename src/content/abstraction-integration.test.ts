@@ -20,6 +20,7 @@ for (const [moduleId, prerequisite] of [
   ["atomic-state", "synchronized-state"],
   ["memory-ordering", "atomic-state"],
   ["async-foundations", "memory-ordering"],
+  ["tokio-runtime-tasks", "async-foundations"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

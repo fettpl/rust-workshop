@@ -93,7 +93,7 @@ export type Evaluator =
       forbiddenPatterns?: string[];
     }
   | { kind: "compilation" }
-  | { kind: "expected-error"; code: string }
+  | { kind: "expected-error"; code?: string; diagnostic?: string }
   | { kind: "tests"; tests: string; forbiddenPatterns?: string[] }
   | { kind: "answer"; accepted: string[]; feedback: string }
   | { kind: "choice"; correct: string; explanations: Record<string, string> }
@@ -128,6 +128,10 @@ export interface LessonStep {
   rubric?: string[];
   expectedStatus?: RunStatus;
   expectedError?: string;
+  /** Authored compiler message fragment when rustc emits no stable E-code. */
+  expectedDiagnostic?: string;
+  /** Maintainer-only compiler selection for repository-authored fixtures, never a runner request. */
+  trustedFixtureTarget?: "rustc-2024" | "cargo-tokio-runtime-1.53.1";
 }
 export interface Lesson {
   id: string;
