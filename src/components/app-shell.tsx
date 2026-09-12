@@ -47,6 +47,11 @@ function AppShell() {
   const [menu, setMenu] = useState(false);
   const headingRef = useRef<HTMLElement>(null);
   const view = state.resume.view;
+  const navigationKey =
+    view === "lesson"
+      ? `${view}:${state.resume.lessonId}:${state.resume.stepIndex}`
+      : view;
+  const previousNavigation = useRef(navigationKey);
   const openLesson = useOpenLesson();
   const currentModule =
     modules.find((module) =>
@@ -57,6 +62,16 @@ function AppShell() {
   );
   const focus = state.resume.focus && view === "lesson";
   const due = dueReviews(state, now).length;
+  useEffect(() => {
+    // Preserve the browser's initial focus; reset only when moving to new content.
+    if (previousNavigation.current === navigationKey) return;
+    previousNavigation.current = navigationKey;
+    const frame = requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      headingRef.current?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [navigationKey]);
   useEffect(() => {
     setOnline(navigator.onLine);
     const on = () => setOnline(true);
@@ -71,7 +86,12 @@ function AppShell() {
   function navigate(next: View) {
     update((s) => ({ ...s, resume: { ...s.resume, view: next } }));
     setMenu(false);
-    requestAnimationFrame(() => headingRef.current?.focus());
+    if (next === view) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        headingRef.current?.focus({ preventScroll: true });
+      });
+    }
   }
   if (!state.onboarding.completed) return <Onboarding />;
   if (!state.diagnostic.completed) return <Diagnostic />;

@@ -1,6 +1,6 @@
 # Rust Workshop
 
-Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej od zera z Rust. Dostępnych jest 35 lekcji w ośmiu modułach: 5 lekcji fundamentów Rust, 8 pamięci, ownership i podstaw borrowing, 6 modelowania danych, 3 kolekcji, 3 obsługi błędów, 3 rdzenia Todo CLI, 4 modułów i Cargo oraz 3 formatu pliku, zapisu i terminala. Curriculum zawiera 39 pojęć, 6 śladów pamięci i 56 wpisów źródłowych. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnego projektu.
+Interaktywna aplikacja do nauki Rust dla osoby znającej podstawy programowania, ale zaczynającej od zera z Rust. Dostępne są 42 lekcje w dziesięciu modułach: 5 lekcji fundamentów Rust, 8 pamięci, ownership i podstaw borrowing, 6 modelowania danych, 3 kolekcji, 3 obsługi błędów, 3 rdzenia Todo CLI, 4 modułów i Cargo, 3 formatu pliku, zapisu i terminala, 3 generics oraz 4 traitów. Curriculum zawiera 46 pojęć, 6 śladów pamięci i 74 wpisy źródłowe. Nauka prowadzi od przewidywania przez eksperyment i interpretację kompilatora do samodzielnego projektu.
 
 ## Uruchomienie lokalne
 
@@ -28,16 +28,18 @@ Po pierwszym otwarciu i pobraniu zasobów Service Worker zapisuje powłokę apli
 
 - Onboarding i cztery działania diagnostyczne bez blokowania dostępu do lekcji.
 - Dashboard z dokładnie wznowioną sesją, powtórkami, projektem, stanami pojęć i przekrojowymi kompetencjami.
-- Mapa ośmiu modułów z kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań.
+- Mapa dziesięciu modułów z kontraktami, grafem zależności i kryteriami samodzielności prowadzącymi do konkretnych zadań.
 - Edytor Monaco serwowany lokalnie, alternatywny edytor tekstowy, wykonanie i testy Rust 2024.
 - Oryginalny stderr kompilatora oraz osobny Compiler Coach z progresywnymi wskazówkami.
 - Modele stack/heap z krokami move, Copy, clone, pożyczania i końca zakresu.
 - Wybór dwóch projektów: mini-projektu komunikatu Number Guessing i Todo CLI. Todo prowadzi od parsera `add/done/list`, stanu w `Vec` i dwóch polityk sesji do prawdziwych plików oraz programu terminalowego. Karta projektu udostępnia 11-plikowy pakiet Cargo bez zewnętrznych zależności: starter i rozwiązanie referencyjne, z testami plików oraz osobnego procesu CLI. Projekty mają oddzielne notatki i retrospektywy; wznowienie wraca do bieżącej lekcji projektu albo pierwszej nieukończonej.
 - Otworzenie lub pobranie rozwiązania referencyjnego jest pomocą dla odpowiednich zadań Todo i nie zalicza ćwiczeń. Niezależne zadania notatnika, z innym formatem, API i poleceniami, pozostają dostępne jako dowód transferu.
-- Powtórki łączą odtwarzanie pojęć, przewidywanie i krótkie naprawy błędów uruchamiane w kompilatorze, także dla kolekcji i Todo.
+- Generics obejmują parametry `T`/`U`, `impl<T>`, pożyczanie i przenoszenie danych oraz minimalne ograniczenia `PartialEq` i `where`. Traity wprowadzają własne kontrakty, metody domyślne i nadpisania, generycznych konsumentów, typy powiązane oraz pożyczone `&dyn Trait` i granicę zgodności z `dyn`.
+- Każde z siedmiu nowych pojęć ma dwa niezależne zadania kodowe z innym kontraktem; po odsłonięciu jednego rozwiązania drugi wariant pozostaje dostępny jako dowód samodzielności. Etap zawiera także trzy zadania od pustej kartki — ograniczenia generyczne, własny trait `Measure` z `Output` i listę reporterów — oraz siedem kodowych powtórek z testami.
+- Powtórki łączą odtwarzanie pojęć, przewidywanie i krótkie naprawy błędów uruchamiane w kompilatorze, także dla kolekcji, Todo, generics i traitów.
 - Wersjonowany zapis, dokładne wznowienie, notatki, zakładki, eksport/import, motywy i Focus Mode.
 
-Treści kolejnych działów są pokazane jako roadmapa. Podstawy części 9 — moduły, widoczność, importy, crates i pakiety Cargo — są zaimplementowane. Do rozwinięcia pozostają zaawansowane Cargo, workspaces, features i MSRV, części 10–18 poza dostępnym projektem Todo, pełna gra Number Guessing+, Log Analyzer, Mini grep i projekt końcowy. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani poziomu zawodowego.
+Treści kolejnych działów są pokazane jako roadmapa. Podstawy części 9–11 — moduły/Cargo, generics i traity — są zaimplementowane. Do rozwinięcia pozostają zaawansowane Cargo, workspaces, features i MSRV, projektowanie publicznego API i pomiary kosztów abstrakcji, lifetimes, closures i iterators oraz dalsze części 12–18 poza dostępnym projektem Todo. Pełna gra Number Guessing+, Log Analyzer, Mini grep i projekt końcowy nadal są w planie. [Docelowa mapa zaawansowanego kursu](docs/advanced-curriculum.md) opisuje kompetencje mid/senior, zależności, projekty i wymagane dowody. Porównanie wszystkich głównych wymagań z oryginalnym briefem i pozostały zakres są w [audycie wymagań](docs/requirements-audit.md). Nie przeprowadzono pilotażu z uczącymi się; dostępność lekcji nie potwierdza opanowania całego tematu ani gotowości zawodowej.
 
 ## Architektura
 
@@ -64,6 +66,8 @@ Testy dodatkowe są schowane w doświadczeniu ucznia, lecz ich źródło jest cz
 
 ## Weryfikacja
 
+Zestaw wymaga lokalnego stable Rust. Także `npm test` kompiluje małe, zaufane fixture'y sprawdzające weryfikator curriculum.
+
 ```sh
 npm run lint
 npm run typecheck
@@ -77,7 +81,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-`content:rust` kompiluje i wykonuje wyłącznie zaufane, autorskie przykłady w repozytorium. Sprawdza poprawne startery, oczekiwane klasy błędów, rozwiązania z testami zadeklarowanymi w evaluatorze, ślady i powtórki. Nie przekazuj temu skryptowi importowanych szkiców użytkownika.
+`content:rust` kompiluje i wykonuje wyłącznie zaufane, autorskie przykłady w repozytorium. Sprawdza poprawne startery, oczekiwane klasy błędów, rozwiązania — także zawierające wyłącznie funkcje generyczne — z testami zadeklarowanymi w evaluatorze, ślady i powtórki. Dla zadań testowych sprawdza również, czy niezmieniony starter wymaga poprawy według evaluatora: zachowania albo jawnego ograniczenia źródła. Brak testów, timeout i błąd infrastruktury nie stanowią dowodu prawidłowego odrzucenia startera; błąd wymaganego API musi mieć diagnostykę kodu źródłowego. Przegląd kodu i kontraktów uzupełnia te kontrole. Nie przekazuj temu skryptowi importowanych szkiców użytkownika.
 
 `content:packages` buduje archiwa ZIP startera i rozwiązania z autorskich danych projektu; działa również przed `dev` i `build`. `content:cargo` sprawdza te zaufane pakiety przez Cargo, w tym testy plików i uruchomionego procesu CLI. Nie służy do wykonywania dowolnego kodu lub ścieżek dostarczonych przez użytkownika.
 

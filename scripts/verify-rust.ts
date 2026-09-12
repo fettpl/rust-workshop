@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { lessons, reviewExercises, traces } from "../src/content/course";
-import type { LessonStep } from "../src/domain/types";
+import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
 type Verification = { id: string; passed: boolean; detail: string };
@@ -17,7 +17,13 @@ function command(cmd: string, args: string[], cwd: string) {
     maxBuffer: 1024 * 1024,
   });
 }
-export function verifyTrustedRust(): Verification[] {
+export function verifyTrustedRust(
+  content: {
+    lessons: Lesson[];
+    reviewExercises: Record<string, LessonStep>;
+    traces: Record<string, Trace>;
+  } = { lessons, reviewExercises, traces },
+): Verification[] {
   const dir = mkdtempSync(join(tmpdir(), "rust-workshop-authored-"));
   const results: Verification[] = [];
   let number = 0;
@@ -31,8 +37,17 @@ export function verifyTrustedRust(): Verification[] {
       solutionStep?: LessonStep;
       run?: boolean;
       expectTestFailure?: boolean;
+      expectStarterRejection?: boolean;
     } = {},
   ) {
+    if (options.expectStarterRejection && !options.tests?.trim()) {
+      results.push({
+        id,
+        passed: false,
+        detail: "brak testów do oceny startera",
+      });
+      return;
+    }
     const path = join(dir, `example_${number++}.rs`);
     const binary = path + ".bin";
     const testMode = !!options.tests;
@@ -47,6 +62,7 @@ export function verifyTrustedRust(): Verification[] {
         "--crate-name",
         "authored_example",
         ...(testMode ? ["--test"] : main ? [] : ["--crate-type", "lib"]),
+        ...(options.expectStarterRejection ? ["--error-format=json"] : []),
         "-o",
         binary,
       ],
@@ -68,6 +84,43 @@ export function verifyTrustedRust(): Verification[] {
       return;
     }
     if (compile.error || compile.status !== 0) {
+      const sourceError =
+        options.expectStarterRejection &&
+        compile.stderr.split("\n").some((line) => {
+          try {
+            const diagnostic = JSON.parse(line) as {
+              $message_type?: string;
+              level?: string;
+              code?: { code?: string } | null;
+              spans?: { is_primary?: boolean; file_name?: string }[];
+            } | null;
+            return (
+              diagnostic?.$message_type === "diagnostic" &&
+              diagnostic.level === "error" &&
+              /^E\d{4}$/.test(diagnostic.code?.code ?? "") &&
+              Array.isArray(diagnostic.spans) &&
+              diagnostic.spans.some(
+                (span) => span.is_primary && span.file_name === path,
+              )
+            );
+          } catch {
+            return false;
+          }
+        });
+      if (
+        options.expectStarterRejection &&
+        !compile.error &&
+        compile.status === 1 &&
+        !compile.signal &&
+        sourceError
+      ) {
+        results.push({
+          id,
+          passed: true,
+          detail: "starter nie spełnia API wymaganego przez testy",
+        });
+        return;
+      }
       results.push({
         id,
         passed: false,
@@ -80,6 +133,43 @@ export function verifyTrustedRust(): Verification[] {
       return;
     }
     const execution = command(binary, [], dir);
+    if (options.expectStarterRejection) {
+      const counts = execution.stdout.match(
+        /test result:.*?\. (\d+) passed; (\d+) failed;/,
+      );
+      const tests = counts
+        ? { passed: Number(counts[1]), failed: Number(counts[2]) }
+        : undefined;
+      const validRun =
+        !execution.error &&
+        execution.status !== null &&
+        tests &&
+        tests.passed + tests.failed > 0;
+      const outcome =
+        validRun && options.solutionStep?.evaluator
+          ? evaluate(options.solutionStep.evaluator, {
+              code,
+              result: {
+                status: execution.status === 0 ? "success" : "test-failure",
+                stdout: execution.stdout,
+                stderr: execution.stderr,
+                diagnostics: [],
+                durationMs: 0,
+                tests,
+              },
+            })
+          : undefined;
+      results.push({
+        id,
+        passed: outcome !== undefined && !outcome.passed,
+        detail: !validRun
+          ? `nie udało się ocenić startera: ${execution.error?.message ?? execution.stderr}`
+          : outcome?.passed
+            ? "starter już zalicza zadanie bez zmiany kodu"
+            : "starter wymaga poprawy przed zaliczeniem evaluatora",
+      });
+      return;
+    }
     if (options.expectTestFailure) {
       const failed = execution.stdout.match(
         /test result: FAILED.*?(\d+) passed; (\d+) failed;/,
@@ -171,8 +261,23 @@ export function verifyTrustedRust(): Verification[] {
             : undefined,
         run: step.expectedStatus !== "runtime-error",
       });
+      if (
+        step.evaluator?.kind === "tests" &&
+        step.expectedStatus !== "compile-error"
+      )
+        verify(`${prefix}/${step.id}/starter-rejected`, step.code, {
+          tests: step.evaluator.tests,
+          solutionStep: step,
+          expectStarterRejection: true,
+        });
     }
-    if (step.solution && /\bfn\s+\w+\s*\(/.test(step.solution))
+    if (
+      step.solution &&
+      (["tests", "compilation", "expected-error", "exact-output"].includes(
+        step.evaluator?.kind ?? "",
+      ) ||
+        /\bfn\s+\w+\s*(?:<|\()/.test(step.solution))
+    )
       verify(`${prefix}/${step.id}/solution`, step.solution, {
         tests:
           step.evaluator?.kind === "tests" ? step.evaluator.tests : undefined,
@@ -192,11 +297,11 @@ export function verifyTrustedRust(): Verification[] {
         expectTestFailure: true,
       },
     );
-    for (const lesson of lessons)
+    for (const lesson of content.lessons)
       for (const step of lesson.steps) stepCases(lesson.id, step);
-    for (const [concept, step] of Object.entries(reviewExercises))
+    for (const [concept, step] of Object.entries(content.reviewExercises))
       stepCases(`review/${concept}`, step);
-    for (const [id, trace] of Object.entries(traces))
+    for (const [id, trace] of Object.entries(content.traces))
       verify(`trace/${id}`, `fn main() {\n${trace.code}\n}`);
     verify("diagnostic/double", "fn double(n: i32) -> i32 { n * 2 }", {
       tests:

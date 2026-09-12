@@ -1,5 +1,21 @@
 import * as ownership from "./catalog";
 import {
+  genericsLessons,
+  genericsConcepts,
+  genericsCompetencies,
+  genericsReviewExercises,
+  genericsModule,
+  genericsSources,
+} from "./generics";
+import {
+  traitsLessons,
+  traitsConcepts,
+  traitsCompetencies,
+  traitsReviewExercises,
+  traitsModule,
+  traitsSources,
+} from "./traits";
+import {
   cargoLessons,
   cargoConcepts,
   cargoCompetencies,
@@ -71,6 +87,8 @@ export const modules = [
   todoModule,
   cargoModule,
   ioModule,
+  genericsModule,
+  traitsModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -85,6 +103,8 @@ export const lessons = [
   ...todoLessons,
   ...cargoLessons,
   ...ioLessons,
+  ...genericsLessons,
+  ...traitsLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -95,6 +115,8 @@ export const concepts = [
   ...todoConcepts,
   ...cargoConcepts,
   ...ioConcepts,
+  ...genericsConcepts,
+  ...traitsConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -105,6 +127,8 @@ export const competencies = [
   ...todoCompetencies,
   ...cargoCompetencies,
   ...ioCompetencies,
+  ...genericsCompetencies,
+  ...traitsCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -115,6 +139,8 @@ export const sources = [
   ...todoSources,
   ...cargoSources,
   ...ioSources,
+  ...genericsSources,
+  ...traitsSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -125,6 +151,8 @@ export const reviewExercises = {
   ...todoReviewExercises,
   ...cargoReviewExercises,
   ...ioReviewExercises,
+  ...genericsReviewExercises,
+  ...traitsReviewExercises,
 };
 export const { traces, project } = ownership;
 export const projects = [
@@ -181,7 +209,10 @@ export const roadmap = [
     title: "Todo: format pliku, zapis i pobierany projekt CLI",
     status: "available",
   },
-  { title: "Generics i traits", status: "planned" },
+  {
+    title: "Generics, własne traity, typy powiązane i dyn",
+    status: "available",
+  },
   { title: "Lifetimes, closures i iterators", status: "planned" },
   { title: "Testowanie, rustfmt i Clippy w projekcie", status: "planned" },
   { title: "Smart pointers, threads i async", status: "planned" },
