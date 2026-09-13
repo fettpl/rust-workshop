@@ -72,6 +72,7 @@ import { readFile } from "node:fs/promises";
       /Laboratorium: protokoły atomowe/,
       /Laboratorium: pipeline Tokio/,
       /Laboratorium: serwis TCP/,
+      /Laboratorium: publiczne API i workspace/,
     ]) {
       await context.setOffline(false);
       await page
@@ -247,6 +248,7 @@ import { readFile } from "node:fs/promises";
       "Tokio: I/O i strumienie",
       "Tokio: praca blokująca",
       "Tokio: sieć i serwis",
+      "Publiczne API i workspace Cargo",
     ]) {
       await page
         .getByRole("button", { name: "Mapa nauki", exact: true })

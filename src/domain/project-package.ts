@@ -37,11 +37,37 @@ export function validateProjectPackage(project: ProjectPackage): string[] {
         errors.push(`File/directory collision: ${path}`);
   }
   const exactPaths = new Set(project.files.map((file) => file.path));
-  if (
-    !exactPaths.has("Cargo.toml") ||
-    (!exactPaths.has("src/lib.rs") && !exactPaths.has("src/main.rs"))
-  )
-    errors.push("Cargo package needs Cargo.toml and a library or binary root");
+  if (!exactPaths.has("Cargo.toml"))
+    errors.push("Cargo package needs Cargo.toml");
+  if (project.workspaceMembers !== undefined) {
+    if (!project.workspaceMembers.length)
+      errors.push("Workspace needs members");
+    const members = new Set<string>();
+    for (const member of project.workspaceMembers) {
+      if (
+        member
+          .split("/")
+          .some(
+            (part) =>
+              !/^[a-zA-Z0-9_.-]+$/.test(part) || part === "." || part === "..",
+          )
+      )
+        errors.push(`Invalid workspace member: ${member}`);
+      if (members.has(member.toLowerCase()))
+        errors.push(`Duplicate workspace member: ${member}`);
+      members.add(member.toLowerCase());
+      if (
+        !exactPaths.has(`${member}/Cargo.toml`) ||
+        (!exactPaths.has(`${member}/src/lib.rs`) &&
+          !exactPaths.has(`${member}/src/main.rs`))
+      )
+        errors.push(
+          `Workspace member needs Cargo.toml and a library or binary root: ${member}`,
+        );
+    }
+  } else if (!exactPaths.has("src/lib.rs") && !exactPaths.has("src/main.rs")) {
+    errors.push("Cargo package needs a library or binary root");
+  }
   return errors;
 }
 

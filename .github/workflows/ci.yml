@@ -21,6 +21,7 @@ jobs:
       - run: npm run content:tokio -- --fetch
       - run: npm run content:models -- --fetch
       - run: npm run content:cargo
+      - run: npm run content:workspace
       - run: npm run content:audit
       - run: npm run build
       - run: npx playwright install --with-deps chromium
@@ -30,3 +31,16 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
+  workspace-msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@1.85.0
+        with:
+          components: rustfmt, clippy
+      - run: npm ci
+      - run: npm run content:workspace -- --msrv

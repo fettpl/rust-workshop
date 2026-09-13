@@ -6,6 +6,7 @@ for (const moduleId of [
   "tokio-io-streams",
   "tokio-blocking-work",
   "tokio-network-service",
+  "public-api-workspaces",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,

@@ -1,55 +1,62 @@
-# Weryfikacja etapu: TCP i serwis Tokio
+# Weryfikacja etapu: publiczne API i workspace Cargo
 
-Data: 13 września 2026. Etap przeszedł przegląd i końcową weryfikację lokalną. Katalog obejmuje 106 lekcji w 29 modułach, 109 pojęć, 205 wpisów źródłowych, 61 zadań od pustej kartki, 7 śladów pamięci i 6 projektów; pięć projektów ma pakiet Cargo. Ten etap dodaje cztery lekcje, osiem bramek (w tym cztery blank-page), cztery kodowe powtórki i laboratorium serwisu TCP.
+Data: 13 września 2026. Katalog obejmuje 110 lekcji w 30 modułach, 113 pojęć, 218 wpisów źródłowych, 65 zadań od pustej kartki, 7 śladów pamięci i 7 projektów; sześć projektów ma pakiet Cargo. Ten etap dodaje cztery lekcje, osiem bramek (w tym cztery blank-page), cztery kodowe powtórki i rzeczywisty workspace z biblioteką oraz osobnym klientem.
 
-## Wykonane kontrole
+Przeglądy treści, pakietu i weryfikatorów oraz lokalne kontrole interfejsu, produkcyjnego buildu i offline są zakończone.
+
+## Kontrole
 
 | Sprawdzenie | Wynik |
 | --- | --- |
-| Integracja modułu i reveal projektu | 22/22 testy; ujawnienie pakietu oznacza cztery główne zadania jako pomoc, pozostawiając cztery niezależne blank-page |
-| Vitest | 150/150 testów w 28 plikach |
-| TypeScript i ESLint | Oba przebiegi bez błędów; końcowy build również sprawdził typy |
-| Curriculum | Poprawne relacje 106 lekcji, 109 pojęć i 7 śladów |
-| Źródła HTTP | 205/205 HTTP 200, brak uszkodzonych referencji, lekcji bez bramki i pojęć bez aktywnej powtórki |
-| Profil Tokio | Pięć testów preflight offline/locked, w tym prawdziwe IPv4 loopback connect/accept, half-close i odpowiedź |
-| rustc | 1207/1207 autorskich przypadków biblioteki standardowej; exit 0 |
-| Cargo/Tokio | 252/252 autorskie przypadki; po doprecyzowaniu testów kolejności admission i granicy rozmiaru niezależny przegląd ponownie sprawdził sześć rozwiązań lifecycle oraz cztery kompilujące się mutanty, odrzucone przez asercje. Dwa rozwiązania half-close po ostatnim rozszerzeniu granic: po 3/3 testy; dwa mutanty >= odrzucone asercjami |
-| Playwright: lekcje I/O, blocking i TCP | 3/3 scenariusze wznowienia diagnostyki/szkicu i świeżego blank-page; 390 px, bez naruszeń axe, przepełnienia i pageerror |
-| Pakiety Cargo | Wszystkie pięć: starter fmt/check i oczekiwana porażka testów na todo!; referencje fmt/check/test/Clippy bez błędów. Serwis: 2 testy jednostkowe i 15 kontraktowych; 3 celowo błędne przykłady ignorowane w zwykłym przebiegu |
-| Pełne E2E | 40/40; po ostatniej zmianie samego testu w paczce Cargo ponownie przeszedł scenariusz zgodności bajtów ZIP, reveal i świeżego blank-page po reload |
-| Build produkcyjny | Sukces; skróty czterech plików treści przed i po buildzie identyczne |
-| Offline v17 | Zapis szkicu, notatek, kroku i podpowiedzi po reload; nowe zadanie sieciowe dostępne bez wcześniejszego otwarcia; wszystkie pięć pobieranych paczek startowych zachowuje identyczne bajty; brak pageerror |
-| Ręczna kontrola przeglądarki | Mapa 29 modułów, wyszukiwanie i projekt TCP czytelne; Tab wybiera skip link, Enter przenosi focus do main-content; brak ostrzeżeń i błędów konsoli w kontrolowanym przebiegu |
+| Vitest | 158/158 w 30 plikach; obejmuje rzeczywiste metadane Cargo i zachowanie niezależnych bramek po reveal |
+| TypeScript i ESLint | Bez błędów |
+| Curriculum | Poprawne relacje 110 lekcji, 113 pojęć i 7 śladów |
+| Źródła HTTP | 218/218 HTTP 200; brak uszkodzonych referencji, lekcji bez bramki i pojęć bez aktywnej powtórki |
+| rustc | Pełny przebieg 1251/1251; po ostatnich zmianach ćwiczeń dodatkowo 46/46 przypadków zamrożonego modułu API |
+| Cargo/Tokio | 252/252 autorskie przypadki, w tym lokalne TCP |
+| Loom | Poprawne modele przechodzą; dwa kontrprzykłady i osłabiona biblioteka odrzucone przez właściwe asercje |
+| Pakiety Cargo | Wszystkie sześć: starter fmt/check i oczekiwana porażka na todo; referencje fmt/check/test/Clippy |
+| Frame Protocol — obecny kompilator | Workspace i biblioteka osobno: default/no-default/all-features; osobne diagnostics biblioteki oraz klienta; fmt/check/test/Clippy/doc i stały lockfile |
+| Frame Protocol — dokładny Rust 1.85.0 | Ten sam zestaw konfiguracji, testów i dziesięciu kontrolowanych mutacji przechodzi na deklarowanym minimum kompilatora |
+| Liczba testów pakietu | Referencja: 17 testów domyślnie i 18 z all-features; obejmuje dwa compile-fail doctesty i osobny proces CLI |
+| Pełne E2E | 42/42 po zamrożeniu treści; nowe scenariusze obejmują wznowienie modułu, pobranie i reveal projektu oraz mobilną dostępność |
+| Build produkcyjny | Przeszedł; hashe plików treści nie zmieniły się podczas budowania |
+| Offline | Cache v18; sześć ZIP-ów pobranych po reload bez sieci ma identyczne bajty; nowy moduł przywraca dokładne zadanie, szkic i hint; brak błędów strony |
+| Ręczna kontrola produkcji | Mapa 30 modułów, wyszukiwanie, nowa lekcja i karta projektu czytelne; Tab → skip link → Enter przenosi fokus do main, Enter otwiera krok; konsola bez ostrzeżeń i błędów |
 
-Weryfikacja wykonuje tylko przejrzany kod repozytorium i celowo przygotowane kontrpróby. Nie wykonuje lokalnie szkiców ani importów ucznia. E2E kontroluje odpowiedzi `/api/run`; nowych przykładów nie wysłano do publicznego Playgrounda.
+Pierwszy przebieg E2E miał 41/42 wyników pozytywnych podczas równoczesnych zmian importowanej treści przez HMR; log wskazywał odłączenie DOM i granicę błędu Reacta. Test przechodził samodzielnie. Nie zmieniono CSS ani nie osłabiono kliknięcia; pełny przebieg powtórzony po zamrożeniu plików przeszedł.
 
-## Przegląd kontraktów
+## Niezależne przeglądy i poprawki
 
-Niezależne przeglądy lekcji TCP, lifecycle, integracji i projektu serwisu zakończyły się bez pozostałych materialnych uwag. Naprawiono starter, który przypadkiem przechodził dla małego zapisu TCP; brak limitu odpowiedzi; zakończenie join po pierwszej panice; manager czekający na następną pracę zamiast wysyłać gotową odpowiedź; niepełne sprawdzenie sukcesu i błędów flush oraz zbyt duże wartości konfiguracji. Odpowiedź ma jawny tag sukcesu lub klasy błędu, a raport nie przypisuje wewnętrznego błędu managera do JoinError.
+Recenzje obu grup lekcji, projektu oraz weryfikatorów wykonali inni autorzy niż osoby implementujące daną część. Zgłoszone problemy poprawiono przed zamknięciem recenzji:
 
-Recenzent sprawdził rzeczywiste mutacje referencji: powiększenie kolejki o jeden, zwiększenie admission o jeden i odnawianie deadline podczas kolejnych odczytów. Każda kompiluje się i przegrywa na odpowiedniej asercji. Są to dodatkowe dowody poza trzema edukacyjnymi kontrprzykładami w pakiecie.
+- Blank dotyczący błędów wymaga teraz niezależnego odczytu discriminatora i długości z dwoma etapami awarii. Opis podaje jawny publiczny format wyniku i nazwy accessorów, pozostawiając prywatną reprezentację oraz algorytm uczniowi.
+- Testy limitów bajtów obejmują tekst wielobajtowy, aby odrzucić mylenie liczby znaków z liczbą bajtów. Testy jednego pliku nie są opisane jako dowód prywatności między crate’ami.
+- Escapowane znaczniki dokumentacji powodowały zero doctestów. Artefakt zawiera teraz rzeczywiste bloki, a weryfikator wymaga co najmniej dwóch wykonanych testów dokumentacji.
+- Test CLI rozdziela konfigurację domyślną i diagnostyczną oraz pokazuje stderr procesu. Dzięki temu porażka startera wskazuje rzeczywiste todo, zamiast ukrywać je za samym kodem wyjścia.
+- Publiczne testy zachowują oryginalny obiekt przyczyny błędu dla obu etapów odczytu i zapisu. Adapter testowy obsługuje dowolną długość bufora zgodnie z kontraktem Read.
+- Display opisuje etap operacji; Error::source udostępnia przyczynę. Regresja zapobiega powielaniu komunikatu przy prezentacji łańcucha błędów.
+- Kontrola manifestów sprawdza deklarowane dziedziczenie metadanych i przekazywanie diagnostics do biblioteki. Osobny build klienta zapobiega ukryciu brakującego feature przez unifikację całego workspace.
 
-Test łączący prawdziwe TCP z zatrzymanym zegarem Tokio sporadycznie zatrzymywał równoległy przebieg. Poprawka kończy sieciowe i kolejkowe uzgodnienia przed zatrzymaniem czasu, a wznawia zegar przed zwolnieniem closure oraz join. Końcowy domyślny równoległy przebieg Cargo przeszedł. Nie izolowano tego testu w osobnym pliku ani nie zwiększono limitu czasu w celu ukrycia problemu.
+## Co udowadniają kontrole negatywne
 
-E2E pierwotnie zakładał, że po reload pozostaje wybrany projekt i wariant rozwiązania. Test teraz ponownie wybiera projekt i bez ponownego reveal sprawdza zachowaną ekspozycję oraz świeży blank-page. Jeden przebieg narzędzia miał około 900 sekund przerwy w obsłudze kliknięcia i przekroczył limit; przyczyna tej przerwy pozostaje nieustalona. Następny scenariusz i pełny zestaw przeszły bez zmiany timeoutu.
+`scripts/workspace-mutants.ts` celowo zmienia wyłącznie wyekstrahowaną autorską referencję. Łącznie wykonuje dziesięć kontrolowanych mutacji. Pierwsze dziewięć narusza prywatność, non_exhaustive, wymagane metody traitu, zgodność z dyn, minimalne bounds, stare importy, zachowanie odczytu, zachowanie przyczyny I/O i włączną granicę rozmiaru. Wymagane są odpowiednie kody diagnostyk albo właściwe asercje; timeout, sygnał i brak uruchomionych testów nie stanowią sukcesu.
 
-Testy muszą odrzucać wadliwe zachowanie przez obserwowalne asercje, a nie przez watchdog. Testy z blokującą closure muszą zwalniać jej kanał przed asercjami i dołączać rozpoczętą pracę.
+Dziesiąta próba najpierw potwierdza, że workspace ze zunifikowanym diagnostics przechodzi, a następnie wymaga odrzucenia tej samej biblioteki budowanej osobno bez domyślnych features. Weryfikator przywraca oryginalne pliki po próbach, także przy błędzie. Niezależny recenzent uruchomił te kontrole i porównał przywrócone bajty.
 
-Znana granica evaluatora: testy odczytu ramki weryfikują wynik oraz nieprzeczytane body, ale nie mierzą wszystkich alokacji. Mutant przenoszący alokację Vec przed kontrolę limitu przechodzi testy; referencja sprawdza limit przed alokacją i została odczytana w przeglądzie. Protokół u16 ogranicza tę lukę do 65535 bajtów. Testy nie są pełnym dowodem dowolnej implementacji ucznia.
+Testy metadanych zmieniają prawdziwe tymczasowe manifesty: pomijają klienta, podnoszą MSRV, zastępują dziedziczone edition/MSRV wartościami lokalnymi i usuwają przekazywanie diagnostics. Osobna próba odczytuje zadeklarowaną, wyłączoną zależność rejestrową przez cargo metadata --no-deps --offline i potwierdza jej odrzucenie bez pobierania. Kontrola układu jest jawnym kontraktem stałego autorskiego formatu, nie ogólnym parserem TOML; rozstrzygnięte fakty pochodzą z Cargo.
 
-Test admission sprawdza również obserwowany szczyt aktywnych handlerów. Próbkowanie stanu po oddaniu sterowania executorowi nie jest wyczerpującym dowodem dla każdego możliwego harmonogramu; kolejność nabycia permitu i accept została dodatkowo przejrzana w kodzie.
+## Granice dowodu
 
-## Środowisko i granica wykonania
+Kontrola kolejności limitu przed alokacją opiera się na przeglądzie referencji. Testy potwierdzają brak odczytu payloadu i brak zapisu po odmowie, lecz nie mierzą wszystkich alokacji; u16 ogranicza ramkę do 65535 bajtów. Próby starych klientów są konkretnym dowodem zgodności, nie pełnym dowodem SemVer dla dowolnego klienta.
 
-Profil autora przypina Tokio =1.53.1 z macros/rt/sync/time/test-util/io-util/net oraz tokio-stream =0.1.19, ze stałym Cargo.lock. Test sieciowy utrzymuje listener na `127.0.0.1:0`; nie używa publicznego hosta, DNS, stałego portu ani probe wolnego portu.
+Rust 1.85.0 został rzeczywiście uruchomiony; sam rust-version nie wystarczyłby do potwierdzenia minimum. Ten zakres nie obejmuje publikowania, pełnej polityki zależności ani identyczności binariów na wszystkich platformach.
 
-Odczyt oficjalnego manifestu Playgrounda potwierdził upstream Tokio 1.53.1 z net. Kod koordynatora uruchamia kontener z `--net none`; dokumentacja Docker opisuje w tym trybie interfejs IPv4 loopback. Jest to zgodność z polityką źródłową, nie wynik wykonania na obecnie wdrożonym Playgroundzie. Nie wykonano zewnętrznego POST. RunRequest nadal przyjmuje wyłącznie code/mode/tests.
+Weryfikacja wykonuje wyłącznie przejrzany kod repozytorium i przygotowane mutacje. Nie wykonuje lokalnie szkiców ani importów ucznia. E2E zastępuje odpowiedzi /api/run; nowych przykładów nie wysłano do publicznego Playgrounda. Ćwiczenia jednego pliku nie dowodzą wykonania workspace w przeglądarce. Pobranie lub uruchomienie Cargo lokalnie nie nadaje automatycznie mastery.
 
-## Repozytorium i CI
+## Repozytorium i odtworzenie
 
-[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest już scalony w commit 64667e4. Poprzedni milestone 9154cc3 został wypchnięty na feat/tokio-io-streams, a jego [CI 34721907263](https://github.com/fettpl/rustcrushcourse/actions/runs/34721907263) zakończyło się sukcesem. Bieżący etap jest przeznaczony do commita i push na feat/tokio-network-service. Ten raport dokumentuje lokalną weryfikację; wynik CI należy sprawdzić dla konkretnego wypchniętego commita.
-
-## Odtworzenie
+[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w commit 64667e4; stan potwierdzono ponownie w tym etapie. Poprzedni milestone 0d25d9d ma [udane CI](https://github.com/fettpl/rustcrushcourse/actions/runs/34729729100). Bieżący etap jest przygotowywany do commita i push na feat/public-api-workspaces; wynik zdalny należy sprawdzić dla konkretnego wypchniętego commita.
 
 ```sh
 npm run lint
@@ -60,13 +67,15 @@ npm run content:rust
 npm run content:tokio -- --fetch
 npm run content:models -- --fetch
 npm run content:cargo
+npm run content:workspace
+npm run content:workspace -- --msrv
 npm run content:audit -- --check-links
 npm run build
 npm run test:e2e -- --workers=4
 ```
 
-Przy produkcyjnym serwerze na 3002: `npm run test:offline`. Pierwsze `--fetch` pobiera stały lockfile; właściwe kompilacje i testy Cargo działają offline/locked. Środowisko lokalne musi pozwalać na IPv4 loopback dla autorskich testów TCP.
+Przy produkcyjnym serwerze na 3002: npm run test:offline. Dokładny starszy kompilator instaluje polecenie opisane w README. Autorskie testy TCP wymagają lokalnego IPv4 loopback.
 
-## Pozostały zakres
+## Pozostały zakres całego kursu
 
-Laboratorium nie obejmuje TLS, uwierzytelniania, wdrożenia i operacyjnej telemetrii. Nadal brakuje m.in. zaawansowanych Cargo/API, variance/HRTB, property/fuzz, profilowania, unsafe/FFI, utrzymania oraz pełnych Number Guessing+, Mini grep i capstone. Audyt zachowuje również luki produktu: pełną historię migracji i pochodzenia wersji materiału. Pilotaż z uczącymi się oraz ręczny test czytnikiem ekranu pozostają do wykonania.
+Cel zaawansowanego kursu pozostaje otwarty. Do dostarczenia pozostają m.in. zaawansowane Cargo i publikowanie, variance/HRTB, property/fuzz, profilowanie, unsafe/FFI, utrzymanie systemów, pełne Number Guessing+, Mini grep i capstone. Audyt zachowuje luki produktu dotyczące pełnej historii migracji i pochodzenia wersji materiału. Pilotaż z uczącymi się oraz ręczna ocena czytnikiem ekranu również pozostają do wykonania.

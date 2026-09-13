@@ -22,7 +22,9 @@
     "content:cargo": "npm run content:packages && node --import tsx scripts/verify-packages.ts",
     "precontent:models": "npm run content:packages",
     "content:models": "node --import tsx scripts/verify-models.ts",
-    "content:tokio": "node --import tsx scripts/verify-tokio.ts"
+    "content:tokio": "node --import tsx scripts/verify-tokio.ts",
+    "precontent:workspace": "npm run content:packages",
+    "content:workspace": "node --import tsx scripts/verify-workspace.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

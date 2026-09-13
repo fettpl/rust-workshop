@@ -25,6 +25,7 @@ for (const [moduleId, prerequisite] of [
   ["tokio-io-streams", "tokio-flow-control"],
   ["tokio-blocking-work", "tokio-io-streams"],
   ["tokio-network-service", "tokio-blocking-work"],
+  ["public-api-workspaces", "tokio-network-service"],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {

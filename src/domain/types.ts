@@ -191,6 +191,8 @@ export interface ProjectPackage {
   title: string;
   description: string;
   instructions: string[];
+  /** Authored virtual-workspace layout; actual manifest membership is checked by Cargo. */
+  workspaceMembers?: string[];
   revealStepRefs: ModuleGateTaskRef[];
   files: {
     path: string;

@@ -1,3 +1,19 @@
+import { publicApiModule } from "./public-api-module";
+import {
+  publicApiValueLessons,
+  publicApiValueConcepts,
+  publicApiValueCompetencies,
+  publicApiValueSources,
+  publicApiValueReviewExercises,
+} from "./public-api-values";
+import {
+  publicApiEvolutionLessons,
+  publicApiEvolutionConcepts,
+  publicApiEvolutionCompetencies,
+  publicApiEvolutionSources,
+  publicApiEvolutionReviewExercises,
+} from "./public-api-evolution";
+import { frameProtocolProject } from "./projects/frame-protocol";
 import { tokioNetworkModule } from "./tokio-network-module";
 import {
   tokioTcpLessons,
@@ -293,6 +309,7 @@ export const modules = [
   tokioIoModule,
   tokioBlockingModule,
   tokioNetworkModule,
+  publicApiModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -332,6 +349,8 @@ export const lessons = [
   ...tokioBlockingLessons,
   ...tokioTcpLessons,
   ...tokioNetworkLifecycleLessons,
+  ...publicApiValueLessons,
+  ...publicApiEvolutionLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -367,6 +386,8 @@ export const concepts = [
   ...tokioBlockingConcepts,
   ...tokioTcpConcepts,
   ...tokioNetworkLifecycleConcepts,
+  ...publicApiValueConcepts,
+  ...publicApiEvolutionConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -402,6 +423,8 @@ export const competencies = [
   ...tokioBlockingCompetencies,
   ...tokioTcpCompetencies,
   ...tokioNetworkLifecycleCompetencies,
+  ...publicApiValueCompetencies,
+  ...publicApiEvolutionCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -437,6 +460,8 @@ export const sources = [
   ...tokioBlockingSources,
   ...tokioTcpSources,
   ...tokioNetworkLifecycleSources,
+  ...publicApiValueSources,
+  ...publicApiEvolutionSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -472,6 +497,8 @@ export const reviewExercises = {
   ...tokioBlockingReviewExercises,
   ...tokioTcpReviewExercises,
   ...tokioNetworkLifecycleReviewExercises,
+  ...publicApiValueReviewExercises,
+  ...publicApiEvolutionReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -516,6 +543,7 @@ export const projects = [
   concurrencyLabProject,
   tokioPipelineProject,
   tokioServiceProject,
+  frameProtocolProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -569,7 +597,7 @@ export const roadmap = [
     status: "planned",
   },
   {
-    title: "Biblioteki, publiczne API, semver, Cargo features i MSRV",
+    title: "Zaawansowane Cargo, zależności i publikacja bibliotek",
     status: "planned",
   },
   {
@@ -578,6 +606,10 @@ export const roadmap = [
   },
   {
     title: "Serwis sieciowy Tokio i integracja większego systemu",
+    status: "available",
+  },
+  {
+    title: "Publiczne API: kontrakty i workspace Cargo",
     status: "available",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },

@@ -29,6 +29,8 @@ The std authoring verifier permits 60 seconds per compile and 8 seconds per exec
 
 The authoring verifier accepts neither source nor paths on its command line and is never called by an application request. A dependency failure, timeout, missing executable or zero-test run is a verification failure, not evidence that a wrong solution was rejected. Code-less compiler errors are checked against an actual Rust diagnostic on the authored source; the learning UI preserves that message without inventing an E-code.
 
+The public API stage uses the existing std-only browser runner. Its separate `content:workspace` command extracts only the repository-authored Frame Protocol archive, checks Cargo metadata against the declared virtual-workspace members, and exercises library-only and whole-workspace feature configurations. `--msrv` selects the exact Rust 1.85.0 toolchain for starter checks and reference tests, Clippy and rustdoc. These maintainer commands accept no learner paths, source code, manifests or arbitrary toolchain selectors. The app does not run Cargo or award mastery from a downloaded workspace or local command checklist.
+
 Deterministic adapter tests use a fetch boundary fixture and assert the serialized request, status mapping, output preservation, limits, timeout, and HTTPS validation. Run them with:
 
 ```sh
