@@ -53,7 +53,7 @@ Root owns `src/content/guessing-module.ts`, `course.ts`, integration test, dedic
 - [x] Extend module-resume/project-reference/offline checks and preserve user data. Review browser navigation/keyboard/console on a final production build.
 - [x] Run lint, typecheck, Vitest, content/Rust/Tokio/Loom/Cargo verification, source audit, production E2E/offline; independently review final integration.
 - [x] Update all coverage/audit/verification docs without claiming full advanced-course completion; include prior PR #2/CI evidence and correct duplicate local verifier count.
-- [ ] Commit, push, create PR to main, inspect exact-head CI and merge. Leave the full course goal open.
+- [x] Commit, push, create PR to main, inspect exact-head CI and merge. Leave the full course goal open.
 
 ## Preflight and rulings
 
@@ -79,3 +79,5 @@ Previous goal turn made progress: committed/pushed Mini grep + CI, merged PR #2,
 - Broader course goal remains open. Hosting is still unspecified; no deployment or repository visibility change.
 
 Release check: commit 8d9536e and PR #7 created. CI run 34748982169 passed MSRV and fuzz but failed starter TODO detection because Cargo stopped after early CLI test failures. Both starter verifiers now require all suites with --no-fail-fast, preserving the explicit unfinished-behavior assertion; the corrected head must pass the full CI before merge.
+
+Release completed: corrected head 451e3a3 passed verify, workspace-msrv and mini-grep-fuzz in run 34749313613. PR #7 merged at f94b87e after GitHub merge APIs repeatedly returned HTTP 500; an ordinary merge in a clean temporary worktree produced a tree identical to the tested head, then a non-force push updated main. GitHub confirms merged=true. Post-merge main run 34749710087 succeeded in all three jobs.

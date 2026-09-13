@@ -253,6 +253,7 @@ import { readFile } from "node:fs/promises";
       "Publiczne API i workspace Cargo",
       "Mini grep: wyszukaj, ogranicz, wyjaśnij wynik",
       "Number Guessing+: od komunikatu do pełnej gry",
+      "Pożyczone API: wariancja i HRTB",
     ]) {
       await page
         .getByRole("button", { name: "Mapa nauki", exact: true })

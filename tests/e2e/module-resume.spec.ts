@@ -9,6 +9,7 @@ for (const moduleId of [
   "public-api-workspaces",
   "mini-grep",
   "number-guessing-plus",
+  "borrowed-callbacks",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,
