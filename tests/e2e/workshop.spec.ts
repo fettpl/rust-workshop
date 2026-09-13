@@ -125,7 +125,9 @@ test("keeps onboarding, lesson work, settings, notes, and exports across reloads
   await page
     .getByLabel("Notatki do lekcji")
     .fill("Własność przechodzi razem z wartością.");
-
+  await expect(
+    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Uruchom przykład" }),

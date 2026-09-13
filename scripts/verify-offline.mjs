@@ -70,6 +70,10 @@ import { readFile } from "node:fs/promises";
       /Todo CLI/,
       /Log Analyzer/,
       /Laboratorium: protokoły atomowe/,
+      /Laboratorium: pipeline Tokio/,
+      /Laboratorium: serwis TCP/,
+      /Laboratorium: publiczne API i workspace/,
+      /Projekt: ograniczony Mini grep/,
     ]) {
       await context.setOffline(false);
       await page
@@ -190,6 +194,92 @@ import { readFile } from "node:fs/promises";
     console.log(
       "Previously unvisited async gate, draft and hint resume offline",
     );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Tokio");
+    const tokioModule = page.locator(".module-picker > button").filter({
+      hasText: "Tokio: runtime i odpowiedzialność za zadania",
+    });
+    await expect(tokioModule).toHaveCount(1);
+    await tokioModule.click();
+    await page.locator(".gate-action").first().click();
+    const tokioHeading = await page.locator(".task-pane h1").innerText();
+    const tokioDraft = `${await editor.inputValue()}\n// Lokalny szkic runtime Tokio, bez uruchamiania kodu.\n`;
+    await editor.fill(tokioDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(tokioHeading);
+    await expect(editor).toHaveValue(tokioDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited Tokio gate, draft and hint resume offline",
+    );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Tokio");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Tokio: przepływ i zamknięcie" })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const flowHeading = await page.locator(".task-pane h1").innerText();
+    const flowDraft = `${await editor.inputValue()}\n// Zachowany szkic bounded mpsc, bez wykonania.\n`;
+    await editor.fill(flowDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(flowHeading);
+    await expect(editor).toHaveValue(flowDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited Tokio flow gate, draft and hint resume offline",
+    );
+    for (const title of [
+      "Tokio: I/O i strumienie",
+      "Tokio: praca blokująca",
+      "Tokio: sieć i serwis",
+      "Publiczne API i workspace Cargo",
+      "Mini grep: wyszukaj, ogranicz, wyjaśnij wynik",
+    ]) {
+      await page
+        .getByRole("button", { name: "Mapa nauki", exact: true })
+        .click();
+      await page
+        .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+        .fill(title);
+      await page
+        .locator(".module-picker > button")
+        .filter({ hasText: title })
+        .click();
+      await page.locator(".gate-action").first().click();
+      const heading = await page.locator(".task-pane h1").innerText();
+      const draft = `${await editor.inputValue()}\n// Szkic ${title}, zachowany offline.\n`;
+      await editor.fill(draft);
+      await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+      await expect(
+        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await expect(page.locator(".task-pane h1")).toHaveText(heading);
+      await expect(editor).toHaveValue(draft);
+      await expect(
+        page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+      ).toBeVisible();
+      console.log(
+        `${title}: previously unvisited gate, draft and hint resume offline`,
+      );
+    }
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

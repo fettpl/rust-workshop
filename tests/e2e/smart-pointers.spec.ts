@@ -111,6 +111,9 @@ test("preserves a new loop draft through old modules and shows raw Box diagnosti
   await expect(editor).toHaveValue(
     "// Mój warunek i krok postępu pozostają do uzupełnienia.\n",
   );
+  await expect(
+    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(
     "// Mój warunek i krok postępu pozostają do uzupełnienia.\n",

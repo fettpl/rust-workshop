@@ -9,6 +9,52 @@ function upstream(body: unknown, status = 200): Response {
 }
 
 describe("PlaygroundRunner", () => {
+  it("preserves Tokio test macros through the fixed code-only Playground payload", async () => {
+    const code =
+      "async fn answer() -> u8 { tokio::task::yield_now().await; 3 }";
+    const tests =
+      '#[tokio::test(flavor = "current_thread")] async fn check() { assert_eq!(answer().await, 3); }';
+    const fetcher = vi.fn(
+      async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const payload = JSON.parse(String(init?.body));
+        expect(Object.keys(payload).sort()).toEqual([
+          "backtrace",
+          "channel",
+          "code",
+          "crateType",
+          "edition",
+          "mode",
+          "tests",
+        ]);
+        expect(payload).toMatchObject({
+          channel: "stable",
+          edition: "2024",
+          crateType: "lib",
+          tests: true,
+        });
+        expect(payload.code).toContain(code);
+        expect(payload.code).toContain(
+          '#[tokio::test(flavor = "current_thread")]',
+        );
+        expect(payload.code).toContain("::std::assert_eq!(answer().await, 3)");
+        return upstream({
+          success: true,
+          stdout: "test result: ok. 1 passed; 0 failed;",
+          stderr: "",
+        });
+      },
+    );
+    const result = await new PlaygroundRunner({ fetch: fetcher }).run({
+      code,
+      mode: "test",
+      tests,
+    });
+    expect(result).toMatchObject({
+      status: "success",
+      tests: { passed: 1, failed: 0 },
+    });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it("sends stable Rust 2024 execution requests and returns stdout", async () => {
     const fetcher = vi.fn(
       async (_input: RequestInfo | URL, init?: RequestInit) => {

@@ -7,13 +7,15 @@ import { lessons, reviewExercises, traces } from "../src/content/course";
 import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
+import { getTrustedFixtureTarget } from "../src/domain/trusted-fixtures";
 type Verification = { id: string; passed: boolean; detail: string };
-const TIMEOUT = 8000;
-function command(cmd: string, args: string[], cwd: string) {
+const COMPILE_TIMEOUT = 60_000;
+const EXECUTION_TIMEOUT = 8_000;
+function command(cmd: string, args: string[], cwd: string, timeout: number) {
   return spawnSync(cmd, args, {
     cwd,
     encoding: "utf8",
-    timeout: TIMEOUT,
+    timeout,
     maxBuffer: 1024 * 1024,
   });
 }
@@ -32,6 +34,7 @@ export function verifyTrustedRust(
     code: string,
     options: {
       error?: string;
+      diagnostic?: string;
       tests?: string;
       expectedOutput?: string;
       solutionStep?: LessonStep;
@@ -67,19 +70,24 @@ export function verifyTrustedRust(
         binary,
       ],
       dir,
+      COMPILE_TIMEOUT,
     );
-    if (options.error) {
+    if (options.error || options.diagnostic) {
       const passed =
         !compile.error &&
+        !compile.signal &&
+        compile.status !== null &&
         compile.status !== 0 &&
-        (options.error === "any" ||
-          compile.stderr.includes(`error[${options.error}]`));
+        (!options.error ||
+          options.error === "any" ||
+          compile.stderr.includes(`error[${options.error}]`)) &&
+        (!options.diagnostic || compile.stderr.includes(options.diagnostic));
       results.push({
         id,
         passed,
         detail: passed
-          ? `przewidziany błąd ${options.error}`
-          : `oczekiwano ${options.error}: ${compile.error?.message ?? compile.stderr.slice(0, 700)}`,
+          ? `przewidziany błąd ${options.diagnostic ?? options.error}`
+          : `oczekiwano ${options.diagnostic ?? options.error}: ${compile.error?.message ?? compile.stderr.slice(0, 700)}`,
       });
       return;
     }
@@ -132,7 +140,7 @@ export function verifyTrustedRust(
       results.push({ id, passed: true, detail: "kompiluje się (biblioteka)" });
       return;
     }
-    const execution = command(binary, [], dir);
+    const execution = command(binary, [], dir, EXECUTION_TIMEOUT);
     if (options.expectStarterRejection) {
       const counts = execution.stdout.match(
         /test result:.*?\. (\d+) passed; (\d+) failed;/,
@@ -174,14 +182,19 @@ export function verifyTrustedRust(
       const failed = execution.stdout.match(
         /test result: FAILED.*?(\d+) passed; (\d+) failed;/,
       );
+      const passed =
+        !execution.error &&
+        !execution.signal &&
+        execution.status !== null &&
+        execution.status !== 0 &&
+        !!failed &&
+        Number(failed[2]) > 0;
       results.push({
         id,
-        passed:
-          !execution.error &&
-          execution.status !== 0 &&
-          !!failed &&
-          Number(failed[2]) > 0,
-        detail: "zmieniona implementacja nie omija asercji testów",
+        passed,
+        detail: passed
+          ? "zmieniona implementacja nie omija asercji testów"
+          : `oczekiwano nieprzechodzącej asercji; status=${execution.status}, signal=${execution.signal}, error=${execution.error?.message ?? "brak"}; stdout=${execution.stdout.slice(0, 900)}; stderr=${execution.stderr.slice(0, 900)}`,
       });
       return;
     }
@@ -248,6 +261,7 @@ export function verifyTrustedRust(
     });
   }
   function stepCases(prefix: string, step: LessonStep) {
+    if (getTrustedFixtureTarget(step) !== "rustc-2024") return;
     if (step.evaluator?.kind === "tests")
       verify(`${prefix}/${step.id}/reject-empty-implementation`, "", {
         tests: step.evaluator.tests,
@@ -258,6 +272,10 @@ export function verifyTrustedRust(
         error:
           step.expectedStatus === "compile-error"
             ? step.expectedError
+            : undefined,
+        diagnostic:
+          step.expectedStatus === "compile-error"
+            ? step.expectedDiagnostic
             : undefined,
         run: step.expectedStatus !== "runtime-error",
       });

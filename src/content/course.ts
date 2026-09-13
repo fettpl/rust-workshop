@@ -1,4 +1,105 @@
+import { miniGrepModule } from "./mini-grep-module";
+import {
+  miniGrepSearchLessons,
+  miniGrepSearchConcepts,
+  miniGrepSearchCompetencies,
+  miniGrepSearchSources,
+  miniGrepSearchReviewExercises,
+} from "./mini-grep-search";
+import {
+  miniGrepSystemLessons,
+  miniGrepSystemConcepts,
+  miniGrepSystemCompetencies,
+  miniGrepSystemSources,
+  miniGrepSystemReviewExercises,
+} from "./mini-grep-system";
+import { miniGrepProject } from "./projects/mini-grep";
+import { publicApiModule } from "./public-api-module";
+import {
+  publicApiValueLessons,
+  publicApiValueConcepts,
+  publicApiValueCompetencies,
+  publicApiValueSources,
+  publicApiValueReviewExercises,
+} from "./public-api-values";
+import {
+  publicApiEvolutionLessons,
+  publicApiEvolutionConcepts,
+  publicApiEvolutionCompetencies,
+  publicApiEvolutionSources,
+  publicApiEvolutionReviewExercises,
+} from "./public-api-evolution";
+import { frameProtocolProject } from "./projects/frame-protocol";
+import { tokioNetworkModule } from "./tokio-network-module";
+import {
+  tokioTcpLessons,
+  tokioTcpConcepts,
+  tokioTcpCompetencies,
+  tokioTcpSources,
+  tokioTcpReviewExercises,
+} from "./tokio-tcp";
+import {
+  tokioNetworkLifecycleLessons,
+  tokioNetworkLifecycleConcepts,
+  tokioNetworkLifecycleCompetencies,
+  tokioNetworkLifecycleSources,
+  tokioNetworkLifecycleReviewExercises,
+} from "./tokio-network-lifecycle";
+import { tokioServiceProject } from "./projects/tokio-service";
+import { tokioIoModule, tokioBlockingModule } from "./tokio-io-modules";
+import {
+  tokioIoLessons,
+  tokioIoConcepts,
+  tokioIoCompetencies,
+  tokioIoSources,
+  tokioIoReviewExercises,
+} from "./tokio-io";
+import {
+  tokioStreamLessons,
+  tokioStreamConcepts,
+  tokioStreamCompetencies,
+  tokioStreamSources,
+  tokioStreamReviewExercises,
+} from "./tokio-streams";
+import {
+  tokioBlockingLessons,
+  tokioBlockingConcepts,
+  tokioBlockingCompetencies,
+  tokioBlockingSources,
+  tokioBlockingReviewExercises,
+} from "./tokio-blocking";
+import { tokioPipelineProject } from "./projects/tokio-pipeline";
+import { tokioFlowModule } from "./tokio-flow-control";
+import {
+  tokioChannelLessons,
+  tokioChannelConcepts,
+  tokioChannelCompetencies,
+  tokioChannelSources,
+  tokioChannelReviewExercises,
+} from "./tokio-channels";
+import {
+  tokioTimeLessons,
+  tokioTimeConcepts,
+  tokioTimeCompetencies,
+  tokioTimeSources,
+  tokioTimeReviewExercises,
+} from "./tokio-time-select";
+import {
+  tokioShutdownLessons,
+  tokioShutdownConcepts,
+  tokioShutdownCompetencies,
+  tokioShutdownSources,
+  tokioShutdownReviewExercises,
+} from "./tokio-shutdown";
 import { concurrencyLabProject } from "./projects/concurrency-lab";
+import {
+  tokioRuntimeLessons,
+  tokioRuntimeConcepts,
+  tokioRuntimeCompetencies,
+  tokioRuntimeSources,
+  tokioRuntimeReviewExercises,
+  tokioRuntimeModule,
+} from "./tokio-runtime-tasks";
 import {
   asyncFoundationsLessons,
   asyncFoundationsConcepts,
@@ -219,6 +320,13 @@ export const modules = [
   atomicStateModule,
   memoryOrderingModule,
   asyncFoundationsModule,
+  tokioRuntimeModule,
+  tokioFlowModule,
+  tokioIoModule,
+  tokioBlockingModule,
+  tokioNetworkModule,
+  publicApiModule,
+  miniGrepModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -249,6 +357,19 @@ export const lessons = [
   ...atomicStateLessons,
   ...memoryOrderingLessons,
   ...asyncFoundationsLessons,
+  ...tokioRuntimeLessons,
+  ...tokioChannelLessons,
+  ...tokioTimeLessons,
+  ...tokioShutdownLessons,
+  ...tokioIoLessons,
+  ...tokioStreamLessons,
+  ...tokioBlockingLessons,
+  ...tokioTcpLessons,
+  ...tokioNetworkLifecycleLessons,
+  ...publicApiValueLessons,
+  ...publicApiEvolutionLessons,
+  ...miniGrepSearchLessons,
+  ...miniGrepSystemLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -275,6 +396,19 @@ export const concepts = [
   ...atomicStateConcepts,
   ...memoryOrderingConcepts,
   ...asyncFoundationsConcepts,
+  ...tokioRuntimeConcepts,
+  ...tokioChannelConcepts,
+  ...tokioTimeConcepts,
+  ...tokioShutdownConcepts,
+  ...tokioIoConcepts,
+  ...tokioStreamConcepts,
+  ...tokioBlockingConcepts,
+  ...tokioTcpConcepts,
+  ...tokioNetworkLifecycleConcepts,
+  ...publicApiValueConcepts,
+  ...publicApiEvolutionConcepts,
+  ...miniGrepSearchConcepts,
+  ...miniGrepSystemConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -301,6 +435,19 @@ export const competencies = [
   ...atomicStateCompetencies,
   ...memoryOrderingCompetencies,
   ...asyncFoundationsCompetencies,
+  ...tokioRuntimeCompetencies,
+  ...tokioChannelCompetencies,
+  ...tokioTimeCompetencies,
+  ...tokioShutdownCompetencies,
+  ...tokioIoCompetencies,
+  ...tokioStreamCompetencies,
+  ...tokioBlockingCompetencies,
+  ...tokioTcpCompetencies,
+  ...tokioNetworkLifecycleCompetencies,
+  ...publicApiValueCompetencies,
+  ...publicApiEvolutionCompetencies,
+  ...miniGrepSearchCompetencies,
+  ...miniGrepSystemCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -327,6 +474,19 @@ export const sources = [
   ...atomicStateSources,
   ...memoryOrderingSources,
   ...asyncFoundationsSources,
+  ...tokioRuntimeSources,
+  ...tokioChannelSources,
+  ...tokioTimeSources,
+  ...tokioShutdownSources,
+  ...tokioIoSources,
+  ...tokioStreamSources,
+  ...tokioBlockingSources,
+  ...tokioTcpSources,
+  ...tokioNetworkLifecycleSources,
+  ...publicApiValueSources,
+  ...publicApiEvolutionSources,
+  ...miniGrepSearchSources,
+  ...miniGrepSystemSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -353,6 +513,19 @@ export const reviewExercises = {
   ...atomicStateReviewExercises,
   ...memoryOrderingReviewExercises,
   ...asyncFoundationsReviewExercises,
+  ...tokioRuntimeReviewExercises,
+  ...tokioChannelReviewExercises,
+  ...tokioTimeReviewExercises,
+  ...tokioShutdownReviewExercises,
+  ...tokioIoReviewExercises,
+  ...tokioStreamReviewExercises,
+  ...tokioBlockingReviewExercises,
+  ...tokioTcpReviewExercises,
+  ...tokioNetworkLifecycleReviewExercises,
+  ...publicApiValueReviewExercises,
+  ...publicApiEvolutionReviewExercises,
+  ...miniGrepSearchReviewExercises,
+  ...miniGrepSystemReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -395,6 +568,10 @@ export const projects = [
   },
   { ...logAnalyzerProject, package: logAnalyzerPackage },
   concurrencyLabProject,
+  tokioPipelineProject,
+  tokioServiceProject,
+  frameProtocolProject,
+  miniGrepProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -436,16 +613,32 @@ export const roadmap = [
     status: "available",
   },
   {
-    title: "Mini grep i projekt końcowy",
+    title: "Tokio: runtime, zadania, Send i wyniki JoinHandle",
+    status: "available",
+  },
+  {
+    title: "Tokio: bounded kanały, timeout, select i zamknięcie",
+    status: "available",
+  },
+  {
+    title: "Zaawansowane Cargo, zależności i publikacja bibliotek",
     status: "planned",
   },
   {
-    title: "Biblioteki, publiczne API, semver, Cargo features i MSRV",
-    status: "planned",
+    title: "Tokio: I/O, ramki, streamy i operacje blokujące",
+    status: "available",
   },
   {
-    title: "Async w praktyce: anulowanie, limity, backpressure i shutdown",
-    status: "planned",
+    title: "Serwis sieciowy Tokio i integracja większego systemu",
+    status: "available",
+  },
+  {
+    title: "Publiczne API: kontrakty i workspace Cargo",
+    status: "available",
+  },
+  {
+    title: "Mini grep: ograniczone wejście, kontekst i CLI",
+    status: "available",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },
   { title: "Unsafe, FFI, Miri i testowanie współbieżności", status: "planned" },
@@ -453,4 +646,5 @@ export const roadmap = [
     title: "Architektura, bezpieczeństwo, obserwowalność i przegląd incydentów",
     status: "planned",
   },
+  { title: "Większy projekt końcowy", status: "planned" },
 ];

@@ -39,6 +39,62 @@ const fixture: ProjectPackage = {
 };
 
 describe("downloadable project packages", () => {
+  it("archives a virtual workspace with real member roots and no fake root crate", () => {
+    const workspace = {
+      ...fixture,
+      workspaceMembers: ["crates/core", "crates/cli"],
+      files: [
+        {
+          path: "Cargo.toml",
+          starter:
+            '[workspace]\nmembers = ["crates/core", "crates/cli"]\nresolver = "3"\n',
+        },
+        {
+          path: "crates/core/Cargo.toml",
+          starter: '[package]\nname = "core"\nversion = "1.0.0"\n',
+        },
+        {
+          path: "crates/core/src/lib.rs",
+          starter: "pub fn answer() -> u8 { 42 }",
+        },
+        {
+          path: "crates/cli/Cargo.toml",
+          starter: '[package]\nname = "cli"\nversion = "1.0.0"\n',
+        },
+        { path: "crates/cli/src/main.rs", starter: "fn main() {}" },
+      ],
+    };
+    expect(validateProjectPackage(workspace)).toEqual([]);
+    const archive = unzipSync(buildProjectArchive(workspace, "starter"));
+    expect(Object.keys(archive)).toHaveLength(5);
+    expect(archive[`${workspace.id}/src/lib.rs`]).toBeUndefined();
+    for (const removed of [
+      "Cargo.toml",
+      "crates/core/Cargo.toml",
+      "crates/cli/src/main.rs",
+    ]) {
+      expect(
+        validateProjectPackage({
+          ...workspace,
+          files: workspace.files.filter((file) => file.path !== removed),
+        }),
+        removed,
+      ).not.toEqual([]);
+    }
+    for (const members of [
+      [],
+      ["../escape"],
+      ["crates/core", "CRATES/core"],
+      ["crates/missing"],
+      ["."],
+    ]) {
+      expect(
+        validateProjectPackage({ ...workspace, workspaceMembers: members }),
+        JSON.stringify(members),
+      ).not.toEqual([]);
+    }
+  });
+
   it("exports exact UTF-8 files under one directory, with a distinct starter and reference", () => {
     const starter = unzipSync(buildProjectArchive(fixture, "starter"));
     const solution = unzipSync(buildProjectArchive(fixture, "solution"));

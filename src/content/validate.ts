@@ -1,4 +1,8 @@
 import { validateProjectPackage } from "../domain/project-package";
+import {
+  hasRustTestAttribute,
+  trustedFixtureIssues,
+} from "../domain/trusted-fixtures";
 import type {
   Competency,
   Concept,
@@ -123,6 +127,20 @@ export function validateContent(content: ContentBundle): string[] {
         );
     }
     const review = content.reviewExercises[concept.id];
+    if (review) {
+      errors.push(
+        ...trustedFixtureIssues(review).map(
+          (error) => `review ${concept.id}: ${error}`,
+        ),
+      );
+      if (
+        review.evaluator?.kind === "tests" &&
+        !hasRustTestAttribute(review.evaluator.tests)
+      )
+        errors.push(
+          `review ${concept.id} tests evaluator must contain a Rust #[test] or #[tokio::test]`,
+        );
+    }
     if (!review?.evaluator || !review.prompt.trim())
       errors.push(`concept ${concept.id} has no active review exercise`);
     else if (
@@ -181,6 +199,11 @@ export function validateContent(content: ContentBundle): string[] {
     const localStepIds = new Set<string>();
     for (const step of lesson.steps) {
       const stepKey = `${lesson.id}/${step.id}`;
+      errors.push(
+        ...trustedFixtureIssues(step).map(
+          (error) => `step ${stepKey}: ${error}`,
+        ),
+      );
       stepsByRef.set(stepKey, step);
       if (localStepIds.has(step.id))
         errors.push(`duplicate step id in ${lesson.id}: ${step.id}`);
@@ -193,18 +216,36 @@ export function validateContent(content: ContentBundle): string[] {
           errors.push(`step ${stepKey} has code but no solution`);
         if (!step.expectedStatus)
           errors.push(`step ${stepKey} has code but no expectedStatus`);
-        if (step.expectedStatus === "compile-error" && !step.expectedError)
+        if (
+          step.expectedStatus === "compile-error" &&
+          !step.expectedError?.trim() &&
+          !step.expectedDiagnostic?.trim()
+        )
           errors.push(
-            `step ${stepKey} has compile-error status but no expectedError`,
+            `step ${stepKey} has compile-error status but no expectedError or expectedDiagnostic`,
           );
-        if (step.expectedStatus !== "compile-error" && step.expectedError)
+        if (
+          step.expectedStatus !== "compile-error" &&
+          (step.expectedError || step.expectedDiagnostic)
+        )
           errors.push(
-            `step ${stepKey} has expectedError without compile-error status`,
+            `step ${stepKey} has expectedError or expectedDiagnostic without compile-error status`,
           );
       }
       if (step.traceId && !traceIds.has(step.traceId))
         errors.push(`step ${stepKey} has unknown trace id: ${step.traceId}`);
       const evaluator = step.evaluator;
+      if (
+        evaluator?.kind === "expected-error" &&
+        (step.expectedStatus !== "compile-error" ||
+          (evaluator.code?.trim() || undefined) !==
+            (step.expectedError?.trim() || undefined) ||
+          (evaluator.diagnostic?.trim() || undefined) !==
+            (step.expectedDiagnostic?.trim() || undefined))
+      )
+        errors.push(
+          `step ${stepKey} expected-error evaluator must match authored diagnostic`,
+        );
       if (
         step.kind === "predict" &&
         evaluator &&
@@ -217,12 +258,18 @@ export function validateContent(content: ContentBundle): string[] {
         );
       if (evaluator?.kind === "tests" && !evaluator.tests.trim())
         errors.push(`step ${stepKey} has empty tests evaluator`);
-      if (evaluator?.kind === "tests" && !evaluator.tests.includes("#[test]"))
+      if (evaluator?.kind === "tests" && !hasRustTestAttribute(evaluator.tests))
         errors.push(
-          `step ${stepKey} tests evaluator must contain a Rust #[test]`,
+          `step ${stepKey} tests evaluator must contain a Rust #[test] or #[tokio::test]`,
         );
-      if (evaluator?.kind === "expected-error" && !evaluator.code.trim())
-        errors.push(`step ${stepKey} has empty expected-error code`);
+      if (
+        evaluator?.kind === "expected-error" &&
+        !evaluator.code?.trim() &&
+        !evaluator.diagnostic?.trim()
+      )
+        errors.push(
+          `step ${stepKey} has empty expected-error code and diagnostic`,
+        );
       if (evaluator?.kind === "answer" && evaluator.accepted.length === 0)
         errors.push(`step ${stepKey} has no accepted answers`);
       if (
@@ -380,7 +427,12 @@ export function validateContent(content: ContentBundle): string[] {
       !source.url.startsWith("https://doc.rust-lang.org/") &&
       !source.url.startsWith("https://play.rust-lang.org/") &&
       !source.url.startsWith("https://github.com/rust-lang/") &&
-      !source.url.startsWith("https://docs.rs/loom/0.7.2/loom/")
+      !source.url.startsWith("https://docs.rs/loom/0.7.2/loom/") &&
+      !source.url.startsWith("https://docs.rs/tokio/1.53.1/tokio/") &&
+      !source.url.startsWith(
+        "https://docs.rs/tokio-stream/0.1.19/tokio_stream/",
+      ) &&
+      !source.url.startsWith("https://tokio.rs/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewedAt))

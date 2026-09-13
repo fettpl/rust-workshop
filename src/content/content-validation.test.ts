@@ -29,6 +29,111 @@ const bundle: ContentBundle = {
 };
 
 describe("curriculum content contract", () => {
+  it("aligns authored compiler diagnostics with browser grading", () => {
+    const lesson = lessons.find((x) => x.id === "tokio-task-boundaries")!;
+    const step = lesson.steps.find((x) => x.expectedDiagnostic)!;
+    const changed = {
+      ...lesson,
+      steps: lesson.steps.map((x) =>
+        x === step
+          ? {
+              ...x,
+              evaluator: { kind: "expected-error" as const, code: "E0277" },
+            }
+          : x,
+      ),
+    };
+    const errors = validateContent({
+      ...bundle,
+      lessons: lessons.map((x) => (x === lesson ? changed : x)),
+    });
+    expect(
+      errors.some((x) =>
+        x.includes("expected-error evaluator must match authored diagnostic"),
+      ),
+    ).toBe(true);
+  });
+  it("accepts the reviewed Tokio documentation and rejects lookalikes or another version", () => {
+    const check = (url: string) =>
+      validateContent({
+        ...bundle,
+        sources: [{ ...sources[0], url }, ...sources.slice(1)],
+      }).filter((error) => error.includes("official Rust source"));
+    expect(
+      check("https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html"),
+    ).toEqual([]);
+    expect(check("https://tokio.rs/tokio/tutorial/spawning")).toEqual([]);
+    expect(
+      check(
+        "https://docs.rs/tokio-stream/0.1.19/tokio_stream/trait.StreamExt.html",
+      ),
+    ).toEqual([]);
+    for (const url of [
+      "https://docs.rs/tokio/latest/tokio/",
+      "https://docs.rs/tokio/1.53.0/tokio/",
+      "https://tokio.rs.example.org/",
+      "https://docs.rs/unrelated/1.53.1/tokio/",
+      "https://docs.rs/tokio-stream/latest/tokio_stream/",
+      "https://docs.rs/tokio-stream/0.1.18/tokio_stream/",
+      "https://docs.rs.example.org/tokio-stream/0.1.19/tokio_stream/",
+    ])
+      expect(check(url), url).not.toEqual([]);
+  });
+  it("checks Tokio metadata on both lesson code and review hidden tests", () => {
+    const tokioCode =
+      '#[tokio::main(flavor = "current_thread")] async fn main() {}';
+    const changed = {
+      ...lessons[0],
+      steps: [
+        { ...lessons[0].steps[0], code: tokioCode, solution: tokioCode },
+        ...lessons[0].steps.slice(1),
+      ],
+    };
+    expect(
+      validateContent({
+        ...bundle,
+        lessons: [changed, ...lessons.slice(1)],
+      }).some((error) => error.includes("Tokio fixture requires")),
+    ).toBe(true);
+    const first = concepts[0].id;
+    const review = reviewExercises[first];
+    const broken = {
+      ...bundle,
+      reviewExercises: {
+        ...reviewExercises,
+        [first]: {
+          ...review,
+          evaluator: {
+            kind: "tests" as const,
+            tests:
+              '#[tokio::test(flavor = "current_thread")] async fn checks() {}',
+          },
+        },
+      },
+    };
+    expect(
+      validateContent(broken).some((error) =>
+        error.includes(`review ${first}: Tokio fixture requires`),
+      ),
+    ).toBe(true);
+    const fixed = {
+      ...broken,
+      reviewExercises: {
+        ...broken.reviewExercises,
+        [first]: {
+          ...broken.reviewExercises[first],
+          trustedFixtureTarget: "cargo-tokio-runtime-1.53.1" as const,
+        },
+      },
+    };
+    expect(
+      validateContent(fixed).filter(
+        (error) =>
+          error.includes(`review ${first}:`) ||
+          error.includes("must contain a Rust #[test]"),
+      ),
+    ).toEqual([]);
+  });
   it("accepts pinned Loom documentation but rejects unrelated sources", () => {
     const checkSource = (url: string) =>
       validateContent({

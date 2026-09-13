@@ -160,17 +160,24 @@ export function evaluate(
             feedback: "Kod nie skompilował się poprawnie.",
           };
     case "expected-error": {
+      const expectation =
+        evaluator.code?.trim() || evaluator.diagnostic?.trim();
       const passed =
+        !!expectation &&
         runResult?.status === "compile-error" &&
         runResult.diagnostics.some(
-          (diagnostic) => diagnostic.code === evaluator.code,
+          (diagnostic) =>
+            diagnostic.level === "error" &&
+            (!evaluator.code || diagnostic.code === evaluator.code) &&
+            (!evaluator.diagnostic ||
+              diagnostic.message.includes(evaluator.diagnostic)),
         );
       return {
         passed,
         evaluator: evaluator.kind,
         feedback: passed
-          ? `Kompilator zgłosił ${evaluator.code}.`
-          : `Oczekiwano błędu kompilatora ${evaluator.code}.`,
+          ? `Kompilator zgłosił oczekiwany błąd: ${expectation}.`
+          : `Oczekiwano błędu kompilatora: ${expectation ?? "brak kryterium"}.`,
       };
     }
     case "tests": {

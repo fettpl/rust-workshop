@@ -14,6 +14,39 @@ const run = (evaluator: Evaluator, input: EvaluationInput) =>
   evaluate(evaluator, input);
 
 describe("evaluate", () => {
+  it("recognizes a code-less expected compiler diagnostic without accepting warnings or infrastructure errors", () => {
+    const diagnostic = "future cannot be sent between threads safely";
+    const evaluator = { kind: "expected-error", diagnostic } as Evaluator;
+    const result: RunResult = {
+      ...success(),
+      status: "compile-error",
+      diagnostics: [{ message: diagnostic, level: "error" }],
+    };
+    expect(run(evaluator, { result }).passed).toBe(true);
+    expect(
+      run(evaluator, { result: { ...result, status: "infrastructure-error" } })
+        .passed,
+    ).toBe(false);
+    expect(
+      run(evaluator, {
+        result: {
+          ...result,
+          diagnostics: [{ message: diagnostic, level: "warning" }],
+        },
+      }).passed,
+    ).toBe(false);
+    expect(
+      run(evaluator, {
+        result: {
+          ...result,
+          diagnostics: [{ message: "another compiler error", level: "error" }],
+        },
+      }).passed,
+    ).toBe(false);
+    expect(
+      run({ kind: "expected-error" } as Evaluator, { result }).passed,
+    ).toBe(false);
+  });
   it("compares normalized exact output and compilation status", () => {
     expect(
       run(

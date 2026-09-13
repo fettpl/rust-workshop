@@ -1,42 +1,45 @@
-# Weryfikacja etapu: podstawy async
+# Weryfikacja: publiczne API, workspace Cargo i Mini grep
 
-Data: 12 września 2026. Kurs zawiera 86 lekcji w 24 modułach, 89 pojęć, 7 śladów pamięci, 161 wpisów źródłowych i 4 projekty. Ten etap dodaje 4 lekcje, 8 zadań z evidence gate, 4 zadania od pustej kartki i 4 kodowe powtórki. Środowisko: macOS, Node.js 26.7.0, Next.js 16.3.5, Rust 1.98.1 stable, edition 2024 i Chromium z Playwright.
+Data: 13 września 2026. Katalog obejmuje 114 lekcji w 31 modułach, 117 pojęć, 69 zadań blank-page, 7 śladów pamięci, 226 wpisów źródłowych i 8 projektów; 7 projektów ma pakiet Cargo. Poprzedni etap dodał cztery lekcje publicznego API i workspace Frame Protocol. Etap Mini grep dodaje cztery lekcje, osiem bramek, cztery blank-page, cztery powtórki oraz bibliotekę i CLI `mini-grep-workshop`.
 
-## Wyniki kontroli
+## Zakończone kontrole lokalne
 
 | Sprawdzenie | Wynik |
-| --- | --- |
-| ESLint i TypeScript strict | Bez błędów; końcowy build ponownie sprawdził typy |
-| Vitest | 117/117 testów w 21 plikach; relacje modułów, niezależne bramki i świeże alternatywy po reveal |
-| Walidacja curriculum | 86 lekcji, 89 pojęć i 7 śladów; poprawne relacje, źródła i identyfikatory |
-| Rzeczywisty rustc | Pełny przebieg 1207/1207. Po dodaniu asercji propagacji drugiego błędu, reguł źródła i obsługi lokalnych pożyczeń ponownie sprawdzono końcowy moduł async: 58/58 |
-| Próby wadliwych rozwiązań | 10/10 kompiluje się i zostaje odrzuconych przez asercje behawioralne; szczegóły poniżej |
-| Playwright | 32/32 scenariusze; nowe zadania, surowy wynik, wskazówki, reveal, zachowanie szkicu, niezależne blank-page i dokładne wznowienie |
-| Produkcyjny build Webpack | Poprawny; sumy SHA trzech plików async przed i po buildzie zgodne; podgląd na porcie 3002 używa końcowej wersji |
-| Audyt źródeł HTTP | 161/161 wpisów z HTTP 200; brak uszkodzonych relacji, pojęć bez aktywnej powtórki i lekcji bez evidence gate |
-| Offline | Cache rust-workshop-v13; wcześniej nieotwarte zadanie async, szkic i wskazówka odtwarzają się po reload bez sieci |
-| Regresja offline | Zachowane poprzednie szkice i notatki, dokładna klatka śladu Weak, krok lekcji Send oraz wszystkie trzy identyczne bajtowo archiwa starterów Cargo |
-| Dostępność i podgląd | Nowy scenariusz przy 390 px przechodzi axe i kontrolę przepełnienia. Ręcznie sprawdzono czytelność zadania i kodu oraz widoczny fokus linku pomijającego nawigację. Brak błędów strony offline i ostrzeżeń/błędów w konsoli końcowego podglądu |
-| Zewnętrzny Playground | Nowe przykłady nie zostały wysłane; E2E używa kontrolowanych odpowiedzi runnera |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vitest | 165/165 w 34 plikach |
+| TypeScript, ESLint i build | Typecheck bez błędów; ESLint zakończył się bez błędów i ostrzeżeń; końcowy build produkcyjny przeszedł |
+| Curriculum i źródła | Katalog ma wskazane wyżej liczniki; 226/226 źródeł zwróciło HTTP 200 |
+| Rust | 1251/1251 przypadków istniejącego, zamrożonego curriculum oraz 50/50 nowych przypadków Mini grep w rozłącznych przebiegach, razem 1301/1301 |
+| Tokio i Loom | 252/252 autorskich przypadków Tokio; modele referencyjne Loom przechodzą, dwa kontrprzykłady i osłabiona biblioteka są odrzucane właściwymi asercjami |
+| Archiwa Cargo | Wszystkie 7 starterów przeszło fmt/check i zatrzymało się na zamierzonym `todo!`; wszystkie 7 referencji przeszło fmt/check/test/Clippy |
+| Mini grep — finalne archiwum | Referencja ma 16 testów integration/property/process i 1 doctest |
+| Mini grep — mutacje pakietu | Odrzucone: brak unii okien kontekstu, akceptacja bajtu ponad limitem surowej linii, podążanie za symlinkiem i częściowy stdout po błędzie wejścia |
+| Frame Protocol — bieżący compiler | Workspace i biblioteka osobno: default/no-default/all-features, osobne diagnostics biblioteki i klienta, fmt/check/test/Clippy/doc oraz 10 kontrolowanych mutacji |
+| Frame Protocol — Rust 1.85.0 | Ten sam zestaw na dokładnym minimum kompilatora; `PATH`, `RUSTC` i `RUSTDOC` są przypięte także dla procesów potomnych |
+| Mini grep — fuzz | 20000-próbna kampania libFuzzer z niezależnym oracle wykryła mutanta substring→prefix; zapisany przypadek odtworzono po przywróceniu referencji |
+| Offline | Cache v19: 7 ZIP-ów ma identyczne bajty po reload bez sieci; nieodwiedzony Mini grep przywraca szkic, hint i krok; `pageerrors` jest puste |
+| Produkcyjne E2E | 44/44 bez retry; desktop, mobile, wznowienie zapisu i niezależne bramki po podglądzie projektu |
+| Ręczny przegląd produkcji | Karta projektu, lekcja i blank-page są czytelne; fokus klawiatury jest widoczny, Enter otwiera mapę, konsola nie ma błędów ani ostrzeżeń |
 
-Pełny przebieg Rust poprzedza końcowe wzmocnienie testu błędu drugiej przyszłości oraz poprawkę niepotrzebnych ograniczeń static w fabryce. Końcowy przebieg 58/58 obejmuje cały zmieniony moduł po tej korekcie. Nie wykonano ponownie niezmienionych laboratoriów Cargo/Loom; ich poprzednią kontrolę zapisuje commit a701637. E2E i offline potwierdzają zgodność podawanych archiwów.
+## Dowody Mini grep
 
-Weryfikacja Rust obejmuje wyłącznie przejrzane przykłady repozytorium, nigdy szkice ucznia ani kod z importu. Kontrolowane odpowiedzi E2E nie potwierdzają bieżącej dostępności zewnętrznego Playgrounda. Wcześniejsza automatyczna kontrola uprawnień odrzuciła transmisję przykładów do Playgrounda; osobna zgoda pozostaje bez odpowiedzi.
+Referencyjne archiwum ma bibliotekę i binarkę, rozdziela odczyt/wybór kontekstu, traversal, renderowanie i argumenty. Testy Cargo obejmują `BufRead` w małych porcjach, CRLF, samotny CR na EOF, Unicode, granice bajtowe, błąd odczytu po trafieniu z oryginalną przyczyną, katalogi i proces CLI. Starter kompiluje się i formatuje, ale kończy na jawnych `todo!`; jego porażka nie jest liczona jako przejście.
 
-## Przegląd dydaktyczny i techniczny
+`content:fuzz` działa wyłącznie na dokładnym, wyekstrahowanym archiwum autora. Sprawdza niezależny oracle, kampanię z maksymalnie 20000 próbami lub 30 sekundami przy wejściach do 4096 bajtów, stałego mutanta i replay po przywróceniu referencji. Końcowy lokalny przebieg po korekcie wyłącznie testowego warunku granicznego zapisał kampanię, kontrprzykład i udany replay. Fuzzowanie małego tekstu nie dowodzi limitów alokacji obcej implementacji `BufRead`, pełnej polityki I/O ani bezpieczeństwa traversal.
 
-- **Leniwe wykonanie:** odróżniamy obliczenie argumentów od uruchomienia ciała async. Zewnętrzny licznik i zasób z Drop sprawdzają opóźnione wywołanie fabryki. Powtórka odczytuje aktualny początek kolejki dopiero podczas poll.
-- **Postęp:** kolejność await, Pending obu etapów i oba źródła błędu są obserwowane przez zewnętrzne przyszłości. Test zmienia Context, wyzwala zapisany Waker i sprawdza przekazanie aktualnego Waker przez rozwiązanie. Gotowe dziecko odrzuca ponowny poll po wznowieniu drugiego etapu.
-- **Własność:** rzeczywiste E0382 i E0597 poprzedzają zadania z przenoszeniem wartości. Zewnętrzny DropProbe obserwuje zasób przed pierwszym poll, podczas Pending, po anulowaniu i w posiadanym wyniku. Powtórka wykonuje odroczoną transformację na nowym kontrakcie.
-- **Anulowanie:** usunięcie posiadanej przyszłości kończy jej dalsze wykonywanie i zwalnia zasoby, lecz nie cofa już wykonanych skutków. Testy obejmują !Unpin, Pending, Ready, pusty slot, tożsamość zachowanej przyszłości, liczbę poll i Drop oraz użycie przekazanego Context. Drop uchwytu do niezależnego zadania nie jest przedstawiany jako gwarancja zatrzymania tego zadania.
-- **Samodzielność:** każde z czterech kryteriów ma dwie różne bramki, w tym pusty edytor z nazwanym API w prozie. Odsłonięcie rozwiązania pozostawia świeży wariant. Cztery kodowe powtórki wymagają transferu do innego kontraktu.
-- **Granice:** ręczne poll służy skończonej obserwacji rzeczywistych Future ze std, nie jest executorem ani testem runtime Tokio. Pending ma opisane źródło budzenia albo jest jawnym std::future::pending(), które nigdy nie zwraca Ready. Reguły źródła uzupełniają testy zachowania; nie są pełną analizą AST.
+Kontrole wykonują wyłącznie zaufane pliki repozytorium i celowe mutacje w katalogach tymczasowych. Nie uruchamiają szkiców ani importów ucznia i nie wysyłają nowego kodu do publicznego Playgrounda. Pobranie archiwum albo lokalne uruchomienie Cargo nie nadaje automatycznie mastery.
 
-Dziesięć wadliwych wariantów obejmuje: podwójny poll, wyciek posiadanej przyszłości, ignorowanie flagi anulowania, usuwanie Pending ze slotu, zbyt wczesne wywołanie fabryki, odczyt końca kolejki, odwróconą kolejność await, zmianę drugiego błędu, wyciek przejętego zasobu oraz aktywne odpytywanie zamiast propagacji Pending. Każdy wariant skompilował się i zakończył nieudaną asercją. Timeout ani błąd kompilacji nie jest liczony jako odrzucenie mutanta.
+## Produkcyjne E2E i publikacja bloku
 
-W przeglądzie usunięto zbyt podobne kontrakty bramek, zastąpiono pośrednie obserwacje długości tekstu rzeczywistym DropProbe i dodano brakujący przypadek błędu drugiej przyszłości. Drugi niezależny przegląd wykrył zbędne ograniczenia static w odroczonej fabryce. Test lokalnego pożyczenia najpierw odrzucił rozwiązanie przez E0373; po usunięciu ograniczeń ten sam test i cały moduł przechodzą. Kontrakt dopuszcza teraz zarówno posiadany wynik, jak i referencję do wystarczająco długo żyjących danych.
+Pełne E2E zakończyło się wynikiem **44/44 bez retry** na produkcyjnym buildzie. Testy zachowują szkice, wskazówki, notatki i wybrany panel po zakończeniu zapisu IndexedDB. W sześciu plikach testów dodano oczekiwanie na potwierdzenie zapisu przed reloadem; na wąskim ekranie kontrolowany jest tekst ukrytego statusu. Nie usunięto asercji stanu ani nie wydłużono timeoutów.
 
-## Odtworzenie kontroli
+Kontrola z dokładną konfiguracją CI ujawniła także opóźnione przejęcie fokusu przez zmianę widoku. Efekt nawigacji ustawia teraz fokus synchronicznie po zmianie DOM, zanim użytkownik przejdzie do zakładki Output. Po poprawce ponownie przeszły build, lint, typecheck, 165 testów Vitest, 44 E2E i offline. Ręczna kontrola finalnego buildu potwierdziła widoczny fokus oraz przejście strzałkami Zadanie → Kod → Output bez utraty fokusu; konsola nie zawierała błędów ani ostrzeżeń.
+
+Blok obejmuje także wzmocnienie CI opisane w [CI/CD](ci-cd.md). Wynik zdalnych jobów dla dokładnego SHA musi zostać sprawdzony przed scaleniem PR; lokalne wyniki go nie zastępują.
+
+## Repozytorium i odtworzenie
+
+[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w commit `64667e4`. Poprzedni milestone `89a388e687a50a6c51616b6a44d699d31ccb9467` na `feat/public-api-workspaces` ma [udane CI](https://github.com/fettpl/rustcrushcourse/actions/runs/34743788852): oba joby zakończyły się sukcesem, z 158 testami Vitest, 1251 przypadkami rustc, 252 Tokio i 42 E2E bez retry. Ten historyczny przebieg nie zastępuje kontroli SHA bieżącego bloku.
 
 ```sh
 npm run lint
@@ -44,15 +47,23 @@ npm run typecheck
 npm test
 npm run content:check
 npm run content:rust
+npm run content:tokio -- --fetch
+npm run content:models -- --fetch
+npm run content:cargo
+npm run content:fuzz -- --fetch
+npm run content:workspace
+npm run content:workspace -- --msrv
 npm run content:audit -- --check-links
 npm run build
-npm run test:e2e
+# w osobnym terminalu: npm start -- --port 3002
+npx --no-install playwright test --config .github/playwright.production.config.ts
+npm run test:offline
 ```
 
-Przy serwerze produkcyjnym na porcie 3002: npm run test:offline. Pełną kontrolę niezmienionych pakietów można odtworzyć przez npm run content:models -- --fetch oraz npm run content:cargo. Pierwsze --fetch pobiera przypięte zależności; wykonanie testów używa --offline --locked.
+Dokładny starszy kompilator instaluje polecenie opisane w README. Autorskie testy TCP wymagają lokalnego IPv4 loopback; `content:fuzz -- --fetch` wymaga także przypiętego nightly, cargo-fuzz i kompilatora C++.
 
-## Pozostały zakres
+## Granice dowodu i pozostały zakres
 
-Ten etap udostępnia podstawy Future, await, własności i anulowania przez Drop. Runtime Tokio, zadania, bounded pipeline, timeout/select i graceful shutdown pozostają do wdrożenia. W dalszym zakresie są także zaawansowane Cargo/API, variance/HRTB, property/fuzz, profilowanie, unsafe/FFI, operacje produkcyjne oraz pełne Number Guessing+, Mini grep i capstone. Pełny zakres zachowują [audyt wymagań](requirements-audit.md) i [mapa kursu](advanced-curriculum.md).
+Kontrole Frame Protocol są konkretnym dowodem jego workspace, features, aktualnych klientów i Rust 1.85.0, lecz nie pełnym dowodem SemVer ani identycznych binariów na wszystkich platformach. Mini grep ma ograniczony test własności i skończoną kampanię fuzz; nie zastępują one pełnego curriculum property/fuzz, benchmarków, profilowania ani większej polityki I/O i ścieżek.
 
-Nie przeprowadzono pilotażu z uczącymi się ani ręcznego testu czytnikiem ekranu. Techniczne kontrole nie dowodzą skuteczności nauczania ani gotowości zawodowej; potrzebna jest samodzielna praca na nowych problemach i transfer po przerwie.
+Cel zaawansowanego kursu pozostaje otwarty. Do dostarczenia pozostają m.in. zaawansowane Cargo i publikowanie, variance/HRTB, pełne property/fuzz, profilowanie, unsafe/FFI, utrzymanie systemów, pełne Number Guessing+ oraz capstone. Audyt zachowuje luki produktu dotyczące trwałej historii migracji i pochodzenia wersji materiału. Pilotaż z osobą zaczynającą Rust oraz ręczna ocena czytnikiem ekranu również pozostają do wykonania.

@@ -12,6 +12,7 @@ import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { projects } from "../src/content/course";
 import { buildProjectArchive } from "./project-archive";
+import { verifyMiniGrepMutants } from "./mini-grep-mutants";
 
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-authored-cargo-"));
 let failures = 0;
@@ -61,15 +62,22 @@ try {
       }
       const packageRoot = join(directory, project.id);
       command(packageRoot, ["fmt", "--all", "--", "--check"]);
-      command(packageRoot, ["check", "--offline", "--locked", "--all-targets"]);
+      command(packageRoot, [
+        "check",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--all-targets",
+      ]);
       command(
         packageRoot,
-        ["test", "--offline", "--locked"],
+        ["test", "--workspace", "--offline", "--locked"],
         variant === "starter",
       );
       if (variant === "solution")
         command(packageRoot, [
           "clippy",
+          "--workspace",
           "--offline",
           "--locked",
           "--all-targets",
@@ -77,6 +85,8 @@ try {
           "-D",
           "warnings",
         ]);
+      if (variant === "solution" && project.id === "mini-grep-workshop")
+        verifyMiniGrepMutants(packageRoot);
     }
 } finally {
   rmSync(root, { recursive: true, force: true });

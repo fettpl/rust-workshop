@@ -24,7 +24,7 @@
 - [x] Lint, typecheck, Vitest, walidacja treści, rzeczywisty rustc, źródła HTTP i produkcyjny build.
 - [x] Przeglądarka: predykcja z kodem, blank-page, reveal z zachowaną alternatywą, resume i mobile. Offline nowego modułu i dotychczasowych pakietów.
 - [x] Przegląd checkpointu oraz aktualizacja rzeczywistych wyników i pozostałego zakresu.
-- [ ] Commit etapu, push i scalenie pierwszego PR-a zgodnie z późniejszą dyspozycją użytkownika.
+- [x] Commit etapu f2b052c, push i scalenie pierwszego PR-a w 64667e4; oba przebiegi GitHub CI zakończone sukcesem.
 
 ## Korekty po przeglądzie
 
