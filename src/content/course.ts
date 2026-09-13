@@ -1,3 +1,19 @@
+import { guessingModule } from "./guessing-module";
+import {
+  guessingCoreLessons,
+  guessingCoreConcepts,
+  guessingCoreCompetencies,
+  guessingCoreSources,
+  guessingCoreReviewExercises,
+} from "./guessing-core";
+import {
+  guessingIoLessons,
+  guessingIoConcepts,
+  guessingIoCompetencies,
+  guessingIoSources,
+  guessingIoReviewExercises,
+} from "./guessing-io";
+import { numberGuessingProject } from "./projects/number-guessing";
 import { miniGrepModule } from "./mini-grep-module";
 import {
   miniGrepSearchLessons,
@@ -311,6 +327,7 @@ export const modules = [
   closuresModule,
   iteratorsModule,
   testingModule,
+  guessingModule,
   logAnalyzerModule,
   boxedValuesModule,
   sharedOwnershipModule,
@@ -348,6 +365,8 @@ export const lessons = [
   ...closuresLessons,
   ...iteratorsLessons,
   ...testingLessons,
+  ...guessingCoreLessons,
+  ...guessingIoLessons,
   ...logAnalyzerLessons,
   ...boxedValuesLessons,
   ...sharedOwnershipLessons,
@@ -387,6 +406,8 @@ export const concepts = [
   ...closuresConcepts,
   ...iteratorsConcepts,
   ...testingConcepts,
+  ...guessingCoreConcepts,
+  ...guessingIoConcepts,
   ...logAnalyzerConcepts,
   ...boxedValuesConcepts,
   ...sharedOwnershipConcepts,
@@ -426,6 +447,8 @@ export const competencies = [
   ...closuresCompetencies,
   ...iteratorsCompetencies,
   ...testingCompetencies,
+  ...guessingCoreCompetencies,
+  ...guessingIoCompetencies,
   ...logAnalyzerCompetencies,
   ...boxedValuesCompetencies,
   ...sharedOwnershipCompetencies,
@@ -465,6 +488,8 @@ export const sources = [
   ...closuresSources,
   ...iteratorsSources,
   ...testingSources,
+  ...guessingCoreSources,
+  ...guessingIoSources,
   ...logAnalyzerSources,
   ...boxedValuesSources,
   ...sharedOwnershipSources,
@@ -504,6 +529,8 @@ export const reviewExercises = {
   ...closuresReviewExercises,
   ...iteratorsReviewExercises,
   ...testingReviewExercises,
+  ...guessingCoreReviewExercises,
+  ...guessingIoReviewExercises,
   ...logAnalyzerReviewExercises,
   ...boxedValuesReviewExercises,
   ...sharedOwnershipReviewExercises,
@@ -527,7 +554,7 @@ export const reviewExercises = {
   ...miniGrepSearchReviewExercises,
   ...miniGrepSystemReviewExercises,
 };
-export const { project } = ownership;
+export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
   ...ownership.traces,
   "trace-rc-weak": rcLifetimeTrace,
@@ -601,6 +628,7 @@ export const roadmap = [
     title: "Podstawy testowania, rustfmt i Clippy w projekcie",
     status: "available",
   },
+  { title: "Number Guessing+: pełna gra i pakiet CLI", status: "available" },
   { title: "Log Analyzer: parser, strumień i pakiet CLI", status: "available" },
   { title: "Box, Deref, Drop oraz Rc, RefCell i Weak", status: "available" },
   { title: "Wątki, kanały, Send/Sync oraz Arc/Mutex", status: "available" },

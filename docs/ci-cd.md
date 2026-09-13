@@ -14,9 +14,12 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
 - `verify`: instalacja z `package-lock.json`, ESLint, TypeScript, Vitest,
   walidacja curriculum, autorskie przypadki Rust/Tokio/Loom, archiwa Cargo,
   workspace i audyt powiązań źródeł. Następnie buduje aplikację i uruchamia
-  44 testy Playwright oraz kontrolę offline na tym samym serwerze produkcyjnym.
-- `workspace-msrv`: testuje workspace Frame Protocol na dokładnym Rust 1.85.0,
-  także z przypiętymi ścieżkami `rustc` i `rustdoc` dla procesów potomnych.
+  testy Playwright oraz kontrolę offline na tym samym serwerze produkcyjnym.
+  Osobny krok Number Guessing+ sprawdza pobierany starter i rozwiązanie, prawdziwe
+  procesy CLI oraz wykrycie czterech kontrolowanych błędów programu.
+- `workspace-msrv`: testuje workspace Frame Protocol i pakiet Number Guessing+
+  na dokładnym Rust 1.85.0, także z przypiętymi ścieżkami `rustc` i `rustdoc`
+  dla procesów potomnych.
 - `mini-grep-fuzz`: sprawdza niezależny oracle, ograniczoną kampanię libFuzzer,
   wykrycie kontrolowanego błędu i odtworzenie przypadku po jego usunięciu.
 
@@ -49,6 +52,15 @@ również po sukcesie. Artefakty mają retencję siedmiu dni.
 Dependabot sprawdza npm i GitHub Actions raz w tygodniu. Jego zmiany przechodzą
 ten sam PR i kontrole; nie skonfigurowano automatycznego merge. Aktualizacja
 narzędzia nie zastępuje przeglądu zmian w zachowaniu testów i curriculum.
+
+`content:guessing -- --fetch` pobiera wyłącznie zależności przypięte w autorskim
+pakiecie z rand 0.10.2. Dalsze kontrole działają z `--offline --locked`; skrypt
+nie przyjmuje ścieżki, kodu ani nadpisania zależności. Wariant `--msrv` sprawdza
+wersje cargo, rustc i rustdoc przed uruchomieniem oraz wybiera katalog tego
+toolchainu dla formatowania i Clippy. Celowe błędy muszą skompilować się
+i zostać odrzucone przez konkretny test zachowania; timeout, błąd kompilacji ani
+uruchomienie zera testów nie zaliczają kontroli. Po każdej mutacji przywrócona
+referencja musi ponownie przejść ten test.
 
 ## Scalenie i ograniczenia platformy
 

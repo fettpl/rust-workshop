@@ -29,6 +29,28 @@ const bundle: ContentBundle = {
 };
 
 describe("curriculum content contract", () => {
+  it("accepts reviewed Rand sources and rejects lookalike hosts or unreviewed versions", () => {
+    const check = (url: string) =>
+      validateContent({
+        ...bundle,
+        sources: [{ ...sources[0], url }],
+      }).filter((error) => error.includes("official Rust source"));
+    for (const url of [
+      "https://docs.rs/rand/0.10.2/rand/fn.random_range.html",
+      "https://docs.rs/crate/rand/0.10.2/source/Cargo.toml.orig",
+      "https://rust-random.github.io/book/crate-reprod.html",
+    ])
+      expect(check(url), url).toEqual([]);
+    for (const url of [
+      "https://docs.rs/rand/latest/rand/",
+      "https://docs.rs/rand/0.10.1/rand/",
+      "https://docs.rs/another/0.10.2/rand/",
+      "https://docs.rs.example.org/rand/0.10.2/rand/",
+      "https://rust-random.github.io.example.org/book/",
+      "https://docs.rs/crate/rand/0.10.1/source/Cargo.toml.orig",
+    ])
+      expect(check(url), url).not.toEqual([]);
+  });
   it("aligns authored compiler diagnostics with browser grading", () => {
     const lesson = lessons.find((x) => x.id === "tokio-task-boundaries")!;
     const step = lesson.steps.find((x) => x.expectedDiagnostic)!;

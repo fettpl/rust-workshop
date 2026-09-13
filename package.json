@@ -26,7 +26,9 @@
     "precontent:workspace": "npm run content:packages",
     "content:workspace": "node --import tsx scripts/verify-workspace.ts",
     "precontent:fuzz": "npm run content:packages",
-    "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts"
+    "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts",
+    "precontent:guessing": "npm run content:packages",
+    "content:guessing": "node --import tsx scripts/verify-number-guessing.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

@@ -7,8 +7,11 @@ import { projects } from "../../src/content/course";
 test("downloads the Cargo starter, separates reference help and preserves it after reload", async ({
   page,
 }, testInfo) => {
-  const project = projects.find((item) => item.package)!;
-  expect(project, "Course must offer a real Cargo package").toBeDefined();
+  // This flow inspects Todo's persistence module, regardless of portfolio order.
+  const project = projects.find(
+    (item) => item.package?.id === "todo-cli-workshop",
+  )!;
+  expect(project, "Course must offer the Todo CLI package").toBeDefined();
   const archive = project.package!;
   await page.goto("/");
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
@@ -16,7 +19,7 @@ test("downloads the Cargo starter, separates reference help and preserves it aft
   await page.getByRole("button", { name: "Projekt", exact: true }).click();
   await page
     .getByRole("navigation", { name: "Wybierz projekt" })
-    .getByRole("button", { name: new RegExp(project.title) })
+    .getByRole("button", { name: project.title })
     .click();
   const panel = page.getByRole("region", { name: "Pakiet Cargo" });
   await expect(
@@ -96,7 +99,7 @@ test("downloads the Cargo starter, separates reference help and preserves it aft
   ).toBe(true);
   await page
     .getByRole("navigation", { name: "Wybierz projekt" })
-    .getByRole("button", { name: new RegExp(project.title) })
+    .getByRole("button", { name: project.title })
     .click();
   await page.setViewportSize({ width: 390, height: 844 });
   await panel.getByLabel("Plik w pakiecie").selectOption("src/storage.rs");

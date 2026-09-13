@@ -43,6 +43,7 @@ jobs:
       - run: npm run content:rust
       - run: npm run content:tokio -- --fetch
       - run: npm run content:models -- --fetch
+      - run: npm run content:guessing -- --fetch
       - run: npm run content:cargo
       - run: npm run content:workspace
       - run: npm run content:audit
@@ -106,6 +107,7 @@ jobs:
           components: rustfmt, clippy
       - run: npm ci
       - run: npm run content:workspace -- --msrv
+      - run: npm run content:guessing -- --fetch --msrv
 
   mini-grep-fuzz:
     runs-on: ubuntu-latest

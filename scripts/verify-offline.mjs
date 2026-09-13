@@ -67,6 +67,7 @@ import { readFile } from "node:fs/promises";
     await context.setOffline(false);
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
     for (const projectName of [
+      /Number Guessing\+/,
       /Todo CLI/,
       /Log Analyzer/,
       /Laboratorium: protokoły atomowe/,
@@ -251,6 +252,7 @@ import { readFile } from "node:fs/promises";
       "Tokio: sieć i serwis",
       "Publiczne API i workspace Cargo",
       "Mini grep: wyszukaj, ogranicz, wyjaśnij wynik",
+      "Number Guessing+: od komunikatu do pełnej gry",
     ]) {
       await page
         .getByRole("button", { name: "Mapa nauki", exact: true })
