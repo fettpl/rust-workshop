@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Compass,
@@ -62,15 +62,13 @@ function AppShell() {
   );
   const focus = state.resume.focus && view === "lesson";
   const due = dueReviews(state, now).length;
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Preserve the browser's initial focus; reset only when moving to new content.
+    // Finish before another interaction can move focus into the new content.
     if (previousNavigation.current === navigationKey) return;
     previousNavigation.current = navigationKey;
-    const frame = requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-      headingRef.current?.focus({ preventScroll: true });
-    });
-    return () => cancelAnimationFrame(frame);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    headingRef.current?.focus({ preventScroll: true });
   }, [navigationKey]);
   useEffect(() => {
     setOnline(navigator.onLine);

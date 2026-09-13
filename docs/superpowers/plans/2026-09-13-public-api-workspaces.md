@@ -63,4 +63,4 @@ Root: module/course registration, `src/content/public-api-integration.test.ts`, 
 - [x] Test metadata/matrix verification failures by changing actual authored manifests or source; reject missing workspace member, wrong compiler floor, hidden default feature dependency and broken old consumer.
 - [x] Run full content, typecheck/lint/Vitest/Rust/Cargo checks; source audit, production build, full E2E and offline ZIP byte checks. Freeze content before final build.
 - [x] Independent review of both lesson groups, workspace and integration. Audit against original requirements and update honest coverage and limitations.
-- [ ] Commit/push and inspect exact-commit CI.
+- [x] Commit/push and inspect exact-commit CI. Commit `89a388e687a50a6c51616b6a44d699d31ccb9467`, branch `feat/public-api-workspaces`; run `34743788852` passed both verify and workspace-msrv jobs (158 Vitest, 1251 Rust, 252 Tokio, 42 E2E).

@@ -1,3 +1,19 @@
+import { miniGrepModule } from "./mini-grep-module";
+import {
+  miniGrepSearchLessons,
+  miniGrepSearchConcepts,
+  miniGrepSearchCompetencies,
+  miniGrepSearchSources,
+  miniGrepSearchReviewExercises,
+} from "./mini-grep-search";
+import {
+  miniGrepSystemLessons,
+  miniGrepSystemConcepts,
+  miniGrepSystemCompetencies,
+  miniGrepSystemSources,
+  miniGrepSystemReviewExercises,
+} from "./mini-grep-system";
+import { miniGrepProject } from "./projects/mini-grep";
 import { publicApiModule } from "./public-api-module";
 import {
   publicApiValueLessons,
@@ -310,6 +326,7 @@ export const modules = [
   tokioBlockingModule,
   tokioNetworkModule,
   publicApiModule,
+  miniGrepModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -351,6 +368,8 @@ export const lessons = [
   ...tokioNetworkLifecycleLessons,
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
+  ...miniGrepSearchLessons,
+  ...miniGrepSystemLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -388,6 +407,8 @@ export const concepts = [
   ...tokioNetworkLifecycleConcepts,
   ...publicApiValueConcepts,
   ...publicApiEvolutionConcepts,
+  ...miniGrepSearchConcepts,
+  ...miniGrepSystemConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -425,6 +446,8 @@ export const competencies = [
   ...tokioNetworkLifecycleCompetencies,
   ...publicApiValueCompetencies,
   ...publicApiEvolutionCompetencies,
+  ...miniGrepSearchCompetencies,
+  ...miniGrepSystemCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -462,6 +485,8 @@ export const sources = [
   ...tokioNetworkLifecycleSources,
   ...publicApiValueSources,
   ...publicApiEvolutionSources,
+  ...miniGrepSearchSources,
+  ...miniGrepSystemSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -499,6 +524,8 @@ export const reviewExercises = {
   ...tokioNetworkLifecycleReviewExercises,
   ...publicApiValueReviewExercises,
   ...publicApiEvolutionReviewExercises,
+  ...miniGrepSearchReviewExercises,
+  ...miniGrepSystemReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -544,6 +571,7 @@ export const projects = [
   tokioPipelineProject,
   tokioServiceProject,
   frameProtocolProject,
+  miniGrepProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -593,10 +621,6 @@ export const roadmap = [
     status: "available",
   },
   {
-    title: "Mini grep i projekt końcowy",
-    status: "planned",
-  },
-  {
     title: "Zaawansowane Cargo, zależności i publikacja bibliotek",
     status: "planned",
   },
@@ -612,10 +636,15 @@ export const roadmap = [
     title: "Publiczne API: kontrakty i workspace Cargo",
     status: "available",
   },
+  {
+    title: "Mini grep: ograniczone wejście, kontekst i CLI",
+    status: "available",
+  },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },
   { title: "Unsafe, FFI, Miri i testowanie współbieżności", status: "planned" },
   {
     title: "Architektura, bezpieczeństwo, obserwowalność i przegląd incydentów",
     status: "planned",
   },
+  { title: "Większy projekt końcowy", status: "planned" },
 ];

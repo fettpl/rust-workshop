@@ -66,6 +66,9 @@ test("returns from the last course step to its map without losing the resume", a
       exact: true,
     }),
   ).toBeVisible();
+  await expect(
+    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await expect(
     page.getByRole("heading", {

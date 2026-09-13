@@ -7,6 +7,7 @@ for (const moduleId of [
   "tokio-blocking-work",
   "tokio-network-service",
   "public-api-workspaces",
+  "mini-grep",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,
@@ -69,6 +70,9 @@ for (const moduleId of [
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText(diagnostic);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
     await page.reload();
     await expect(editor).toHaveValue(draft);
     await expect(page.locator(".task-pane h1")).toHaveText(step.title);

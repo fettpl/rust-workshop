@@ -6,6 +6,7 @@ import { lessons, modules, projects } from "../../src/content/course";
 for (const [projectId, moduleId] of [
   ["tokio-service", "tokio-network-service"],
   ["frame-protocol", "public-api-workspaces"],
+  ["mini-grep", "mini-grep"],
 ]) {
   test(`${projectId}: downloads exact package files and preserves fresh gates after reveal`, async ({
     page,

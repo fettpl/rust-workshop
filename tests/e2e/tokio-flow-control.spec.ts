@@ -84,6 +84,9 @@ test("keeps Tokio gate diagnostics and a hinted draft, while revealed success ca
 
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await expect(editor).toHaveValue(draft);
+  await expect(
+    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);
   await expect(output).toContainText(failure);

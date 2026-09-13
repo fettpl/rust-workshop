@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 import { frameProtocolPackage } from "../src/content/projects/frame-protocol";
 import {
   projectFiles,
@@ -27,6 +27,36 @@ const args = process.argv.slice(2);
 if (args.length > 1 || args.some((arg) => arg !== "--msrv"))
   throw new Error("Only --msrv is supported; code and paths are not accepted.");
 const msrv = args.includes("--msrv");
+if (msrv) {
+  // rustup run selects Cargo, but its bare rustc/rustdoc child can still find
+  // a non-proxy Homebrew installation first on PATH. Pin both compiler tools.
+  for (const [variable, tool] of [
+    ["RUSTC", "rustc"],
+    ["RUSTDOC", "rustdoc"],
+  ]) {
+    const resolved = spawnSync(
+      "rustup",
+      ["which", "--toolchain", "1.85.0", tool],
+      { encoding: "utf8", timeout: 10_000 },
+    );
+    assert.ifError(resolved.error);
+    assert.equal(resolved.status, 0, resolved.stderr);
+    const executable = resolved.stdout.trim();
+    const version = spawnSync(executable, ["--version"], {
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+    assert.ifError(version.error);
+    assert.equal(version.status, 0, version.stderr);
+    assert(
+      version.stdout.startsWith(`${tool} 1.85.0 `),
+      `Expected exact MSRV ${tool}: ${version.stdout}`,
+    );
+    process.env[variable] = executable;
+    console.log(version.stdout.trim());
+  }
+  process.env.PATH = `${dirname(process.env.RUSTC!)}${delimiter}${process.env.PATH ?? ""}`;
+}
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-authored-workspace-"));
 const binary = msrv ? "rustup" : "cargo";
 const prefix = msrv ? ["run", "1.85.0", "cargo"] : [];

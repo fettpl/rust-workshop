@@ -1,62 +1,45 @@
-# Weryfikacja etapu: publiczne API i workspace Cargo
+# Weryfikacja: publiczne API, workspace Cargo i Mini grep
 
-Data: 13 września 2026. Katalog obejmuje 110 lekcji w 30 modułach, 113 pojęć, 218 wpisów źródłowych, 65 zadań od pustej kartki, 7 śladów pamięci i 7 projektów; sześć projektów ma pakiet Cargo. Ten etap dodaje cztery lekcje, osiem bramek (w tym cztery blank-page), cztery kodowe powtórki i rzeczywisty workspace z biblioteką oraz osobnym klientem.
+Data: 13 września 2026. Katalog obejmuje 114 lekcji w 31 modułach, 117 pojęć, 69 zadań blank-page, 7 śladów pamięci, 226 wpisów źródłowych i 8 projektów; 7 projektów ma pakiet Cargo. Poprzedni etap dodał cztery lekcje publicznego API i workspace Frame Protocol. Etap Mini grep dodaje cztery lekcje, osiem bramek, cztery blank-page, cztery powtórki oraz bibliotekę i CLI `mini-grep-workshop`.
 
-Przeglądy treści, pakietu i weryfikatorów oraz lokalne kontrole interfejsu, produkcyjnego buildu i offline są zakończone.
-
-## Kontrole
+## Zakończone kontrole lokalne
 
 | Sprawdzenie | Wynik |
-| --- | --- |
-| Vitest | 158/158 w 30 plikach; obejmuje rzeczywiste metadane Cargo i zachowanie niezależnych bramek po reveal |
-| TypeScript i ESLint | Bez błędów |
-| Curriculum | Poprawne relacje 110 lekcji, 113 pojęć i 7 śladów |
-| Źródła HTTP | 218/218 HTTP 200; brak uszkodzonych referencji, lekcji bez bramki i pojęć bez aktywnej powtórki |
-| rustc | Pełny przebieg 1251/1251; po ostatnich zmianach ćwiczeń dodatkowo 46/46 przypadków zamrożonego modułu API |
-| Cargo/Tokio | 252/252 autorskie przypadki, w tym lokalne TCP |
-| Loom | Poprawne modele przechodzą; dwa kontrprzykłady i osłabiona biblioteka odrzucone przez właściwe asercje |
-| Pakiety Cargo | Wszystkie sześć: starter fmt/check i oczekiwana porażka na todo; referencje fmt/check/test/Clippy |
-| Frame Protocol — obecny kompilator | Workspace i biblioteka osobno: default/no-default/all-features; osobne diagnostics biblioteki oraz klienta; fmt/check/test/Clippy/doc i stały lockfile |
-| Frame Protocol — dokładny Rust 1.85.0 | Ten sam zestaw konfiguracji, testów i dziesięciu kontrolowanych mutacji przechodzi na deklarowanym minimum kompilatora |
-| Liczba testów pakietu | Referencja: 17 testów domyślnie i 18 z all-features; obejmuje dwa compile-fail doctesty i osobny proces CLI |
-| Pełne E2E | 42/42 po zamrożeniu treści; nowe scenariusze obejmują wznowienie modułu, pobranie i reveal projektu oraz mobilną dostępność |
-| Build produkcyjny | Przeszedł; hashe plików treści nie zmieniły się podczas budowania |
-| Offline | Cache v18; sześć ZIP-ów pobranych po reload bez sieci ma identyczne bajty; nowy moduł przywraca dokładne zadanie, szkic i hint; brak błędów strony |
-| Ręczna kontrola produkcji | Mapa 30 modułów, wyszukiwanie, nowa lekcja i karta projektu czytelne; Tab → skip link → Enter przenosi fokus do main, Enter otwiera krok; konsola bez ostrzeżeń i błędów |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vitest | 165/165 w 34 plikach |
+| TypeScript, ESLint i build | Typecheck bez błędów; ESLint zakończył się bez błędów i ostrzeżeń; końcowy build produkcyjny przeszedł |
+| Curriculum i źródła | Katalog ma wskazane wyżej liczniki; 226/226 źródeł zwróciło HTTP 200 |
+| Rust | 1251/1251 przypadków istniejącego, zamrożonego curriculum oraz 50/50 nowych przypadków Mini grep w rozłącznych przebiegach, razem 1301/1301 |
+| Tokio i Loom | 252/252 autorskich przypadków Tokio; modele referencyjne Loom przechodzą, dwa kontrprzykłady i osłabiona biblioteka są odrzucane właściwymi asercjami |
+| Archiwa Cargo | Wszystkie 7 starterów przeszło fmt/check i zatrzymało się na zamierzonym `todo!`; wszystkie 7 referencji przeszło fmt/check/test/Clippy |
+| Mini grep — finalne archiwum | Referencja ma 16 testów integration/property/process i 1 doctest |
+| Mini grep — mutacje pakietu | Odrzucone: brak unii okien kontekstu, akceptacja bajtu ponad limitem surowej linii, podążanie za symlinkiem i częściowy stdout po błędzie wejścia |
+| Frame Protocol — bieżący compiler | Workspace i biblioteka osobno: default/no-default/all-features, osobne diagnostics biblioteki i klienta, fmt/check/test/Clippy/doc oraz 10 kontrolowanych mutacji |
+| Frame Protocol — Rust 1.85.0 | Ten sam zestaw na dokładnym minimum kompilatora; `PATH`, `RUSTC` i `RUSTDOC` są przypięte także dla procesów potomnych |
+| Mini grep — fuzz | 20000-próbna kampania libFuzzer z niezależnym oracle wykryła mutanta substring→prefix; zapisany przypadek odtworzono po przywróceniu referencji |
+| Offline | Cache v19: 7 ZIP-ów ma identyczne bajty po reload bez sieci; nieodwiedzony Mini grep przywraca szkic, hint i krok; `pageerrors` jest puste |
+| Produkcyjne E2E | 44/44 bez retry; desktop, mobile, wznowienie zapisu i niezależne bramki po podglądzie projektu |
+| Ręczny przegląd produkcji | Karta projektu, lekcja i blank-page są czytelne; fokus klawiatury jest widoczny, Enter otwiera mapę, konsola nie ma błędów ani ostrzeżeń |
 
-Pierwszy przebieg E2E miał 41/42 wyników pozytywnych podczas równoczesnych zmian importowanej treści przez HMR; log wskazywał odłączenie DOM i granicę błędu Reacta. Test przechodził samodzielnie. Nie zmieniono CSS ani nie osłabiono kliknięcia; pełny przebieg powtórzony po zamrożeniu plików przeszedł.
+## Dowody Mini grep
 
-## Niezależne przeglądy i poprawki
+Referencyjne archiwum ma bibliotekę i binarkę, rozdziela odczyt/wybór kontekstu, traversal, renderowanie i argumenty. Testy Cargo obejmują `BufRead` w małych porcjach, CRLF, samotny CR na EOF, Unicode, granice bajtowe, błąd odczytu po trafieniu z oryginalną przyczyną, katalogi i proces CLI. Starter kompiluje się i formatuje, ale kończy na jawnych `todo!`; jego porażka nie jest liczona jako przejście.
 
-Recenzje obu grup lekcji, projektu oraz weryfikatorów wykonali inni autorzy niż osoby implementujące daną część. Zgłoszone problemy poprawiono przed zamknięciem recenzji:
+`content:fuzz` działa wyłącznie na dokładnym, wyekstrahowanym archiwum autora. Sprawdza niezależny oracle, kampanię z maksymalnie 20000 próbami lub 30 sekundami przy wejściach do 4096 bajtów, stałego mutanta i replay po przywróceniu referencji. Końcowy lokalny przebieg po korekcie wyłącznie testowego warunku granicznego zapisał kampanię, kontrprzykład i udany replay. Fuzzowanie małego tekstu nie dowodzi limitów alokacji obcej implementacji `BufRead`, pełnej polityki I/O ani bezpieczeństwa traversal.
 
-- Blank dotyczący błędów wymaga teraz niezależnego odczytu discriminatora i długości z dwoma etapami awarii. Opis podaje jawny publiczny format wyniku i nazwy accessorów, pozostawiając prywatną reprezentację oraz algorytm uczniowi.
-- Testy limitów bajtów obejmują tekst wielobajtowy, aby odrzucić mylenie liczby znaków z liczbą bajtów. Testy jednego pliku nie są opisane jako dowód prywatności między crate’ami.
-- Escapowane znaczniki dokumentacji powodowały zero doctestów. Artefakt zawiera teraz rzeczywiste bloki, a weryfikator wymaga co najmniej dwóch wykonanych testów dokumentacji.
-- Test CLI rozdziela konfigurację domyślną i diagnostyczną oraz pokazuje stderr procesu. Dzięki temu porażka startera wskazuje rzeczywiste todo, zamiast ukrywać je za samym kodem wyjścia.
-- Publiczne testy zachowują oryginalny obiekt przyczyny błędu dla obu etapów odczytu i zapisu. Adapter testowy obsługuje dowolną długość bufora zgodnie z kontraktem Read.
-- Display opisuje etap operacji; Error::source udostępnia przyczynę. Regresja zapobiega powielaniu komunikatu przy prezentacji łańcucha błędów.
-- Kontrola manifestów sprawdza deklarowane dziedziczenie metadanych i przekazywanie diagnostics do biblioteki. Osobny build klienta zapobiega ukryciu brakującego feature przez unifikację całego workspace.
+Kontrole wykonują wyłącznie zaufane pliki repozytorium i celowe mutacje w katalogach tymczasowych. Nie uruchamiają szkiców ani importów ucznia i nie wysyłają nowego kodu do publicznego Playgrounda. Pobranie archiwum albo lokalne uruchomienie Cargo nie nadaje automatycznie mastery.
 
-## Co udowadniają kontrole negatywne
+## Produkcyjne E2E i publikacja bloku
 
-`scripts/workspace-mutants.ts` celowo zmienia wyłącznie wyekstrahowaną autorską referencję. Łącznie wykonuje dziesięć kontrolowanych mutacji. Pierwsze dziewięć narusza prywatność, non_exhaustive, wymagane metody traitu, zgodność z dyn, minimalne bounds, stare importy, zachowanie odczytu, zachowanie przyczyny I/O i włączną granicę rozmiaru. Wymagane są odpowiednie kody diagnostyk albo właściwe asercje; timeout, sygnał i brak uruchomionych testów nie stanowią sukcesu.
+Pełne E2E zakończyło się wynikiem **44/44 bez retry** na produkcyjnym buildzie. Testy zachowują szkice, wskazówki, notatki i wybrany panel po zakończeniu zapisu IndexedDB. W sześciu plikach testów dodano oczekiwanie na potwierdzenie zapisu przed reloadem; na wąskim ekranie kontrolowany jest tekst ukrytego statusu. Nie usunięto asercji stanu ani nie wydłużono timeoutów.
 
-Dziesiąta próba najpierw potwierdza, że workspace ze zunifikowanym diagnostics przechodzi, a następnie wymaga odrzucenia tej samej biblioteki budowanej osobno bez domyślnych features. Weryfikator przywraca oryginalne pliki po próbach, także przy błędzie. Niezależny recenzent uruchomił te kontrole i porównał przywrócone bajty.
+Kontrola z dokładną konfiguracją CI ujawniła także opóźnione przejęcie fokusu przez zmianę widoku. Efekt nawigacji ustawia teraz fokus synchronicznie po zmianie DOM, zanim użytkownik przejdzie do zakładki Output. Po poprawce ponownie przeszły build, lint, typecheck, 165 testów Vitest, 44 E2E i offline. Ręczna kontrola finalnego buildu potwierdziła widoczny fokus oraz przejście strzałkami Zadanie → Kod → Output bez utraty fokusu; konsola nie zawierała błędów ani ostrzeżeń.
 
-Testy metadanych zmieniają prawdziwe tymczasowe manifesty: pomijają klienta, podnoszą MSRV, zastępują dziedziczone edition/MSRV wartościami lokalnymi i usuwają przekazywanie diagnostics. Osobna próba odczytuje zadeklarowaną, wyłączoną zależność rejestrową przez cargo metadata --no-deps --offline i potwierdza jej odrzucenie bez pobierania. Kontrola układu jest jawnym kontraktem stałego autorskiego formatu, nie ogólnym parserem TOML; rozstrzygnięte fakty pochodzą z Cargo.
-
-## Granice dowodu
-
-Kontrola kolejności limitu przed alokacją opiera się na przeglądzie referencji. Testy potwierdzają brak odczytu payloadu i brak zapisu po odmowie, lecz nie mierzą wszystkich alokacji; u16 ogranicza ramkę do 65535 bajtów. Próby starych klientów są konkretnym dowodem zgodności, nie pełnym dowodem SemVer dla dowolnego klienta.
-
-Rust 1.85.0 został rzeczywiście uruchomiony; sam rust-version nie wystarczyłby do potwierdzenia minimum. Ten zakres nie obejmuje publikowania, pełnej polityki zależności ani identyczności binariów na wszystkich platformach.
-
-Weryfikacja wykonuje wyłącznie przejrzany kod repozytorium i przygotowane mutacje. Nie wykonuje lokalnie szkiców ani importów ucznia. E2E zastępuje odpowiedzi /api/run; nowych przykładów nie wysłano do publicznego Playgrounda. Ćwiczenia jednego pliku nie dowodzą wykonania workspace w przeglądarce. Pobranie lub uruchomienie Cargo lokalnie nie nadaje automatycznie mastery.
+Blok obejmuje także wzmocnienie CI opisane w [CI/CD](ci-cd.md). Wynik zdalnych jobów dla dokładnego SHA musi zostać sprawdzony przed scaleniem PR; lokalne wyniki go nie zastępują.
 
 ## Repozytorium i odtworzenie
 
-[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w commit 64667e4; stan potwierdzono ponownie w tym etapie. Poprzedni milestone 0d25d9d ma [udane CI](https://github.com/fettpl/rustcrushcourse/actions/runs/34729729100). Bieżący etap jest przygotowywany do commita i push na feat/public-api-workspaces; wynik zdalny należy sprawdzić dla konkretnego wypchniętego commita.
+[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w commit `64667e4`. Poprzedni milestone `89a388e687a50a6c51616b6a44d699d31ccb9467` na `feat/public-api-workspaces` ma [udane CI](https://github.com/fettpl/rustcrushcourse/actions/runs/34743788852): oba joby zakończyły się sukcesem, z 158 testami Vitest, 1251 przypadkami rustc, 252 Tokio i 42 E2E bez retry. Ten historyczny przebieg nie zastępuje kontroli SHA bieżącego bloku.
 
 ```sh
 npm run lint
@@ -67,15 +50,20 @@ npm run content:rust
 npm run content:tokio -- --fetch
 npm run content:models -- --fetch
 npm run content:cargo
+npm run content:fuzz -- --fetch
 npm run content:workspace
 npm run content:workspace -- --msrv
 npm run content:audit -- --check-links
 npm run build
-npm run test:e2e -- --workers=4
+# w osobnym terminalu: npm start -- --port 3002
+npx --no-install playwright test --config .github/playwright.production.config.ts
+npm run test:offline
 ```
 
-Przy produkcyjnym serwerze na 3002: npm run test:offline. Dokładny starszy kompilator instaluje polecenie opisane w README. Autorskie testy TCP wymagają lokalnego IPv4 loopback.
+Dokładny starszy kompilator instaluje polecenie opisane w README. Autorskie testy TCP wymagają lokalnego IPv4 loopback; `content:fuzz -- --fetch` wymaga także przypiętego nightly, cargo-fuzz i kompilatora C++.
 
-## Pozostały zakres całego kursu
+## Granice dowodu i pozostały zakres
 
-Cel zaawansowanego kursu pozostaje otwarty. Do dostarczenia pozostają m.in. zaawansowane Cargo i publikowanie, variance/HRTB, property/fuzz, profilowanie, unsafe/FFI, utrzymanie systemów, pełne Number Guessing+, Mini grep i capstone. Audyt zachowuje luki produktu dotyczące pełnej historii migracji i pochodzenia wersji materiału. Pilotaż z uczącymi się oraz ręczna ocena czytnikiem ekranu również pozostają do wykonania.
+Kontrole Frame Protocol są konkretnym dowodem jego workspace, features, aktualnych klientów i Rust 1.85.0, lecz nie pełnym dowodem SemVer ani identycznych binariów na wszystkich platformach. Mini grep ma ograniczony test własności i skończoną kampanię fuzz; nie zastępują one pełnego curriculum property/fuzz, benchmarków, profilowania ani większej polityki I/O i ścieżek.
+
+Cel zaawansowanego kursu pozostaje otwarty. Do dostarczenia pozostają m.in. zaawansowane Cargo i publikowanie, variance/HRTB, pełne property/fuzz, profilowanie, unsafe/FFI, utrzymanie systemów, pełne Number Guessing+ oraz capstone. Audyt zachowuje luki produktu dotyczące trwałej historii migracji i pochodzenia wersji materiału. Pilotaż z osobą zaczynającą Rust oraz ręczna ocena czytnikiem ekranu również pozostają do wykonania.

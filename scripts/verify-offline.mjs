@@ -73,6 +73,7 @@ import { readFile } from "node:fs/promises";
       /Laboratorium: pipeline Tokio/,
       /Laboratorium: serwis TCP/,
       /Laboratorium: publiczne API i workspace/,
+      /Projekt: ograniczony Mini grep/,
     ]) {
       await context.setOffline(false);
       await page
@@ -249,6 +250,7 @@ import { readFile } from "node:fs/promises";
       "Tokio: praca blokująca",
       "Tokio: sieć i serwis",
       "Publiczne API i workspace Cargo",
+      "Mini grep: wyszukaj, ogranicz, wyjaśnij wynik",
     ]) {
       await page
         .getByRole("button", { name: "Mapa nauki", exact: true })

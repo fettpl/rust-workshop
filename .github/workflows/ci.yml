@@ -1,16 +1,39 @@
 name: Verify learning product
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Every run needs only the repository checkout; all unspecified token scopes are none.
+permissions:
+  contents: read
+
+# Replace obsolete PR and feature-branch validations while preserving running main jobs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # v6.1.0
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22
           cache: npm
-      - uses: dtolnay/rust-toolchain@stable
+      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
         with:
+          toolchain: stable
           components: rustfmt, clippy
       - run: npm ci
       - run: npm run lint
@@ -24,23 +47,92 @@ jobs:
       - run: npm run content:workspace
       - run: npm run content:audit
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
-      - uses: actions/upload-artifact@v4
+      - run: npx --no-install playwright install --with-deps chromium
+      - name: Test the production build and offline experience
+        shell: bash
+        run: |
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3002 > next-server.log 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          for _ in {1..60}; do
+            if ! kill -0 "$server_pid" 2>/dev/null; then
+              cat next-server.log
+              exit 1
+            fi
+            if curl --connect-timeout 1 --max-time 2 --fail --silent --show-error http://127.0.0.1:3002 >/dev/null; then
+              npx playwright test --config .github/playwright.production.config.ts --retries=0
+              npm run test:offline
+              exit 0
+            fi
+            sleep 1
+          done
+
+          cat next-server.log
+          exit 1
+      # v7.0.1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: failure()
         with:
-          name: playwright-report
-          path: playwright-report/
+          name: production-e2e-diagnostics
+          path: |
+            next-server.log
+            playwright-report/
+            test-results/playwright/
+          if-no-files-found: warn
+          retention-days: 7
+
   workspace-msrv:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # v6.1.0
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22
           cache: npm
-      - uses: dtolnay/rust-toolchain@1.85.0
+      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
         with:
+          toolchain: 1.85.0
           components: rustfmt, clippy
       - run: npm ci
       - run: npm run content:workspace -- --msrv
+
+  mini-grep-fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # v6.1.0
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: nightly-2026-08-08
+          components: rustfmt
+      - run: cargo install cargo-fuzz --version 0.13.2 --locked
+      - run: npm ci
+      - run: npm run content:fuzz -- --fetch
+      # v7.0.1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: mini-grep-fuzz-evidence
+          path: test-results/mini-grep-fuzz/
+          if-no-files-found: warn
+          retention-days: 7

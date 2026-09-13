@@ -128,6 +128,10 @@ test("sends a Tokio gate through the existing code-only runner contract", async 
   ).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  // The compact mobile header hides this status, but its text tracks the save.
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
   await page.reload();
   await expect(
     page.getByRole("textbox", { name: "Kod Rust", exact: true }),

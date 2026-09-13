@@ -24,7 +24,9 @@
     "content:models": "node --import tsx scripts/verify-models.ts",
     "content:tokio": "node --import tsx scripts/verify-tokio.ts",
     "precontent:workspace": "npm run content:packages",
-    "content:workspace": "node --import tsx scripts/verify-workspace.ts"
+    "content:workspace": "node --import tsx scripts/verify-workspace.ts",
+    "precontent:fuzz": "npm run content:packages",
+    "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
