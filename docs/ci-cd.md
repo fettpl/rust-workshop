@@ -62,6 +62,12 @@ i zostać odrzucone przez konkretny test zachowania; timeout, błąd kompilacji 
 uruchomienie zera testów nie zaliczają kontroli. Po każdej mutacji przywrócona
 referencja musi ponownie przejść ten test.
 
+Dla nieukończonych starterów Cargo używa `--no-fail-fast`: błąd testu procesu
+nie może pominąć bezpośrednich testów kontraktu, które potwierdzają oczekiwane
+`todo!`. Weryfikator nadal wymaga niezerowego wyniku, nieudanego zestawu testów
+i komunikatu o niezaimplementowanym zachowaniu. Pełne referencje muszą przejść
+wszystkie testy bez tego wyjątku.
+
 ## Scalenie i ograniczenia platformy
 
 Przed scaleniem należy potwierdzić sukces wszystkich trzech jobów dla aktualnego

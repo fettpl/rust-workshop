@@ -77,3 +77,5 @@ Previous goal turn made progress: committed/pushed Mini grep + CI, merged PR #2,
 - Luna high reviews covered core, IO, package, integration/CI and learner-facing contracts; root fixed reported gaps.
 - Root additionally reproduced/fixed OutputReader cleanup with a full channel, removed an unknown MSRV lint and preserved old project step ordering. The Cargo integration test received its own bounded 120-second timeout after a valid compilation run exceeded the unit default 5 seconds; the Todo E2E now selects its project explicitly.
 - Broader course goal remains open. Hosting is still unspecified; no deployment or repository visibility change.
+
+Release check: commit 8d9536e and PR #7 created. CI run 34748982169 passed MSRV and fuzz but failed starter TODO detection because Cargo stopped after early CLI test failures. Both starter verifiers now require all suites with --no-fail-fast, preserving the explicit unfinished-behavior assertion; the corrected head must pass the full CI before merge.

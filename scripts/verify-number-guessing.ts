@@ -106,7 +106,15 @@ try {
     if (args.includes("--fetch")) command(["fetch", "--locked"]);
     command(["fmt", "--all", "--", "--check"]);
     command(["check", "--all-targets", "--offline", "--locked"]);
-    command(["test", "--offline", "--locked"], variant === "starter");
+    command(
+      [
+        "test",
+        ...(variant === "starter" ? ["--no-fail-fast"] : []),
+        "--offline",
+        "--locked",
+      ],
+      variant === "starter",
+    );
     if (variant === "solution")
       command([
         "clippy",
