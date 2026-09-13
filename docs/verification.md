@@ -1,52 +1,53 @@
-# Weryfikacja etapu: Tokio I/O, strumienie i praca blokująca
+# Weryfikacja etapu: TCP i serwis Tokio
 
-Data: 13 września 2026. Kurs ma 102 lekcje w 28 modułach, 105 pojęć, 7 śladów pamięci, 193 wpisy źródłowe i 5 projektów. Etap dodaje siedem lekcji, 14 bramek, siedem zadań od pustej kartki i siedem osobnych kodowych powtórek. Środowisko: macOS, Node.js 26.7.0, Next.js 16.3.5, Rust 1.98.1 stable, edition 2024, Tokio 1.53.1, tokio-stream 0.1.19 i Chromium z Playwright.
+Data: 13 września 2026. Etap przeszedł przegląd i końcową weryfikację lokalną. Katalog obejmuje 106 lekcji w 29 modułach, 109 pojęć, 205 wpisów źródłowych, 61 zadań od pustej kartki, 7 śladów pamięci i 6 projektów; pięć projektów ma pakiet Cargo. Ten etap dodaje cztery lekcje, osiem bramek (w tym cztery blank-page), cztery kodowe powtórki i laboratorium serwisu TCP.
 
 ## Wykonane kontrole
 
 | Sprawdzenie | Wynik |
 | --- | --- |
-| ESLint i TypeScript strict | Bez błędów; produkcyjny build również sprawdził typy |
-| Vitest | 148/148 testów w 27 plikach. Po ostatnim doprecyzowaniu testu Rust ponownie przeszło 35/35 kontroli integracji, walidacji i limitów runnera |
-| Curriculum | 102 lekcje, 105 pojęć i 7 śladów: poprawne relacje, źródła, cele oraz niezależne warianty bramek |
-| rustc | 1207/1207 przypadków standardowej biblioteki |
-| Cargo/Tokio | 204/204 przypadki: przykłady, diagnostyka, startery, rozwiązania, blank-page i powtórki; końcowy przebieg obejmuje poprawiony test drugiej ramki |
-| Profil Tokio | Cztery testy preflight: runtime, timeout, rzeczywiste częściowe duplex I/O oraz ReceiverStream z wcześniejszym Permit |
-| Pakiety Cargo | Wszystkie cztery startery i rozwiązania: fmt, check offline/locked, oczekiwane porażki niedokończonych starterów, testy rozwiązań i Clippy z -D warnings |
-| Loom | 5 standardowych testów/doctest, 2 modele, Clippy; 2 celowe kontrprzykłady i osłabiona biblioteka wykryte przez właściwe asercje |
-| Playwright | 38/38 scenariuszy. Wcześniejszy przebieg miał 37/38 z powodu równoczesnej zmiany treści: HMR wysłał nowe testy, a proces E2E porównywał starszą kopię. Po zamknięciu edycji cały zestaw przeszedł |
-| Mobile | 390 px: nowe bramki, wznowienie diagnostyki i szkicu oraz świeże zadanie po reveal; brak naruszeń axe, przepełnienia poziomego i błędów strony |
-| Źródła HTTP | 193/193 z HTTP 200; brak uszkodzonych odwołań, lekcji bez bramki i pojęć bez kodowej powtórki |
-| Build | Produkcyjny Webpack build przeszedł; suma SHA treści przed i po buildzie jest zgodna |
-| Ręczny podgląd | Mapa pokazuje 28 modułów; kryterium I/O otwiera właściwe ćwiczenie. Sprawdzono czytelność edytora i wznowienie po reload. Tab wybiera „Przejdź do treści”, Enter ustawia fokus na main-content; konsola bez warn/error |
-| Offline | Cache v16: szkice, wskazówki, notatki i ślad Weak odtwarzają się bez sieci. Nowe, wcześniej nieodwiedzane bramki I/O i pracy blokującej działają offline. Wszystkie cztery startery ZIP zachowują identyczne bajty po reload. Brak błędów strony |
+| Integracja modułu i reveal projektu | 22/22 testy; ujawnienie pakietu oznacza cztery główne zadania jako pomoc, pozostawiając cztery niezależne blank-page |
+| Vitest | 150/150 testów w 28 plikach |
+| TypeScript i ESLint | Oba przebiegi bez błędów; końcowy build również sprawdził typy |
+| Curriculum | Poprawne relacje 106 lekcji, 109 pojęć i 7 śladów |
+| Źródła HTTP | 205/205 HTTP 200, brak uszkodzonych referencji, lekcji bez bramki i pojęć bez aktywnej powtórki |
+| Profil Tokio | Pięć testów preflight offline/locked, w tym prawdziwe IPv4 loopback connect/accept, half-close i odpowiedź |
+| rustc | 1207/1207 autorskich przypadków biblioteki standardowej; exit 0 |
+| Cargo/Tokio | 252/252 autorskie przypadki; po doprecyzowaniu testów kolejności admission i granicy rozmiaru niezależny przegląd ponownie sprawdził sześć rozwiązań lifecycle oraz cztery kompilujące się mutanty, odrzucone przez asercje. Dwa rozwiązania half-close po ostatnim rozszerzeniu granic: po 3/3 testy; dwa mutanty >= odrzucone asercjami |
+| Playwright: lekcje I/O, blocking i TCP | 3/3 scenariusze wznowienia diagnostyki/szkicu i świeżego blank-page; 390 px, bez naruszeń axe, przepełnienia i pageerror |
+| Pakiety Cargo | Wszystkie pięć: starter fmt/check i oczekiwana porażka testów na todo!; referencje fmt/check/test/Clippy bez błędów. Serwis: 2 testy jednostkowe i 15 kontraktowych; 3 celowo błędne przykłady ignorowane w zwykłym przebiegu |
+| Pełne E2E | 40/40; po ostatniej zmianie samego testu w paczce Cargo ponownie przeszedł scenariusz zgodności bajtów ZIP, reveal i świeżego blank-page po reload |
+| Build produkcyjny | Sukces; skróty czterech plików treści przed i po buildzie identyczne |
+| Offline v17 | Zapis szkicu, notatek, kroku i podpowiedzi po reload; nowe zadanie sieciowe dostępne bez wcześniejszego otwarcia; wszystkie pięć pobieranych paczek startowych zachowuje identyczne bajty; brak pageerror |
+| Ręczna kontrola przeglądarki | Mapa 29 modułów, wyszukiwanie i projekt TCP czytelne; Tab wybiera skip link, Enter przenosi focus do main-content; brak ostrzeżeń i błędów konsoli w kontrolowanym przebiegu |
 
-Weryfikacja uruchamiała wyłącznie przejrzany kod repozytorium i celowo napisane kontrpróby. Szkice ucznia oraz importy nie były wykonywane lokalnie. E2E korzysta z kontrolowanych odpowiedzi `/api/run`; nowych przykładów nie wysyłano do publicznego Playgrounda.
+Weryfikacja wykonuje tylko przejrzany kod repozytorium i celowo przygotowane kontrpróby. Nie wykonuje lokalnie szkiców ani importów ucznia. E2E kontroluje odpowiedzi `/api/run`; nowych przykładów nie wysłano do publicznego Playgrounda.
 
-## Co sprawdził i poprawił niezależny przegląd
+## Przegląd kontraktów
 
-- Częściowy zapis jest obserwowany na rzeczywistym duplex o pojemności mniejszej niż wiadomość. Testy wymagają wszystkich bajtów, a osobny writer sprawdza `flush`: również po niepustym zapisie, po Pending i przy błędzie. Powtórki wymagają pełnego zapisu i poprawnego końca strumienia.
-- Format u16 big-endian odróżnia czysty EOF od uciętego nagłówka lub treści. Testowane są ramka pusta, kolejna niepusta, wielobajtowa długość, dokładnie 65535 bajtów i odrzucenie 65536. Walidacja poprzedza alokację treści lub jakikolwiek zapis ramki.
-- FrameState zachowuje częściowy nagłówek i treść po anulowaniu. Po zakończeniu test dekoduje drugą ramkę o innej długości. Jawny EOF powoduje, że mutant zachowujący wyłącznie starą oczekiwaną długość kończy się asercją z UnexpectedEof, a nie watchdogiem.
-- PendingWrite zachowuje offset i własność danych; wznowienie nie powiela prefiksu. `is_complete` opisuje przyjęcie bajtów, nie udany flush. Testy osobno sprawdzają Pending podczas flush, błędy i WriteZero. Kolektor z limitem 0 rozróżnia EOF od jednego nadmiarowego bajtu; błąd limitu po tej próbie jest terminalny.
-- Streamy obsługują Pending, dane bez Copy i przypięte typy bez Unpin. Limit nie odpytuje dodatkowego elementu. Świeża powtórka również używa opóźnionego !Unpin streamu; testy odrzucają Pending potraktowane jak Closed oraz zbędny bound Unpin.
-- ReceiverStream jest zamykany przed drain, przy zachowaniu danych z bufora i wcześniej przyznanego Permit. Powtórka bezpośrednio odpytuje Future przed i po zatrzymaniu; obejmuje zarówno wysłanie stopu, jak i porzucenie jego nadawcy. Żaden z tych przypadków nie używa timeoutu jako dowodu poprawności.
-- Praca blocking działa na rzeczywistej puli wątków, zachowuje wynik i JoinError. Lokalny odbiorca async może używać Rc oraz pożyczonych danych. Stop następuje przed join, a permit pozostaje w closure do rzeczywistego końca, także po panice lub abort uchwytu. Tekstowa osłona zakazanego abort obejmuje także zapis `::abort`; nie jest analizą AST ani zabezpieczeniem egzaminacyjnym.
-- Testy granicy procesu utrzymują 60 sekund dla kompilacji i 8 sekund dla wykonania. Timeout, sygnał lub częściowy raport testów nie zalicza odrzucenia startera. Wszystkie rozwiązania z ukrytymi testami mieszczą się w rzeczywistych limitach żądań runnera.
+Niezależne przeglądy lekcji TCP, lifecycle, integracji i projektu serwisu zakończyły się bez pozostałych materialnych uwag. Naprawiono starter, który przypadkiem przechodził dla małego zapisu TCP; brak limitu odpowiedzi; zakończenie join po pierwszej panice; manager czekający na następną pracę zamiast wysyłać gotową odpowiedź; niepełne sprawdzenie sukcesu i błędów flush oraz zbyt duże wartości konfiguracji. Odpowiedź ma jawny tag sukcesu lub klasy błędu, a raport nie przypisuje wewnętrznego błędu managera do JoinError.
 
-Kontrpróby obejmowały m.in. pominięcie flush, sprawdzania u16, resetu stanu i próby limitu; stare pole oczekiwanej długości; utratę Pending; zbędne Unpin; zignorowanie porzuconego nadawcy stop; użycie zwykłego spawn, permit poza closure i join przed stop. Błędy zachowania wykrywały asercje po kompilacji, a kontrakt !Unpin prawidłowo odrzucał kompilator. Timeout nie był dowodem odrzucenia wadliwego wariantu.
+Recenzent sprawdził rzeczywiste mutacje referencji: powiększenie kolejki o jeden, zwiększenie admission o jeden i odnawianie deadline podczas kolejnych odczytów. Każda kompiluje się i przegrywa na odpowiedniej asercji. Są to dodatkowe dowody poza trzema edukacyjnymi kontrprzykładami w pakiecie.
 
-## Źródła i granica środowiska
+Test łączący prawdziwe TCP z zatrzymanym zegarem Tokio sporadycznie zatrzymywał równoległy przebieg. Poprawka kończy sieciowe i kolejkowe uzgodnienia przed zatrzymaniem czasu, a wznawia zegar przed zwolnieniem closure oraz join. Końcowy domyślny równoległy przebieg Cargo przeszedł. Nie izolowano tego testu w osobnym pliku ani nie zwiększono limitu czasu w celu ukrycia problemu.
 
-Profil autora przypina Tokio =1.53.1 z macros/rt/sync/time/test-util/io-util oraz tokio-stream =0.1.19 bez domyślnych features i ze stałym Cargo.lock. ReceiverStream nie wymaga opcjonalnego feature sync z tokio-stream. Odczyt dokumentacji i wygenerowanego manifestu kompilatora Playgrounda potwierdził dostępność potrzebnych API upstream; nie potwierdza identycznego buildu obecnie wdrożonej usługi. Nie wykonano zewnętrznego POST. Kontrakt RunRequest pozostaje code/mode/tests.
+E2E pierwotnie zakładał, że po reload pozostaje wybrany projekt i wariant rozwiązania. Test teraz ponownie wybiera projekt i bez ponownego reveal sprawdza zachowaną ekspozycję oraz świeży blank-page. Jeden przebieg narzędzia miał około 900 sekund przerwy w obsłudze kliknięcia i przekroczył limit; przyczyna tej przerwy pozostaje nieustalona. Następny scenariusz i pełny zestaw przeszły bez zmiany timeoutu.
 
-Ćwiczenia używają duplex i kanałów. Nie są jeszcze testem TCP ani pełnego serwisu sieciowego.
+Testy muszą odrzucać wadliwe zachowanie przez obserwowalne asercje, a nie przez watchdog. Testy z blokującą closure muszą zwalniać jej kanał przed asercjami i dołączać rozpoczętą pracę.
 
-## CI i zapis pracy
+Znana granica evaluatora: testy odczytu ramki weryfikują wynik oraz nieprzeczytane body, ale nie mierzą wszystkich alokacji. Mutant przenoszący alokację Vec przed kontrolę limitu przechodzi testy; referencja sprawdza limit przed alokacją i została odczytana w przeglądzie. Protokół u16 ogranicza tę lukę do 65535 bajtów. Testy nie są pełnym dowodem dowolnej implementacji ucznia.
 
-[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w commit 64667e4. [CI poprzedniego etapu e625057](https://github.com/fettpl/rustcrushcourse/actions/runs/34720429657) ujawniło konkretną przyczynę dodatkowej porażki runner/assertion-shadowing: `spawnSync rustc ETIMEDOUT` podczas pierwszej kompilacji pod dawnym wspólnym limitem 8 sekund. Ten etap rozdziela budżet kompilacji (60 sekund, jak w weryfikatorze Cargo) i wykonania (nadal 8 sekund), z testami regresji granicy procesu. Nie zmienia limitu runnera aplikacji.
+Test admission sprawdza również obserwowany szczyt aktywnych handlerów. Próbkowanie stanu po oddaniu sterowania executorowi nie jest wyczerpującym dowodem dla każdego możliwego harmonogramu; kolejność nabycia permitu i accept została dodatkowo przejrzana w kodzie.
 
-Wcześniejsze [CI commitu diagnostycznego 32a0dc6](https://github.com/fettpl/rustcrushcourse/actions/runs/34719780947) przeszło wszystkie kroki. Przyczyna dwóch starszych awarii c57b3b1, których log nie zawierał szczegółów, pozostaje niepotwierdzona. Wyniki lokalne powyżej nie zastępują statusu CI nowego commitu na GitHub.
+## Środowisko i granica wykonania
+
+Profil autora przypina Tokio =1.53.1 z macros/rt/sync/time/test-util/io-util/net oraz tokio-stream =0.1.19, ze stałym Cargo.lock. Test sieciowy utrzymuje listener na `127.0.0.1:0`; nie używa publicznego hosta, DNS, stałego portu ani probe wolnego portu.
+
+Odczyt oficjalnego manifestu Playgrounda potwierdził upstream Tokio 1.53.1 z net. Kod koordynatora uruchamia kontener z `--net none`; dokumentacja Docker opisuje w tym trybie interfejs IPv4 loopback. Jest to zgodność z polityką źródłową, nie wynik wykonania na obecnie wdrożonym Playgroundzie. Nie wykonano zewnętrznego POST. RunRequest nadal przyjmuje wyłącznie code/mode/tests.
+
+## Repozytorium i CI
+
+[PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest już scalony w commit 64667e4. Poprzedni milestone 9154cc3 został wypchnięty na feat/tokio-io-streams, a jego [CI 34721907263](https://github.com/fettpl/rustcrushcourse/actions/runs/34721907263) zakończyło się sukcesem. Bieżący etap jest przeznaczony do commita i push na feat/tokio-network-service. Ten raport dokumentuje lokalną weryfikację; wynik CI należy sprawdzić dla konkretnego wypchniętego commita.
 
 ## Odtworzenie
 
@@ -64,8 +65,8 @@ npm run build
 npm run test:e2e -- --workers=4
 ```
 
-Przy produkcyjnym serwerze na 3002: `npm run test:offline`. Pierwsze `--fetch` pobiera stały lockfile; właściwe kompilacje i testy Cargo działają offline/locked.
+Przy produkcyjnym serwerze na 3002: `npm run test:offline`. Pierwsze `--fetch` pobiera stały lockfile; właściwe kompilacje i testy Cargo działają offline/locked. Środowisko lokalne musi pozwalać na IPv4 loopback dla autorskich testów TCP.
 
-## Dalszy zakres
+## Pozostały zakres
 
-Sieć Tokio oraz połączenie I/O, blokującego kodu i pipeline w pełnym cyklu życia serwisu pozostają następnym etapem. Nadal brakuje m.in. zaawansowanych Cargo/API, variance/HRTB, property/fuzz, profilowania, unsafe/FFI, utrzymania oraz pełnych Number Guessing+, Mini grep i capstone. Audyt zachowuje również luki produktu, m.in. pełną historię migracji i pochodzenia wersji materiału. Nie przeprowadzono pilotażu z uczącymi się ani ręcznego testu czytnikiem ekranu. Kontrole techniczne nie dowodzą skuteczności dydaktycznej ani gotowości zawodowej.
+Laboratorium nie obejmuje TLS, uwierzytelniania, wdrożenia i operacyjnej telemetrii. Nadal brakuje m.in. zaawansowanych Cargo/API, variance/HRTB, property/fuzz, profilowania, unsafe/FFI, utrzymania oraz pełnych Number Guessing+, Mini grep i capstone. Audyt zachowuje również luki produktu: pełną historię migracji i pochodzenia wersji materiału. Pilotaż z uczącymi się oraz ręczny test czytnikiem ekranu pozostają do wykonania.

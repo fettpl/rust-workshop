@@ -1,3 +1,19 @@
+import { tokioNetworkModule } from "./tokio-network-module";
+import {
+  tokioTcpLessons,
+  tokioTcpConcepts,
+  tokioTcpCompetencies,
+  tokioTcpSources,
+  tokioTcpReviewExercises,
+} from "./tokio-tcp";
+import {
+  tokioNetworkLifecycleLessons,
+  tokioNetworkLifecycleConcepts,
+  tokioNetworkLifecycleCompetencies,
+  tokioNetworkLifecycleSources,
+  tokioNetworkLifecycleReviewExercises,
+} from "./tokio-network-lifecycle";
+import { tokioServiceProject } from "./projects/tokio-service";
 import { tokioIoModule, tokioBlockingModule } from "./tokio-io-modules";
 import {
   tokioIoLessons,
@@ -276,6 +292,7 @@ export const modules = [
   tokioFlowModule,
   tokioIoModule,
   tokioBlockingModule,
+  tokioNetworkModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -313,6 +330,8 @@ export const lessons = [
   ...tokioIoLessons,
   ...tokioStreamLessons,
   ...tokioBlockingLessons,
+  ...tokioTcpLessons,
+  ...tokioNetworkLifecycleLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -346,6 +365,8 @@ export const concepts = [
   ...tokioIoConcepts,
   ...tokioStreamConcepts,
   ...tokioBlockingConcepts,
+  ...tokioTcpConcepts,
+  ...tokioNetworkLifecycleConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -379,6 +400,8 @@ export const competencies = [
   ...tokioIoCompetencies,
   ...tokioStreamCompetencies,
   ...tokioBlockingCompetencies,
+  ...tokioTcpCompetencies,
+  ...tokioNetworkLifecycleCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -412,6 +435,8 @@ export const sources = [
   ...tokioIoSources,
   ...tokioStreamSources,
   ...tokioBlockingSources,
+  ...tokioTcpSources,
+  ...tokioNetworkLifecycleSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -445,6 +470,8 @@ export const reviewExercises = {
   ...tokioIoReviewExercises,
   ...tokioStreamReviewExercises,
   ...tokioBlockingReviewExercises,
+  ...tokioTcpReviewExercises,
+  ...tokioNetworkLifecycleReviewExercises,
 };
 export const { project } = ownership;
 export const traces: typeof ownership.traces = {
@@ -488,6 +515,7 @@ export const projects = [
   { ...logAnalyzerProject, package: logAnalyzerPackage },
   concurrencyLabProject,
   tokioPipelineProject,
+  tokioServiceProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -550,7 +578,7 @@ export const roadmap = [
   },
   {
     title: "Serwis sieciowy Tokio i integracja większego systemu",
-    status: "planned",
+    status: "available",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },
   { title: "Unsafe, FFI, Miri i testowanie współbieżności", status: "planned" },

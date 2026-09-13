@@ -50,4 +50,37 @@ mod tests {
         assert_eq!(stream.next().await.as_deref(), Some("reserved"));
         assert_eq!(stream.next().await, None);
     }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn pinned_tcp_half_close_preserves_the_response_direction() {
+        use std::net::Ipv4Addr;
+        use tokio::io::{AsyncReadExt, AsyncWriteExt};
+        use tokio::net::{TcpListener, TcpStream};
+
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).await.unwrap();
+        let address = listener.local_addr().unwrap();
+        let client = async {
+            let mut stream = TcpStream::connect(address).await.unwrap();
+            let local = stream.local_addr().unwrap();
+            assert_eq!(stream.peer_addr().unwrap(), address);
+            stream.write_all(b"request").await.unwrap();
+            stream.shutdown().await.unwrap();
+            let mut reply = Vec::new();
+            stream.read_to_end(&mut reply).await.unwrap();
+            assert_eq!(reply, b"response");
+            local
+        };
+        let server = async {
+            let (mut stream, peer) = listener.accept().await.unwrap();
+            assert!(peer.ip().is_loopback());
+            let mut request = Vec::new();
+            stream.read_to_end(&mut request).await.unwrap();
+            assert_eq!(request, b"request");
+            stream.write_all(b"response").await.unwrap();
+            stream.shutdown().await.unwrap();
+            peer
+        };
+        let (local, peer) = tokio::join!(client, server);
+        assert_eq!(local, peer);
+    }
 }

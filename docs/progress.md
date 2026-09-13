@@ -1,6 +1,6 @@
 # Rust Workshop — stan implementacji
 
-Dostępne są 102 lekcje w 28 modułach, 105 pojęć, 7 śladów pamięci, 193 wpisy źródłowe i 5 projektów. Kurs jest przeznaczony dla osoby znającej podstawy programowania, która zaczyna Rust od zera. Pełny zakres zaawansowanej praktyki mid/senior pozostaje w realizacji.
+Dostępne są 106 lekcji w 29 modułach, 109 pojęć, 7 śladów pamięci, 205 wpisów źródłowych i 6 projektów. Kurs jest przeznaczony dla osoby znającej podstawy programowania, która zaczyna Rust od zera. Pełny zakres zaawansowanej praktyki mid/senior pozostaje w realizacji.
 
 Cały dostępny zakres współbieżności obejmuje 15 lekcji w pięciu modułach: wątki i scope, kanały, współdzielony stan przez Arc/Mutex, atomiki oraz porządkowanie pamięci z laboratorium Loom. Ćwiczenia dotyczą kończenia pracy także po błędzie, granicy własności, Send/Sync, przepływu wiadomości, backpressure, poison, RMW/CAS, publikacji Release/Acquire i zakresu dowodu z małego modelu. Mapa kursu wyszukuje nazwy i tematy lekcji bez polskich znaków; filtr nie zmienia wybranego modułu ani miejsca nauki.
 
@@ -14,6 +14,8 @@ Poprzedni etap zintegrował pięć lekcji `tokio-flow-control`: bounded kanały,
 
 Siedem kolejnych lekcji w `tokio-io-streams` i `tokio-blocking-work` dodaje częściowe I/O, ramki z limitem, postęp zachowany po anulowaniu, przypięte Stream, zamknięcie ReceiverStream oraz spawn_blocking z kontrolą życia pracy i permitu. Mają 14 niezależnych bramek, siedem zadań od pustej kartki i siedem osobnych kodowych powtórek. Profil autorski rozszerza Tokio 1.53.1 o io-util i przypina tokio-stream 0.1.19 bez opcjonalnych features. Duplex i kanały służą testowaniu kontraktów I/O; nie zastępują testu sieci TCP.
 
+Etap `tokio-network-service` dodaje cztery lekcje TCP: własność połączenia, kierunkowe zamknięcie zapisu, absolutny deadline ramki i limit admission. Osiem niezależnych bramek obejmuje cztery zadania od pustej kartki; każde pojęcie ma świeżą powtórkę kodową. `tokio-service-workshop` jest piątym pobieranym pakietem Cargo i szóstym projektem. Łączy rzeczywiste IPv4 loopback TCP, ograniczoną kolejkę i pracę blocking z jawnym rozliczeniem zamknięcia. Profil autora dodaje `net` do przypiętego Tokio 1.53.1. Wyniki końcowych kontroli tego etapu są zapisywane w [raporcie weryfikacji](verification.md).
+
 Projekty obejmują również `tokio-pipeline-workshop`: 7 plików i obecnie 10 testów Rust (1 prywatny test managera, 9 integracyjnych). Łączy bounded queue, limit aktywnych zadań, deadline i raport zamknięcia; pozostaje laboratorium dydaktycznym, nie wdrożonym serwisem.
 
 Wcześniejsze moduły obejmują fundamenty, własność i pożyczanie, modelowanie, kolekcje, błędy, Todo CLI, moduły/Cargo, format i IO, generics, traity, lifetimes, closures i iteratory. Todo ma 11-plikowy pakiet Cargo z biblioteką, programem terminalowym, zapisem pliku i testami procesu. Mini-projekt Number Guessing ćwiczy komunikat wyniku; pełna gra nadal jest w planie. Poprzedni etap dodał pętle, Box/Deref/Drop, Rc/RefCell/Weak i ślad życia wartości oraz alokacji.
@@ -22,6 +24,6 @@ Mechaniki aplikacji obejmują onboarding, diagnostykę, Monaco i prosty edytor, 
 
 [Raport weryfikacji](verification.md) zawiera wyniki kontroli technicznych i ich ograniczenia. [Audyt wymagań](requirements-audit.md) porównuje stan z pierwotnym briefem, a [mapa zaawansowanego curriculum](advanced-curriculum.md) zachowuje docelowy zakres.
 
-Następne prace obejmują sieć Tokio i integrację warstw I/O z pipeline, zaawansowane protokoły współbieżności, Cargo i publiczne API, variance/HRTB, property/fuzz, benchmarki, unsafe/FFI oraz utrzymanie systemów. Podstawy pętli, smart pointers, współbieżności, atomików i małego modelowania Loom są dostępne; pełny memory model, zaawansowane gwarancje postępu oraz pomiary pozostają rozszerzeniem. Pełne Number Guessing+, Mini grep i capstone pozostają do zbudowania. Kolejne duże etapy wymagają przeglądu i odpowiednich testów przed commitem.
+Następne prace obejmują produkcyjne rozszerzenia serwisu Tokio, zaawansowane protokoły współbieżności, Cargo i publiczne API, variance/HRTB, property/fuzz, benchmarki, unsafe/FFI oraz utrzymanie systemów. Podstawy pętli, smart pointers, współbieżności, atomików i małego modelowania Loom są dostępne; pełny memory model, zaawansowane gwarancje postępu oraz pomiary pozostają rozszerzeniem. Pełne Number Guessing+, Mini grep i capstone pozostają do zbudowania. Kolejne duże etapy wymagają przeglądu i odpowiednich testów przed commitem.
 
 Nie przeprowadzono pilotażu z uczącymi się. Dostępność treści i zielone testy nie potwierdzają samodzielnego transferu po przerwie ani gotowości zawodowej. Cel całego kursu pozostaje otwarty.

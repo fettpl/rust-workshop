@@ -2,7 +2,11 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
 
-for (const moduleId of ["tokio-io-streams", "tokio-blocking-work"]) {
+for (const moduleId of [
+  "tokio-io-streams",
+  "tokio-blocking-work",
+  "tokio-network-service",
+]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,
   }) => {

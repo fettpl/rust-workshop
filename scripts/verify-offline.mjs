@@ -71,6 +71,7 @@ import { readFile } from "node:fs/promises";
       /Log Analyzer/,
       /Laboratorium: protokoły atomowe/,
       /Laboratorium: pipeline Tokio/,
+      /Laboratorium: serwis TCP/,
     ]) {
       await context.setOffline(false);
       await page
@@ -242,7 +243,11 @@ import { readFile } from "node:fs/promises";
     console.log(
       "Previously unvisited Tokio flow gate, draft and hint resume offline",
     );
-    for (const title of ["Tokio: I/O i strumienie", "Tokio: praca blokująca"]) {
+    for (const title of [
+      "Tokio: I/O i strumienie",
+      "Tokio: praca blokująca",
+      "Tokio: sieć i serwis",
+    ]) {
       await page
         .getByRole("button", { name: "Mapa nauki", exact: true })
         .click();
