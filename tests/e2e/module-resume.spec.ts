@@ -8,6 +8,7 @@ for (const moduleId of [
   "tokio-network-service",
   "public-api-workspaces",
   "mini-grep",
+  "number-guessing-plus",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,

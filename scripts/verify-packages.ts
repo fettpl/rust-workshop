@@ -71,7 +71,13 @@ try {
       ]);
       command(
         packageRoot,
-        ["test", "--workspace", "--offline", "--locked"],
+        [
+          "test",
+          ...(variant === "starter" ? ["--no-fail-fast"] : []),
+          "--workspace",
+          "--offline",
+          "--locked",
+        ],
         variant === "starter",
       );
       if (variant === "solution")

@@ -7,6 +7,7 @@ for (const [projectId, moduleId] of [
   ["tokio-service", "tokio-network-service"],
   ["frame-protocol", "public-api-workspaces"],
   ["mini-grep", "mini-grep"],
+  ["number-guessing-result-message", "number-guessing-plus"],
 ]) {
   test(`${projectId}: downloads exact package files and preserves fresh gates after reveal`, async ({
     page,
@@ -25,7 +26,7 @@ for (const [projectId, moduleId] of [
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
     await page
       .getByRole("navigation", { name: "Wybierz projekt" })
-      .getByRole("button", { name: new RegExp(project.title) })
+      .getByRole("button", { name: project.title })
       .click();
     const panel = page.getByRole("region", { name: "Pakiet Cargo" });
     const downloading = page.waitForEvent("download");
@@ -51,7 +52,7 @@ for (const [projectId, moduleId] of [
     await page.reload();
     await page
       .getByRole("navigation", { name: "Wybierz projekt" })
-      .getByRole("button", { name: new RegExp(project.title) })
+      .getByRole("button", { name: project.title })
       .click();
     // Project selection and package variant are view state. The saved exposure
     // must still direct the module criterion to its fresh alternative below.
