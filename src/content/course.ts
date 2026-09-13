@@ -1,3 +1,18 @@
+import { borrowedCallbacksModule } from "./borrowed-callbacks-module";
+import {
+  borrowedVarianceLessons,
+  borrowedVarianceConcepts,
+  borrowedVarianceCompetencies,
+  borrowedVarianceSources,
+  borrowedVarianceReviewExercises,
+} from "./borrowed-variance";
+import {
+  borrowedHrtbLessons,
+  borrowedHrtbConcepts,
+  borrowedHrtbCompetencies,
+  borrowedHrtbSources,
+  borrowedHrtbReviewExercises,
+} from "./borrowed-hrtb";
 import { guessingModule } from "./guessing-module";
 import {
   guessingCoreLessons,
@@ -325,6 +340,7 @@ export const modules = [
   traitsModule,
   lifetimesModule,
   closuresModule,
+  borrowedCallbacksModule,
   iteratorsModule,
   testingModule,
   guessingModule,
@@ -363,6 +379,8 @@ export const lessons = [
   ...traitsLessons,
   ...lifetimesLessons,
   ...closuresLessons,
+  ...borrowedVarianceLessons,
+  ...borrowedHrtbLessons,
   ...iteratorsLessons,
   ...testingLessons,
   ...guessingCoreLessons,
@@ -404,6 +422,8 @@ export const concepts = [
   ...traitsConcepts,
   ...lifetimesConcepts,
   ...closuresConcepts,
+  ...borrowedVarianceConcepts,
+  ...borrowedHrtbConcepts,
   ...iteratorsConcepts,
   ...testingConcepts,
   ...guessingCoreConcepts,
@@ -445,6 +465,8 @@ export const competencies = [
   ...traitsCompetencies,
   ...lifetimesCompetencies,
   ...closuresCompetencies,
+  ...borrowedVarianceCompetencies,
+  ...borrowedHrtbCompetencies,
   ...iteratorsCompetencies,
   ...testingCompetencies,
   ...guessingCoreCompetencies,
@@ -486,6 +508,8 @@ export const sources = [
   ...traitsSources,
   ...lifetimesSources,
   ...closuresSources,
+  ...borrowedVarianceSources,
+  ...borrowedHrtbSources,
   ...iteratorsSources,
   ...testingSources,
   ...guessingCoreSources,
@@ -527,6 +551,8 @@ export const reviewExercises = {
   ...traitsReviewExercises,
   ...lifetimesReviewExercises,
   ...closuresReviewExercises,
+  ...borrowedVarianceReviewExercises,
+  ...borrowedHrtbReviewExercises,
   ...iteratorsReviewExercises,
   ...testingReviewExercises,
   ...guessingCoreReviewExercises,
@@ -624,6 +650,7 @@ export const roadmap = [
     status: "available",
   },
   { title: "Lifetimes, closures i iterators", status: "available" },
+  { title: "Pożyczone API: wariancja i HRTB", status: "available" },
   {
     title: "Podstawy testowania, rustfmt i Clippy w projekcie",
     status: "available",

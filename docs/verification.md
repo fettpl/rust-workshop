@@ -1,48 +1,44 @@
-# Weryfikacja: Number Guessing+ i CI
+# Weryfikacja: pożyczone API, wariancja i HRTB
 
-Data: 13 września 2026. Katalog obejmuje 118 lekcji w 32 modułach, 121 pojęć, 73 zadania blank-page, 7 śladów pamięci, 237 wpisów źródłowych i 8 projektów. Każdy projekt ma pobierany pakiet Cargo. Bieżący etap rozszerza pierwszy projekt o pełną pojedynczą rundę Number Guessing+, cztery lekcje, osiem bramek i cztery kodowe powtórki.
+Data: 13 września 2026. Katalog obejmuje 122 lekcje w 33 modułach, 125 pojęć, 77 zadań blank-page, 7 śladów pamięci, 249 wpisów źródłowych i 8 projektów z pakietami Cargo. Bieżący moduł `borrowed-callbacks` dodaje cztery lekcje po closures, osiem bramek i cztery osobne kodowe powtórki. Nie zmienia zależności ani pakietów Cargo.
 
-## Zakończone kontrole lokalne
+## Kontrole bieżącego etapu
 
 | Sprawdzenie | Wynik |
 | --- | --- |
-| Vitest | 171/171 w 36 plikach |
+| Vitest | 172/172 w 37 plikach, ponownie po końcowej korekcie opisów |
 | TypeScript i ESLint | Bez błędów; lint bez ostrzeżeń |
-| Build | Produkcyjny build Next zakończony powodzeniem |
-| Curriculum i źródła | Walidacja poprawna, 237/237 adresów HTTP 200, bez brakujących bramek i aktywnych powtórek |
-| Rust | 1343/1343 przypadków; po końcowej korekcie treści i formatowaniu ponownie sprawdzono wszystkie 46 przypadków nowego modułu, w tym dwa wspólne sprawdzenia weryfikatora |
-| Tokio | 252/252 autorskich przypadków; testy TCP używają lokalnego IPv4 loopback |
-| Loom | Poprawne modele przechodzą, dwa kontrprzykłady i osłabiona biblioteka są odrzucane właściwymi asercjami |
-| Archiwa Cargo | Osiem starterów: fmt/check i oczekiwane niepowodzenie TODO; osiem referencji: fmt/check/test/Clippy |
-| Number Guessing+ | Osiem plików; 15 testów kontraktu biblioteki oraz 3 testy CLI i jego harnessu |
-| Number Guessing+ — stable i MSRV | Dokładne serwowane ZIP-y sprawdzone na stable 1.98.1 i Rust 1.85.0; graf Cargo.lock pozostaje niezmieniony |
-| Number Guessing+ — cztery mutacje | Wykryto zużycie próby dla błędnego wejścia, porażkę po ostatnim trafieniu, zmianę sekretu w sesji oraz odczyt przed flush; każda referencja przechodzi po przywróceniu |
-| Frame Protocol | Sprawdzony workspace, biblioteka osobno, macierz features i 10 mutacji na dokładnym Rust 1.85.0; bieżący stable był również sprawdzony w poprzednim bloku i zdalnym CI |
-| Mini grep | Referencja: 16 testów integration/property/process i 1 doctest; cztery celowe mutacje wykryte |
-| Mini grep — fuzz | Ograniczona kampania libFuzzer, niezależny oracle, wykryty mutant substring→prefix i udane odtworzenie kontrprzykładu po przywróceniu referencji |
-| Offline | Cache v20: osiem ZIP-ów ma identyczne bajty bez sieci; nieodwiedzony Number Guessing+ przywraca krok, szkic i hint; brak pageerrors |
-| Produkcyjne E2E | 46/46 bez retry na gotowym buildzie, w tym mobile, Axe, wznowienie i świeże bramki po podglądzie pakietu |
-| Ręczny UI | Mapa, karta projektu i kontrakt sesji są czytelne; sformatowany Rust, widoczny fokus, strzałki Zadanie → Kod → Output; brak błędów i ostrzeżeń konsoli |
+| Curriculum | Walidacja poprawna: 122 lekcje, 125 pojęć, 7 śladów; żadnych brakujących bramek ani aktywnych powtórek |
+| Źródła | 249/249 wpisów ma HTTP 200, brak uszkodzonych odwołań |
+| Rust | 1397/1397 przypadków całego katalogu; po poprawkach testów ponownie 56/56 przypadków nowego modułu (w tym dwa wspólne sprawdzenia weryfikatora) |
+| Niezależna recenzja | Dwie recenzje treści i osobna recenzja integracji zamknięte; oryginalne błędne warianty są odrzucane |
+| Build i E2E | Produkcyjny build i 47/47 E2E bez retry; po końcowej korekcie opisów ponowny build i test dotkniętego modułu (1/1) |
+| Offline | Finalny cache v23; osiem ZIP-ów zachowuje identyczne bajty, nieodwiedzony nowy moduł przywraca krok, szkic i hint; brak pageerrors |
+| Ręczny UI | Mapa i kontrakty czytelne; strzałki przełączają Zadanie → Kod → Output; finalna treść polecenia potwierdzona, brak błędów i ostrzeżeń konsoli |
 
-## Co sprawdzono w Number Guessing+
+## Zakres nowych kontraktów
 
-Pojedyncza runda losuje sekret przez przypięte rand 0.10.2, a opcja --secret daje deterministyczną sesję ćwiczeniową. Testy obejmują pustą linię oddzielnie od EOF, Unicode trim, cyfry ASCII i przepełnienie, wszystkie stany końcowe, ostatnie poprawne trafienie, błędy bez zmiany stanu, 128/129 surowych bajtów, CRLF, brak końcowego LF i oryginalne błędy I/O. Test procesu zwykłej gry dobiera kolejne strzały przez bisekcję i wymaga wygranej oraz kodu 0; nie zakłada konkretnej sekwencji generatora.
+Współdzielone widoki używają bezpośrednich generycznych konwersji struktur, aby sprawdzić relację lifetimes. Mutowalne API rozdziela czas pożyczki slotu od czasu danych w jego wnętrzu. Testy obejmują własność lokalną, granice prefiksu i podziału, tożsamość widoków i brak zmiany slotu dla błędnego wejścia. Przykłady funkcji rozdzielają kierunek zgodności argumentu i wyniku.
 
-Testy negatywne muszą uruchomić dokładnie wskazany test i zostać odrzucone jego asercją. Błąd kompilacji, brak testów, sygnał i timeout nie są uznawane za wykrycie mutanta. Root odtworzył dodatkowo zakleszczenie harnessu przy pełnym kanale wyjścia: test regresyjny najpierw zawiódł, a po rozłączeniu odbiorcy przed join przeszedł. Testy procesu sprzątają dziecko przy błędzie i ograniczają oczekiwanie na odpowiedź.
+Lokalny odwiedzający zwraca ustalony typ R, a projekcja zwraca widok związany z każdą kolejną pożyczką. Testy sprawdzają kolejność i liczbę wywołań, Unicode, pustkę, pierwszy błąd, pierwszy Some i odróżnienie Some(0) od None. Typ błędu i stan przechwycony przez callback mogą pożyczać lokalne dane. Poprawny statyczny fallback jest dozwolony: relacja lifetime gwarantuje ważność wyniku, a nie jego pochodzenie z fragmentu wejścia.
 
-Niezależne przeglądy wykryły i doprowadziły do naprawy mylenia pustej linii z EOF, zawijania identyfikatorów rezerwacji, brakujących granic w testach i niedopowiedzianych kontraktów w poleceniach. Świeże zadania dotyczą innych problemów: poleceń dozownika, rezerwacji limitu, pojedynczego komunikatu oraz przydziału identyfikatora z konfliktem rezerwacji. Powtórka źródła wartości dodaje błąd zewnętrznego źródła. Stare ID projektu, lekcji i kroków oraz notatki, szkice i hints przechodzą import/eksport bez resetu.
+Niezależny przegląd wykrył niewystarczające asercje brzegowe i nadmiernie statyczne dane testowe. Wymagał też jawnych wyników w poleceniach powtórek i formatowania kodu Rust wewnątrz ciągów TypeScript. Referencje przechodzą, a oryginalne błędne warianty akceptowane przez wcześniejsze testy są odrzucane: zmiana długości slotu przy tym samym adresie, zdublowane widoki na granicy podziału, zapis obciętego następnego tekstu i zbędny wymóg statycznych danych. Poprawiony opis pustego zakresu wymaga zapisu pustego widoku i zwrotu poprzedniego; nie myli niezmienniczości typu z niezmiennością wartości.
 
-Kontrola MSRV odrzuciła zbędną deklarację lintu nieznanego Clippy 1.85; usunięto ją, a następnie przeszła cała kontrola MSRV. Dawny test E2E Todo przestał wybierać pierwszy pakiet portfolio i wskazuje teraz konkretny projekt, którego storage sprawdza. Test integracyjny mutacji Mini grep ma osobny limit 120 sekund, ponieważ wykonuje rzeczywiste kompilacje Rust; jego poprawny przebieg przekroczył domyślny limit jednostkowy 5 sekund. Asercje i watchdogi procesów pozostały zachowane. Po poprawkach Vitest i pełne E2E przeszły ponownie.
+Test integracyjny ujawnia wszystkie cztery główne rozwiązania, zapisuje wspomagane próby i wykonuje export/import. Taki zapis nie zalicza żadnego z czterech kryteriów; każde świeże zadanie pozostaje dostępne. Cztery samodzielne próby zaliczają moduł, a wcześniejszy szkic Number Guessing i notatka projektu pozostają zachowane. Istniejące identyfikatory, runner i schemat zapisu v3 nie zmieniają się.
 
 ## CI i scalenia
 
-CI uruchamia sprawdzenie Number Guessing+ na stable oraz w jobie MSRV przed scaleniem. Zasady uprawnień, wersji akcji, diagnostyki, utrzymania zależności i ograniczenia planu GitHub opisuje [CI/CD](ci-cd.md). Docelowy hosting nadal nie został wybrany; nie skonfigurowano wdrożenia aplikacji.
+Bieżący moduł ma zakończone lokalne kontrole i niezależne recenzje. Commit, push i CI aktualnego head poprzedzą scalenie tego bloku.
 
-Bieżący blok został zapisany w commicie 8d9536e i wypchnięty jako [PR #7](https://github.com/fettpl/rustcrushcourse/pull/7). Pierwszy przebieg CI potwierdził MSRV i fuzz, ale zatrzymał się na sprawdzaniu startera: Cargo kończyło po błędzie testów procesu, zanim bezpośrednie testy kontraktu mogły pokazać oczekiwane `todo!`. Weryfikatory starterów wymagają uruchomienia wszystkich zestawów przez `--no-fail-fast`; nie znoszą wymogu niezerowego statusu, niepustego niepowodzenia i śladu `todo!`. Testy pełnych referencji zachowują dotychczasowe zasady. Po poprawce ponownie przeszły Number Guessing+ na stable i Rust 1.85.0 oraz wszystkie osiem archiwów Cargo. Poprawiony head wymaga ponownej kontroli wszystkich trzech jobów przed scaleniem.
+[PR #7: Number Guessing+](https://github.com/fettpl/rustcrushcourse/pull/7) jest scalony jako `f94b87edf0423acc7a57abf6a97652baf6213515`. [CI dokładnego head 451e3a3](https://github.com/fettpl/rustcrushcourse/actions/runs/34749313613) zakończyło wszystkie trzy joby sukcesem. Powtórzony [przebieg na main](https://github.com/fettpl/rustcrushcourse/actions/runs/34749710087) również zakończył wszystkie trzy joby sukcesem.
 
-Poprzedni [PR #2](https://github.com/fettpl/rustcrushcourse/pull/2), Mini grep i CI, został scalony jako f49e9fb7cd0cb058aeb55ab84843a91454eea5b5 po [udanym CI commita 5e12660](https://github.com/fettpl/rustcrushcourse/actions/runs/34746892334). [CI po merge do main](https://github.com/fettpl/rustcrushcourse/actions/runs/34747218768) także zakończyło się sukcesem. Tamten blok miał 165 testów Vitest, 1299 różnych przypadków Rust, 226 źródeł, siedem pakietów i 44 E2E. Lokalne wyniki 1251 + 50 powtórzyły dwa wspólne sprawdzenia techniczne, dlatego nie oznaczały 1301 różnych przypadków.
+Pierwszy przebieg Number Guessing+ ujawnił zależność kontroli startera od kolejności zestawów Cargo. `--no-fail-fast` pozwala sprawdzić bezpośrednie kontrakty mimo wcześniejszego błędu nieukończonego procesu CLI; weryfikator nadal wymaga niezerowego wyniku, nieudanych testów i śladu `todo!`. Poprawka przeszła stable, dokładny Rust 1.85.0 i wszystkie osiem pakietów. GitHub wielokrotnie zwracał HTTP 500 z API merge. Zwykłe scalenie w czystym tymczasowym worktree dało drzewo identyczne z przetestowanym head, a push bez force zaktualizował main; GitHub potwierdził scalenie PR.
 
-Wcześniejszy [PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w 64667e4; etap publicznego API miał [udane CI](https://github.com/fettpl/rustcrushcourse/actions/runs/34743788852). Te historyczne przebiegi nie zastępują kontroli bieżącego bloku.
+Historyczny raport Number Guessing+ jest zachowany w wersji `451e3a3` tego pliku: 171 testów Vitest, 1343 przypadki Rust, 252 Tokio, Loom, 8 pakietów Cargo, stable/MSRV, cztery mutacje Number Guessing+, dziesięć mutacji Frame Protocol, fuzz Mini grep, 237 źródeł, 46 E2E bez retry, offline v20 i ręczny UI. Nowe CI ponownie sprawdza także te niezmienione części.
+
+Wcześniejszy [PR #2](https://github.com/fettpl/rustcrushcourse/pull/2), Mini grep i CI, został scalony jako f49e9fb po [udanym CI 5e12660](https://github.com/fettpl/rustcrushcourse/actions/runs/34746892334); [CI po merge](https://github.com/fettpl/rustcrushcourse/actions/runs/34747218768) również przeszło. Wcześniejszy [PR #1](https://github.com/fettpl/rustcrushcourse/pull/1) jest scalony w 64667e4. Historyczne wyniki nie zastępują kontroli aktualnego SHA.
+
+Zasady tokenów, przypiętych akcji, MSRV, fuzz, diagnostyki i ograniczenia planu GitHub opisuje [CI/CD](ci-cd.md). Docelowy hosting nadal nie został wybrany; wdrożenie aplikacji pozostaje nieskonfigurowane.
 
 ## Odtworzenie
 
@@ -67,8 +63,8 @@ npx --no-install playwright test --config .github/playwright.production.config.t
 npm run test:offline
 ```
 
-Instalacja dokładnego toolchainu i cargo-fuzz jest opisana w README. Autorskie testy TCP wymagają lokalnego IPv4 loopback. Weryfikatory wykonują wyłącznie zaufane pliki repozytorium w katalogach tymczasowych, bez kodu z importów ucznia i bez nowego POST do publicznego Playgrounda. E2E podstawia kontrolowane odpowiedzi runnera.
+Instalacja toolchainów i cargo-fuzz jest opisana w README. Weryfikatory wykonują wyłącznie zaufane pliki repozytorium w katalogach tymczasowych, bez kodu z importów ucznia i bez nowego POST do publicznego Playgrounda. E2E podstawia kontrolowane odpowiedzi runnera. Dwa wspólne sprawdzenia weryfikatora powtarzają się w przebiegach częściowych, więc ich wyników nie należy bezpośrednio sumować.
 
 ## Pozostały zakres
 
-Pełny cel zaawansowanego kursu pozostaje otwarty: Cargo i publikowanie, variance/HRTB, szersze property/fuzz, pomiary, unsafe/FFI, utrzymanie systemów i capstone. Automatyczne ponawianie rund Number Guessing+ oraz nagranie code reading pozostają rozszerzeniem szerszego portfolio. Testowanie rand nie jest dowodem jakości statystycznej ani kryptograficznej. Kampania fuzz nie dowodzi całej polityki I/O i ścieżek. Audyt zachowuje luki trwałej historii migracji i pochodzenia wersji materiału. Pilotaż z uczącą się osobą oraz ręczna ocena czytnikiem ekranu pozostają do wykonania.
+Cel zaawansowanego kursu pozostaje otwarty: Cargo i publikowanie, GAT i lending async, wariancja abstrakcji unsafe, szersze property/fuzz, pomiary, unsafe/FFI, utrzymanie systemów i capstone. Automatyczne ponawianie rund Number Guessing+ oraz nagranie code reading pozostają rozszerzeniem portfolio. Testy kontraktów nie dowodzą szybkości, pełnego memory model ani jakości statystycznej generatora. Audyt zachowuje luki trwałej historii migracji i pochodzenia wersji materiału. Pilotaż z uczącą się osobą oraz ręczna ocena czytnikiem ekranu pozostają do wykonania.
