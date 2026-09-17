@@ -10,6 +10,7 @@ for (const moduleId of [
   "mini-grep",
   "number-guessing-plus",
   "borrowed-callbacks",
+  "gat-lending-iterators",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,
@@ -89,6 +90,14 @@ for (const moduleId of [
       .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
       .click();
     await expect(editor).toHaveValue(draft);
+    if (moduleId === "gat-lending-iterators") {
+      await expect(
+        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await expect(page.locator(".task-pane h1")).toHaveText(step.title);
+      await expect(editor).toHaveValue(draft);
+    }
 
     await page.getByRole("button", { name: stage.title, exact: true }).click();
     await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
@@ -96,6 +105,17 @@ for (const moduleId of [
     await page.locator(".gate-action").first().click();
     await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
     await expect(editor).toHaveValue("");
+    if (moduleId === "gat-lending-iterators") {
+      const blankDraft =
+        "// Samodzielny kontrakt GAT\ntrait LendingIterator {\n";
+      await editor.fill(blankDraft);
+      await expect(
+        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      ).toBeVisible();
+      await page.reload();
+      await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
+      await expect(editor).toHaveValue(blankDraft);
+    }
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toHaveCount(0);

@@ -487,6 +487,7 @@ export function validateContent(content: ContentBundle): string[] {
   for (const source of content.sources) {
     if (
       !source.url.startsWith("https://doc.rust-lang.org/") &&
+      !source.url.startsWith("https://blog.rust-lang.org/") &&
       !source.url.startsWith("https://play.rust-lang.org/") &&
       !source.url.startsWith("https://github.com/rust-lang/") &&
       !source.url.startsWith("https://docs.rs/loom/0.7.2/loom/") &&

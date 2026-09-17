@@ -29,6 +29,23 @@ const bundle: ContentBundle = {
 };
 
 describe("curriculum content contract", () => {
+  it("accepts the official Rust blog without accepting lookalike hosts", () => {
+    const check = (url: string) =>
+      validateContent({
+        ...bundle,
+        sources: [{ ...sources[0], url }],
+      }).filter((error) => error.includes("official Rust source"));
+    expect(
+      check("https://blog.rust-lang.org/2022/10/28/gats-stabilization/"),
+    ).toEqual([]);
+    for (const url of [
+      "http://blog.rust-lang.org/2022/10/28/gats-stabilization/",
+      "https://blog.rust-lang.org.example.org/2022/10/28/gats-stabilization/",
+      "https://blog.rust-lang.org@example.org/2022/10/28/gats-stabilization/",
+    ])
+      expect(check(url), url).not.toEqual([]);
+  });
+
   it("validates TOML declarations without requiring a compiler result", () => {
     const target = lessons[0];
     const changed = structuredClone(target);

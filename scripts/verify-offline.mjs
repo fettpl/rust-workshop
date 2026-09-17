@@ -328,6 +328,38 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     console.log(
       "Previously unvisited TOML blank resumes and passes locally while offline",
     );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const gatTitle = "GAT i lending iterators: pożyczone elementy";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(gatTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: gatTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    await page
+      .getByLabel("Kroki lekcji")
+      .getByRole("button", { name: /Od pustej kartki/ })
+      .click();
+    const gatEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    await expect(gatEditor).toHaveValue("");
+    const gatHeading = await page.locator(".task-pane h1").innerText();
+    const gatDraft =
+      "// Własny producent pożyczanych wartości, zapisany offline.\n";
+    await gatEditor.fill(gatDraft);
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(gatHeading);
+    await expect(gatEditor).toHaveValue(gatDraft);
+    console.log(
+      "Previously unvisited GAT blank and its exact draft resume offline",
+    );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

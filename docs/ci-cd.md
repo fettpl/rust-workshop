@@ -20,6 +20,10 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
 - `workspace-msrv`: testuje workspace Frame Protocol i pakiet Number Guessing+
   na dokładnym Rust 1.85.0, także z przypiętymi ścieżkami `rustc` i `rustdoc`
   dla procesów potomnych. Weryfikuje też stałe manifesty i przykład unii features przez Cargo 1.85.0.
+  Osobny krok wybiera katalog kompilatora przez `rustup which --toolchain 1.85.0`
+  i umieszcza go na początku `PATH`, sprawdzając przykłady GAT oraz ich
+  referencje, poprawne alternatywy i celowe błędne implementacje. Kontrola
+  minimalnej wersji obejmuje dzięki temu kod lekcji, a nie tylko archiwa Cargo.
 - `mini-grep-fuzz`: sprawdza niezależny oracle, ograniczoną kampanię libFuzzer,
   wykrycie kontrolowanego błędu i odtworzenie przypadku po jego usunięciu.
 

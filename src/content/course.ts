@@ -1,4 +1,19 @@
 import { borrowedCallbacksModule } from "./borrowed-callbacks-module";
+import { gatLendingModule } from "./gat-lending-module";
+import {
+  gatProducerLessons,
+  gatProducerConcepts,
+  gatProducerCompetencies,
+  gatProducerSources,
+  gatProducerReviewExercises,
+} from "./gat-producers";
+import {
+  gatConsumerLessons,
+  gatConsumerConcepts,
+  gatConsumerCompetencies,
+  gatConsumerSources,
+  gatConsumerReviewExercises,
+} from "./gat-consumers";
 import {
   borrowedVarianceLessons,
   borrowedVarianceConcepts,
@@ -351,6 +366,7 @@ export const modules = [
   closuresModule,
   borrowedCallbacksModule,
   iteratorsModule,
+  gatLendingModule,
   testingModule,
   guessingModule,
   logAnalyzerModule,
@@ -392,6 +408,8 @@ export const lessons = [
   ...borrowedVarianceLessons,
   ...borrowedHrtbLessons,
   ...iteratorsLessons,
+  ...gatProducerLessons,
+  ...gatConsumerLessons,
   ...testingLessons,
   ...guessingCoreLessons,
   ...guessingIoLessons,
@@ -437,6 +455,8 @@ export const concepts = [
   ...borrowedVarianceConcepts,
   ...borrowedHrtbConcepts,
   ...iteratorsConcepts,
+  ...gatProducerConcepts,
+  ...gatConsumerConcepts,
   ...testingConcepts,
   ...guessingCoreConcepts,
   ...guessingIoConcepts,
@@ -482,6 +502,8 @@ export const competencies = [
   ...borrowedVarianceCompetencies,
   ...borrowedHrtbCompetencies,
   ...iteratorsCompetencies,
+  ...gatProducerCompetencies,
+  ...gatConsumerCompetencies,
   ...testingCompetencies,
   ...guessingCoreCompetencies,
   ...guessingIoCompetencies,
@@ -527,6 +549,8 @@ export const sources = [
   ...borrowedVarianceSources,
   ...borrowedHrtbSources,
   ...iteratorsSources,
+  ...gatProducerSources,
+  ...gatConsumerSources,
   ...testingSources,
   ...guessingCoreSources,
   ...guessingIoSources,
@@ -572,6 +596,8 @@ export const reviewExercises = {
   ...borrowedVarianceReviewExercises,
   ...borrowedHrtbReviewExercises,
   ...iteratorsReviewExercises,
+  ...gatProducerReviewExercises,
+  ...gatConsumerReviewExercises,
   ...testingReviewExercises,
   ...guessingCoreReviewExercises,
   ...guessingIoReviewExercises,
