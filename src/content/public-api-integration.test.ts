@@ -10,8 +10,10 @@ it("preserves independent API evidence after revealing the workspace reference",
   expect(project).toBeDefined();
   expect(stage).toBeDefined();
   expect(stage!.prerequisites).toEqual(["tokio-network-service"]);
-  expect(project!.lessonIds).toEqual(stage!.lessonIds);
-  expect(project!.reviewConceptIds).toEqual(stage!.lessonIds);
+  expect(project!.lessonIds).toEqual(expect.arrayContaining(stage!.lessonIds));
+  expect(project!.reviewConceptIds).toEqual(
+    expect.arrayContaining(stage!.lessonIds),
+  );
   const archive = project!.package!;
   expect(archive.id).toBe("frame-protocol-workspace");
   expect(archive.files.map((file) => file.path)).toEqual(
@@ -32,7 +34,9 @@ it("preserves independent API evidence after revealing the workspace reference",
     1000,
   );
   expect(moduleGate(state, lessons, stage!).passed).toBe(false);
-  expect(state.events).toHaveLength(4);
+  expect(
+    state.events.filter((event) => stage!.lessonIds.includes(event.lessonId)),
+  ).toHaveLength(4);
   for (const criterion of stage!.gateCriteria!) {
     expect(criterion.taskRefs).toHaveLength(2);
     const fresh = criterion.taskRefs.filter(

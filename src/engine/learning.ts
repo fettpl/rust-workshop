@@ -1,4 +1,5 @@
 import type {
+  Concept,
   CourseModule,
   EvidenceEvent,
   Lesson,
@@ -7,6 +8,30 @@ import type {
   ReviewItem,
   UserState,
 } from "@/domain/types";
+
+export type EvidenceArtifact = "rust-code" | "manifest";
+
+export interface EvidencePolicy {
+  artifactForConcept(conceptId: string): EvidenceArtifact;
+}
+
+const DEFAULT_EVIDENCE_POLICY: EvidencePolicy = {
+  artifactForConcept: () => "rust-code",
+};
+
+export function evidencePolicyForConcepts(
+  concepts: readonly Concept[],
+): EvidencePolicy {
+  const artifacts = new Map(
+    concepts.map((concept) => [
+      concept.id,
+      concept.evidenceArtifact ?? ("rust-code" as const),
+    ]),
+  );
+  return {
+    artifactForConcept: (conceptId) => artifacts.get(conceptId) ?? "rust-code",
+  };
+}
 
 const DAY = 24 * 60 * 60 * 1000;
 const STRONG_KINDS = new Set<EvidenceEvent["kind"]>([
@@ -26,6 +51,23 @@ const VERIFIED_CODING_EVALUATORS = new Set([
   "exact-output",
   "compilation",
 ]);
+const NEUTRAL_EVALUATORS = new Set(["answer", "choice", "ordering", "rubric"]);
+
+function eventMatchesConceptArtifact(
+  event: EvidenceEvent,
+  conceptId: string,
+  policy: EvidencePolicy,
+): boolean {
+  // Exposure and answer-only evaluators are neutral contact with a lesson or
+  // reference. They remain useful for every concept, including manifest ones,
+  // while verified manifest evidence still requires manifest-contract.
+  if (event.kind === "exposure") return true;
+  const expected = policy.artifactForConcept(conceptId);
+  if (NEUTRAL_EVALUATORS.has(event.evaluator ?? "")) return true;
+  const actual: EvidenceArtifact =
+    event.evaluator === "manifest-contract" ? "manifest" : "rust-code";
+  return actual === expected;
+}
 
 export function isIndependentSuccess(event: EvidenceEvent): boolean {
   return (
@@ -37,6 +79,19 @@ export function isIndependentSuccess(event: EvidenceEvent): boolean {
     event.evaluator !== "rubric" &&
     event.evaluator !== "expected-error"
   );
+}
+
+function isIndependentTaskSuccess(
+  event: EvidenceEvent,
+  step: Lesson["steps"][number] | undefined,
+): boolean {
+  if (!isIndependentSuccess(event)) return false;
+  // Gate counters do not receive the course concept policy. A manifest
+  // evaluator still gives us enough local information to reject a Rust proof
+  // attached to a TOML gate (and vice versa) without importing course data.
+  if (step?.evaluator?.kind === "manifest-contract")
+    return event.evaluator === "manifest-contract";
+  return event.evaluator !== "manifest-contract";
 }
 
 function copyState(state: UserState): UserState {
@@ -92,11 +147,13 @@ function copyState(state: UserState): UserState {
 function strongEvidence(
   events: EvidenceEvent[],
   conceptId: string,
+  policy: EvidencePolicy,
 ): EvidenceEvent[] {
   const seen = new Set<string>();
   return events.filter((event) => {
     if (
       !event.conceptIds.includes(conceptId) ||
+      !eventMatchesConceptArtifact(event, conceptId, policy) ||
       !event.passed ||
       event.hints !== 0 ||
       event.revealed ||
@@ -116,10 +173,13 @@ function strongEvidence(
 function hasVerifiedCodingEvidence(
   events: EvidenceEvent[],
   conceptId: string,
+  policy: EvidencePolicy,
 ): boolean {
+  const expected = policy.artifactForConcept(conceptId);
   return events.some((event) => {
     if (
       !event.conceptIds.includes(conceptId) ||
+      !eventMatchesConceptArtifact(event, conceptId, policy) ||
       !event.passed ||
       event.hints !== 0 ||
       event.revealed ||
@@ -129,6 +189,7 @@ function hasVerifiedCodingEvidence(
       !CODING_KINDS.has(event.kind)
     )
       return false;
+    if (expected === "manifest") return event.evaluator === "manifest-contract";
     return (
       (event.evaluator !== undefined &&
         VERIFIED_CODING_EVALUATORS.has(event.evaluator)) ||
@@ -141,10 +202,12 @@ function hasVerifiedCodingEvidence(
 function passedEvidence(
   events: EvidenceEvent[],
   conceptId: string,
+  policy: EvidencePolicy,
 ): EvidenceEvent[] {
   return events.filter(
     (event) =>
       event.conceptIds.includes(conceptId) &&
+      eventMatchesConceptArtifact(event, conceptId, policy) &&
       event.passed &&
       event.kind !== "self-rating" &&
       event.evaluator !== "rubric" &&
@@ -156,10 +219,12 @@ function hasVerifiedRetention(
   events: EvidenceEvent[],
   conceptId: string,
   ratings: UserState["ratings"],
+  policy: EvidencePolicy,
 ): boolean {
   return events.some((candidate) => {
     if (
       !candidate.conceptIds.includes(conceptId) ||
+      !eventMatchesConceptArtifact(candidate, conceptId, policy) ||
       !candidate.passed ||
       candidate.kind !== "recall" ||
       candidate.delayed !== true ||
@@ -168,9 +233,13 @@ function hasVerifiedRetention(
     )
       return false;
     const prior = events.filter((event) => event.at < candidate.at);
-    const priorStrong = strongEvidence(prior, conceptId);
+    const priorStrong = strongEvidence(prior, conceptId, policy);
     const latestPriorEvent = prior
-      .filter((event) => event.conceptIds.includes(conceptId))
+      .filter(
+        (event) =>
+          event.conceptIds.includes(conceptId) &&
+          eventMatchesConceptArtifact(event, conceptId, policy),
+      )
       .reduce<number | undefined>(
         (latest, event) =>
           latest === undefined ? event.at : Math.max(latest, event.at),
@@ -198,7 +267,7 @@ function hasVerifiedRetention(
     );
     return (
       priorStrong.length >= 2 &&
-      hasVerifiedCodingEvidence(prior, conceptId) &&
+      hasVerifiedCodingEvidence(prior, conceptId, policy) &&
       latestPriorEvidence !== undefined &&
       candidate.at - latestPriorEvidence > DAY
     );
@@ -210,15 +279,19 @@ function deriveMastery(
   conceptId: string,
   previous: MasteryLevel | undefined,
   ratings: UserState["ratings"],
+  policy: EvidencePolicy,
 ): { level: MasteryLevel; reason: string } {
-  const passed = passedEvidence(events, conceptId);
-  const strong = strongEvidence(events, conceptId);
-  if (hasVerifiedRetention(events, conceptId, ratings))
+  const passed = passedEvidence(events, conceptId, policy);
+  const strong = strongEvidence(events, conceptId, policy);
+  if (hasVerifiedRetention(events, conceptId, ratings, policy))
     return {
       level: "retained",
       reason: "Zweryfikowane, samodzielne przypomnienie po ponad 24 godzinach.",
     };
-  if (strong.length >= 2 && hasVerifiedCodingEvidence(events, conceptId))
+  if (
+    strong.length >= 2 &&
+    hasVerifiedCodingEvidence(events, conceptId, policy)
+  )
     return {
       level: "understood",
       reason:
@@ -304,11 +377,13 @@ function queueSuccess(
 export function recordEvidence(
   state: UserState,
   event: EvidenceEvent,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
 ): UserState {
   if (state.events.some((existing) => existing.id === event.id)) return state;
   const next = copyState(state);
   next.events.push({ ...event, conceptIds: [...event.conceptIds] });
   for (const conceptId of event.conceptIds) {
+    if (!eventMatchesConceptArtifact(event, conceptId, policy)) continue;
     if (
       !event.passed &&
       event.kind !== "self-rating" &&
@@ -330,6 +405,7 @@ export function recordEvidence(
       conceptId,
       previous,
       next.ratings,
+      policy,
     );
     next.mastery[conceptId] = { ...derived, updatedAt: event.at };
   }
@@ -340,20 +416,25 @@ export function recordEvidence(
 export function recordLessonExposure(
   state: UserState,
   exposure: LessonExposure,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
 ): UserState {
   const revealed = exposure.revealed === true;
-  return recordEvidence(state, {
-    id: `exposure:${exposure.lessonId}:${exposure.stepId}:${exposure.at}:${revealed ? "revealed" : "opened"}`,
-    conceptIds: exposure.conceptIds,
-    lessonId: exposure.lessonId,
-    stepId: exposure.stepId,
-    kind: "exposure",
-    passed: true,
-    hints: 0,
-    revealed,
-    at: exposure.at,
-    gate: false,
-  });
+  return recordEvidence(
+    state,
+    {
+      id: `exposure:${exposure.lessonId}:${exposure.stepId}:${exposure.at}:${revealed ? "revealed" : "opened"}`,
+      conceptIds: exposure.conceptIds,
+      lessonId: exposure.lessonId,
+      stepId: exposure.stepId,
+      kind: "exposure",
+      passed: true,
+      hints: 0,
+      revealed,
+      at: exposure.at,
+      gate: false,
+    },
+    policy,
+  );
 }
 
 function intervalFor(
@@ -423,12 +504,19 @@ export function moduleGate(
       label: criterion.label,
       passed:
         criterion.taskRefs.some((taskRef) =>
-          state.events.some(
-            (event) =>
+          state.events.some((event) => {
+            const lesson = lessons.find(
+              (candidate) => candidate.id === taskRef.lessonId,
+            );
+            const step = lesson?.steps.find(
+              (candidate) => candidate.id === taskRef.stepId,
+            );
+            return (
               event.lessonId === taskRef.lessonId &&
               event.stepId === taskRef.stepId &&
-              isIndependentSuccess(event),
-          ),
+              isIndependentTaskSuccess(event, step)
+            );
+          }),
         ) &&
         (criterion.supplementaryStepRefs === undefined ||
           criterion.supplementaryStepRefs.length === 0 ||
@@ -457,7 +545,7 @@ export function moduleGate(
         (event) =>
           event.lessonId === lesson.id &&
           event.stepId === step.id &&
-          isIndependentSuccess(event),
+          isIndependentTaskSuccess(event, step),
       );
       criteria.push({ label: `${lesson.title}: ${step.title}`, passed });
     }

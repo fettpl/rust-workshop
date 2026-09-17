@@ -283,6 +283,51 @@ import { readFile } from "node:fs/promises";
         `${title}: previously unvisited gate, draft and hint resume offline`,
       );
     }
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Cargo: zależności, features i pakowanie");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Cargo: zależności, features i pakowanie" })
+      .click();
+    // Earlier Frame preview/download exposed the primary manifests. The map
+    // must select the independent standalone declaration task instead.
+    await page.locator(".gate-action").first().click();
+    const tomlEditor = page.getByRole("textbox", {
+      name: "Kod TOML",
+      exact: true,
+    });
+    await expect(tomlEditor).toHaveValue("");
+    const manifestDraft = `[package]
+name = "catalog-tool"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85.0"
+description = "Offline dependency declaration exercise."
+license = "MIT"
+publish = false
+
+[dependencies]
+wire_serde = { package = "serde", version = "1.0.229", default-features = false }
+
+[dev-dependencies]
+wire_serde = { package = "serde", version = "1.0.229", default-features = false, features = ["alloc"] }
+`;
+    await tomlEditor.fill(manifestDraft);
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(tomlEditor).toHaveValue(manifestDraft);
+    await expect(page.getByRole("button", { name: /^Uruchom/ })).toHaveCount(0);
+    await page
+      .getByRole("button", { name: "Sprawdź manifest", exact: true })
+      .click();
+    await expect(page.locator(".feedback.passed")).toBeVisible();
+    console.log(
+      "Previously unvisited TOML blank resumes and passes locally while offline",
+    );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

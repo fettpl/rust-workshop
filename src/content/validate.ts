@@ -1,5 +1,10 @@
 import { validateProjectPackage } from "../domain/project-package";
 import {
+  checkManifestContract,
+  manifestContractIssues,
+  manifestSyntaxIssues,
+} from "../engine/manifest-contract";
+import {
   hasRustTestAttribute,
   trustedFixtureIssues,
 } from "../domain/trusted-fixtures";
@@ -28,6 +33,54 @@ export interface ContentBundle {
 }
 
 const uniqueErrors = (errors: string[]) => [...new Set(errors)];
+
+function manifestStepIssues(step: LessonStep): string[] {
+  const errors: string[] = [];
+  const evaluator = step.evaluator;
+  if (evaluator?.kind === "manifest-contract" && step.editorMode !== "toml")
+    errors.push("manifest evaluator requires TOML editor mode");
+  if (step.editorMode !== "toml") return errors;
+  if (
+    step.expectedStatus ||
+    step.expectedError ||
+    step.expectedDiagnostic ||
+    step.trustedFixtureTarget
+  )
+    errors.push(
+      "TOML must not declare a Rust compiler status or fixture target",
+    );
+  if (
+    evaluator &&
+    ["tests", "compilation", "expected-error", "exact-output"].includes(
+      evaluator.kind,
+    )
+  )
+    errors.push("TOML must not use a Rust evaluator");
+  for (const field of ["code", "solution"] as const) {
+    if (step[field] !== undefined)
+      errors.push(
+        ...manifestSyntaxIssues(step[field]!).map(
+          (issue) => `${field}: ${issue}`,
+        ),
+      );
+  }
+  if (evaluator?.kind === "manifest-contract") {
+    errors.push(...manifestContractIssues(evaluator.contract));
+    if (
+      !step.solution?.trim() ||
+      !checkManifestContract(step.solution, evaluator.contract).passed
+    )
+      errors.push("manifest solution does not satisfy its contract");
+    if (
+      step.code !== undefined &&
+      checkManifestContract(step.code, evaluator.contract).passed
+    )
+      errors.push("manifest starter already satisfies its contract");
+    if (step.kind === "blank" && step.code !== undefined)
+      errors.push("blank manifest task must not provide starter code");
+  }
+  return errors;
+}
 
 function checkUnique(ids: string[], label: string, errors: string[]) {
   const seen = new Set<string>();
@@ -129,6 +182,11 @@ export function validateContent(content: ContentBundle): string[] {
     const review = content.reviewExercises[concept.id];
     if (review) {
       errors.push(
+        ...manifestStepIssues(review).map(
+          (error) => `review ${concept.id}: ${error}`,
+        ),
+      );
+      errors.push(
         ...trustedFixtureIssues(review).map(
           (error) => `review ${concept.id}: ${error}`,
         ),
@@ -145,7 +203,8 @@ export function validateContent(content: ContentBundle): string[] {
       errors.push(`concept ${concept.id} has no active review exercise`);
     else if (
       review.code !== undefined &&
-      (!review.solution?.trim() || !review.expectedStatus)
+      (!review.solution?.trim() ||
+        (review.editorMode !== "toml" && !review.expectedStatus))
     )
       errors.push(
         `review ${concept.id} has code without a verifiable solution`,
@@ -200,6 +259,9 @@ export function validateContent(content: ContentBundle): string[] {
     for (const step of lesson.steps) {
       const stepKey = `${lesson.id}/${step.id}`;
       errors.push(
+        ...manifestStepIssues(step).map((error) => `step ${stepKey}: ${error}`),
+      );
+      errors.push(
         ...trustedFixtureIssues(step).map(
           (error) => `step ${stepKey}: ${error}`,
         ),
@@ -214,7 +276,7 @@ export function validateContent(content: ContentBundle): string[] {
       if (step.code !== undefined) {
         if (!step.solution?.trim())
           errors.push(`step ${stepKey} has code but no solution`);
-        if (!step.expectedStatus)
+        if (step.editorMode !== "toml" && !step.expectedStatus)
           errors.push(`step ${stepKey} has code but no expectedStatus`);
         if (
           step.expectedStatus === "compile-error" &&
@@ -458,7 +520,10 @@ export function validateContent(content: ContentBundle): string[] {
           (error) => `project ${project.id}: ${error}`,
         ),
       );
-      for (const ref of project.package.revealStepRefs) {
+      for (const ref of [
+        ...project.package.revealStepRefs,
+        ...(project.package.starterRevealStepRefs ?? []),
+      ]) {
         if (!stepsByRef.has(`${ref.lessonId}/${ref.stepId}`))
           errors.push(
             `project ${project.id} package has unknown solution task: ${ref.lessonId}/${ref.stepId}`,

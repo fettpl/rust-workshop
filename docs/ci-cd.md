@@ -1,6 +1,6 @@
 # CI/CD repozytorium
 
-Stan na 13 września 2026. CI jest zdefiniowane w `.github/workflows/ci.yml`.
+Stan na 17 września 2026. CI jest zdefiniowane w `.github/workflows/ci.yml`.
 Wdrożenie aplikacji nie jest jeszcze skonfigurowane: docelowy hosting pozostaje
 do wyboru. Konfiguracja nie wymaga sekretów wdrożeniowych i niczego nie publikuje
 poza raportami testów w prywatnym repozytorium.
@@ -13,13 +13,13 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
 
 - `verify`: instalacja z `package-lock.json`, ESLint, TypeScript, Vitest,
   walidacja curriculum, autorskie przypadki Rust/Tokio/Loom, archiwa Cargo,
-  workspace i audyt powiązań źródeł. Następnie buduje aplikację i uruchamia
+  workspace, manifesty TOML i audyt powiązań źródeł. Następnie buduje aplikację i uruchamia
   testy Playwright oraz kontrolę offline na tym samym serwerze produkcyjnym.
   Osobny krok Number Guessing+ sprawdza pobierany starter i rozwiązanie, prawdziwe
   procesy CLI oraz wykrycie czterech kontrolowanych błędów programu.
 - `workspace-msrv`: testuje workspace Frame Protocol i pakiet Number Guessing+
   na dokładnym Rust 1.85.0, także z przypiętymi ścieżkami `rustc` i `rustdoc`
-  dla procesów potomnych.
+  dla procesów potomnych. Weryfikuje też stałe manifesty i przykład unii features przez Cargo 1.85.0.
 - `mini-grep-fuzz`: sprawdza niezależny oracle, ograniczoną kampanię libFuzzer,
   wykrycie kontrolowanego błędu i odtworzenie przypadku po jego usunięciu.
 
@@ -67,6 +67,8 @@ nie może pominąć bezpośrednich testów kontraktu, które potwierdzają oczek
 `todo!`. Weryfikator nadal wymaga niezerowego wyniku, nieudanego zestawu testów
 i komunikatu o niezaimplementowanym zachowaniu. Pełne referencje muszą przejść
 wszystkie testy bez tego wyjątku.
+
+Etap Cargo pobiera autorski lockfile Frame przez `content:workspace -- --fetch` przed ogólnym `content:cargo`; dalsze polecenia pracują offline/locked. `content:manifests` sprawdza wyłącznie konteksty zapisane w repozytorium, w tym różnicę gramatyki TOML pomiędzy stable i MSRV oraz rzeczywisty przykład normal/dev. Zwykłe testy deklaracji używają `cargo metadata --no-deps --offline`, więc nie wymagają cache registry. Kontrole archiwum używają wspólnego walidatora listy plików i mutacji, która musi zostać przez niego odrzucona.
 
 ## Scalenie i ograniczenia platformy
 

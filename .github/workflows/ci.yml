@@ -44,8 +44,9 @@ jobs:
       - run: npm run content:tokio -- --fetch
       - run: npm run content:models -- --fetch
       - run: npm run content:guessing -- --fetch
+      - run: npm run content:workspace -- --fetch
       - run: npm run content:cargo
-      - run: npm run content:workspace
+      - run: npm run content:manifests
       - run: npm run content:audit
       - run: npm run build
       - run: npx --no-install playwright install --with-deps chromium
@@ -106,7 +107,8 @@ jobs:
           toolchain: 1.85.0
           components: rustfmt, clippy
       - run: npm ci
-      - run: npm run content:workspace -- --msrv
+      - run: npm run content:workspace -- --fetch --msrv
+      - run: npm run content:manifests -- --msrv
       - run: npm run content:guessing -- --fetch --msrv
 
   mini-grep-fuzz:

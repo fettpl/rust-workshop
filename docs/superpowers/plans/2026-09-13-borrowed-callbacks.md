@@ -56,7 +56,7 @@ Read spec sections Integration, Lesson 3, Lesson 4 and Sources/evidence. The pri
 - [x] Review both author outputs independently, fix contract/test gaps and review integration. Read relevant local Next guide before changing app wiring.
 - [x] Run lint/typecheck/Vitest/content, full authored Rust, source audit, production build/E2E/offline. Existing CI reruns Tokio/Loom/Cargo/MSRV/fuzz before release. Do not repeat unrelated expensive local suites unless a change or failure justifies it.
 - [x] Update current stats and coverage honestly. Keep Cargo/publication, unsafe/GAT/advanced variance, performance and operational curriculum gaps. Record preceding Number Guessing PR/CI evidence and new verification limits.
-- [ ] Commit/push, open PR, verify all three jobs for exact head, merge and confirm main. Leave overarching course goal open.
+- [x] Commit/push, open PR, verify all three jobs for exact head, merge and confirm main. Leave overarching course goal open.
 
 ## Preflight and rulings
 
@@ -76,3 +76,7 @@ Cache ruling: v21 was exposed by the previous production server while its HTML s
 Final UI copy pass: clarify invariance of the contained type rather than immutability of the value, and fix replace_window empty-range prose (store empty, return the previous view). Rust fixtures unchanged. Final cache v23 carries this copy after the reviewed v22 production build.
 
 Final local evidence:122 lessons/33modules/125concepts/77blanks/249sources/8projects.172 Vitest in37 files, lint/TS, fullRust1397 plus final affected56, sources249HTTP200, productionbuild,47E2E withoutretry, finalcopybuild+1affectedE2E, offlinev23/all8ZIPs andmanualUIkeyboard/consoleclean. No executionoflearner/importRust. Readyforcommit/PR/exactheadCI.
+
+Release: PR #8 merged as57c24f905e94c04ca8629add5eb67eac246749f4 after all three CI checks passed for236a09e (automatic run34750981784; manual run34750956776 also passed). The merge tree exactly matches the tested head. The final documentation commit translates README and records English commit/PR metadata. Local main synchronized before starting the next Cargo feature branch.
+
+Post-merge main CI34751446523 passed all three jobs for57c24f9.

@@ -1,3 +1,5 @@
+import type { ManifestContract } from "./manifest";
+
 export type MasteryLevel =
   "new" | "exposed" | "practiced" | "understood" | "retained";
 export type EvidenceKind =
@@ -55,6 +57,7 @@ export interface Concept {
   reviewPrompt: string;
   reviewAnswer: string;
   distinguish: string;
+  evidenceArtifact?: "rust-code" | "manifest";
 }
 export interface Competency {
   id: string;
@@ -98,7 +101,8 @@ export type Evaluator =
   | { kind: "answer"; accepted: string[]; feedback: string }
   | { kind: "choice"; correct: string; explanations: Record<string, string> }
   | { kind: "ordering"; correct: string[] }
-  | { kind: "rubric"; criteria: string[] };
+  | { kind: "rubric"; criteria: string[] }
+  | { kind: "manifest-contract"; contract: ManifestContract };
 export type StepKind =
   | "predict"
   | "run"
@@ -132,6 +136,8 @@ export interface LessonStep {
   expectedDiagnostic?: string;
   /** Maintainer-only compiler selection for repository-authored fixtures, never a runner request. */
   trustedFixtureTarget?: "rustc-2024" | "cargo-tokio-runtime-1.53.1";
+  editorMode?: "rust" | "toml";
+  editorFile?: string;
 }
 export interface Lesson {
   id: string;
@@ -194,6 +200,7 @@ export interface ProjectPackage {
   /** Authored virtual-workspace layout; actual manifest membership is checked by Cargo. */
   workspaceMembers?: string[];
   revealStepRefs: ModuleGateTaskRef[];
+  starterRevealStepRefs?: ModuleGateTaskRef[];
   files: {
     path: string;
     starter: string;

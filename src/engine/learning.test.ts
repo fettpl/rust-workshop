@@ -9,6 +9,7 @@ import type {
 import { createInitialState } from "@/persistence/state";
 import {
   dueReviews,
+  evidencePolicyForConcepts,
   moduleGate,
   rateReview,
   recordEvidence,
@@ -30,6 +31,18 @@ const event = (overrides: Partial<EvidenceEvent> = {}): EvidenceEvent => ({
   ...overrides,
 });
 const base = (): UserState => createInitialState();
+const manifestPolicy = evidencePolicyForConcepts([
+  {
+    id: "manifest-concept",
+    title: "Manifest",
+    prerequisites: [],
+    competencyIds: [],
+    reviewPrompt: "",
+    reviewAnswer: "",
+    distinguish: "",
+    evidenceArtifact: "manifest",
+  },
+]);
 
 describe("learning engine", () => {
   it("does not make self-rating or a revealed answer strong evidence", () => {
@@ -100,6 +113,156 @@ describe("learning engine", () => {
       }),
     );
     expect(state.mastery.ownership?.level).toBe("understood");
+  });
+
+  it("requires two independent manifest tasks for manifest understanding", () => {
+    let state = recordEvidence(
+      base(),
+      event({
+        id: "manifest-a",
+        conceptIds: ["manifest-concept"],
+        evaluator: "manifest-contract",
+        stepId: "manifest-a",
+      }),
+      manifestPolicy,
+    );
+    state = recordEvidence(
+      state,
+      event({
+        id: "manifest-b",
+        conceptIds: ["manifest-concept"],
+        evaluator: "manifest-contract",
+        stepId: "manifest-b",
+        kind: "assessment",
+        at: 2_000,
+      }),
+      manifestPolicy,
+    );
+    expect(state.mastery["manifest-concept"]?.level).toBe("understood");
+  });
+
+  it("filters Rust and manifest evidence in both directions", () => {
+    let state = recordEvidence(
+      base(),
+      event({
+        id: "manifest-rust-a",
+        conceptIds: ["manifest-concept"],
+        stepId: "manifest-rust-a",
+        evaluator: "tests",
+      }),
+      manifestPolicy,
+    );
+    state = recordEvidence(
+      state,
+      event({
+        id: "manifest-rust-b",
+        conceptIds: ["manifest-concept"],
+        stepId: "manifest-rust-b",
+        evaluator: "exact-output",
+      }),
+      manifestPolicy,
+    );
+    expect(state.mastery["manifest-concept"]?.level ?? "new").toBe("new");
+
+    const rustPolicy = evidencePolicyForConcepts([
+      {
+        id: "rust-concept",
+        title: "Rust",
+        prerequisites: [],
+        competencyIds: [],
+        reviewPrompt: "",
+        reviewAnswer: "",
+        distinguish: "",
+      },
+    ]);
+    state = recordEvidence(
+      state,
+      event({
+        id: "rust-manifest-a",
+        conceptIds: ["rust-concept"],
+        stepId: "rust-manifest-a",
+        evaluator: "manifest-contract",
+      }),
+      rustPolicy,
+    );
+    state = recordEvidence(
+      state,
+      event({
+        id: "rust-manifest-b",
+        conceptIds: ["rust-concept"],
+        stepId: "rust-manifest-b",
+        evaluator: "manifest-contract",
+        kind: "assessment",
+      }),
+      rustPolicy,
+    );
+    expect(state.mastery["rust-concept"]?.level ?? "new").toBe("new");
+  });
+
+  it("keeps neutral answer and choice evidence independent of artifact", () => {
+    let state = recordEvidence(
+      base(),
+      event({
+        id: "manifest-choice",
+        conceptIds: ["manifest-concept"],
+        stepId: "manifest-choice",
+        evaluator: "choice",
+      }),
+      manifestPolicy,
+    );
+    expect(state.mastery["manifest-concept"]?.level).toBe("practiced");
+    state = recordEvidence(
+      state,
+      event({
+        id: "manifest-answer",
+        conceptIds: ["manifest-concept"],
+        stepId: "manifest-answer",
+        evaluator: "manifest-contract",
+        kind: "assessment",
+      }),
+      manifestPolicy,
+    );
+    expect(state.mastery["manifest-concept"]?.level).toBe("understood");
+  });
+
+  it("requires delayed manifest recall after two manifest tasks for retention", () => {
+    let state = recordEvidence(
+      base(),
+      event({
+        id: "manifest-retention-a",
+        conceptIds: ["manifest-concept"],
+        evaluator: "manifest-contract",
+        stepId: "manifest-retention-a",
+        at: 1_000,
+      }),
+      manifestPolicy,
+    );
+    state = recordEvidence(
+      state,
+      event({
+        id: "manifest-retention-b",
+        conceptIds: ["manifest-concept"],
+        evaluator: "manifest-contract",
+        stepId: "manifest-retention-b",
+        kind: "assessment",
+        at: 2_000,
+      }),
+      manifestPolicy,
+    );
+    state = recordEvidence(
+      state,
+      event({
+        id: "manifest-retention-recall",
+        conceptIds: ["manifest-concept"],
+        evaluator: "manifest-contract",
+        kind: "recall",
+        stepId: "manifest-retention-recall",
+        delayed: true,
+        at: 2_000 + DAY + 1,
+      }),
+      manifestPolicy,
+    );
+    expect(state.mastery["manifest-concept"]?.level).toBe("retained");
   });
 
   it("requires a verified delayed event more than a day after prior evidence for retention", () => {
@@ -612,6 +775,82 @@ describe("learning engine", () => {
     expect(result.criteria).toHaveLength(1);
     expect(result.criteria[0].passed).toBe(true);
     expect(result.passed).toBe(true);
+  });
+
+  it("does not let a Rust result satisfy a manifest module gate", () => {
+    const lesson: Lesson = {
+      id: "manifest-lesson",
+      moduleId: "manifest-module",
+      conceptIds: ["manifest-concept"],
+      competencyIds: [],
+      prerequisites: [],
+      title: "Manifest",
+      subtitle: "",
+      minutes: 5,
+      outcomes: [],
+      misconceptions: [],
+      transferTask: "",
+      evidenceGate: "gate",
+      sourceIds: [],
+      steps: [
+        {
+          id: "gate",
+          kind: "assessment",
+          title: "Gate",
+          prompt: "",
+          evidenceKind: "assessment",
+          evidenceGate: true,
+          evaluator: {
+            kind: "manifest-contract",
+            contract: {
+              document: "package",
+              assertions: [{ kind: "path-present", path: ["package"] }],
+            },
+          },
+        },
+      ],
+    };
+    const courseModule: CourseModule = {
+      id: "manifest-module",
+      title: "",
+      whyItMatters: "",
+      capabilities: [],
+      prerequisites: [],
+      lessonIds: [lesson.id],
+      exitGate: [],
+      projectConnection: "",
+      assessmentId: "manifest-lesson/gate",
+      gateCriteria: [
+        {
+          id: "manifest",
+          label: "Manifest",
+          taskRefs: [{ lessonId: lesson.id, stepId: "gate" }],
+        },
+      ],
+    };
+    let state = recordEvidence(
+      base(),
+      event({
+        id: "rust-result",
+        lessonId: lesson.id,
+        stepId: "gate",
+        evaluator: "compilation",
+      }),
+      manifestPolicy,
+    );
+    expect(moduleGate(state, [lesson], courseModule).passed).toBe(false);
+    state = recordEvidence(
+      state,
+      event({
+        id: "manifest-result",
+        lessonId: lesson.id,
+        stepId: "gate",
+        conceptIds: ["manifest-concept"],
+        evaluator: "manifest-contract",
+      }),
+      manifestPolicy,
+    );
+    expect(moduleGate(state, [lesson], courseModule).passed).toBe(true);
   });
 
   it("passes a capability when a clean equivalent task succeeds after the primary was revealed", () => {

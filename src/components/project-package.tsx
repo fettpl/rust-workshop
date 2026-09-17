@@ -5,15 +5,38 @@ import { Download, FileCode, Eye } from "lucide-react";
 import type { ProjectPackage as Package } from "@/domain/types";
 import {
   packageDownloadPath,
-  revealProjectSolution,
   type PackageVariant,
 } from "@/domain/project-package";
+import { revealCourseProjectPackageVariant } from "@/content/learning-context";
 import { lessons } from "@/content/course";
+import { stepKey } from "@/persistence/state";
 import { useLearning } from "./learning-provider";
 import { Eyebrow } from "./ui";
 
 export function ProjectPackage({ project }: { project: Package }) {
-  const { update } = useLearning();
+  const { state, update } = useLearning();
+  const [variant, setVariant] = useState<PackageVariant>("starter");
+  const previewRefs =
+    variant === "solution"
+      ? [...(project.starterRevealStepRefs ?? []), ...project.revealStepRefs]
+      : (project.starterRevealStepRefs ?? []);
+  const needsExposure = previewRefs.some(
+    (ref) => !state.steps[stepKey(ref.lessonId, ref.stepId)]?.revealed,
+  );
+  useEffect(() => {
+    // Also restore exposure if imported progress changes while a preview is open.
+    if (needsExposure) {
+      update((state) =>
+        revealCourseProjectPackageVariant(
+          state,
+          project,
+          lessons,
+          variant,
+          Date.now(),
+        ),
+      );
+    }
+  }, [project, update, needsExposure, variant]);
   useEffect(() => {
     if (
       process.env.NODE_ENV !== "production" ||
@@ -38,7 +61,6 @@ export function ProjectPackage({ project }: { project: Package }) {
       active = false;
     };
   }, [project]);
-  const [variant, setVariant] = useState<PackageVariant>("starter");
   const [path, setPath] = useState(
     project.files.find((file) => file.path === "README.md")?.path ??
       project.files[0].path,
@@ -47,12 +69,31 @@ export function ProjectPackage({ project }: { project: Package }) {
     project.files.find((item) => item.path === path) ?? project.files[0];
   const content =
     variant === "solution" ? (file.solution ?? file.starter) : file.starter;
-  function showReference() {
+  function expose(nextVariant: PackageVariant) {
     update((state) =>
-      revealProjectSolution(state, project, lessons, Date.now()),
+      revealCourseProjectPackageVariant(
+        state,
+        project,
+        lessons,
+        nextVariant,
+        Date.now(),
+      ),
     );
-    setVariant("solution");
   }
+  function showVariant(nextVariant: PackageVariant) {
+    expose(nextVariant);
+    setVariant(nextVariant);
+  }
+  if (needsExposure)
+    return (
+      <section
+        className="project-package"
+        aria-label="Pakiet Cargo"
+        aria-busy="true"
+      >
+        <p>Otwieranie pakietu…</p>
+      </section>
+    );
   return (
     <section className="project-package" aria-label="Pakiet Cargo">
       <Eyebrow>OD EDYTORA DO TERMINALA</Eyebrow>
@@ -72,21 +113,23 @@ export function ProjectPackage({ project }: { project: Package }) {
         <button
           className="secondary"
           aria-pressed={variant === "starter"}
-          onClick={() => setVariant("starter")}
+          onClick={() => showVariant("starter")}
         >
           Pliki startowe
         </button>
         <button
           className="secondary"
           aria-pressed={variant === "solution"}
-          onClick={showReference}
+          onClick={() => showVariant("solution")}
         >
           <Eye size={17} />
           Pokaż rozwiązanie pakietu
         </button>
       </div>
       <p className="package-help-note">
-        Podgląd rozwiązania zapisuje użycie pomocy w powiązanych lekcjach.
+        {project.starterRevealStepRefs?.length
+          ? "Podgląd lub pobranie plików startowych zapisuje pomoc w zadaniach z gotowymi manifestami. Rozwiązanie pakietu zapisuje także pomoc w powiązanych zadaniach Rust."
+          : "Podgląd rozwiązania zapisuje użycie pomocy w powiązanych lekcjach."}{" "}
         Wcześniejsze samodzielne wyniki pozostają zachowane.
       </p>
       <div className="package-file-header">
@@ -108,6 +151,7 @@ export function ProjectPackage({ project }: { project: Package }) {
           className="primary"
           href={packageDownloadPath(project, variant)}
           download={`${project.id}-${variant}.zip`}
+          onClick={() => expose(variant)}
         >
           <Download size={17} />
           {variant === "starter"

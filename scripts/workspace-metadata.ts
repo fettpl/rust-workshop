@@ -12,7 +12,16 @@ export interface WorkspaceMetadata {
     edition: string;
     rust_version: string | null;
     manifest_path: string;
-    dependencies: { name: string; source: string | null; path?: string }[];
+    publish: string[];
+    dependencies: {
+      name: string;
+      source: string | null;
+      path?: string;
+      req?: string;
+      optional?: boolean;
+      uses_default_features?: boolean;
+      features?: string[];
+    }[];
     features: Record<string, string[]>;
     targets: { kind: string[]; src_path: string; edition: string }[];
   }[];
@@ -35,6 +44,15 @@ export function assertFrameWorkspaceAuthoredLayout(
   assert.ok(rootLines.has("[workspace]"), "root: virtual workspace table");
   assert.ok(!rootLines.has("[package]"), "root must stay a virtual workspace");
   assert.ok(rootLines.has('resolver = "3"'), "root: resolver 3");
+  assert.ok(rootLines.has("publish = false"), "root: publish=false");
+  assert.ok(
+    rootLines.has('[workspace.dependencies]'),
+    "root: workspace dependencies table",
+  );
+  assert.ok(
+    rootLines.has('serde = { version = "1.0.229", default-features = false }'),
+    "root: pinned serde requirement with default features disabled",
+  );
   const declaredMembers = [...rootLines].find((line) =>
     line.startsWith("members ="),
   );
@@ -76,6 +94,14 @@ export function assertFrameWorkspaceAuthoredLayout(
     library.has("diagnostics = []"),
     "frame-protocol: diagnostics feature",
   );
+  assert.ok(
+    library.has('format = ["dep:serde", "serde/alloc", "serde/derive"]'),
+    "frame-protocol: format must enable serde alloc and derive",
+  );
+  assert.ok(
+    library.has("serde = { workspace = true, optional = true }"),
+    "frame-protocol: serde must be optional workspace dependency",
+  );
 
   const probe = manifestLines(
     join(root, "crates", "frame-probe", "Cargo.toml"),
@@ -84,6 +110,10 @@ export function assertFrameWorkspaceAuthoredLayout(
   assert.ok(
     probe.has('diagnostics = ["frame-protocol/diagnostics"]'),
     "frame-probe: diagnostics must forward to frame-protocol",
+  );
+  assert.ok(
+    probe.has('format = ["frame-protocol/format"]'),
+    "frame-probe: format must forward to frame-protocol",
   );
 }
 
@@ -130,14 +160,26 @@ export function assertFrameWorkspaceMetadata(
     "This exercise promises a std-only workspace without external dependencies",
   );
   for (const member of members) {
+    assert.deepEqual(
+      member.publish,
+      [],
+      `${member.name}: publish=false metadata`,
+    );
     assert.equal(member.edition, "2024", `${member.name}: edition`);
     for (const target of member.targets)
       assert.equal(target.edition, "2024", `${member.name}: target edition`);
     for (const dependency of member.dependencies) {
+      if (member.name === "frame-protocol" && dependency.name === "serde") {
+        assert.match(dependency.source ?? "", /^registry\+/);
+        assert.equal(dependency.req, "^1.0.229");
+        assert.equal(dependency.optional, true);
+        assert.equal(dependency.uses_default_features, false);
+        continue;
+      }
       assert.equal(
         dependency.source,
         null,
-        `${member.name}: no registry or git dependencies, including disabled optional ones`,
+        `${member.name}: no registry or git dependencies`,
       );
       assert.ok(
         dependency.path &&
@@ -169,5 +211,15 @@ export function assertFrameWorkspaceMetadata(
   assert.ok(
     Object.hasOwn(library.features, "diagnostics"),
     "Additive diagnostics feature must exist",
+  );
+  assert.deepEqual(
+    library.features.format,
+    ["dep:serde", "serde/alloc", "serde/derive"],
+    "format feature must activate the reviewed serde set",
+  );
+  assert.deepEqual(
+    members.find((pkg) => pkg.name === "frame-probe")!.features.format,
+    ["frame-protocol/format"],
+    "frame-probe format must forward to frame-protocol",
   );
 }

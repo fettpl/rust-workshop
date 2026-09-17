@@ -1,6 +1,6 @@
 import type { Lesson, ProjectPackage, UserState } from "./types";
 import { createStepProgress, stepKey } from "../persistence/state";
-import { recordLessonExposure } from "../engine/learning";
+import { recordLessonExposure, type EvidencePolicy } from "../engine/learning";
 
 export type PackageVariant = "starter" | "solution";
 
@@ -16,6 +16,27 @@ export function validateProjectPackage(project: ProjectPackage): string[] {
     errors.push("Package needs a title, description and instructions");
   if (!project.revealStepRefs.length)
     errors.push("Package needs solution exposure references");
+  for (const [label, refs] of [
+    ["solution", project.revealStepRefs],
+    ["starter", project.starterRevealStepRefs],
+  ] as const) {
+    if (refs === undefined) continue;
+    const seen = new Set<string>();
+    for (const ref of refs) {
+      if (
+        !ref ||
+        typeof ref.lessonId !== "string" ||
+        typeof ref.stepId !== "string" ||
+        !ref.lessonId.trim() ||
+        !ref.stepId.trim()
+      )
+        errors.push(`Invalid ${label} exposure reference`);
+      const key = `${ref?.lessonId ?? ""}:${ref?.stepId ?? ""}`;
+      if (seen.has(key))
+        errors.push(`Duplicate ${label} exposure reference: ${key}`);
+      seen.add(key);
+    }
+  }
   const paths = new Set<string>();
   for (const file of project.files) {
     const parts = file.path.split("/");
@@ -91,14 +112,45 @@ export function revealProjectSolution(
   project: ProjectPackage,
   lessons: Lesson[],
   now: number,
+  policy?: EvidencePolicy,
 ): UserState {
+  return revealProjectPackageVariant(
+    state,
+    project,
+    lessons,
+    "solution",
+    now,
+    policy,
+  );
+}
+
+/** Record help for the requested package variant while preserving independent work. */
+export function revealProjectPackageVariant(
+  state: UserState,
+  project: ProjectPackage,
+  lessons: Lesson[],
+  variant: PackageVariant,
+  now: number,
+  policy?: EvidencePolicy,
+): UserState {
+  const errors = validateProjectPackage(project);
+  if (errors.length) throw new Error(errors.join("; "));
+  const refs =
+    variant === "starter"
+      ? (project.starterRevealStepRefs ?? [])
+      : [...project.revealStepRefs, ...(project.starterRevealStepRefs ?? [])];
+  const uniqueRefs = Array.from(
+    new Map(refs.map((ref) => [`${ref.lessonId}:${ref.stepId}`, ref])).values(),
+  );
   let next = state;
-  for (const lesson of lessons) {
-    for (const step of lesson.steps.filter((item) =>
-      project.revealStepRefs.some(
-        (ref) => ref.lessonId === lesson.id && ref.stepId === item.id,
-      ),
-    )) {
+  for (const ref of uniqueRefs) {
+    const lesson = lessons.find((candidate) => candidate.id === ref.lessonId);
+    const step = lesson?.steps.find((candidate) => candidate.id === ref.stepId);
+    if (!lesson || !step)
+      throw new Error(
+        `Unknown ${variant} exposure reference: ${ref.lessonId}:${ref.stepId}`,
+      );
+    {
       const key = stepKey(lesson.id, step.id);
       if (next.steps[key]?.revealed) continue;
       next = recordLessonExposure(
@@ -119,6 +171,7 @@ export function revealProjectSolution(
           at: now,
           revealed: true,
         },
+        policy,
       );
     }
   }

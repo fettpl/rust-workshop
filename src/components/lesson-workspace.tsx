@@ -17,7 +17,10 @@ import { lessons, traces, sources, modules } from "@/content/course";
 import { createStepProgress, stepKey } from "@/persistence/state";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
-import { recordEvidence, recordLessonExposure } from "@/engine/learning";
+import {
+  recordCourseEvidence,
+  recordCourseLessonExposure,
+} from "@/content/learning-context";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
 import { LearningText } from "./learning-text";
 import { CompilerCoach } from "./compiler-coach";
@@ -63,6 +66,11 @@ export function LessonWorkspace() {
   const lastRun = [...progress.attempts].reverse().find((a) => a.result);
   const result = lastRun?.result;
   const hasCode = step.code !== undefined || step.kind === "blank";
+  const isManifest = step.evaluator?.kind === "manifest-contract";
+  const isToml = step.editorMode === "toml";
+  const panels = isToml
+    ? (["lesson", "code"] as const)
+    : (["lesson", "code", "output"] as const);
   const usesRun =
     step.evaluator &&
     ["exact-output", "compilation", "expected-error", "tests"].includes(
@@ -75,13 +83,17 @@ export function LessonWorkspace() {
     "trace",
     "recall",
   ].includes(step.kind);
-  const panel = hasCode ? state.resume.panel : "lesson";
+  const panel = !hasCode
+    ? "lesson"
+    : isToml && state.resume.panel === "output"
+      ? "code"
+      : state.resume.panel;
   const openedStep = useRef("");
   useEffect(() => {
     if (openedStep.current === key) return;
     openedStep.current = key;
     update((s) =>
-      recordLessonExposure(s, {
+      recordCourseLessonExposure(s, {
         lessonId: lesson.id,
         stepId: step.id,
         conceptIds: lesson.conceptIds,
@@ -104,7 +116,7 @@ export function LessonWorkspace() {
       return values.hints !== undefined ||
         values.revealed ||
         values.traceIndex !== undefined
-        ? recordLessonExposure(next, {
+        ? recordCourseLessonExposure(next, {
             lessonId: lesson.id,
             stepId: step.id,
             conceptIds: lesson.conceptIds,
@@ -129,7 +141,7 @@ export function LessonWorkspace() {
               {
                 at: Date.now(),
                 answer: prior.answer,
-                code: run ? code : undefined,
+                code: run || isManifest ? code : undefined,
                 result: run,
                 passed: outcome.passed,
                 feedback: outcome.feedback,
@@ -138,7 +150,7 @@ export function LessonWorkspace() {
           },
         },
       };
-      return recordEvidence(next, {
+      return recordCourseEvidence(next, {
         id: crypto.randomUUID(),
         conceptIds: lesson.conceptIds,
         lessonId: lesson.id,
@@ -165,6 +177,7 @@ export function LessonWorkspace() {
     );
   }
   async function run() {
+    if (isToml) return;
     const requestGeneration = generation();
     setPending(true);
     setExecutionMessage("");
@@ -342,7 +355,7 @@ export function LessonWorkspace() {
           role="tablist"
           aria-label="Panele zadania"
         >
-          {(["lesson", "code", "output"] as const).map((p) => (
+          {panels.map((p) => (
             <button
               role="tab"
               key={p}
@@ -350,17 +363,16 @@ export function LessonWorkspace() {
               aria-controls={`workspace-${p}`}
               tabIndex={panel === p ? 0 : -1}
               onKeyDown={(event) => {
-                const panels = ["lesson", "code", "output"] as const;
-                const position = panels.indexOf(p);
+                const position = panels.findIndex((item) => item === p);
                 const nextIndex =
                   event.key === "ArrowRight"
-                    ? (position + 1) % 3
+                    ? (position + 1) % panels.length
                     : event.key === "ArrowLeft"
-                      ? (position + 2) % 3
+                      ? (position + panels.length - 1) % panels.length
                       : event.key === "Home"
                         ? 0
                         : event.key === "End"
-                          ? 2
+                          ? panels.length - 1
                           : -1;
                 if (nextIndex < 0) return;
                 event.preventDefault();
@@ -404,7 +416,7 @@ export function LessonWorkspace() {
           {step.evidenceGate && (
             <p className="gate-label">◇ Dowód samodzielności · nowy problem</p>
           )}
-          {step.evaluator && !usesRun && (
+          {step.evaluator && !usesRun && !isManifest && (
             <div className="answer-area">
               {step.choices ? (
                 <fieldset>
@@ -611,7 +623,12 @@ export function LessonWorkspace() {
             <div className="editor-toolbar">
               <span>
                 <span className="file-dot" />{" "}
-                {step.evaluator?.kind === "tests" ? "lib.rs" : "main.rs"}
+                {step.editorFile ??
+                  (isToml
+                    ? "Cargo.toml"
+                    : step.evaluator?.kind === "tests"
+                      ? "lib.rs"
+                      : "main.rs")}
               </span>
               <div>
                 <button
@@ -628,30 +645,37 @@ export function LessonWorkspace() {
                 >
                   <RotateCcw size={15} />
                 </button>
-                <button
-                  className="run-button"
-                  disabled={
-                    pending ||
-                    !code.trim() ||
-                    (step.kind === "predict" && !progress.attempts.length)
-                  }
-                  onClick={() => void run()}
-                >
-                  {step.evaluator?.kind === "tests" ? (
-                    <TestTube2 size={15} />
-                  ) : (
-                    <Play size={15} />
-                  )}{" "}
-                  {pending
-                    ? "Kompilowanie…"
-                    : step.evaluator?.kind === "tests"
-                      ? "Uruchom testy"
-                      : "Uruchom"}
-                </button>
+                {(!isToml || isManifest) && (
+                  <button
+                    className="run-button"
+                    disabled={
+                      pending ||
+                      !code.trim() ||
+                      (step.kind === "predict" && !progress.attempts.length)
+                    }
+                    onClick={isManifest ? checkAnswer : () => void run()}
+                  >
+                    {isManifest ? (
+                      <Check size={15} />
+                    ) : step.evaluator?.kind === "tests" ? (
+                      <TestTube2 size={15} />
+                    ) : (
+                      <Play size={15} />
+                    )}{" "}
+                    {isManifest
+                      ? "Sprawdź manifest"
+                      : pending
+                        ? "Kompilowanie…"
+                        : step.evaluator?.kind === "tests"
+                          ? "Uruchom testy"
+                          : "Uruchom"}
+                  </button>
+                )}
               </div>
             </div>
             <div className="editor-wrap">
               <CodeEditor
+                language={step.editorMode}
                 code={code}
                 onChange={(code) => patch({ code })}
                 readOnly={!editable || pending}
@@ -661,7 +685,11 @@ export function LessonWorkspace() {
               />
             </div>
             <div className="editor-status">
-              <span>Rust · stable · edition 2024</span>
+              <span>
+                {isToml
+                  ? "TOML 1.0 · sprawdzenie deklaracji"
+                  : "Rust · stable · edition 2024"}
+              </span>
               <button
                 onClick={() =>
                   update((s) => ({
@@ -678,13 +706,15 @@ export function LessonWorkspace() {
                   : "Prosty edytor"}
               </button>
             </div>
-            {lastRun?.code !== undefined && lastRun.code !== code && (
-              <p className="output-stale" role="status">
-                Output pochodzi z poprzedniej wersji kodu. Uruchom ponownie po
-                zmianach.
-              </p>
-            )}
-            <CompilerOutput result={result} pending={pending} />
+            {!isToml &&
+              lastRun?.code !== undefined &&
+              lastRun.code !== code && (
+                <p className="output-stale" role="status">
+                  Output pochodzi z poprzedniej wersji kodu. Uruchom ponownie po
+                  zmianach.
+                </p>
+              )}
+            {!isToml && <CompilerOutput result={result} pending={pending} />}
           </section>
         )}
       </div>

@@ -17,7 +17,9 @@ export function CompilerCoach({
     <section className="compiler-coach">
       <h2>
         <Lightbulb size={18} />
-        Compiler Coach
+        {step.editorMode === "toml"
+          ? "Wskazówki do manifestu"
+          : "Compiler Coach"}
       </h2>
       <p>
         Zacznij od swojej próby. Wskazówki pomogą Ci zinterpretować wynik i
@@ -35,7 +37,9 @@ export function CompilerCoach({
             <p>
               <LearningText>
                 {step.hints?.[0] ??
-                  "Porównaj wymagania z komunikatem kompilatora."}
+                  (step.editorMode === "toml"
+                    ? "Porównaj wymagane deklaracje z informacją ze sprawdzenia."
+                    : "Porównaj wymagania z komunikatem kompilatora.")}
               </LearningText>
             </p>
           </div>
@@ -45,7 +49,9 @@ export function CompilerCoach({
               <p>
                 <LearningText>
                   {step.hints?.[1] ??
-                    "Przeanalizuj zakresy i przekazanie wartości."}
+                    (step.editorMode === "toml"
+                      ? "Sprawdź tabelę, do której należy pole, i jego wartość."
+                      : "Przeanalizuj zakresy i przekazanie wartości.")}
                 </LearningText>
               </p>
             </div>
