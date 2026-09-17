@@ -110,6 +110,11 @@ jobs:
       - run: npm run content:workspace -- --fetch --msrv
       - run: npm run content:manifests -- --msrv
       - run: npm run content:guessing -- --fetch --msrv
+      - name: Verify GAT contracts on Rust 1.85.0
+        run: |
+          gat_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
+          "$gat_rust_bin/rustc" --version
+          PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts
 
   mini-grep-fuzz:
     runs-on: ubuntu-latest
