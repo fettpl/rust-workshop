@@ -45,6 +45,22 @@ import {
 } from "./guessing-io";
 import { numberGuessingProject } from "./projects/number-guessing";
 import { miniGrepModule } from "./mini-grep-module";
+import { propertyContractsModule } from "./property-contracts-module";
+import {
+  propertyFoundationLessons,
+  propertyFoundationConcepts,
+  propertyFoundationCompetencies,
+  propertyFoundationSources,
+  propertyFoundationReviewExercises,
+} from "./property-foundations";
+import {
+  propertyCounterexampleLessons,
+  propertyCounterexampleConcepts,
+  propertyCounterexampleCompetencies,
+  propertyCounterexampleSources,
+  propertyCounterexampleReviewExercises,
+} from "./property-counterexamples";
+import { propertyContractsProject } from "./projects/property-contracts";
 import {
   miniGrepSearchLessons,
   miniGrepSearchConcepts,
@@ -338,12 +354,18 @@ import {
 } from "./foundations";
 import { cargoDependencyLifecycleModule } from "./cargo-dependency-lifecycle-module";
 import {
-  cargoDependencyLessons, cargoDependencyConcepts, cargoDependencyCompetencies,
-  cargoDependencySources, cargoDependencyReviewExercises,
+  cargoDependencyLessons,
+  cargoDependencyConcepts,
+  cargoDependencyCompetencies,
+  cargoDependencySources,
+  cargoDependencyReviewExercises,
 } from "./cargo-dependencies";
 import {
-  cargoReleaseLessons, cargoReleaseConcepts, cargoReleaseCompetencies,
-  cargoReleaseSources, cargoReleaseReviewExercises,
+  cargoReleaseLessons,
+  cargoReleaseConcepts,
+  cargoReleaseCompetencies,
+  cargoReleaseSources,
+  cargoReleaseReviewExercises,
 } from "./cargo-release-policy";
 
 export const ownershipModule = {
@@ -386,6 +408,7 @@ export const modules = [
   publicApiModule,
   cargoDependencyLifecycleModule,
   miniGrepModule,
+  propertyContractsModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -437,6 +460,8 @@ export const lessons = [
   ...cargoReleaseLessons,
   ...miniGrepSearchLessons,
   ...miniGrepSystemLessons,
+  ...propertyFoundationLessons,
+  ...propertyCounterexampleLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -484,6 +509,8 @@ export const concepts = [
   ...cargoReleaseConcepts,
   ...miniGrepSearchConcepts,
   ...miniGrepSystemConcepts,
+  ...propertyFoundationConcepts,
+  ...propertyCounterexampleConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -531,6 +558,8 @@ export const competencies = [
   ...cargoReleaseCompetencies,
   ...miniGrepSearchCompetencies,
   ...miniGrepSystemCompetencies,
+  ...propertyFoundationCompetencies,
+  ...propertyCounterexampleCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -578,6 +607,8 @@ export const sources = [
   ...cargoReleaseSources,
   ...miniGrepSearchSources,
   ...miniGrepSystemSources,
+  ...propertyFoundationSources,
+  ...propertyCounterexampleSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -625,6 +656,8 @@ export const reviewExercises = {
   ...cargoReleaseReviewExercises,
   ...miniGrepSearchReviewExercises,
   ...miniGrepSystemReviewExercises,
+  ...propertyFoundationReviewExercises,
+  ...propertyCounterexampleReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
@@ -671,6 +704,7 @@ export const projects = [
   tokioServiceProject,
   frameProtocolProject,
   miniGrepProject,
+  propertyContractsProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -739,6 +773,10 @@ export const roadmap = [
   },
   {
     title: "Mini grep: ograniczone wejście, kontekst i CLI",
+    status: "available",
+  },
+  {
+    title: "Property testing: kontrakty, generatory i kontrprzykłady",
     status: "available",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },

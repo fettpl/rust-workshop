@@ -45,6 +45,7 @@ jobs:
       - run: npm run content:models -- --fetch
       - run: npm run content:guessing -- --fetch
       - run: npm run content:workspace -- --fetch
+      - run: npm run content:property -- --fetch
       - run: npm run content:cargo
       - run: npm run content:manifests
       - run: npm run content:audit
@@ -107,9 +108,14 @@ jobs:
           toolchain: 1.85.0
           components: rustfmt, clippy
       - run: npm ci
-      - run: npm run content:workspace -- --fetch --msrv
-      - run: npm run content:manifests -- --msrv
       - run: npm run content:guessing -- --fetch --msrv
+      - run: npm run content:property -- --fetch --msrv
+      - run: npm run content:tokio -- --fetch
+      - run: npm run content:workspace -- --fetch --msrv
+      - run: npm run content:models -- --fetch --msrv
+      # Fetch Proptest before the generic archive verifier touches all Cargo packages.
+      - run: npm run content:cargo
+      - run: npm run content:manifests -- --msrv
       - name: Verify GAT contracts on Rust 1.85.0
         run: |
           gat_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"

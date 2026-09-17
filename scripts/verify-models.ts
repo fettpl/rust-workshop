@@ -7,7 +7,7 @@ import {
   rmSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { concurrencyLabPackage } from "../src/content/projects/concurrency-lab";
 import { projectFiles } from "../src/domain/project-package";
@@ -15,15 +15,51 @@ import { buildProjectArchive } from "./project-archive";
 import { verifyModelResult, type ModelExpectation } from "./model-result";
 
 const args = process.argv.slice(2);
-if (args.some((arg) => arg !== "--fetch") || args.length > 1) {
+if (
+  args.length > 2 ||
+  args.some((arg) => arg !== "--fetch" && arg !== "--msrv") ||
+  new Set(args).size !== args.length
+) {
   throw new Error(
-    "Only --fetch is supported; arbitrary paths and code are not accepted.",
+    "Only --fetch and --msrv are supported once each; arbitrary paths and code are not accepted.",
   );
+}
+const fetch = args.includes("--fetch");
+const msrv = args.includes("--msrv");
+const env = { ...process.env };
+const binary = msrv ? "rustup" : "cargo";
+const prefix = msrv ? ["run", "1.85.0", "cargo"] : [];
+if (msrv) {
+  for (const [variable, tool] of [
+    ["RUSTC", "rustc"],
+    ["RUSTDOC", "rustdoc"],
+  ] as const) {
+    const resolved = spawnSync(
+      "rustup",
+      ["which", "--toolchain", "1.85.0", tool],
+      { encoding: "utf8", timeout: 10_000 },
+    );
+    if (resolved.error || resolved.status !== 0)
+      throw new Error(resolved.error?.message ?? resolved.stderr);
+    const executable = resolved.stdout.trim();
+    const version = spawnSync(executable, ["--version"], {
+      encoding: "utf8",
+      timeout: 10_000,
+    });
+    if (version.error || version.status !== 0)
+      throw new Error(version.error?.message ?? version.stderr);
+    if (!version.stdout.startsWith(`${tool} 1.85.0 `))
+      throw new Error(`Expected exact MSRV ${tool}: ${version.stdout}`);
+    env[variable] = executable;
+    console.log(version.stdout.trim());
+  }
+  env.PATH = `${dirname(env.RUSTC!)}${delimiter}${env.PATH ?? ""}`;
 }
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-authored-models-"));
 function cargo(commandArgs: string[], expectation?: ModelExpectation) {
-  const result = spawnSync("cargo", commandArgs, {
+  const result = spawnSync(binary, [...prefix, ...commandArgs], {
     cwd: root,
+    env,
     encoding: "utf8",
     timeout: 60_000,
     maxBuffer: 3 * 1024 * 1024,
@@ -31,7 +67,9 @@ function cargo(commandArgs: string[], expectation?: ModelExpectation) {
   const passed = expectation
     ? verifyModelResult(result, expectation)
     : !result.error && result.status === 0;
-  console.log(`${passed ? "ok" : "FAIL"} cargo ${commandArgs.join(" ")}`);
+  console.log(
+    `${passed ? "ok" : "FAIL"} ${binary} ${[...prefix, ...commandArgs].join(" ")}`,
+  );
   if (expectation) console.log(result.stdout + result.stderr);
   if (!passed)
     throw new Error(result.error?.message ?? result.stdout + result.stderr);
@@ -56,7 +94,7 @@ try {
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, content);
   }
-  if (args.includes("--fetch")) cargo(["fetch", "--locked"]);
+  if (fetch) cargo(["fetch", "--locked"]);
   cargo(["test", "--offline", "--locked"], { passed: 5 });
   cargo(
     [

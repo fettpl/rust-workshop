@@ -75,6 +75,7 @@ import { readFile } from "node:fs/promises";
       /Laboratorium: serwis TCP/,
       /Laboratorium: publiczne API i workspace/,
       /Projekt: ograniczony Mini grep/,
+      /Projekt: kontrakty własności/,
     ]) {
       await context.setOffline(false);
       await page
@@ -359,6 +360,43 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(gatEditor).toHaveValue(gatDraft);
     console.log(
       "Previously unvisited GAT blank and its exact draft resume offline",
+    );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const propertyTitle =
+      "Property testing: kontrakty, generatory i kontrprzykłady";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(propertyTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: propertyTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    await page
+      .getByLabel("Kroki lekcji")
+      .getByRole("button", { name: /Od pustej kartki/ })
+      .click();
+    const propertyEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    await expect(propertyEditor).toHaveValue("");
+    const propertyHeading = await page.locator(".task-pane h1").innerText();
+    const propertyDraft =
+      "// Własność z niezależnym oracle, zachowana offline.\n";
+    await propertyEditor.fill(propertyDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(propertyHeading);
+    await expect(propertyEditor).toHaveValue(propertyDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited property-contracts blank and draft resume offline",
     );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);

@@ -689,7 +689,7 @@ struct Walker<'a> {
     visited_entries: usize,
 }
 
-impl<'a> Walker<'a> {
+impl Walker<'_> {
     fn count_entry(&mut self) -> Result<(), GrepError> {
         let required = self.visited_entries.saturating_add(1);
         if required > MAX_VISITED_ENTRIES {
@@ -1187,9 +1187,11 @@ fn bounded_reader_rejects_binary_long_and_partial_io_with_its_source() {
 #[test]
 fn selected_text_limit_is_inclusive_and_charges_each_empty_line() {
     let query = Query::parse("x").unwrap();
-    let exact = (0..16)
-        .map(|_| format!("{}\n", "x".repeat(MAX_RAW_LINE_BYTES - 1)))
-        .collect::<String>();
+    let mut exact = String::new();
+    for _ in 0..16 {
+        exact.push_str(&"x".repeat(MAX_RAW_LINE_BYTES - 1));
+        exact.push('\n');
+    }
     let selected = scan_reader(&query, Chunked::new(&exact, 19), 0).unwrap();
     assert_eq!(
         selected

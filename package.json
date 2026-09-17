@@ -23,6 +23,8 @@
     "predev": "npm run content:packages",
     "prebuild": "npm run content:packages",
     "content:cargo": "npm run content:packages && node --import tsx scripts/verify-packages.ts",
+    "precontent:property": "npm run content:packages",
+    "content:property": "node --import tsx scripts/verify-property-contracts.ts",
     "precontent:models": "npm run content:packages",
     "content:models": "node --import tsx scripts/verify-models.ts",
     "content:tokio": "node --import tsx scripts/verify-tokio.ts",

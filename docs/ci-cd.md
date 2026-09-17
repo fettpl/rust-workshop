@@ -26,6 +26,11 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
   minimalnej wersji obejmuje dzięki temu kod lekcji, a nie tylko archiwa Cargo.
 - `mini-grep-fuzz`: sprawdza niezależny oracle, ograniczoną kampanię libFuzzer,
   wykrycie kontrolowanego błędu i odtworzenie przypadku po jego usunięciu.
+- `content:property` runs only the authored Property Contracts archive. It checks
+  the locked Proptest 1.11.0 development dependency, starter and solution
+  behavior, replay of the checked-in regression, formatting, Clippy, and a
+  compiling mutant that must be rejected. The stable job and the MSRV job both
+  run it; `--msrv` selects the exact Rust 1.85.0 toolchain.
 
 Kontrole używają Node.js 22, bieżącego stable Rust oraz osobnych, jawnie
 przypiętych toolchainów MSRV i fuzzera. Bieżący stable celowo sprawdza również
@@ -65,6 +70,13 @@ toolchainu dla formatowania i Clippy. Celowe błędy muszą skompilować się
 i zostać odrzucone przez konkretny test zachowania; timeout, błąd kompilacji ani
 uruchomienie zera testów nie zaliczają kontroli. Po każdej mutacji przywrócona
 referencja musi ponownie przejść ten test.
+
+`content:property -- --fetch` pobiera tylko zależności z lockfile pakietu
+Property Contracts i następnie działa offline/locked. Weryfikator buduje
+archiwum z autorskich danych, porównuje je z pobieranym ZIP-em, sprawdza
+starter, rozwiązanie, replay regresji i kontrolowanego mutanta. Nie przyjmuje
+kodu ucznia, ścieżek ani nadpisań zależności; biblioteka ćwiczenia pozostaje
+std-only, a Proptest jest używany wyłącznie w testach deweloperskich.
 
 Dla nieukończonych starterów Cargo używa `--no-fail-fast`: błąd testu procesu
 nie może pominąć bezpośrednich testów kontraktu, które potwierdzają oczekiwane
