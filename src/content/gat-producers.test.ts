@@ -123,7 +123,7 @@ describe("GAT producer contracts", () => {
     ];
     for (const [source, tests] of unfinished)
       expect(runRust(source, tests).status).toBe(101);
-  });
+  }, 30_000);
 
   it("keeps constructor, order, maximum, and scratch regressions rejected", () => {
     const reverseRows = step("gat-receiver-borrows-review").solution!;

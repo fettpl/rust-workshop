@@ -34,7 +34,7 @@ Pierwszy E2E zatrzymał się w istniejącej kontroli Axe scenariusza Tokio. Śla
 
 ## CI i wydania
 
-Etap GAT nie ma jeszcze commita ani PR-a. Lokalna weryfikacja jest zakończona; przed scaleniem wymagane są commit, PR i sukces trzech zadań CI dla dokładnego head. Stable uruchamia pełny zestaw, workspace-msrv dodatkowo trzy zestawy GAT na dokładnym Rust 1.85.0, a mini-grep-fuzz zachowuje zakres. Krok MSRV dodaje do PATH rzeczywisty katalog z rustup which: samo rustup run może nadal wybrać systemowy kompilator.
+Etap GAT jest zapisany w commicie `4c7e499` i PR #10. Lokalna weryfikacja jest zakończona; przed scaleniem wymagany jest sukces trzech zadań CI dla dokładnego head. Stable uruchamia pełny zestaw, workspace-msrv dodatkowo trzy zestawy GAT na dokładnym Rust 1.85.0, a mini-grep-fuzz zachowuje zakres. Krok MSRV dodaje do PATH rzeczywisty katalog z rustup which: samo rustup run może nadal wybrać systemowy kompilator.
 
 Cargo scalono w [PR #9](https://github.com/fettpl/rustcrushcourse/pull/9) jako 2a68786. Trzy zadania przeszły dla [head 520ed98](https://github.com/fettpl/rustcrushcourse/actions/runs/35234913384) i [main](https://github.com/fettpl/rustcrushcourse/actions/runs/35235866279). Drzewo scalenia było identyczne z testowanym head. Historyczny raport w wersji 2a68786 tego pliku opisuje Cargo, 216 testów Vitest, 1397 przypadków Rust, 50 E2E i offline v24.
 
