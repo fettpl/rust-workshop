@@ -187,6 +187,38 @@ describe("state persistence", () => {
     expect(imported).toEqual(state);
   });
 
+  it("round trips TOML drafts and manifest attempts without a RunResult", () => {
+    const state = createInitialState();
+    const key = stepKey(
+      "cargo-dependency-contract",
+      "cargo-dependency-contract-gate",
+    );
+    state.steps[key] = {
+      ...createStepProgress('[workspace]\nresolver = "3"\n'),
+      attempts: [
+        {
+          at: 42,
+          code: '[workspace]\nresolver = "3"\n',
+          passed: false,
+          feedback: "Uzupełnij zależność.",
+        },
+      ],
+    };
+    state.events.push({
+      id: "manifest-attempt",
+      conceptIds: ["cargo-dependency-contract"],
+      lessonId: "cargo-dependency-contract",
+      stepId: "cargo-dependency-contract-gate",
+      kind: "assessment",
+      passed: false,
+      hints: 0,
+      revealed: false,
+      at: 42,
+      evaluator: "manifest-contract",
+    });
+    expect(importState(exportState(state))).toEqual(state);
+  });
+
   it("preserves an existing ownership resume when the new course starts with foundations", () => {
     const old = createInitialState();
     old.resume = {

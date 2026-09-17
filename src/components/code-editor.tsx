@@ -7,6 +7,40 @@ const LIGHT_THEME = "rust-workshop-light";
 const DARK_THEME = "rust-workshop-dark";
 
 const defineWorkshopThemes: BeforeMount = (monaco) => {
+  if (
+    !monaco.languages
+      .getLanguages()
+      .some(({ id }: { id: string }) => id === "toml")
+  ) {
+    monaco.languages.register({ id: "toml", extensions: [".toml"] });
+    // Highlighting only; the bounded TOML adapter performs validation.
+    monaco.languages.setMonarchTokensProvider("toml", {
+      tokenizer: {
+        root: [
+          [/#.*$/, "comment"],
+          [/"""/, "string", "@multilineBasic"],
+          [/'''/, "string", "@multilineLiteral"],
+          [/"([^"\\]|\\.)*"/, "string"],
+          [/'[^']*'/, "string"],
+          [/\b(?:true|false)\b/, "keyword"],
+          [/[+-]?(?:\d[\w.:+-]*|inf|nan)/, "number"],
+          [/[\[\]{},.=]/, "delimiter"],
+          [/[\w-]+/, "identifier"],
+        ],
+        multilineBasic: [
+          [/"""/, "string", "@pop"],
+          [/\\./, "string.escape"],
+          [/[^"\\]+/, "string"],
+          [/"/, "string"],
+        ],
+        multilineLiteral: [
+          [/'''/, "string", "@pop"],
+          [/[^']+/, "string"],
+          [/'/, "string"],
+        ],
+      },
+    });
+  }
   monaco.editor.defineTheme(LIGHT_THEME, {
     base: "vs",
     inherit: true,
@@ -76,6 +110,7 @@ export default function CodeEditor({
   fontSize = 16,
   theme = "light",
   accessible = false,
+  language = "rust",
 }: {
   code: string;
   onChange: (code: string) => void;
@@ -83,6 +118,7 @@ export default function CodeEditor({
   fontSize?: number;
   theme?: "light" | "dark";
   accessible?: boolean;
+  language?: "rust" | "toml";
 }) {
   const [fallback, setFallback] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -96,7 +132,7 @@ export default function CodeEditor({
     return (
       <textarea
         className="code-textarea"
-        aria-label="Kod Rust"
+        aria-label={language === "toml" ? "Kod TOML" : "Kod Rust"}
         value={code}
         readOnly={readOnly}
         spellCheck={false}
@@ -107,7 +143,7 @@ export default function CodeEditor({
   return (
     <Editor
       height="100%"
-      language="rust"
+      language={language}
       value={code}
       theme={theme === "dark" ? DARK_THEME : LIGHT_THEME}
       onChange={(value) => onChange(value ?? "")}
@@ -135,7 +171,7 @@ export default function CodeEditor({
         wordWrap: "on",
         automaticLayout: true,
         tabSize: 4,
-        ariaLabel: "Kod Rust",
+        ariaLabel: language === "toml" ? "Kod TOML" : "Kod Rust",
         accessibilitySupport: "on",
         tabFocusMode: true,
         renderLineHighlight: "none",

@@ -2,6 +2,9 @@
   "name": "rust-workshop",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "^22.13.0 || >=24"
+  },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build --webpack",
@@ -25,6 +28,7 @@
     "content:tokio": "node --import tsx scripts/verify-tokio.ts",
     "precontent:workspace": "npm run content:packages",
     "content:workspace": "node --import tsx scripts/verify-workspace.ts",
+    "content:manifests": "node --import tsx scripts/verify-manifests.ts",
     "precontent:fuzz": "npm run content:packages",
     "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts",
     "precontent:guessing": "npm run content:packages",
@@ -38,6 +42,7 @@
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "toml-eslint-parser": "1.0.3",
     "zod": "^4.6.2"
   },
   "devDependencies": {

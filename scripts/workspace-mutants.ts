@@ -1,8 +1,10 @@
 /** Negative controls for the fixed, repository-authored Frame Protocol workspace. */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { assertFrameWorkspaceAuthoredLayout } from "./workspace-metadata";
+import { assertExactFramePackageFiles } from "./workspace-package";
 
 export function verifyFrameWorkspaceMutants(
   root: string,
@@ -10,9 +12,14 @@ export function verifyFrameWorkspaceMutants(
   prefix: string[],
 ): void {
   const libraryPath = join(root, "crates/frame-protocol/src/lib.rs");
+  const rootManifestPath = join(root, "Cargo.toml");
+  const libraryManifestPath = join(root, "crates/frame-protocol/Cargo.toml");
   const probePath = join(root, "crates/frame-probe/Cargo.toml");
   const library = readFileSync(libraryPath, "utf8");
+  const rootManifest = readFileSync(rootManifestPath, "utf8");
+  const libraryManifest = readFileSync(libraryManifestPath, "utf8");
   const probe = readFileSync(probePath, "utf8");
+  const extraPath = join(root, "crates/frame-protocol", "UNREVIEWED.md");
 
   function replace(source: string, before: string, after: string): string {
     assert.ok(source.includes(before), `Mutation target missing: ${before}`);
@@ -176,8 +183,113 @@ export function verifyFrameWorkspaceMutants(
     console.log(
       "ok rejected mutant: library-only build exposes dependency hidden by feature unification",
     );
-  } finally {
     writeFileSync(libraryPath, library);
     writeFileSync(probePath, probe);
+    const clientFormat = run([
+      "test",
+      "-p",
+      "frame-probe",
+      "--no-default-features",
+      "--features",
+      "format",
+      "--test",
+      "cli",
+      "format_feature_activates_library_serialize_consumer",
+    ]);
+    assert.equal(clientFormat.status, 0, clientFormat.output);
+    assert.match(
+      clientFormat.output,
+      /test format_feature_activates_library_serialize_consumer \.\.\. ok/,
+    );
+    console.log("ok client-forwarded format executes the Serialize consumer");
+    writeFileSync(
+      probePath,
+      replace(probe, 'format = ["frame-protocol/format"]', "format = []"),
+    );
+    const missingForward = run([
+      "test",
+      "-p",
+      "frame-probe",
+      "--no-default-features",
+      "--features",
+      "format",
+      "--test",
+      "cli",
+      "format_feature_activates_library_serialize_consumer",
+    ]);
+    assert.notEqual(missingForward.status, 0);
+    assert.match(missingForward.output, /frame-probe\/format|feature/);
+    console.log("ok rejected mutant: client forwarding prevents format activation");
+    writeFileSync(probePath, probe);
+
+    writeFileSync(
+      rootManifestPath,
+      replace(rootManifest, 'version = "1.0.229"', 'version = "1.0.228"'),
+    );
+    assert.throws(
+      () => assertFrameWorkspaceAuthoredLayout(root, [
+        "crates/frame-protocol",
+        "crates/frame-probe",
+      ]),
+      /pinned serde requirement/,
+    );
+    console.log("ok rejected mutant: root serde requirement drift");
+
+    writeFileSync(
+      rootManifestPath,
+      rootManifest,
+    );
+    writeFileSync(
+      libraryManifestPath,
+      replace(
+        libraryManifest,
+        "serde = { workspace = true, optional = true }",
+        "serde = { workspace = true }",
+      ),
+    );
+    assert.throws(
+      () => assertFrameWorkspaceAuthoredLayout(root, [
+        "crates/frame-protocol",
+        "crates/frame-probe",
+      ]),
+      /optional workspace dependency/,
+    );
+    console.log("ok rejected mutant: inherited serde loses optionality");
+
+    writeFileSync(libraryManifestPath, libraryManifest);
+    writeFileSync(
+      probePath,
+      replace(
+        probe,
+        'format = ["frame-protocol/format"]',
+        "format = []",
+      ),
+    );
+    assert.throws(
+      () => assertFrameWorkspaceAuthoredLayout(root, [
+        "crates/frame-protocol",
+        "crates/frame-probe",
+      ]),
+      /format must forward/,
+    );
+    console.log("ok rejected mutant: client format forwarding drift");
+    writeFileSync(probePath, probe);
+
+    writeFileSync(extraPath, "unreviewed\n");
+    const archive = run(["package", "-p", "frame-protocol", "--list"]);
+    assert.equal(archive.status, 0, archive.output);
+    const mutatedFiles = archive.output.trim().split("\n").filter(Boolean);
+    assert.throws(
+      () => assertExactFramePackageFiles(mutatedFiles),
+      /package file list/,
+    );
+    console.log("ok rejected mutant: unreviewed package file crosses archive boundary");
+    writeFileSync(rootManifestPath, rootManifest);
+  } finally {
+    writeFileSync(rootManifestPath, rootManifest);
+    writeFileSync(libraryManifestPath, libraryManifest);
+    writeFileSync(libraryPath, library);
+    writeFileSync(probePath, probe);
+    rmSync(extraPath, { force: true });
   }
 }

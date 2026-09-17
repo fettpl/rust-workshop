@@ -4,6 +4,7 @@ import type {
   EvaluationResult,
   RunResult,
 } from "@/domain/types";
+import { checkManifestContract } from "./manifest-contract";
 
 const output = (value: string): string =>
   value
@@ -108,6 +109,11 @@ export function evaluate(
 ): EvaluationResult {
   const runResult = result(input);
   switch (evaluator.kind) {
+    case "manifest-contract":
+      return {
+        ...checkManifestContract(input.code ?? "", evaluator.contract),
+        evaluator: evaluator.kind,
+      };
     case "exact-output":
       if (!runResult) return missing(evaluator.kind);
       {

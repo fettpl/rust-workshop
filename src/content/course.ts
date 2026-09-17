@@ -321,6 +321,15 @@ import {
   foundationsSources,
   foundationsReviewExercises,
 } from "./foundations";
+import { cargoDependencyLifecycleModule } from "./cargo-dependency-lifecycle-module";
+import {
+  cargoDependencyLessons, cargoDependencyConcepts, cargoDependencyCompetencies,
+  cargoDependencySources, cargoDependencyReviewExercises,
+} from "./cargo-dependencies";
+import {
+  cargoReleaseLessons, cargoReleaseConcepts, cargoReleaseCompetencies,
+  cargoReleaseSources, cargoReleaseReviewExercises,
+} from "./cargo-release-policy";
 
 export const ownershipModule = {
   ...ownership.ownershipModule,
@@ -359,6 +368,7 @@ export const modules = [
   tokioBlockingModule,
   tokioNetworkModule,
   publicApiModule,
+  cargoDependencyLifecycleModule,
   miniGrepModule,
 ];
 export const lessons = [
@@ -405,6 +415,8 @@ export const lessons = [
   ...tokioNetworkLifecycleLessons,
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
+  ...cargoDependencyLessons,
+  ...cargoReleaseLessons,
   ...miniGrepSearchLessons,
   ...miniGrepSystemLessons,
 ];
@@ -448,6 +460,8 @@ export const concepts = [
   ...tokioNetworkLifecycleConcepts,
   ...publicApiValueConcepts,
   ...publicApiEvolutionConcepts,
+  ...cargoDependencyConcepts,
+  ...cargoReleaseConcepts,
   ...miniGrepSearchConcepts,
   ...miniGrepSystemConcepts,
 ];
@@ -491,6 +505,8 @@ export const competencies = [
   ...tokioNetworkLifecycleCompetencies,
   ...publicApiValueCompetencies,
   ...publicApiEvolutionCompetencies,
+  ...cargoDependencyCompetencies,
+  ...cargoReleaseCompetencies,
   ...miniGrepSearchCompetencies,
   ...miniGrepSystemCompetencies,
 ];
@@ -534,6 +550,8 @@ export const sources = [
   ...tokioNetworkLifecycleSources,
   ...publicApiValueSources,
   ...publicApiEvolutionSources,
+  ...cargoDependencySources,
+  ...cargoReleaseSources,
   ...miniGrepSearchSources,
   ...miniGrepSystemSources,
 ];
@@ -577,6 +595,8 @@ export const reviewExercises = {
   ...tokioNetworkLifecycleReviewExercises,
   ...publicApiValueReviewExercises,
   ...publicApiEvolutionReviewExercises,
+  ...cargoDependencyReviewExercises,
+  ...cargoReleaseReviewExercises,
   ...miniGrepSearchReviewExercises,
   ...miniGrepSystemReviewExercises,
 };

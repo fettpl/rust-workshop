@@ -42,6 +42,21 @@ describe("authored Rust starter verification", () => {
       evidenceGate: "",
       sourceIds: [],
       steps: [
+        {
+          id: "toml-observation",
+          title: "TOML observation",
+          kind: "observe",
+          prompt: "Read the authored manifest declaration.",
+          editorMode: "toml",
+          code: '[package]\nname = "probe"\n# fn main() {}',
+          solution: '[package]\nname = "probe"\n# fn main() {}',
+          evidenceKind: "exposure",
+          evaluator: {
+            kind: "answer",
+            accepted: ["probe"],
+            feedback: "Odczytana deklaracja.",
+          },
+        },
         fixture("already-correct", "fn answer() -> i32 { 1 + 1 }"),
         fixture("wrong-value", "fn answer() -> i32 { 0 }"),
         fixture("unimplemented", 'fn answer() -> i32 { todo!("implement") }'),
@@ -82,6 +97,9 @@ describe("authored Rust starter verification", () => {
       reviewExercises: {},
       traces: {},
     });
+    expect(
+      results.some((result) => result.id.includes("toml-observation")),
+    ).toBe(false);
     for (const [id, passed] of [
       ["already-correct", false],
       ["wrong-value", true],

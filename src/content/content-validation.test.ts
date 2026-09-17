@@ -29,6 +29,48 @@ const bundle: ContentBundle = {
 };
 
 describe("curriculum content contract", () => {
+  it("validates TOML declarations without requiring a compiler result", () => {
+    const target = lessons[0];
+    const changed = structuredClone(target);
+    changed.steps[0] = {
+      ...changed.steps[0],
+      editorMode: "toml",
+      editorFile: "Cargo.toml",
+      code: '[package]\nname="wrong"',
+      solution: '[package]\nname="demo"',
+      kind: "modify",
+      evidenceKind: "assessment",
+      evidenceGate: true,
+      evaluator: {
+        kind: "manifest-contract",
+        contract: {
+          document: "package",
+          assertions: [
+            { kind: "path-equals", path: ["package", "name"], value: "demo" },
+          ],
+        },
+      },
+      expectedStatus: undefined,
+      expectedError: undefined,
+      expectedDiagnostic: undefined,
+    };
+    const errors = () =>
+      validateContent({
+        ...bundle,
+        lessons: lessons.map((item) => (item === target ? changed : item)),
+      });
+    expect(errors()).toEqual([]);
+    changed.steps[0].solution = '[package]\nname="wrong"';
+    expect(errors().some((error) => error.includes("manifest solution"))).toBe(
+      true,
+    );
+    changed.steps[0].solution = '[package]\nname="demo"';
+    changed.steps[0].code = changed.steps[0].solution;
+    expect(errors().some((error) => error.includes("manifest starter"))).toBe(
+      true,
+    );
+  });
+
   it("accepts reviewed Rand sources and rejects lookalike hosts or unreviewed versions", () => {
     const check = (url: string) =>
       validateContent({

@@ -108,6 +108,7 @@ const EvidenceEventSchema = z.strictObject({
       "choice",
       "ordering",
       "rubric",
+      "manifest-contract",
     ])
     .optional(),
 });

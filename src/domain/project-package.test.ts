@@ -4,6 +4,7 @@ import type { ProjectPackage } from "./types";
 import {
   validateProjectPackage,
   projectFiles,
+  revealProjectPackageVariant,
   revealProjectSolution,
 } from "./project-package";
 import { buildProjectArchive } from "../../scripts/project-archive";
@@ -189,5 +190,48 @@ describe("downloadable project packages", () => {
     expect(
       Object.keys(next.steps).every((id) => id.startsWith(`${lesson.id}:`)),
     ).toBe(true);
+  });
+
+  it("exposes starter refs alone and deduplicates their union in the solution", () => {
+    const packageWithStarterRefs: ProjectPackage = {
+      ...fixture,
+      starterRevealStepRefs: [
+        { lessonId: "todo-session-project", stepId: "session-blank" },
+      ],
+    };
+    const starter = revealProjectPackageVariant(
+      createInitialState(),
+      packageWithStarterRefs,
+      lessons,
+      "starter",
+      2_000,
+    );
+    expect(starter.events).toHaveLength(1);
+    expect(starter.events[0].stepId).toBe("session-blank");
+    expect(
+      starter.steps[stepKey("todo-session-project", "session-debug")],
+    ).toBeUndefined();
+
+    const solution = revealProjectPackageVariant(
+      starter,
+      packageWithStarterRefs,
+      lessons,
+      "solution",
+      3_000,
+    );
+    expect(solution.events).toHaveLength(2);
+    expect(solution.events.map((event) => event.stepId).sort()).toEqual([
+      "session-blank",
+      "session-debug",
+    ]);
+    expect(
+      revealProjectPackageVariant(
+        solution,
+        packageWithStarterRefs,
+        lessons,
+        "solution",
+        4_000,
+      ).events,
+    ).toHaveLength(2);
   });
 });

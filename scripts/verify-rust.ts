@@ -261,6 +261,7 @@ export function verifyTrustedRust(
     });
   }
   function stepCases(prefix: string, step: LessonStep) {
+    if (step.editorMode === "toml") return;
     if (getTrustedFixtureTarget(step) !== "rustc-2024") return;
     if (step.evaluator?.kind === "tests")
       verify(`${prefix}/${step.id}/reject-empty-implementation`, "", {

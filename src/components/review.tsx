@@ -7,12 +7,11 @@ import { useLearning } from "./learning-provider";
 import { CompilerOutput } from "./compiler-output";
 import { LearningText } from "./learning-text";
 import { concepts, reviewExercises } from "@/content/course";
+import { dueReviews, rateReview } from "@/engine/learning";
 import {
-  dueReviews,
-  recordEvidence,
-  rateReview,
-  recordLessonExposure,
-} from "@/engine/learning";
+  recordCourseEvidence,
+  recordCourseLessonExposure,
+} from "@/content/learning-context";
 import { reviewSessionKey, startReviewSession } from "@/engine/review-session";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
@@ -48,6 +47,7 @@ export function ReviewView() {
     ? (state.steps[key] ?? createStepProgress())
     : createStepProgress();
   const evaluator = step?.evaluator;
+  const isManifest = evaluator?.kind === "manifest-contract";
   const executable =
     step?.code !== undefined &&
     evaluator !== undefined &&
@@ -108,7 +108,7 @@ export function ReviewView() {
         },
       };
       return values.revealed
-        ? recordLessonExposure(next, {
+        ? recordCourseLessonExposure(next, {
             lessonId: "review",
             stepId: key,
             conceptIds: [session.conceptId],
@@ -148,7 +148,7 @@ export function ReviewView() {
     if (!concept || !step?.evaluator || !session || pending || completed)
       return;
     const evaluator = step.evaluator;
-    const outcome = evaluate(evaluator, { answer: progress.answer });
+    const outcome = evaluate(evaluator, { answer: progress.answer, code });
     // eslint-disable-next-line react-hooks/purity -- Event handler: record actual action time, not the render clock.
     const now = Date.now();
     update((s) => {
@@ -165,6 +165,7 @@ export function ReviewView() {
               {
                 at: now,
                 answer: current.answer,
+                code: isManifest ? code : undefined,
                 passed: outcome.passed,
                 feedback: outcome.feedback,
               },
@@ -172,7 +173,7 @@ export function ReviewView() {
           },
         },
       };
-      next = recordEvidence(next, {
+      next = recordCourseEvidence(next, {
         id: crypto.randomUUID(),
         conceptIds: [concept.id],
         lessonId: "review",
@@ -281,7 +282,7 @@ export function ReviewView() {
           },
         },
       };
-      return recordEvidence(next, {
+      return recordCourseEvidence(next, {
         id: crypto.randomUUID(),
         conceptIds: [concept.id],
         lessonId: "review",
@@ -371,13 +372,14 @@ export function ReviewView() {
             <>
               <h3>{step.title}</h3>
               <LearningText>{step.prompt}</LearningText>
-              {step.code && !executable && (
+              {step.code && !executable && !isManifest && (
                 <pre className="code-sample">{step.code}</pre>
               )}
-              {executable ? (
+              {executable || isManifest ? (
                 <>
                   <div className="review-code-editor">
                     <CodeEditor
+                      language={step.editorMode}
                       code={code}
                       onChange={(nextCode) => patch({ code: nextCode })}
                       readOnly={pending || completed}
@@ -390,13 +392,15 @@ export function ReviewView() {
                     <button
                       className="primary"
                       disabled={pending || completed || !code.trim()}
-                      onClick={() => void run()}
+                      onClick={isManifest ? check : () => void run()}
                     >
-                      {pending
-                        ? "Kompilowanie…"
-                        : evaluator.kind === "tests"
-                          ? "Uruchom testy"
-                          : "Uruchom kod"}
+                      {isManifest
+                        ? "Sprawdź manifest"
+                        : pending
+                          ? "Kompilowanie…"
+                          : evaluator.kind === "tests"
+                            ? "Uruchom testy"
+                            : "Uruchom kod"}
                       <ArrowRight size={16} />
                     </button>
                     {codePassed && (
@@ -419,7 +423,14 @@ export function ReviewView() {
                       {lastAttempt.feedback}
                     </p>
                   )}
-                  <CompilerOutput result={result} pending={pending} />
+                  {isManifest ? (
+                    <p className="footnote">
+                      {step.editorFile ?? "Cargo.toml"} · TOML 1.0 · sprawdzenie
+                      deklaracji
+                    </p>
+                  ) : (
+                    <CompilerOutput result={result} pending={pending} />
+                  )}
                   {lastRun?.code !== undefined && lastRun.code !== code && (
                     <p className="footnote" role="status">
                       Output pochodzi z poprzedniej wersji kodu. Uruchom
@@ -455,7 +466,7 @@ export function ReviewView() {
                   />
                 </label>
               )}
-              {!executable && (
+              {!executable && !isManifest && (
                 <>
                   <button
                     className="primary"
