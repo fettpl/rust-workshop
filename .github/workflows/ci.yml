@@ -48,6 +48,7 @@ jobs:
       - run: npm run content:property -- --fetch
       # Fetch Criterion before the generic archive verifier runs offline.
       - run: npm run content:performance -- --fetch
+      - run: npm run content:ffi
       - run: npm run content:cargo
       - run: npm run content:manifests
       - run: npm run content:audit
@@ -117,6 +118,7 @@ jobs:
       - run: npm run content:models -- --fetch --msrv
       # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
       - run: npm run content:performance -- --fetch --msrv
+      - run: npm run content:ffi -- --msrv
       - run: npm run content:cargo
       - run: npm run content:manifests -- --msrv
       - name: Verify GAT and Performance Evidence contracts on Rust 1.85.0

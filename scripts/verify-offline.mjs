@@ -76,6 +76,7 @@ import { readFile } from "node:fs/promises";
       /Laboratorium: publiczne API i workspace/,
       /Projekt: ograniczony Mini grep/,
       /Projekt: kontrakty własności/,
+      /Project: safe FFI buffer owner/,
     ]) {
       await context.setOffline(false);
       await page
@@ -434,6 +435,32 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     console.log(
       "Previously unvisited performance blank and draft resume offline",
     );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const ffiTitle = "Unsafe i FFI: kontrakty raw pointerów oraz RAII";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(ffiTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: ffiTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const ffiEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    await expect(ffiEditor).toHaveValue(/checked_view/);
+    const ffiHeading = await page.locator(".task-pane h1").innerText();
+    const ffiDraft = `${await ffiEditor.inputValue()}\n// Kontrakt FFI zachowany offline.\n`;
+    await ffiEditor.fill(ffiDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(ffiHeading);
+    await expect(ffiEditor).toHaveValue(ffiDraft);
+    console.log("Unsafe/FFI gate and draft resume offline");
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

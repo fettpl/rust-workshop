@@ -12,6 +12,7 @@ for (const moduleId of [
   "borrowed-callbacks",
   "gat-lending-iterators",
   "performance-evidence",
+  "unsafe-ffi-contracts",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,

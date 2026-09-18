@@ -8,6 +8,7 @@ for (const [projectId, moduleId] of [
   ["frame-protocol", "public-api-workspaces"],
   ["mini-grep", "mini-grep"],
   ["number-guessing-result-message", "number-guessing-plus"],
+  ["ffi-buffer", "unsafe-ffi-contracts"],
 ]) {
   test(`${projectId}: downloads exact package files and preserves fresh gates after reveal`, async ({
     page,
@@ -18,8 +19,14 @@ for (const [projectId, moduleId] of [
     const archive = project.package!;
     const stage = modules.find((item) => item.id === moduleId)!;
     const fresh = stage.gateCriteria![0].taskRefs[1];
-    const lesson = lessons.find((item) => item.id === fresh.lessonId)!;
-    const blank = lesson.steps.find((item) => item.id === fresh.stepId)!;
+    const expectedStepRef =
+      projectId === "ffi-buffer" ? stage.gateCriteria![0].taskRefs[0] : fresh;
+    const expectedLesson = lessons.find(
+      (item) => item.id === expectedStepRef.lessonId,
+    )!;
+    const expectedStep = expectedLesson.steps.find(
+      (item) => item.id === expectedStepRef.stepId,
+    )!;
     await page.goto("/");
     await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
     await page.getByRole("button", { name: "Przejdź do nauki" }).click();
@@ -69,13 +76,13 @@ for (const [projectId, moduleId] of [
       .click();
     await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
     await page.locator(".gate-action").first().click();
-    await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
+    await expect(page.locator(".task-pane h1")).toHaveText(expectedStep.title);
     await page
       .getByRole("button", { name: "Prosty edytor", exact: true })
       .click();
     await expect(
       page.getByRole("textbox", { name: "Kod Rust", exact: true }),
-    ).toHaveValue("");
+    ).toHaveValue(expectedStep.code ?? "");
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toHaveCount(0);

@@ -61,6 +61,7 @@ import {
   propertyCounterexampleReviewExercises,
 } from "./property-counterexamples";
 import { propertyContractsProject } from "./projects/property-contracts";
+import { ffiBufferProject } from "./projects/ffi-buffer";
 import {
   performanceEvidenceLessons,
   performanceEvidenceConcepts,
@@ -375,6 +376,14 @@ import {
   cargoReleaseSources,
   cargoReleaseReviewExercises,
 } from "./cargo-release-policy";
+import {
+  unsafeFfiLessons,
+  unsafeFfiConcepts,
+  unsafeFfiCompetencies,
+  unsafeFfiSources,
+  unsafeFfiReviewExercises,
+  unsafeFfiModule,
+} from "./unsafe-ffi";
 
 export const ownershipModule = {
   ...ownership.ownershipModule,
@@ -418,6 +427,7 @@ export const modules = [
   miniGrepModule,
   propertyContractsModule,
   performanceEvidenceModule,
+  unsafeFfiModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -472,6 +482,7 @@ export const lessons = [
   ...propertyFoundationLessons,
   ...propertyCounterexampleLessons,
   ...performanceEvidenceLessons,
+  ...unsafeFfiLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -522,6 +533,7 @@ export const concepts = [
   ...propertyFoundationConcepts,
   ...propertyCounterexampleConcepts,
   ...performanceEvidenceConcepts,
+  ...unsafeFfiConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -572,6 +584,7 @@ export const competencies = [
   ...propertyFoundationCompetencies,
   ...propertyCounterexampleCompetencies,
   ...performanceEvidenceCompetencies,
+  ...unsafeFfiCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -622,6 +635,7 @@ export const sources = [
   ...propertyFoundationSources,
   ...propertyCounterexampleSources,
   ...performanceEvidenceSources,
+  ...unsafeFfiSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -672,6 +686,7 @@ export const reviewExercises = {
   ...propertyFoundationReviewExercises,
   ...propertyCounterexampleReviewExercises,
   ...performanceEvidenceReviewExercises,
+  ...unsafeFfiReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
@@ -719,6 +734,7 @@ export const projects = [
   frameProtocolProject,
   miniGrepProject,
   propertyContractsProject,
+  ffiBufferProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -794,7 +810,10 @@ export const roadmap = [
     status: "available",
   },
   { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },
-  { title: "Unsafe, FFI, Miri i testowanie współbieżności", status: "planned" },
+  {
+    title: "Unsafe i FFI: kontrakty raw pointerów oraz RAII",
+    status: "available",
+  },
   {
     title: "Architektura, bezpieczeństwo, obserwowalność i przegląd incydentów",
     status: "planned",
