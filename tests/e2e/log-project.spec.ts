@@ -185,3 +185,35 @@ test("resumes the blank log report from its project card without revealing a sol
     page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
   ).toHaveCount(0);
 });
+
+test("downloads the Log Analyzer benchmark and result contract", async ({
+  page,
+}) => {
+  const log = projects.find(
+    (item) => item.package?.id === "log-analyzer-workshop",
+  );
+  expect(log).toBeDefined();
+  const archive = log!.package!;
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+  await page.getByRole("button", { name: "Projekt", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "Wybierz projekt" })
+    .getByRole("button", { name: new RegExp(log!.title) })
+    .click();
+  const panel = page.getByRole("region", { name: "Pakiet Cargo" });
+  await panel.getByRole("button", { name: "Pokaż rozwiązanie pakietu" }).click();
+  const downloading = page.waitForEvent("download");
+  await panel.getByRole("link", { name: "Pobierz rozwiązanie" }).click();
+  const download = await downloading;
+  expect(download.suggestedFilename()).toBe(`${archive.id}-solution.zip`);
+  expect(await download.failure()).toBeNull();
+  const files = unzipSync(await readFile((await download.path())!));
+  expect(
+    strFromU8(files[`${archive.id}/benches/log_analyzer.rs`]),
+  ).toContain("criterion_main!");
+  expect(
+    strFromU8(files[`${archive.id}/tests/performance_contract.rs`]),
+  ).toContain("baseline_and_candidate_have_the_same_result_shape");
+});

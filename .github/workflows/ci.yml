@@ -46,6 +46,8 @@ jobs:
       - run: npm run content:guessing -- --fetch
       - run: npm run content:workspace -- --fetch
       - run: npm run content:property -- --fetch
+      # Fetch Criterion before the generic archive verifier runs offline.
+      - run: npm run content:performance -- --fetch
       - run: npm run content:cargo
       - run: npm run content:manifests
       - run: npm run content:audit
@@ -113,14 +115,15 @@ jobs:
       - run: npm run content:tokio -- --fetch
       - run: npm run content:workspace -- --fetch --msrv
       - run: npm run content:models -- --fetch --msrv
-      # Fetch Proptest before the generic archive verifier touches all Cargo packages.
+      # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
+      - run: npm run content:performance -- --fetch --msrv
       - run: npm run content:cargo
       - run: npm run content:manifests -- --msrv
-      - name: Verify GAT contracts on Rust 1.85.0
+      - name: Verify GAT and Performance Evidence contracts on Rust 1.85.0
         run: |
           gat_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
           "$gat_rust_bin/rustc" --version
-          PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts
+          PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts src/content/performance-evidence-assessment.test.ts
 
   mini-grep-fuzz:
     runs-on: ubuntu-latest

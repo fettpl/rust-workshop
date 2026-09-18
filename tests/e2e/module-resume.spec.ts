@@ -11,6 +11,7 @@ for (const moduleId of [
   "number-guessing-plus",
   "borrowed-callbacks",
   "gat-lending-iterators",
+  "performance-evidence",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,

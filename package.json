@@ -31,6 +31,8 @@
     "precontent:workspace": "npm run content:packages",
     "content:workspace": "node --import tsx scripts/verify-workspace.ts",
     "content:manifests": "node --import tsx scripts/verify-manifests.ts",
+    "precontent:performance": "npm run content:packages",
+    "content:performance": "node --import tsx scripts/verify-performance.ts",
     "precontent:fuzz": "npm run content:packages",
     "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts",
     "precontent:guessing": "npm run content:packages",

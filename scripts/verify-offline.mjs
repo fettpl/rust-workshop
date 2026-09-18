@@ -398,6 +398,42 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     console.log(
       "Previously unvisited property-contracts blank and draft resume offline",
     );
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const performanceTitle = "Performance Evidence: workload, pamięć i decyzje";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(performanceTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: performanceTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    await page
+      .getByLabel("Kroki lekcji")
+      .getByRole("button", { name: /Od pustej kartki/ })
+      .click();
+    const performanceEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    await expect(performanceEditor).toHaveValue("");
+    const performanceHeading = await page.locator(".task-pane h1").innerText();
+    const performanceDraft =
+      "// Workload, bufor i proxy zapisane bez zegara.\n";
+    await performanceEditor.fill(performanceDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(performanceHeading);
+    await expect(performanceEditor).toHaveValue(performanceDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log(
+      "Previously unvisited performance blank and draft resume offline",
+    );
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

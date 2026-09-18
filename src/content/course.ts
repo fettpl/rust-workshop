@@ -62,6 +62,14 @@ import {
 } from "./property-counterexamples";
 import { propertyContractsProject } from "./projects/property-contracts";
 import {
+  performanceEvidenceLessons,
+  performanceEvidenceConcepts,
+  performanceEvidenceCompetencies,
+  performanceEvidenceSources,
+  performanceEvidenceReviewExercises,
+  performanceEvidenceModule,
+} from "./performance-evidence";
+import {
   miniGrepSearchLessons,
   miniGrepSearchConcepts,
   miniGrepSearchCompetencies,
@@ -409,6 +417,7 @@ export const modules = [
   cargoDependencyLifecycleModule,
   miniGrepModule,
   propertyContractsModule,
+  performanceEvidenceModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -462,6 +471,7 @@ export const lessons = [
   ...miniGrepSystemLessons,
   ...propertyFoundationLessons,
   ...propertyCounterexampleLessons,
+  ...performanceEvidenceLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -511,6 +521,7 @@ export const concepts = [
   ...miniGrepSystemConcepts,
   ...propertyFoundationConcepts,
   ...propertyCounterexampleConcepts,
+  ...performanceEvidenceConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -560,6 +571,7 @@ export const competencies = [
   ...miniGrepSystemCompetencies,
   ...propertyFoundationCompetencies,
   ...propertyCounterexampleCompetencies,
+  ...performanceEvidenceCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -609,6 +621,7 @@ export const sources = [
   ...miniGrepSystemSources,
   ...propertyFoundationSources,
   ...propertyCounterexampleSources,
+  ...performanceEvidenceSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -658,6 +671,7 @@ export const reviewExercises = {
   ...miniGrepSystemReviewExercises,
   ...propertyFoundationReviewExercises,
   ...propertyCounterexampleReviewExercises,
+  ...performanceEvidenceReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
