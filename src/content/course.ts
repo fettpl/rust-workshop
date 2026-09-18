@@ -393,6 +393,14 @@ import {
   serviceOperationsReviewExercises,
   serviceOperationsModule,
 } from "./service-operations";
+import {
+  profileEvidenceLessons,
+  profileEvidenceConcepts,
+  profileEvidenceCompetencies,
+  profileEvidenceSources,
+  profileEvidenceReviewExercises,
+  profileEvidenceModule,
+} from "./profile-evidence";
 
 export const ownershipModule = {
   ...ownership.ownershipModule,
@@ -436,6 +444,7 @@ export const modules = [
   miniGrepModule,
   propertyContractsModule,
   performanceEvidenceModule,
+  profileEvidenceModule,
   unsafeFfiModule,
   serviceOperationsModule,
 ];
@@ -492,6 +501,7 @@ export const lessons = [
   ...propertyFoundationLessons,
   ...propertyCounterexampleLessons,
   ...performanceEvidenceLessons,
+  ...profileEvidenceLessons,
   ...unsafeFfiLessons,
   ...serviceOperationsLessons,
 ];
@@ -544,6 +554,7 @@ export const concepts = [
   ...propertyFoundationConcepts,
   ...propertyCounterexampleConcepts,
   ...performanceEvidenceConcepts,
+  ...profileEvidenceConcepts,
   ...unsafeFfiConcepts,
   ...serviceOperationsConcepts,
 ];
@@ -596,6 +607,7 @@ export const competencies = [
   ...propertyFoundationCompetencies,
   ...propertyCounterexampleCompetencies,
   ...performanceEvidenceCompetencies,
+  ...profileEvidenceCompetencies,
   ...unsafeFfiCompetencies,
   ...serviceOperationsCompetencies,
 ];
@@ -648,6 +660,7 @@ export const sources = [
   ...propertyFoundationSources,
   ...propertyCounterexampleSources,
   ...performanceEvidenceSources,
+  ...profileEvidenceSources,
   ...unsafeFfiSources,
   ...serviceOperationsSources,
 ];
@@ -700,6 +713,7 @@ export const reviewExercises = {
   ...propertyFoundationReviewExercises,
   ...propertyCounterexampleReviewExercises,
   ...performanceEvidenceReviewExercises,
+  ...profileEvidenceReviewExercises,
   ...unsafeFfiReviewExercises,
   ...serviceOperationsReviewExercises,
 };

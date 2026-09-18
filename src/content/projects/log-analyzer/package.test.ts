@@ -9,7 +9,7 @@ describe("Log Analyzer performance archive contract", () => {
   it("keeps the existing package identity and archive gates", () => {
     expect(validateProjectPackage(logAnalyzerPackage)).toEqual([]);
     expect(logAnalyzerPackage.id).toBe("log-analyzer-workshop");
-    expect(logAnalyzerPackage.files).toHaveLength(12);
+    expect(logAnalyzerPackage.files).toHaveLength(15);
     expect(logAnalyzerPackage.revealStepRefs.map((ref) => ref.stepId)).toEqual([
       "records-debug",
       "stream-debug",
@@ -44,5 +44,37 @@ describe("Log Analyzer performance archive contract", () => {
     );
     expect(contract).toContain("small_valid");
     expect(contract).toContain("mixed_malformed");
+
+    const sourceModel = solution["tests/source_model_contract.rs"];
+    expect(sourceModel).toContain(
+      "fixed_workload_matches_explicit_source_model_without_runtime_counter",
+    );
+    expect(sourceModel).toContain(
+      "no runtime allocator is observed here",
+    );
+    expect(sourceModel).toContain("source_model_buffer_capacity_bytes: MAX_LINE_BYTES");
+    expect(sourceModel).toContain("source_model_retained_record_bytes: 0");
+    const profileManifest = solution["PROFILE-MANIFEST.json"];
+    expect(profileManifest).toContain('"rust-workshop.profile.v1"');
+    expect(profileManifest).toContain(
+      '"status": "unverified-source-assumption"',
+    );
+    expect(profileManifest).toContain(
+      '"source_model_buffer_capacity_bytes": 4096',
+    );
+    expect(profileManifest).toContain(
+      '"source_model_retained_record_bytes": 0',
+    );
+    expect(profileManifest).toContain('"runtime_observed": false');
+    expect(profileManifest).toContain('"verification_status": "open"');
+    expect(profileManifest).toContain('"kind": "whole-test-process"');
+    expect(profileManifest).toContain('"attributes_parser_exclusively": false');
+    expect(profileManifest).toContain('"summary equality only"');
+    const performance = solution["PERFORMANCE.md"];
+    expect(performance).toContain("actual parser allocation");
+    expect(performance).toContain("verification remains open");
+    expect(performance).toMatch(/profiles\s+the whole Rust\s+test process/);
+    expect(performance).toContain("cannot be attributed exclusively");
+    expect(performance).toContain("not a baseline/candidate allocation comparison");
   });
 });

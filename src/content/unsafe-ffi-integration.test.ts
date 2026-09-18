@@ -151,20 +151,21 @@ it("uses each gate and blank as an independent module criterion", () => {
   ).toBe(true);
 });
 
-it("keeps Unsafe/FFI registered before Service Operations and the eleventh project", () => {
-  expect(modules).toHaveLength(39);
-  expect(lessons).toHaveLength(146);
-  expect(concepts).toHaveLength(149);
-  expect(sources).toHaveLength(286);
+it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
+  expect(modules).toHaveLength(40);
+  expect(lessons).toHaveLength(150);
+  expect(concepts).toHaveLength(153);
+  expect(sources).toHaveLength(291);
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(101);
+  ).toHaveLength(105);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
   expect(index).toBe(modules.length - 2);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);
-  expect(modules[index - 1].id).toBe("performance-evidence");
+  expect(modules[index - 1].id).toBe("profile-evidence");
+  expect(modules[index - 2].id).toBe("performance-evidence");
   expect(modules[index + 1].id).toBe("service-operations");
   expect(unsafeFfiSources).toHaveLength(4);
   expect(

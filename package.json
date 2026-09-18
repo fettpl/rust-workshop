@@ -37,6 +37,8 @@
     "content:manifests": "node --import tsx scripts/verify-manifests.ts",
     "precontent:performance": "npm run content:packages",
     "content:performance": "node --import tsx scripts/verify-performance.ts",
+    "precontent:profiles": "npm run content:packages",
+    "content:profiles": "node --import tsx scripts/verify-profiles.ts",
     "precontent:fuzz": "npm run content:packages",
     "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts",
     "precontent:guessing": "npm run content:packages",

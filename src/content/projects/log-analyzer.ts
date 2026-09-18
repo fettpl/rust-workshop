@@ -1347,6 +1347,150 @@ fn baseline_and_candidate_have_the_same_result_shape() {
 }
 `;
 
+const sourceModelContractTests = `use log_analyzer_workshop::{MAX_LINE_BYTES, Summary, analyze_reader};
+use std::io::Cursor;
+
+#[derive(Debug, PartialEq, Eq)]
+struct SourceModelAssumptions {
+    /// Source-level assumption; no runtime allocator is observed here.
+    source_model_buffer_capacity_bytes: usize,
+    /// Source-level assumption; no record payload is retained by the API.
+    source_model_retained_record_bytes: usize,
+    /// Workload construction is reported separately from the source model.
+    setup_bytes: usize,
+}
+
+fn fixed_workload() -> Vec<u8> {
+    let mut input = Vec::with_capacity(20_000);
+    for _ in 0..512 {
+        input.extend_from_slice(b"1 INFO fixed message\\n");
+    }
+    input
+}
+
+#[test]
+fn fixed_workload_matches_explicit_source_model_without_runtime_counter() {
+    let input = fixed_workload();
+    let setup_bytes = input.len();
+    let summary = analyze_reader(Cursor::new(input), None).unwrap();
+    assert_eq!(
+        summary,
+        Summary {
+            info: 512,
+            ..Summary::default()
+        }
+    );
+
+    let report = SourceModelAssumptions {
+        source_model_buffer_capacity_bytes: MAX_LINE_BYTES,
+        source_model_retained_record_bytes: 0,
+        setup_bytes,
+    };
+    assert_eq!(report.source_model_buffer_capacity_bytes, MAX_LINE_BYTES);
+    assert_eq!(report.source_model_retained_record_bytes, 0);
+    assert_eq!(report.setup_bytes, 512 * b"1 INFO fixed message\\n".len());
+}
+`;
+
+const profileManifest = `{
+  "schema": "rust-workshop.profile.v1",
+  "package": "log-analyzer-workshop",
+  "workload": {
+    "id": "fixed-512-info-records",
+    "generator": "tests/source_model_contract.rs::fixed_workload",
+    "records": 512,
+    "shape": "1 INFO fixed message\\n"
+  },
+  "allocation_model": {
+    "status": "unverified-source-assumption",
+    "metric": "source-level bounded-buffer assumption",
+    "source_model_buffer_capacity_bytes": 4096,
+    "source_model_retained_record_bytes": 0,
+    "scope": "source-level API and constant contract only",
+    "runtime_observed": false,
+    "verification_status": "open",
+    "portable_runtime_counter": false,
+    "limitations": "the contract does not observe allocator calls, allocated bytes, retained capacity, or parser-only profiler samples"
+  },
+  "comparison": {
+    "metric": "summary equality only",
+    "same_workload": true,
+    "baseline": "tests/performance_contract.rs::baseline",
+    "candidate": "tests/performance_contract.rs::candidate",
+    "limitations": "does not compare wall-clock time, allocation counts, profiler samples, or every possible input"
+  },
+  "profile_boundary": {
+    "kind": "whole-test-process",
+    "entrypoint": "source_model_contract::fixed_workload_matches_explicit_source_model_without_runtime_counter",
+    "includes": [
+      "Rust test harness",
+      "fixed workload construction",
+      "analyze_reader",
+      "assertions and teardown"
+    ],
+    "attributes_parser_exclusively": false,
+    "attribution": "Callgrind and DHAT reports are process-level observations; source-level allocation fields are not extracted from those reports"
+  },
+  "cpu": {
+    "tool": "callgrind",
+    "command": "npm run content:profiles -- --profile=callgrind",
+    "policy": "external tool evidence is required; stale checked-in fixtures are rejected",
+    "environment": "Linux x86-64 runner; verifier prints the installed Valgrind version"
+  },
+  "heap": {
+    "tool": "dhat",
+    "command": "npm run content:profiles -- --profile=dhat",
+    "policy": "external tool evidence is required; stale checked-in fixtures are rejected",
+    "environment": "Linux x86-64 runner; verifier prints the installed Valgrind version"
+  },
+  "provenance": {
+    "source": "repository-authored workload and test contract",
+    "fixture_policy": "no generated profile output is accepted as a source of truth",
+    "measurement_boundary": "no parser allocation measurement is performed; external profiles cover the whole test process"
+  }
+}
+`;
+
+const performanceGuide = `# Performance evidence
+
+This archive teaches how to collect bounded evidence for a streaming parser. The
+workload is fixed in \`tests/source_model_contract.rs\`: 512 identical INFO records
+are generated before measurement, and the parser must produce exactly 512 INFO
+records. The test records an explicit source-level model after workload setup,
+with assumptions that \`analyze_reader\` uses a 4096-byte line buffer and retains
+no record payload. These fields are not runtime allocator observations.
+
+The source model is a set of assumptions checked against the authored API and
+constants. Its \`source_model_buffer_capacity_bytes\` and
+\`source_model_retained_record_bytes\` fields are declarations of the reviewed
+source-level model, not runtime observations. It does not observe allocator
+calls, allocated bytes, retained capacity, or parser-only profiler samples, so
+actual parser allocation verification remains open. Workload setup is reported
+separately to keep the source-level scope explicit. A Callgrind or DHAT run is different: it profiles
+the whole Rust test process, including the test harness, workload construction,
+assertions and teardown. Its samples cannot be attributed exclusively to
+\`analyze_reader\` and cannot close the open allocation-verification gap.
+
+The Criterion benchmark in \`benches/log_analyzer.rs\` is a repeatable local
+comparison between the baseline and streaming implementations. Its timings are
+observations, not a universal performance threshold. CPU and heap evidence must
+be collected with the explicit verifier modes:
+
+\`\`\`text
+npm run content:profiles -- --profile=callgrind
+npm run content:profiles -- --profile=dhat
+\`\`\`
+
+Those modes require the named Valgrind tool and fail when it is unavailable.
+The verifier runs the repository-authored test binary and checks that a fresh
+tool output was produced. The report is process-level evidence for this runner,
+not a baseline/candidate allocation comparison, parser-only measurement, or
+runtime allocation proof.
+It never reads or trusts checked-in profile fixtures. See
+\`PROFILE-MANIFEST.json\` for workload, comparison limits, provenance, and the
+profile boundary.
+`;
+
 const fixture = `1 INFO uruchomienie
 2 WARN żółć
 2 WARN żółć
@@ -1458,6 +1602,21 @@ export const logAnalyzerPackage: ProjectPackage = {
       path: "tests/performance_contract.rs",
       starter: performanceContractTests,
       solution: performanceContractTests,
+    },
+    {
+      path: "tests/source_model_contract.rs",
+      starter: sourceModelContractTests,
+      solution: sourceModelContractTests,
+    },
+    {
+      path: "PROFILE-MANIFEST.json",
+      starter: profileManifest,
+      solution: profileManifest,
+    },
+    {
+      path: "PERFORMANCE.md",
+      starter: performanceGuide,
+      solution: performanceGuide,
     },
     { path: "fixtures/mixed.log", starter: fixture },
     { path: "README.md", starter: readme },

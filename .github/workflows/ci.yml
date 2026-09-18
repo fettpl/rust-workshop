@@ -49,6 +49,7 @@ jobs:
       - run: npm run content:property -- --fetch
       # Fetch Criterion before the generic archive verifier runs offline.
       - run: npm run content:performance -- --fetch
+      - run: npm run content:profiles
       - run: npm run content:ffi
       - run: npm run content:cargo
       - run: npm run content:manifests
@@ -120,6 +121,7 @@ jobs:
       - run: npm run content:models -- --fetch --msrv
       # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
       - run: npm run content:performance -- --fetch --msrv
+      - run: npm run content:profiles -- --fetch --msrv
       - run: npm run content:ffi -- --msrv
       - run: npm run content:cargo
       - run: npm run content:manifests -- --msrv
@@ -157,4 +159,46 @@ jobs:
           name: mini-grep-fuzz-evidence
           path: test-results/mini-grep-fuzz/
           if-no-files-found: warn
+          retention-days: 7
+
+  profile-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      # v6.1.0
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+      # Valgrind is an explicit environment prerequisite for fresh Callgrind evidence.
+      - name: Install Valgrind when the runner image does not provide it
+        shell: bash
+        run: |
+          if ! command -v valgrind >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes valgrind
+          fi
+      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - run: npm ci
+      - name: Collect fresh Callgrind and DHAT reports
+        env:
+          PROFILE_OUTPUT_DIR: profile-evidence
+        run: |
+          npm run content:profiles -- --fetch --profile=callgrind
+          npm run content:profiles -- --fetch --profile=dhat
+      # v7.0.1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: log-analyzer-profile-evidence
+          path: profile-evidence/
+          if-no-files-found: error
           retention-days: 7

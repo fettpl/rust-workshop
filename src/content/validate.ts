@@ -501,7 +501,9 @@ export function validateContent(content: ContentBundle): string[] {
         "https://docs.rs/tokio-stream/0.1.19/tokio_stream/",
       ) &&
       !source.url.startsWith("https://tokio.rs/") &&
-      !source.url.startsWith("https://proptest-rs.github.io/proptest/")
+      !source.url.startsWith("https://proptest-rs.github.io/proptest/") &&
+      !source.url.startsWith("https://nnethercote.github.io/perf-book/") &&
+      !source.url.startsWith("https://valgrind.org/docs/manual/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewedAt))
