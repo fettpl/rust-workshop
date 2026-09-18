@@ -378,6 +378,14 @@ import {
   cargoReleaseSources,
   cargoReleaseReviewExercises,
 } from "./cargo-release-policy";
+import { dependencyAssuranceModule } from "./dependency-assurance-module";
+import {
+  dependencyAssuranceLessons,
+  dependencyAssuranceConcepts,
+  dependencyAssuranceCompetencies,
+  dependencyAssuranceSources,
+  dependencyAssuranceReviewExercises,
+} from "./dependency-assurance";
 import {
   unsafeFfiLessons,
   unsafeFfiConcepts,
@@ -450,6 +458,7 @@ export const modules = [
   tokioNetworkModule,
   publicApiModule,
   cargoDependencyLifecycleModule,
+  dependencyAssuranceModule,
   miniGrepModule,
   propertyContractsModule,
   performanceEvidenceModule,
@@ -506,6 +515,7 @@ export const lessons = [
   ...publicApiEvolutionLessons,
   ...cargoDependencyLessons,
   ...cargoReleaseLessons,
+  ...dependencyAssuranceLessons,
   ...miniGrepSearchLessons,
   ...miniGrepSystemLessons,
   ...propertyFoundationLessons,
@@ -560,6 +570,7 @@ export const concepts = [
   ...publicApiEvolutionConcepts,
   ...cargoDependencyConcepts,
   ...cargoReleaseConcepts,
+  ...dependencyAssuranceConcepts,
   ...miniGrepSearchConcepts,
   ...miniGrepSystemConcepts,
   ...propertyFoundationConcepts,
@@ -614,6 +625,7 @@ export const competencies = [
   ...publicApiEvolutionCompetencies,
   ...cargoDependencyCompetencies,
   ...cargoReleaseCompetencies,
+  ...dependencyAssuranceCompetencies,
   ...miniGrepSearchCompetencies,
   ...miniGrepSystemCompetencies,
   ...propertyFoundationCompetencies,
@@ -668,6 +680,7 @@ export const sources = [
   ...publicApiEvolutionSources,
   ...cargoDependencySources,
   ...cargoReleaseSources,
+  ...dependencyAssuranceSources,
   ...miniGrepSearchSources,
   ...miniGrepSystemSources,
   ...propertyFoundationSources,
@@ -722,6 +735,7 @@ export const reviewExercises = {
   ...publicApiEvolutionReviewExercises,
   ...cargoDependencyReviewExercises,
   ...cargoReleaseReviewExercises,
+  ...dependencyAssuranceReviewExercises,
   ...miniGrepSearchReviewExercises,
   ...miniGrepSystemReviewExercises,
   ...propertyFoundationReviewExercises,

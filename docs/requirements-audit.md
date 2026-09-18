@@ -1,6 +1,10 @@
 # Zgodność z oryginalnym briefem
 
-## Bieżąca praca: Unsafe/FFI i Service Operations
+## Bieżąca praca: Dependency Assurance
+
+Katalog po integracji `dependency-assurance` ma 158 lekcji w 42 modułach, 161 pojęć, 113 zadań blank-page, 7 śladów pamięci, 300 wpisów źródłowych i dwanaście projektów z pakietami Cargo. Cztery polskie lekcje dodają osiem bramek i cztery kodowe retrievals dla diagnozy grafu, polityki source/license, injected-date advisory exceptions oraz artifact-bound release dossier. Frame Protocol zachowuje `publish = false` i ma restricted verifier, duplicate evidence, pinned offline snapshot, exception ledger, package extraction oraz external consumer. Snapshot nie jest live advisory feedem, kompletnym SBOM-em, oceną prawną ani publikacją; brak przypiętego binarium/bazy cargo-deny jest oznaczony jako `unsupported/infrastructure`, a decyzja pozostaje hold.
+
+## Poprzednia praca: Unsafe/FFI i Service Operations
 
 Katalog po integracji `unsafe-miri-contracts` ma 154 lekcje w 41 modułach, 157 pojęć, 109 zadań blank-page, 7 śladów pamięci, 295 wpisów źródłowych i dwanaście projektów z pakietami Cargo. Profile Evidence dodaje source-level cost assumptions i świeże profile Callgrind/DHAT całego procesu testowego; runtime parser-allocation verification pozostaje otwarte. Unsafe/FFI obejmuje precondition raw pointera, rozłączne regiony, `#[repr(C)]` i RAII uchwytu; Miri Safety dodaje `ByteView`, `Slot<T>` i `MutSlot` oraz trzy izolowane pure-Rust fixtures UB; Service Operations dodaje bounded admission, allowlisted telemetry, readiness/drain i evidence-first diagnosis. Dedykowane weryfikatory stable/MSRV porównują wygenerowane archiwa, uruchamiają formatowanie, testy i Clippy oraz odrzucają kontrolowane mutanty; przypięty nightly uruchamia Miri na testach bezpiecznej biblioteki oraz osobno na trzech izolowanych binariach negatywnych, z których tylko te ostatnie są negatywnymi fixture'ami i celowo wywołują UB. Miri nie jest raportowane dla fixture przekraczającego granicę kompilowanego C i alokatora. Bieżące focused checks obejmują content 154/157/7/295 oraz TypeScript bez błędów; pełny learner pilot i produkcyjna gotowość pozostają poza zakresem.
 
@@ -96,7 +100,7 @@ Moduł `borrowed-callbacks` dodaje cztery lekcje po podstawach closures. Osiem b
 
 Aktualizacja po integracji Service Operations: etap ma cztery dodatkowe
 lekcje z ośmioma bramkami, czterema blank-page i czterema powtórkami.
-Focused validation obejmuje katalog content 154/157/7/295, TypeScript bez błędów, package archive checks na stable/MSRV oraz Miri Safety fixtures. Pełne E2E i offline są uruchamiane osobno, a ich zakres i ograniczenia opisuje raport weryfikacji. Historyczne milestone reviews
+Focused validation obejmuje katalog content 158/161/7/300, TypeScript bez błędów, Vitest 382/382, package archive checks na stable/MSRV oraz Dependency Assurance ZIP/external-consumer fixture. Cargo-deny pozostaje `unsupported/infrastructure`, a release hold jest wymagany. Pełne E2E i offline są uruchamiane osobno, a ich zakres i ograniczenia opisuje raport weryfikacji. Historyczne milestone reviews
 GPT-6-Astra medium mają status APPROVED; bieżący profile follow-up jest osobną recenzją. Benchmark Log Analyzer ma kontrakt
 kształtu wyniku, a Profile Evidence dodaje jawne, niezweryfikowane założenia
 source-model oraz świeże Callgrind/DHAT całego procesu w CI. Raporty opisują

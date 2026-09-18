@@ -490,6 +490,7 @@ export function validateContent(content: ContentBundle): string[] {
       !source.url.startsWith("https://blog.rust-lang.org/") &&
       !source.url.startsWith("https://play.rust-lang.org/") &&
       !source.url.startsWith("https://github.com/rust-lang/") &&
+      !source.url.startsWith("https://github.com/RustSec/") &&
       !source.url.startsWith("https://github.com/fettpl/rustcrushcourse/") &&
       !source.url.startsWith("https://docs.rs/loom/0.7.2/loom/") &&
       !source.url.startsWith("https://docs.rs/rand/0.10.2/rand/") &&
@@ -503,7 +504,8 @@ export function validateContent(content: ContentBundle): string[] {
       !source.url.startsWith("https://tokio.rs/") &&
       !source.url.startsWith("https://proptest-rs.github.io/proptest/") &&
       !source.url.startsWith("https://nnethercote.github.io/perf-book/") &&
-      !source.url.startsWith("https://valgrind.org/docs/manual/")
+      !source.url.startsWith("https://valgrind.org/docs/manual/") &&
+      !source.url.startsWith("https://embarkstudios.github.io/cargo-deny/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewedAt))

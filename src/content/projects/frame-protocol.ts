@@ -154,6 +154,179 @@ frame-protocol = { path = "../frame-protocol" }
 workspace = true
 `;
 
+const denyConfig = String.raw`# cargo-deny 0.18.3 — reviewed 2026-09-18
+[graph]
+all-features = true
+no-default-features = false
+
+[advisories]
+db-urls = ["https://github.com/RustSec/advisory-db"]
+ignore = []
+
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+highlight = "all"
+
+[licenses]
+confidence-threshold = 0.8
+allow = ["MIT", "Apache-2.0"]
+unknown = "deny"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
+`;
+
+const dependencyPolicy = `# Dependency policy
+
+This fixture accepts only reviewed registry dependencies from crates.io, with
+MIT or Apache-2.0 licensing. Git, path, wildcard and unknown-license entries
+require a reviewed policy change. A duplicate package/version or source is a
+release hold until the graph is explained and the policy owner approves it.
+
+The policy is educational and bounded. It does not prove that a registry is
+honest, that every license expression was interpreted correctly, or that a
+transitive package has no unpublished behavior. The checked snapshot is a
+review artifact. This package does not have the pinned cargo-deny binary and
+advisory database required for a tool-backed decision, so the verifier reports
+unsupported/infrastructure and keeps the release on hold. A real project must
+refresh its advisory database on a scheduled cadence and record the exact
+tool/database revisions.
+`;
+
+const releaseChecklist = `# Release checklist
+
+- [ ] \`cargo metadata --locked\` verified the selected graph.
+- [ ] \`cargo tree -e features\` was inspected for duplicate versions and sources.
+- [ ] \`cargo deny check\` passed the pinned source, license, ban and advisory policy (unsupported/infrastructure in this offline fixture).
+- [ ] The advisory snapshot and exception ledger were reviewed with an injected date.
+- [ ] The authored solution ZIP listing and the extracted files were compared to the dossier.
+- [ ] The external consumer compiled against the extracted \`frame-protocol\` crate.
+- [ ] Manifest and dossier retain \`publish = false\`.
+
+This checklist is a local release rehearsal. It does not publish a crate,
+attest to a complete SBOM, or replace an organization-specific legal review.
+`;
+
+const exceptionLedger = `# Advisory exception ledger
+
+[[exception]]
+id = "RUSTSEC-2026-0001"
+package = "example-transitive-package"
+owner = "platform-team"
+reason = "Upstream fix is scheduled; the affected optional path is disabled in this fixture."
+scope = "frame-protocol default graph"
+opened_ymd = 20260910
+expires_ymd = 20260930
+reviewed_ymd = 20260918
+status = "temporary"
+`;
+
+const duplicateEvidence = `# Synthetic duplicate dependency fixture (hypothetical)
+
+# This record is a teaching scenario, not output from the current Cargo graph.
+# The clean runtime graph observation is recorded separately in
+# evidence/actual-cargo-tree.txt.
+
+reviewed_at = 2026-09-18
+scenario_source = "synthetic authored teaching fixture"
+command = "not-run; see evidence/actual-cargo-tree.txt for runtime observation"
+status = "hold"
+
+[[duplicate]]
+package = "serde"
+versions = ["1.0.228", "1.0.229"]
+sources = ["registry+https://github.com/rust-lang/crates.io-index"]
+parents = ["frame-protocol", "frame-probe"]
+reason = "The fixture demonstrates a conflict record; the shipped lockfile is the clean baseline."
+`;
+
+const actualCargoTreeEvidence = `# Actual Cargo graph observation for the shipped ZIP fixture
+
+command = "cargo tree --offline --locked --workspace -e features"
+observation = "runtime verifier must confirm this clean baseline"
+members = ["frame-probe v1.0.0", "frame-protocol v1.0.0"]
+duplicate_status = "not-observed"
+source = "cargo tree executed after ZIP extraction"
+`;
+
+const advisorySnapshot = `{
+  "tool": "cargo-deny",
+  "tool_version": "0.18.3",
+  "advisory_db": "RustSec/advisory-db",
+  "advisory_db_commit": "2026-09-18-reviewed-fixture",
+  "reviewed_at": "2026-09-18",
+  "status": "pinned-snapshot",
+  "execution_status": "unsupported/infrastructure",
+  "release_decision": "hold-until-local-verifier",
+  "network_access": false,
+  "limits": "This snapshot is authored teaching evidence, not a live advisory feed."
+}
+`;
+
+const releaseEvidenceManifest = `{
+  "schema": 1,
+  "project": "frame-protocol",
+  "release": "1.0.0",
+  "publish": false,
+  "reviewed_at": "2026-09-18",
+  "manifest_sha256": "sha256:6307aa9b031600c36dfc7f4105ad5bb957ff6c09d8c24ce072bbf6e36861e5b5",
+  "lock_sha256": "sha256:0068cc64876d703c1adc13fe62f24fdf4c6b304bf8c98d804e41c595e808c005",
+  "supply_chain_report": "evidence/cargo-deny-snapshot.json",
+  "duplicate_report": "evidence/duplicate-dependencies.toml",
+  "archive_listing": "evidence/package-list.txt",
+  "external_consumer": "fixtures/external-consumer",
+  "archive_kind": "authored-project-zip",
+  "decision": "hold-until-local-verifier",
+  "limits": [
+    "No registry publish is attempted.",
+    "The advisory snapshot is pinned authored evidence, not a live database.",
+    "The external consumer is compiled only after archive extraction."
+  ]
+}
+`;
+
+const packageListEvidence = `frame-protocol-workspace/Cargo.toml
+frame-protocol-workspace/Cargo.lock
+frame-protocol-workspace/README.md
+frame-protocol-workspace/DEPENDENCY-POLICY.md
+frame-protocol-workspace/RELEASE-CHECKLIST.md
+frame-protocol-workspace/RELEASE-EVIDENCE.json
+frame-protocol-workspace/deny.toml
+frame-protocol-workspace/exceptions/advisories.toml
+frame-protocol-workspace/evidence/cargo-deny-snapshot.json
+frame-protocol-workspace/evidence/duplicate-dependencies.toml
+frame-protocol-workspace/evidence/actual-cargo-tree.txt
+frame-protocol-workspace/evidence/package-list.txt
+frame-protocol-workspace/evidence/release-evidence.json
+frame-protocol-workspace/fixtures/external-consumer/Cargo.toml
+frame-protocol-workspace/fixtures/external-consumer/src/main.rs
+`;
+
+const externalConsumerManifest = String.raw`[package]
+name = "frame-external-consumer"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85.0"
+publish = false
+
+[dependencies]
+frame-protocol = { path = "../../crates/frame-protocol" }
+
+[workspace]
+`;
+
+const externalConsumerMain = `use frame_protocol::Frame;
+
+fn main() {
+    let frame = Frame::try_from_payload(b"external".to_vec()).expect("valid frame");
+    assert_eq!(frame.payload(), b"external");
+}
+`;
+
 const referenceLibrary = `#![forbid(unsafe_code)]
 //! Bounded, u16-prefixed frames with a deliberately small public API.
 //!
@@ -1053,6 +1226,23 @@ toolchainu, manifestów lub polityki zgodności; przegląd planowy co 90 dni.
 - [Cargo: rust-version](https://doc.rust-lang.org/cargo/reference/rust-version.html)
 - [Rust 2024: resolver 3](https://doc.rust-lang.org/edition-guide/rust-2024/cargo-resolver.html)
 - [Cargo: SemVer compatibility](https://doc.rust-lang.org/cargo/reference/semver.html)
+
+## Supply chain i decyzja wydania
+
+\`deny.toml\`, \`DEPENDENCY-POLICY.md\`, snapshot advisory i exception ledger
+opisują ograniczony, lokalny kontrakt: registry crates.io, MIT/Apache-2.0,
+brak wildcardów i duplicate versions. \`evidence/duplicate-dependencies.toml\`
+jest syntetycznym, hipotetycznym dowodem konfliktu do omówienia, a nie
+twierdzeniem, że bieżący lockfile ma ten konflikt. Osobna
+\`evidence/actual-cargo-tree.txt\` opisuje clean baseline obserwowany przez
+verifier po ekstrakcji. \`RELEASE-CHECKLIST.md\` wymaga listy autorskiego ZIP-a,
+hashy manifestu/lockfile i kompilacji fixture external consumer po ekstrakcji.
+
+\`cargo deny\` i advisory database nie są uruchamiane przez aplikację ani przez
+kod ucznia. Snapshot jest przypiętym, autorskim fixture bez dostępu do sieci;
+nie zastępuje aktualnego skanu, SBOM, oceny prawnej ani certyfikatu
+reproducible build. \`publish = false\` pozostaje zachowane i żadne polecenie
+tego projektu nie publikuje crate.
 `;
 
 const adr = `# ADR: stabilizujemy fasadę, nie reprezentację
@@ -1125,6 +1315,7 @@ export const frameProtocolPackage: ProjectPackage = {
     "Uzupełnij walidację Frame, framing u16, source chain, zachowane stare callable API i extension trait bez zmiany zewnętrznych testów.",
     "Dla referencji uruchom matrix z README: workspace default, library-only --no-default-features, diagnostics, format i niezależne procesy frame-probe. Nie zastępuj library-only testu zielonym workspace z unifikacją feature.",
     "Uruchom cargo test --doc -p frame-protocol, aby zobaczyć compile-fail dowody prawdziwej prywatności i #[non_exhaustive]. Lokalna lista poleceń nie nadaje mastery w aplikacji.",
+    "Przeczytaj DEPENDENCY-POLICY.md, deny.toml i exception ledger. Zapisz duplicate dependency evidence, sprawdź pinned snapshot oraz RELEASE-EVIDENCE.json; content:supply-chain wykonuje lokalny, fail-closed rehearsal i kompiluje external consumer po ekstrakcji.",
   ],
   revealStepRefs: [
     {
@@ -1150,13 +1341,40 @@ export const frameProtocolPackage: ProjectPackage = {
     "cargo-resolver-feature-unification",
     "cargo-lock-msrv-policy",
     "cargo-package-rehearsal",
-  ].map((lessonId) => ({lessonId, stepId: `${lessonId}-gate`})),
+  ].map((lessonId) => ({ lessonId, stepId: `${lessonId}-gate` })),
   files: [
     { path: "Cargo.toml", starter: workspaceManifest },
     { path: "Cargo.lock", starter: lockfile },
     { path: "README.md", starter: readme },
     { path: "ADR.md", starter: adr },
     { path: "CHANGELOG.md", starter: changelog },
+    { path: "deny.toml", starter: denyConfig },
+    { path: "DEPENDENCY-POLICY.md", starter: dependencyPolicy },
+    { path: "RELEASE-CHECKLIST.md", starter: releaseChecklist },
+    { path: "RELEASE-EVIDENCE.json", starter: releaseEvidenceManifest },
+    { path: "exceptions/advisories.toml", starter: exceptionLedger },
+    {
+      path: "evidence/duplicate-dependencies.toml",
+      starter: duplicateEvidence,
+    },
+    {
+      path: "evidence/actual-cargo-tree.txt",
+      starter: actualCargoTreeEvidence,
+    },
+    { path: "evidence/cargo-deny-snapshot.json", starter: advisorySnapshot },
+    {
+      path: "evidence/release-evidence.json",
+      starter: releaseEvidenceManifest,
+    },
+    { path: "evidence/package-list.txt", starter: packageListEvidence },
+    {
+      path: "fixtures/external-consumer/Cargo.toml",
+      starter: externalConsumerManifest,
+    },
+    {
+      path: "fixtures/external-consumer/src/main.rs",
+      starter: externalConsumerMain,
+    },
     { path: ".gitignore", starter: "/target\n" },
     {
       path: "crates/frame-protocol/Cargo.toml",
@@ -1190,7 +1408,7 @@ export const frameProtocolProject: ProjectContract = {
   id: "frame-protocol",
   title: "Laboratorium: publiczne API i workspace",
   objective:
-    "Ewoluuj API framed I/O, zachowując dotychczasowych klientów, i sprawdź zależności, features, minimalną wersję kompilatora oraz lokalne archiwum biblioteki.",
+    "Ewoluuj API framed I/O, zachowując dotychczasowych klientów, i sprawdź zależności, features, minimalną wersję kompilatora, supply-chain policy oraz lokalne dossier archiwum biblioteki.",
   lessonId: "api-validated-construction",
   lessonIds: [
     "api-validated-construction",
@@ -1201,6 +1419,10 @@ export const frameProtocolProject: ProjectContract = {
     "cargo-resolver-feature-unification",
     "cargo-lock-msrv-policy",
     "cargo-package-rehearsal",
+    "dependency-graph-diagnosis",
+    "dependency-source-license-policy",
+    "dependency-advisory-exceptions",
+    "dependency-release-dossier",
   ],
   reviewConceptIds: [
     "api-validated-construction",
@@ -1211,6 +1433,10 @@ export const frameProtocolProject: ProjectContract = {
     "cargo-resolver-feature-unification",
     "cargo-lock-msrv-policy",
     "cargo-package-rehearsal",
+    "dependency-graph-diagnosis",
+    "dependency-source-license-policy",
+    "dependency-advisory-exceptions",
+    "dependency-release-dossier",
   ],
   requiredBehaviors: [
     "Feature format jest opt-in, klient przekazuje go bibliotece, a serde nie należy do domyślnie aktywnego grafu.",
@@ -1218,17 +1444,22 @@ export const frameProtocolProject: ProjectContract = {
     "Limit czytania zatrzymuje się po prefixie przed alokacją lub odczytem payloadu, a limit checked write odmawia przed dowolnym outputem.",
     "FrameError zachowuje konkretną przyczynę I/O przez Error::source dla EOF, truncation i błędu reader/writer.",
     "Stare read_frame/write_frame, istniejący FrameReader implementer oraz dyn FrameReader zachowują callable powierzchnię; checked API i diagnostics są dodatkami.",
+    "Polityka źródeł i licencji odrzuca unknown, git/path i licencje spoza allowlisty, a duplicate dependency ma jawny zapis konfliktu.",
+    "Wyjątek advisory ma ownera, scope, reason i injected expiry; po dacie wygaśnięcia decyzja jest Hold.",
+    "Release dossier wiąże manifest, lockfile, audit, archive i external consumer; publish = false pozostaje zachowane.",
   ],
   requiredEvidence: [
-    "Osobne library/client format, cargo metadata/tree, niezmieniony lockfile i lokalne cargo package -p frame-protocol na stable oraz Rust 1.85.0; publish = false pozostaje zachowane.",
+    "Osobne library/client format, cargo metadata/tree, niezmieniony lockfile i autorski ZIP rozwiązania sprawdzony po ekstrakcji na stable oraz Rust 1.85.0; publish = false pozostaje zachowane.",
     "Cargo default, library-only --no-default-features, diagnostics, doc test, fmt, check, test, Clippy oraz osobny proces frame-probe.",
     "Zewnętrzny consumer kompiluje stare function pointery i non-Clone/non-Debug implementer, a doctesty compile_fail sprawdzają rzeczywistą prywatność i #[non_exhaustive].",
     "Mutacje wymaganej metody, Self: Sized, starego podpisu, kolejności limitu lub zachowania starej funkcji odrzucają test albo kompilator.",
+    "Lokalny verifier wykonuje tylko autorski archive extraction i zewnętrznego consumera; nie publikuje crate i nie przyjmuje ścieżek, kodu ani overrides.",
   ],
   constraints: [
     "Workspace jest virtual, resolver 3 i ma jawnie dziedziczone metadata oraz fixed Cargo.lock z opcjonalnym serde; domyślny graf pozostaje std-only.",
     "rust-version 1.85.0 jest deklaracją; tylko uruchomienie wskazanych artefaktów przez cargo +1.85.0 jest ograniczonym dowodem MSRV.",
     "Fixtures dowodzą wskazane publiczne kontrakty, nie pełnej zgodności SemVer ani bezpieczeństwa produkcyjnego protokołu.",
+    "Snapshot cargo-deny/advisory jest przypiętym authored evidence bez dostępu do sieci; nie jest żywą bazą advisory ani certyfikatem SBOM.",
   ],
   adversarialLessonId: "api-compatible-surface",
   adversarialInject:
