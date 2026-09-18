@@ -202,3 +202,34 @@ jobs:
           path: profile-evidence/
           if-no-files-found: error
           retention-days: 7
+
+  miri-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      # v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+      # Verified locally and in rustup's component index on 2026-09-18.
+      # The date is pinned because Miri is coupled to its nightly compiler.
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: 1.85.0
+          components: rustfmt, clippy
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: nightly-2026-08-08
+          components: miri, rust-src
+      - run: npm ci
+      - run: npm run content:miri -- --fetch
+      - run: npm run content:miri -- --msrv --fetch

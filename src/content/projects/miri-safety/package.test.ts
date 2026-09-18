@@ -1,0 +1,57 @@
+import { describe, expect, it } from "vitest";
+import { miriSafetyPackage, miriSafetyProject } from "../miri-safety";
+import {
+  projectFiles,
+  validateProjectPackage,
+} from "../../../domain/project-package";
+
+describe("Miri safety authored package contract", () => {
+  it("ships a std-only safe library and isolated UB fixtures", () => {
+    expect(validateProjectPackage(miriSafetyPackage)).toEqual([]);
+    expect(miriSafetyProject.id).toBe("miri-safety");
+    expect(miriSafetyPackage.id).toBe("miri-safety-workshop");
+    expect(miriSafetyPackage.revealStepRefs).toHaveLength(4);
+
+    const solution = projectFiles(miriSafetyPackage, "solution");
+    expect(Object.keys(solution)).toEqual(
+      expect.arrayContaining([
+        "Cargo.toml",
+        "Cargo.lock",
+        "README.md",
+        "SAFETY.md",
+        "src/lib.rs",
+        "tests/safety_contract.rs",
+        "tests/mutation_contract.rs",
+        "fixtures/Cargo.toml",
+        "fixtures/ub_out_of_bounds.rs",
+        "fixtures/ub_use_after_free.rs",
+        "fixtures/ub_aliasing.rs",
+      ]),
+    );
+    expect(solution["Cargo.toml"]).toContain('edition = "2024"');
+    expect(solution["Cargo.toml"]).toContain('rust-version = "1.85.0"');
+    expect(solution["Cargo.toml"]).not.toContain("[dependencies]");
+    expect(solution["src/lib.rs"]).toContain("#![forbid(unsafe_code)]");
+    expect(solution["tests/safety_contract.rs"]).toContain(
+      "byte_view_borrows_initialized_bytes_without_owning_them",
+    );
+    expect(solution["src/lib.rs"]).toContain("pub struct ByteView");
+    expect(solution["src/lib.rs"]).toContain("pub struct Slot<T>");
+    expect(solution["src/lib.rs"]).toContain("pub struct MutSlot");
+    expect(solution["fixtures/ub_out_of_bounds.rs"]).toContain("unsafe");
+    expect(solution["fixtures/ub_use_after_free.rs"]).toContain("from_raw");
+    expect(solution["fixtures/ub_aliasing.rs"]).toContain("*raw");
+  });
+
+  it("keeps the starter unfinished while retaining safety tests and fixtures", () => {
+    const starter = projectFiles(miriSafetyPackage, "starter");
+    expect(starter["src/lib.rs"]).toContain("todo!");
+    expect(starter["tests/safety_contract.rs"]).toContain(
+      "split_regions_are_disjoint",
+    );
+    expect(starter["tests/safety_contract.rs"]).toContain(
+      "mut_slot_reborrow_releases_the_outer_slot",
+    );
+    expect(starter["fixtures/ub_out_of_bounds.rs"]).toContain("unsafe");
+  });
+});

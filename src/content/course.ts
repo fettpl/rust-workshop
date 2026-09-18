@@ -62,6 +62,7 @@ import {
 } from "./property-counterexamples";
 import { propertyContractsProject } from "./projects/property-contracts";
 import { ffiBufferProject } from "./projects/ffi-buffer";
+import { miriSafetyProject } from "./projects/miri-safety";
 import {
   performanceEvidenceLessons,
   performanceEvidenceConcepts,
@@ -386,6 +387,14 @@ import {
   unsafeFfiModule,
 } from "./unsafe-ffi";
 import {
+  unsafeMiriLessons,
+  unsafeMiriConcepts,
+  unsafeMiriCompetencies,
+  unsafeMiriSources,
+  unsafeMiriReviewExercises,
+  unsafeMiriModule,
+} from "./unsafe-miri";
+import {
   serviceOperationsLessons,
   serviceOperationsConcepts,
   serviceOperationsCompetencies,
@@ -446,6 +455,7 @@ export const modules = [
   performanceEvidenceModule,
   profileEvidenceModule,
   unsafeFfiModule,
+  unsafeMiriModule,
   serviceOperationsModule,
 ];
 export const lessons = [
@@ -503,6 +513,7 @@ export const lessons = [
   ...performanceEvidenceLessons,
   ...profileEvidenceLessons,
   ...unsafeFfiLessons,
+  ...unsafeMiriLessons,
   ...serviceOperationsLessons,
 ];
 export const concepts = [
@@ -556,6 +567,7 @@ export const concepts = [
   ...performanceEvidenceConcepts,
   ...profileEvidenceConcepts,
   ...unsafeFfiConcepts,
+  ...unsafeMiriConcepts,
   ...serviceOperationsConcepts,
 ];
 export const competencies = [
@@ -609,6 +621,7 @@ export const competencies = [
   ...performanceEvidenceCompetencies,
   ...profileEvidenceCompetencies,
   ...unsafeFfiCompetencies,
+  ...unsafeMiriCompetencies,
   ...serviceOperationsCompetencies,
 ];
 export const sources = [
@@ -662,6 +675,7 @@ export const sources = [
   ...performanceEvidenceSources,
   ...profileEvidenceSources,
   ...unsafeFfiSources,
+  ...unsafeMiriSources,
   ...serviceOperationsSources,
 ];
 export const reviewExercises = {
@@ -715,6 +729,7 @@ export const reviewExercises = {
   ...performanceEvidenceReviewExercises,
   ...profileEvidenceReviewExercises,
   ...unsafeFfiReviewExercises,
+  ...unsafeMiriReviewExercises,
   ...serviceOperationsReviewExercises,
 };
 export const project = numberGuessingProject;
@@ -765,6 +780,7 @@ export const projects = [
   miniGrepProject,
   propertyContractsProject,
   ffiBufferProject,
+  miriSafetyProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },

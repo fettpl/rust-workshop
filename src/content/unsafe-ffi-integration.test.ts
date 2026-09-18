@@ -152,21 +152,22 @@ it("uses each gate and blank as an independent module criterion", () => {
 });
 
 it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
-  expect(modules).toHaveLength(40);
-  expect(lessons).toHaveLength(150);
-  expect(concepts).toHaveLength(153);
-  expect(sources).toHaveLength(291);
+  expect(modules).toHaveLength(41);
+  expect(lessons).toHaveLength(154);
+  expect(concepts).toHaveLength(157);
+  expect(sources).toHaveLength(295);
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(105);
+  ).toHaveLength(109);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
-  expect(index).toBe(modules.length - 2);
+  expect(index).toBe(modules.length - 3);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);
   expect(modules[index - 1].id).toBe("profile-evidence");
   expect(modules[index - 2].id).toBe("performance-evidence");
-  expect(modules[index + 1].id).toBe("service-operations");
+  expect(modules[index + 1].id).toBe("unsafe-miri-contracts");
+  expect(modules[index + 2].id).toBe("service-operations");
   expect(unsafeFfiSources).toHaveLength(4);
   expect(
     roadmap.find((entry) => entry.title.startsWith("Unsafe i FFI"))?.status,
@@ -174,9 +175,13 @@ it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operat
 
   const project = projects.find((entry) => entry.id === "ffi-buffer");
   expect(project?.package?.id).toBe("ffi-buffer-workshop");
-  expect(projects).toHaveLength(11);
+  expect(projects).toHaveLength(12);
   expect(project?.package?.revealStepRefs).toHaveLength(4);
   expect(project?.lessonIds).toEqual(unsafeFfiModule.lessonIds);
+
+  const miriProject = projects.find((entry) => entry.id === "miri-safety");
+  expect(miriProject?.package?.id).toBe("miri-safety-workshop");
+  expect(miriProject?.package?.revealStepRefs).toHaveLength(4);
 });
 
 it("runs the FFI verifier before generic Cargo archives in both CI jobs", () => {

@@ -32,6 +32,8 @@
     "content:operations": "node --import tsx scripts/verify-operations.ts",
     "precontent:ffi": "npm run content:packages",
     "content:ffi": "node --import tsx scripts/verify-ffi.ts",
+    "precontent:miri": "npm run content:packages",
+    "content:miri": "node --import tsx scripts/verify-miri.ts",
     "precontent:workspace": "npm run content:packages",
     "content:workspace": "node --import tsx scripts/verify-workspace.ts",
     "content:manifests": "node --import tsx scripts/verify-manifests.ts",
