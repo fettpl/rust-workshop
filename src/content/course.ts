@@ -117,6 +117,7 @@ import {
   tokioNetworkLifecycleReviewExercises,
 } from "./tokio-network-lifecycle";
 import { tokioServiceProject } from "./projects/tokio-service";
+import { serviceOperationsProject } from "./projects/service-operations";
 import { tokioIoModule, tokioBlockingModule } from "./tokio-io-modules";
 import {
   tokioIoLessons,
@@ -384,6 +385,14 @@ import {
   unsafeFfiReviewExercises,
   unsafeFfiModule,
 } from "./unsafe-ffi";
+import {
+  serviceOperationsLessons,
+  serviceOperationsConcepts,
+  serviceOperationsCompetencies,
+  serviceOperationsSources,
+  serviceOperationsReviewExercises,
+  serviceOperationsModule,
+} from "./service-operations";
 
 export const ownershipModule = {
   ...ownership.ownershipModule,
@@ -428,6 +437,7 @@ export const modules = [
   propertyContractsModule,
   performanceEvidenceModule,
   unsafeFfiModule,
+  serviceOperationsModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -483,6 +493,7 @@ export const lessons = [
   ...propertyCounterexampleLessons,
   ...performanceEvidenceLessons,
   ...unsafeFfiLessons,
+  ...serviceOperationsLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -534,6 +545,7 @@ export const concepts = [
   ...propertyCounterexampleConcepts,
   ...performanceEvidenceConcepts,
   ...unsafeFfiConcepts,
+  ...serviceOperationsConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -585,6 +597,7 @@ export const competencies = [
   ...propertyCounterexampleCompetencies,
   ...performanceEvidenceCompetencies,
   ...unsafeFfiCompetencies,
+  ...serviceOperationsCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -636,6 +649,7 @@ export const sources = [
   ...propertyCounterexampleSources,
   ...performanceEvidenceSources,
   ...unsafeFfiSources,
+  ...serviceOperationsSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -687,6 +701,7 @@ export const reviewExercises = {
   ...propertyCounterexampleReviewExercises,
   ...performanceEvidenceReviewExercises,
   ...unsafeFfiReviewExercises,
+  ...serviceOperationsReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
@@ -731,6 +746,7 @@ export const projects = [
   concurrencyLabProject,
   tokioPipelineProject,
   tokioServiceProject,
+  serviceOperationsProject,
   frameProtocolProject,
   miniGrepProject,
   propertyContractsProject,

@@ -151,20 +151,21 @@ it("uses each gate and blank as an independent module criterion", () => {
   ).toBe(true);
 });
 
-it("registers Unsafe/FFI as an available module and the tenth project", () => {
-  expect(modules).toHaveLength(38);
-  expect(lessons).toHaveLength(142);
-  expect(concepts).toHaveLength(145);
-  expect(sources).toHaveLength(282);
+it("keeps Unsafe/FFI registered before Service Operations and the eleventh project", () => {
+  expect(modules).toHaveLength(39);
+  expect(lessons).toHaveLength(146);
+  expect(concepts).toHaveLength(149);
+  expect(sources).toHaveLength(286);
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(97);
+  ).toHaveLength(101);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
-  expect(index).toBe(modules.length - 1);
+  expect(index).toBe(modules.length - 2);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);
   expect(modules[index - 1].id).toBe("performance-evidence");
+  expect(modules[index + 1].id).toBe("service-operations");
   expect(unsafeFfiSources).toHaveLength(4);
   expect(
     roadmap.find((entry) => entry.title.startsWith("Unsafe i FFI"))?.status,
@@ -172,7 +173,7 @@ it("registers Unsafe/FFI as an available module and the tenth project", () => {
 
   const project = projects.find((entry) => entry.id === "ffi-buffer");
   expect(project?.package?.id).toBe("ffi-buffer-workshop");
-  expect(projects).toHaveLength(10);
+  expect(projects).toHaveLength(11);
   expect(project?.package?.revealStepRefs).toHaveLength(4);
   expect(project?.lessonIds).toEqual(unsafeFfiModule.lessonIds);
 });

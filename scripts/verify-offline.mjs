@@ -77,6 +77,7 @@ import { readFile } from "node:fs/promises";
       /Projekt: ograniczony Mini grep/,
       /Projekt: kontrakty własności/,
       /Project: safe FFI buffer owner/,
+      /Projekt: operacje serwisu Tokio/,
     ]) {
       await context.setOffline(false);
       await page
@@ -461,6 +462,34 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.locator(".task-pane h1")).toHaveText(ffiHeading);
     await expect(ffiEditor).toHaveValue(ffiDraft);
     console.log("Unsafe/FFI gate and draft resume offline");
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const operationsTitle = "Service Operations: zaufanie, telemetryka i incydenty";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(operationsTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: operationsTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const operationsEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const operationsHeading = await page.locator(".task-pane h1").innerText();
+    const operationsDraft = `${await operationsEditor.inputValue()}\n// Evidence-first operations, preserved offline.\n`;
+    await operationsEditor.fill(operationsDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(operationsHeading);
+    await expect(operationsEditor).toHaveValue(operationsDraft);
+    await expect(
+      page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
+    ).toBeVisible();
+    console.log("Service Operations gate and draft resume offline");
     expect(errors).toEqual([]);
     console.log("Page errors", errors);
   } finally {

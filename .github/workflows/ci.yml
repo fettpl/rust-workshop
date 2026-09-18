@@ -42,6 +42,7 @@ jobs:
       - run: npm run content:check
       - run: npm run content:rust
       - run: npm run content:tokio -- --fetch
+      - run: npm run content:operations -- --fetch
       - run: npm run content:models -- --fetch
       - run: npm run content:guessing -- --fetch
       - run: npm run content:workspace -- --fetch
@@ -114,6 +115,7 @@ jobs:
       - run: npm run content:guessing -- --fetch --msrv
       - run: npm run content:property -- --fetch --msrv
       - run: npm run content:tokio -- --fetch
+      - run: npm run content:operations -- --fetch --msrv
       - run: npm run content:workspace -- --fetch --msrv
       - run: npm run content:models -- --fetch --msrv
       # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
