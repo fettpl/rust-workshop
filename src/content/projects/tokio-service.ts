@@ -1,4 +1,5 @@
 import type { ProjectContract, ProjectPackage } from "../../domain/types";
+import { tokioServiceLendingFiles } from "./tokio-service-lending";
 
 export const tokioServicePackage: ProjectPackage = {
   id: "tokio-service-workshop",
@@ -179,8 +180,23 @@ dependencies = [
     },
     {
       path: "src/lib.rs",
-      starter: `pub mod processing;
+      starter: `pub mod lending;
+pub mod processing;
 pub mod protocol;
+pub mod report_source;
+pub mod service;
+
+pub use processing::{ProcessError, Processor};
+pub use protocol::{FrameError, read_frame, write_frame};
+pub use service::{
+    ConfigError, ConnectionOutcome, MAX_REQUEST_DEADLINE, Service, ServiceConfig, ServiceMonitor,
+    ServiceReport,
+};
+`,
+      solution: `pub mod lending;
+pub mod processing;
+pub mod protocol;
+pub mod report_source;
 pub mod service;
 
 pub use processing::{ProcessError, Processor};
@@ -2364,6 +2380,7 @@ fn rejects_platform_capacity_and_deadline_overflow_before_binding() {
       path: ".gitignore",
       starter: "/target\n",
     },
+    ...tokioServiceLendingFiles,
   ],
 };
 

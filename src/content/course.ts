@@ -427,6 +427,21 @@ import {
   capstoneIntegrationModule,
 } from "./capstone-integration";
 import { durableLogServiceProject } from "./projects/durable-log-service";
+import {
+  asyncLendingCoreLessons,
+  asyncLendingCoreConcepts,
+  asyncLendingCoreCompetencies,
+  asyncLendingCoreSources,
+  asyncLendingCoreReviewExercises,
+} from "./async-lending-core";
+import {
+  asyncLendingBoundaryLessons,
+  asyncLendingBoundaryConcepts,
+  asyncLendingBoundaryCompetencies,
+  asyncLendingBoundarySources,
+  asyncLendingBoundaryReviewExercises,
+} from "./async-lending-boundaries";
+import { asyncLendingModule } from "./async-lending-module";
 
 export const ownershipModule = {
   ...ownership.ownershipModule,
@@ -465,6 +480,7 @@ export const modules = [
   tokioIoModule,
   tokioBlockingModule,
   tokioNetworkModule,
+  asyncLendingModule,
   publicApiModule,
   cargoDependencyLifecycleModule,
   dependencyAssuranceModule,
@@ -521,6 +537,8 @@ export const lessons = [
   ...tokioBlockingLessons,
   ...tokioTcpLessons,
   ...tokioNetworkLifecycleLessons,
+  ...asyncLendingCoreLessons,
+  ...asyncLendingBoundaryLessons,
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
   ...cargoDependencyLessons,
@@ -577,6 +595,8 @@ export const concepts = [
   ...tokioBlockingConcepts,
   ...tokioTcpConcepts,
   ...tokioNetworkLifecycleConcepts,
+  ...asyncLendingCoreConcepts,
+  ...asyncLendingBoundaryConcepts,
   ...publicApiValueConcepts,
   ...publicApiEvolutionConcepts,
   ...cargoDependencyConcepts,
@@ -633,6 +653,8 @@ export const competencies = [
   ...tokioBlockingCompetencies,
   ...tokioTcpCompetencies,
   ...tokioNetworkLifecycleCompetencies,
+  ...asyncLendingCoreCompetencies,
+  ...asyncLendingBoundaryCompetencies,
   ...publicApiValueCompetencies,
   ...publicApiEvolutionCompetencies,
   ...cargoDependencyCompetencies,
@@ -689,6 +711,8 @@ export const sources = [
   ...tokioBlockingSources,
   ...tokioTcpSources,
   ...tokioNetworkLifecycleSources,
+  ...asyncLendingCoreSources,
+  ...asyncLendingBoundarySources,
   ...publicApiValueSources,
   ...publicApiEvolutionSources,
   ...cargoDependencySources,
@@ -745,6 +769,8 @@ export const reviewExercises = {
   ...tokioBlockingReviewExercises,
   ...tokioTcpReviewExercises,
   ...tokioNetworkLifecycleReviewExercises,
+  ...asyncLendingCoreReviewExercises,
+  ...asyncLendingBoundaryReviewExercises,
   ...publicApiValueReviewExercises,
   ...publicApiEvolutionReviewExercises,
   ...cargoDependencyReviewExercises,

@@ -30,6 +30,7 @@
     "precontent:models": "npm run content:packages",
     "content:models": "node --import tsx scripts/verify-models.ts",
     "content:tokio": "node --import tsx scripts/verify-tokio.ts",
+    "content:async-lending": "node --import tsx scripts/verify-async-lending.ts",
     "precontent:operations": "npm run content:packages",
     "content:operations": "node --import tsx scripts/verify-operations.ts",
     "precontent:ffi": "npm run content:packages",

@@ -11,6 +11,7 @@ for (const moduleId of [
   "number-guessing-plus",
   "borrowed-callbacks",
   "gat-lending-iterators",
+  "async-lending-contracts",
   "performance-evidence",
   "unsafe-ffi-contracts",
 ]) {
