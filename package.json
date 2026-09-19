@@ -20,6 +20,8 @@
     "content:audit": "node --import tsx scripts/audit-sources.ts",
     "format": "prettier --write src scripts tests *.ts *.mjs",
     "content:packages": "node --import tsx scripts/build-project-assets.ts",
+    "precontent:capstone": "npm run content:packages",
+    "content:capstone": "node --import tsx scripts/verify-capstone.ts",
     "predev": "npm run content:packages",
     "prebuild": "npm run content:packages",
     "content:cargo": "npm run content:packages && node --import tsx scripts/verify-packages.ts",

@@ -65,6 +65,49 @@ import { readFile } from "node:fs/promises";
     );
     console.log("Offline runner honest, draft preserved");
     await context.setOffline(false);
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("trwaly serwis");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Capstone: trwały serwis logów" })
+      .click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Wartość przyjęta to nie dowolny tekst" })
+      .click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(2).click();
+    const simpleEditor = page.getByRole("button", {
+      name: "Prosty edytor",
+      exact: true,
+    });
+    if (await simpleEditor.count()) await simpleEditor.click();
+    const capstoneEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const capstoneHeading = await page.locator(".task-pane h1").innerText();
+    const capstoneDraft =
+      "// Granica domeny zachowana lokalnie bez wykonywania runnera.\n";
+    await capstoneEditor.fill(capstoneDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await page
+      .getByLabel("Notatki do lekcji")
+      .fill("Sprawdzić limity bajtów przed zapisem do magazynu.");
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(capstoneHeading);
+    await expect(capstoneEditor).toHaveValue(capstoneDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(
+      "Sprawdzić limity bajtów przed zapisem do magazynu.",
+    );
+    console.log("Capstone draft, note and exact gate resume work offline");
+    await context.setOffline(false);
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
     for (const projectName of [
       /Number Guessing\+/,
@@ -78,6 +121,7 @@ import { readFile } from "node:fs/promises";
       /Projekt: kontrakty własności/,
       /Project: safe FFI buffer owner/,
       /Projekt: operacje serwisu Tokio/,
+      /Miri Safety Workshop/,
     ]) {
       await context.setOffline(false);
       await page
@@ -116,6 +160,78 @@ import { readFile } from "node:fs/promises";
         `${archiveUrl}: starter download works offline after reload, bytes unchanged`,
       );
     }
+    await context.setOffline(false);
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: /Projekt: trwały serwis logów/ })
+      .click();
+    const capstonePanel = page.getByRole("region", { name: "Pakiet Cargo" });
+    const capstoneStarterLink = capstonePanel.getByRole("link", {
+      name: "Pobierz pakiet startowy",
+    });
+    const capstoneStarterUrl = await capstoneStarterLink.getAttribute("href");
+    await page.waitForFunction(
+      async (path) => !!(await caches.match(path)),
+      capstoneStarterUrl,
+    );
+    const capstoneStarterBytes = await page.evaluate(
+      async (path) =>
+        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
+      capstoneStarterUrl,
+    );
+    expect(capstoneStarterBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
+    await capstonePanel
+      .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
+      .click();
+    const capstoneSolutionLink = capstonePanel.getByRole("link", {
+      name: "Pobierz rozwiązanie",
+    });
+    const capstoneSolutionUrl = await capstoneSolutionLink.getAttribute("href");
+    await page.waitForFunction(
+      async (path) => !!(await caches.match(path)),
+      capstoneSolutionUrl,
+    );
+    const capstoneSolutionBytes = await page.evaluate(
+      async (path) =>
+        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
+      capstoneSolutionUrl,
+    );
+    expect(capstoneSolutionBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
+    await context.setOffline(true);
+    await page.reload();
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: /Projekt: trwały serwis logów/ })
+      .click();
+    const offlineCapstonePanel = page.getByRole("region", {
+      name: "Pakiet Cargo",
+    });
+    const offlineStarterLink = offlineCapstonePanel.getByRole("link", {
+      name: "Pobierz pakiet startowy",
+    });
+    const offlineStarterDownload = page.waitForEvent("download");
+    await offlineStarterLink.click();
+    const offlineStarter = await offlineStarterDownload;
+    expect(await offlineStarter.failure()).toBeNull();
+    expect(Array.from(await readFile(await offlineStarter.path()))).toEqual(
+      capstoneStarterBytes,
+    );
+    await offlineCapstonePanel
+      .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
+      .click();
+    const offlineSolutionLink = offlineCapstonePanel.getByRole("link", {
+      name: "Pobierz rozwiązanie",
+    });
+    const offlineSolutionDownload = page.waitForEvent("download");
+    await offlineSolutionLink.click();
+    const offlineSolution = await offlineSolutionDownload;
+    expect(await offlineSolution.failure()).toBeNull();
+    expect(Array.from(await readFile(await offlineSolution.path()))).toEqual(
+      capstoneSolutionBytes,
+    );
+    console.log(
+      "Capstone starter and solution ZIP bytes are unchanged offline",
+    );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .locator(".module-picker")
@@ -463,7 +579,8 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(ffiEditor).toHaveValue(ffiDraft);
     console.log("Unsafe/FFI gate and draft resume offline");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const operationsTitle = "Service Operations: zaufanie, telemetryka i incydenty";
+    const operationsTitle =
+      "Service Operations: zaufanie, telemetryka i incydenty";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(operationsTitle);

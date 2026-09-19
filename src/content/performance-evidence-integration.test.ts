@@ -25,10 +25,10 @@ it("wires the authored performance verifier into package scripts and CI", () => 
     "utf8",
   );
   expect(ci).toMatch(
-    /- run: npm run content:performance -- --fetch\n      - run: npm run content:profiles\n      - run: npm run content:ffi\n      - run: npm run content:cargo/,
+    /- run: npm run content:performance -- --fetch[\s\S]*?- run: npm run content:ffi\n[\s\S]*?- run: npm run content:capstone -- --fetch[\s\S]*?- run: npm run content:cargo/,
   );
   expect(ci).toMatch(
-    /# Fetch Proptest and Criterion[\s\S]*- run: npm run content:performance -- --fetch --msrv\n      - run: npm run content:profiles -- --fetch --msrv\n      - run: npm run content:ffi -- --msrv\n      - run: npm run content:cargo/,
+    /# Fetch Proptest and Criterion[\s\S]*- run: npm run content:performance -- --fetch --msrv[\s\S]*?- run: npm run content:ffi -- --msrv[\s\S]*?- run: npm run content:capstone -- --fetch --msrv[\s\S]*?- run: npm run content:cargo/,
   );
   expect(ci).toMatch(
     /PATH="\$gat_rust_bin:\$PATH" RUSTUP_TOOLCHAIN=1\.85\.0 npx --no-install vitest run[\s\S]*src\/content\/performance-evidence-assessment\.test\.ts/,

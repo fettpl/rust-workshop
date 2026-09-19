@@ -418,6 +418,15 @@ import {
   profileEvidenceReviewExercises,
   profileEvidenceModule,
 } from "./profile-evidence";
+import {
+  capstoneIntegrationLessons,
+  capstoneIntegrationConcepts,
+  capstoneIntegrationCompetencies,
+  capstoneIntegrationSources,
+  capstoneIntegrationReviewExercises,
+  capstoneIntegrationModule,
+} from "./capstone-integration";
+import { durableLogServiceProject } from "./projects/durable-log-service";
 
 export const ownershipModule = {
   ...ownership.ownershipModule,
@@ -466,6 +475,7 @@ export const modules = [
   unsafeFfiModule,
   unsafeMiriModule,
   serviceOperationsModule,
+  capstoneIntegrationModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -525,6 +535,7 @@ export const lessons = [
   ...unsafeFfiLessons,
   ...unsafeMiriLessons,
   ...serviceOperationsLessons,
+  ...capstoneIntegrationLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -580,6 +591,7 @@ export const concepts = [
   ...unsafeFfiConcepts,
   ...unsafeMiriConcepts,
   ...serviceOperationsConcepts,
+  ...capstoneIntegrationConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -635,6 +647,7 @@ export const competencies = [
   ...unsafeFfiCompetencies,
   ...unsafeMiriCompetencies,
   ...serviceOperationsCompetencies,
+  ...capstoneIntegrationCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -690,6 +703,7 @@ export const sources = [
   ...unsafeFfiSources,
   ...unsafeMiriSources,
   ...serviceOperationsSources,
+  ...capstoneIntegrationSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -745,6 +759,7 @@ export const reviewExercises = {
   ...unsafeFfiReviewExercises,
   ...unsafeMiriReviewExercises,
   ...serviceOperationsReviewExercises,
+  ...capstoneIntegrationReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
@@ -795,6 +810,7 @@ export const projects = [
   propertyContractsProject,
   ffiBufferProject,
   miriSafetyProject,
+  durableLogServiceProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },
@@ -879,4 +895,5 @@ export const roadmap = [
     status: "planned",
   },
   { title: "Większy projekt końcowy", status: "planned" },
+  { title: "Capstone: trwały serwis logów", status: "available" },
 ];

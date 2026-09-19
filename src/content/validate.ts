@@ -505,7 +505,9 @@ export function validateContent(content: ContentBundle): string[] {
       !source.url.startsWith("https://proptest-rs.github.io/proptest/") &&
       !source.url.startsWith("https://nnethercote.github.io/perf-book/") &&
       !source.url.startsWith("https://valgrind.org/docs/manual/") &&
-      !source.url.startsWith("https://embarkstudios.github.io/cargo-deny/")
+      !source.url.startsWith("https://embarkstudios.github.io/cargo-deny/") &&
+      !source.url.startsWith("https://www.sqlite.org/") &&
+      !source.url.startsWith("https://docs.rs/rusqlite/0.40.2/rusqlite/")
     )
       errors.push(`source ${source.id} is not an official Rust source`);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(source.reviewedAt))

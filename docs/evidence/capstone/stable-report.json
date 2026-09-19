@@ -1,0 +1,380 @@
+{
+  "reportVersion": 2,
+  "status": "failed",
+  "archiveKind": "authored-project-zip",
+  "variant": "solution",
+  "archiveSha256": "4c470486adbf5d281965c52741fcc4266323416957ba4a85443fb79bd6ec96af",
+  "generatedArchiveSha256": "4c470486adbf5d281965c52741fcc4266323416957ba4a85443fb79bd6ec96af",
+  "toolchain": {
+    "label": "stable",
+    "cargoPath": "cargo",
+    "rustcPath": "rustc",
+    "rustdocPath": "rustdoc",
+    "versions": {
+      "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05) (Homebrew)",
+      "rustc": "rustc 1.98.1 (48a229cea 2026-09-01) (Homebrew)",
+      "rustdoc": "rustdoc 1.98.1 (48a229cea 2026-09-01) (Homebrew)"
+    },
+    "selectedArgs": [
+      "--fetch"
+    ]
+  },
+  "metadata": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "nodeVersion": "v26.7.0"
+  },
+  "commands": [
+    {
+      "command": "cargo",
+      "args": [
+        "fetch",
+        "--locked"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "durationMs": 88
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--offline",
+        "--locked"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "   Compiling find-msvc-tools v0.1.13\n   Compiling shlex v2.0.1\n   Compiling vcpkg v0.2.15\n   Compiling pkg-config v0.3.34\n   Compiling proc-macro2 v1.0.107\n    Checking ingest-core v1.0.0 (<private-temp>/receipt-008/durable-log-service-workspace/crates/ingest-core)\n    Checking bitflags v2.13.2\n   Compiling quote v1.0.47\n    Checking fallible-streaming-iterator v0.1.9\n   Compiling unicode-ident v1.0.26\n   Compiling libc v0.2.189\n    Checking smallvec v1.16.1\n    Checking fallible-iterator v0.3.0\n    Checking pin-project-lite v0.2.17\n    Checking bytes v1.12.1\nwarning: unused variable: `source`\n  --> crates/ingest-core/src/domain.rs:22:16\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                ^^^^^^ help: if this is intentional, prefix it with an underscore: `_source`\n   |\n   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `key`\n  --> crates/ingest-core/src/domain.rs:22:32\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                                ^^^ help: if this is intentional, prefix it with an underscore: `_key`\n\nwarning: unused variable: `level`\n  --> crates/ingest-core/src/domain.rs:22:45\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                                             ^^^^^ help: if this is intentional, prefix it with an underscore: `_level`\n\nwarning: unused variable: `message`\n  --> crates/ingest-core/src/domain.rs:22:59\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                                                           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_message`\n\nwarning: unused variable: `correlation`\n  --> crates/ingest-core/src/domain.rs:27:35\n   |\n27 |     pub fn with_correlation(self, correlation: Option<String>)\n   |                                   ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_correlation`\n\nwarning: constant `MAX_IDENTIFIER_BYTES` is never used\n --> crates/ingest-core/src/domain.rs:3:7\n  |\n3 | const MAX_IDENTIFIER_BYTES: usize = 32;\n  |       ^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: constant `MAX_MESSAGE_BYTES` is never used\n --> crates/ingest-core/src/domain.rs:4:18\n  |\n4 | pub(crate) const MAX_MESSAGE_BYTES: usize = 2048;\n  |                  ^^^^^^^^^^^^^^^^^\n\nwarning: constant `MAX_FRAME_BYTES` is never used\n  --> crates/ingest-core/src/domain.rs:45:18\n   |\n45 | pub(crate) const MAX_FRAME_BYTES: usize = 4096;\n   |                  ^^^^^^^^^^^^^^^\n\nwarning: `ingest-core` (lib) generated 8 warnings (run `cargo fix --lib -p ingest-core` to apply 5 suggestions)\n   Compiling cc v1.4.7\nwarning: `ingest-core` (lib test) generated 8 warnings (8 duplicates)\n   Compiling libsqlite3-sys v0.38.2\n    Checking socket2 v0.6.5\n    Checking mio v1.2.3\n   Compiling syn v3.0.6\n   Compiling tokio-macros v2.7.2\n    Checking tokio v1.53.1\n    Checking rusqlite v0.40.2\n    Checking ingest-store v1.0.0 (<private-temp>/receipt-008/durable-log-service-workspace/crates/ingest-store)\nwarning: constant `SCHEMA_VERSION` is never used\n --> crates/ingest-store/src/store.rs:8:7\n  |\n8 | const SCHEMA_VERSION: u32 = 2;\n  |       ^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: fields `connection` and `max_events` are never read\n  --> crates/ingest-store/src/store.rs:20:5\n   |\n19 | pub struct Store {\n   |            ----- fields in this struct\n20 |     connection: Connection,\n   |     ^^^^^^^^^^\n21 |     max_events: usize,\n   |     ^^^^^^^^^^\n\nwarning: `ingest-store` (lib test) generated 2 warnings (2 duplicates)\nwarning: `ingest-store` (lib) generated 2 warnings\n    Checking ingest-service v1.0.0 (<private-temp>/receipt-008/durable-log-service-workspace/crates/ingest-service)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.15s\n",
+      "durationMs": 3163
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "test",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--no-fail-fast"
+      ],
+      "classification": "test-failure",
+      "status": 101,
+      "signal": null,
+      "stdout": "\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 4 tests\ntest bounded_utf8_messages_are_exhaustive_inputs ... ok\ntest identifier_boundaries_reject_empty_and_overbound_values ... FAILED\ntest decode_v2_round_trips_bounded_values_and_correlations ... FAILED\ntest v1_round_trips_every_level_for_correlation_free_values ... FAILED\n\nfailures:\n\n---- identifier_boundaries_reject_empty_and_overbound_values stdout ----\n\nthread 'identifier_boundaries_reject_empty_and_overbound_values' (20980215) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- decode_v2_round_trips_bounded_values_and_correlations stdout ----\n\nthread 'decode_v2_round_trips_bounded_values_and_correlations' (20980214) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n---- v1_round_trips_every_level_for_correlation_free_values stdout ----\n\nthread 'v1_round_trips_every_level_for_correlation_free_values' (20980216) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n\nfailures:\n    decode_v2_round_trips_bounded_values_and_correlations\n    identifier_boundaries_reject_empty_and_overbound_values\n    v1_round_trips_every_level_for_correlation_free_values\n\ntest result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 8 tests\ntest control_delimiters_are_rejected ... FAILED\ntest empty_and_boundary_identifiers_are_checked ... FAILED\ntest old_event_constructor_and_accessors_remain_callable ... FAILED\ntest correlation_sentinel_is_rejected ... FAILED\ntest multibyte_message_is_limited_by_utf8_bytes ... FAILED\ntest frame_limit_is_measured_before_terminal_newline ... FAILED\ntest unsupported_version_and_extra_fields_are_rejected ... FAILED\ntest v1_and_v2_normalize_absent_correlation ... FAILED\n\nfailures:\n\n---- control_delimiters_are_rejected stdout ----\n\nthread 'control_delimiters_are_rejected' (20980218) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- empty_and_boundary_identifiers_are_checked stdout ----\n\nthread 'empty_and_boundary_identifiers_are_checked' (20980220) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n---- old_event_constructor_and_accessors_remain_callable stdout ----\n\nthread 'old_event_constructor_and_accessors_remain_callable' (20980223) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n---- correlation_sentinel_is_rejected stdout ----\n\nthread 'correlation_sentinel_is_rejected' (20980219) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n---- multibyte_message_is_limited_by_utf8_bytes stdout ----\n\nthread 'multibyte_message_is_limited_by_utf8_bytes' (20980222) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n---- frame_limit_is_measured_before_terminal_newline stdout ----\n\nthread 'frame_limit_is_measured_before_terminal_newline' (20980221) panicked at crates/ingest-core/src/protocol.rs:9:5:\nnot yet implemented: zdekoduj ograniczoną ramkę\n\n---- unsupported_version_and_extra_fields_are_rejected stdout ----\n\nthread 'unsupported_version_and_extra_fields_are_rejected' (20980224) panicked at crates/ingest-core/src/protocol.rs:9:5:\nnot yet implemented: zdekoduj ograniczoną ramkę\n\n---- v1_and_v2_normalize_absent_correlation stdout ----\n\nthread 'v1_and_v2_normalize_absent_correlation' (20980225) panicked at crates/ingest-core/src/domain.rs:24:9:\nnot yet implemented: zweryfikuj source, key i message\n\n\nfailures:\n    control_delimiters_are_rejected\n    correlation_sentinel_is_rejected\n    empty_and_boundary_identifiers_are_checked\n    frame_limit_is_measured_before_terminal_newline\n    multibyte_message_is_limited_by_utf8_bytes\n    old_event_constructor_and_accessors_remain_callable\n    unsupported_version_and_extra_fields_are_rejected\n    v1_and_v2_normalize_absent_correlation\n\ntest result: FAILED. 0 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest lifecycle_contract_is_implemented_in_task_three ... ignored, Kontrakt cyklu życia zostanie zaimplementowany w zadaniu 3.\n\ntest result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest loopback_contract_is_implemented_in_task_three ... ignored, Kontrakt loopback zostanie zaimplementowany w zadaniu 3.\n\ntest result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest process_contract_is_implemented_in_task_three ... ignored, Kontrakt procesu zostanie zaimplementowany w zadaniu 3.\n\ntest result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest restart_contract_is_implemented_in_task_three ... ignored, Kontrakt restartu zostanie zaimplementowany w zadaniu 3.\n\ntest result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest migration_contract_is_implemented_in_task_two ... ignored, Kontrakt migracji zostanie zaimplementowany w zadaniu 2.\n\ntest result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest storage_contract_is_implemented_in_task_two ... ignored, Kontrakt transakcji zostanie zaimplementowany w zadaniu 2.\n\ntest result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "   Compiling ingest-core v1.0.0 (<private-temp>/receipt-008/durable-log-service-workspace/crates/ingest-core)\n   Compiling fallible-iterator v0.3.0\n   Compiling bitflags v2.13.2\n   Compiling smallvec v1.16.1\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling pin-project-lite v0.2.17\n   Compiling bytes v1.12.1\n   Compiling libc v0.2.189\n   Compiling libsqlite3-sys v0.38.2\nwarning: unused variable: `source`\n  --> crates/ingest-core/src/domain.rs:22:16\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                ^^^^^^ help: if this is intentional, prefix it with an underscore: `_source`\n   |\n   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused variable: `key`\n  --> crates/ingest-core/src/domain.rs:22:32\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                                ^^^ help: if this is intentional, prefix it with an underscore: `_key`\n\nwarning: unused variable: `level`\n  --> crates/ingest-core/src/domain.rs:22:45\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                                             ^^^^^ help: if this is intentional, prefix it with an underscore: `_level`\n\nwarning: unused variable: `message`\n  --> crates/ingest-core/src/domain.rs:22:59\n   |\n22 |     pub fn new(source: String, key: String, level: Level, message: String)\n   |                                                           ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_message`\n\nwarning: unused variable: `correlation`\n  --> crates/ingest-core/src/domain.rs:27:35\n   |\n27 |     pub fn with_correlation(self, correlation: Option<String>)\n   |                                   ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_correlation`\n\nwarning: constant `MAX_IDENTIFIER_BYTES` is never used\n --> crates/ingest-core/src/domain.rs:3:7\n  |\n3 | const MAX_IDENTIFIER_BYTES: usize = 32;\n  |       ^^^^^^^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: constant `MAX_MESSAGE_BYTES` is never used\n --> crates/ingest-core/src/domain.rs:4:18\n  |\n4 | pub(crate) const MAX_MESSAGE_BYTES: usize = 2048;\n  |                  ^^^^^^^^^^^^^^^^^\n\nwarning: constant `MAX_FRAME_BYTES` is never used\n  --> crates/ingest-core/src/domain.rs:45:18\n   |\n45 | pub(crate) const MAX_FRAME_BYTES: usize = 4096;\n   |                  ^^^^^^^^^^^^^^^\n\nwarning: `ingest-core` (lib) generated 8 warnings (run `cargo fix --lib -p ingest-core` to apply 5 suggestions)\nwarning: `ingest-core` (lib test) generated 8 warnings (8 duplicates)\n   Compiling rusqlite v0.40.2\n   Compiling socket2 v0.6.5\n   Compiling mio v1.2.3\n   Compiling tokio v1.53.1\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-008/durable-log-service-workspace/crates/ingest-store)\nwarning: constant `SCHEMA_VERSION` is never used\n --> crates/ingest-store/src/store.rs:8:7\n  |\n8 | const SCHEMA_VERSION: u32 = 2;\n  |       ^^^^^^^^^^^^^^\n  |\n  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: fields `connection` and `max_events` are never read\n  --> crates/ingest-store/src/store.rs:20:5\n   |\n19 | pub struct Store {\n   |            ----- fields in this struct\n20 |     connection: Connection,\n   |     ^^^^^^^^^^\n21 |     max_events: usize,\n   |     ^^^^^^^^^^\n\nwarning: `ingest-store` (lib) generated 2 warnings\nwarning: `ingest-store` (lib test) generated 2 warnings (2 duplicates)\n   Compiling ingest-service v1.0.0 (<private-temp>/receipt-008/durable-log-service-workspace/crates/ingest-service)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.99s\n     Running unittests src/lib.rs (target/debug/deps/ingest_core-caa29d428669f1ea)\n     Running tests/protocol_properties.rs (target/debug/deps/protocol_properties-50260fdb0bfd05b8)\nerror: test failed, to rerun pass `-p ingest-core --test protocol_properties`\n     Running tests/public_api.rs (target/debug/deps/public_api-053680bbf84f69dc)\nerror: test failed, to rerun pass `-p ingest-core --test public_api`\n     Running unittests src/lib.rs (target/debug/deps/ingest_service-f325e7a50b2e2860)\n     Running unittests src/bin/ingest-client.rs (target/debug/deps/ingest_client-dd21e0196f6e611d)\n     Running unittests src/main.rs (target/debug/deps/ingest_service-6701729b5420872a)\n     Running tests/lifecycle.rs (target/debug/deps/lifecycle-2d6c292bd3c48b00)\n     Running tests/loopback.rs (target/debug/deps/loopback-10a748375333827f)\n     Running tests/process.rs (target/debug/deps/process-ba34b50f5f72c361)\n     Running tests/restart.rs (target/debug/deps/restart-d804d8753797edb9)\n     Running unittests src/lib.rs (target/debug/deps/ingest_store-565f469f4ba5fdee)\n     Running tests/migrations.rs (target/debug/deps/migrations-8689af930b838110)\n     Running tests/transactions.rs (target/debug/deps/transactions-4a9aa4eee43f2f59)\n   Doc-tests ingest_core\n   Doc-tests ingest_service\n   Doc-tests ingest_store\nerror: 2 targets failed:\n    `-p ingest-core --test protocol_properties`\n    `-p ingest-core --test public_api`\n",
+      "durationMs": 4353
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "fetch",
+        "--locked"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "durationMs": 58
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--offline",
+        "--locked"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "   Compiling shlex v2.0.1\n   Compiling find-msvc-tools v0.1.13\n   Compiling vcpkg v0.2.15\n   Compiling pkg-config v0.3.34\n   Compiling proc-macro2 v1.0.107\n    Checking ingest-core v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-core)\n   Compiling quote v1.0.47\n    Checking fallible-iterator v0.3.0\n    Checking fallible-streaming-iterator v0.1.9\n    Checking smallvec v1.16.1\n    Checking bitflags v2.13.2\n   Compiling libc v0.2.189\n   Compiling unicode-ident v1.0.26\n    Checking bytes v1.12.1\n    Checking pin-project-lite v0.2.17\n   Compiling cc v1.4.7\n    Checking socket2 v0.6.5\n    Checking mio v1.2.3\n   Compiling libsqlite3-sys v0.38.2\n   Compiling syn v3.0.6\n   Compiling tokio-macros v2.7.2\n    Checking tokio v1.53.1\n    Checking rusqlite v0.40.2\n    Checking ingest-store v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-store)\n    Checking ingest-service v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-service)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.10s\n",
+      "durationMs": 3117
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "test",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--no-fail-fast"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 4 tests\ntest identifier_boundaries_reject_empty_and_overbound_values ... ok\ntest bounded_utf8_messages_are_exhaustive_inputs ... ok\ntest v1_round_trips_every_level_for_correlation_free_values ... ok\ntest decode_v2_round_trips_bounded_values_and_correlations ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 8 tests\ntest control_delimiters_are_rejected ... ok\ntest empty_and_boundary_identifiers_are_checked ... ok\ntest correlation_sentinel_is_rejected ... ok\ntest frame_limit_is_measured_before_terminal_newline ... ok\ntest multibyte_message_is_limited_by_utf8_bytes ... ok\ntest old_event_constructor_and_accessors_remain_callable ... ok\ntest unsupported_version_and_extra_fields_are_rejected ... ok\ntest v1_and_v2_normalize_absent_correlation ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest tests::receipt_parser_rejects_extra_newline_and_trailing_bytes ... ok\ntest tests::response_deadline_is_absolute_across_slow_reads ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 8 tests\ntest configuration_rejects_zero_limits_and_public_bind ... ok\ntest admission_saturation_closes_excess_connection ... ok\ntest paused_clock_marks_grace_expiry_without_wall_clock_waiting ... ok\ntest absolute_deadline_expires_slow_partial_frame ... ok\ntest shutdown_joins_worker_and_reports_terminal_counts ... ok\ntest queue_saturation_returns_bounded_rejection ... ok\ntest grace_expiry_aborts_partial_handler_and_joins_worker ... ok\ntest cancellation_after_enqueue_keeps_terminal_accounting ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s\n\n\nrunning 4 tests\ntest oversized_and_unknown_frames_are_rejected ... ok\ntest concurrent_duplicate_clients_share_one_sequence ... ok\ntest split_frame_and_duplicate_return_receipts ... ok\ntest multibyte_split_slow_partial_and_conflict_frames_are_checked ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.02s\n\n\nrunning 5 tests\ntest invalid_flags_return_code_two ... ok\ntest valid_process_prints_ready_after_initialization_and_eof_stops_it ... ok\ntest acknowledged_receipt_survives_crash_and_restart ... ok\ntest unacknowledged_crash_replay_leaves_exactly_one_row ... ok\ntest client_exit_codes_distinguish_receipt_domain_and_transport ... ok\n\ntest result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s\n\n\nrunning 1 test\ntest reopening_database_replays_same_request_as_duplicate ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 1 test\ntest store::tests::failed_commit_never_returns_a_success_receipt ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 3 tests\ntest newer_schema_is_rejected_without_modification ... ok\ntest incompatible_v1_migration_rolls_back_marker_and_rows ... ok\ntest empty_database_initializes_directly_to_v2_and_v1_migrates ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n\nrunning 8 tests\ntest first_insert_returns_sequence_and_inserted ... ok\ntest full_store_rejects_new_keys_but_accepts_duplicate ... ok\ntest changed_payload_is_a_conflict_without_modification ... ok\ntest equal_replay_returns_original_receipt ... ok\ntest both_correlation_values_participate_in_conflict_checking ... ok\ntest same_key_from_different_source_is_independent ... ok\ntest utf8_and_receipt_survive_reopen ... ok\ntest lock_contention_is_reported_as_busy ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "   Compiling ingest-core v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-core)\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling fallible-iterator v0.3.0\n   Compiling smallvec v1.16.1\n   Compiling bitflags v2.13.2\n   Compiling bytes v1.12.1\n   Compiling pin-project-lite v0.2.17\n   Compiling libc v0.2.189\n   Compiling libsqlite3-sys v0.38.2\n   Compiling rusqlite v0.40.2\n   Compiling mio v1.2.3\n   Compiling socket2 v0.6.5\n   Compiling tokio v1.53.1\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-store)\n   Compiling ingest-service v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-service)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.49s\n     Running unittests src/lib.rs (target/debug/deps/ingest_core-caa29d428669f1ea)\n     Running tests/protocol_properties.rs (target/debug/deps/protocol_properties-50260fdb0bfd05b8)\n     Running tests/public_api.rs (target/debug/deps/public_api-053680bbf84f69dc)\n     Running unittests src/lib.rs (target/debug/deps/ingest_service-f325e7a50b2e2860)\n     Running unittests src/bin/ingest-client.rs (target/debug/deps/ingest_client-dd21e0196f6e611d)\n     Running unittests src/main.rs (target/debug/deps/ingest_service-6701729b5420872a)\n     Running tests/lifecycle.rs (target/debug/deps/lifecycle-2d6c292bd3c48b00)\n     Running tests/loopback.rs (target/debug/deps/loopback-10a748375333827f)\n     Running tests/process.rs (target/debug/deps/process-ba34b50f5f72c361)\nusage: ingest-service --db PATH --bind 127.0.0.1:PORT\n     Running tests/restart.rs (target/debug/deps/restart-d804d8753797edb9)\n     Running unittests src/lib.rs (target/debug/deps/ingest_store-565f469f4ba5fdee)\n     Running tests/migrations.rs (target/debug/deps/migrations-8689af930b838110)\n     Running tests/transactions.rs (target/debug/deps/transactions-4a9aa4eee43f2f59)\n   Doc-tests ingest_core\n   Doc-tests ingest_service\n   Doc-tests ingest_store\n",
+      "durationMs": 6919
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "",
+      "durationMs": 61
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--offline",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "    Checking ingest-core v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-core)\n    Checking ingest-store v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-store)\n    Checking ingest-service v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-service)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.44s\n",
+      "durationMs": 483
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "doc",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--no-deps"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": " Documenting ingest-core v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-core)\n    Checking tokio v1.53.1\n Documenting ingest-store v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-store)\n Documenting ingest-service v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-service)\n    Checking ingest-service v1.0.0 (<private-temp>/receipt-007/durable-log-service-workspace/crates/ingest-service)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.38s\n   Generated <private-temp>/receipt-007/durable-log-service-workspace/target/doc/ingest_core/index.html and 3 other files\n",
+      "durationMs": 1398
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "test",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--doc"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.01s\n   Doc-tests ingest_core\n   Doc-tests ingest_service\n   Doc-tests ingest_store\n",
+      "durationMs": 115
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--offline",
+        "--locked",
+        "--no-default-features"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s\n",
+      "durationMs": 29
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "check",
+        "--workspace",
+        "--all-targets",
+        "--offline",
+        "--locked",
+        "--all-features"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "",
+      "stderr": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s\n",
+      "durationMs": 28
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "test",
+        "--offline"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "\nrunning 1 test\ntest old_consumer_round_trips_v1 ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "     Locking 1 package to latest Rust 1.98.1 compatible version\n   Compiling ingest-core v1.0.0 (<private-temp>/receipt-019/durable-log-service-workspace/crates/ingest-core)\n   Compiling external-consumer v0.1.0 (<private-temp>/receipt-007/external-consumer)\nwarning: unused imports: `Event`, `Level`, `decode_frame`, and `encode_v1`\n --> src/lib.rs:1:19\n  |\n1 | use ingest_core::{decode_frame, encode_v1, Event, Level};\n  |                   ^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^  ^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `external-consumer` (lib) generated 1 warning (run `cargo fix --lib -p external-consumer` to apply 1 suggestion)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s\n     Running unittests src/lib.rs (target/debug/deps/external_consumer-e7bc04abc2bfb39c)\n   Doc-tests external_consumer\n",
+      "durationMs": 517
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "run",
+        "--example",
+        "fixed_workload",
+        "--offline",
+        "--locked"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "events=512 inserted=256 duplicates=256 unique=256 count=256 elapsed_ms=45\n",
+      "stderr": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s\n     Running `target/debug/examples/fixed_workload`\n",
+      "durationMs": 276
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "test",
+        "--workspace",
+        "--offline",
+        "--locked",
+        "--no-run"
+      ],
+      "classification": "signal",
+      "status": null,
+      "signal": "SIGTERM",
+      "stdout": "",
+      "stderr": "   Compiling shlex v2.0.1\n   Compiling find-msvc-tools v0.1.13\n   Compiling vcpkg v0.2.15\n   Compiling pkg-config v0.3.34\n   Compiling ingest-core v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-core)\n   Compiling smallvec v1.16.1\n   Compiling bitflags v2.13.2\n   Compiling proc-macro2 v1.0.107\n   Compiling fallible-iterator v0.3.0\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling unicode-ident v1.0.26\n   Compiling quote v1.0.47\n   Compiling libc v0.2.189\n   Compiling pin-project-lite v0.2.17\n   Compiling bytes v1.12.1\n   Compiling cc v1.4.7\n   Compiling socket2 v0.6.5\n   Compiling mio v1.2.3\n   Compiling libsqlite3-sys v0.38.2\n   Compiling syn v3.0.6\n   Compiling tokio-macros v2.7.2\n   Compiling tokio v1.53.1\n   Compiling rusqlite v0.40.2\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-store)\n",
+      "durationMs": 555630
+    },
+    {
+      "command": "cargo",
+      "args": [
+        "test",
+        "-p",
+        "ingest-store",
+        "--test",
+        "transactions",
+        "--offline",
+        "--locked",
+        "changed_payload_is_a_conflict_without_modification"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "\nrunning 1 test\ntest changed_payload_is_a_conflict_without_modification ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s\n\n",
+      "stderr": "   Compiling rusqlite v0.40.2\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-store)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s\n     Running tests/transactions.rs (target/debug/deps/transactions-4a9aa4eee43f2f59)\n",
+      "durationMs": 1121
+    }
+  ],
+  "schemaVersion": 2,
+  "wireVersions": [
+    1,
+    2
+  ],
+  "starter": {
+    "failedUnfinishedBehavior": true
+  },
+  "externalConsumer": {
+    "state": "executed",
+    "result": {
+      "command": "cargo",
+      "args": [
+        "test",
+        "--offline"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "\nrunning 1 test\ntest old_consumer_round_trips_v1 ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "     Locking 1 package to latest Rust 1.98.1 compatible version\n   Compiling ingest-core v1.0.0 (<private-temp>/receipt-019/durable-log-service-workspace/crates/ingest-core)\n   Compiling external-consumer v0.1.0 (<private-temp>/receipt-007/external-consumer)\nwarning: unused imports: `Event`, `Level`, `decode_frame`, and `encode_v1`\n --> src/lib.rs:1:19\n  |\n1 | use ingest_core::{decode_frame, encode_v1, Event, Level};\n  |                   ^^^^^^^^^^^^  ^^^^^^^^^  ^^^^^  ^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `external-consumer` (lib) generated 1 warning (run `cargo fix --lib -p external-consumer` to apply 1 suggestion)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.29s\n     Running unittests src/lib.rs (target/debug/deps/external_consumer-e7bc04abc2bfb39c)\n   Doc-tests external_consumer\n",
+      "durationMs": 517
+    },
+    "preCorrelationEventNew": null,
+    "v1RoundTrip": true
+  },
+  "recovery": {
+    "mutants": [
+      {
+        "id": "changed-payload-accepted-as-duplicate",
+        "accepted": false,
+        "compile": {
+          "command": "cargo",
+          "args": [
+            "test",
+            "--workspace",
+            "--offline",
+            "--locked",
+            "--no-run"
+          ],
+          "classification": "signal",
+          "status": null,
+          "signal": "SIGTERM",
+          "stdout": "",
+          "stderr": "   Compiling shlex v2.0.1\n   Compiling find-msvc-tools v0.1.13\n   Compiling vcpkg v0.2.15\n   Compiling pkg-config v0.3.34\n   Compiling ingest-core v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-core)\n   Compiling smallvec v1.16.1\n   Compiling bitflags v2.13.2\n   Compiling proc-macro2 v1.0.107\n   Compiling fallible-iterator v0.3.0\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling unicode-ident v1.0.26\n   Compiling quote v1.0.47\n   Compiling libc v0.2.189\n   Compiling pin-project-lite v0.2.17\n   Compiling bytes v1.12.1\n   Compiling cc v1.4.7\n   Compiling socket2 v0.6.5\n   Compiling mio v1.2.3\n   Compiling libsqlite3-sys v0.38.2\n   Compiling syn v3.0.6\n   Compiling tokio-macros v2.7.2\n   Compiling tokio v1.53.1\n   Compiling rusqlite v0.40.2\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-store)\n",
+          "durationMs": 555630
+        },
+        "error": "changed-payload-accepted-as-duplicate must compile: cargo test --workspace --offline --locked --no-run\n\n   Compiling shlex v2.0.1\n   Compiling find-msvc-tools v0.1.13\n   Compiling vcpkg v0.2.15\n   Compiling pkg-config v0.3.34\n   Compiling ingest-core v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-core)\n   Compiling smallvec v1.16.1\n   Compiling bitflags v2.13.2\n   Compiling proc-macro2 v1.0.107\n   Compiling fallible-iterator v0.3.0\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling unicode-ident v1.0.26\n   Compiling quote v1.0.47\n   Compiling libc v0.2.189\n   Compiling pin-project-lite v0.2.17\n   Compiling bytes v1.12.1\n   Compiling cc v1.4.7\n   Compiling socket2 v0.6.5\n   Compiling mio v1.2.3\n   Compiling libsqlite3-sys v0.38.2\n   Compiling syn v3.0.6\n   Compiling tokio-macros v2.7.2\n   Compiling tokio v1.53.1\n   Compiling rusqlite v0.40.2\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-store)\n\n\n'signal' !== 'passed'\n",
+        "restored": {
+          "command": "cargo",
+          "args": [
+            "test",
+            "-p",
+            "ingest-store",
+            "--test",
+            "transactions",
+            "--offline",
+            "--locked",
+            "changed_payload_is_a_conflict_without_modification"
+          ],
+          "classification": "passed",
+          "status": 0,
+          "signal": null,
+          "stdout": "\nrunning 1 test\ntest changed_payload_is_a_conflict_without_modification ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s\n\n",
+          "stderr": "   Compiling rusqlite v0.40.2\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-store)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s\n     Running tests/transactions.rs (target/debug/deps/transactions-4a9aa4eee43f2f59)\n",
+          "durationMs": 1121
+        }
+      }
+    ]
+  },
+  "workload": {
+    "events": 512,
+    "expectedInserted": 256,
+    "expectedDuplicates": 256,
+    "deterministicDuplicateSchedule": "key = floor(index / 2)",
+    "result": {
+      "command": "cargo",
+      "args": [
+        "run",
+        "--example",
+        "fixed_workload",
+        "--offline",
+        "--locked"
+      ],
+      "classification": "passed",
+      "status": 0,
+      "signal": null,
+      "stdout": "events=512 inserted=256 duplicates=256 unique=256 count=256 elapsed_ms=45\n",
+      "stderr": "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s\n     Running `target/debug/examples/fixed_workload`\n",
+      "durationMs": 276
+    }
+  },
+  "release": {
+    "status": "Hold",
+    "advisoryAndLicenseReview": "incomplete"
+  },
+  "failure": "changed-payload-accepted-as-duplicate must compile: cargo test --workspace --offline --locked --no-run\n\n   Compiling shlex v2.0.1\n   Compiling find-msvc-tools v0.1.13\n   Compiling vcpkg v0.2.15\n   Compiling pkg-config v0.3.34\n   Compiling ingest-core v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-core)\n   Compiling smallvec v1.16.1\n   Compiling bitflags v2.13.2\n   Compiling proc-macro2 v1.0.107\n   Compiling fallible-iterator v0.3.0\n   Compiling fallible-streaming-iterator v0.1.9\n   Compiling unicode-ident v1.0.26\n   Compiling quote v1.0.47\n   Compiling libc v0.2.189\n   Compiling pin-project-lite v0.2.17\n   Compiling bytes v1.12.1\n   Compiling cc v1.4.7\n   Compiling socket2 v0.6.5\n   Compiling mio v1.2.3\n   Compiling libsqlite3-sys v0.38.2\n   Compiling syn v3.0.6\n   Compiling tokio-macros v2.7.2\n   Compiling tokio v1.53.1\n   Compiling rusqlite v0.40.2\n   Compiling ingest-store v1.0.0 (<private-temp>/receipt-006/changed-payload-accepted-as-duplicate/durable-log-service-workspace/crates/ingest-store)\n\n\n'signal' !== 'passed'\n"
+}

@@ -152,17 +152,17 @@ it("uses each gate and blank as an independent module criterion", () => {
 });
 
 it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
-  expect(modules).toHaveLength(42);
-  expect(lessons).toHaveLength(158);
-  expect(concepts).toHaveLength(161);
-  expect(sources).toHaveLength(300);
+  expect(modules).toHaveLength(43);
+  expect(lessons).toHaveLength(164);
+  expect(concepts).toHaveLength(167);
+  expect(sources).toHaveLength(308);
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(113);
+  ).toHaveLength(119);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
-  expect(index).toBe(modules.length - 3);
+  expect(index).toBe(modules.length - 4);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);
   expect(modules[index - 1].id).toBe("profile-evidence");
   expect(modules[index - 2].id).toBe("performance-evidence");
@@ -175,7 +175,7 @@ it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operat
 
   const project = projects.find((entry) => entry.id === "ffi-buffer");
   expect(project?.package?.id).toBe("ffi-buffer-workshop");
-  expect(projects).toHaveLength(12);
+  expect(projects).toHaveLength(13);
   expect(project?.package?.revealStepRefs).toHaveLength(4);
   expect(project?.lessonIds).toEqual(unsafeFfiModule.lessonIds);
 
@@ -200,10 +200,10 @@ it("runs the FFI verifier before generic Cargo archives in both CI jobs", () => 
     "utf8",
   );
   expect(ci).toMatch(
-    /- run: npm run content:ffi\n      - run: npm run content:cargo/g,
+    /- run: npm run content:ffi\n[\s\S]*?- run: npm run content:capstone -- --fetch[\s\S]*?- run: npm run content:cargo/g,
   );
   expect(ci).toMatch(
-    /content:performance -- --fetch --msrv[\s\S]*- run: npm run content:ffi -- --msrv\n      - run: npm run content:cargo/,
+    /content:performance -- --fetch --msrv[\s\S]*?- run: npm run content:ffi -- --msrv\n[\s\S]*?- run: npm run content:capstone -- --fetch --msrv[\s\S]*?- run: npm run content:cargo/,
   );
 });
 

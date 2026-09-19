@@ -15,11 +15,16 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
   walidacja curriculum, autorskie przypadki Rust/Tokio/Loom, archiwa Cargo,
   workspace, manifesty TOML i audyt powiązań źródeł. Następnie buduje aplikację i uruchamia
   testy Playwright oraz kontrolę offline na tym samym serwerze produkcyjnym.
-  Osobny krok Number Guessing+ sprawdza pobierany starter i rozwiązanie, prawdziwe
-  procesy CLI oraz wykrycie czterech kontrolowanych błędów programu.
-- `workspace-msrv`: testuje workspace Frame Protocol i pakiet Number Guessing+
-  na dokładnym Rust 1.85.0, także z przypiętymi ścieżkami `rustc` i `rustdoc`
-  dla procesów potomnych. Weryfikuje też stałe manifesty i przykład unii features przez Cargo 1.85.0.
+  Separate capstone steps run the restricted archive verifier on stable and exact
+  Rust 1.85.0 before generic `content:cargo`, upload the JSON report as a seven-day
+  artifact and run the capstone assessment fixtures. E2E uses only a controlled
+  `/api/run` mock; offline compares both capstone ZIPs byte-for-byte and preserves
+  the draft, note and exact step. The Number Guessing+ step still checks the
+  starter, solution, CLI processes and four controlled program faults.
+- `workspace-msrv`: tests the Frame Protocol workspace, Number Guessing+ package and
+  capstone on exact Rust 1.85.0, with pinned `rustc` and `rustdoc` paths for child
+  processes. It also verifies fixed manifests and the features-unification example
+  with Cargo 1.85.0.
   Osobny krok wybiera katalog kompilatora przez `rustup which --toolchain 1.85.0`
   i umieszcza go na początku `PATH`, sprawdzając przykłady GAT oraz ich
   referencje, poprawne alternatywy i celowe błędne implementacje. Kontrola
@@ -77,6 +82,16 @@ archiwum z autorskich danych, porównuje je z pobieranym ZIP-em, sprawdza
 starter, rozwiązanie, replay regresji i kontrolowanego mutanta. Nie przyjmuje
 kodu ucznia, ścieżek ani nadpisań zależności; biblioteka ćwiczenia pozostaje
 std-only, a Proptest jest używany wyłącznie w testach deweloperskich.
+
+`content:capstone -- --fetch` and `content:capstone -- --fetch --msrv` accept only
+the `--fetch` and `--msrv` flags. Each run invalidates its prior report, compares
+the generated archive with both served ZIP variants, extracts only the authored
+35-file workspace, and records bounded command output, toolchain versions, archive
+digest, recovery checks and eight controlled-mutant outcomes. A compile error,
+timeout, signal, empty test run or infrastructure failure is never treated as
+mutant evidence. The release procedure stays on Hold until both stable and MSRV
+JSON reports are fresh and independently reviewed; live advisory/license review
+and production operations remain outside this milestone.
 
 Dla nieukończonych starterów Cargo używa `--no-fail-fast`: błąd testu procesu
 nie może pominąć bezpośrednich testów kontraktu, które potwierdzają oczekiwane
