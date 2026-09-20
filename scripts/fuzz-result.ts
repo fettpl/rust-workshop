@@ -9,6 +9,7 @@ export type FuzzProcessResult = {
 export type FuzzExpectation =
   | { kind: "campaign"; minimumRuns: number }
   | { kind: "counterexample"; artifactWritten: boolean }
+  | { kind: "counterexample-replay" }
   | { kind: "replay" };
 
 export type FuzzPhaseStatus = "passed" | "failed" | "infrastructure";
@@ -155,16 +156,20 @@ export function verifyFuzzResult(
     !/Loaded \d+ PC tables \([1-9]\d* PCs\)/.test(log)
   )
     return false;
+  const isSelectionMismatchCrash =
+    result.status === 77 &&
+    log.includes(
+      "assertion `left == right` failed: mini-grep selection oracle mismatch",
+    ) &&
+    log.includes("SUMMARY: libFuzzer: deadly signal");
   if (expectation.kind === "counterexample")
     return (
-      result.status === 77 &&
+      isSelectionMismatchCrash &&
       expectation.artifactWritten &&
-      log.includes(
-        "assertion `left == right` failed: mini-grep selection oracle mismatch",
-      ) &&
-      log.includes("SUMMARY: libFuzzer: deadly signal") &&
       log.includes("Test unit written to ")
     );
+  if (expectation.kind === "counterexample-replay")
+    return isSelectionMismatchCrash;
   if (result.status !== 0) return false;
   if (expectation.kind === "replay") return /Executed .+ in \d+ ms/.test(log);
   const runs = Number(log.match(/^#(\d+)\s+DONE\s+cov: [1-9]\d*/m)?.[1] ?? 0);

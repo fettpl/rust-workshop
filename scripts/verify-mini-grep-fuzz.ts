@@ -297,11 +297,10 @@ try {
         join(report, `${name}.log`),
         `${output}\nstatus=${result.status}; signal=${result.signal}; error=${result.error?.message ?? "none"}\n`,
       );
-      const artifactWritten = readdirSync(replayArtifacts).length > 0;
       assert(
         verifyFuzzResult(
           { ...result, stdout: result.stdout ?? "", stderr: result.stderr ?? "" },
-          { kind: "counterexample", artifactWritten },
+          { kind: "counterexample-replay" },
         ),
         `Mutant replay did not reproduce SelectionMismatch; see ${report}/${name}.log`,
       );
