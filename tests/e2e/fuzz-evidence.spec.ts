@@ -81,6 +81,24 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.locator(".module-picker > button").filter({ hasText: stage.title }).click();
   await page.getByRole("button", { name: stage.title, exact: true }).click();
   await page.locator(".gate-action").first().click();
+  await page.getByLabel("Kroki lekcji").getByRole("button", { name: gate.title }).click();
+  await page.getByRole("textbox", { name: "Kod Rust", exact: true }).fill(gate.solution!);
+  await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
+  await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  const masteryAfterAssistedPrimary = await page.evaluate(async () => {
+    const request = indexedDB.open("rust-workshop-state", 1);
+    return await new Promise<Record<string, unknown>>((resolve, reject) => {
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const transaction = request.result.transaction("user-state", "readonly");
+        const get = transaction.objectStore("user-state").get("current");
+        get.onsuccess = () => resolve((get.result?.mastery ?? {}) as Record<string, unknown>);
+        get.onerror = () => reject(get.error);
+      };
+    });
+  });
+  expect(masteryAfterAssistedPrimary[primary.conceptIds[0]]).toEqual(masteryAfterReveal[primary.conceptIds[0]]);
   await page.getByLabel("Kroki lekcji").getByRole("button", { name: blank.title }).click();
   const blankEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
   await expect(blankEditor).toHaveValue("");

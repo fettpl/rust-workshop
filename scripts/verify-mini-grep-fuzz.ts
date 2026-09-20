@@ -41,9 +41,11 @@ let mutantStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
 let mutantReplayStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
 let restoredReplayStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
 let stableRegressionStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
+let reductionReplayStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
 let phaseErrors: string[] = [];
 let reductionEvidence: ReductionResult | undefined;
 let authoredOriginalPath = "";
+let authoredRegressionSha256 = "";
 
 function recordPhaseError(error: unknown): void {
   phaseErrors = [...phaseErrors, String(error)];
@@ -224,8 +226,14 @@ try {
     build("mutant-build");
     const stableMutationEnv = { ...env, PATH: `${dirname(stableCargo)}${process.platform === "win32" ? ";" : ":"}${env.PATH ?? ""}`, RUSTC: stableCompiler, RUSTDOC: stableRustdoc };
     const stableMutation = spawnSync(stableCargo, ["test", "--manifest-path", join(root, "Cargo.toml"), "--locked", "--test", "fuzz_regressions"], { cwd: root, env: stableMutationEnv, encoding: "utf8", timeout: 180_000, maxBuffer: 8 * 1024 * 1024 });
-    writeFileSync(join(report, "mutant-stable-regression.log"), `${stableMutation.stdout ?? ""}${stableMutation.stderr ?? ""}\nstatus=${stableMutation.status}; signal=${stableMutation.signal}; error=${stableMutation.error?.message ?? "none"}\n`);
-    assert(stableMutation.status !== 0 && !stableMutation.error && !stableMutation.signal, "Controlled mutant unexpectedly passed stable regression");
+    const stableMutationOutput = `${stableMutation.stdout ?? ""}${stableMutation.stderr ?? ""}`;
+    writeFileSync(join(report, "mutant-stable-regression.log"), `${stableMutationOutput}\nstatus=${stableMutation.status}; signal=${stableMutation.signal}; error=${stableMutation.error?.message ?? "none"}\n`);
+    assert(
+      !stableMutation.error && !stableMutation.signal && stableMutation.status !== 0 &&
+      /running \d+ test/.test(stableMutationOutput) && /test result: FAILED/.test(stableMutationOutput) &&
+      !/could not compile|error\[E\d+\]/.test(stableMutationOutput),
+      "Controlled mutant must compile and fail the named stable regression",
+    );
     const result = spawnSync(binary, [corpus, ...limits], {
       cwd: root,
       env,
@@ -282,6 +290,7 @@ try {
     const paddedWitnessPath = join(root, "fuzz/regressions/substring-prefix-padded.seed");
     authoredOriginalPath = join(report, "padded-original.seed");
     writeFileSync(authoredOriginalPath, readFileSync(paddedWitnessPath));
+    authoredRegressionSha256 = sha256Bytes(readFileSync(paddedWitnessPath));
     replayMutantArtifact("padded-mutant-replay", paddedWitnessPath);
     let candidateNumber = 0;
     const reductionDeadline = Date.now() + 30_000;
@@ -315,6 +324,7 @@ try {
     assert.equal(reductionEvidence.status, "reduced", "Authored padded witness must strictly reduce through the mutant");
     writeFileSync(join(report, "reduced.seed"), reductionEvidence.reduced);
     replayMutantArtifact("reduced-mutant-replay", join(report, "reduced.seed"));
+    reductionReplayStatus = "failed";
     writeFileSync(
       join(report, "reducer.json"),
       `${JSON.stringify({
@@ -388,7 +398,7 @@ try {
     }
   }
   const reduced = reductionEvidence;
-  const allPhasesPassed = phaseErrors.length === 0 && campaignStatus === "passed" && mutantStatus === "failed" && mutantReplayStatus === "failed" && restoredReplayStatus === "passed" && stableRegressionStatus === "passed";
+  const allPhasesPassed = phaseErrors.length === 0 && campaignStatus === "passed" && mutantStatus === "failed" && mutantReplayStatus === "failed" && reductionReplayStatus === "failed" && restoredReplayStatus === "passed" && stableRegressionStatus === "passed";
   const evidence = createPartialReport({
     runId,
     archiveSha256,
@@ -399,14 +409,14 @@ try {
     observedExecutions: observedRuns,
     mutant: { identity: "substring-to-prefix", status: mutantStatus === "failed" ? "failed" : mutantStatus, assertion: "mini-grep selection oracle mismatch" },
     artifacts: { original: { path: artifactPath, sha256: artifactBytes.length ? sha256Bytes(artifactBytes) : "0".repeat(64), bytes: artifactBytes.length, runId, archiveSha256, manifestSha256 }, ...(reduced && reduced.status === "reduced" ? { reduced: { path: join(report, "reduced.seed"), sha256: sha256Bytes(reduced.reduced), bytes: reduced.reduced.length, runId, archiveSha256, manifestSha256 } } : {}) },
-    reduction: reduced ? { attempts: reduced.attempts, status: reduced.status, failureKind: "SelectionMismatch" } : undefined,
+    reduction: reduced ? { attempts: reduced.attempts, status: reduced.status, failureKind: "SelectionMismatch", replay: { status: reductionReplayStatus, failureKind: "SelectionMismatch" } } : undefined,
     mutantReplay: { status: mutantReplayStatus, failureKind: "SelectionMismatch" },
     restoredReplay: { status: restoredReplayStatus, failureKind: "none" },
     stableRegression: { status: stableRegressionStatus, toolchain: "1.85.0", channel: "stable", sha256: "9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1" },
     phaseErrors,
   });
   try {
-    validateEvidenceReport(evidence);
+    validateEvidenceReport(evidence, { runId, archiveSha256, manifestSha256, regressionSha256: authoredRegressionSha256 });
   } catch (error) {
     recordPhaseError(error);
     evidence.status = "infrastructure";

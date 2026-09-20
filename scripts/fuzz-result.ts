@@ -46,6 +46,7 @@ export type FuzzEvidenceReport = {
     attempts: number;
     status: "reduced" | "unchanged" | "rejected";
     failureKind: string;
+    replay: { status: FuzzPhaseStatus; failureKind: string };
   };
   mutantReplay: { status: FuzzPhaseStatus; failureKind: string };
   restoredReplay: { status: FuzzPhaseStatus; failureKind: string };
@@ -63,11 +64,19 @@ export type ArtifactProvenance = {
   manifestSha256?: string;
 };
 
+export type FuzzEvidenceTrust = {
+  runId: string;
+  archiveSha256: string;
+  manifestSha256: string;
+  regressionSha256: string;
+};
+
 const sha256 = /^[a-f0-9]{64}$/;
 
 /** Validate machine-readable provenance before it can be reported as evidence. */
 export function validateFuzzEvidenceReport(
   report: unknown,
+  trust?: FuzzEvidenceTrust,
 ): string[] {
   const errors: string[] = [];
   if (!report || typeof report !== "object") return ["report must be an object"];
@@ -116,6 +125,8 @@ export function validateFuzzEvidenceReport(
   if (!value.reduction || !Number.isInteger(value.reduction.attempts) || value.reduction.attempts < 0 || value.reduction.attempts > 256 || !["reduced", "unchanged", "rejected"].includes(value.reduction.status) || value.reduction.failureKind !== "SelectionMismatch") errors.push("invalid reduction evidence");
   if (value.reduction && value.reduction.status === "reduced" && (!reduced || !original || original.bytes <= 0 || reduced.bytes >= original.bytes || value.reduction.attempts < 1)) errors.push("reduced status lacks a strict reduced artifact");
   if (value.reduction && value.reduction.status !== "reduced" && reduced) errors.push("non-reduced status cannot carry a reduced artifact");
+  if (!value.reduction?.replay || !["passed", "failed", "infrastructure"].includes(value.reduction.replay.status) || typeof value.reduction.replay.failureKind !== "string") errors.push("invalid reduction replay phase");
+  if (value.reduction?.replay.status === "failed" && value.reduction.replay.failureKind !== "SelectionMismatch") errors.push("reduction replay failure kind must be SelectionMismatch");
   for (const [name, phase] of [["mutantReplay", value.mutantReplay], ["restoredReplay", value.restoredReplay]] as const) {
     if (!phase || !["passed", "failed", "infrastructure"].includes(phase.status) || typeof phase.failureKind !== "string") errors.push(`invalid ${name} phase`);
   }
@@ -126,7 +137,8 @@ export function validateFuzzEvidenceReport(
   if (!value.stableRegression || !["passed", "failed", "infrastructure"].includes(value.stableRegression.status)) errors.push("invalid stableRegression phase");
   if (!value.stableRegression || value.stableRegression.toolchain !== "1.85.0" || value.stableRegression.channel !== "stable" || !sha256.test(value.stableRegression.sha256)) errors.push("stable regression must identify exact Rust 1.85.0 stable and a hash");
   if (!Array.isArray(value.phaseErrors) || !Array.isArray(value.limitations)) errors.push("phaseErrors and limitations must be arrays");
-  if (value.status === "passed" && (errors.length || (value.phaseErrors?.length ?? 0) > 0 || campaign?.status !== "passed" || campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || value.mutant?.status !== "failed" || value.mutantReplay?.status !== "failed" || value.restoredReplay?.status !== "passed" || value.stableRegression?.status !== "passed")) errors.push("passed report lacks completed evidence phases");
+  if (value.status === "passed" && (!trust || trust.runId !== value.runId || trust.archiveSha256 !== value.archiveSha256 || trust.manifestSha256 !== value.manifestSha256 || trust.regressionSha256 !== original?.sha256)) errors.push("passed report is not bound to trusted current provenance");
+  if (value.status === "passed" && (errors.length || (value.phaseErrors?.length ?? 0) > 0 || campaign?.status !== "passed" || campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || value.mutant?.status !== "failed" || value.mutantReplay?.status !== "failed" || value.reduction?.status !== "reduced" || value.reduction.attempts < 1 || value.reduction.replay?.status !== "failed" || value.reduction.replay.failureKind !== "SelectionMismatch" || value.restoredReplay?.status !== "passed" || value.restoredReplay.failureKind !== "none" || value.stableRegression?.status !== "passed")) errors.push("passed report lacks completed evidence phases");
   return [...new Set(errors)];
 }
 

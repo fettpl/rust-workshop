@@ -34,7 +34,7 @@ const validReport = () => ({
   observedExecutions: 20000,
   mutant: { identity: "substring-to-prefix", status: "failed", assertion: "mini-grep selection oracle mismatch" },
   artifacts: { original: { path: originalPath, sha256: hash(originalBytes), bytes: 5, runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64) }, reduced: { path: reducedPath, sha256: hash(reducedBytes), bytes: 2, runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64) } },
-  reduction: { attempts: 4, status: "reduced", failureKind: "SelectionMismatch" },
+  reduction: { attempts: 4, status: "reduced", failureKind: "SelectionMismatch", replay: { status: "failed", failureKind: "SelectionMismatch" } },
   mutantReplay: { status: "failed", failureKind: "SelectionMismatch" },
   restoredReplay: { status: "passed", failureKind: "none" },
   stableRegression: { status: "passed", toolchain: "1.85.0", channel: "stable", sha256: "e".repeat(64) },
@@ -89,7 +89,8 @@ it("keeps accepted reductions inside the framed input domain", () => {
 });
 
 it("rejects malformed, stale and replay-only reports", () => {
-  expect(() => validateEvidenceReport(validReport())).not.toThrow();
+  expect(() => validateEvidenceReport(validReport(), { runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64), regressionSha256: hash(originalBytes) })).not.toThrow();
+  expect(() => validateEvidenceReport(validReport())).toThrow();
   for (const mutate of [
     (report: ReturnType<typeof validReport>) => ({ ...report, schemaVersion: 2 }),
     (report: ReturnType<typeof validReport>) => ({ ...report, referenceCampaign: { ...report.referenceCampaign, replayOnly: true } }),
@@ -108,7 +109,10 @@ it("rejects malformed, stale and replay-only reports", () => {
     (report: ReturnType<typeof validReport>) => ({ ...report, restoredReplay: { status: "passed", failureKind: "SelectionMismatch" } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, restoredReplay: { status: "failed", failureKind: "ReaderMismatch" } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, status: "reduced" }, artifacts: { original: report.artifacts.original } }),
-  ]) expect(() => validateEvidenceReport(mutate(validReport()))).toThrow();
+    (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, replay: { status: "passed", failureKind: "none" } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, status: "rejected", attempts: 0, replay: { status: "infrastructure", failureKind: "SelectionMismatch" } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, sha256: "c".repeat(64) } } }),
+  ]) expect(() => validateEvidenceReport(mutate(validReport()), { runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64), regressionSha256: hash(originalBytes) })).toThrow();
 });
 
 it("accepts an explicit infrastructure report without inventing an artifact", () => {
@@ -126,7 +130,7 @@ it("accepts an explicit infrastructure report without inventing an artifact", ()
     observedExecutions: 0,
     mutant: { identity: "substring-to-prefix", status: "infrastructure", assertion: "mini-grep selection oracle mismatch" },
     artifacts: { original: { path: "", sha256: "0".repeat(64), bytes: 0 } },
-    reduction: { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch" },
+    reduction: { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch", replay: { status: "infrastructure", failureKind: "SelectionMismatch" } },
     mutantReplay: { status: "infrastructure", failureKind: "SelectionMismatch" },
     restoredReplay: { status: "infrastructure", failureKind: "none" },
     stableRegression: { status: "infrastructure", toolchain: "1.85.0", channel: "stable", sha256: "0".repeat(64) },

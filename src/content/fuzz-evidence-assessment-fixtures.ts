@@ -204,6 +204,7 @@ fn duplicate_retrieval_preserves_every_field_and_order() {
     assert!(!compare_duplicate_rows(&[(1, "ax".to_owned(), true)], &expected));
     assert!(!compare_duplicate_rows(&[(2, "bx".to_owned(), false), (1, "ax".to_owned(), true)], &expected));
     assert!(!compare_duplicate_rows(&[(1, "wrong".to_owned(), true), (2, "bx".to_owned(), false)], &expected));
+    assert!(!compare_duplicate_rows(&[(1, "ax".to_owned(), false), (2, "bx".to_owned(), false)], &expected));
 }`,
   frameRetrieval: String.raw`fn retain_named_failure(original: &[u8], candidate: &[u8], failure: &str) -> Vec<u8> {
     if candidate.len() < original.len() && failure == "SelectionMismatch" { candidate.to_vec() } else { original.to_vec() }
@@ -238,7 +239,12 @@ export const fuzzEvidenceAssessmentFixtures = {
 
 export const fuzzEvidenceRetrievalFixtures = {
   "fuzz-input-domain": { reference: fuzzEvidenceRustReferences.taggedRetrieval, mutants: [fuzzEvidenceRustReferences.taggedRetrieval.replace("tag == 7 &&", "true &&"), fuzzEvidenceRustReferences.taggedRetrieval.replace("payload.len() >= length as usize", "payload.len() >= 0")] },
-  "fuzz-oracle-sensitivity": { reference: fuzzEvidenceRustReferences.duplicateRetrieval, mutants: [fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.len() == expected.len()"), fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.iter().zip(expected).all(|(a, b)| a.0 == b.0)")] },
+  "fuzz-oracle-sensitivity": { reference: fuzzEvidenceRustReferences.duplicateRetrieval, mutants: [
+    fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.len() == expected.len()"),
+    fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.iter().zip(expected).all(|(a, b)| a.0 == b.0)"),
+    fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.iter().map(|row| row.0).collect::<std::collections::BTreeSet<_>>() == expected.iter().map(|row| row.0).collect::<std::collections::BTreeSet<_>>()"),
+    fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.iter().map(|row| (row.0, row.1.clone())).eq(expected.iter().map(|row| (row.0, row.1.clone())))"),
+  ] },
   "fuzz-counterexample-regression": { reference: fuzzEvidenceRustReferences.frameRetrieval, mutants: [fuzzEvidenceRustReferences.frameRetrieval.replace("failure == \"SelectionMismatch\"", "failure == \"Timeout\"")] },
   "fuzz-campaign-evidence": { reference: fuzzEvidenceRustReferences.dossierRetrieval, mutants: [fuzzEvidenceRustReferences.dossierRetrieval.replace("if replay_only { \"failed\" }", "if false { \"failed\" }")] },
 };

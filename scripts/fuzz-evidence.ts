@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import type { FuzzEvidenceReport } from "./fuzz-result";
+import type { FuzzEvidenceReport, FuzzEvidenceTrust } from "./fuzz-result";
 import { validateFuzzEvidenceReport } from "./fuzz-result";
 
 export type ReductionObservation =
@@ -72,8 +72,8 @@ export function sha256File(path: string): string {
   return sha256Bytes(readFileSync(path));
 }
 
-export function validateEvidenceReport(report: unknown): void {
-  const errors = validateFuzzEvidenceReport(report);
+export function validateEvidenceReport(report: unknown, trust?: FuzzEvidenceTrust): void {
+  const errors = validateFuzzEvidenceReport(report, trust);
   if (errors.length) throw new Error(`Invalid fuzz evidence report: ${errors.join("; ")}`);
 }
 
@@ -92,7 +92,7 @@ export function createPartialReport(input: Partial<FuzzEvidenceReport> = {}): Fu
     observedExecutions: input.observedExecutions ?? 0,
     mutant: input.mutant ?? { identity: "substring-to-prefix", status: "infrastructure", assertion: "mini-grep selection oracle mismatch" },
     artifacts: input.artifacts ?? { original: { path: "", sha256: "0".repeat(64), bytes: 0 } },
-    reduction: input.reduction ?? { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch" },
+    reduction: input.reduction ?? { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch", replay: { status: "infrastructure", failureKind: "SelectionMismatch" } },
     mutantReplay: input.mutantReplay ?? { status: "infrastructure", failureKind: "SelectionMismatch" },
     restoredReplay: input.restoredReplay ?? { status: "infrastructure", failureKind: "none" },
     stableRegression: input.stableRegression ?? { status: "infrastructure", toolchain: "1.85.0", channel: "stable", sha256: "0".repeat(64) },
