@@ -143,12 +143,18 @@ jobs:
       # Fetch and run the restricted capstone archive verifier before the generic offline archive pass.
       - run: npm run content:capstone -- --fetch --msrv
       - run: npm run content:cargo
+      - run: npm run content:rust
       - run: npm run content:manifests -- --msrv
       - name: Verify GAT and Performance Evidence contracts on Rust 1.85.0
         run: |
           gat_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
           "$gat_rust_bin/rustc" --version
           PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts src/content/performance-evidence-assessment.test.ts src/content/capstone-integration-assessment.test.ts src/content/capstone-verification.test.ts
+      - name: Verify fuzz evidence assessments on Rust 1.85.0
+        run: |
+          fuzz_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
+          "$fuzz_rust_bin/rustc" --version
+          PATH="$fuzz_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/fuzz-evidence-assessment.test.ts src/content/fuzz-evidence-integration.test.ts src/content/fuzz-evidence-verification.test.ts
       # v7.0.1
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()

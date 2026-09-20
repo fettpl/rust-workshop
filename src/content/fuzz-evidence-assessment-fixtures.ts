@@ -101,24 +101,22 @@ fn oracle_checks_order_text_match_flags_and_error_class() {
     assert!(same_output(&expected, &expected));
     assert!(!same_output(&expected, &expected[..1]));
     assert!(!same_output(&expected, &vec![(2, "ax".to_owned(), true), (1, "ax".to_owned(), true)]));
+    let unmatched = vec![(1, "ax".to_owned(), false), (2, "ax".to_owned(), true)];
+    assert!(same_output(&unmatched, &unmatched));
+    assert!(!same_output(&unmatched, &expected));
     assert!(same_result(Err("invalid-body"), Err("invalid-body")));
     assert!(!same_result(Err("invalid-body"), Ok(expected)));
 }`,
   oracleBlank: String.raw`fn duplicate_selection_matches(actual: &[(usize, bool)], expected: &[(usize, bool)]) -> bool {
     actual == expected
 }
-fn decode_frame(bytes: &[u8]) -> Option<(&[u8], &[u8])> {
-    let (&length, payload) = bytes.split_first()?;
-    (payload.len() >= length as usize).then(|| (&payload[..length as usize], &payload[length as usize..]))
-}
 #[test]
-fn duplicate_rows_order_and_frame_bounds_are_part_of_the_contract() {
+fn duplicate_rows_order_and_flags_are_part_of_the_contract() {
     let expected = [(1, true), (1, true), (2, false)];
     assert!(duplicate_selection_matches(&expected, &expected));
     assert!(!duplicate_selection_matches(&expected[..2], &expected));
     assert!(!duplicate_selection_matches(&[(1, true), (2, false), (1, true)], &expected));
-    assert_eq!(decode_frame(&[2, b'a', 0xff, b'z']), Some((&[b'a', 0xff][..], &[b'z'][..])));
-    assert!(decode_frame(&[3, b'a']).is_none());
+    assert!(!duplicate_selection_matches(&[(1, false), (1, true), (2, false)], &expected));
 }`,
   reducer: String.raw`type Regression = fn(&[u8]) -> bool;
 struct Observation { bytes: Vec<u8>, failure: &'static str, restored_replay: Option<&'static str>, regression: Option<Regression> }
@@ -127,7 +125,7 @@ fn choose_witness(original: &[u8], candidates: &[Observation]) -> Vec<u8> {
     candidates.iter()
         .filter(|candidate| !candidate.bytes.is_empty() && candidate.bytes.len() < original.len())
         .filter(|candidate| candidate.failure == "SelectionMismatch")
-        .filter(|candidate| candidate.restored_replay == Some("failed"))
+        .filter(|candidate| candidate.restored_replay == Some("passed"))
         .filter(|candidate| candidate.regression.is_some_and(|regression| regression(&candidate.bytes)))
         .min_by_key(|candidate| candidate.bytes.len())
         .map(|candidate| candidate.bytes.clone())
@@ -137,14 +135,16 @@ fn choose_witness(original: &[u8], candidates: &[Observation]) -> Vec<u8> {
 fn reducer_requires_strict_size_named_failure_replay_and_regression() {
     let original = b"ABCDE";
     let candidates = vec![
-        Observation { bytes: Vec::new(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: Some(executable_regression) },
-        Observation { bytes: b"ABC".to_vec(), failure: "Timeout", restored_replay: Some("failed"), regression: Some(executable_regression) },
+        Observation { bytes: Vec::new(), failure: "SelectionMismatch", restored_replay: Some("passed"), regression: Some(executable_regression) },
+        Observation { bytes: b"ABC".to_vec(), failure: "Timeout", restored_replay: Some("passed"), regression: Some(executable_regression) },
         Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: None, regression: Some(executable_regression) },
-        Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: None },
+        Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("passed"), regression: None },
+        Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("passed"), regression: Some(executable_regression) },
         Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: Some(executable_regression) },
     ];
     assert_eq!(choose_witness(original, &candidates), b"BC");
-    assert_eq!(choose_witness(original, &[Observation { bytes: b"BC".to_vec(), failure: "CompileError", restored_replay: Some("failed"), regression: Some(executable_regression) }]), original);
+    assert_eq!(choose_witness(original, &[Observation { bytes: b"BC".to_vec(), failure: "CompileError", restored_replay: Some("passed"), regression: Some(executable_regression) }]), original);
+    assert_eq!(choose_witness(original, &[Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: Some(executable_regression) }]), original);
 }`,
   reducerBlank: String.raw`fn reduce_frame(original: &[u8], candidate: &[u8], failure_class: &str) -> Vec<u8> {
     if candidate.len() < original.len() && failure_class == "LengthMismatch" { candidate.to_vec() } else { original.to_vec() }
@@ -230,7 +230,7 @@ fn dossier_retrieval_requires_fresh_instrumented_runs() {
 export const fuzzEvidenceAssessmentFixtures = {
   "fuzz-input-domain-gate": { reference: fuzzEvidenceRustReferences.inputDomain, mutant: fuzzEvidenceRustReferences.inputDomain.replace("if !(3..=4096).contains(&bytes.len()) { return None; }", "if bytes.len() < 2 { return None; }") },
   "fuzz-input-domain-blank": { reference: fuzzEvidenceRustReferences.inputDomainBlank, mutant: fuzzEvidenceRustReferences.inputDomainBlank.replace("bytes.len() >= length + 1", "bytes.len() >= 1") },
-  "fuzz-oracle-sensitivity-gate": { reference: fuzzEvidenceRustReferences.oracle, mutant: fuzzEvidenceRustReferences.oracle.replace("actual == expected", "actual.len() == expected.len()") },
+  "fuzz-oracle-sensitivity-gate": { reference: fuzzEvidenceRustReferences.oracle, mutant: fuzzEvidenceRustReferences.oracle.replace("actual == expected", "actual.iter().map(|(line, text, _)| (*line, text.clone())).eq(expected.iter().map(|(line, text, _)| (*line, text.clone())))") },
   "fuzz-oracle-sensitivity-blank": { reference: fuzzEvidenceRustReferences.oracleBlank, mutant: fuzzEvidenceRustReferences.oracleBlank.replace("actual == expected", "actual.len() == expected.len()") },
   "fuzz-counterexample-regression-gate": { reference: fuzzEvidenceRustReferences.reducer, mutant: fuzzEvidenceRustReferences.reducer.replace("candidate.failure == \"SelectionMismatch\"", "candidate.failure == \"Timeout\"") },
   "fuzz-counterexample-regression-blank": { reference: fuzzEvidenceRustReferences.reducerBlank, mutant: fuzzEvidenceRustReferences.reducerBlank.replace("failure_class == \"LengthMismatch\"", "failure_class == \"Timeout\"") },

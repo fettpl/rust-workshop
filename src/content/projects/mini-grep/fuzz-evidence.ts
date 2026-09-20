@@ -16,7 +16,7 @@ export const miniGrepFuzzEvidenceManifest = {
     "fuzz/support/case.rs": "2ceb7e43e78efe2829979c7d4db5dc29076b744899376db4fd9ba1b94e856ca2",
     "fuzz/support/check.rs": "adcc42f2343d1d1a71fb7865bbc73750f07805f866b0c8c0e3e64d0f8eb10140",
     "fuzz/oracle.rs": "a9bb985ffe6e9abc77dd00a961029d02ad6dc8f4c43426827130535feb76c915",
-    "fuzz/fuzz_targets/selection.rs": "f09001a09ca32f29aba9713e3d2687fc9337555c726fddb4eff3cf4a47191042",
+    "fuzz/fuzz_targets/selection.rs": "18ae6c67232a14ba313f6707a0ab176e6c4750e19e4248aa14b5af5e26a035f1",
   },
   fixedRegressionSha256:
     "9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1",

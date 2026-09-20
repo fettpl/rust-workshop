@@ -86,7 +86,9 @@ fuzz_target!(|data: &[u8]| {
         Err(check::FailureKind::QueryAcceptance) => panic!("mini-grep invalid query accepted"),
         Err(check::FailureKind::ContextAcceptance) => panic!("mini-grep invalid context accepted"),
         Err(check::FailureKind::BodyAcceptance) => panic!("mini-grep invalid input accepted"),
-        Err(check::FailureKind::SelectionMismatch) => assert_eq!(true, false, "mini-grep selection oracle mismatch"),
+        Err(check::FailureKind::SelectionMismatch) => {
+            assert_eq!(true, false, "mini-grep selection oracle mismatch")
+        }
         Err(check::FailureKind::ReaderMismatch) => panic!("mini-grep reader oracle mismatch"),
     }
 });
@@ -202,7 +204,9 @@ fn substring_prefix_witness_is_exact_and_replays_selection_mismatch() {
 
 #[test]
 fn padded_substring_prefix_witness_is_an_executable_regression() {
-    let bytes = [0u8, 0, 1, b'x', b'p', b'a', b'd', b'd', b'i', b'n', b'g', b'\n', b'a', b'x', b'\n'];
+    let bytes = [
+        0u8, 0, 1, b'x', b'p', b'a', b'd', b'd', b'i', b'n', b'g', b'\n', b'a', b'x', b'\n',
+    ];
     assert_eq!(check::check(&bytes), Ok(()));
 }
 

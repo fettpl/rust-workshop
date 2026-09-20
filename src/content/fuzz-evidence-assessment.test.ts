@@ -27,6 +27,22 @@ const compileAndRun = (id: string, source: string, tests: string, expected: bool
 
 const codeOf = (reference: string) => reference.slice(0, reference.indexOf("\n#[test]"));
 
+it("publishes the learner-facing Rust signatures without hiding the contract", () => {
+  const gates = fuzzEvidenceLessons.flatMap((lesson) => lesson.steps.filter((step) => step.evidenceGate));
+  const input = gates.find((step) => step.id === "fuzz-input-domain-gate");
+  const oracleBlank = gates.find((step) => step.id === "fuzz-oracle-sensitivity-blank");
+  const reducer = gates.find((step) => step.id === "fuzz-counterexample-regression-gate");
+  const campaign = gates.find((step) => step.id === "fuzz-campaign-evidence-gate");
+  expect(input?.code).toContain("struct Case<'a>");
+  expect(input?.code).toContain("fn decode_case(bytes: &[u8]) -> Option<Case<'_>>");
+  expect(reducer?.code).toContain("struct Observation");
+  expect(reducer?.code).toContain("fn choose_witness(original: &[u8], candidates: &[Observation])");
+  expect(campaign?.code).toContain("struct Dossier");
+  expect(campaign?.code).toContain("fn classify_report(dossier: &Dossier, _: &str, _: &str, _: &str)");
+  expect(oracleBlank?.evaluator?.kind).toBe("tests");
+  expect(oracleBlank?.evaluator?.kind === "tests" ? oracleBlank.evaluator.tests : "").not.toContain("decode_frame");
+});
+
 it("keeps the raw-byte decoder boundary and lossy-query semantics", () => {
   const parsed = decodeCase(new Uint8Array([0, 0, 1, 120, 0xff]));
   expect(parsed?.query).toBe("x");

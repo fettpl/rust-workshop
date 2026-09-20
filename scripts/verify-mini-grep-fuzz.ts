@@ -131,6 +131,12 @@ try {
     toolchain,
     "rustdoc",
   ]).trim();
+  const rustfmt = run("resolve-rustfmt", "rustup", [
+    "which",
+    "--toolchain",
+    toolchain,
+    "rustfmt",
+  ]).trim();
   const stableCompiler = run("resolve-stable-rustc", "rustup", ["which", "--toolchain", "1.85.0", "rustc"]).trim();
   const stableCargo = run("resolve-stable-cargo", "rustup", ["which", "--toolchain", "1.85.0", "cargo"]).trim();
   const stableRustdoc = run("resolve-stable-rustdoc", "rustup", ["which", "--toolchain", "1.85.0", "rustdoc"]).trim();
@@ -176,6 +182,16 @@ try {
     run("oracle-test", join(root, "oracle-tests"), []),
     /test result: ok\. 3 passed/,
   );
+  run("authored-fuzz-rustfmt", rustfmt, [
+    "--edition",
+    "2024",
+    "--check",
+    "fuzz/fuzz_targets/selection.rs",
+    "tests/fuzz_regressions.rs",
+    "fuzz/support/case.rs",
+    "fuzz/support/check.rs",
+    "fuzz/oracle.rs",
+  ]);
   run("fuzz-format", cargo, [
     "fmt",
     "--manifest-path",
