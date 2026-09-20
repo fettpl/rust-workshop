@@ -38,7 +38,7 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(input?.code).toContain("fn decode_case(bytes: &[u8]) -> Option<Case<'_>>");
   expect(oracle?.code).toContain("fn same_result(");
   expect(oracleBlank?.solution).toContain("fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>>");
-  expect(oracleBlank?.solution).toContain("bytes.len() > 64");
+  expect(oracleBlank?.solution).toContain("bytes.len() > 4096");
   expect(reducer?.code).toContain("struct Observation");
   expect(reducer?.code).toContain("fn executable_regression(bytes: &[u8]) -> bool");
   expect(reducer?.code).toContain("fn choose_witness(original: &[u8], candidates: &[Observation])");
