@@ -30,7 +30,12 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
   referencje, poprawne alternatywy i celowe błędne implementacje. Kontrola
   minimalnej wersji obejmuje dzięki temu kod lekcji, a nie tylko archiwa Cargo.
 - `mini-grep-fuzz`: sprawdza niezależny oracle, ograniczoną kampanię libFuzzer,
-  wykrycie kontrolowanego błędu i odtworzenie przypadku po jego usunięciu.
+  controlled bug detection and replay after restoring the reference. The job
+  compares both ZIPs with the generator, runs stable replay separately from the
+  nightly campaign, and uploads `report.json`, logs, corpus, and original and
+  reduced artifacts with `if: always()` and seven-day retention. Missing
+  provenance, instrumentation, normal completion or a fresh artifact produces a
+  failure or `infrastructure`, never a green report.
 - `content:property` runs only the authored Property Contracts archive. It checks
   the locked Proptest 1.11.0 development dependency, starter and solution
   behavior, replay of the checked-in regression, formatting, Clippy, and a

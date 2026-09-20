@@ -1,6 +1,12 @@
-# Verification: runtime allocation evidence and bounded course integration
+# Verification: fuzz evidence lifecycle and bounded course integration
 
-Date: 2026-09-19. Current catalog: 171 lessons in 44 modules, 174 concepts, 126 blank-page tasks, 314 sources and 13 Cargo projects. The runtime allocation follow-up adds two Polish lessons, four gates, six assessed steps and two independent reviews. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The async lending verifier records 32 stable/MSRV fixture results per toolchain, and dedicated gate/reveal/offline/console/keyboard assertions are authored but remain unverified until a loopback-capable E2E/offline run. Earlier counts below are historical where explicitly labeled.
+Date: 2026-09-20. Current catalog: 175 lessons in 45 modules, 178 concepts, 130 blank-page tasks, 318 sources and 13 Cargo projects. The fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks and four independent reviews. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The Mini grep verifier accepts only the generated authored archive and records stable replay separately from the pinned-nightly campaign. Earlier counts below are historical where explicitly labeled.
+
+## Fuzz evidence lifecycle
+
+The reviewed implementation is at the working-tree head recorded by the eventual commit. `npm run content:check` reports 175 lessons, 178 concepts and 7 traces; `npm run typecheck` and focused Vitest pass. The package adds `fuzz/support/case.rs`, `fuzz/support/check.rs`, `tests/fuzz_regressions.rs`, `FUZZ-MANIFEST.json`, `FUZZ-EVIDENCE.md` and the exact UTF-8-safe seed `00 00 01 78 61 78 0a` (`9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1`). Stable/MSRV runs execute the checked-in regression; instrumentation and bounded campaign evidence use nightly-2026-08-08 with cargo-fuzz 0.13.2. Reports contain run ID, archive/manifest hashes, host, limits, raw logs, corpus, original/reduced artifacts, replay phases and limitations.
+
+The campaign is capped at seed 20260913, 20,000 runs or 30 seconds, input length 3..=4096, timeout 3 seconds and RSS limit 1024 MB. The deterministic deletion reducer is capped at 256 attempts and 30 seconds and accepts only strict reductions retaining `SelectionMismatch`; timeout, compile error or another assertion is rejected. A replay-only report, stale hash, missing instrumentation, timeout, or merely successful build is not campaign evidence. This milestone does not claim discovery of an unknown bug, universal input coverage, absence of bugs, production readiness, live advisory/license review, registry publication, or a learner pilot. Release remains Hold.
 
 ## Runtime allocation evidence
 

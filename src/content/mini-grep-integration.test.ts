@@ -10,8 +10,14 @@ it("preserves independent Mini grep evidence after revealing the project referen
   expect(project).toBeDefined();
   expect(stage).toBeDefined();
   expect(stage!.prerequisites).toEqual(["public-api-workspaces"]);
-  expect(project!.lessonIds).toEqual(stage!.lessonIds);
-  expect(project!.reviewConceptIds).toEqual(stage!.lessonIds);
+  expect(project!.lessonIds).toEqual([
+    ...stage!.lessonIds,
+    "fuzz-input-domain",
+    "fuzz-oracle-sensitivity",
+    "fuzz-counterexample-regression",
+    "fuzz-campaign-evidence",
+  ]);
+  expect(project!.reviewConceptIds).toEqual(project!.lessonIds);
   const archive = project!.package!;
   expect(archive.id).toBe("mini-grep-workshop");
   expect(archive.files.map((file) => file.path)).toEqual(
@@ -23,7 +29,7 @@ it("preserves independent Mini grep evidence after revealing the project referen
       "THREAT-MODEL.md",
     ]),
   );
-  expect(archive.revealStepRefs).toHaveLength(4);
+  expect(archive.revealStepRefs).toHaveLength(8);
   expect(stage!.gateCriteria).toHaveLength(4);
   let state = revealProjectSolution(
     createInitialState(),
@@ -32,7 +38,7 @@ it("preserves independent Mini grep evidence after revealing the project referen
     1000,
   );
   expect(moduleGate(state, lessons, stage!).passed).toBe(false);
-  expect(state.events).toHaveLength(4);
+  expect(state.events).toHaveLength(8);
   for (const criterion of stage!.gateCriteria!) {
     expect(criterion.taskRefs).toHaveLength(2);
     const fresh = criterion.taskRefs.filter(

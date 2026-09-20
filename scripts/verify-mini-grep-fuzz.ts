@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import {
   cpSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,
@@ -16,6 +17,7 @@ import { miniGrepPackage } from "../src/content/projects/mini-grep";
 import { projectFiles } from "../src/domain/project-package";
 import { buildProjectArchive } from "./project-archive";
 import { verifyFuzzResult, type FuzzExpectation } from "./fuzz-result";
+import { createPartialReport, reduceWitness, sha256Bytes, validateEvidenceReport, type ReductionResult } from "./fuzz-evidence";
 
 const args = process.argv.slice(2);
 assert(
@@ -29,6 +31,18 @@ const reports = join(process.cwd(), "test-results/mini-grep-fuzz");
 mkdirSync(reports, { recursive: true });
 const report = mkdtempSync(join(reports, "run-"));
 let env = { ...process.env };
+const runId = report.split("/").at(-1)!;
+let archiveSha256 = "0".repeat(64);
+let manifestSha256 = "0".repeat(64);
+let host = "unknown";
+let observedRuns = 0;
+let campaignStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
+let mutantStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
+let mutantReplayStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
+let restoredReplayStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
+let stableRegressionStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
+let phaseErrors: string[] = [];
+let reductionEvidence: ReductionResult | undefined;
 
 function run(
   name: string,
@@ -67,6 +81,7 @@ try {
   const served = readFileSync(
     join(process.cwd(), "public/projects", miniGrepPackage.id, "solution.zip"),
   );
+  archiveSha256 = sha256Bytes(served);
   assert.deepEqual(
     served,
     Buffer.from(buildProjectArchive(miniGrepPackage, "solution")),
@@ -81,6 +96,13 @@ try {
   }
   const lockFiles = ["Cargo.lock", "fuzz/Cargo.lock"];
   const locks = lockFiles.map((path) => readFileSync(join(root, path), "utf8"));
+  const manifestBytes = readFileSync(join(root, "FUZZ-MANIFEST.json"));
+  manifestSha256 = sha256Bytes(manifestBytes);
+  const manifest = JSON.parse(manifestBytes.toString()) as {
+    sourceHashes?: Record<string, string>;
+  };
+  for (const [path, expectedHash] of Object.entries(manifest.sourceHashes ?? {}))
+    assert.equal(sha256Bytes(readFileSync(join(root, path))), expectedHash, `Stale authored source hash for ${path}`);
   const compiler = run("resolve-rustc", "rustup", [
     "which",
     "--toolchain",
@@ -99,6 +121,9 @@ try {
     toolchain,
     "rustdoc",
   ]).trim();
+  const stableCompiler = run("resolve-stable-rustc", "rustup", ["which", "--toolchain", "1.85.0", "rustc"]).trim();
+  const stableCargo = run("resolve-stable-cargo", "rustup", ["which", "--toolchain", "1.85.0", "cargo"]).trim();
+  const stableRustdoc = run("resolve-stable-rustdoc", "rustup", ["which", "--toolchain", "1.85.0", "rustdoc"]).trim();
   // cargo-fuzz spawns bare cargo/rustc; rustup run alone can still select a
   // non-proxy Homebrew compiler. Pin the entire child process chain explicitly.
   env = {
@@ -114,8 +139,9 @@ try {
     version.includes("nightly"),
     "A nightly compiler is required for instrumentation",
   );
-  const host = version.match(/^host: (\S+)$/m)?.[1];
-  assert(host, "Compiler must report its native target");
+  const resolvedHost = version.match(/^host: (\S+)$/m)?.[1];
+  assert(resolvedHost, "Compiler must report its native target");
+  host = resolvedHost;
   assert.match(
     run("cargo-fuzz-version", "cargo-fuzz", ["--version"]),
     /^cargo-fuzz 0\.13\.2\s*$/,
@@ -170,10 +196,12 @@ try {
     `-artifact_prefix=${artifacts}/`,
   ];
   build("reference-build");
-  run("reference-campaign", binary, [corpus, ...limits], {
+  const campaignOutput = run("reference-campaign", binary, [corpus, ...limits], {
     kind: "campaign",
     minimumRuns: 1000,
   });
+  observedRuns = Number(campaignOutput.match(/^#(\d+)\s+DONE/m)?.[1] ?? 0);
+  campaignStatus = "passed";
   const searchPath = join(root, "src/search.rs");
   const original = readFileSync(searchPath, "utf8");
   const needle = "if !line.contains(query.as_str()) {";
@@ -188,6 +216,10 @@ try {
       original.replace(needle, "if !line.starts_with(query.as_str()) {"),
     );
     build("mutant-build");
+    const stableMutationEnv = { ...env, PATH: `${dirname(stableCargo)}${process.platform === "win32" ? ";" : ":"}${env.PATH ?? ""}`, RUSTC: stableCompiler, RUSTDOC: stableRustdoc };
+    const stableMutation = spawnSync(stableCargo, ["test", "--manifest-path", join(root, "Cargo.toml"), "--locked", "--test", "fuzz_regressions"], { cwd: root, env: stableMutationEnv, encoding: "utf8", timeout: 180_000, maxBuffer: 8 * 1024 * 1024 });
+    writeFileSync(join(report, "mutant-stable-regression.log"), `${stableMutation.stdout ?? ""}${stableMutation.stderr ?? ""}\nstatus=${stableMutation.status}; signal=${stableMutation.signal}; error=${stableMutation.error?.message ?? "none"}\n`);
+    assert(stableMutation.status !== 0 && !stableMutation.error && !stableMutation.signal, "Controlled mutant unexpectedly passed stable regression");
     const result = spawnSync(binary, [corpus, ...limits], {
       cwd: root,
       env,
@@ -211,6 +243,46 @@ try {
       ),
       `Intended mutation was not detected; see ${report}`,
     );
+    mutantStatus = "failed";
+    const crash = crashes[0];
+    assert(crash, "The controlled mutant must produce a fresh crash artifact");
+    const crashPath = join(artifacts, crash);
+    run("mutant-replay", binary, [crashPath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
+      kind: "counterexample",
+      artifactWritten: true,
+    });
+    mutantReplayStatus = "failed";
+    let candidateNumber = 0;
+    reductionEvidence = reduceWitness(readFileSync(crashPath), (candidate) => {
+      const candidatePath = join(root, `reduction-candidate-${candidateNumber++}.seed`);
+      writeFileSync(candidatePath, candidate);
+      const candidateResult = spawnSync(binary, [candidatePath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
+        cwd: root,
+        env,
+        encoding: "utf8",
+        timeout: 3_500,
+        maxBuffer: 8 * 1024 * 1024,
+      });
+      const candidateOutput = `${candidateResult.stdout ?? ""}${candidateResult.stderr ?? ""}`;
+      if (candidateResult.error || candidateResult.signal) {
+        return candidateResult.error?.message.includes("timed out") || candidateResult.signal === "SIGTERM"
+          ? { status: "timeout" as const }
+          : { status: "other" as const };
+      }
+      if (candidateResult.status === 77 && candidateOutput.includes("mini-grep selection oracle mismatch"))
+        return { status: "finding" as const, failureKind: "SelectionMismatch" as const };
+      return { status: "other" as const };
+    });
+    if (reductionEvidence.status === "reduced")
+      writeFileSync(join(report, "reduced.seed"), reductionEvidence.reduced);
+    writeFileSync(
+      join(report, "reducer.json"),
+      `${JSON.stringify({
+        attempts: reductionEvidence.attempts,
+        status: reductionEvidence.status,
+        observations: reductionEvidence.observations.map(({ bytes, observation }) => ({ bytes: bytes.length, observation })),
+      }, null, 2)}\n`,
+    );
     console.log(
       "ok fixed substring-to-prefix mutant rejected by oracle with saved input",
     );
@@ -218,12 +290,21 @@ try {
     writeFileSync(searchPath, original);
   }
   build("restored-build");
-  for (const crash of readdirSync(artifacts).filter((name) =>
-    name.startsWith("crash-"),
-  ))
-    run(`replay-${crash}`, binary, [join(artifacts, crash), ...limits], {
+  restoredReplayStatus = "passed";
+  const stableEnv = { ...env, PATH: `${dirname(stableCargo)}${process.platform === "win32" ? ";" : ":"}${env.PATH ?? ""}`, RUSTC: stableCompiler, RUSTDOC: stableRustdoc };
+  const stable = spawnSync(stableCargo, ["test", "--manifest-path", join(root, "Cargo.toml"), "--locked"], { cwd: root, env: stableEnv, encoding: "utf8", timeout: 180_000, maxBuffer: 8 * 1024 * 1024 });
+  writeFileSync(join(report, "stable-regression.log"), `${stable.stdout ?? ""}${stable.stderr ?? ""}\nstatus=${stable.status}; signal=${stable.signal}; error=${stable.error?.message ?? "none"}\n`);
+  stableRegressionStatus = !stable.error && !stable.signal && stable.status === 0 ? "passed" : "infrastructure";
+  if (stableRegressionStatus !== "passed") throw new Error(`Stable regression failed; see ${report}/stable-regression.log`);
+  const restoredArtifacts = [
+    ...readdirSync(artifacts).filter((name) => name.startsWith("crash-")),
+    ...(reductionEvidence?.status === "reduced" ? ["../../reduced.seed"] : []),
+  ];
+  for (const artifact of restoredArtifacts)
+    run(`replay-restored-${artifact}`, binary, [artifact.startsWith("../") ? join(report, "reduced.seed") : join(artifacts, artifact), "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
       kind: "replay",
     });
+  restoredReplayStatus = "passed";
   lockFiles.forEach((path, index) =>
     assert.equal(
       readFileSync(join(root, path), "utf8"),
@@ -243,5 +324,30 @@ try {
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
   }
+  const artifactDirectory = join(report, "artifacts/selection");
+  const artifact = existsSync(artifactDirectory)
+    ? readdirSync(artifactDirectory, { withFileTypes: true }).find((entry) => entry.name.startsWith("crash-"))
+    : undefined;
+  const artifactPath = artifact ? join(report, "artifacts/selection", artifact.name) : "";
+  const artifactBytes = artifactPath ? readFileSync(artifactPath) : new Uint8Array();
+  const reduced = reductionEvidence;
+  const evidence = createPartialReport({
+    runId,
+    archiveSha256,
+    manifestSha256,
+    host,
+    status: campaignStatus === "passed" && mutantStatus === "failed" && mutantReplayStatus === "failed" && restoredReplayStatus === "passed" && stableRegressionStatus === "passed" ? "passed" : "infrastructure",
+    referenceCampaign: { status: campaignStatus, observedRuns, instrumentation: campaignStatus === "passed", normalCompletion: campaignStatus === "passed", replayOnly: false },
+    observedExecutions: observedRuns,
+    mutant: { identity: "substring-to-prefix", status: mutantStatus === "failed" ? "failed" : mutantStatus, assertion: "mini-grep selection oracle mismatch" },
+    artifacts: { original: { path: artifactPath, sha256: artifactBytes.length ? sha256Bytes(artifactBytes) : "0".repeat(64), bytes: artifactBytes.length }, ...(reduced && reduced.status === "reduced" ? { reduced: { path: join(report, "reduced.seed"), sha256: sha256Bytes(reduced.reduced), bytes: reduced.reduced.length } } : {}) },
+    reduction: reduced ? { attempts: reduced.attempts, status: reduced.status, failureKind: "SelectionMismatch" } : undefined,
+    mutantReplay: { status: mutantReplayStatus, failureKind: "SelectionMismatch" },
+    restoredReplay: { status: restoredReplayStatus, failureKind: "none" },
+    stableRegression: { status: stableRegressionStatus, toolchain: "rustc 1.85.0", sha256: "9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1" },
+    phaseErrors,
+  });
+  try { validateEvidenceReport(evidence); } catch (error) { phaseErrors = [...phaseErrors, String(error)]; }
+  writeFileSync(join(report, "report.json"), `${JSON.stringify({ ...evidence, phaseErrors }, null, 2)}\n`);
   rmSync(root, { recursive: true, force: true });
 }

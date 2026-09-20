@@ -174,6 +174,72 @@ import { readFile } from "node:fs/promises";
     await context.setOffline(false);
     await page
       .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: /Projekt: ograniczony Mini grep/ })
+      .click();
+    const miniGrepPanel = page.getByRole("region", { name: "Pakiet Cargo" });
+    const miniGrepStarterLink = miniGrepPanel.getByRole("link", {
+      name: "Pobierz pakiet startowy",
+    });
+    const miniGrepStarterUrl = await miniGrepStarterLink.getAttribute("href");
+    await page.waitForFunction(
+      async (path) => !!(await caches.match(path)),
+      miniGrepStarterUrl,
+    );
+    const miniGrepStarterBytes = await page.evaluate(
+      async (path) =>
+        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
+      miniGrepStarterUrl,
+    );
+    await miniGrepPanel
+      .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
+      .click();
+    const miniGrepSolutionLink = miniGrepPanel.getByRole("link", {
+      name: "Pobierz rozwiązanie",
+    });
+    const miniGrepSolutionUrl = await miniGrepSolutionLink.getAttribute("href");
+    await page.waitForFunction(
+      async (path) => !!(await caches.match(path)),
+      miniGrepSolutionUrl,
+    );
+    const miniGrepSolutionBytes = await page.evaluate(
+      async (path) =>
+        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
+      miniGrepSolutionUrl,
+    );
+    await context.setOffline(true);
+    await page.reload();
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: /Projekt: ograniczony Mini grep/ })
+      .click();
+    const offlineMiniGrepPanel = page.getByRole("region", { name: "Pakiet Cargo" });
+    const offlineMiniGrepStarter = offlineMiniGrepPanel.getByRole("link", {
+      name: "Pobierz pakiet startowy",
+    });
+    const offlineMiniGrepStarterDownload = page.waitForEvent("download");
+    await offlineMiniGrepStarter.click();
+    const offlineMiniGrepStarterFile = await offlineMiniGrepStarterDownload;
+    expect(await offlineMiniGrepStarterFile.failure()).toBeNull();
+    expect(Array.from(await readFile(await offlineMiniGrepStarterFile.path()))).toEqual(
+      miniGrepStarterBytes,
+    );
+    await offlineMiniGrepPanel
+      .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
+      .click();
+    const offlineMiniGrepSolution = offlineMiniGrepPanel.getByRole("link", {
+      name: "Pobierz rozwiązanie",
+    });
+    const offlineMiniGrepSolutionDownload = page.waitForEvent("download");
+    await offlineMiniGrepSolution.click();
+    const offlineMiniGrepSolutionFile = await offlineMiniGrepSolutionDownload;
+    expect(await offlineMiniGrepSolutionFile.failure()).toBeNull();
+    expect(Array.from(await readFile(await offlineMiniGrepSolutionFile.path()))).toEqual(
+      miniGrepSolutionBytes,
+    );
+    console.log("Mini grep starter and solution downloads preserve bytes offline");
+    await context.setOffline(false);
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
       .getByRole("button", { name: /Projekt: trwały serwis logów/ })
       .click();
     const capstonePanel = page.getByRole("region", { name: "Pakiet Cargo" });
@@ -679,6 +745,29 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
     ).toBeVisible();
     console.log("Service Operations gate and draft resume offline");
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const fuzzTitle = "Fuzz evidence: od bajtów do audytowalnej regresji";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(fuzzTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: fuzzTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const fuzzHeading = await page.locator(".task-pane h1").innerText();
+    const fuzzEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    const fuzzDraft = `${await fuzzEditor.inputValue()}\n// Bounded fuzz domain draft.\n`;
+    await fuzzEditor.fill(fuzzDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await page.getByLabel("Notatki do lekcji").fill("Replay pozostaje oddzielny od kampanii.");
+    await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(fuzzHeading);
+    await expect(fuzzEditor).toHaveValue(fuzzDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue("Replay pozostaje oddzielny od kampanii.");
+    console.log("Fuzz evidence lesson, blank draft and note resume offline");
     expect(errors).toEqual([]);
     expect(consoleErrors).toEqual([]);
     console.log("Expected offline transport console errors", expectedOfflineConsoleErrors);

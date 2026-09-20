@@ -61,6 +61,14 @@ import {
   propertyCounterexampleReviewExercises,
 } from "./property-counterexamples";
 import { propertyContractsProject } from "./projects/property-contracts";
+import { fuzzEvidenceModule } from "./fuzz-evidence-module";
+import {
+  fuzzEvidenceLessons,
+  fuzzEvidenceConcepts,
+  fuzzEvidenceCompetencies,
+  fuzzEvidenceSources,
+  fuzzEvidenceReviewExercises,
+} from "./fuzz-evidence";
 import { ffiBufferProject } from "./projects/ffi-buffer";
 import { miriSafetyProject } from "./projects/miri-safety";
 import {
@@ -491,6 +499,7 @@ export const modules = [
   dependencyAssuranceModule,
   miniGrepModule,
   propertyContractsModule,
+  fuzzEvidenceModule,
   performanceEvidenceModule,
   profileEvidenceModule,
   unsafeFfiModule,
@@ -553,6 +562,7 @@ export const lessons = [
   ...miniGrepSystemLessons,
   ...propertyFoundationLessons,
   ...propertyCounterexampleLessons,
+  ...fuzzEvidenceLessons,
   ...performanceEvidenceLessons,
   ...profileEvidenceLessons,
   ...runtimeAllocationEvidenceLessons,
@@ -612,6 +622,7 @@ export const concepts = [
   ...miniGrepSystemConcepts,
   ...propertyFoundationConcepts,
   ...propertyCounterexampleConcepts,
+  ...fuzzEvidenceConcepts,
   ...performanceEvidenceConcepts,
   ...profileEvidenceConcepts,
   ...runtimeAllocationEvidenceConcepts,
@@ -671,6 +682,7 @@ export const competencies = [
   ...miniGrepSystemCompetencies,
   ...propertyFoundationCompetencies,
   ...propertyCounterexampleCompetencies,
+  ...fuzzEvidenceCompetencies,
   ...performanceEvidenceCompetencies,
   ...profileEvidenceCompetencies,
   ...unsafeFfiCompetencies,
@@ -729,6 +741,7 @@ export const sources = [
   ...miniGrepSystemSources,
   ...propertyFoundationSources,
   ...propertyCounterexampleSources,
+  ...fuzzEvidenceSources,
   ...performanceEvidenceSources,
   ...profileEvidenceSources,
   ...unsafeFfiSources,
@@ -787,6 +800,7 @@ export const reviewExercises = {
   ...miniGrepSystemReviewExercises,
   ...propertyFoundationReviewExercises,
   ...propertyCounterexampleReviewExercises,
+  ...fuzzEvidenceReviewExercises,
   ...performanceEvidenceReviewExercises,
   ...profileEvidenceReviewExercises,
   ...runtimeAllocationEvidenceReviewExercises,

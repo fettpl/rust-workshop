@@ -1,10 +1,10 @@
 # Alignment with the original brief
 
-Current catalog counts: 171 lessons, 44 modules, 174 concepts, 126 blank-page tasks, 314 sources, and 13 Cargo projects. The runtime allocation follow-up adds two Polish lessons, four gates, six assessed steps, and two independent reviews; release remains Hold until the broader evidence requirements are complete.
+Current catalog counts: 175 lessons, 45 modules, 178 concepts, 130 blank-page tasks, 318 sources, and 13 Cargo projects. The fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks, and four independent reviews; release remains Hold until the broader evidence requirements are complete.
 
 ## Current work: bounded capstone integration
 
-After the `async-lending-contracts` milestone and runtime allocation follow-up, the catalog has 171 lessons in 44 modules, 174 concepts, 126 blank-page tasks, 7 memory traces, 314 source entries and thirteen Cargo projects. The runtime follow-up adds two Polish lessons, four gates, six assessed steps and two independent reviews. The capstone adds six Polish lessons, twelve gates, six blank-page tasks and six independent retrieval reviews. `durable-log-service-workspace` has three crates and 35 authored files; the restricted verifier accepts only that authored archive on stable and exact Rust 1.85.0. Browser gates use modeled contracts and do not execute SQLite, TCP or learner code. Public release remains Hold until complete, reviewed JSON reports exist for both toolchains and the live advisory/license review is complete.
+After the fuzz evidence lifecycle, the catalog has 175 lessons in 45 modules, 178 concepts, 130 blank-page tasks, 7 memory traces, 318 source entries and thirteen Cargo projects. The new module adds four Polish lessons, eight gates, four blank tasks and four independent retrieval reviews. The capstone adds six Polish lessons, twelve gates, six blank-page tasks and six independent coding reviews. `durable-log-service-workspace` has three crates and 35 authored files; the restricted verifier accepts only that authored archive on stable and exact Rust 1.85.0. Browser gates use modeled contracts and do not execute SQLite, TCP or learner code. Public release remains Hold until complete, reviewed JSON reports exist for both toolchains and the live advisory/license review is complete.
 
 ## Historyczny snapshot: Unsafe/FFI i Service Operations
 

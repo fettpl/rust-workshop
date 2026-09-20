@@ -1,4 +1,9 @@
 import type { ProjectPackage } from "../../../domain/types";
+import {
+  miniGrepFuzzEvidenceDocumentation,
+  miniGrepFuzzEvidenceManifest,
+  miniGrepFuzzRegressionSeed,
+} from "./fuzz-evidence";
 
 export const miniGrepFuzzOracle = String.raw`pub fn expected(query: &str, text: &str, context: u8) -> Vec<(usize, String, bool)> {
     assert!(!query.is_empty());
@@ -71,76 +76,136 @@ mod tests {
 
 export const miniGrepFuzzTarget = String.raw`#![no_main]
 use libfuzzer_sys::fuzz_target;
-use mini_grep::{Query, SelectedLine, scan_reader, select_context};
-use std::io::{BufReader, Cursor};
+#[path = "../support/check.rs"]
+mod check;
+
+fuzz_target!(|data: &[u8]| {
+    match check::check(data) {
+        Ok(()) => {}
+        Err(check::FailureKind::QueryAcceptance) => panic!("mini-grep invalid query accepted"),
+        Err(check::FailureKind::ContextAcceptance) => panic!("mini-grep invalid context accepted"),
+        Err(check::FailureKind::BodyAcceptance) => panic!("mini-grep invalid input accepted"),
+        Err(check::FailureKind::SelectionMismatch) => panic!("mini-grep selection oracle mismatch"),
+        Err(check::FailureKind::ReaderMismatch) => panic!("mini-grep reader oracle mismatch"),
+    }
+});
+`;
+
+export const miniGrepFuzzCase = String.raw`#[derive(Debug, PartialEq, Eq)]
+pub struct Case<'a> {
+    pub context: u8,
+    pub query: String,
+    pub body: &'a [u8],
+}
+
+pub fn decode(data: &[u8]) -> Option<Case<'_>> {
+    if !(3..=4096).contains(&data.len()) {
+        return None;
+    }
+    let context = data[0] % 20;
+    let declared = usize::from(u16::from_be_bytes([data[1], data[2]]));
+    let size = declared.min(data.len() - 3);
+    let query = String::from_utf8_lossy(&data[3..3 + size]).into_owned();
+    Some(Case {
+        context,
+        query,
+        body: &data[3 + size..],
+    })
+}
+`;
+
+export const miniGrepFuzzCheck = String.raw`#[path = "case.rs"]
+pub mod case;
 #[path = "../oracle.rs"]
 mod oracle;
+use mini_grep::{Query, SelectedLine, scan_reader, select_context};
+use std::io::{BufReader, Cursor};
 
+#[allow(dead_code)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FailureKind {
+    QueryAcceptance,
+    ContextAcceptance,
+    BodyAcceptance,
+    SelectionMismatch,
+    ReaderMismatch,
+}
 fn values(lines: Vec<SelectedLine>) -> Vec<(usize, String, bool)> {
     lines
         .into_iter()
         .map(|line| (line.line_number, line.text, line.matched))
         .collect()
 }
-
-fuzz_target!(|data: &[u8]| {
-    if data.len() < 3 || data.len() > 4096 {
-        return;
+pub fn check(data: &[u8]) -> Result<(), FailureKind> {
+    let Some(input) = case::decode(data) else {
+        return Ok(());
+    };
+    let query = match Query::parse(&input.query) {
+        Ok(_) if input.query.is_empty() || input.query.len() > 1024 => {
+            return Err(FailureKind::QueryAcceptance);
+        }
+        Ok(query) => query,
+        Err(_) if input.query.is_empty() || input.query.len() > 1024 => return Ok(()),
+        Err(_) => return Err(FailureKind::QueryAcceptance),
+    };
+    let reader = BufReader::with_capacity(1 + usize::from(data[0] % 7), Cursor::new(input.body));
+    let scanned = scan_reader(&query, reader, input.context);
+    if input.context > 16 {
+        return if scanned.is_err() && select_context(&query, &[], input.context).is_err() {
+            Ok(())
+        } else {
+            Err(FailureKind::ContextAcceptance)
+        };
     }
-    let context = data[0] % 20;
-    let size = usize::from(u16::from_be_bytes([data[1], data[2]])).min(data.len() - 3);
-    let query_text = String::from_utf8_lossy(&data[3..3 + size]);
-    let query_result = Query::parse(&query_text);
-    if query_text.is_empty() || query_text.len() > 1024 {
-        assert!(query_result.is_err(), "mini-grep invalid query accepted");
-        return;
-    }
-    let query = query_result.expect("mini-grep valid query rejected");
-    assert_eq!(query.as_str(), query_text);
-    let input = &data[3 + size..];
-    let reader = BufReader::with_capacity(1 + usize::from(data[0] % 7), Cursor::new(input));
-    let scanned = scan_reader(&query, reader, context);
-    if context > 16 {
-        assert!(
-            scanned.is_err(),
-            "mini-grep invalid context accepted by reader"
-        );
-        assert!(
-            select_context(&query, &[], context).is_err(),
-            "mini-grep invalid context accepted by selection"
-        );
-        return;
-    }
-    let text = match std::str::from_utf8(input) {
-        Ok(text) if !input.contains(&0) => text,
+    let text = match std::str::from_utf8(input.body) {
+        Ok(text) if !input.body.contains(&0) => text,
         _ => {
-            assert!(scanned.is_err(), "mini-grep invalid input accepted");
-            return;
+            return if scanned.is_err() {
+                Ok(())
+            } else {
+                Err(FailureKind::BodyAcceptance)
+            };
         }
     };
-    // The fuzzer's max_len is 4096: accepted text stays below the package's
-    // line/output caps. Unit/process tests independently exercise those limits.
-    let expected = oracle::expected(query.as_str(), text, context);
-    let lines: Vec<String> = text
+    let expected = oracle::expected(query.as_str(), text, input.context);
+    let lines = text
         .split_inclusive('\n')
         .map(|part| match part.strip_suffix('\n') {
             Some(line) => line.strip_suffix('\r').unwrap_or(line).to_owned(),
             None => part.to_owned(),
         })
-        .collect();
-    let selected =
-        select_context(&query, &lines, context).expect("mini-grep valid selection rejected");
-    assert_eq!(
-        values(selected),
-        expected,
-        "mini-grep selection oracle mismatch"
-    );
-    assert_eq!(
-        values(scanned.expect("mini-grep valid input rejected")),
-        expected,
-        "mini-grep reader oracle mismatch"
-    );
-});
+        .collect::<Vec<_>>();
+    let selected = select_context(&query, &lines, input.context)
+        .map_err(|_| FailureKind::SelectionMismatch)?;
+    if values(selected) != expected {
+        return Err(FailureKind::SelectionMismatch);
+    }
+    if values(scanned.map_err(|_| FailureKind::ReaderMismatch)?) != expected {
+        return Err(FailureKind::ReaderMismatch);
+    }
+    Ok(())
+}
+`;
+
+export const miniGrepFuzzRegressionTests = String.raw`#[path = "../fuzz/support/check.rs"]
+mod check;
+use check::case;
+#[test]
+fn substring_prefix_witness_is_exact_and_replays_selection_mismatch() {
+    let bytes = [0u8, 0, 1, b'x', b'a', b'x', b'\n'];
+    let parsed = case::decode(&bytes).expect("framed witness");
+    assert_eq!(parsed.query, "x");
+    assert_eq!(parsed.body, b"ax\n");
+    assert_eq!(check::check(&bytes), Ok(()));
+}
+
+#[test]
+fn boundary_vectors_remain_typed() {
+    assert!(case::decode(&[0, 0]).is_none());
+    assert_eq!(check::check(&[0, 0, 0]), Ok(()));
+    assert_eq!(check::check(&[19, 0, 1, b'x', b'x', b'\n']), Ok(()));
+    assert!(case::decode(&[0, 0, 1, b'x', 0xff]).is_some());
+}
 `;
 
 export const miniGrepFuzzManifest = `[package]
@@ -308,6 +373,22 @@ export const miniGrepFuzzFiles: ProjectPackage["files"] = [
   { path: "fuzz/README.md", starter: fuzzReadme },
   { path: "fuzz/oracle.rs", starter: miniGrepFuzzOracle },
   { path: "fuzz/fuzz_targets/selection.rs", starter: miniGrepFuzzTarget },
+  { path: "fuzz/support/case.rs", starter: miniGrepFuzzCase },
+  { path: "fuzz/support/check.rs", starter: miniGrepFuzzCheck },
+  { path: "tests/fuzz_regressions.rs", starter: miniGrepFuzzRegressionTests },
+  {
+    path: "FUZZ-MANIFEST.json",
+    starter:
+      JSON.stringify(miniGrepFuzzEvidenceManifest, null, 2) + "\n",
+  },
+  {
+    path: "FUZZ-EVIDENCE.md",
+    starter: miniGrepFuzzEvidenceDocumentation,
+  },
+  {
+    path: "fuzz/regressions/substring-prefix.seed",
+    starter: miniGrepFuzzRegressionSeed,
+  },
   ...[
     ["substring", corpusSeed(0, "beta", "alphabetagamma\n")],
     ["overlap", corpusSeed(1, "x", "left\nx\nmiddle\nx\nright\n")],
