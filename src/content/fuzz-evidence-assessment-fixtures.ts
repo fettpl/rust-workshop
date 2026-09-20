@@ -249,7 +249,7 @@ fn duplicate_retrieval_preserves_every_field_and_order() {
 struct Window { declared: u8, payload: Vec<u8>, checksum: u8 }
 fn shrink_window(original: &Window, candidate: Window, outcome: &str) -> Window {
     let candidate_is_framed = candidate.declared as usize == candidate.payload.len();
-    if outcome == "LengthMismatch" && candidate_is_framed && candidate.payload.len() + 1 < original.payload.len() { candidate } else { original.clone() }
+    if outcome == "LengthMismatch" && candidate_is_framed && candidate.payload.len() < original.payload.len() { candidate } else { original.clone() }
 }
 #[test]
 fn window_retrieval_requires_framed_payload_and_named_failure() {
@@ -257,6 +257,8 @@ fn window_retrieval_requires_framed_payload_and_named_failure() {
     let candidate = Window { declared: 2, payload: b"BC".to_vec(), checksum: 7 };
     assert_eq!(shrink_window(&original, candidate.clone(), "LengthMismatch"), candidate);
     assert_eq!(shrink_window(&original, candidate.clone(), "Timeout"), original);
+    let one_byte_shorter = Window { declared: 4, payload: b"ABCD".to_vec(), checksum: 7 };
+    assert_eq!(shrink_window(&original, one_byte_shorter.clone(), "LengthMismatch"), one_byte_shorter);
     assert_eq!(shrink_window(&original, Window { declared: 3, payload: b"BC".to_vec(), checksum: 7 }, "LengthMismatch"), original);
     assert_eq!(shrink_window(&original, Window { declared: 5, payload: b"ABCDE".to_vec(), checksum: 7 }, "LengthMismatch"), original);
 }`,
