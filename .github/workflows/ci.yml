@@ -38,11 +38,11 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run content:packages
       - run: npm test
       - run: npm run content:check
       - run: npm run content:rust
       - run: npm run content:tokio -- --fetch
-      - run: npm run content:packages
       - run: npm run content:async-lending -- --fetch
       - run: npm run content:operations -- --fetch
       - run: npm run content:models -- --fetch
