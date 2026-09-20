@@ -598,7 +598,6 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
     await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
     await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
-    const assistedPrimaryCode = await page.locator(".revealed-solution pre").innerText();
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
