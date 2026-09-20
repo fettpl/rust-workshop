@@ -8,7 +8,18 @@ import { readFile } from "node:fs/promises";
     });
     const page = await context.newPage();
     const errors = [];
+    const consoleErrors = [];
+    const expectedOfflineConsoleErrors = [];
     page.on("pageerror", (e) => errors.push(e.message));
+    page.on("console", (message) => {
+      if (message.type() !== "error") return;
+      const text = message.text();
+      if (text.includes("net::ERR_INTERNET_DISCONNECTED")) {
+        expectedOfflineConsoleErrors.push(text);
+      } else {
+        consoleErrors.push(text);
+      }
+    });
     await page.goto("http://127.0.0.1:3002");
     await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
     await page.getByRole("button", { name: "Przejdź do nauki" }).click();
@@ -480,6 +491,67 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       "Previously unvisited GAT blank and its exact draft resume offline",
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const asyncLendingTitle =
+      "Async lending: pożyczone futures i granice dispatchu";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(asyncLendingTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: asyncLendingTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const asyncEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const asyncPrimaryHeading = await page.locator(".task-pane h1").innerText();
+    const asyncPrimaryDraft =
+      "// Async primary draft revealed before the independent transfer.\n";
+    await asyncEditor.fill(asyncPrimaryDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
+    await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
+    await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(asyncLendingTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: asyncLendingTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    await expect(page.locator(".task-pane h1")).not.toHaveText(asyncPrimaryHeading);
+    await asyncEditor.focus();
+    await asyncEditor.press("ControlOrMeta+End");
+    const asyncLendingHeading = await page.locator(".task-pane h1").innerText();
+    const asyncLendingDraft =
+      "// Niezależny async transfer: Pending nie zapisuje efektu przed Ready.\n";
+    await asyncEditor.fill(asyncLendingDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(asyncLendingHeading);
+    await expect(asyncEditor).toHaveValue(asyncLendingDraft);
+    await asyncEditor.focus();
+    await expect(asyncEditor).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(
+      page.getByRole("button", { name: "Monaco Editor", exact: true }),
+    ).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(asyncEditor).toBeFocused();
+    await expect(page.getByText("Tryb offline.", { exact: false })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Uruchom", exact: true })).toHaveCount(0);
+    console.log("Async lending gate, keyboard focus and draft resume offline");
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
       "Property testing: kontrakty, generatory i kontrprzykłady";
     await page
@@ -608,6 +680,8 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     ).toBeVisible();
     console.log("Service Operations gate and draft resume offline");
     expect(errors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+    console.log("Expected offline transport console errors", expectedOfflineConsoleErrors);
     console.log("Page errors", errors);
   } finally {
     await browser.close();

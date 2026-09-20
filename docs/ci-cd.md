@@ -36,6 +36,12 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
   behavior, replay of the checked-in regression, formatting, Clippy, and a
   compiling mutant that must be rejected. The stable job and the MSRV job both
   run it; `--msrv` selects the exact Rust 1.85.0 toolchain.
+- `allocation-evidence`: a three-entry Ubuntu stable, Ubuntu Rust 1.85.0 and
+  macOS stable matrix runs `content:allocations`. The job regenerates and hashes
+  both Log Analyzer archives, checks formatting/Cargo tests/Clippy offline,
+  executes baseline, candidate and materialization mutant as separate processes
+  on eight identical workloads, including reader errors and line boundaries, and uploads bounded JSON reports. The counter has
+  no Valgrind dependency and the report makes no RSS or universal-threshold claim.
 
 Kontrole używają Node.js 22, bieżącego stable Rust oraz osobnych, jawnie
 przypiętych toolchainów MSRV i fuzzera. Bieżący stable celowo sprawdza również

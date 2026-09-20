@@ -9,7 +9,7 @@ describe("Log Analyzer performance archive contract", () => {
   it("keeps the existing package identity and archive gates", () => {
     expect(validateProjectPackage(logAnalyzerPackage)).toEqual([]);
     expect(logAnalyzerPackage.id).toBe("log-analyzer-workshop");
-    expect(logAnalyzerPackage.files).toHaveLength(15);
+    expect(logAnalyzerPackage.files).toHaveLength(20);
     expect(logAnalyzerPackage.revealStepRefs.map((ref) => ref.stepId)).toEqual([
       "records-debug",
       "stream-debug",
@@ -76,5 +76,22 @@ describe("Log Analyzer performance archive contract", () => {
     expect(performance).toMatch(/profiles\s+the whole Rust\s+test process/);
     expect(performance).toContain("cannot be attributed exclusively");
     expect(performance).toContain("not a baseline/candidate allocation comparison");
+  });
+
+  it("ships the portable allocation counter and separate-process probe contract", () => {
+    const solution = projectFiles(logAnalyzerPackage, "solution");
+    expect(solution["examples/allocation_probe.rs"]).toContain("analyze_reader");
+    expect(solution["examples/allocation_probe.rs"]).toContain("Mode::Mutant");
+    expect(solution["examples/allocation_probe.rs"]).toContain("snapshot()");
+    expect(solution["examples/support/allocation_counter.rs"]).toContain("unsafe impl GlobalAlloc");
+    expect(solution["examples/support/allocation_counter.rs"]).toContain("alloc_zeroed");
+    expect(solution["examples/support/allocation_counter.rs"]).toContain("realloc");
+    expect(solution["tests/allocation_counter_contract.rs"]).toContain("counts_all_global_allocator_operations");
+    expect(JSON.parse(solution["ALLOCATION-MANIFEST.json"]).workloads).toEqual([
+      "empty", "valid-512", "repeated", "malformed", "crlf-boundary",
+      "line-4096", "line-4097", "reader-error",
+    ]);
+    expect(solution["ALLOCATION-EVIDENCE.md"]).toContain("RSS");
+    expect(solution["ALLOCATION-EVIDENCE.md"]).toContain("Summary");
   });
 });

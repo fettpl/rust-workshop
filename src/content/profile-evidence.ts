@@ -6,6 +6,7 @@ import type {
   LessonStep,
   Source,
 } from "@/domain/types";
+import { runtimeAllocationEvidenceLessons, runtimeAllocationEvidenceConcepts, runtimeAllocationEvidenceReviewExercises } from "./runtime-allocation-evidence";
 
 const reviewedAt = "2026-09-18";
 
@@ -1138,7 +1139,7 @@ export const profileEvidenceModule: CourseModule = {
     "Profilowanie pomaga podejmować decyzje dopiero wtedy, gdy zakres workloadu, obserwowana metryka i próg są jawne. Zbudujesz deterministyczne rekordy instrukcji i alokacji, przeniesiesz je do porównania wariantów oraz nazwiesz regresję bez obietnic globalnej szybkości.",
   capabilities: profileEvidenceCompetencies.map((item) => item.title),
   prerequisites: ["performance-evidence"],
-  lessonIds: profileEvidenceLessons.map((lesson) => lesson.id),
+  lessonIds: [...profileEvidenceLessons, ...runtimeAllocationEvidenceLessons].map((lesson) => lesson.id),
   exitGate: [
     "Zapiszesz instrukcyjny koszt fixture jako rekord ograniczony do jawnego śladu.",
     "Zamodelujesz alokacje jako zdarzenia z rodzajem, rozmiarem i miejscem.",
@@ -1227,5 +1228,41 @@ export const profileEvidenceModule: CourseModule = {
         { lessonId: "profile-regression-decision", stepId: "decision-blank" },
       ],
     },
+    {
+      id: "runtime-allocation-scope-gate",
+      label: "Okno alokacji ma osobny setup i zamyka się po Ok oraz Err.",
+      taskRefs: [
+        { lessonId: "runtime-allocation-scope", stepId: "allocation-scope-gate" },
+        { lessonId: "runtime-allocation-scope", stepId: "allocation-scope-blank" },
+      ],
+    },
+    {
+      id: "runtime-allocation-scope-error-gate",
+      label: "Niekompletne okno nie jest dowodem sukcesu.",
+      taskRefs: [
+        { lessonId: "runtime-allocation-scope", stepId: "allocation-scope-error-gate" },
+        { lessonId: "runtime-allocation-scope", stepId: "allocation-scope-blank" },
+      ],
+    },
+    {
+      id: "runtime-allocation-comparison-gate",
+      label: "Baseline i candidate mają ten sam input oraz Summary.",
+      taskRefs: [
+        { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-gate" },
+        { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-blank" },
+      ],
+    },
+    {
+      id: "runtime-allocation-comparison-complete-gate",
+      label: "Niekompletne lub nieporównywalne dane są odrzucane.",
+      taskRefs: [
+        { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-complete-gate" },
+        { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-blank" },
+      ],
+    },
   ],
 };
+
+export const profileEvidenceExtendedLessons = runtimeAllocationEvidenceLessons;
+export const profileEvidenceExtendedConcepts = runtimeAllocationEvidenceConcepts;
+export const profileEvidenceExtendedReviewExercises = runtimeAllocationEvidenceReviewExercises;

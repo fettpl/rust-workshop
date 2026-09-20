@@ -18,10 +18,15 @@ const lessonIds = [
   "profile-optimization-transfer",
   "profile-regression-decision",
 ];
+const moduleLessonIds = [
+  ...lessonIds,
+  "runtime-allocation-scope",
+  "runtime-allocation-comparison",
+];
 
-it("registers four profile lessons with independent gates, blanks, and retrievals", () => {
+it("registers profile lessons with independent gates, blanks, and retrievals", () => {
   expect(profileEvidenceLessons).toHaveLength(4);
-  expect(profileEvidenceModule.lessonIds).toEqual(lessonIds);
+  expect(profileEvidenceModule.lessonIds).toEqual(moduleLessonIds);
   expect(modules.find((module) => module.id === "profile-evidence")).toEqual(
     profileEvidenceModule,
   );
@@ -30,7 +35,7 @@ it("registers four profile lessons with independent gates, blanks, and retrieval
     lessonIds.includes(lesson.id),
   );
   expect(moduleLessons).toHaveLength(4);
-  expect(profileEvidenceModule.gateCriteria).toHaveLength(8);
+  expect(profileEvidenceModule.gateCriteria).toHaveLength(12);
   expect(
     moduleLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
@@ -60,8 +65,8 @@ it("registers four profile lessons with independent gates, blanks, and retrieval
   const refs = profileEvidenceModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(16);
-  expect(new Set(refs).size).toBe(16);
+  expect(refs).toHaveLength(24);
+  expect(new Set(refs).size).toBe(22);
   expect(
     profileEvidenceModule.gateCriteria!.map((criterion) =>
       criterion.taskRefs.map((ref) => ref.stepId),
@@ -75,6 +80,10 @@ it("registers four profile lessons with independent gates, blanks, and retrieval
     ["transfer-budget-gate", "transfer-blank"],
     ["decision-gate", "decision-recall"],
     ["decision-evidence-gate", "decision-blank"],
+    ["allocation-scope-gate", "allocation-scope-blank"],
+    ["allocation-scope-error-gate", "allocation-scope-blank"],
+    ["allocation-comparison-gate", "allocation-comparison-blank"],
+    ["allocation-comparison-complete-gate", "allocation-comparison-blank"],
   ]);
   expect(
     profileEvidenceModule.gateCriteria!.every((criterion) => {

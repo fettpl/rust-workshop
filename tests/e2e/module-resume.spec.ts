@@ -13,13 +13,18 @@ for (const moduleId of [
   "gat-lending-iterators",
   "async-lending-contracts",
   "performance-evidence",
+  "profile-evidence",
   "unsafe-ffi-contracts",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,
   }) => {
     const errors: string[] = [];
+    const consoleErrors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") consoleErrors.push(message.text());
+    });
     const stage = modules.find((item) => item.id === moduleId)!;
     expect(stage).toBeDefined();
     const [first, fresh] = stage.gateCriteria![0].taskRefs;
@@ -122,6 +127,23 @@ for (const moduleId of [
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toHaveCount(0);
+    if (moduleId === "async-lending-contracts") {
+      const asyncDraft = "// Niezależny transfer async zapisany po reveal.\n";
+      await editor.fill(asyncDraft);
+      await expect(
+        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      ).toBeVisible();
+      await editor.focus();
+      await page.keyboard.press("Tab");
+      await expect(
+        page.getByRole("button", { name: "Monaco Editor", exact: true }),
+      ).toBeFocused();
+      await page.keyboard.press("Shift+Tab");
+      await expect(editor).toBeFocused();
+      await page.reload();
+      await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
+      await expect(editor).toHaveValue(asyncDraft);
+    }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole("tab", { name: "Kod", exact: true }).click();
     await editor.focus();
@@ -133,5 +155,6 @@ for (const moduleId of [
     ).toBe(true);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
   });
 }

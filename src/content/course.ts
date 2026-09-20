@@ -265,6 +265,11 @@ import {
 } from "./log-analyzer";
 import { logAnalyzerPackage } from "./projects/log-analyzer";
 import {
+  runtimeAllocationEvidenceLessons,
+  runtimeAllocationEvidenceConcepts,
+  runtimeAllocationEvidenceReviewExercises,
+} from "./runtime-allocation-evidence";
+import {
   iteratorsLessons,
   iteratorsConcepts,
   iteratorsCompetencies,
@@ -550,6 +555,7 @@ export const lessons = [
   ...propertyCounterexampleLessons,
   ...performanceEvidenceLessons,
   ...profileEvidenceLessons,
+  ...runtimeAllocationEvidenceLessons,
   ...unsafeFfiLessons,
   ...unsafeMiriLessons,
   ...serviceOperationsLessons,
@@ -608,6 +614,7 @@ export const concepts = [
   ...propertyCounterexampleConcepts,
   ...performanceEvidenceConcepts,
   ...profileEvidenceConcepts,
+  ...runtimeAllocationEvidenceConcepts,
   ...unsafeFfiConcepts,
   ...unsafeMiriConcepts,
   ...serviceOperationsConcepts,
@@ -782,6 +789,7 @@ export const reviewExercises = {
   ...propertyCounterexampleReviewExercises,
   ...performanceEvidenceReviewExercises,
   ...profileEvidenceReviewExercises,
+  ...runtimeAllocationEvidenceReviewExercises,
   ...unsafeFfiReviewExercises,
   ...unsafeMiriReviewExercises,
   ...serviceOperationsReviewExercises,

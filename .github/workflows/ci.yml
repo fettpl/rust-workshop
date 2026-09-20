@@ -230,6 +230,47 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  allocation-evidence:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            toolchain: stable
+            verifier: "npm run content:allocations -- --fetch"
+            artifact: allocation-stable-ubuntu
+          - os: ubuntu-latest
+            toolchain: 1.85.0
+            verifier: "npm run content:allocations -- --fetch --msrv"
+            artifact: allocation-msrv-ubuntu
+          - os: macos-latest
+            toolchain: stable
+            verifier: "npm run content:allocations -- --fetch"
+            artifact: allocation-stable-macos
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy
+      - run: npm ci
+      - run: ${{ matrix.verifier }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: ${{ matrix.artifact }}
+          path: test-results/allocations/
+          if-no-files-found: warn
+          retention-days: 7
+
   miri-safety:
     runs-on: ubuntu-latest
     timeout-minutes: 20

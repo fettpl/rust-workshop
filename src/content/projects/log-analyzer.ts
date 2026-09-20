@@ -1463,13 +1463,14 @@ no record payload. These fields are not runtime allocator observations.
 The source model is a set of assumptions checked against the authored API and
 constants. Its \`source_model_buffer_capacity_bytes\` and
 \`source_model_retained_record_bytes\` fields are declarations of the reviewed
-source-level model, not runtime observations. It does not observe allocator
-calls, allocated bytes, retained capacity, or parser-only profiler samples, so
-actual parser allocation verification remains open. Workload setup is reported
-separately to keep the source-level scope explicit. A Callgrind or DHAT run is different: it profiles
+source-level model, not runtime observations. The separate allocation probe
+observes global allocator calls around the real parser on fixed workloads, while
+the source model remains source-level evidence. Workload setup is reported
+separately to keep the source-level scope explicit. The bounded probe is actual parser allocation evidence for its named process and fixed workloads. A Callgrind or DHAT run is different: it profiles
 the whole Rust test process, including the test harness, workload construction,
 assertions and teardown. Its samples cannot be attributed exclusively to
-\`analyze_reader\` and cannot close the open allocation-verification gap.
+\`analyze_reader\`; the allocation probe is bounded to its named process and
+does not claim RSS, retained memory for the whole process, or a universal threshold.
 
 The Criterion benchmark in \`benches/log_analyzer.rs\` is a repeatable local
 comparison between the baseline and streaming implementations. Its timings are
@@ -1481,14 +1482,288 @@ npm run content:profiles -- --profile=callgrind
 npm run content:profiles -- --profile=dhat
 \`\`\`
 
-Those modes require the named Valgrind tool and fail when it is unavailable.
+Those modes require the named Valgrind tool and fail when it is unavailable;
+profiler verification remains open until those tools run in CI.
 The verifier runs the repository-authored test binary and checks that a fresh
 tool output was produced. The report is process-level evidence for this runner,
-not a baseline/candidate allocation comparison, parser-only measurement, or
-runtime allocation proof.
+not a baseline/candidate allocation comparison or parser-only profiler
+measurement. See \`ALLOCATION-EVIDENCE.md\` and \`ALLOCATION-MANIFEST.json\` for
+the bounded runtime allocation contract.
 It never reads or trusts checked-in profile fixtures. See
 \`PROFILE-MANIFEST.json\` for workload, comparison limits, provenance, and the
 profile boundary.
+`;
+
+const allocationCounter = `use std::alloc::{GlobalAlloc, Layout, System};
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AllocationSnapshot {
+    pub alloc_calls: usize,
+    pub alloc_zeroed_calls: usize,
+    pub dealloc_calls: usize,
+    pub realloc_calls: usize,
+    pub requested_bytes: usize,
+    pub freed_bytes: usize,
+}
+
+pub struct CountingAllocator;
+static ALLOC_CALLS: AtomicUsize = AtomicUsize::new(0);
+static ALLOC_ZEROED_CALLS: AtomicUsize = AtomicUsize::new(0);
+static DEALLOC_CALLS: AtomicUsize = AtomicUsize::new(0);
+static REALLOC_CALLS: AtomicUsize = AtomicUsize::new(0);
+static REQUESTED_BYTES: AtomicUsize = AtomicUsize::new(0);
+static FREED_BYTES: AtomicUsize = AtomicUsize::new(0);
+
+#[inline]
+fn add(counter: &AtomicUsize, value: usize) {
+    counter.fetch_add(value, Ordering::Relaxed);
+}
+
+pub fn reset() {
+    for counter in [
+        &ALLOC_CALLS,
+        &ALLOC_ZEROED_CALLS,
+        &DEALLOC_CALLS,
+        &REALLOC_CALLS,
+        &REQUESTED_BYTES,
+        &FREED_BYTES,
+    ] {
+        counter.store(0, Ordering::Relaxed);
+    }
+}
+
+pub fn snapshot() -> AllocationSnapshot {
+    AllocationSnapshot {
+        alloc_calls: ALLOC_CALLS.load(Ordering::Relaxed),
+        alloc_zeroed_calls: ALLOC_ZEROED_CALLS.load(Ordering::Relaxed),
+        dealloc_calls: DEALLOC_CALLS.load(Ordering::Relaxed),
+        realloc_calls: REALLOC_CALLS.load(Ordering::Relaxed),
+        requested_bytes: REQUESTED_BYTES.load(Ordering::Relaxed),
+        freed_bytes: FREED_BYTES.load(Ordering::Relaxed),
+    }
+}
+
+#[inline]
+fn record_realloc(layout: Layout, new_size: usize, result: *mut u8) {
+    add(&REALLOC_CALLS, 1);
+    add(&REQUESTED_BYTES, new_size);
+    if !result.is_null() {
+        add(&FREED_BYTES, layout.size());
+    }
+}
+
+#[allow(dead_code)]
+pub fn simulate_failed_realloc(layout: Layout, new_size: usize) -> *mut u8 {
+    let result = std::ptr::null_mut();
+    record_realloc(layout, new_size, result);
+    result
+}
+
+unsafe impl GlobalAlloc for CountingAllocator {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        add(&ALLOC_CALLS, 1);
+        add(&REQUESTED_BYTES, layout.size());
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        add(&ALLOC_ZEROED_CALLS, 1);
+        add(&REQUESTED_BYTES, layout.size());
+        unsafe { System.alloc_zeroed(layout) }
+    }
+    unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
+        add(&DEALLOC_CALLS, 1);
+        add(&FREED_BYTES, layout.size());
+        unsafe { System.dealloc(pointer, layout) }
+    }
+    unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+        let result = unsafe { System.realloc(pointer, layout, new_size) };
+        record_realloc(layout, new_size, result);
+        result
+    }
+}
+`;
+
+const allocationProbe = `#[path = "support/allocation_counter.rs"]
+mod allocation_counter;
+
+use allocation_counter::{AllocationSnapshot, CountingAllocator, reset, snapshot};
+use log_analyzer_workshop::{AnalyzeError, Summary, analyze_reader};
+use std::env;
+use std::hint::black_box;
+use std::io::{self, BufRead, Cursor, Read};
+
+#[global_allocator]
+static GLOBAL: CountingAllocator = CountingAllocator;
+
+#[rustfmt::skip]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Mode { Baseline, Candidate, Mutant }
+
+#[rustfmt::skip]
+fn input_for(name: &str) -> Vec<u8> {
+    match name {
+        "empty" => Vec::new(),
+        "valid-512" => (0..512).flat_map(|_| b"1 INFO fixed message\\n".iter().copied()).collect(),
+        "repeated" => (0..128).flat_map(|index| format!("{index} WARN repeated\\n").into_bytes()).collect(),
+        "malformed" => b"1 INFO ok\\nnot a record\\n2 WARN ok\\n".iter().copied().chain([0xff, b'\\n']).collect(),
+        "crlf-boundary" => b"1 INFO first\\r\\n2 ERROR second\\n".to_vec(),
+        "line-4096" => {
+            let mut value = b"1 INFO ".to_vec();
+            value.extend(std::iter::repeat_n(b'x', 4089)); value.extend_from_slice(b"\\n"); value
+        }
+        "line-4097" => {
+            let mut value = b"1 INFO ".to_vec();
+            value.extend(std::iter::repeat_n(b'x', 4090)); value.extend_from_slice(b"\\n"); value
+        }
+        "reader-error" => Vec::new(),
+        other => panic!("unknown workload: {other}"),
+    }
+}
+
+struct FailingReader;
+
+impl Read for FailingReader {
+    fn read(&mut self, _buffer: &mut [u8]) -> io::Result<usize> {
+        Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "controlled reader error",
+        ))
+    }
+}
+
+impl BufRead for FailingReader {
+    fn fill_buf(&mut self) -> io::Result<&[u8]> {
+        Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "controlled reader error",
+        ))
+    }
+
+    fn consume(&mut self, _amount: usize) {}
+}
+
+#[rustfmt::skip]
+fn materializing_mutant(input: &[u8]) -> Result<Summary, log_analyzer_workshop::AnalyzeError> {
+    let owned: Vec<Vec<u8>> = input.split_inclusive(|byte| *byte == b'\\n').map(<[u8]>::to_vec).collect();
+    let mut materialized = Vec::with_capacity(input.len());
+    for line in owned { materialized.extend_from_slice(&line); }
+    analyze_reader(Cursor::new(materialized), None)
+}
+
+#[rustfmt::skip]
+fn measure(mode: Mode, workload: &str, input: &[u8]) -> (Result<Summary, AnalyzeError>, AllocationSnapshot) {
+    reset();
+    let result = if workload == "reader-error" {
+        analyze_reader(FailingReader, None)
+    } else { match mode {
+        Mode::Baseline | Mode::Candidate => analyze_reader(Cursor::new(input), None),
+        Mode::Mutant => materializing_mutant(input),
+    }};
+    let observed = snapshot();
+    (result, observed)
+}
+
+#[rustfmt::skip]
+fn parse_mode(value: &str) -> Mode {
+    match value { "baseline" => Mode::Baseline, "candidate" => Mode::Candidate, "mutant" => Mode::Mutant, _ => panic!("unknown mode: {value}") }
+}
+
+#[rustfmt::skip]
+#[allow(dead_code)]
+fn emit_legacy(mode: &str, workload: &str, summary: Summary, observed: AllocationSnapshot) {
+    println!("{{\\\"schema\\\":\\\"rust-workshop.allocation-result.v1\\\",\\\"mode\\\":\\\"{mode}\\\",\\\"workload\\\":\\\"{workload}\\\",\\\"toolchain\\\":\\\"{}\\\",\\\"target\\\":\\\"{}\\\",\\\"build_profile\\\":\\\"debug\\\",\\\"summary\\\":{{\\\"info\\\":{},\\\"warn\\\":{},\\\"error\\\":{},\\\"malformed\\\":{}}},\\\"alloc_calls\\\":{},\\\"alloc_zeroed_calls\\\":{},\\\"dealloc_calls\\\":{},\\\"realloc_calls\\\":{},\\\"requested_bytes\\\":{},\\\"freed_bytes\\\":{},\\\"complete\\\":true,\\\"limits\\\":{{\\\"single_threaded\\\":true,\\\"rss_claim\\\":false,\\\"universal_threshold\\\":false}}}}", option_env!("RUSTC_VERSION").unwrap_or("unknown"), option_env!("TARGET").unwrap_or("unknown"), summary.info, summary.warn, summary.error, summary.malformed, observed.alloc_calls, observed.alloc_zeroed_calls, observed.dealloc_calls, observed.realloc_calls, observed.requested_bytes, observed.freed_bytes);
+}
+
+#[rustfmt::skip]
+fn emit_report(mode: &str, workload: &str, result: &Result<Summary, AnalyzeError>, observed: AllocationSnapshot) {
+    let summary = match result { Ok(value) => Summary { info: value.info, warn: value.warn, error: value.error, malformed: value.malformed }, Err(_) => Summary::default() };
+    let (result_name, error_kind) = match result { Ok(_) => ("ok", "null"), Err(AnalyzeError::Io(_)) => ("err", "\\\"io\\\""), Err(AnalyzeError::CounterOverflow) => ("err", "\\\"analysis\\\"") };
+    println!("{{\\\"schema\\\":\\\"rust-workshop.allocation-result.v1\\\",\\\"mode\\\":\\\"{mode}\\\",\\\"workload\\\":\\\"{workload}\\\",\\\"toolchain\\\":\\\"{}\\\",\\\"target\\\":\\\"{}\\\",\\\"build_profile\\\":\\\"{}\\\",\\\"result\\\":\\\"{result_name}\\\",\\\"error_kind\\\":{},\\\"summary\\\":{{\\\"info\\\":{},\\\"warn\\\":{},\\\"error\\\":{},\\\"malformed\\\":{}}},\\\"alloc_calls\\\":{},\\\"alloc_zeroed_calls\\\":{},\\\"dealloc_calls\\\":{},\\\"realloc_calls\\\":{},\\\"requested_bytes\\\":{},\\\"freed_bytes\\\":{},\\\"complete\\\":true,\\\"limits\\\":{{\\\"single_process\\\":true,\\\"single_threaded\\\":true,\\\"rss_claim\\\":false,\\\"universal_threshold\\\":false}}}}", env::var("ALLOCATION_TOOLCHAIN").unwrap_or_else(|_| "unknown".into()), env::var("ALLOCATION_TARGET").unwrap_or_else(|_| "unknown".into()), env::var("ALLOCATION_PROFILE").unwrap_or_else(|_| "unknown".into()), error_kind, summary.info, summary.warn, summary.error, summary.malformed, observed.alloc_calls, observed.alloc_zeroed_calls, observed.dealloc_calls, observed.realloc_calls, observed.requested_bytes, observed.freed_bytes);
+}
+
+#[rustfmt::skip]
+fn main() {
+    let mut args = env::args().skip(1);
+    let mode_name = args.next().unwrap_or_else(|| "baseline".into());
+    let workload = args.next().unwrap_or_else(|| "valid-512".into());
+    let mode = parse_mode(&mode_name);
+    let input = input_for(&workload);
+    let _warmup = if workload == "reader-error" { analyze_reader(FailingReader, None) } else { analyze_reader(Cursor::new(input.as_slice()), None) };
+    let (result, observed) = measure(mode, &workload, black_box(input.as_slice()));
+    black_box(&result); emit_report(&mode_name, &workload, &result, observed);
+}
+`;
+
+const allocationCounterContract = `#[path = "../examples/support/allocation_counter.rs"]
+mod allocation_counter;
+use allocation_counter::{CountingAllocator, reset, snapshot};
+use std::alloc::Layout;
+#[global_allocator]
+static GLOBAL: CountingAllocator = CountingAllocator;
+
+#[test]
+fn counts_all_global_allocator_operations_without_allocating_in_callbacks() {
+    reset();
+    let layout = Layout::from_size_align(8, 8).unwrap();
+    let pointer = unsafe { std::alloc::alloc_zeroed(layout) };
+    assert!(!pointer.is_null());
+    let grown = unsafe { std::alloc::realloc(pointer, layout, 32) };
+    assert!(!grown.is_null());
+    unsafe { std::alloc::dealloc(grown, Layout::from_size_align(32, 8).unwrap()) };
+    let before_failed = snapshot();
+    assert!(allocation_counter::simulate_failed_realloc(layout, 64).is_null());
+    let after_failed = snapshot();
+    assert_eq!(after_failed.realloc_calls, before_failed.realloc_calls + 1);
+    assert_eq!(
+        after_failed.requested_bytes,
+        before_failed.requested_bytes + 64
+    );
+    assert_eq!(after_failed.freed_bytes, before_failed.freed_bytes);
+    let observed = after_failed;
+    assert_eq!(observed.alloc_zeroed_calls, 1);
+    assert_eq!(observed.realloc_calls, 2);
+    assert_eq!(observed.dealloc_calls, 1);
+    assert!(observed.requested_bytes >= 40);
+    assert_eq!(observed.freed_bytes, 40);
+}
+`;
+
+const allocationManifest = `{
+  "schema": "rust-workshop.allocation.v1",
+  "package": "log-analyzer-workshop",
+  "probe": "examples/allocation_probe.rs",
+  "counter": "examples/support/allocation_counter.rs",
+  "contract": "tests/allocation_counter_contract.rs",
+  "source_hashes": {
+    "examples/allocation_probe.rs": "sha256:211a8ecc4c1065b4062b6725fd7ab9cc988d0967e88c83b19909f16d74990a59",
+    "examples/support/allocation_counter.rs": "sha256:4c050d5dca5912d152885f937ed6aabfb0fdf434424b1ad671526dd8de8e17bb",
+    "tests/allocation_counter_contract.rs": "sha256:218c09b1b1e8a71895e7f0ea02b2a09347b34d39adebebaee3e031b2d759d426"
+  },
+  "workloads": ["empty", "valid-512", "repeated", "malformed", "crlf-boundary", "line-4096", "line-4097", "reader-error"],
+  "measurement": { "entrypoint": "analyze_reader(Cursor<&[u8]>, None)", "modes": ["baseline", "candidate", "mutant"], "mutant": "materializes owned line payloads while preserving Summary", "window": "setup and warm-up before reset; parser call; snapshot on Ok or Err; formatting after snapshot", "metric": "global allocator calls and requested/freed bytes" },
+  "limits": { "single_process": true, "single_threaded": true, "rss_claim": false, "stack_claim": false, "universal_threshold": false, "oom_triggered": false }
+}
+`;
+
+const allocationEvidence = `# Dowód pomiaru alokacji
+
+Ten pakiet zawiera autorski probe uruchamiany jako osobny proces. Counter
+implementuje \`GlobalAlloc\` dla \`alloc\`, \`alloc_zeroed\`, \`dealloc\` i \`realloc\`
+przez atomowe liczniki, bez formatowania ani alokowania w callbacku.
+
+Przygotowanie inputu, warm-up, formatowanie JSON i teardown są poza oknem. Okno
+obejmuje rzeczywiste \`analyze_reader(Cursor<&[u8]>, None)\`, a snapshot jest
+wykonywany po wyniku \`Ok\` lub \`Err\`. Baseline, candidate i mutant są uruchamiane
+w osobnych procesach na identycznych workloadach: pustym, poprawnym 512,
+powtarzalnym, malformed, CRLF, dokładnie 4096/4097 bajtami oraz controlled
+reader error. Mutant materializuje owned payloady, lecz musi zwrócić identyczne
+\`Summary\` i ten sam strukturalny status \`Err\`.
+
+Raport opisuje wywołania globalnego alokatora oraz żądane i zwolnione bajty.
+Nie jest pomiarem RSS, stosu, retained memory całego procesu ani uniwersalnym
+progiem czasu. Brak kompletnego raportu lub różne inputy i wyniki unieważniają
+porównanie.
 `;
 
 const fixture = `1 INFO uruchomienie
@@ -1618,6 +1893,11 @@ export const logAnalyzerPackage: ProjectPackage = {
       starter: performanceGuide,
       solution: performanceGuide,
     },
+    { path: "examples/allocation_probe.rs", starter: allocationProbe, solution: allocationProbe },
+    { path: "examples/support/allocation_counter.rs", starter: allocationCounter, solution: allocationCounter },
+    { path: "tests/allocation_counter_contract.rs", starter: allocationCounterContract, solution: allocationCounterContract },
+    { path: "ALLOCATION-MANIFEST.json", starter: allocationManifest, solution: allocationManifest },
+    { path: "ALLOCATION-EVIDENCE.md", starter: allocationEvidence, solution: allocationEvidence },
     { path: "fixtures/mixed.log", starter: fixture },
     { path: "README.md", starter: readme },
     { path: ".gitignore", starter: gitignore },
