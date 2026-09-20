@@ -7,6 +7,21 @@ import { readFile } from "node:fs/promises";
       viewport: { width: 1280, height: 900 },
     });
     const page = await context.newPage();
+    const readLearningState = () =>
+      page.evaluate(
+        () =>
+          new Promise((resolve, reject) => {
+            const request = indexedDB.open("rust-workshop-state");
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+              const database = request.result;
+              const transaction = database.transaction("user-state", "readonly");
+              const read = transaction.objectStore("user-state").get("current");
+              read.onerror = () => reject(read.error);
+              read.onsuccess = () => resolve(read.result);
+            };
+          }),
+      );
     const errors = [];
     const consoleErrors = [];
     const expectedOfflineConsoleErrors = [];
@@ -583,6 +598,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
     await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
     await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
+    const assistedPrimaryCode = await page.locator(".revealed-solution pre").innerText();
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
@@ -759,6 +775,44 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByRole("radio").first().check();
     await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
     await expect(page.getByRole("status")).toBeVisible();
+    await page.getByLabel("Kroki lekcji").getByRole("button", { name: "Napraw decoder", exact: true }).click();
+    const fuzzPrimaryEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    await fuzzPrimaryEditor.fill("// Mocked primary run before the assisted reveal.\n");
+    await page.route("**/api/run", async (route) => {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "success", stdout: "primary mock: ok", stderr: "", diagnostics: [], durationMs: 1, tests: { passed: 1, failed: 0 } }) });
+    });
+    await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("primary mock: ok");
+    const independentBeforeAssisted = await readLearningState();
+    const independentCountBeforeAssisted = independentBeforeAssisted.events.filter(
+      (event) => event.conceptIds.includes("fuzz-input-domain") && event.passed && event.hints === 0 && !event.revealed && event.kind !== "exposure",
+    ).length;
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
+    await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
+    await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Projekt", exact: true }).click();
+    await page.getByRole("navigation", { name: "Wybierz projekt" }).getByRole("button", { name: /Projekt: ograniczony Mini grep/ }).click();
+    const assistedPackage = page.getByRole("region", { name: "Pakiet Cargo" });
+    await assistedPackage.getByRole("button", { name: "Pokaż rozwiązanie pakietu" }).click();
+    const assistedDownload = page.waitForEvent("download");
+    await assistedPackage.getByRole("link", { name: "Pobierz rozwiązanie" }).click();
+    const assistedArchive = await assistedDownload;
+    expect(await assistedArchive.failure()).toBeNull();
+    expect((await readFile(await assistedArchive.path())).length).toBeGreaterThan(0);
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(fuzzTitle);
+    await page.locator(".module-picker > button").filter({ hasText: fuzzTitle }).click();
+    await page.getByLabel("Kroki lekcji").getByRole("button", { name: "Napraw decoder", exact: true }).click();
+    await fuzzPrimaryEditor.fill(assistedPrimaryCode);
+    await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+    await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("primary mock: ok");
+    const independentAfterAssisted = await readLearningState();
+    const independentCountAfterAssisted = independentAfterAssisted.events.filter(
+      (event) => event.conceptIds.includes("fuzz-input-domain") && event.passed && event.hints === 0 && !event.revealed && event.kind !== "exposure",
+    ).length;
+    expect(independentCountAfterAssisted).toBe(independentCountBeforeAssisted);
     await page.getByLabel("Kroki lekcji").getByRole("button", { name: "Transfer: length-prefixed command" }).click();
     const fuzzHeading = await page.locator(".task-pane h1").innerText();
     const fuzzEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });

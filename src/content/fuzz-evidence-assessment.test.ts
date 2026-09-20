@@ -36,6 +36,8 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   const campaign = gates.find((step) => step.id === "fuzz-campaign-evidence-gate");
   expect(input?.code).toContain("struct Case<'a>");
   expect(input?.code).toContain("fn decode_case(bytes: &[u8]) -> Option<Case<'_>>");
+  expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-blank")?.prompt).toContain("decode_command(bytes: &[u8]) -> Option<(&[u8], &[u8])>");
+  expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-blank")?.prompt).toContain("bytes.len() < length + 1");
   expect(oracle?.code).toContain("fn same_result(");
   expect(oracleBlank?.solution).toContain("fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>>");
   expect(oracleBlank?.solution).toContain("bytes.len() > 4096");
@@ -45,8 +47,12 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(reducer?.code).toContain("struct Observation");
   expect(reducer?.code).toContain("fn executable_regression(bytes: &[u8]) -> bool");
   expect(reducer?.code).toContain("fn choose_witness(original: &[u8], candidates: &[Observation])");
+  expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-counterexample-regression")?.steps.find((step) => step.id === "fuzz-counterexample-regression-blank")?.prompt).toContain("reduce_frame(original: &[u8], candidate: &[u8], failure_class: &str) -> Vec<u8>");
   expect(campaign?.code).toContain("struct Dossier");
   expect(campaign?.code).toContain("fn classify_report(dossier: &Dossier, _: &str, _: &str, _: &str)");
+  expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-campaign-evidence")?.steps.find((step) => step.id === "fuzz-campaign-evidence-blank")?.prompt).toContain("triage_report(report: &Triage) -> &'static str");
+  expect((reviewExercises["fuzz-input-domain"]?.prompt ?? "")).toContain("decode_tagged(bytes: &[u8]) -> Option<(&[u8], &[u8])>");
+  expect((reviewExercises["fuzz-input-domain"]?.prompt ?? "")).toContain("tag: u8 = 7");
   expect(oracleBlank?.evaluator?.kind).toBe("tests");
   expect(oracleBlank?.evaluator?.kind === "tests" ? oracleBlank.evaluator.tests : "").toContain("decode_frame");
 });
