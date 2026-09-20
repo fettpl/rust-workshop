@@ -13,6 +13,8 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   const primary = lessons.find((lesson) => lesson.id === firstCriterion.taskRefs[0].lessonId)!;
   const gate = primary.steps.find((step) => step.id === firstCriterion.taskRefs[0].stepId)!;
   const blank = primary.steps.find((step) => step.id === firstCriterion.taskRefs[1].stepId)!;
+  const gateIndex = primary.steps.findIndex((step) => step.id === gate.id);
+  const blankIndex = primary.steps.findIndex((step) => step.id === blank.id);
   await page.goto("/");
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
   await page.getByRole("button", { name: "Przejdź do nauki" }).click();
@@ -25,7 +27,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("radio").first().check();
   await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
   await expect(page.getByRole("status")).toBeVisible();
-  await page.getByLabel("Kroki lekcji").getByRole("button", { name: gate.title }).click();
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(gateIndex).click();
   await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();
   const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
   const draft = `${gate.code}\n// Prediction recorded before the authored run.\n`;
@@ -84,7 +86,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.locator(".module-picker > button").filter({ hasText: stage.title }).click();
   await page.getByRole("button", { name: stage.title, exact: true }).click();
   await page.locator(".gate-action").first().click();
-  await page.getByLabel("Kroki lekcji").getByRole("button", { name: gate.title }).click();
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(gateIndex).click();
   await page.getByRole("textbox", { name: "Kod Rust", exact: true }).fill(gate.solution!);
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
@@ -102,7 +104,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
     });
   });
   expect(masteryAfterAssistedPrimary[primary.conceptIds[0]]).toEqual(masteryAfterReveal[primary.conceptIds[0]]);
-  await page.getByLabel("Kroki lekcji").getByRole("button", { name: blank.title }).click();
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(blankIndex).click();
   const blankEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
   await expect(blankEditor).toHaveValue("");
   const blankDraft = "// Independent fuzz contract draft.\n";
