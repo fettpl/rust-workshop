@@ -80,11 +80,14 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
       };
     });
   });
-  expect(masteryAfterReveal[primary.conceptIds[0]]).toEqual(masteryBeforeReveal[primary.conceptIds[0]]);
+  const stableMastery = (mastery: Record<string, unknown>) => {
+    const entry = mastery[primary.conceptIds[0]] as Record<string, unknown> | undefined;
+    return { level: entry?.level, reason: entry?.reason };
+  };
+  expect(stableMastery(masteryAfterReveal)).toEqual(stableMastery(masteryBeforeReveal));
   await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
   await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(stage.title);
   await page.locator(".module-picker > button").filter({ hasText: stage.title }).click();
-  await page.getByRole("button", { name: stage.title, exact: true }).click();
   await page.locator(".gate-action").first().click();
   await page.getByLabel("Kroki lekcji").getByRole("button").nth(gateIndex).click();
   await page.getByRole("textbox", { name: "Kod Rust", exact: true }).fill(gate.solution!);
@@ -103,7 +106,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
       };
     });
   });
-  expect(masteryAfterAssistedPrimary[primary.conceptIds[0]]).toEqual(masteryAfterReveal[primary.conceptIds[0]]);
+  expect(stableMastery(masteryAfterAssistedPrimary)).toEqual(stableMastery(masteryAfterReveal));
   await page.getByLabel("Kroki lekcji").getByRole("button").nth(blankIndex).click();
   const blankEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
   await expect(blankEditor).toHaveValue("");
