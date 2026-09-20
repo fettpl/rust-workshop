@@ -778,8 +778,12 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByLabel("Kroki lekcji").getByRole("button", { name: "Napraw decoder", exact: true }).click();
     const fuzzPrimaryEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
     await fuzzPrimaryEditor.fill("// Mocked primary run before the assisted reveal.\n");
+    let fuzzAssistedPrimaryCode = "";
+    let requireFuzzAssistedCode = false;
     await page.route("**/api/run", async (route) => {
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "success", stdout: "primary mock: ok", stderr: "", diagnostics: [], durationMs: 1, tests: { passed: 1, failed: 0 } }) });
+      const request = route.request().postDataJSON();
+      const accepted = !requireFuzzAssistedCode || request.code === fuzzAssistedPrimaryCode;
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: accepted ? "success" : "failed", stdout: accepted ? "primary mock: ok" : "unexpected assisted source", stderr: accepted ? "" : "solution mismatch", diagnostics: [], durationMs: 1, tests: { passed: accepted ? 1 : 0, failed: accepted ? 0 : 1 } }) });
     });
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
     await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("primary mock: ok");
@@ -792,6 +796,9 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
     await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
     await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
+    fuzzAssistedPrimaryCode = await page.locator(".revealed-solution pre").innerText();
+    expect(fuzzAssistedPrimaryCode).toContain("decode_case");
+    requireFuzzAssistedCode = true;
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
     await page.getByRole("navigation", { name: "Wybierz projekt" }).getByRole("button", { name: /Projekt: ograniczony Mini grep/ }).click();
     const assistedPackage = page.getByRole("region", { name: "Pakiet Cargo" });
@@ -805,7 +812,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(fuzzTitle);
     await page.locator(".module-picker > button").filter({ hasText: fuzzTitle }).click();
     await page.getByLabel("Kroki lekcji").getByRole("button", { name: "Napraw decoder", exact: true }).click();
-    await fuzzPrimaryEditor.fill(assistedPrimaryCode);
+    await fuzzPrimaryEditor.fill(fuzzAssistedPrimaryCode);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
     await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("primary mock: ok");
     const independentAfterAssisted = await readLearningState();

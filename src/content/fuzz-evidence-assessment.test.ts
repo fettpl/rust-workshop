@@ -53,6 +53,9 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-campaign-evidence")?.steps.find((step) => step.id === "fuzz-campaign-evidence-blank")?.prompt).toContain("triage_report(report: &Triage) -> &'static str");
   expect((reviewExercises["fuzz-input-domain"]?.prompt ?? "")).toContain("decode_tagged(bytes: &[u8]) -> Option<(&[u8], &[u8])>");
   expect((reviewExercises["fuzz-input-domain"]?.prompt ?? "")).toContain("tag: u8 = 7");
+  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("instrumented, normal, runs, replay_only");
+  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("runs >= 1000");
+  expect((reviewExercises["fuzz-campaign-evidence"]?.code ?? "")).toContain("expected_archive_hash");
   expect(oracleBlank?.evaluator?.kind).toBe("tests");
   expect(oracleBlank?.evaluator?.kind === "tests" ? oracleBlank.evaluator.tests : "").toContain("decode_frame");
 });
