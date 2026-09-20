@@ -39,6 +39,9 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
   await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true }).click();
+  await expect(page.getByText("Potrzebuję pełnego rozwiązania", { exact: true })).toBeVisible();
   const masteryBeforeReveal = await page.evaluate(async () => {
     const request = indexedDB.open("rust-workshop-state", 1);
     return await new Promise<Record<string, unknown>>((resolve, reject) => {
