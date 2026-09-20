@@ -16,7 +16,7 @@ import { dirname, join } from "node:path";
 import { miniGrepPackage } from "../src/content/projects/mini-grep";
 import { projectFiles } from "../src/domain/project-package";
 import { buildProjectArchive } from "./project-archive";
-import { verifyFuzzResult, type FuzzExpectation } from "./fuzz-result";
+import { verifyFuzzResult, verifyNamedRegressionFailure, type FuzzExpectation } from "./fuzz-result";
 import { createPartialReport, reduceWitness, sha256Bytes, validateEvidenceReport, type ReductionResult } from "./fuzz-evidence";
 
 const args = process.argv.slice(2);
@@ -46,6 +46,7 @@ let phaseErrors: string[] = [];
 let reductionEvidence: ReductionResult | undefined;
 let authoredOriginalPath = "";
 let authoredRegressionSha256 = "";
+let stableRegressionSha256 = "0".repeat(64);
 
 function recordPhaseError(error: unknown): void {
   phaseErrors = [...phaseErrors, String(error)];
@@ -111,6 +112,7 @@ try {
   };
   for (const [path, expectedHash] of Object.entries(manifest.sourceHashes ?? {}))
     assert.equal(sha256Bytes(readFileSync(join(root, path))), expectedHash, `Stale authored source hash for ${path}`);
+  stableRegressionSha256 = sha256Bytes(readFileSync(join(root, "fuzz/regressions/substring-prefix.seed")));
   const compiler = run("resolve-rustc", "rustup", [
     "which",
     "--toolchain",
@@ -229,9 +231,10 @@ try {
     const stableMutationOutput = `${stableMutation.stdout ?? ""}${stableMutation.stderr ?? ""}`;
     writeFileSync(join(report, "mutant-stable-regression.log"), `${stableMutationOutput}\nstatus=${stableMutation.status}; signal=${stableMutation.signal}; error=${stableMutation.error?.message ?? "none"}\n`);
     assert(
-      !stableMutation.error && !stableMutation.signal && stableMutation.status !== 0 &&
-      /running \d+ test/.test(stableMutationOutput) && /test result: FAILED/.test(stableMutationOutput) &&
-      !/could not compile|error\[E\d+\]/.test(stableMutationOutput),
+      verifyNamedRegressionFailure(
+        { ...stableMutation, stdout: stableMutation.stdout ?? "", stderr: stableMutation.stderr ?? "" },
+        "substring_prefix_witness_is_exact_and_replays_selection_mismatch",
+      ),
       "Controlled mutant must compile and fail the named stable regression",
     );
     const result = spawnSync(binary, [corpus, ...limits], {
@@ -412,11 +415,11 @@ try {
     reduction: reduced ? { attempts: reduced.attempts, status: reduced.status, failureKind: "SelectionMismatch", replay: { status: reductionReplayStatus, failureKind: "SelectionMismatch" } } : undefined,
     mutantReplay: { status: mutantReplayStatus, failureKind: "SelectionMismatch" },
     restoredReplay: { status: restoredReplayStatus, failureKind: "none" },
-    stableRegression: { status: stableRegressionStatus, toolchain: "1.85.0", channel: "stable", sha256: "9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1" },
+    stableRegression: { identity: "substring-prefix-seed", status: stableRegressionStatus, toolchain: "1.85.0", channel: "stable", sha256: stableRegressionSha256 },
     phaseErrors,
   });
   try {
-    validateEvidenceReport(evidence, { runId, archiveSha256, manifestSha256, regressionSha256: authoredRegressionSha256 });
+    validateEvidenceReport(evidence, { runId, archiveSha256, manifestSha256, regressionSha256: authoredRegressionSha256, stableRegressionSha256 });
   } catch (error) {
     recordPhaseError(error);
     evidence.status = "infrastructure";

@@ -50,7 +50,7 @@ export type FuzzEvidenceReport = {
   };
   mutantReplay: { status: FuzzPhaseStatus; failureKind: string };
   restoredReplay: { status: FuzzPhaseStatus; failureKind: string };
-  stableRegression: { status: FuzzPhaseStatus; toolchain: "1.85.0"; channel: "stable"; sha256: string };
+  stableRegression: { identity: "substring-prefix-seed"; status: FuzzPhaseStatus; toolchain: "1.85.0"; channel: "stable"; sha256: string };
   phaseErrors: string[];
   limitations: string[];
 };
@@ -69,6 +69,7 @@ export type FuzzEvidenceTrust = {
   archiveSha256: string;
   manifestSha256: string;
   regressionSha256: string;
+  stableRegressionSha256: string;
 };
 
 const sha256 = /^[a-f0-9]{64}$/;
@@ -98,7 +99,8 @@ export function validateFuzzEvidenceReport(
   if (campaign?.status === "passed" && (campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || campaign.replayOnly)) errors.push("passed campaign lacks minimum instrumented normal runs");
   if (typeof value.observedExecutions !== "number" || !Number.isInteger(value.observedExecutions) || value.observedExecutions < 0) errors.push("observedExecutions must be a non-negative integer");
   if (campaign && value.bounds && (campaign.observedRuns > value.bounds.maxRuns || (value.observedExecutions ?? -1) > value.bounds.maxRuns || value.observedExecutions !== campaign.observedRuns)) errors.push("campaign execution count exceeds or disagrees with bounds");
-  if (!value.mutant || typeof value.mutant.identity !== "string" || !value.mutant.identity || value.mutant.assertion !== "mini-grep selection oracle mismatch") errors.push("invalid mutant identity");
+  if (value.target !== "selection") errors.push("target is not the reviewed selection harness");
+  if (!value.mutant || value.mutant.identity !== "substring-to-prefix" || value.mutant.assertion !== "mini-grep selection oracle mismatch") errors.push("invalid mutant identity");
   const original = value.artifacts?.original;
   const partialArtifact = value.status === "infrastructure" && original?.bytes === 0 && original.path === "" && original.sha256 === "0".repeat(64);
   const validateArtifact = (artifact: ArtifactProvenance | undefined, name: string) => {
@@ -134,10 +136,10 @@ export function validateFuzzEvidenceReport(
   if (value.restoredReplay?.status === "infrastructure" && value.status === "passed") errors.push("passed report cannot have infrastructure restored replay");
   if (value.mutantReplay && value.mutantReplay.status === "failed" && value.mutantReplay.failureKind !== "SelectionMismatch") errors.push("mutant replay failure kind must be SelectionMismatch");
   if (value.restoredReplay && value.restoredReplay.status === "passed" && value.restoredReplay.failureKind !== "none") errors.push("restored replay pass must have failureKind none");
-  if (!value.stableRegression || !["passed", "failed", "infrastructure"].includes(value.stableRegression.status)) errors.push("invalid stableRegression phase");
+  if (!value.stableRegression || value.stableRegression.identity !== "substring-prefix-seed" || !["passed", "failed", "infrastructure"].includes(value.stableRegression.status)) errors.push("invalid stableRegression identity or phase");
   if (!value.stableRegression || value.stableRegression.toolchain !== "1.85.0" || value.stableRegression.channel !== "stable" || !sha256.test(value.stableRegression.sha256)) errors.push("stable regression must identify exact Rust 1.85.0 stable and a hash");
   if (!Array.isArray(value.phaseErrors) || !Array.isArray(value.limitations)) errors.push("phaseErrors and limitations must be arrays");
-  if (value.status === "passed" && (!trust || trust.runId !== value.runId || trust.archiveSha256 !== value.archiveSha256 || trust.manifestSha256 !== value.manifestSha256 || trust.regressionSha256 !== original?.sha256)) errors.push("passed report is not bound to trusted current provenance");
+  if (value.status === "passed" && (!trust || trust.runId !== value.runId || trust.archiveSha256 !== value.archiveSha256 || trust.manifestSha256 !== value.manifestSha256 || trust.regressionSha256 !== original?.sha256 || trust.stableRegressionSha256 !== value.stableRegression?.sha256)) errors.push("passed report is not bound to trusted current provenance");
   if (value.status === "passed" && (errors.length || (value.phaseErrors?.length ?? 0) > 0 || campaign?.status !== "passed" || campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || value.mutant?.status !== "failed" || value.mutantReplay?.status !== "failed" || value.reduction?.status !== "reduced" || value.reduction.attempts < 1 || value.reduction.replay?.status !== "failed" || value.reduction.replay.failureKind !== "SelectionMismatch" || value.restoredReplay?.status !== "passed" || value.restoredReplay.failureKind !== "none" || value.stableRegression?.status !== "passed")) errors.push("passed report lacks completed evidence phases");
   return [...new Set(errors)];
 }
@@ -169,6 +171,18 @@ export function verifyFuzzResult(
   return (
     runs >= expectation.minimumRuns && log.includes(`Done ${runs} runs in `)
   );
+}
+
+export function verifyNamedRegressionFailure(
+  result: FuzzProcessResult,
+  testName: string,
+): boolean {
+  if (result.error || result.signal || result.status === 0) return false;
+  const log = result.stdout + result.stderr;
+  const escaped = testName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^test ${escaped} \\.\\.\\. FAILED$`, "m").test(log) &&
+    /test result: FAILED/.test(log) &&
+    !/could not compile|error\[E\d+\]/.test(log);
 }
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";

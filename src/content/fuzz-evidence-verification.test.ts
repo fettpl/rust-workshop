@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, expect, it } from "vitest";
 import { reduceWitness, validateEvidenceReport } from "../../scripts/fuzz-evidence";
+import { verifyNamedRegressionFailure } from "../../scripts/fuzz-result";
 
 const reportFixtures = mkdtempSync(join(tmpdir(), "fuzz-report-fixtures-"));
 const reportRunDirectory = join(reportFixtures, "run-authored-1");
@@ -37,7 +38,7 @@ const validReport = () => ({
   reduction: { attempts: 4, status: "reduced", failureKind: "SelectionMismatch", replay: { status: "failed", failureKind: "SelectionMismatch" } },
   mutantReplay: { status: "failed", failureKind: "SelectionMismatch" },
   restoredReplay: { status: "passed", failureKind: "none" },
-  stableRegression: { status: "passed", toolchain: "1.85.0", channel: "stable", sha256: "e".repeat(64) },
+  stableRegression: { identity: "substring-prefix-seed", status: "passed", toolchain: "1.85.0", channel: "stable", sha256: "e".repeat(64) },
   phaseErrors: [],
   limitations: ["finite campaign"],
 });
@@ -89,7 +90,7 @@ it("keeps accepted reductions inside the framed input domain", () => {
 });
 
 it("rejects malformed, stale and replay-only reports", () => {
-  expect(() => validateEvidenceReport(validReport(), { runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64), regressionSha256: hash(originalBytes) })).not.toThrow();
+  expect(() => validateEvidenceReport(validReport(), { runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64), regressionSha256: hash(originalBytes), stableRegressionSha256: "e".repeat(64) })).not.toThrow();
   expect(() => validateEvidenceReport(validReport())).toThrow();
   for (const mutate of [
     (report: ReturnType<typeof validReport>) => ({ ...report, schemaVersion: 2 }),
@@ -112,7 +113,11 @@ it("rejects malformed, stale and replay-only reports", () => {
     (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, replay: { status: "passed", failureKind: "none" } } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, status: "rejected", attempts: 0, replay: { status: "infrastructure", failureKind: "SelectionMismatch" } } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, sha256: "c".repeat(64) } } }),
-  ]) expect(() => validateEvidenceReport(mutate(validReport()), { runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64), regressionSha256: hash(originalBytes) })).toThrow();
+    (report: ReturnType<typeof validReport>) => ({ ...report, target: "other-harness" }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, mutant: { ...report.mutant, identity: "other-mutant" } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, stableRegression: { ...report.stableRegression, identity: "padded-witness" } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, stableRegression: { ...report.stableRegression, sha256: "d".repeat(64) } }),
+  ]) expect(() => validateEvidenceReport(mutate(validReport()), { runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64), regressionSha256: hash(originalBytes), stableRegressionSha256: "e".repeat(64) })).toThrow();
 });
 
 it("accepts an explicit infrastructure report without inventing an artifact", () => {
@@ -133,8 +138,16 @@ it("accepts an explicit infrastructure report without inventing an artifact", ()
     reduction: { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch", replay: { status: "infrastructure", failureKind: "SelectionMismatch" } },
     mutantReplay: { status: "infrastructure", failureKind: "SelectionMismatch" },
     restoredReplay: { status: "infrastructure", failureKind: "none" },
-    stableRegression: { status: "infrastructure", toolchain: "1.85.0", channel: "stable", sha256: "0".repeat(64) },
+    stableRegression: { identity: "substring-prefix-seed", status: "infrastructure", toolchain: "1.85.0", channel: "stable", sha256: "0".repeat(64) },
     phaseErrors: [],
     limitations: ["cargo-fuzz unavailable"],
-  })).not.toThrow();
+})).not.toThrow();
+});
+
+it("accepts only the named stable regression failure", () => {
+  const named = "running 2 tests\ntest substring_prefix_witness_is_exact_and_replays_selection_mismatch ... FAILED\ntest boundary_contract ... ok\ntest result: FAILED. 1 passed; 1 failed";
+  const unrelated = "running 2 tests\ntest substring_prefix_witness_is_exact_and_replays_selection_mismatch ... ok\ntest boundary_contract ... FAILED\ntest result: FAILED. 1 passed; 1 failed";
+  expect(verifyNamedRegressionFailure({ status: 101, signal: null, stdout: named, stderr: "" }, "substring_prefix_witness_is_exact_and_replays_selection_mismatch")).toBe(true);
+  expect(verifyNamedRegressionFailure({ status: 101, signal: null, stdout: unrelated, stderr: "" }, "substring_prefix_witness_is_exact_and_replays_selection_mismatch")).toBe(false);
+  expect(verifyNamedRegressionFailure({ status: 1, signal: null, stdout: "error: could not compile", stderr: "" }, "substring_prefix_witness_is_exact_and_replays_selection_mismatch")).toBe(false);
 });
