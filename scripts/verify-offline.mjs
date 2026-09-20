@@ -800,7 +800,12 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     ).length;
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
-    await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
+    const fuzzRevealSummary = page
+      .getByRole("region", { name: "Zadanie" })
+      .locator("details.solution-warning > summary")
+      .filter({ hasText: /^Potrzebuję pełnego rozwiązania$/ });
+    await expect(fuzzRevealSummary).toBeVisible();
+    await fuzzRevealSummary.click();
     await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
     await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
     fuzzAssistedPrimaryCode = await page.locator(".revealed-solution pre").innerText();
