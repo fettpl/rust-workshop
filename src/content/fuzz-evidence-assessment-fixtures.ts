@@ -245,14 +245,20 @@ fn duplicate_retrieval_preserves_every_field_and_order() {
     assert!(!compare_duplicate_rows(&[(1, "wrong".to_owned(), true), (1, "ax".to_owned(), true), (2, "bx".to_owned(), false)], &expected));
     assert!(!compare_duplicate_rows(&[(1, "ax".to_owned(), false), (1, "ax".to_owned(), true), (2, "bx".to_owned(), false)], &expected));
 }`,
-  frameRetrieval: String.raw`fn retain_named_failure(original: &[u8], candidate: &[u8], failure: &str) -> Vec<u8> {
-    if candidate.len() < original.len() && failure == "SelectionMismatch" { candidate.to_vec() } else { original.to_vec() }
+  frameRetrieval: String.raw`#[derive(Clone, Debug, PartialEq, Eq)]
+struct Window { declared: u8, payload: Vec<u8>, checksum: u8 }
+fn shrink_window(original: &Window, candidate: Window, outcome: &str) -> Window {
+    let candidate_is_framed = candidate.declared as usize == candidate.payload.len();
+    if outcome == "LengthMismatch" && candidate_is_framed && candidate.payload.len() + 1 < original.payload.len() { candidate } else { original.clone() }
 }
 #[test]
-fn frame_retrieval_rejects_timeout_and_nonshrinking_candidates() {
-    assert_eq!(retain_named_failure(b"ABCDE", b"BC", "SelectionMismatch"), b"BC");
-    assert_eq!(retain_named_failure(b"ABCDE", b"BC", "Timeout"), b"ABCDE");
-    assert_eq!(retain_named_failure(b"ABCDE", b"ABCDE", "SelectionMismatch"), b"ABCDE");
+fn window_retrieval_requires_framed_payload_and_named_failure() {
+    let original = Window { declared: 5, payload: b"ABCDE".to_vec(), checksum: 7 };
+    let candidate = Window { declared: 2, payload: b"BC".to_vec(), checksum: 7 };
+    assert_eq!(shrink_window(&original, candidate.clone(), "LengthMismatch"), candidate);
+    assert_eq!(shrink_window(&original, candidate.clone(), "Timeout"), original);
+    assert_eq!(shrink_window(&original, Window { declared: 3, payload: b"BC".to_vec(), checksum: 7 }, "LengthMismatch"), original);
+    assert_eq!(shrink_window(&original, Window { declared: 5, payload: b"ABCDE".to_vec(), checksum: 7 }, "LengthMismatch"), original);
 }`,
   dossierRetrieval: String.raw`struct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, toolchain: &'static str, expected_toolchain: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool }
 fn classify_dossier(report: &Triage) -> &'static str {
@@ -302,6 +308,6 @@ export const fuzzEvidenceRetrievalFixtures = {
     fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.iter().map(|row| (row.0, row.1.clone())).eq(expected.iter().map(|row| (row.0, row.1.clone())))"),
     fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "{ let mut actual = actual.to_vec(); actual.sort(); actual.dedup(); let mut expected = expected.to_vec(); expected.sort(); expected.dedup(); actual == expected }"),
   ] },
-  "fuzz-counterexample-regression": { reference: fuzzEvidenceRustReferences.frameRetrieval, mutants: [fuzzEvidenceRustReferences.frameRetrieval.replace("failure == \"SelectionMismatch\"", "failure == \"Timeout\"")] },
+  "fuzz-counterexample-regression": { reference: fuzzEvidenceRustReferences.frameRetrieval, mutants: [fuzzEvidenceRustReferences.frameRetrieval.replace("outcome == \"LengthMismatch\"", "outcome == \"Timeout\"")] },
   "fuzz-campaign-evidence": { reference: fuzzEvidenceRustReferences.dossierRetrieval, mutants: [fuzzEvidenceRustReferences.dossierRetrieval.replace("if report.replay_only { \"failed\" }", "if false { \"failed\" }"), fuzzEvidenceRustReferences.dossierRetrieval.replace("!report.instrumented || ", ""), fuzzEvidenceRustReferences.dossierRetrieval.replace("!report.normal || ", ""), fuzzEvidenceRustReferences.dossierRetrieval.replace("report.archive_hash != report.expected_archive_hash || ", ""), fuzzEvidenceRustReferences.dossierRetrieval.replace("report.toolchain != report.expected_toolchain || ", "")] },
 };

@@ -15,7 +15,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { miniGrepPackage } from "../src/content/projects/mini-grep";
 import { projectFiles } from "../src/domain/project-package";
-import { buildProjectArchive } from "./project-archive";
+import { assertFreshFuzzArchive } from "./fuzz-archive";
 import { verifyFuzzResult, verifyNamedRegressionFailure, type FuzzExpectation } from "./fuzz-result";
 import { createPartialReport, reduceWitness, sha256Bytes, validateEvidenceReport, type ReductionResult } from "./fuzz-evidence";
 
@@ -87,15 +87,15 @@ function run(
 }
 
 try {
+  const servedStarter = readFileSync(
+    join(process.cwd(), "public/projects", miniGrepPackage.id, "starter.zip"),
+  );
+  assertFreshFuzzArchive(miniGrepPackage, "starter", servedStarter);
   const served = readFileSync(
     join(process.cwd(), "public/projects", miniGrepPackage.id, "solution.zip"),
   );
   archiveSha256 = sha256Bytes(served);
-  assert.deepEqual(
-    served,
-    Buffer.from(buildProjectArchive(miniGrepPackage, "solution")),
-    "Fuzz must verify the exact downloadable archive",
-  );
+  assertFreshFuzzArchive(miniGrepPackage, "solution", served);
   for (const [path, content] of Object.entries(
     projectFiles(miniGrepPackage, "solution"),
   )) {
@@ -140,6 +140,8 @@ try {
   const stableCompiler = run("resolve-stable-rustc", "rustup", ["which", "--toolchain", "1.85.0", "rustc"]).trim();
   const stableCargo = run("resolve-stable-cargo", "rustup", ["which", "--toolchain", "1.85.0", "cargo"]).trim();
   const stableRustdoc = run("resolve-stable-rustdoc", "rustup", ["which", "--toolchain", "1.85.0", "rustdoc"]).trim();
+  const nightlyVersion = run("nightly-toolchain-check", "rustup", ["run", toolchain, "rustc", "--version"]);
+  assert.match(nightlyVersion, /nightly/, "The reviewed nightly toolchain must be active");
   // cargo-fuzz spawns bare cargo/rustc; rustup run alone can still select a
   // non-proxy Homebrew compiler. Pin the entire child process chain explicitly.
   env = {

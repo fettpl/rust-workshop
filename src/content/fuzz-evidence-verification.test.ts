@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, expect, it } from "vitest";
 import { reduceWitness, validateEvidenceReport } from "../../scripts/fuzz-evidence";
 import { verifyNamedRegressionFailure } from "../../scripts/fuzz-result";
+import { assertFreshFuzzArchive } from "../../scripts/fuzz-archive";
+import { miniGrepPackage } from "./projects/mini-grep";
 
 const reportFixtures = mkdtempSync(join(tmpdir(), "fuzz-report-fixtures-"));
 const reportRunDirectory = join(reportFixtures, "run-authored-1");
@@ -150,4 +152,15 @@ it("accepts only the named stable regression failure", () => {
   expect(verifyNamedRegressionFailure({ status: 101, signal: null, stdout: named, stderr: "" }, "substring_prefix_witness_is_exact_and_replays_selection_mismatch")).toBe(true);
   expect(verifyNamedRegressionFailure({ status: 101, signal: null, stdout: unrelated, stderr: "" }, "substring_prefix_witness_is_exact_and_replays_selection_mismatch")).toBe(false);
   expect(verifyNamedRegressionFailure({ status: 1, signal: null, stdout: "error: could not compile", stderr: "" }, "substring_prefix_witness_is_exact_and_replays_selection_mismatch")).toBe(false);
+});
+
+it("byte-compares both served Mini grep archives and rejects stale bytes", () => {
+  for (const variant of ["starter", "solution"] as const) {
+    const path = join(process.cwd(), "public/projects", miniGrepPackage.id, `${variant}.zip`);
+    const served = readFileSync(path);
+    expect(() => assertFreshFuzzArchive(miniGrepPackage, variant, served)).not.toThrow();
+    const stale = Buffer.from(served);
+    stale[stale.length - 1] ^= 0xff;
+    expect(() => assertFreshFuzzArchive(miniGrepPackage, variant, stale)).toThrow(/Stale authored/);
+  }
 });
