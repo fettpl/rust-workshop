@@ -22,6 +22,9 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.locator(".gate-action").first().click();
   await page.getByLabel("Kroki lekcji").getByRole("button").first().click();
   await expect(page.locator(".task-pane h1")).toHaveText(primary.steps[0].title);
+  await page.getByRole("radio").first().check();
+  await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
+  await expect(page.getByRole("status")).toBeVisible();
   await page.getByLabel("Kroki lekcji").getByRole("button", { name: gate.title }).click();
   await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();
   const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });

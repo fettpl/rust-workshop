@@ -755,6 +755,11 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .filter({ hasText: fuzzTitle })
       .click();
     await page.locator(".gate-action").first().click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").first().click();
+    await page.getByRole("radio").first().check();
+    await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
+    await expect(page.getByRole("status")).toBeVisible();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(3).click();
     const fuzzHeading = await page.locator(".task-pane h1").innerText();
     const fuzzEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
     const fuzzDraft = `${await fuzzEditor.inputValue()}\n// Bounded fuzz domain draft.\n`;
