@@ -39,8 +39,8 @@ export type FuzzEvidenceReport = {
   observedExecutions: number;
   mutant: { identity: string; status: FuzzPhaseStatus; assertion: string };
   artifacts: {
-    original: { path: string; sha256: string; bytes: number };
-    reduced?: { path: string; sha256: string; bytes: number };
+    original: ArtifactProvenance;
+    reduced?: ArtifactProvenance;
   };
   reduction: {
     attempts: number;
@@ -52,6 +52,15 @@ export type FuzzEvidenceReport = {
   stableRegression: { status: FuzzPhaseStatus; toolchain: string; sha256: string };
   phaseErrors: string[];
   limitations: string[];
+};
+
+export type ArtifactProvenance = {
+  path: string;
+  sha256: string;
+  bytes: number;
+  runId?: string;
+  archiveSha256?: string;
+  manifestSha256?: string;
 };
 
 const sha256 = /^[a-f0-9]{64}$/;
@@ -68,6 +77,7 @@ export function validateFuzzEvidenceReport(
     if (typeof value[field] !== "string" || !value[field]?.trim()) errors.push(`missing ${field}`);
   for (const field of ["archiveSha256", "manifestSha256"] as const)
     if (typeof value[field] !== "string" || !sha256.test(value[field])) errors.push(`invalid ${field}`);
+  if (value.toolchain !== "nightly-2026-08-08") errors.push("toolchain is not the reviewed nightly");
   if (!value.bounds || value.bounds.minInputBytes !== 3 || value.bounds.maxInputBytes !== 4096 || value.bounds.maxRuns !== 20000 || value.bounds.maxSeconds !== 30 || value.bounds.timeoutSeconds !== 3 || value.bounds.rssLimitMb !== 1024)
     errors.push("bounds do not match the reviewed campaign");
   if (!["passed", "failed", "infrastructure"].includes(value.status ?? "")) errors.push("invalid report status");
@@ -79,9 +89,26 @@ export function validateFuzzEvidenceReport(
   if (!value.mutant || typeof value.mutant.identity !== "string" || !value.mutant.identity || value.mutant.assertion !== "mini-grep selection oracle mismatch") errors.push("invalid mutant identity");
   const original = value.artifacts?.original;
   const partialArtifact = value.status === "infrastructure" && original?.bytes === 0 && original.path === "" && original.sha256 === "0".repeat(64);
-  if (!partialArtifact && (!original || !original.path || !sha256.test(original.sha256) || !Number.isInteger(original.bytes) || original.bytes <= 0)) errors.push("invalid original artifact provenance");
+  const validateArtifact = (artifact: ArtifactProvenance | undefined, name: string) => {
+    if (!artifact || !artifact.path || !sha256.test(artifact.sha256) || !Number.isInteger(artifact.bytes) || artifact.bytes <= 0) {
+      errors.push(`invalid ${name} artifact provenance`);
+      return;
+    }
+    if (artifact.runId !== value.runId || artifact.archiveSha256 !== value.archiveSha256 || artifact.manifestSha256 !== value.manifestSha256) errors.push(`mixed ${name} artifact identity`);
+    if (artifact.path.includes("..") || !existsSync(artifact.path) || !statSync(artifact.path).isFile()) {
+      errors.push(`stale ${name} artifact path`);
+      return;
+    }
+    const bytes = readFileSync(artifact.path);
+    const actualHash = createHash("sha256").update(bytes).digest("hex");
+    if (bytes.length !== artifact.bytes || actualHash !== artifact.sha256) errors.push(`stale ${name} artifact hash`);
+  };
+  if (!partialArtifact) validateArtifact(original, "original");
   const reduced = value.artifacts?.reduced;
-  if (reduced && (!reduced.path || !sha256.test(reduced.sha256) || !Number.isInteger(reduced.bytes) || reduced.bytes <= 0 || (original && original.bytes > 0 && reduced.bytes >= original.bytes))) errors.push("invalid reduced artifact provenance");
+  if (reduced) {
+    validateArtifact(reduced, "reduced");
+    if (original && original.bytes > 0 && reduced.bytes >= original.bytes) errors.push("reduced artifact is not smaller");
+  }
   if (!value.reduction || !Number.isInteger(value.reduction.attempts) || value.reduction.attempts < 0 || !["reduced", "unchanged", "rejected"].includes(value.reduction.status) || value.reduction.failureKind !== "SelectionMismatch") errors.push("invalid reduction evidence");
   for (const [name, phase] of [["mutantReplay", value.mutantReplay], ["restoredReplay", value.restoredReplay]] as const) {
     if (!phase || !["passed", "failed", "infrastructure"].includes(phase.status) || typeof phase.failureKind !== "string") errors.push(`invalid ${name} phase`);
@@ -89,7 +116,7 @@ export function validateFuzzEvidenceReport(
   if (!value.stableRegression || !["passed", "failed", "infrastructure"].includes(value.stableRegression.status)) errors.push("invalid stableRegression phase");
   if (!value.stableRegression || !value.stableRegression.toolchain.includes("1.85") || !sha256.test(value.stableRegression.sha256)) errors.push("stable regression must identify Rust 1.85 and a hash");
   if (!Array.isArray(value.phaseErrors) || !Array.isArray(value.limitations)) errors.push("phaseErrors and limitations must be arrays");
-  if (value.status === "passed" && (errors.length || campaign?.status !== "passed" || campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || value.mutantReplay?.status !== "failed" || value.restoredReplay?.status !== "passed" || value.stableRegression?.status !== "passed")) errors.push("passed report lacks completed evidence phases");
+  if (value.status === "passed" && (errors.length || (value.phaseErrors?.length ?? 0) > 0 || campaign?.status !== "passed" || campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || value.mutant?.status !== "failed" || value.mutantReplay?.status !== "failed" || value.restoredReplay?.status !== "passed" || value.stableRegression?.status !== "passed")) errors.push("passed report lacks completed evidence phases");
   return [...new Set(errors)];
 }
 
@@ -121,3 +148,5 @@ export function verifyFuzzResult(
     runs >= expectation.minimumRuns && log.includes(`Done ${runs} runs in `)
   );
 }
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, statSync } from "node:fs";

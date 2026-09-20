@@ -85,7 +85,7 @@ fuzz_target!(|data: &[u8]| {
         Err(check::FailureKind::QueryAcceptance) => panic!("mini-grep invalid query accepted"),
         Err(check::FailureKind::ContextAcceptance) => panic!("mini-grep invalid context accepted"),
         Err(check::FailureKind::BodyAcceptance) => panic!("mini-grep invalid input accepted"),
-        Err(check::FailureKind::SelectionMismatch) => panic!("mini-grep selection oracle mismatch"),
+        Err(check::FailureKind::SelectionMismatch) => assert_eq!(true, false, "mini-grep selection oracle mismatch"),
         Err(check::FailureKind::ReaderMismatch) => panic!("mini-grep reader oracle mismatch"),
     }
 });

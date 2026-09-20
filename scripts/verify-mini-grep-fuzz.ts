@@ -247,23 +247,44 @@ try {
     const crash = crashes[0];
     assert(crash, "The controlled mutant must produce a fresh crash artifact");
     const crashPath = join(artifacts, crash);
-    run("mutant-replay", binary, [crashPath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
-      kind: "counterexample",
-      artifactWritten: true,
+    const mutantReplay = spawnSync(binary, [crashPath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
+      cwd: root,
+      env,
+      encoding: "utf8",
+      timeout: 10_000,
+      maxBuffer: 8 * 1024 * 1024,
     });
+    const mutantReplayOutput = `${mutantReplay.stdout ?? ""}${mutantReplay.stderr ?? ""}`;
+    writeFileSync(
+      join(report, "mutant-replay.log"),
+      `${mutantReplayOutput}\nstatus=${mutantReplay.status}; signal=${mutantReplay.signal}; error=${mutantReplay.error?.message ?? "none"}\n`,
+    );
+    assert(
+      verifyFuzzResult(
+        { ...mutantReplay, stdout: mutantReplay.stdout ?? "", stderr: mutantReplay.stderr ?? "" },
+        { kind: "counterexample", artifactWritten: true },
+      ),
+      `Mutant replay did not reproduce SelectionMismatch; see ${report}/mutant-replay.log`,
+    );
     mutantReplayStatus = "failed";
     let candidateNumber = 0;
+    const reductionDeadline = Date.now() + 30_000;
     reductionEvidence = reduceWitness(readFileSync(crashPath), (candidate) => {
+      const remainingMs = reductionDeadline - Date.now();
+      if (remainingMs <= 0)
+        return { status: "timeout" as const };
       const candidatePath = join(root, `reduction-candidate-${candidateNumber++}.seed`);
       writeFileSync(candidatePath, candidate);
       const candidateResult = spawnSync(binary, [candidatePath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
         cwd: root,
         env,
         encoding: "utf8",
-        timeout: 3_500,
+        timeout: Math.min(3_500, remainingMs),
         maxBuffer: 8 * 1024 * 1024,
       });
       const candidateOutput = `${candidateResult.stdout ?? ""}${candidateResult.stderr ?? ""}`;
+      if (Date.now() > reductionDeadline)
+        return { status: "timeout" as const };
       if (candidateResult.error || candidateResult.signal) {
         return candidateResult.error?.message.includes("timed out") || candidateResult.signal === "SIGTERM"
           ? { status: "timeout" as const }
@@ -290,7 +311,6 @@ try {
     writeFileSync(searchPath, original);
   }
   build("restored-build");
-  restoredReplayStatus = "passed";
   const stableEnv = { ...env, PATH: `${dirname(stableCargo)}${process.platform === "win32" ? ";" : ":"}${env.PATH ?? ""}`, RUSTC: stableCompiler, RUSTDOC: stableRustdoc };
   const stable = spawnSync(stableCargo, ["test", "--manifest-path", join(root, "Cargo.toml"), "--locked"], { cwd: root, env: stableEnv, encoding: "utf8", timeout: 180_000, maxBuffer: 8 * 1024 * 1024 });
   writeFileSync(join(report, "stable-regression.log"), `${stable.stdout ?? ""}${stable.stderr ?? ""}\nstatus=${stable.status}; signal=${stable.signal}; error=${stable.error?.message ?? "none"}\n`);
@@ -315,6 +335,9 @@ try {
   console.log(
     `Mini grep fuzz passed: instrumented campaign, controlled counterexample and restored replay. Reports: ${report}`,
   );
+} catch (error) {
+  phaseErrors = [...phaseErrors, String(error)];
+  throw error;
 } finally {
   for (const directory of ["corpus", "artifacts"]) {
     const source = join(root, "fuzz", directory);
@@ -340,7 +363,7 @@ try {
     referenceCampaign: { status: campaignStatus, observedRuns, instrumentation: campaignStatus === "passed", normalCompletion: campaignStatus === "passed", replayOnly: false },
     observedExecutions: observedRuns,
     mutant: { identity: "substring-to-prefix", status: mutantStatus === "failed" ? "failed" : mutantStatus, assertion: "mini-grep selection oracle mismatch" },
-    artifacts: { original: { path: artifactPath, sha256: artifactBytes.length ? sha256Bytes(artifactBytes) : "0".repeat(64), bytes: artifactBytes.length }, ...(reduced && reduced.status === "reduced" ? { reduced: { path: join(report, "reduced.seed"), sha256: sha256Bytes(reduced.reduced), bytes: reduced.reduced.length } } : {}) },
+    artifacts: { original: { path: artifactPath, sha256: artifactBytes.length ? sha256Bytes(artifactBytes) : "0".repeat(64), bytes: artifactBytes.length, runId, archiveSha256, manifestSha256 }, ...(reduced && reduced.status === "reduced" ? { reduced: { path: join(report, "reduced.seed"), sha256: sha256Bytes(reduced.reduced), bytes: reduced.reduced.length, runId, archiveSha256, manifestSha256 } } : {}) },
     reduction: reduced ? { attempts: reduced.attempts, status: reduced.status, failureKind: "SelectionMismatch" } : undefined,
     mutantReplay: { status: mutantReplayStatus, failureKind: "SelectionMismatch" },
     restoredReplay: { status: restoredReplayStatus, failureKind: "none" },

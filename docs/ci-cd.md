@@ -5,6 +5,12 @@ Wdrożenie aplikacji nie jest jeszcze skonfigurowane: docelowy hosting pozostaje
 do wyboru. Konfiguracja nie wymaga sekretów wdrożeniowych i niczego nie publikuje
 poza raportami testów w prywatnym repozytorium.
 
+The `mini-grep-fuzz` job installs both the reviewed nightly `nightly-2026-08-08`
+and exact Rust `1.85.0`. It uploads the report, raw logs, corpus and artifacts
+with `if: always()`. Local verification records `cargo-fuzz` absence, loopback
+`EPERM` and Chromium launch permission failures as infrastructure limitations;
+those failures are not converted into a passed evidence report.
+
 ## Kontrole przed scaleniem
 
 Workflow uruchamia się dla PR-ów do `main`, zmian na `main` oraz ręcznie.

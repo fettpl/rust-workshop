@@ -23,10 +23,12 @@ export type ReductionResult = {
 export function reduceWitness(
   original: Uint8Array,
   predicate: ReductionPredicate,
-  options: { maxAttempts?: number; deadlineMs?: number } = {},
+  options: { maxAttempts?: number; deadlineMs?: number; minInputBytes?: number; maxInputBytes?: number } = {},
 ): ReductionResult {
   const maxAttempts = Math.min(options.maxAttempts ?? 256, 256);
   const deadline = Date.now() + Math.min(options.deadlineMs ?? 30_000, 30_000);
+  const minInputBytes = options.minInputBytes ?? 3;
+  const maxInputBytes = options.maxInputBytes ?? 4096;
   let current = new Uint8Array(original);
   let attempts = 0;
   let changed = false;
@@ -41,7 +43,9 @@ export function reduceWitness(
       candidate.set(current.slice(0, start));
       candidate.set(current.slice(start + chunk), start);
       attempts += 1;
-      const observation = predicate(candidate);
+      const observation = candidate.length < minInputBytes || candidate.length > maxInputBytes
+        ? { status: "other" as const, failureKind: "OutsideInputDomain" }
+        : predicate(candidate);
       observations.push({ bytes: candidate, observation });
       if (observation.status === "finding" && observation.failureKind === "SelectionMismatch") {
         current = candidate;

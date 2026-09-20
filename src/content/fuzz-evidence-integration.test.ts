@@ -10,7 +10,19 @@ it("registers the bounded fuzz evidence module and four independent alternatives
   expect(fuzzEvidenceLessons).toHaveLength(4);
   for (const lesson of fuzzEvidenceLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(1);
-    expect(reviewExercises[lesson.conceptIds[0]]).toBeDefined();
+    const retrieval = reviewExercises[lesson.conceptIds[0]];
+    expect(retrieval).toBeDefined();
+    expect(retrieval.code).toBeTruthy();
+    expect(retrieval.solution).toBeTruthy();
+    expect(retrieval.evaluator?.kind).toBe("tests");
+    if (retrieval.evaluator?.kind === "tests") {
+      expect(retrieval.evaluator.tests).toContain("#[test]");
+      expect(retrieval.evaluator.tests).not.toContain("assert!(true)");
+    }
+    for (const gate of lesson.steps.filter((step) => step.evidenceGate)) {
+      expect(gate.evaluator?.kind).toBe("tests");
+      if (gate.evaluator?.kind === "tests") expect(gate.evaluator.tests).not.toContain("assert!(true)");
+    }
     expect(lesson.conceptIds).toEqual([lesson.id]);
   }
   expect(lessons).toHaveLength(175);

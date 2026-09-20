@@ -1,5 +1,19 @@
-import { expect, it } from "vitest";
+import { createHash } from "node:crypto";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterAll, expect, it } from "vitest";
 import { reduceWitness, validateEvidenceReport } from "../../scripts/fuzz-evidence";
+
+const reportFixtures = mkdtempSync(join(tmpdir(), "fuzz-report-fixtures-"));
+const originalPath = join(reportFixtures, "original.seed");
+const reducedPath = join(reportFixtures, "reduced.seed");
+const originalBytes = Buffer.from("ABCDE");
+const reducedBytes = Buffer.from("BC");
+writeFileSync(originalPath, originalBytes);
+writeFileSync(reducedPath, reducedBytes);
+const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+afterAll(() => rmSync(reportFixtures, { recursive: true, force: true }));
 
 const validReport = () => ({
   schemaVersion: 1,
@@ -14,7 +28,7 @@ const validReport = () => ({
   referenceCampaign: { status: "passed", observedRuns: 20000, instrumentation: true, normalCompletion: true, replayOnly: false },
   observedExecutions: 20000,
   mutant: { identity: "substring-to-prefix", status: "failed", assertion: "mini-grep selection oracle mismatch" },
-  artifacts: { original: { path: "artifacts/original", sha256: "c".repeat(64), bytes: 5 }, reduced: { path: "artifacts/reduced", sha256: "d".repeat(64), bytes: 2 } },
+  artifacts: { original: { path: originalPath, sha256: hash(originalBytes), bytes: 5, runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64) }, reduced: { path: reducedPath, sha256: hash(reducedBytes), bytes: 2, runId: "run-authored-1", archiveSha256: "a".repeat(64), manifestSha256: "b".repeat(64) } },
   reduction: { attempts: 4, status: "reduced", failureKind: "SelectionMismatch" },
   mutantReplay: { status: "failed", failureKind: "SelectionMismatch" },
   restoredReplay: { status: "passed", failureKind: "none" },
@@ -30,10 +44,28 @@ it("reduces only a strict SelectionMismatch and preserves byte order", () => {
     return ["BC", "ABC", "BCD", "ABCD", "BCDE", "ABCDE"].includes(text)
       ? { status: "finding", failureKind: "SelectionMismatch" }
       : { status: "other" };
-  });
+  }, { minInputBytes: 0 });
   expect(result.reduced.length).toBeLessThan(original.length);
   expect(new TextDecoder().decode(result.reduced)).toBe("BC");
   expect(result.original).toEqual(original);
+});
+
+it("shrinks a padded witness with a strict byte budget", () => {
+  const original = new TextEncoder().encode("PAD-ABCDE-TAIL");
+  const result = reduceWitness(
+    original,
+    (candidate) => {
+      const text = new TextDecoder().decode(candidate);
+      return text.includes("BC")
+        ? { status: "finding", failureKind: "SelectionMismatch" }
+        : { status: "other" };
+    },
+    { maxAttempts: 64, deadlineMs: 5_000, minInputBytes: 0 },
+  );
+  expect(result.status).toBe("reduced");
+  expect(result.reduced.length).toBeLessThan(original.length);
+  expect(new TextDecoder().decode(result.reduced)).toBe("BC");
+  expect(result.attempts).toBeLessThanOrEqual(64);
 });
 
 it("does not treat timeout or compile failure as a reduction predicate", () => {
@@ -43,6 +75,14 @@ it("does not treat timeout or compile failure as a reduction predicate", () => {
   expect(result.reduced).toEqual(original);
 });
 
+it("keeps accepted reductions inside the framed input domain", () => {
+  const result = reduceWitness(new Uint8Array([0, 0, 1, 120]), () => ({
+    status: "finding",
+    failureKind: "SelectionMismatch",
+  }));
+  expect(result.reduced.length).toBeGreaterThanOrEqual(3);
+});
+
 it("rejects malformed, stale and replay-only reports", () => {
   expect(() => validateEvidenceReport(validReport())).not.toThrow();
   for (const mutate of [
@@ -50,6 +90,12 @@ it("rejects malformed, stale and replay-only reports", () => {
     (report: ReturnType<typeof validReport>) => ({ ...report, referenceCampaign: { ...report.referenceCampaign, replayOnly: true } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, manifestSha256: "stale" }),
     (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, bytes: 0 } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, path: join(reportFixtures, "missing.seed") } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, reduced: { ...report.artifacts.reduced!, sha256: "f".repeat(64) } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, runId: "other-run" } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, toolchain: "stable" }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, phaseErrors: ["restored replay failed"] }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, mutantReplay: { status: "passed", failureKind: "none" } }),
   ]) expect(() => validateEvidenceReport(mutate(validReport()))).toThrow();
 });
 

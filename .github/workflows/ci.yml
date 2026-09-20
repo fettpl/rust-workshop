@@ -176,6 +176,10 @@ jobs:
         with:
           toolchain: nightly-2026-08-08
           components: rustfmt
+      # The stable regression and MSRV replay are pinned independently from nightly instrumentation.
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de
+        with:
+          toolchain: 1.85.0
       - run: cargo install cargo-fuzz --version 0.13.2 --locked
       - run: npm ci
       - run: npm run content:fuzz -- --fetch
