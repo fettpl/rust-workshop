@@ -772,7 +772,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.locator(".gate-action").first().click();
     await page
       .getByLabel("Kroki lekcji")
-      .getByRole("button", { name: "Przewidź", exact: true })
+      .getByRole("button", { name: /^(?:\d{2} )?Przewidź$/ })
       .click();
     await page.getByRole("radio").first().check();
     await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
@@ -781,7 +781,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     ).toBeVisible();
     await page
       .getByLabel("Kroki lekcji")
-      .getByRole("button", { name: "Zmień", exact: true })
+      .getByRole("button", { name: /^(?:\d{2} )?Zmień$/ })
       .click();
     const fuzzPrimaryEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
     await fuzzPrimaryEditor.fill("// Mocked primary run before the assisted reveal.\n");
@@ -820,7 +820,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.locator(".module-picker > button").filter({ hasText: fuzzTitle }).click();
     await page
       .getByLabel("Kroki lekcji")
-      .getByRole("button", { name: "Zmień", exact: true })
+      .getByRole("button", { name: /^(?:\d{2} )?Zmień$/ })
       .click();
     await fuzzPrimaryEditor.fill(fuzzAssistedPrimaryCode);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
@@ -832,7 +832,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     expect(independentCountAfterAssisted).toBe(independentCountBeforeAssisted);
     await page
       .getByLabel("Kroki lekcji")
-      .getByRole("button", { name: "Od pustej kartki", exact: true })
+      .getByRole("button", { name: /^(?:\d{2} )?Od pustej kartki$/ })
       .click();
     const fuzzHeading = await page.locator(".task-pane h1").innerText();
     const fuzzEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
