@@ -773,7 +773,9 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByLabel("Kroki lekcji").getByRole("button").first().click();
     await page.getByRole("radio").first().check();
     await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
-    await expect(page.getByRole("status")).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Zadanie" }).getByRole("status"),
+    ).toBeVisible();
     await page.getByLabel("Kroki lekcji").getByRole("button", { name: "Napraw decoder", exact: true }).click();
     const fuzzPrimaryEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
     await fuzzPrimaryEditor.fill("// Mocked primary run before the assisted reveal.\n");
