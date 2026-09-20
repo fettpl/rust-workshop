@@ -22,29 +22,59 @@
 - Do not execute UB intentionally in the browser, in the stable verifier, or in a learner package. Miri may interpret only isolated, checked-in negative fixtures whose expected diagnostic and identity are pinned.
 - No new production dependency, public API compatibility claim, FFI trust claim, universal memory-safety claim, performance claim, or professional-readiness claim.
 - Preserve the release status `Hold`; this milestone does not replace advisory/license review, a human pilot, or a complete Rust memory-model proof.
+- Model routing is fixed: GPT-6-Astra medium owns planning and qualitative review; GPT-5.6-Luna high owns implementation, tests, documentation, and Git operations. A separate soundness review gate must pass before the normal acceptance gate can be green.
+- The final acceptance record must name the exact head SHA and show green exact-head CI for the content, stable/MSRV, Miri, E2E, and documentation checks; a branch-local result or a previous SHA is insufficient.
 - Read the applicable `AGENTS.md` and the relevant Next guide before changing application code. This plan adds content and verification paths; it does not require a Next route or runner change.
 
 ## Scope and decisions
 
 The milestone closes the explicit gap between practical raw-pointer/`MaybeUninit` exercises and reviewing an unsafe borrowed-memory abstraction as a whole. It does not repeat the existing `unsafe-ffi-contracts` C ABI/RAII work or the existing `unsafe-miri-contracts` `ByteView`, `Slot<T>`, and simple disjoint-slice contracts. The new contracts use different names, data shapes, and failure modes.
 
-The module has four ordered lessons and eight primary coding gates (two per lesson), four independent code-evaluated retrievals, four lesson-local recall tasks, and one fresh blank task per lesson. The primary and blank tasks must be independently assessed; a revealed primary cannot satisfy its blank or retrieval. Each task has a distinct authored fixture and at least one compiling semantic mutant that the hidden tests reject.
+The module has exactly four ordered lessons, eight primary coding gates (two per lesson), four `evidenceGate` blanks, four independent code-evaluated reviews, and four lesson-local recall tasks. The twelve evidence-gate IDs are fixed as follows:
+
+| lesson ID | primary gate IDs | blank ID | review ID | recall ID |
+| --- | --- | --- | --- | --- |
+| `unsafe-borrowed-provenance` | `unsafe-borrowed-provenance-boundary-gate`, `unsafe-borrowed-provenance-soundness-gate` | `unsafe-borrowed-provenance-blank` | `unsafe-borrowed-provenance-review` | `unsafe-borrowed-provenance-recall` |
+| `unsafe-borrowed-reborrow` | `unsafe-borrowed-reborrow-boundary-gate`, `unsafe-borrowed-reborrow-soundness-gate` | `unsafe-borrowed-reborrow-blank` | `unsafe-borrowed-reborrow-review` | `unsafe-borrowed-reborrow-recall` |
+| `unsafe-borrowed-slot` | `unsafe-borrowed-slot-boundary-gate`, `unsafe-borrowed-slot-soundness-gate` | `unsafe-borrowed-slot-blank` | `unsafe-borrowed-slot-review` | `unsafe-borrowed-slot-recall` |
+| `unsafe-borrowed-auto-traits` | `unsafe-borrowed-auto-traits-boundary-gate`, `unsafe-borrowed-auto-traits-soundness-gate` | `unsafe-borrowed-auto-traits-blank` | `unsafe-borrowed-auto-traits-review` | `unsafe-borrowed-auto-traits-recall` |
+
+The eight primary IDs and four blank IDs set `evidenceGate: true`; review and recall IDs set `evidenceGate: false` or omit it. Each `CourseModule.gateCriteria` entry has explicit `taskRefs` for that lesson's boundary and soundness gate plus an explicit `supplementaryStepRefs` entry for its blank; no generated or unrelated task is substituted. The independent maintainer gate is named `unsafe-borrowed-memory-soundness-review`; it is a review/CI gate rather than a learner task and is excluded from the twelve learner evidence gates. A revealed primary cannot satisfy its blank, recall, or review. Every task has a distinct authored fixture and at least one compiling semantic mutant that the hidden tests reject.
 
 The four contracts are:
 
-1. **Provenance and lifetime boundary.** `BorrowedRegion<'a>` wraps a raw byte range using `NonNull<u8>`, a `usize` length, and `PhantomData<&'a [u8]>`. `unsafe fn from_raw_parts<'a>(raw: *const u8, len: usize) -> Option<BorrowedRegion<'a>>` accepts a null pointer only for `len == 0`, rejects `len > isize::MAX`, rejects a wrapped end address, and never extends the lifetime of the backing allocation. Tests use valid local allocations, empty null views, multibyte lengths, and a compile-fail lifetime escape.
-2. **Mutable reborrow and disjointness.** `split_borrowed<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>` accepts `0..=len`, including empty sides, and rejects `mid > len` before creating views. A separate `reborrow<'short>(&'short mut BorrowedRegion<'a>)` contract proves that the outer loan may shorten while the borrowed storage lifetime and inner type remain invariant. Tests reject overlapping output, off-by-one bounds, and a mutant that writes through both views.
-3. **Initialization and ownership state.** `BorrowedSlot<T>` stores `MaybeUninit<T>` plus an explicit `SlotState`. `put` is allowed only when empty, `take` changes the state before moving the value, `drop_initialized` drops exactly once, and no `T` is read or dropped while uninitialized. The tests use a non-`Copy` drop counter and a panic-free invalid transition path; they do not execute an invalid unsafe operation. A compile-fail fixture proves that a borrowed value cannot outlive its source.
-4. **Variance and auto-trait boundary.** `InvariantBorrow<'a, T>` uses a marker that preserves the required lifetime and `T` invariance and does not invent `Send`/`Sync`. The contract distinguishes shortening the outer reborrow from replacing a longer borrowed `T` with a shorter one, and checks that `Rc`/`Cell`-containing values do not cross a thread boundary through an unsafe manual implementation. Compile-fail controls assert the rejected lifetime substitution and rejected auto-trait claim; a positive test covers a genuinely thread-safe borrowed value.
+1. **Provenance and lifetime boundary.** The learner-safe browser contract is `BorrowedBytes<'owner>::from_slice(owner: &'owner [u8]) -> BorrowedBytes<'owner>` and `BorrowedBytes::reborrow<'short>(&'short self) -> BorrowedBytes<'short>`; the constructor ties the view to an actual owner and cannot manufacture a lifetime. The maintainer-only raw fixture separately exposes `unsafe fn from_raw_parts_unchecked<'a>(raw: *const u8, len: usize) -> Option<RawBorrowed<'a>>`, with null, initialization, alignment, `len <= isize::MAX`, non-wrapping range, and non-aliasing preconditions. The raw function never appears in learner starter code or browser execution. Tests use valid local allocations, empty null views, multibyte lengths, and a compile-fail lifetime escape.
+2. **Mutable reborrow, disjointness, and invariance.** The learner-safe contract is `split_borrowed<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>` plus `InvariantBorrow<'owner, T>::from_mut(owner: &'owner mut T) -> InvariantBorrow<'owner, T>` and the exact `reborrow<'short>(&'short mut self) -> InvariantBorrow<'short, T>`. The outer loan may shorten; the inner `T` lifetime remains invariant through `PhantomData<fn(&'owner T) -> &'owner T>`. A separate maintainer-only raw constructor is the only unsafe boundary. Tests reject overlap, `mid > len`, lifetime substitution, and a mutant that writes through both views.
+3. **Initialization and ownership state.** The learner-safe browser contract is `SafeSlot<T>` backed by `Option<T>` with `put`, `take`, and `drop_initialized` state transitions; it contains no `MaybeUninit` and no raw pointer. The maintainer-only fixture mirrors the same state machine with `MaybeUninit<T>`, explicit `SlotState`, and a checked `unsafe` implementation. `put` is allowed only when empty, `take` changes state before moving the value, and drop occurs exactly once. Tests use a non-`Copy` drop counter, a local non-`'static` borrow, and no invalid unsafe execution outside Miri.
+4. **Variance and Send/Sync boundary.** The learner-safe contract uses `InvariantBorrow<'owner, T>` only through `from_mut` and `reborrow`; no manual `unsafe impl Send` or `unsafe impl Sync` is teachable or accepted. The marker combines an auto-trait-bearing `PhantomData<&'owner T>` with a function-pointer marker `PhantomData<fn(&'owner T) -> &'owner T>` so `T` auto-traits are inherited while the owner lifetime is invariant. Maintainer clients include `assert_send::<InvariantBorrow<'_, u8>>()` and `assert_sync::<InvariantBorrow<'_, u8>>()`. A `Cell<u8>` client is allowed to prove `Send` but must fail `Sync`; both `Send` and `Sync` clients using `Rc<u8>` must fail. A positive `Send + Sync` client uses an immutable `u8`/`Arc`-free value. A mutant using an output-only `PhantomData` or an unsafe blanket impl is rejected. Compile-fail controls cover lifetime substitution, the `Cell<u8>` `Sync` bound, and both `Rc<u8>` bounds.
 
-The public prompts must state these names, fields, signatures, preconditions, and observable behavior without giving the implementation. Hidden tests may enforce the announced contract but may not introduce a second undiscoverable API.
+The public prompts state only the safe constructor, exact `reborrow` signature, fields/types, invariance behavior, and observable boundaries. Raw pointers, `MaybeUninit`, invalid states, and Miri-negative bodies live in maintainer-only fixtures and are never hidden requirements for learner code. Hidden tests may enforce only the announced safe contract.
+
+### Learner versus maintainer execution boundary
+
+| Surface | Allowed source | Contracts | Execution | Evidence |
+| --- | --- | --- | --- | --- |
+| Browser primary/blank/review | learner-safe authored snippets with references and slices | `from_slice`, `from_mut`, `reborrow`, `split_borrowed`, `SafeSlot`, trait-bound clients | existing isolated single-file Rust runner; no raw pointer or `MaybeUninit` | independent tests and persisted learner events |
+| Stable/MSRV verifier | checked-in safe behavioral fixtures and compile-fail clients | boundary/state/output behavior and named diagnostics | stable plus exact 1.85.0 only | canonical/equivalent pass and safe mutants fail |
+| Nightly Miri verifier | checked-in maintainer-only raw/`MaybeUninit` fixtures | explicit unsafe preconditions and named UB controls | pinned nightly-2026-08-08 Miri only | canonical and equivalent pass; negative UB fixtures produce expected diagnostics |
+
+The fixture matrix is explicit: stable and MSRV execute only safe behavior and compile-fail controls; only Miri executes raw-pointer and `MaybeUninit` negative fixtures. Canonical and structurally equivalent implementations must pass in every mode where they are applicable.
+
+| fixture family | stable/MSRV requirement | Miri requirement | rejected mutant examples |
+| --- | --- | --- | --- |
+| provenance/null/range | safe `from_slice` behavior, byte lengths, and boundary errors | canonical and equivalent raw-boundary fixtures pass | null-for-positive, wrapped range, invalid initialization |
+| split/reborrow | safe disjoint slices, exact `mid` errors, and lifetime compile-fail controls | raw alias fixture produces the named diagnostic | overlap, out-of-bounds, aliased raw view |
+| slot state | `SafeSlot` state and exactly-once drop behavior | `MaybeUninit` canonical/equivalent pass and negative state fixtures diagnose | omitted initialization, state-skipping drop, double drop |
+| variance/auto-traits | safe invariance and `Send`/`Sync` positive/negative clients | only a maintainer raw client may run | lifetime substitution, output-only marker, unsafe blanket impl |
+
+Real UB is never a stable/MSRV mutant case. A Miri-negative fixture must compile far enough to run and must be rejected by the expected diagnostic; a compile error, timeout, or infrastructure error is not successful mutant discovery.
 
 ## File map
 
 Create:
 
 - `src/content/unsafe-borrowed-memory.ts`: Polish sources, concepts, competencies, module, four lessons, eight primary gates, four blanks, four local recalls, and four independent review exercises.
-- `src/content/unsafe-borrowed-memory-contracts.ts`: authored Rust reference snippets, test harnesses, expected compile-fail diagnostics, and distinct equivalent implementations. Keep Rust contracts separate from lesson prose.
+- `src/content/unsafe-borrowed-memory-contracts.ts`: authored Rust reference snippets, test harnesses, expected compile-fail diagnostics, and distinct equivalent implementations. Keep Rust contracts separate from lesson prose. The public interfaces use `BorrowedBytes`, `split_borrowed`, `SafeSlot`, and `InvariantBorrow`; maintainer-only raw/`MaybeUninit` interfaces are separate exports.
 - `src/content/unsafe-borrowed-memory-assessment-fixtures.ts`: canonical, equivalent, and compiling-mutant fixtures for every tested gate, recall, and review. Include fixture identity, expected status, and whether stable or Miri evidence is required.
 - `src/content/unsafe-borrowed-memory-assessment.test.ts`: compile/run the canonical and equivalent fixtures and require each named semantic mutant to fail its independent assertions; test compile-fail controls by diagnostic class and source identity.
 - `src/content/unsafe-borrowed-memory-integration.test.ts`: verify IDs, prerequisite graph, eight gates, four blank tasks, four reviews, material contract differences, evidence independence, and schema compatibility.
@@ -56,7 +86,7 @@ Modify:
 
 - `src/content/course.ts`: register the new module after `unsafe-miri-contracts` and expose its sources, lessons, concepts, and review exercises without changing prior IDs.
 - `scripts/verify-offline.mjs`: add one previously unvisited soundness lesson path with draft, hint/reveal boundary, independent blank, note, keyboard, and exact resume assertions. Use semantic step locators and persisted event checks.
-- `package.json`: add `content:borrowed-memory` with an allowlist for `--fetch`, `--msrv`, and `--miri` only.
+- `package.json`: add `content:borrowed-memory` with an allowlist for no arguments, `--msrv`, and `--miri` only; reject `--fetch`, mixed modes, paths, and arbitrary toolchains.
 - `.github/workflows/ci.yml`: add stable/MSRV authored fixture verification and a pinned-nightly Miri step/job with separate artifacts and explicit timeout limits.
 - `README.md`, `docs/advanced-curriculum.md`, `docs/requirements-audit.md`, `docs/progress.md`, `docs/verification.md`, and `docs/ci-cd.md`: update English counts, scope, exact verification evidence, limitations, and release Hold after the implementation head is known.
 
@@ -70,6 +100,8 @@ The implementation is acceptable only when all gates below are true and recorded
 - Every primary, blank, recall, and review contract compiles from its published prompt and passes the canonical/equivalent tests. Every listed compiling mutant is executed and rejected for its named semantic difference.
 - The provenance fixture rejects null-for-positive length, wrapped range, omitted initialization checks, overlapping mutable views, state-skipping `Drop`, lifetime substitution, and invented `Send`/`Sync` claims.
 - Stable and exact Rust 1.85.0 runs perform `rustfmt --check`, `cargo fmt --check` where a Cargo fixture exists, `rustc`/Cargo tests, and Clippy with the same authored bytes. Stable/MSRV results are separate from nightly Miri results.
+- The independent soundness gate checks the lifetime-tied safe constructor, exact `reborrow`, invariance marker, raw boundary preconditions, learner/maintainer separation, and the complete `Send`/`Sync` client matrix before the normal content gate can pass.
+- Exact-head CI is green for the same SHA across the stable, exact 1.85.0 MSRV, pinned Miri, browser/offline E2E, content, and documentation jobs; a prior successful SHA cannot satisfy this gate.
 - Miri runs only the checked-in negative fixtures, verifies expected diagnostic identity, and records toolchain, source hash, fixture hash, phase status, and limitations. A missing Miri component or timeout is infrastructure, not pass.
 - The verifier rejects arbitrary arguments, stale source/fixture hashes, mixed run identities, wrong toolchains, missing phase errors, compile errors misreported as mutant discovery, and reports that claim `passed` before every required phase completes.
 - The E2E test proves reveal/help cannot create independent mastery, then proves a fresh independent blank can record a non-empty draft and note and resume exactly after reload. Keyboard and console-error assertions remain active.
@@ -88,10 +120,10 @@ The implementation is acceptable only when all gates below are true and recorded
 **Interfaces:**
 
 - Produces `unsafeBorrowedMemorySources`, `unsafeBorrowedMemoryConcepts`, `unsafeBorrowedMemoryCompetencies`, `unsafeBorrowedMemoryLessons`, `unsafeBorrowedMemoryReviewExercises`, and `unsafeBorrowedMemoryModule`.
-- Produces fixture exports with exact signatures for `BorrowedRegion`, `split_borrowed`, `BorrowedSlot`, and `InvariantBorrow`.
+- Produces fixture exports with exact signatures for `BorrowedBytes`, `split_borrowed`, `SafeSlot`, and `InvariantBorrow`, plus separate maintainer-only raw and `MaybeUninit` fixtures.
 - Consumes existing `Lesson`, `Concept`, `CourseModule`, `Source`, and evidence types; does not change those types.
 
-- [ ] Write integration tests first for the four lesson IDs, prerequisite chain, eight `evidenceGate` steps, four blanks with no starter code, four code-evaluated reviews, and unique task references.
+- [ ] Write integration tests first for the four lesson IDs, prerequisite chain, twelve `evidenceGate` steps (eight primary gates plus four blanks), four blanks with no starter code, four code-evaluated reviews, and unique task references.
 - [ ] Add the four Polish lesson prompts with the signatures and safety conditions in the Scope section. State the positive and negative boundaries explicitly; do not prescribe the body.
 - [ ] Add prediction, authored observation, explanation, two tested gates, one blank, one local recall, misconceptions, hints, and project/transfer context for each lesson.
 - [ ] Add a different review contract for each lesson. Reviews must change the type shape or call policy; they cannot be the primary function with renamed variables.
@@ -109,8 +141,21 @@ The implementation is acceptable only when all gates below are true and recorded
 **Interfaces:**
 
 - Each fixture exports `{ id, canonical, equivalent, mutant, tests, mode, expectedDiagnostic? }`.
-- `mode` is one of `stable`, `compile-fail`, or `miri-negative`; a fixture cannot silently change mode.
+- `mode` is one of `safe-behavior`, `compile-fail`, or `miri-negative`; `safe-behavior` and `compile-fail` run on stable and exact 1.85.0, while `miri-negative` runs only on pinned nightly. A fixture cannot silently change mode.
 - Hidden tests compare full returned slices/state transitions and exact error classes, not source strings or `assert!(true)`.
+
+The minimum executable matrix is:
+
+| case | authored execution | expected result |
+| --- | --- | --- |
+| canonical safe behavior | stable and exact 1.85.0 | pass |
+| equivalent safe behavior | stable and exact 1.85.0 | pass |
+| safe semantic mutant | stable and exact 1.85.0 | named assertion fails |
+| canonical/equivalent raw or `MaybeUninit` | nightly-2026-08-08 Miri | pass |
+| named UB mutant | nightly-2026-08-08 Miri | expected diagnostic |
+| compile-fail client | stable and exact 1.85.0 | expected diagnostic family |
+
+The matrix forbids treating a stable compile error, timeout, or unrelated failing test as a successful semantic rejection; the named test must execute and fail for the named mutant.
 
 - [ ] Write one failing test per semantic mutant: positive null handling, range overflow, omitted initialization, overlap, out-of-bounds split, state-skipping drop, lifetime variance, and auto-trait leakage.
 - [ ] Add at least one non-`Copy` drop counter and one local non-`'static` borrowed value to prevent ownership shortcuts.
@@ -129,7 +174,7 @@ The implementation is acceptable only when all gates below are true and recorded
 
 **Interfaces:**
 
-- CLI accepts no arguments or exactly `--fetch`, `--msrv`, and `--miri`; reject all combinations outside the documented matrix.
+- CLI accepts no arguments, exactly `--msrv`, or exactly `--miri`; reject `--fetch`, combined modes, paths, and arbitrary toolchains. The no-argument invocation runs the host stable safe matrix; `--msrv` runs the exact Rust 1.85.0 safe matrix; `--miri` runs the pinned nightly Miri matrix.
 - Report fields include `schemaVersion`, `runId`, `sourceHashes`, `fixtureHashes`, `toolchain`, `host`, `phaseStatuses`, `phaseErrors`, `compileFailChecks`, `miriChecks`, `artifactPaths`, `artifactHashes`, and `limitations`.
 - A phase status is `passed`, `failed`, or `infrastructure`; `passed` is legal only after all required phases complete and provenance matches the current authored bytes.
 
@@ -138,7 +183,16 @@ The implementation is acceptable only when all gates below are true and recorded
 - [ ] Run stable and exact 1.85.0 formatting, compilation, tests, and Clippy with bounded subprocess timeouts and a total budget. Keep stable/MSRV and Miri report identities separate.
 - [ ] Run only named Miri-negative binaries with `rustup run nightly-2026-08-08 miri`, capture stdout/stderr and diagnostic identity, and classify missing components/timeouts as infrastructure.
 - [ ] Emit JSON even on failure, preserve phase errors, and exit nonzero for failed or infrastructure reports. Never convert an incomplete run into `passed`.
-- [ ] Add the `content:borrowed-memory` script and CI steps with exact toolchain setup, cache/fetch boundaries, and uploaded reports.
+- [ ] Add the `content:borrowed-memory` script and CI steps with exact toolchain setup, cache/fetch boundaries, uploaded reports, and the CLI matrix below:
+
+  | invocation | toolchain and phases | accepted |
+  | --- | --- | --- |
+  | `content:borrowed-memory` | host stable safe behavior, compile-fail, and report validation | yes |
+  | `content:borrowed-memory --msrv` | exact Rust 1.85.0 safe behavior, compile-fail, and report validation | yes |
+  | `content:borrowed-memory --miri` | nightly-2026-08-08 Miri canonical/equivalent and named negative fixtures | yes |
+  | `content:borrowed-memory --fetch` | no authored verifier phase permits network fetch | no |
+  | `content:borrowed-memory --msrv --miri` | mixed run identity and toolchain | no |
+  | `content:borrowed-memory ./path` | arbitrary path input | no |
 - [ ] Run verifier unit tests, argument checks, and a valid authored run where the local toolchain permits it.
 
 ## Task 4: Add browser and offline evidence coverage
