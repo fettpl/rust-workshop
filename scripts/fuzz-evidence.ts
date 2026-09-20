@@ -95,7 +95,7 @@ export function createPartialReport(input: Partial<FuzzEvidenceReport> = {}): Fu
     reduction: input.reduction ?? { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch" },
     mutantReplay: input.mutantReplay ?? { status: "infrastructure", failureKind: "SelectionMismatch" },
     restoredReplay: input.restoredReplay ?? { status: "infrastructure", failureKind: "none" },
-    stableRegression: input.stableRegression ?? { status: "infrastructure", toolchain: "rustc 1.85.0", sha256: "0".repeat(64) },
+    stableRegression: input.stableRegression ?? { status: "infrastructure", toolchain: "1.85.0", channel: "stable", sha256: "0".repeat(64) },
     phaseErrors: input.phaseErrors ?? [],
     limitations: input.limitations ?? ["Finite authored campaign is not proof of absence of bugs."],
   };

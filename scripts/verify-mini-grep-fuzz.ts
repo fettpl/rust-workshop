@@ -43,6 +43,12 @@ let restoredReplayStatus: "passed" | "failed" | "infrastructure" = "infrastructu
 let stableRegressionStatus: "passed" | "failed" | "infrastructure" = "infrastructure";
 let phaseErrors: string[] = [];
 let reductionEvidence: ReductionResult | undefined;
+let authoredOriginalPath = "";
+
+function recordPhaseError(error: unknown): void {
+  phaseErrors = [...phaseErrors, String(error)];
+  if (campaignStatus === "passed") campaignStatus = "failed";
+}
 
 function run(
   name: string,
@@ -60,7 +66,7 @@ function run(
   });
   const output = (result.stdout ?? "") + (result.stderr ?? "");
   writeFileSync(
-    join(report, `${name}.log`),
+    join(report, `${name.replace(/[\\/]/g, "_")}.log`),
     `${binary} ${commandArgs.join(" ")}\n${output}\nstatus=${result.status}; signal=${result.signal}; error=${result.error?.message ?? "none"}\n`,
   );
   const passed = expectation
@@ -247,29 +253,39 @@ try {
     const crash = crashes[0];
     assert(crash, "The controlled mutant must produce a fresh crash artifact");
     const crashPath = join(artifacts, crash);
-    const mutantReplay = spawnSync(binary, [crashPath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
-      cwd: root,
-      env,
-      encoding: "utf8",
-      timeout: 10_000,
-      maxBuffer: 8 * 1024 * 1024,
-    });
-    const mutantReplayOutput = `${mutantReplay.stdout ?? ""}${mutantReplay.stderr ?? ""}`;
-    writeFileSync(
-      join(report, "mutant-replay.log"),
-      `${mutantReplayOutput}\nstatus=${mutantReplay.status}; signal=${mutantReplay.signal}; error=${mutantReplay.error?.message ?? "none"}\n`,
-    );
-    assert(
-      verifyFuzzResult(
-        { ...mutantReplay, stdout: mutantReplay.stdout ?? "", stderr: mutantReplay.stderr ?? "" },
-        { kind: "counterexample", artifactWritten: true },
-      ),
-      `Mutant replay did not reproduce SelectionMismatch; see ${report}/mutant-replay.log`,
-    );
+    const replayMutantArtifact = (name: string, witnessPath: string) => {
+      const replayArtifacts = join(root, `fuzz/artifacts/${name}`);
+      mkdirSync(replayArtifacts, { recursive: true });
+      const result = spawnSync(binary, [witnessPath, "-runs=1", "-timeout=3", "-rss_limit_mb=1024", `-artifact_prefix=${replayArtifacts}/`], {
+        cwd: root,
+        env,
+        encoding: "utf8",
+        timeout: 10_000,
+        maxBuffer: 8 * 1024 * 1024,
+      });
+      const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+      writeFileSync(
+        join(report, `${name}.log`),
+        `${output}\nstatus=${result.status}; signal=${result.signal}; error=${result.error?.message ?? "none"}\n`,
+      );
+      const artifactWritten = readdirSync(replayArtifacts).length > 0;
+      assert(
+        verifyFuzzResult(
+          { ...result, stdout: result.stdout ?? "", stderr: result.stderr ?? "" },
+          { kind: "counterexample", artifactWritten },
+        ),
+        `Mutant replay did not reproduce SelectionMismatch; see ${report}/${name}.log`,
+      );
+    };
+    replayMutantArtifact("mutant-replay", crashPath);
     mutantReplayStatus = "failed";
+    const paddedWitnessPath = join(root, "fuzz/regressions/substring-prefix-padded.seed");
+    authoredOriginalPath = join(report, "padded-original.seed");
+    writeFileSync(authoredOriginalPath, readFileSync(paddedWitnessPath));
+    replayMutantArtifact("padded-mutant-replay", paddedWitnessPath);
     let candidateNumber = 0;
     const reductionDeadline = Date.now() + 30_000;
-    reductionEvidence = reduceWitness(readFileSync(crashPath), (candidate) => {
+    reductionEvidence = reduceWitness(readFileSync(paddedWitnessPath), (candidate) => {
       const remainingMs = reductionDeadline - Date.now();
       if (remainingMs <= 0)
         return { status: "timeout" as const };
@@ -288,14 +304,17 @@ try {
       if (candidateResult.error || candidateResult.signal) {
         return candidateResult.error?.message.includes("timed out") || candidateResult.signal === "SIGTERM"
           ? { status: "timeout" as const }
-          : { status: "other" as const };
+          : { status: "other" as const, failureKind: "CompileError" };
       }
       if (candidateResult.status === 77 && candidateOutput.includes("mini-grep selection oracle mismatch"))
         return { status: "finding" as const, failureKind: "SelectionMismatch" as const };
-      return { status: "other" as const };
-    });
-    if (reductionEvidence.status === "reduced")
-      writeFileSync(join(report, "reduced.seed"), reductionEvidence.reduced);
+      return candidateResult.status !== 0
+        ? { status: "other" as const, failureKind: "OtherAssertion" }
+        : { status: "other" as const };
+    }, { minInputBytes: 3, maxInputBytes: 4096, maxAttempts: 256, deadlineMs: 30_000 });
+    assert.equal(reductionEvidence.status, "reduced", "Authored padded witness must strictly reduce through the mutant");
+    writeFileSync(join(report, "reduced.seed"), reductionEvidence.reduced);
+    replayMutantArtifact("reduced-mutant-replay", join(report, "reduced.seed"));
     writeFileSync(
       join(report, "reducer.json"),
       `${JSON.stringify({
@@ -305,8 +324,15 @@ try {
       }, null, 2)}\n`,
     );
     console.log(
-      "ok fixed substring-to-prefix mutant rejected by oracle with saved input",
+      "ok fixed substring-to-prefix mutant rejected by oracle with saved padded witness",
     );
+    /*
+     * A compiler failure is an infrastructure observation, never a fuzz
+     * finding. Keep this negative control separate from the mutant campaign.
+     */
+    const compileNegative = spawnSync(compiler, ["--definitely-invalid-fuzz-flag"], { cwd: root, env, encoding: "utf8", timeout: 10_000 });
+    writeFileSync(join(report, "compile-error-negative.log"), `${compileNegative.stdout ?? ""}${compileNegative.stderr ?? ""}\nstatus=${compileNegative.status}; error=${compileNegative.error?.message ?? "none"}\n`);
+    assert(compileNegative.status !== 0 && !verifyFuzzResult({ ...compileNegative, stdout: compileNegative.stdout ?? "", stderr: compileNegative.stderr ?? "" }, { kind: "counterexample", artifactWritten: false }), "Compile failure must not be a fuzz finding");
   } finally {
     writeFileSync(searchPath, original);
   }
@@ -318,10 +344,11 @@ try {
   if (stableRegressionStatus !== "passed") throw new Error(`Stable regression failed; see ${report}/stable-regression.log`);
   const restoredArtifacts = [
     ...readdirSync(artifacts).filter((name) => name.startsWith("crash-")),
+    ...(authoredOriginalPath ? [authoredOriginalPath] : []),
     ...(reductionEvidence?.status === "reduced" ? ["../../reduced.seed"] : []),
   ];
   for (const artifact of restoredArtifacts)
-    run(`replay-restored-${artifact}`, binary, [artifact.startsWith("../") ? join(report, "reduced.seed") : join(artifacts, artifact), "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
+    run(`replay-restored-${artifact}`, binary, [artifact.startsWith("../") ? join(report, "reduced.seed") : artifact.startsWith(report) ? artifact : join(artifacts, artifact), "-runs=1", "-timeout=3", "-rss_limit_mb=1024"], {
       kind: "replay",
     });
   restoredReplayStatus = "passed";
@@ -336,7 +363,7 @@ try {
     `Mini grep fuzz passed: instrumented campaign, controlled counterexample and restored replay. Reports: ${report}`,
   );
 } catch (error) {
-  phaseErrors = [...phaseErrors, String(error)];
+  recordPhaseError(error);
   throw error;
 } finally {
   for (const directory of ["corpus", "artifacts"]) {
@@ -344,22 +371,30 @@ try {
     try {
       cpSync(source, join(report, directory), { recursive: true });
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") recordPhaseError(error);
     }
   }
   const artifactDirectory = join(report, "artifacts/selection");
   const artifact = existsSync(artifactDirectory)
     ? readdirSync(artifactDirectory, { withFileTypes: true }).find((entry) => entry.name.startsWith("crash-"))
     : undefined;
-  const artifactPath = artifact ? join(report, "artifacts/selection", artifact.name) : "";
-  const artifactBytes = artifactPath ? readFileSync(artifactPath) : new Uint8Array();
+  const artifactPath = authoredOriginalPath || (artifact ? join(report, "artifacts/selection", artifact.name) : "");
+  let artifactBytes = new Uint8Array();
+  if (artifactPath) {
+    try {
+      artifactBytes = readFileSync(artifactPath);
+    } catch (error) {
+      recordPhaseError(error);
+    }
+  }
   const reduced = reductionEvidence;
+  const allPhasesPassed = phaseErrors.length === 0 && campaignStatus === "passed" && mutantStatus === "failed" && mutantReplayStatus === "failed" && restoredReplayStatus === "passed" && stableRegressionStatus === "passed";
   const evidence = createPartialReport({
     runId,
     archiveSha256,
     manifestSha256,
     host,
-    status: campaignStatus === "passed" && mutantStatus === "failed" && mutantReplayStatus === "failed" && restoredReplayStatus === "passed" && stableRegressionStatus === "passed" ? "passed" : "infrastructure",
+    status: allPhasesPassed ? "passed" : "infrastructure",
     referenceCampaign: { status: campaignStatus, observedRuns, instrumentation: campaignStatus === "passed", normalCompletion: campaignStatus === "passed", replayOnly: false },
     observedExecutions: observedRuns,
     mutant: { identity: "substring-to-prefix", status: mutantStatus === "failed" ? "failed" : mutantStatus, assertion: "mini-grep selection oracle mismatch" },
@@ -367,10 +402,23 @@ try {
     reduction: reduced ? { attempts: reduced.attempts, status: reduced.status, failureKind: "SelectionMismatch" } : undefined,
     mutantReplay: { status: mutantReplayStatus, failureKind: "SelectionMismatch" },
     restoredReplay: { status: restoredReplayStatus, failureKind: "none" },
-    stableRegression: { status: stableRegressionStatus, toolchain: "rustc 1.85.0", sha256: "9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1" },
+    stableRegression: { status: stableRegressionStatus, toolchain: "1.85.0", channel: "stable", sha256: "9a4e5eea45a79d6a59b9c9e64d3e043ad612e9340526492e52f020526c4deaa1" },
     phaseErrors,
   });
-  try { validateEvidenceReport(evidence); } catch (error) { phaseErrors = [...phaseErrors, String(error)]; }
-  writeFileSync(join(report, "report.json"), `${JSON.stringify({ ...evidence, phaseErrors }, null, 2)}\n`);
+  try {
+    validateEvidenceReport(evidence);
+  } catch (error) {
+    recordPhaseError(error);
+    evidence.status = "infrastructure";
+  }
+  try {
+    writeFileSync(join(report, "report.json"), `${JSON.stringify({ ...evidence, status: phaseErrors.length ? "infrastructure" : evidence.status, phaseErrors }, null, 2)}\n`);
+  } catch (error) {
+    recordPhaseError(error);
+  }
+  // A phase error is a failed verification even when it happened while the
+  // report was being finalized. CI must not accept a partial dossier as a
+  // successful command.
+  if (phaseErrors.length > 0) process.exitCode = 1;
   rmSync(root, { recursive: true, force: true });
 }

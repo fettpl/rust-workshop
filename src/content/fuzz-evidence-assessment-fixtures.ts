@@ -107,28 +107,44 @@ fn oracle_checks_order_text_match_flags_and_error_class() {
   oracleBlank: String.raw`fn duplicate_selection_matches(actual: &[(usize, bool)], expected: &[(usize, bool)]) -> bool {
     actual == expected
 }
+fn decode_frame(bytes: &[u8]) -> Option<(&[u8], &[u8])> {
+    let (&length, payload) = bytes.split_first()?;
+    (payload.len() >= length as usize).then(|| (&payload[..length as usize], &payload[length as usize..]))
+}
 #[test]
-fn duplicate_rows_and_order_are_part_of_the_contract() {
+fn duplicate_rows_order_and_frame_bounds_are_part_of_the_contract() {
     let expected = [(1, true), (1, true), (2, false)];
     assert!(duplicate_selection_matches(&expected, &expected));
     assert!(!duplicate_selection_matches(&expected[..2], &expected));
     assert!(!duplicate_selection_matches(&[(1, true), (2, false), (1, true)], &expected));
+    assert_eq!(decode_frame(&[2, b'a', 0xff, b'z']), Some((&[b'a', 0xff][..], &[b'z'][..])));
+    assert!(decode_frame(&[3, b'a']).is_none());
 }`,
-  reducer: String.raw`fn choose_witness(original: &[u8], candidates: &[Vec<u8>], observations: &[(Vec<u8>, &str)]) -> Vec<u8> {
+  reducer: String.raw`type Regression = fn(&[u8]) -> bool;
+struct Observation { bytes: Vec<u8>, failure: &'static str, restored_replay: Option<&'static str>, regression: Option<Regression> }
+fn executable_regression(bytes: &[u8]) -> bool { bytes == b"BC" }
+fn choose_witness(original: &[u8], candidates: &[Observation]) -> Vec<u8> {
     candidates.iter()
-        .filter(|candidate| candidate.len() < original.len())
-        .filter(|candidate| observations.iter().any(|(bytes, class)| bytes == *candidate && *class == "SelectionMismatch"))
-        .min_by_key(|candidate| candidate.len())
-        .cloned()
+        .filter(|candidate| !candidate.bytes.is_empty() && candidate.bytes.len() < original.len())
+        .filter(|candidate| candidate.failure == "SelectionMismatch")
+        .filter(|candidate| candidate.restored_replay == Some("failed"))
+        .filter(|candidate| candidate.regression.is_some_and(|regression| regression(&candidate.bytes)))
+        .min_by_key(|candidate| candidate.bytes.len())
+        .map(|candidate| candidate.bytes.clone())
         .unwrap_or_else(|| original.to_vec())
 }
 #[test]
-fn reducer_requires_strict_size_and_named_failure() {
+fn reducer_requires_strict_size_named_failure_replay_and_regression() {
     let original = b"ABCDE";
-    let candidates = vec![b"ABCDE".to_vec(), b"ABC".to_vec(), b"BC".to_vec()];
-    let observations = vec![(b"ABC".to_vec(), "Timeout"), (b"BC".to_vec(), "SelectionMismatch")];
-    assert_eq!(choose_witness(original, &candidates, &observations), b"BC");
-    assert_eq!(choose_witness(original, &candidates, &[(b"BC".to_vec(), "CompileError")]), original);
+    let candidates = vec![
+        Observation { bytes: Vec::new(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: Some(executable_regression) },
+        Observation { bytes: b"ABC".to_vec(), failure: "Timeout", restored_replay: Some("failed"), regression: Some(executable_regression) },
+        Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: None, regression: Some(executable_regression) },
+        Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: None },
+        Observation { bytes: b"BC".to_vec(), failure: "SelectionMismatch", restored_replay: Some("failed"), regression: Some(executable_regression) },
+    ];
+    assert_eq!(choose_witness(original, &candidates), b"BC");
+    assert_eq!(choose_witness(original, &[Observation { bytes: b"BC".to_vec(), failure: "CompileError", restored_replay: Some("failed"), regression: Some(executable_regression) }]), original);
 }`,
   reducerBlank: String.raw`fn reduce_frame(original: &[u8], candidate: &[u8], failure_class: &str) -> Vec<u8> {
     if candidate.len() < original.len() && failure_class == "LengthMismatch" { candidate.to_vec() } else { original.to_vec() }
@@ -139,29 +155,35 @@ fn frame_reduction_keeps_named_error_and_rejects_timeout() {
     assert_eq!(reduce_frame(b"frame-long", b"frame", "Timeout"), b"frame-long");
 }`,
   campaign: String.raw`#[derive(Debug, PartialEq, Eq)]
-struct Dossier { instrumented: bool, normal: bool, runs: usize, replay_only: bool, status: &'static str }
-fn classify_report(dossier: &Dossier) -> &'static str {
+struct Dossier { run_id: &'static str, archive_hash: &'static str, manifest_hash: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool, status: &'static str }
+fn classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, current_manifest: &str) -> &'static str {
     if dossier.replay_only { return "failed"; }
+    if dossier.run_id != current_run || dossier.archive_hash != current_archive || dossier.manifest_hash != current_manifest { return "infrastructure"; }
     if !dossier.instrumented || !dossier.normal || dossier.runs < 1000 { return "infrastructure"; }
     dossier.status
 }
 #[test]
-fn dossier_requires_campaign_phases() {
-    assert_eq!(classify_report(&Dossier { instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }), "passed");
-    assert_eq!(classify_report(&Dossier { instrumented: true, normal: true, runs: 1, replay_only: false, status: "passed" }), "infrastructure");
-    assert_eq!(classify_report(&Dossier { instrumented: true, normal: true, runs: 1000, replay_only: true, status: "passed" }), "failed");
+fn dossier_requires_fresh_identity_and_campaign_phases() {
+    let current = ("run-1", "archive-a", "manifest-a");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "passed");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "stale", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: true, status: "passed" }, current.0, current.1, current.2), "failed");
 }`,
   campaignBlank: String.raw`#[derive(Debug, PartialEq, Eq)]
-struct Triage { instrumented: bool, tool_ok: bool, finding: bool }
+struct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, instrumented: bool, tool_ok: bool, finding: bool }
 fn triage_report(report: &Triage) -> &'static str {
-    if !report.instrumented || !report.tool_ok { "infrastructure" } else if report.finding { "failed" } else { "passed" }
+    if report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || !report.instrumented || !report.tool_ok { "infrastructure" } else if report.finding { "failed" } else { "passed" }
 }
 #[test]
-fn triage_distinguishes_tool_failure_from_oracle_finding() {
-    assert_eq!(triage_report(&Triage { instrumented: false, tool_ok: true, finding: true }), "infrastructure");
-    assert_eq!(triage_report(&Triage { instrumented: true, tool_ok: false, finding: false }), "infrastructure");
-    assert_eq!(triage_report(&Triage { instrumented: true, tool_ok: true, finding: true }), "failed");
-    assert_eq!(triage_report(&Triage { instrumented: true, tool_ok: true, finding: false }), "passed");
+fn triage_distinguishes_hash_mismatch_tool_failure_and_oracle_finding() {
+    let good = ("archive-a", "manifest-a");
+    assert_eq!(triage_report(&Triage { archive_hash: "stale", expected_archive_hash: "archive-a", manifest_hash: "manifest-a", expected_manifest_hash: "manifest-a", instrumented: true, tool_ok: true, finding: true }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: false, tool_ok: true, finding: true }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: false, finding: false }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: true }), "failed");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: false }), "passed");
 }`,
   taggedRetrieval: String.raw`fn decode_tagged(bytes: &[u8]) -> Option<(&[u8], &[u8])> {
     let (&tag, rest) = bytes.split_first()?;
@@ -177,9 +199,11 @@ fn tagged_decoder_checks_tag_length_and_remainder() {
   duplicateRetrieval: String.raw`fn compare_duplicate_rows(actual: &[(usize, String, bool)], expected: &[(usize, String, bool)]) -> bool { actual == expected }
 #[test]
 fn duplicate_retrieval_preserves_every_field_and_order() {
-    let expected = vec![(1, "ax".to_owned(), true), (1, "ax".to_owned(), true)];
+    let expected = vec![(1, "ax".to_owned(), true), (2, "bx".to_owned(), false)];
     assert!(compare_duplicate_rows(&expected, &expected));
     assert!(!compare_duplicate_rows(&[(1, "ax".to_owned(), true)], &expected));
+    assert!(!compare_duplicate_rows(&[(2, "bx".to_owned(), false), (1, "ax".to_owned(), true)], &expected));
+    assert!(!compare_duplicate_rows(&[(1, "wrong".to_owned(), true), (2, "bx".to_owned(), false)], &expected));
 }`,
   frameRetrieval: String.raw`fn retain_named_failure(original: &[u8], candidate: &[u8], failure: &str) -> Vec<u8> {
     if candidate.len() < original.len() && failure == "SelectionMismatch" { candidate.to_vec() } else { original.to_vec() }
@@ -206,15 +230,15 @@ export const fuzzEvidenceAssessmentFixtures = {
   "fuzz-input-domain-blank": { reference: fuzzEvidenceRustReferences.inputDomainBlank, mutant: fuzzEvidenceRustReferences.inputDomainBlank.replace("bytes.len() >= length + 1", "bytes.len() >= 1") },
   "fuzz-oracle-sensitivity-gate": { reference: fuzzEvidenceRustReferences.oracle, mutant: fuzzEvidenceRustReferences.oracle.replace("actual == expected", "actual.len() == expected.len()") },
   "fuzz-oracle-sensitivity-blank": { reference: fuzzEvidenceRustReferences.oracleBlank, mutant: fuzzEvidenceRustReferences.oracleBlank.replace("actual == expected", "actual.len() == expected.len()") },
-  "fuzz-counterexample-regression-gate": { reference: fuzzEvidenceRustReferences.reducer, mutant: fuzzEvidenceRustReferences.reducer.replace("*class == \"SelectionMismatch\"", "*class == \"Timeout\"") },
+  "fuzz-counterexample-regression-gate": { reference: fuzzEvidenceRustReferences.reducer, mutant: fuzzEvidenceRustReferences.reducer.replace("candidate.failure == \"SelectionMismatch\"", "candidate.failure == \"Timeout\"") },
   "fuzz-counterexample-regression-blank": { reference: fuzzEvidenceRustReferences.reducerBlank, mutant: fuzzEvidenceRustReferences.reducerBlank.replace("failure_class == \"LengthMismatch\"", "failure_class == \"Timeout\"") },
-  "fuzz-campaign-evidence-gate": { reference: fuzzEvidenceRustReferences.campaign, mutant: fuzzEvidenceRustReferences.campaign.replace("if !dossier.instrumented || !dossier.normal || dossier.runs < 1000 { return \"infrastructure\"; }", "if dossier.runs > 0 { return \"passed\"; }") },
-  "fuzz-campaign-evidence-blank": { reference: fuzzEvidenceRustReferences.campaignBlank, mutant: fuzzEvidenceRustReferences.campaignBlank.replace("!report.instrumented || !report.tool_ok", "false") },
+  "fuzz-campaign-evidence-gate": { reference: fuzzEvidenceRustReferences.campaign, mutant: fuzzEvidenceRustReferences.campaign.replace("dossier.run_id != current_run || dossier.archive_hash != current_archive || dossier.manifest_hash != current_manifest", "false") },
+  "fuzz-campaign-evidence-blank": { reference: fuzzEvidenceRustReferences.campaignBlank, mutant: fuzzEvidenceRustReferences.campaignBlank.replace("report.archive_hash != report.expected_archive_hash ||", "false ||") },
 };
 
 export const fuzzEvidenceRetrievalFixtures = {
-  "fuzz-input-domain": { reference: fuzzEvidenceRustReferences.taggedRetrieval, mutant: fuzzEvidenceRustReferences.taggedRetrieval.replace("tag == 7 && payload.len() >= length as usize", "payload.len() >= length as usize") },
-  "fuzz-oracle-sensitivity": { reference: fuzzEvidenceRustReferences.duplicateRetrieval, mutant: fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.len() == expected.len()") },
-  "fuzz-counterexample-regression": { reference: fuzzEvidenceRustReferences.frameRetrieval, mutant: fuzzEvidenceRustReferences.frameRetrieval.replace("failure == \"SelectionMismatch\"", "failure == \"Timeout\"") },
-  "fuzz-campaign-evidence": { reference: fuzzEvidenceRustReferences.dossierRetrieval, mutant: fuzzEvidenceRustReferences.dossierRetrieval.replace("if replay_only { \"failed\" }", "if false { \"failed\" }") },
+  "fuzz-input-domain": { reference: fuzzEvidenceRustReferences.taggedRetrieval, mutants: [fuzzEvidenceRustReferences.taggedRetrieval.replace("tag == 7 &&", "true &&"), fuzzEvidenceRustReferences.taggedRetrieval.replace("payload.len() >= length as usize", "payload.len() >= 0")] },
+  "fuzz-oracle-sensitivity": { reference: fuzzEvidenceRustReferences.duplicateRetrieval, mutants: [fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.len() == expected.len()"), fuzzEvidenceRustReferences.duplicateRetrieval.replace("actual == expected", "actual.iter().zip(expected).all(|(a, b)| a.0 == b.0)")] },
+  "fuzz-counterexample-regression": { reference: fuzzEvidenceRustReferences.frameRetrieval, mutants: [fuzzEvidenceRustReferences.frameRetrieval.replace("failure == \"SelectionMismatch\"", "failure == \"Timeout\"")] },
+  "fuzz-campaign-evidence": { reference: fuzzEvidenceRustReferences.dossierRetrieval, mutants: [fuzzEvidenceRustReferences.dossierRetrieval.replace("if replay_only { \"failed\" }", "if false { \"failed\" }")] },
 };

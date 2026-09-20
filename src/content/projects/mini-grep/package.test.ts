@@ -30,6 +30,7 @@ describe("Mini grep archive contract", () => {
         "fuzz/support/check.rs",
         "tests/fuzz_regressions.rs",
         "fuzz/regressions/substring-prefix.seed",
+        "fuzz/regressions/substring-prefix-padded.seed",
       ]),
     );
     expect(reference["Cargo.toml"]).toContain('edition = "2024"');
@@ -54,6 +55,9 @@ describe("Mini grep archive contract", () => {
       expect(files["FUZZ-EVIDENCE.md"]).toContain("Replay and campaign");
       expect(files["fuzz/support/check.rs"]).toContain("FailureKind");
       expect(files["tests/fuzz_regressions.rs"]).toContain("substring_prefix_witness");
+      expect([...new TextEncoder().encode(files["fuzz/regressions/substring-prefix-padded.seed"])]).toEqual([
+        0, 0, 1, 120, 112, 97, 100, 100, 105, 110, 103, 10, 97, 120, 10,
+      ]);
     }
     expect(projectFiles(miniGrepPackage, "solution")["Cargo.toml"]).not.toContain(
       "libfuzzer-sys",

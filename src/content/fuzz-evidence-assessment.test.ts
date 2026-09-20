@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import { appendHiddenTests } from "../runner";
 import { lessons, reviewExercises } from "./course";
-import { fuzzEvidenceAssessmentFixtures, decodeCase, compareOutputs, chooseWitness, classifyReport } from "./fuzz-evidence-assessment-fixtures";
+import { fuzzEvidenceAssessmentFixtures, fuzzEvidenceRetrievalFixtures, decodeCase, compareOutputs, chooseWitness, classifyReport } from "./fuzz-evidence-assessment-fixtures";
 import { fuzzEvidenceLessons } from "./fuzz-evidence";
 
 const compileAndRun = (id: string, source: string, tests: string, expected: boolean) => {
@@ -50,6 +50,13 @@ it("compiles and runs every correct gate, blank and retrieval reference, then re
     expect(lessonStep?.evaluator?.kind, id).toBe("tests");
     if (!lessonStep || lessonStep.evaluator?.kind !== "tests") continue;
     compileAndRun(`${id}-mutant`, codeOf(fixture.mutant), lessonStep.evaluator.tests, false);
+  }
+  for (const [id, fixture] of Object.entries(fuzzEvidenceRetrievalFixtures)) {
+    const retrieval = retrievals.find((step) => step.id === `${id}-review`);
+    expect(retrieval?.evaluator?.kind, `${id}-retrieval`).toBe("tests");
+    if (!retrieval || retrieval.evaluator?.kind !== "tests") continue;
+    for (const [index, mutant] of fixture.mutants.entries())
+      compileAndRun(`${id}-retrieval-mutant-${index}`, codeOf(mutant), retrieval.evaluator.tests, false);
   }
 }, 45_000);
 

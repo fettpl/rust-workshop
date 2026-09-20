@@ -49,7 +49,7 @@ export type FuzzEvidenceReport = {
   };
   mutantReplay: { status: FuzzPhaseStatus; failureKind: string };
   restoredReplay: { status: FuzzPhaseStatus; failureKind: string };
-  stableRegression: { status: FuzzPhaseStatus; toolchain: string; sha256: string };
+  stableRegression: { status: FuzzPhaseStatus; toolchain: "1.85.0"; channel: "stable"; sha256: string };
   phaseErrors: string[];
   limitations: string[];
 };
@@ -75,6 +75,7 @@ export function validateFuzzEvidenceReport(
   if (value.schemaVersion !== 1) errors.push("schemaVersion must be 1");
   for (const field of ["runId", "target", "toolchain", "host"] as const)
     if (typeof value[field] !== "string" || !value[field]?.trim()) errors.push(`missing ${field}`);
+  if (typeof value.runId === "string" && !/^[A-Za-z0-9._-]+$/.test(value.runId)) errors.push("runId contains unsafe path characters");
   for (const field of ["archiveSha256", "manifestSha256"] as const)
     if (typeof value[field] !== "string" || !sha256.test(value[field])) errors.push(`invalid ${field}`);
   if (value.toolchain !== "nightly-2026-08-08") errors.push("toolchain is not the reviewed nightly");
@@ -85,7 +86,9 @@ export function validateFuzzEvidenceReport(
   if (!campaign || typeof campaign.observedRuns !== "number" || campaign.observedRuns < 0 || typeof campaign.instrumentation !== "boolean" || typeof campaign.normalCompletion !== "boolean" || typeof campaign.replayOnly !== "boolean") errors.push("incomplete reference campaign");
   if (campaign && !["passed", "failed", "infrastructure"].includes(campaign.status)) errors.push("invalid reference campaign status");
   if (campaign?.replayOnly) errors.push("replay-only report cannot satisfy campaign evidence");
+  if (campaign?.status === "passed" && (campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || campaign.replayOnly)) errors.push("passed campaign lacks minimum instrumented normal runs");
   if (typeof value.observedExecutions !== "number" || !Number.isInteger(value.observedExecutions) || value.observedExecutions < 0) errors.push("observedExecutions must be a non-negative integer");
+  if (campaign && value.bounds && (campaign.observedRuns > value.bounds.maxRuns || (value.observedExecutions ?? -1) > value.bounds.maxRuns || value.observedExecutions !== campaign.observedRuns)) errors.push("campaign execution count exceeds or disagrees with bounds");
   if (!value.mutant || typeof value.mutant.identity !== "string" || !value.mutant.identity || value.mutant.assertion !== "mini-grep selection oracle mismatch") errors.push("invalid mutant identity");
   const original = value.artifacts?.original;
   const partialArtifact = value.status === "infrastructure" && original?.bytes === 0 && original.path === "" && original.sha256 === "0".repeat(64);
@@ -95,7 +98,8 @@ export function validateFuzzEvidenceReport(
       return;
     }
     if (artifact.runId !== value.runId || artifact.archiveSha256 !== value.archiveSha256 || artifact.manifestSha256 !== value.manifestSha256) errors.push(`mixed ${name} artifact identity`);
-    if (artifact.path.includes("..") || !existsSync(artifact.path) || !statSync(artifact.path).isFile()) {
+    const pathParts = artifact.path.split(/[\\/]/).filter(Boolean);
+    if (artifact.path.includes("..") || !pathParts.includes(value.runId ?? "") || !existsSync(artifact.path) || !statSync(artifact.path).isFile()) {
       errors.push(`stale ${name} artifact path`);
       return;
     }
@@ -109,12 +113,18 @@ export function validateFuzzEvidenceReport(
     validateArtifact(reduced, "reduced");
     if (original && original.bytes > 0 && reduced.bytes >= original.bytes) errors.push("reduced artifact is not smaller");
   }
-  if (!value.reduction || !Number.isInteger(value.reduction.attempts) || value.reduction.attempts < 0 || !["reduced", "unchanged", "rejected"].includes(value.reduction.status) || value.reduction.failureKind !== "SelectionMismatch") errors.push("invalid reduction evidence");
+  if (!value.reduction || !Number.isInteger(value.reduction.attempts) || value.reduction.attempts < 0 || value.reduction.attempts > 256 || !["reduced", "unchanged", "rejected"].includes(value.reduction.status) || value.reduction.failureKind !== "SelectionMismatch") errors.push("invalid reduction evidence");
+  if (value.reduction && value.reduction.status === "reduced" && (!reduced || !original || original.bytes <= 0 || reduced.bytes >= original.bytes || value.reduction.attempts < 1)) errors.push("reduced status lacks a strict reduced artifact");
+  if (value.reduction && value.reduction.status !== "reduced" && reduced) errors.push("non-reduced status cannot carry a reduced artifact");
   for (const [name, phase] of [["mutantReplay", value.mutantReplay], ["restoredReplay", value.restoredReplay]] as const) {
     if (!phase || !["passed", "failed", "infrastructure"].includes(phase.status) || typeof phase.failureKind !== "string") errors.push(`invalid ${name} phase`);
   }
+  if (value.mutant?.status === "failed" && (!value.mutantReplay || value.mutantReplay.status !== "failed" || value.mutantReplay.failureKind !== "SelectionMismatch")) errors.push("failed mutant must have a SelectionMismatch replay");
+  if (value.restoredReplay?.status === "infrastructure" && value.status === "passed") errors.push("passed report cannot have infrastructure restored replay");
+  if (value.mutantReplay && value.mutantReplay.status === "failed" && value.mutantReplay.failureKind !== "SelectionMismatch") errors.push("mutant replay failure kind must be SelectionMismatch");
+  if (value.restoredReplay && value.restoredReplay.status === "passed" && value.restoredReplay.failureKind !== "none") errors.push("restored replay pass must have failureKind none");
   if (!value.stableRegression || !["passed", "failed", "infrastructure"].includes(value.stableRegression.status)) errors.push("invalid stableRegression phase");
-  if (!value.stableRegression || !value.stableRegression.toolchain.includes("1.85") || !sha256.test(value.stableRegression.sha256)) errors.push("stable regression must identify Rust 1.85 and a hash");
+  if (!value.stableRegression || value.stableRegression.toolchain !== "1.85.0" || value.stableRegression.channel !== "stable" || !sha256.test(value.stableRegression.sha256)) errors.push("stable regression must identify exact Rust 1.85.0 stable and a hash");
   if (!Array.isArray(value.phaseErrors) || !Array.isArray(value.limitations)) errors.push("phaseErrors and limitations must be arrays");
   if (value.status === "passed" && (errors.length || (value.phaseErrors?.length ?? 0) > 0 || campaign?.status !== "passed" || campaign.observedRuns < 1000 || !campaign.instrumentation || !campaign.normalCompletion || value.mutant?.status !== "failed" || value.mutantReplay?.status !== "failed" || value.restoredReplay?.status !== "passed" || value.stableRegression?.status !== "passed")) errors.push("passed report lacks completed evidence phases");
   return [...new Set(errors)];

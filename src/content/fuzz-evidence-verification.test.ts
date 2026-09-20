@@ -1,17 +1,22 @@
 import { createHash } from "node:crypto";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, expect, it } from "vitest";
 import { reduceWitness, validateEvidenceReport } from "../../scripts/fuzz-evidence";
 
 const reportFixtures = mkdtempSync(join(tmpdir(), "fuzz-report-fixtures-"));
-const originalPath = join(reportFixtures, "original.seed");
-const reducedPath = join(reportFixtures, "reduced.seed");
+const reportRunDirectory = join(reportFixtures, "run-authored-1");
+mkdirSync(reportRunDirectory);
+const originalPath = join(reportRunDirectory, "original.seed");
+const reducedPath = join(reportRunDirectory, "reduced.seed");
+const otherRunPath = join(reportFixtures, "run-other", "same-bytes.seed");
 const originalBytes = Buffer.from("ABCDE");
 const reducedBytes = Buffer.from("BC");
 writeFileSync(originalPath, originalBytes);
 writeFileSync(reducedPath, reducedBytes);
+mkdirSync(join(reportFixtures, "run-other"));
+writeFileSync(otherRunPath, originalBytes);
 const hash = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 afterAll(() => rmSync(reportFixtures, { recursive: true, force: true }));
 
@@ -32,7 +37,7 @@ const validReport = () => ({
   reduction: { attempts: 4, status: "reduced", failureKind: "SelectionMismatch" },
   mutantReplay: { status: "failed", failureKind: "SelectionMismatch" },
   restoredReplay: { status: "passed", failureKind: "none" },
-  stableRegression: { status: "passed", toolchain: "rustc 1.85.0", sha256: "e".repeat(64) },
+  stableRegression: { status: "passed", toolchain: "1.85.0", channel: "stable", sha256: "e".repeat(64) },
   phaseErrors: [],
   limitations: ["finite campaign"],
 });
@@ -93,9 +98,16 @@ it("rejects malformed, stale and replay-only reports", () => {
     (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, path: join(reportFixtures, "missing.seed") } } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, reduced: { ...report.artifacts.reduced!, sha256: "f".repeat(64) } } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, runId: "other-run" } } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, artifacts: { ...report.artifacts, original: { ...report.artifacts.original, path: otherRunPath } } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, toolchain: "stable" }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, observedExecutions: 20001 }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, attempts: 257 } }),
     (report: ReturnType<typeof validReport>) => ({ ...report, phaseErrors: ["restored replay failed"] }),
     (report: ReturnType<typeof validReport>) => ({ ...report, mutantReplay: { status: "passed", failureKind: "none" } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, mutantReplay: { status: "infrastructure", failureKind: "SelectionMismatch" } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, restoredReplay: { status: "passed", failureKind: "SelectionMismatch" } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, restoredReplay: { status: "failed", failureKind: "ReaderMismatch" } }),
+    (report: ReturnType<typeof validReport>) => ({ ...report, reduction: { ...report.reduction, status: "reduced" }, artifacts: { original: report.artifacts.original } }),
   ]) expect(() => validateEvidenceReport(mutate(validReport()))).toThrow();
 });
 
@@ -117,7 +129,7 @@ it("accepts an explicit infrastructure report without inventing an artifact", ()
     reduction: { attempts: 0, status: "unchanged", failureKind: "SelectionMismatch" },
     mutantReplay: { status: "infrastructure", failureKind: "SelectionMismatch" },
     restoredReplay: { status: "infrastructure", failureKind: "none" },
-    stableRegression: { status: "infrastructure", toolchain: "rustc 1.85.0", sha256: "0".repeat(64) },
+    stableRegression: { status: "infrastructure", toolchain: "1.85.0", channel: "stable", sha256: "0".repeat(64) },
     phaseErrors: [],
     limitations: ["cargo-fuzz unavailable"],
   })).not.toThrow();

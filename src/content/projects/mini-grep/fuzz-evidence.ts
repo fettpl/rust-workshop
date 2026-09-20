@@ -24,9 +24,10 @@ export const miniGrepFuzzEvidenceManifest = {
 
 export const miniGrepFuzzEvidenceDocumentation = `# Mini grep fuzz evidence
 
-The authored harness decodes a three-byte binary header, preserves raw body bytes, and uses an independent distance/mask oracle. A stable regression replays \`fuzz/regressions/substring-prefix.seed\`; the nightly campaign is a bounded observation, not proof of no bugs.
+The authored harness decodes a three-byte binary header, preserves raw body bytes, and uses an independent distance/mask oracle. Stable regression tests replay both \`substring-prefix.seed\` and the padded witness \`substring-prefix-padded.seed\`; the verifier reduces and replays the padded witness through the controlled SelectionMismatch mutant. The nightly campaign is a bounded observation, not proof of no bugs.
 
 Replay and campaign are separate operations. The verifier records archive and manifest hashes, toolchain, host, observed runs, raw logs, corpus, reducer attempts, and limitations. Missing instrumentation, stale identity, timeout, and compile errors are infrastructure or failed evidence.
 `;
 
 export const miniGrepFuzzRegressionSeed = String.fromCharCode(0, 0, 1) + "xax\n";
+export const miniGrepFuzzPaddedRegressionSeed = String.fromCharCode(0, 0, 1) + "xpadding\nax\n";

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules, projects } from "../../src/content/course";
 
 test("fuzz evidence keeps prediction, mocked success, reveal, independent blank and exact resume", async ({ page }) => {
   const errors: string[] = [];
@@ -31,13 +31,54 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   const draft = `${gate.code}\n// Prediction recorded before the authored run.\n`;
   await editor.fill(draft);
   await page.route("**/api/run", async (route) => {
-    expect(route.request().postDataJSON()).toEqual({ code: draft, mode: "test", tests: gate.evaluator?.kind === "tests" ? gate.evaluator.tests : undefined });
+    const request = route.request().postDataJSON();
+    if (request.code === draft)
+      expect(request).toEqual({ code: draft, mode: "test", tests: gate.evaluator?.kind === "tests" ? gate.evaluator.tests : undefined });
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "success", stdout: "test result: ok", stderr: "", diagnostics: [], durationMs: 1, tests: { passed: 1, failed: 0 } }) });
   });
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
+  await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  const masteryBeforeReveal = await page.evaluate(async () => {
+    const request = indexedDB.open("rust-workshop-state", 1);
+    return await new Promise<Record<string, unknown>>((resolve, reject) => {
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const transaction = request.result.transaction("user-state", "readonly");
+        const get = transaction.objectStore("user-state").get("current");
+        get.onsuccess = () => resolve((get.result?.mastery ?? {}) as Record<string, unknown>);
+        get.onerror = () => reject(get.error);
+      };
+    });
+  });
   await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
   await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
+  const project = projects.find((item) => item.id === "mini-grep")!;
+  await page.getByRole("button", { name: "Projekt", exact: true }).click();
+  await page.getByRole("navigation", { name: "Wybierz projekt" }).getByRole("button", { name: project.title }).click();
+  const packagePanel = page.getByRole("region", { name: "Pakiet Cargo" });
+  await packagePanel.getByRole("button", { name: "Pokaż rozwiązanie pakietu" }).click();
+  const downloadStarted = page.waitForEvent("download");
+  await packagePanel.getByRole("link", { name: "Pobierz rozwiązanie" }).click();
+  const archive = await downloadStarted;
+  expect(await archive.failure()).toBeNull();
+  expect(archive.suggestedFilename()).toBe("mini-grep-workshop-solution.zip");
+  const masteryAfterReveal = await page.evaluate(async () => {
+    const request = indexedDB.open("rust-workshop-state", 1);
+    return await new Promise<Record<string, unknown>>((resolve, reject) => {
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const transaction = request.result.transaction("user-state", "readonly");
+        const get = transaction.objectStore("user-state").get("current");
+        get.onsuccess = () => resolve((get.result?.mastery ?? {}) as Record<string, unknown>);
+        get.onerror = () => reject(get.error);
+      };
+    });
+  });
+  expect(masteryAfterReveal[primary.conceptIds[0]]).toEqual(masteryBeforeReveal[primary.conceptIds[0]]);
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(stage.title);
+  await page.locator(".module-picker > button").filter({ hasText: stage.title }).click();
   await page.getByRole("button", { name: stage.title, exact: true }).click();
   await page.locator(".gate-action").first().click();
   await page.getByLabel("Kroki lekcji").getByRole("button", { name: blank.title }).click();
@@ -45,6 +86,8 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await expect(blankEditor).toHaveValue("");
   const blankDraft = "// Independent fuzz contract draft.\n";
   await blankEditor.fill(blankDraft);
+  await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
   await page.getByText("Twój notatnik", { exact: true }).click();
   await page.getByLabel("Notatki do lekcji").fill("Prediction, replay and blank stay separate.");
   await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();

@@ -2,6 +2,7 @@ import type { ProjectPackage } from "../../../domain/types";
 import {
   miniGrepFuzzEvidenceDocumentation,
   miniGrepFuzzEvidenceManifest,
+  miniGrepFuzzPaddedRegressionSeed,
   miniGrepFuzzRegressionSeed,
 } from "./fuzz-evidence";
 
@@ -200,6 +201,12 @@ fn substring_prefix_witness_is_exact_and_replays_selection_mismatch() {
 }
 
 #[test]
+fn padded_substring_prefix_witness_is_an_executable_regression() {
+    let bytes = [0u8, 0, 1, b'x', b'p', b'a', b'd', b'd', b'i', b'n', b'g', b'\n', b'a', b'x', b'\n'];
+    assert_eq!(check::check(&bytes), Ok(()));
+}
+
+#[test]
 fn boundary_vectors_remain_typed() {
     assert!(case::decode(&[0, 0]).is_none());
     assert_eq!(check::check(&[0, 0, 0]), Ok(()));
@@ -388,6 +395,10 @@ export const miniGrepFuzzFiles: ProjectPackage["files"] = [
   {
     path: "fuzz/regressions/substring-prefix.seed",
     starter: miniGrepFuzzRegressionSeed,
+  },
+  {
+    path: "fuzz/regressions/substring-prefix-padded.seed",
+    starter: miniGrepFuzzPaddedRegressionSeed,
   },
   ...[
     ["substring", corpusSeed(0, "beta", "alphabetagamma\n")],
