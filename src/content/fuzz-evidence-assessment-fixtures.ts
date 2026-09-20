@@ -125,6 +125,17 @@ fn bounded_frame_and_duplicate_selection_are_part_of_the_contract() {
     assert_eq!(frame.context, 0);
     assert_eq!(frame.query, "a");
     assert_eq!(frame.body, &[0xff, b'z']);
+    let clamped = decode_frame(&[255, 0xff, 0xff, b'a', 0xff]).expect("clamped query");
+    assert_eq!(clamped.query, "a�");
+    assert!(clamped.body.is_empty());
+    let invalid_query = decode_frame(&[255, 0, 2, b'a', 0xff, 0xff]).expect("lossy query");
+    assert_eq!(invalid_query.context, 15);
+    assert_eq!(invalid_query.query, "a�");
+    assert_eq!(invalid_query.body, &[0xff]);
+    let at_limit = vec![0u8; 4096];
+    let at_limit = decode_frame(&at_limit).expect("4096-byte frame");
+    assert_eq!(at_limit.context, 0);
+    assert_eq!(at_limit.body.len(), 4093);
     assert!(decode_frame(&[0, 0]).is_none());
     let oversize = vec![0u8; 4097];
     assert!(decode_frame(&oversize).is_none());
@@ -250,7 +261,13 @@ export const fuzzEvidenceAssessmentFixtures = {
   "fuzz-oracle-sensitivity-blank": {
     reference: fuzzEvidenceRustReferences.oracleBlank,
     mutant: fuzzEvidenceRustReferences.oracleBlank.replace("bytes.len() < 3 || bytes.len() > 4096", "bytes.len() < 2"),
-    mutants: [fuzzEvidenceRustReferences.oracleBlank.replace("actual == expected", "actual.len() == expected.len()")],
+    mutants: [
+      fuzzEvidenceRustReferences.oracleBlank.replace("bytes.len() > 4096", "bytes.len() > 64"),
+      fuzzEvidenceRustReferences.oracleBlank.replace(".min(bytes.len() - 3)", ""),
+      fuzzEvidenceRustReferences.oracleBlank.replace("String::from_utf8_lossy(&bytes[3..3 + query_len]).into_owned()", "String::from_utf8(bytes[3..3 + query_len].to_vec()).expect(\"valid query\")"),
+      fuzzEvidenceRustReferences.oracleBlank.replace("bytes[0] % 20", "bytes[0]"),
+      fuzzEvidenceRustReferences.oracleBlank.replace("actual == expected", "actual.len() == expected.len()"),
+    ],
   },
   "fuzz-counterexample-regression-gate": { reference: fuzzEvidenceRustReferences.reducer, mutant: fuzzEvidenceRustReferences.reducer.replace("candidate.failure == \"SelectionMismatch\"", "candidate.failure == \"Timeout\"") },
   "fuzz-counterexample-regression-blank": { reference: fuzzEvidenceRustReferences.reducerBlank, mutant: fuzzEvidenceRustReferences.reducerBlank.replace("failure_class == \"LengthMismatch\"", "failure_class == \"Timeout\"") },
