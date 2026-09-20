@@ -93,16 +93,24 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
   await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(stage.title);
   await page.locator(".module-picker > button").filter({ hasText: stage.title }).click();
-  await page.locator(".gate-action").first().click();
+  await page.locator(".lesson-list-item").filter({ hasText: primary.title }).click();
   await page.getByLabel("Kroki lekcji").getByRole("button").nth(gateIndex).click();
   await page.getByRole("textbox", { name: "Kod Rust", exact: true }).fill(gate.solution!);
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
   await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  const assistedEventsFor = async () => {
+    const state = await readLearningState();
+    return state.events.slice(stateAfterReveal.events.length).filter(
+      (event) =>
+        event.lessonId === primary.id &&
+        event.stepId === gate.id &&
+        event.kind !== "exposure",
+    );
+  };
+  await expect.poll(assistedEventsFor).toHaveLength(1);
   const stateAfterAssistedPrimary = await readLearningState();
-  const assistedEvents = stateAfterAssistedPrimary.events.slice(stateAfterReveal.events.length).filter(
-    (event) => event.lessonId === primary.id && event.stepId === gate.id,
-  );
+  const assistedEvents = await assistedEventsFor();
   expect(assistedEvents).toHaveLength(1);
   const assistedEvent = assistedEvents[0];
   expect(assistedEvent).toMatchObject({ passed: true, hints: 2, revealed: true });
