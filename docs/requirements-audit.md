@@ -1,6 +1,6 @@
 # Alignment with the original brief
 
-Current catalog counts: 175 lessons, 45 modules, 178 concepts, 130 blank-page tasks, 318 sources, and 13 Cargo projects. The fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks, and four independent code-evaluated reviews. The reviewed implementation includes `d87ff77`; its assessment fixtures execute isolated replay, regression, oracle-text and dossier phase mutants, while report validation requires current file hashes and matching run provenance. Release remains Hold until the broader evidence requirements are complete.
+Current catalog counts: 175 lessons, 45 modules, 178 concepts, 130 blank-page tasks, 318 sources, and 13 Cargo projects. The fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks, and four independent code-evaluated reviews. The reviewed implementation includes `d87ff77f617058c3fe4bca5876dada3c68a2f64d`; its assessment fixtures execute isolated replay, regression, oracle-text and dossier phase mutants, while report validation requires current file hashes and matching run provenance. Release remains Hold until the broader evidence requirements are complete.
 
 ## Current work: bounded capstone integration
 
