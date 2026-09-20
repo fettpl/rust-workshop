@@ -30,17 +30,22 @@ const codeOf = (reference: string) => reference.slice(0, reference.indexOf("\n#[
 it("publishes the learner-facing Rust signatures without hiding the contract", () => {
   const gates = fuzzEvidenceLessons.flatMap((lesson) => lesson.steps.filter((step) => step.evidenceGate));
   const input = gates.find((step) => step.id === "fuzz-input-domain-gate");
+  const oracle = gates.find((step) => step.id === "fuzz-oracle-sensitivity-gate");
   const oracleBlank = gates.find((step) => step.id === "fuzz-oracle-sensitivity-blank");
   const reducer = gates.find((step) => step.id === "fuzz-counterexample-regression-gate");
   const campaign = gates.find((step) => step.id === "fuzz-campaign-evidence-gate");
   expect(input?.code).toContain("struct Case<'a>");
   expect(input?.code).toContain("fn decode_case(bytes: &[u8]) -> Option<Case<'_>>");
+  expect(oracle?.code).toContain("fn same_result(");
+  expect(oracleBlank?.solution).toContain("fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>>");
+  expect(oracleBlank?.solution).toContain("bytes.len() > 64");
   expect(reducer?.code).toContain("struct Observation");
+  expect(reducer?.code).toContain("fn executable_regression(bytes: &[u8]) -> bool");
   expect(reducer?.code).toContain("fn choose_witness(original: &[u8], candidates: &[Observation])");
   expect(campaign?.code).toContain("struct Dossier");
   expect(campaign?.code).toContain("fn classify_report(dossier: &Dossier, _: &str, _: &str, _: &str)");
   expect(oracleBlank?.evaluator?.kind).toBe("tests");
-  expect(oracleBlank?.evaluator?.kind === "tests" ? oracleBlank.evaluator.tests : "").not.toContain("decode_frame");
+  expect(oracleBlank?.evaluator?.kind === "tests" ? oracleBlank.evaluator.tests : "").toContain("decode_frame");
 });
 
 it("keeps the raw-byte decoder boundary and lossy-query semantics", () => {
@@ -66,6 +71,8 @@ it("compiles and runs every correct gate, blank and retrieval reference, then re
     expect(lessonStep?.evaluator?.kind, id).toBe("tests");
     if (!lessonStep || lessonStep.evaluator?.kind !== "tests") continue;
     compileAndRun(`${id}-mutant`, codeOf(fixture.mutant), lessonStep.evaluator.tests, false);
+    for (const [index, mutant] of ("mutants" in fixture ? fixture.mutants : []).entries())
+      compileAndRun(`${id}-mutant-${index}`, codeOf(mutant), lessonStep.evaluator.tests, false);
   }
   for (const [id, fixture] of Object.entries(fuzzEvidenceRetrievalFixtures)) {
     const retrieval = retrievals.find((step) => step.id === `${id}-review`);

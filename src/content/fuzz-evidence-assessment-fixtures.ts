@@ -107,11 +107,24 @@ fn oracle_checks_order_text_match_flags_and_error_class() {
     assert!(same_result(Err("invalid-body"), Err("invalid-body")));
     assert!(!same_result(Err("invalid-body"), Ok(expected)));
 }`,
-  oracleBlank: String.raw`fn duplicate_selection_matches(actual: &[(usize, bool)], expected: &[(usize, bool)]) -> bool {
+  oracleBlank: String.raw`#[derive(Debug, PartialEq, Eq)]
+struct Frame<'a> { query: &'a [u8], body: &'a [u8] }
+fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>> {
+    if bytes.len() < 3 || bytes.len() > 64 { return None; }
+    let query_len = usize::from(u16::from_be_bytes([bytes[1], bytes[2]])).min(bytes.len() - 3);
+    Some(Frame { query: &bytes[3..3 + query_len], body: &bytes[3 + query_len..] })
+}
+fn duplicate_selection_matches(actual: &[(usize, bool)], expected: &[(usize, bool)]) -> bool {
     actual == expected
 }
 #[test]
-fn duplicate_rows_order_and_flags_are_part_of_the_contract() {
+fn bounded_frame_and_duplicate_selection_are_part_of_the_contract() {
+    let frame = decode_frame(&[0, 0, 1, b'a', 0xff, b'z']).expect("valid frame");
+    assert_eq!(frame.query, b"a");
+    assert_eq!(frame.body, &[0xff, b'z']);
+    assert!(decode_frame(&[0, 0]).is_none());
+    let oversize = vec![0u8; 65];
+    assert!(decode_frame(&oversize).is_none());
     let expected = [(1, true), (1, true), (2, false)];
     assert!(duplicate_selection_matches(&expected, &expected));
     assert!(!duplicate_selection_matches(&expected[..2], &expected));
@@ -231,7 +244,11 @@ export const fuzzEvidenceAssessmentFixtures = {
   "fuzz-input-domain-gate": { reference: fuzzEvidenceRustReferences.inputDomain, mutant: fuzzEvidenceRustReferences.inputDomain.replace("if !(3..=4096).contains(&bytes.len()) { return None; }", "if bytes.len() < 2 { return None; }") },
   "fuzz-input-domain-blank": { reference: fuzzEvidenceRustReferences.inputDomainBlank, mutant: fuzzEvidenceRustReferences.inputDomainBlank.replace("bytes.len() >= length + 1", "bytes.len() >= 1") },
   "fuzz-oracle-sensitivity-gate": { reference: fuzzEvidenceRustReferences.oracle, mutant: fuzzEvidenceRustReferences.oracle.replace("actual == expected", "actual.iter().map(|(line, text, _)| (*line, text.clone())).eq(expected.iter().map(|(line, text, _)| (*line, text.clone())))") },
-  "fuzz-oracle-sensitivity-blank": { reference: fuzzEvidenceRustReferences.oracleBlank, mutant: fuzzEvidenceRustReferences.oracleBlank.replace("actual == expected", "actual.len() == expected.len()") },
+  "fuzz-oracle-sensitivity-blank": {
+    reference: fuzzEvidenceRustReferences.oracleBlank,
+    mutant: fuzzEvidenceRustReferences.oracleBlank.replace("bytes.len() < 3 || bytes.len() > 64", "bytes.len() < 2"),
+    mutants: [fuzzEvidenceRustReferences.oracleBlank.replace("actual == expected", "actual.len() == expected.len()")],
+  },
   "fuzz-counterexample-regression-gate": { reference: fuzzEvidenceRustReferences.reducer, mutant: fuzzEvidenceRustReferences.reducer.replace("candidate.failure == \"SelectionMismatch\"", "candidate.failure == \"Timeout\"") },
   "fuzz-counterexample-regression-blank": { reference: fuzzEvidenceRustReferences.reducerBlank, mutant: fuzzEvidenceRustReferences.reducerBlank.replace("failure_class == \"LengthMismatch\"", "failure_class == \"Timeout\"") },
   "fuzz-campaign-evidence-gate": { reference: fuzzEvidenceRustReferences.campaign, mutant: fuzzEvidenceRustReferences.campaign.replace("dossier.run_id != current_run || dossier.archive_hash != current_archive || dossier.manifest_hash != current_manifest", "false") },
