@@ -1,6 +1,18 @@
 import { test, expect } from "@playwright/test";
 import { lessons, modules, projects } from "../../src/content/course";
 
+type PersistedLearningState = {
+  mastery: Record<string, unknown>;
+  events: Array<{
+    lessonId: string;
+    stepId: string;
+    kind: string;
+    passed: boolean;
+    hints: number;
+    revealed: boolean;
+  }>;
+};
+
 test("fuzz evidence keeps prediction, mocked success, reveal, independent blank and exact resume", async ({ page }) => {
   const errors: string[] = [];
   const consoleErrors: string[] = [];
@@ -44,18 +56,22 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
   await page.getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true }).click();
   await expect(page.getByText("Potrzebuję pełnego rozwiązania", { exact: true })).toBeVisible();
-  const masteryBeforeReveal = await page.evaluate(async () => {
+  const readLearningState = () => page.evaluate(async (): Promise<PersistedLearningState> => {
     const request = indexedDB.open("rust-workshop-state", 1);
-    return await new Promise<Record<string, unknown>>((resolve, reject) => {
+    return await new Promise<PersistedLearningState>((resolve, reject) => {
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const transaction = request.result.transaction("user-state", "readonly");
         const get = transaction.objectStore("user-state").get("current");
-        get.onsuccess = () => resolve((get.result?.mastery ?? {}) as Record<string, unknown>);
+        get.onsuccess = () => resolve({
+          mastery: (get.result?.mastery ?? {}) as Record<string, unknown>,
+          events: (get.result?.events ?? []) as PersistedLearningState["events"],
+        });
         get.onerror = () => reject(get.error);
       };
     });
   });
+  const stateBeforeReveal = await readLearningState();
   await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
   await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
   const project = projects.find((item) => item.id === "mini-grep")!;
@@ -68,23 +84,12 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   const archive = await downloadStarted;
   expect(await archive.failure()).toBeNull();
   expect(archive.suggestedFilename()).toBe("mini-grep-workshop-solution.zip");
-  const masteryAfterReveal = await page.evaluate(async () => {
-    const request = indexedDB.open("rust-workshop-state", 1);
-    return await new Promise<Record<string, unknown>>((resolve, reject) => {
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        const transaction = request.result.transaction("user-state", "readonly");
-        const get = transaction.objectStore("user-state").get("current");
-        get.onsuccess = () => resolve((get.result?.mastery ?? {}) as Record<string, unknown>);
-        get.onerror = () => reject(get.error);
-      };
-    });
-  });
+  const stateAfterReveal = await readLearningState();
   const stableMastery = (mastery: Record<string, unknown>) => {
     const entry = mastery[primary.conceptIds[0]] as Record<string, unknown> | undefined;
     return { level: entry?.level, reason: entry?.reason };
   };
-  expect(stableMastery(masteryAfterReveal)).toEqual(stableMastery(masteryBeforeReveal));
+  expect(stableMastery(stateAfterReveal.mastery)).toEqual(stableMastery(stateBeforeReveal.mastery));
   await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
   await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(stage.title);
   await page.locator(".module-picker > button").filter({ hasText: stage.title }).click();
@@ -94,19 +99,20 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
   await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
-  const masteryAfterAssistedPrimary = await page.evaluate(async () => {
-    const request = indexedDB.open("rust-workshop-state", 1);
-    return await new Promise<Record<string, unknown>>((resolve, reject) => {
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        const transaction = request.result.transaction("user-state", "readonly");
-        const get = transaction.objectStore("user-state").get("current");
-        get.onsuccess = () => resolve((get.result?.mastery ?? {}) as Record<string, unknown>);
-        get.onerror = () => reject(get.error);
-      };
-    });
-  });
-  expect(stableMastery(masteryAfterAssistedPrimary)).toEqual(stableMastery(masteryAfterReveal));
+  const stateAfterAssistedPrimary = await readLearningState();
+  const assistedEvents = stateAfterAssistedPrimary.events.slice(stateAfterReveal.events.length).filter(
+    (event) => event.lessonId === primary.id && event.stepId === gate.id,
+  );
+  expect(assistedEvents).toHaveLength(1);
+  const assistedEvent = assistedEvents[0];
+  expect(assistedEvent).toMatchObject({ passed: true, hints: 2, revealed: true });
+  const independent =
+    assistedEvent.passed &&
+    assistedEvent.hints === 0 &&
+    !assistedEvent.revealed &&
+    assistedEvent.kind !== "self-rating";
+  expect(independent).toBe(false);
+  expect(stableMastery(stateAfterAssistedPrimary.mastery)).toEqual(stableMastery(stateAfterReveal.mastery));
   await page.getByLabel("Kroki lekcji").getByRole("button").nth(blankIndex).click();
   const blankEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
   await expect(blankEditor).toHaveValue("");
