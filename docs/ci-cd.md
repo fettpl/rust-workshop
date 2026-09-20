@@ -34,7 +34,7 @@ anuluje starszy; trwająca kontrola `main` nie jest przerywana.
   Osobny krok wybiera katalog kompilatora przez `rustup which --toolchain 1.85.0`
   i umieszcza go na początku `PATH`, sprawdzając przykłady GAT oraz ich
   referencje, poprawne alternatywy i celowe błędne implementacje. Kontrola
-  minimalnej wersji obejmuje dzięki temu kod lekcji, a nie tylko archiwa Cargo.
+  minimalnej wersji obejmuje dzięki temu kod lekcji, a nie tylko archiwa Cargo. The same job runs the fuzz evidence assessment, integration and verification Vitest suites under exact Rust 1.85.0, plus `content:rust`.
 - `mini-grep-fuzz`: sprawdza niezależny oracle, ograniczoną kampanię libFuzzer,
   controlled bug detection and replay after restoring the reference. The job
   compares both ZIPs with the generator, runs stable replay separately from the
