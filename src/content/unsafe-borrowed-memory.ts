@@ -593,7 +593,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
           "Zaimplementuj `InvariantBorrow` z `PhantomData<&'owner mut T>` i markerem funkcji czyniącym T invariant. Outer owner lifetime może skracać się przez reborrow; nie używaj unsafe impl.",
         code: autoTraitsEquivalent.replace(
           "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
-          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();}",
+          "",
         ),
         solution: autoTraitsCanonical,
         tests: autoTraitsTests,
@@ -607,7 +607,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
           "Dodaj `assert_send` i `assert_sync` dla `InvariantBorrow<'_, u8>` oraz zachowaj mutably-borrowed marker. Sprawdź osobno, że `Cell<u8>` jest Send, lecz nie Sync.",
         code: autoTraitsSoundnessEquivalent.replace(
           "fn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();soundness_sync::<InvariantBorrow<'_,u8>>();}",
-          "fn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();}",
+          "",
         ),
         solution: autoTraitsSoundnessCanonical,
         tests: autoTraitsSoundnessTests,
@@ -630,7 +630,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         prompt: "Odtwórz positive Send/Sync bounds na innym układzie markera.",
         code: autoTraitsEquivalent.replace(
           "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
-          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();}",
+          "",
         ),
         solution: autoTraitsEquivalent,
         tests: autoTraitsTests,
@@ -657,7 +657,7 @@ export const unsafeBorrowedMemoryReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: widok właściciela",
     prompt:
-      "Zaimplementuj BorrowedBytes z innym ciałem funkcji i testem bajtów.",
+      "Zaimplementuj `BorrowedText<'owner>` z `from_text`, `words` i `raw`; zachowaj Unicode oraz pożyczone bajty.",
     code: borrowedTextReviewMutant,
     solution: borrowedTextReviewEquivalent,
     tests: borrowedTextReviewTests,

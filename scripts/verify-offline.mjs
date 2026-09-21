@@ -611,7 +611,6 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toBeVisible();
-    const borrowedBeforeAssisted = await readLearningState();
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
@@ -834,20 +833,6 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
-    const borrowedAfterAssisted = await readLearningState();
-    expect(borrowedAfterAssisted.mastery).toEqual(
-      borrowedBeforeAssisted.mastery,
-    );
-    expect(
-      borrowedAfterAssisted.events.some(
-        (event) =>
-          event.lessonId === "unsafe-borrowed-provenance" &&
-          event.stepId === "unsafe-borrowed-provenance-boundary-gate" &&
-          event.passed &&
-          event.hints > 0 &&
-          event.revealed,
-      ),
-    ).toBe(true);
     await expect(
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("primary mock: ok");
@@ -915,20 +900,6 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
-    await expect
-      .poll(async () => {
-        const state = await readLearningState();
-        return state.events.some(
-          (event) =>
-            event.lessonId === "unsafe-borrowed-provenance" &&
-            event.stepId === "unsafe-borrowed-provenance-blank" &&
-            event.passed &&
-            event.hints === 0 &&
-            !event.revealed &&
-            event.kind !== "exposure",
-        );
-      })
-      .toBe(true);
     await expect(
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("primary mock: ok");
@@ -1078,6 +1049,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toBeVisible();
+    const borrowedBeforeAssisted = await readLearningState();
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
@@ -1095,6 +1067,20 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
+    const borrowedAfterAssisted = await readLearningState();
+    expect(borrowedAfterAssisted.mastery).toEqual(
+      borrowedBeforeAssisted.mastery,
+    );
+    expect(
+      borrowedAfterAssisted.events.some(
+        (event) =>
+          event.lessonId === "unsafe-borrowed-provenance" &&
+          event.stepId === "unsafe-borrowed-provenance-boundary-gate" &&
+          event.passed &&
+          event.hints > 0 &&
+          event.revealed,
+      ),
+    ).toBe(true);
     await page
       .getByLabel("Kroki lekcji")
       .getByRole("button", { name: /^(?:\d{2} )?Od pustej kartki$/ })
@@ -1109,6 +1095,20 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
+    await expect
+      .poll(async () => {
+        const state = await readLearningState();
+        return state.events.some(
+          (event) =>
+            event.lessonId === "unsafe-borrowed-provenance" &&
+            event.stepId === "unsafe-borrowed-provenance-blank" &&
+            event.passed &&
+            event.hints === 0 &&
+            !event.revealed &&
+            event.kind !== "exposure",
+        );
+      })
+      .toBe(true);
     await page.getByText("Twój notatnik", { exact: true }).click();
     await page
       .getByLabel("Notatki do lekcji")

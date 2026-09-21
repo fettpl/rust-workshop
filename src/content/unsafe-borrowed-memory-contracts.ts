@@ -157,13 +157,13 @@ export const safeSlotSoundnessMutant = safeSlotSoundnessCanonical.replace(
 export const safeSlotSoundnessTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};#[derive(Debug)]struct Counted(Arc<AtomicUsize>);impl Drop for Counted{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
 #[test]fn duplicate_insert_and_clear_have_one_drop_each(){let drops=Arc::new(AtomicUsize::new(0));let mut cell=OwnedCell::open();cell.insert(Counted(drops.clone())).unwrap();drop(cell.insert(Counted(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(cell.remove());assert_eq!(drops.load(Ordering::SeqCst),2);cell.insert(Counted(drops.clone())).unwrap();cell.clear();assert_eq!(drops.load(Ordering::SeqCst),3);}`;
 
-export const initCellBlankCanonical = String.raw`struct InitCell<T>{value:Option<T>}
-impl<T>InitCell<T>{fn vacant()->Self{Self{value:None}}fn insert_once(&mut self,value:T)->Result<(),T>{if self.value.is_some(){Err(value)}else{self.value=Some(value);Ok(())}}fn remove(&mut self)->Option<T>{self.value.take()}fn occupied(&self)->bool{self.value.is_some()}}`;
-export const initCellBlankEquivalent = String.raw`struct InitCell<T>{value:Option<T>}
-impl<T>InitCell<T>{fn vacant()->Self{Self{value:None}}fn insert_once(&mut self,value:T)->Result<(),T>{match self.value{None=>{self.value=Some(value);Ok(())}Some(_)=>Err(value)}}fn remove(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.value,&mut out);out}fn occupied(&self)->bool{matches!(self.value,Some(_))}}`;
+export const initCellBlankCanonical = String.raw`struct InitCell<T>{value:Option<T>,occupied:bool}
+impl<T>InitCell<T>{fn vacant()->Self{Self{value:None,occupied:false}}fn insert_once(&mut self,value:T)->Result<(),T>{if self.occupied{Err(value)}else{self.value=Some(value);self.occupied=true;Ok(())}}fn remove(&mut self)->Option<T>{let out=self.value.take();self.occupied=false;out}fn occupied(&self)->bool{self.occupied}}`;
+export const initCellBlankEquivalent = String.raw`struct InitCell<T>{value:Option<T>,occupied:bool}
+impl<T>InitCell<T>{fn vacant()->Self{Self{value:None,occupied:false}}fn insert_once(&mut self,value:T)->Result<(),T>{match self.occupied{true=>Err(value),false=>{self.value=Some(value);self.occupied=true;Ok(())}}}fn remove(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.value,&mut out);self.occupied=out.is_some();self.occupied=false;out}fn occupied(&self)->bool{self.occupied}}`;
 export const initCellBlankMutant = initCellBlankCanonical.replace(
-  "if self.value.is_some(){Err(value)}else{self.value=Some(value);Ok(())}",
-  "self.value=Some(value);Ok(())",
+  "if self.occupied{Err(value)}else{self.value=Some(value);self.occupied=true;Ok(())}",
+  "self.value=Some(value);self.occupied=true;Ok(())",
 );
 export const initCellBlankTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};#[derive(Debug)]struct DropProbe(Arc<AtomicUsize>);impl Drop for DropProbe{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
 #[test]fn insert_remove_and_duplicate_are_exact(){let drops=Arc::new(AtomicUsize::new(0));let mut cell=InitCell::vacant();cell.insert_once(DropProbe(drops.clone())).unwrap();assert!(cell.occupied());drop(cell.insert_once(DropProbe(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(cell.remove());assert!(!cell.occupied());assert_eq!(drops.load(Ordering::SeqCst),2);}`;
@@ -192,6 +192,7 @@ fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<Invar
 export const autoTraitsMutant = `${autoTraitsCanonical}
 unsafe impl<'owner,T> Sync for InvariantBorrow<'owner,T>{}`;
 export const autoTraitsTests = String.raw`#[test]fn positive_bounds_compile(){positive_bounds();}
+#[test]fn sync_bound_is_explicit(){assert_sync::<InvariantBorrow<'_,u8>>();}
 #[test]fn mutable_borrow_is_operational(){let mut v=8;let b=InvariantBorrow::from_mut(&mut v);assert_eq!(*b.get(),8);}
 #[test]fn cell_is_send_but_not_sync_in_the_client_contract(){use std::cell::Cell;assert_send::<InvariantBorrow<'_,Cell<u8>>>();}`;
 

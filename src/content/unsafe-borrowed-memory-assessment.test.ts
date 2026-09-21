@@ -9,6 +9,10 @@ import {
   unsafeBorrowedMemoryCompileFailFixtures,
 } from "./unsafe-borrowed-memory-assessment-fixtures";
 import { invariantVarianceMutant } from "./unsafe-borrowed-memory-contracts";
+import {
+  unsafeBorrowedMemoryLessons,
+  unsafeBorrowedMemoryReviewExercises,
+} from "./unsafe-borrowed-memory";
 
 const fixtureById = (id: string) =>
   unsafeBorrowedMemoryAssessmentFixtures.find((fixture) => fixture.id === id)!;
@@ -211,4 +215,51 @@ it("keeps primary, blank, and review fixtures materially independent", () => {
     expect(new Set(fixtures.map((fixture) => fixture.tests)).size).toBe(3);
     expect(new Set(fixtures.map((fixture) => fixture.mutant)).size).toBe(3);
   }
+});
+
+it("keeps published auto-trait starters incomplete until learner edits", () => {
+  const lesson = unsafeBorrowedMemoryLessons.find(
+    (entry) => entry.id === "unsafe-borrowed-auto-traits",
+  )!;
+  for (const id of [
+    "unsafe-borrowed-auto-traits-boundary-gate",
+    "unsafe-borrowed-auto-traits-soundness-gate",
+    "unsafe-borrowed-auto-traits-recall",
+  ]) {
+    const step = lesson.steps.find((entry) => entry.id === id)!;
+    if (step.evaluator?.kind !== "tests")
+      throw new Error(`${id} lacks test evaluator`);
+    const directory = mkdtempSync(
+      join(tmpdir(), "unsafe-borrowed-memory-starter-"),
+    );
+    try {
+      const file = join(directory, `${id}.rs`);
+      const binary = join(directory, id);
+      writeFileSync(file, appendHiddenTests(step.code!, step.evaluator.tests));
+      const compiled = spawnSync(
+        "rustc",
+        ["--edition=2024", "--test", file, "-o", binary],
+        { cwd: directory, encoding: "utf8" },
+      );
+      if (compiled.status === 0) {
+        const executed = spawnSync(binary, ["--test-threads=1"], {
+          cwd: directory,
+          encoding: "utf8",
+        });
+        expect(executed.status, `${id} starter unexpectedly passes`).not.toBe(
+          0,
+        );
+      } else
+        expect(
+          compiled.status,
+          `${id} starter must require learner edits`,
+        ).not.toBe(0);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
+  const review =
+    unsafeBorrowedMemoryReviewExercises["unsafe-borrowed-auto-traits-contract"];
+  expect(review.code).not.toContain("unsafe impl");
+  expect(review.code).not.toContain("reattach<'short>");
 });

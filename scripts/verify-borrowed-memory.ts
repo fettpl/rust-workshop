@@ -42,6 +42,11 @@ export interface BorrowedMemoryReport {
     id: string;
     status: BorrowedMemoryPhaseStatus;
     diagnostic?: string;
+    command: string[];
+    stdout: string;
+    stderr: string;
+    exitCode: number | null;
+    signal: string | null;
   }[];
   artifactPaths: string[];
   artifactHashes: Record<string, string>;
@@ -71,6 +76,7 @@ const sha256 = (value: string | Uint8Array) =>
   createHash("sha256").update(value).digest("hex");
 let executionCount = 0;
 let budgetUsedMs = 0;
+let executionDeadline = 0;
 
 export function parseBorrowedMemoryMode(args: string[]): BorrowedMemoryMode {
   if (args.length === 0) return "stable";
@@ -255,6 +261,17 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
       )
     )
       throw new Error("Miri evidence is incomplete");
+    if (
+      report.miriChecks.some(
+        (check) =>
+          !Array.isArray(check.command) ||
+          typeof check.stdout !== "string" ||
+          typeof check.stderr !== "string" ||
+          (check.exitCode !== null && !Number.isInteger(check.exitCode)) ||
+          (check.signal !== null && typeof check.signal !== "string"),
+      )
+    )
+      throw new Error("Miri raw command evidence is incomplete");
   } else if (report.miriChecks.length)
     throw new Error("non-Miri report contains Miri evidence");
   return true;
@@ -266,6 +283,8 @@ function command(
   cwd: string,
   timeout = 120_000,
 ) {
+  if (executionDeadline && Date.now() >= executionDeadline)
+    throw new Error("total verifier budget exhausted before subprocess");
   executionCount += 1;
   const started = Date.now();
   const result = spawnSync(executable, args, {
@@ -275,6 +294,8 @@ function command(
     maxBuffer: 4 * 1024 * 1024,
   });
   budgetUsedMs += Date.now() - started;
+  if (executionDeadline && Date.now() > executionDeadline)
+    throw new Error("total verifier budget exhausted after subprocess");
   return result;
 }
 
@@ -522,6 +543,19 @@ function runMiri(report: BorrowedMemoryReport) {
           id: `${fixture.id}:${variant}`,
           status: "passed",
           diagnostic: fixture.expectedDiagnostic,
+          command: [
+            "rustup",
+            "run",
+            MIRI_TOOLCHAIN,
+            "cargo",
+            "miri",
+            "run",
+            "--quiet",
+          ],
+          stdout: executed.stdout ?? "",
+          stderr: executed.stderr ?? "",
+          exitCode: executed.status,
+          signal: executed.signal ?? null,
         });
       }
     }
@@ -562,6 +596,11 @@ export function runBorrowedMemoryVerification(
   const report = buildBorrowedMemoryReport(mode);
   executionCount = 0;
   budgetUsedMs = 0;
+  executionDeadline =
+    Date.now() +
+    BUDGETS.compileTimeoutMs +
+    BUDGETS.testTimeoutMs +
+    BUDGETS.miriTimeoutMs;
   try {
     if (mode === "miri") runMiri(report);
     else runSafe(mode, report);
