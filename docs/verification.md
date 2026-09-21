@@ -6,7 +6,7 @@ The borrowed-memory milestone keeps learner-safe browser contracts separate from
 
 ## Borrowed-memory exact-head record
 
-The current borrowed-memory implementation evidence is recorded at exact implementation head `f995104` on `feat/soundness-borrowed-memory`. Focused borrowed-memory checks pass 13/13, typecheck/content checks pass, and stable plus exact Rust 1.85.0 verifier runs pass with 145 bounded subprocesses each. Pinned nightly Miri and browser/offline execution remain environment-limited; no unrun CI or local browser result is claimed. Release remains Hold.
+The current borrowed-memory implementation evidence is recorded at exact implementation head `a32ac61` on `feat/soundness-borrowed-memory`. Focused borrowed-memory checks pass 13/13, typecheck/content checks pass, and stable plus exact Rust 1.85.0 verifier runs pass with 188 bounded subprocesses each, including rustfmt `--check`. Pinned nightly Miri and browser/offline execution remain environment-limited; no unrun CI or local browser result is claimed. Release remains Hold.
 
 ## Fuzz evidence lifecycle
 
