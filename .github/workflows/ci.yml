@@ -345,7 +345,7 @@ jobs:
           components: rustfmt, clippy${{ matrix.mode == 'miri' && ', miri, rust-src' || '' }}
       - run: npm ci
       - name: Run authored borrowed-memory verifier
-        run: node --import tsx scripts/verify-borrowed-memory.ts ${{ matrix.args }} > borrowed-memory-${{ matrix.mode }}.json
+        run: BORROWED_MEMORY_ARTIFACT_DIR=borrowed-memory-artifacts node --import tsx scripts/verify-borrowed-memory.ts ${{ matrix.args }} > borrowed-memory-${{ matrix.mode }}.json
       - name: Check Rust tool metadata
         run: rustfmt --version && cargo fmt --version && cargo clippy --version
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -353,5 +353,12 @@ jobs:
         with:
           name: unsafe-borrowed-memory-${{ matrix.mode }}
           path: borrowed-memory-${{ matrix.mode }}.json
+          if-no-files-found: warn
+          retention-days: 7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: unsafe-borrowed-memory-evidence-${{ matrix.mode }}
+          path: borrowed-memory-artifacts
           if-no-files-found: warn
           retention-days: 7

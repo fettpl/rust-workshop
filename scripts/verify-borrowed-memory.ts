@@ -31,6 +31,8 @@ export interface BorrowedMemoryReport {
     miriTimeoutMs: number;
     maxSubprocesses: number;
   };
+  executionCount: number;
+  budgetUsedMs: number;
   sourceHashes: Record<string, string>;
   fixtureHashes: Record<string, string>;
   phaseStatuses: Record<string, BorrowedMemoryPhaseStatus>;
@@ -49,17 +51,26 @@ export interface BorrowedMemoryReport {
 
 const MIRI_TOOLCHAIN = "nightly-2026-08-08";
 const MSRV_TOOLCHAIN = "1.85.0";
-const MIRI_BODY_CONTRACT =
-  "raw-valid;raw-null-range;raw-alias;raw-wrapped-range;maybe-put-take-drop;maybe-uninitialized;maybe-double-drop";
+const MIRI_BODY_CONTRACT = JSON.stringify([
+  "raw-valid:bytes=[1,2];RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)",
+  "raw-null-range:RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)",
+  "maybe-uninitialized:MaintainerSlot::<u8>::empty();drop(slot)",
+  "maybe-double-drop:MaintainerSlot::<String>::empty();put;take;take",
+  "maybe-valid:MaintainerSlot::<String>::empty();put;take;drop;put",
+  "raw-alias:fixture-main",
+  "raw-wrapped-range:fixture-main",
+]);
 const REQUIRED_PHASES = ["compile", "tests", "report"] as const;
 const BUDGETS = {
   compileTimeoutMs: 120_000,
   testTimeoutMs: 8_000,
   miriTimeoutMs: 60_000,
-  maxSubprocesses: 64,
+  maxSubprocesses: 128,
 } as const;
 const sha256 = (value: string | Uint8Array) =>
   createHash("sha256").update(value).digest("hex");
+let executionCount = 0;
+let budgetUsedMs = 0;
 
 export function parseBorrowedMemoryMode(args: string[]): BorrowedMemoryMode {
   if (args.length === 0) return "stable";
@@ -116,6 +127,7 @@ function currentAuthoredHashes() {
         JSON.stringify({
           fixtures: allFixtureHashes,
           miriBodyContract: MIRI_BODY_CONTRACT,
+          varianceMutant: sha256(invariantVarianceMutant),
         }),
       ),
     },
@@ -142,6 +154,18 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
     )
   )
     throw new Error("invalid execution budgets");
+  if (
+    !Number.isInteger(report.executionCount) ||
+    report.executionCount < 1 ||
+    report.executionCount > report.budgets.maxSubprocesses ||
+    !Number.isInteger(report.budgetUsedMs) ||
+    report.budgetUsedMs < 0 ||
+    report.budgetUsedMs >
+      report.budgets.compileTimeoutMs +
+        report.budgets.testTimeoutMs +
+        report.budgets.miriTimeoutMs
+  )
+    throw new Error("execution count or total budget is invalid");
   assertHashMap(report.sourceHashes, "sourceHashes");
   assertHashMap(report.fixtureHashes, "fixtureHashes");
   const expectedHashes = currentAuthoredHashes();
@@ -242,12 +266,16 @@ function command(
   cwd: string,
   timeout = 120_000,
 ) {
-  return spawnSync(executable, args, {
+  executionCount += 1;
+  const started = Date.now();
+  const result = spawnSync(executable, args, {
     cwd,
     encoding: "utf8",
     timeout,
     maxBuffer: 4 * 1024 * 1024,
   });
+  budgetUsedMs += Date.now() - started;
+  return result;
 }
 
 function rustcFor(toolchain: string) {
@@ -513,6 +541,8 @@ export function buildBorrowedMemoryReport(
     toolchain: expectedToolchain(mode),
     compilerVersion: "pending",
     budgets: BUDGETS,
+    executionCount: 1,
+    budgetUsedMs: 0,
     sourceHashes: hashes.sourceHashes,
     fixtureHashes: hashes.fixtureHashes,
     phaseStatuses: { compile: "pending", tests: "pending", report: "pending" },
@@ -530,6 +560,8 @@ export function runBorrowedMemoryVerification(
   mode: BorrowedMemoryMode,
 ): BorrowedMemoryReport {
   const report = buildBorrowedMemoryReport(mode);
+  executionCount = 0;
+  budgetUsedMs = 0;
   try {
     if (mode === "miri") runMiri(report);
     else runSafe(mode, report);
@@ -551,13 +583,52 @@ export function runBorrowedMemoryVerification(
     );
     report.status = mode === "miri" ? "infrastructure" : "failed";
   }
+  report.executionCount = executionCount;
+  report.budgetUsedMs = budgetUsedMs;
   if (report.status === "passed") validateBorrowedMemoryReport(report);
+  return report;
+}
+
+export function attachBorrowedMemoryEvidenceArtifact(
+  report: BorrowedMemoryReport,
+  directory: string,
+) {
+  mkdirSync(directory, { recursive: true });
+  const path = join(directory, `${report.mode}-${report.runId}.log.json`);
+  writeFileSync(
+    path,
+    JSON.stringify(
+      {
+        runId: report.runId,
+        mode: report.mode,
+        compilerVersion: report.compilerVersion,
+        phaseStatuses: report.phaseStatuses,
+        phaseErrors: report.phaseErrors,
+        sourceHashes: report.sourceHashes,
+        fixtureHashes: report.fixtureHashes,
+        compileFailChecks: report.compileFailChecks,
+        miriChecks: report.miriChecks,
+        executionCount: report.executionCount,
+        budgetUsedMs: report.budgetUsedMs,
+      },
+      null,
+      2,
+    ),
+  );
+  report.artifactPaths = [path];
+  report.artifactHashes = { [path]: sha256(readFileSync(path)) };
   return report;
 }
 
 if (process.argv[1]?.endsWith("verify-borrowed-memory.ts")) {
   const mode = parseBorrowedMemoryMode(process.argv.slice(2));
   const report = runBorrowedMemoryVerification(mode);
+  if (process.env.BORROWED_MEMORY_ARTIFACT_DIR)
+    attachBorrowedMemoryEvidenceArtifact(
+      report,
+      process.env.BORROWED_MEMORY_ARTIFACT_DIR,
+    );
+  if (report.status === "passed") validateBorrowedMemoryReport(report);
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   process.exitCode = report.status === "passed" ? 0 : 1;
 }

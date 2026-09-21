@@ -590,8 +590,11 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "modify",
         title: "Zachowaj marker",
         prompt:
-          "Zaimplementuj `InvariantBorrow` z `PhantomData<&'owner mut T>` i markerem funkcji czyniącym lifetime invariant. Nie używaj unsafe impl.",
-        code: autoTraitsEquivalent,
+          "Zaimplementuj `InvariantBorrow` z `PhantomData<&'owner mut T>` i markerem funkcji czyniącym T invariant. Outer owner lifetime może skracać się przez reborrow; nie używaj unsafe impl.",
+        code: autoTraitsEquivalent.replace(
+          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
+          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();}",
+        ),
         solution: autoTraitsCanonical,
         tests: autoTraitsTests,
         gate: true,
@@ -602,7 +605,10 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Sprawdź positive bounds",
         prompt:
           "Dodaj `assert_send` i `assert_sync` dla `InvariantBorrow<'_, u8>` oraz zachowaj mutably-borrowed marker. Sprawdź osobno, że `Cell<u8>` jest Send, lecz nie Sync.",
-        code: autoTraitsSoundnessEquivalent,
+        code: autoTraitsSoundnessEquivalent.replace(
+          "fn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();soundness_sync::<InvariantBorrow<'_,u8>>();}",
+          "fn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();}",
+        ),
         solution: autoTraitsSoundnessCanonical,
         tests: autoTraitsSoundnessTests,
         gate: true,
@@ -622,7 +628,10 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "recall",
         title: "Powtórka: auto-traits",
         prompt: "Odtwórz positive Send/Sync bounds na innym układzie markera.",
-        code: autoTraitsEquivalent,
+        code: autoTraitsEquivalent.replace(
+          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
+          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();}",
+        ),
         solution: autoTraitsEquivalent,
         tests: autoTraitsTests,
       }),
@@ -666,7 +675,8 @@ export const unsafeBorrowedMemoryReviewExercises: Record<string, LessonStep> = {
     id: "review-unsafe-borrowed-slot",
     kind: "apply",
     title: "Powtórka: ownership slotu",
-    prompt: "Odtwórz SafeSlot i exactly-once Drop.",
+    prompt:
+      "Odtwórz `LeaseSlot<T>` z `new`, `store`, `release` i `clear`, zachowując exactly-once Drop.",
     code: leaseSlotReviewMutant,
     solution: leaseSlotReviewEquivalent,
     tests: leaseSlotReviewTests,
@@ -675,8 +685,14 @@ export const unsafeBorrowedMemoryReviewExercises: Record<string, LessonStep> = {
     id: "review-unsafe-borrowed-auto-traits",
     kind: "apply",
     title: "Powtórka: Send i Sync",
-    prompt: "Odtwórz positive bounds oraz marker zależny od T.",
-    code: traitViewReviewCanonical,
+    prompt:
+      "Odtwórz `TraitView<'owner, T>` z `attach`, `get` i krótszym `reattach`; T pozostaje invariant, a outer owner lifetime może być reborrowed krócej.",
+    code: traitViewReviewCanonical
+      .replace("fn get(&self)->&T{self.value}", "fn get(&self)->&T{self.value}")
+      .replace(
+        "fn reattach<'short>(&'short mut self)->TraitView<'short,T>{TraitView{value:&mut*self.value,ty:PhantomData,owner:PhantomData}}",
+        "",
+      ),
     solution: traitViewReviewEquivalent,
     tests: traitViewReviewTests,
   }),
