@@ -4,7 +4,7 @@
 
 **Goal:** Add a bounded, executable Rust curriculum milestone for reviewing the soundness of unsafe borrowed-memory abstractions, with independent compile/runtime/Miri evidence and explicit limits on what that evidence proves.
 
-**Architecture:** Add one four-lesson module after `unsafe-miri-contracts`. Browser exercises remain authored, std-only Rust contracts evaluated by the existing isolated runner; they never execute learner or imported unsafe code. A restricted verifier compiles only checked-in fixture strings on stable and Rust 1.85.0, runs the named safe tests and compile-fail controls, and invokes the pinned nightly Miri toolchain only for isolated authored UB fixtures. Reuse the existing schema v3, lesson evidence engine, Miri reporting conventions, and release Hold.
+**Architecture:** Add one four-lesson module after `unsafe-miri-contracts`. Browser exercises remain authored, std-only Rust contracts evaluated by the existing isolated runner; they never execute learner or imported unsafe code. A restricted verifier compiles only checked-in fixture strings on stable and Rust 1.85.0, runs the named safe tests and compile-fail controls, and invokes the pinned nightly Miri toolchain only for isolated authored maintainer fixtures, requiring positive canonical/equivalent results and named negative diagnostics. Reuse the existing schema v3, lesson evidence engine, Miri reporting conventions, and release Hold.
 
 **Tech Stack:** Existing TypeScript content model, Vitest, Playwright, Node child-process verifier, Rust 2024, stable Rust and exact Rust 1.85.0, pinned nightly-2026-08-08 Miri, rustfmt and Clippy.
 
@@ -19,7 +19,7 @@
 - The browser runner remains single-file and safe for authored contracts. Do not add a general unsafe-code runner, an FFI runner, or a multi-file learner build path.
 - Every accepted unsafe operation has a written safety invariant and a caller precondition. A `#[allow(unsafe_code)]`, a marker type, or a passing compilation alone is not evidence of soundness.
 - Compile errors, Miri setup errors, timeouts, missing diagnostics, and incomplete phase reports are infrastructure or failed evidence; they never count as successful mutant rejection or a green campaign.
-- Do not execute UB intentionally in the browser, in the stable verifier, or in a learner package. Miri may interpret only isolated, checked-in negative fixtures whose expected diagnostic and identity are pinned.
+- Do not execute UB intentionally in the browser, in the stable verifier, or in a learner package. Miri may interpret only isolated, checked-in maintainer fixtures: canonical/equivalent positive fixtures that must pass and named negative fixtures whose expected diagnostic and identity are pinned.
 - No new production dependency, public API compatibility claim, FFI trust claim, universal memory-safety claim, performance claim, or professional-readiness claim.
 - Preserve the release status `Hold`; this milestone does not replace advisory/license review, a human pilot, or a complete Rust memory-model proof.
 - Model routing is fixed: GPT-6-Astra medium owns planning and qualitative review; GPT-5.6-Luna high owns implementation, tests, documentation, and Git operations. A separate soundness review gate must pass before the normal acceptance gate can be green.
@@ -43,12 +43,12 @@ The eight primary IDs and four blank IDs set `evidenceGate: true`; review and re
 
 The four contracts are:
 
-1. **Provenance and lifetime boundary.** The learner-safe browser contract is `BorrowedBytes<'owner>::from_slice(owner: &'owner [u8]) -> BorrowedBytes<'owner>` and `BorrowedBytes::reborrow<'short>(&'short self) -> BorrowedBytes<'short>`; the constructor ties the view to an actual owner and cannot manufacture a lifetime. The maintainer-only raw fixture separately exposes `unsafe fn from_raw_parts_unchecked<'a>(raw: *const u8, len: usize) -> Option<RawBorrowed<'a>>`, with null, initialization, alignment, `len <= isize::MAX`, non-wrapping range, and non-aliasing preconditions. The raw function never appears in learner starter code or browser execution. Tests use valid local allocations, empty null views, multibyte lengths, and a compile-fail lifetime escape.
+1. **Provenance and lifetime boundary.** The learner-safe browser contract is `BorrowedBytes<'owner>::from_slice(owner: &'owner [u8]) -> BorrowedBytes<'owner>` and `BorrowedBytes::reborrow<'short>(&'short self) -> BorrowedBytes<'short>`; the constructor ties the view to an actual owner and cannot manufacture a lifetime. The maintainer-only raw fixture separately exposes `unsafe fn from_raw_parts_unchecked<'a>(raw: *const u8, len: usize) -> Option<RawBorrowed<'a>>`. For every non-empty raw view, the caller must provide one live backing allocation, keep it initialized, aligned, non-aliasing, and valid for the entire `'a`, prove `len <= isize::MAX`, and prove that the byte range does not wrap; `len == 0` may use null only as an explicit empty representation with no dereferenceable range. These are caller obligations because the raw function cannot validate an arbitrary lifetime. The raw function never appears in learner starter code or browser execution. Tests use valid local allocations, an empty null view, multibyte byte lengths, and a compile-fail lifetime escape targeting only safe `from_slice`, never an arbitrary raw `'a`.
 2. **Mutable reborrow, disjointness, and invariance.** The learner-safe contract is `split_borrowed<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>` plus `InvariantBorrow<'owner, T>::from_mut(owner: &'owner mut T) -> InvariantBorrow<'owner, T>` and the exact `reborrow<'short>(&'short mut self) -> InvariantBorrow<'short, T>`. The outer loan may shorten; the inner `T` lifetime remains invariant through `PhantomData<fn(&'owner T) -> &'owner T>`. A separate maintainer-only raw constructor is the only unsafe boundary. Tests reject overlap, `mid > len`, lifetime substitution, and a mutant that writes through both views.
 3. **Initialization and ownership state.** The learner-safe browser contract is `SafeSlot<T>` backed by `Option<T>` with `put`, `take`, and `drop_initialized` state transitions; it contains no `MaybeUninit` and no raw pointer. The maintainer-only fixture mirrors the same state machine with `MaybeUninit<T>`, explicit `SlotState`, and a checked `unsafe` implementation. `put` is allowed only when empty, `take` changes state before moving the value, and drop occurs exactly once. Tests use a non-`Copy` drop counter, a local non-`'static` borrow, and no invalid unsafe execution outside Miri.
-4. **Variance and Send/Sync boundary.** The learner-safe contract uses `InvariantBorrow<'owner, T>` only through `from_mut` and `reborrow`; no manual `unsafe impl Send` or `unsafe impl Sync` is teachable or accepted. The marker combines an auto-trait-bearing `PhantomData<&'owner T>` with a function-pointer marker `PhantomData<fn(&'owner T) -> &'owner T>` so `T` auto-traits are inherited while the owner lifetime is invariant. Maintainer clients include `assert_send::<InvariantBorrow<'_, u8>>()` and `assert_sync::<InvariantBorrow<'_, u8>>()`. A `Cell<u8>` client is allowed to prove `Send` but must fail `Sync`; both `Send` and `Sync` clients using `Rc<u8>` must fail. A positive `Send + Sync` client uses an immutable `u8`/`Arc`-free value. A mutant using an output-only `PhantomData` or an unsafe blanket impl is rejected. Compile-fail controls cover lifetime substitution, the `Cell<u8>` `Sync` bound, and both `Rc<u8>` bounds.
+4. **Variance and Send/Sync boundary.** The learner-safe contract uses `InvariantBorrow<'owner, T>` only through `from_mut` and `reborrow`; no manual `unsafe impl Send` or `unsafe impl Sync` is teachable or accepted. The marker combines `PhantomData<&'owner mut T>` with a function-pointer marker `PhantomData<fn(&'owner T) -> &'owner T>`. The mutable-borrow marker preserves the wrapper's auto-trait relationship to `T` while the function-pointer marker makes the owner lifetime invariant. Maintainer clients include `assert_send::<InvariantBorrow<'_, u8>>()` and `assert_sync::<InvariantBorrow<'_, u8>>()`. A `Cell<u8>` client is allowed to prove `Send` for the single-thread-owned mutable borrow but must fail `Sync`; both `Send` and `Sync` clients using `Rc<u8>` must fail. A positive `Send + Sync` client uses a mutable `u8`/`Arc`-free value. A mutant using an output-only `PhantomData` or an unsafe blanket impl is rejected. Compile-fail controls cover lifetime substitution, the `Cell<u8>` `Sync` bound, and both `Rc<u8>` bounds.
 
-The public prompts state only the safe constructor, exact `reborrow` signature, fields/types, invariance behavior, and observable boundaries. Raw pointers, `MaybeUninit`, invalid states, and Miri-negative bodies live in maintainer-only fixtures and are never hidden requirements for learner code. Hidden tests may enforce only the announced safe contract.
+The public prompts state only the safe constructor, exact `reborrow` signature, fields/types, invariance behavior, and observable boundaries. Raw pointers, `MaybeUninit`, invalid states, and Miri fixture bodies live in maintainer-only fixtures and are never hidden requirements for learner code. Hidden tests may enforce only the announced safe contract.
 
 ### Learner versus maintainer execution boundary
 
@@ -56,18 +56,18 @@ The public prompts state only the safe constructor, exact `reborrow` signature, 
 | --- | --- | --- | --- | --- |
 | Browser primary/blank/review | learner-safe authored snippets with references and slices | `from_slice`, `from_mut`, `reborrow`, `split_borrowed`, `SafeSlot`, trait-bound clients | existing isolated single-file Rust runner; no raw pointer or `MaybeUninit` | independent tests and persisted learner events |
 | Stable/MSRV verifier | checked-in safe behavioral fixtures and compile-fail clients | boundary/state/output behavior and named diagnostics | stable plus exact 1.85.0 only | canonical/equivalent pass and safe mutants fail |
-| Nightly Miri verifier | checked-in maintainer-only raw/`MaybeUninit` fixtures | explicit unsafe preconditions and named UB controls | pinned nightly-2026-08-08 Miri only | canonical and equivalent pass; negative UB fixtures produce expected diagnostics |
+| Nightly Miri verifier | checked-in maintainer-only raw/`MaybeUninit` fixtures | explicit unsafe preconditions and named UB controls | pinned nightly-2026-08-08 Miri only | canonical and equivalent positive fixtures pass; negative UB fixtures produce expected diagnostics |
 
-The fixture matrix is explicit: stable and MSRV execute only safe behavior and compile-fail controls; only Miri executes raw-pointer and `MaybeUninit` negative fixtures. Canonical and structurally equivalent implementations must pass in every mode where they are applicable.
+The fixture matrix is explicit: stable and MSRV execute only safe behavior and compile-fail controls; only Miri executes maintainer-only raw-pointer and `MaybeUninit` fixtures. Canonical and structurally equivalent positive Miri implementations must pass, while named negative Miri fixtures must produce their expected diagnostics.
 
 | fixture family | stable/MSRV requirement | Miri requirement | rejected mutant examples |
 | --- | --- | --- | --- |
 | provenance/null/range | safe `from_slice` behavior, byte lengths, and boundary errors | canonical and equivalent raw-boundary fixtures pass | null-for-positive, wrapped range, invalid initialization |
 | split/reborrow | safe disjoint slices, exact `mid` errors, and lifetime compile-fail controls | raw alias fixture produces the named diagnostic | overlap, out-of-bounds, aliased raw view |
 | slot state | `SafeSlot` state and exactly-once drop behavior | `MaybeUninit` canonical/equivalent pass and negative state fixtures diagnose | omitted initialization, state-skipping drop, double drop |
-| variance/auto-traits | safe invariance and `Send`/`Sync` positive/negative clients | only a maintainer raw client may run | lifetime substitution, output-only marker, unsafe blanket impl |
+| variance/auto-traits | safe invariance and `Send`/`Sync` positive/negative clients | declared canonical/equivalent marker clients pass; any raw boundary remains maintainer-only | lifetime substitution, output-only marker, unsafe blanket impl |
 
-Real UB is never a stable/MSRV mutant case. A Miri-negative fixture must compile far enough to run and must be rejected by the expected diagnostic; a compile error, timeout, or infrastructure error is not successful mutant discovery.
+Real UB is never a stable/MSRV mutant case. A `miri-positive` fixture must compile and pass for both canonical and equivalent implementations. A `miri-negative` fixture must compile far enough to run and be rejected by the expected diagnostic; a compile error, timeout, or infrastructure error is not successful mutant discovery.
 
 ## File map
 
@@ -102,7 +102,7 @@ The implementation is acceptable only when all gates below are true and recorded
 - Stable and exact Rust 1.85.0 runs perform `rustfmt --check`, `cargo fmt --check` where a Cargo fixture exists, `rustc`/Cargo tests, and Clippy with the same authored bytes. Stable/MSRV results are separate from nightly Miri results.
 - The independent soundness gate checks the lifetime-tied safe constructor, exact `reborrow`, invariance marker, raw boundary preconditions, learner/maintainer separation, and the complete `Send`/`Sync` client matrix before the normal content gate can pass.
 - Exact-head CI is green for the same SHA across the stable, exact 1.85.0 MSRV, pinned Miri, browser/offline E2E, content, and documentation jobs; a prior successful SHA cannot satisfy this gate.
-- Miri runs only the checked-in negative fixtures, verifies expected diagnostic identity, and records toolchain, source hash, fixture hash, phase status, and limitations. A missing Miri component or timeout is infrastructure, not pass.
+- Miri runs only the checked-in `miri-positive` and `miri-negative` fixtures. Canonical and equivalent positive fixtures must pass; negative fixtures must produce their expected diagnostic identity. The verifier records toolchain, source hash, fixture hash, phase status, and limitations. A missing Miri component or timeout is infrastructure, not pass.
 - The verifier rejects arbitrary arguments, stale source/fixture hashes, mixed run identities, wrong toolchains, missing phase errors, compile errors misreported as mutant discovery, and reports that claim `passed` before every required phase completes.
 - The E2E test proves reveal/help cannot create independent mastery, then proves a fresh independent blank can record a non-empty draft and note and resume exactly after reload. Keyboard and console-error assertions remain active.
 - Offline verification covers the same soundness lesson path and preserves archive/cache behavior; if Chromium is unavailable locally, the limitation is reported and CI evidence is required.
@@ -141,7 +141,7 @@ The implementation is acceptable only when all gates below are true and recorded
 **Interfaces:**
 
 - Each fixture exports `{ id, canonical, equivalent, mutant, tests, mode, expectedDiagnostic? }`.
-- `mode` is one of `safe-behavior`, `compile-fail`, or `miri-negative`; `safe-behavior` and `compile-fail` run on stable and exact 1.85.0, while `miri-negative` runs only on pinned nightly. A fixture cannot silently change mode.
+- `mode` is one of `safe-behavior`, `compile-fail`, `miri-positive`, or `miri-negative`; `safe-behavior` and `compile-fail` run on stable and exact 1.85.0, while both Miri modes run only on pinned nightly. `miri-positive` requires canonical and equivalent success; `miri-negative` requires the named expected diagnostic. A fixture cannot silently change mode.
 - Hidden tests compare full returned slices/state transitions and exact error classes, not source strings or `assert!(true)`.
 
 The minimum executable matrix is:
@@ -151,8 +151,8 @@ The minimum executable matrix is:
 | canonical safe behavior | stable and exact 1.85.0 | pass |
 | equivalent safe behavior | stable and exact 1.85.0 | pass |
 | safe semantic mutant | stable and exact 1.85.0 | named assertion fails |
-| canonical/equivalent raw or `MaybeUninit` | nightly-2026-08-08 Miri | pass |
-| named UB mutant | nightly-2026-08-08 Miri | expected diagnostic |
+| canonical/equivalent raw or `MaybeUninit` | nightly-2026-08-08 Miri (`miri-positive`) | pass |
+| named UB mutant | nightly-2026-08-08 Miri (`miri-negative`) | expected diagnostic |
 | compile-fail client | stable and exact 1.85.0 | expected diagnostic family |
 
 The matrix forbids treating a stable compile error, timeout, or unrelated failing test as a successful semantic rejection; the named test must execute and fail for the named mutant.
@@ -160,8 +160,8 @@ The matrix forbids treating a stable compile error, timeout, or unrelated failin
 - [ ] Write one failing test per semantic mutant: positive null handling, range overflow, omitted initialization, overlap, out-of-bounds split, state-skipping drop, lifetime variance, and auto-trait leakage.
 - [ ] Add at least one non-`Copy` drop counter and one local non-`'static` borrowed value to prevent ownership shortcuts.
 - [ ] Add equivalent implementations that differ structurally while preserving the public contract.
-- [ ] Add compile-fail fixtures for lifetime escape and invalid `Send`/`Sync`; assert the expected diagnostic family and reject unrelated compiler errors.
-- [ ] Add isolated Miri-negative fixtures whose paths, hashes, expected diagnostic, and toolchain are checked before execution. Do not run them as part of normal learner tests.
+- [ ] Add compile-fail fixtures for a lifetime escape through safe `BorrowedBytes::from_slice` and invalid `Send`/`Sync`; assert the expected diagnostic family and reject unrelated compiler errors. Do not use an arbitrary raw `'a` in the lifetime compile-fail fixture.
+- [ ] Add isolated `miri-positive` and `miri-negative` fixtures whose paths, hashes, expected diagnostic (for negatives), and toolchain are checked before execution. Do not run either mode as part of normal learner tests.
 - [ ] Run the fixture test and confirm each mutant compiles where intended and fails for the intended behavioral assertion.
 
 ## Task 3: Implement the restricted verifier and report contract
@@ -181,7 +181,7 @@ The matrix forbids treating a stable compile error, timeout, or unrelated failin
 - [ ] Write negative validator tests for arbitrary paths/toolchains, stale source hashes, mixed run IDs, wrong stable/nightly toolchains, missing Miri diagnostics, compile-error-as-mutant, and premature `passed` reports.
 - [ ] Implement fresh temporary extraction from the authored fixture registry, hash every source before compilation, and reject any served/generated mismatch.
 - [ ] Run stable and exact 1.85.0 formatting, compilation, tests, and Clippy with bounded subprocess timeouts and a total budget. Keep stable/MSRV and Miri report identities separate.
-- [ ] Run only named Miri-negative binaries with `rustup run nightly-2026-08-08 miri`, capture stdout/stderr and diagnostic identity, and classify missing components/timeouts as infrastructure.
+- [ ] Run only named `miri-positive` and `miri-negative` binaries with `rustup run nightly-2026-08-08 miri`; require canonical/equivalent positives to pass, capture stdout/stderr and diagnostic identity for negatives, and classify missing components/timeouts as infrastructure.
 - [ ] Emit JSON even on failure, preserve phase errors, and exit nonzero for failed or infrastructure reports. Never convert an incomplete run into `passed`.
 - [ ] Add the `content:borrowed-memory` script and CI steps with exact toolchain setup, cache/fetch boundaries, uploaded reports, and the CLI matrix below:
 
