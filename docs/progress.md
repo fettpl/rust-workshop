@@ -2,7 +2,7 @@
 
 Current catalog after the borrowed-memory soundness milestone: 179 lessons, 46 modules, 182 concepts, 134 blank-page tasks, 322 sources and 13 projects. The `content:allocations` verifier compares baseline, candidate and materialization mutant on the same workload without making RSS claims.
 
-The borrowed-memory implementation is recorded at exact head `216f13d` on `feat/soundness-borrowed-memory`. Focused borrowed-memory tests pass 12/12; typecheck/content checks and stable/Rust 1.85.0 verifier runs pass. Pinned nightly Miri is infrastructure-limited because the component is unavailable locally, and offline Chromium is blocked by macOS bootstrap permissions, so CI must supply those exact-head results. Release remains Hold.
+The borrowed-memory implementation is recorded at exact implementation head `f995104` on `feat/soundness-borrowed-memory`. Focused borrowed-memory tests pass 13/13; typecheck/content checks and stable/Rust 1.85.0 verifier runs pass with 145 bounded subprocesses each. Pinned nightly Miri is infrastructure-limited because the component is unavailable locally, and offline Chromium is blocked by macOS bootstrap permissions, so CI must supply those exact-head results. Release remains Hold.
 
 Etap `async-lending-contracts` dodaje pięć polskich lekcji, pięć kryteriów z dziesięcioma ocenianymi zadaniami (gate i blank dla każdego kontraktu) oraz pięć niezależnych powtórek: borrowed receiver z kontrolowanym `Pending -> Ready`, sekwencyjny `AsyncFnMut`, commit po callbacku, granicę `Send + 'static` oraz boxed adapter. Rozszerzenie `tokio-service-workshop` zawiera `lending.rs`, `report_source.rs`, lokalny przykład, kontrakt testowy i `ASYNC-LENDING.md`; `content:async-lending` porównuje oba ZIP-y, uruchamia stable oraz exact Rust 1.85.0 w trybie offline i wymaga odrzucenia startera. Dedykowane async gate/reveal/transfer/resume/offline/keyboard/console assertions są zapisane w E2E/offline, ale pozostają niezweryfikowane do przebiegu z działającym loopback.
 
@@ -67,9 +67,9 @@ Nie przeprowadzono pilotażu z uczącymi się. Dostępność treści i zielone t
 Etap `unsafe-ffi-contracts` jest lokalnie dostępny jako 38. moduł i prowadzi do dziesiątego projektu, `ffi-buffer-workshop`. Stable i job MSRV uruchamiają `content:ffi` przed generycznym `content:cargo`; verifier porównuje oba wygenerowane archiwa, sprawdza formatowanie, locked/offline target checks, testy natywnej granicy i Clippy. Miri pozostaje jawnie poza zakresem tego pakietu: natywny C i allocator są częścią fixture ABI. Wspierany pure-Rust harness Miri znajduje się w osobnym `miri-safety-workshop` i nie obejmuje tej granicy. E2E pokrywa nawigację, dokładne wznowienie blanku, pobranie obu wariantów oraz offline cache dla nowego ZIP-a.
 
 CI po scaleniu na `57c24f9`: [34751446523](https://github.com/fettpl/rustcrushcourse/actions/runs/34751446523), wszystkie trzy zadania zakończone sukcesem.
-### Borrowed memory soundness review checkpoint
+### Historical borrowed memory soundness review checkpoint
 
-Exact verification head: `216f13d` (`feat/soundness-borrowed-memory`). The
+Historical verification head: `216f13d` (`feat/soundness-borrowed-memory`). The
 review fixes preserve release Hold, keep unsafe fixtures maintainer-only, and
 separate learner contracts from Miri/compile-fail evidence. Focused tests are
 12/12, typecheck/content validation pass, and stable plus exact Rust 1.85.0

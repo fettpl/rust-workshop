@@ -6,7 +6,7 @@ The borrowed-memory milestone keeps learner-safe browser contracts separate from
 
 ## Borrowed-memory exact-head record
 
-The current borrowed-memory implementation evidence is recorded at exact head `216f13d` on `feat/soundness-borrowed-memory`. Focused borrowed-memory checks pass 13/13, typecheck/content checks pass, and stable plus exact Rust 1.85.0 verifier runs pass. Pinned nightly Miri and browser/offline execution remain environment-limited; no unrun CI or local browser result is claimed. Release remains Hold.
+The current borrowed-memory implementation evidence is recorded at exact implementation head `f995104` on `feat/soundness-borrowed-memory`. Focused borrowed-memory checks pass 13/13, typecheck/content checks pass, and stable plus exact Rust 1.85.0 verifier runs pass with 145 bounded subprocesses each. Pinned nightly Miri and browser/offline execution remain environment-limited; no unrun CI or local browser result is claimed. Release remains Hold.
 
 ## Fuzz evidence lifecycle
 
@@ -106,7 +106,7 @@ Pożyczone API i angielskie README scalono w [PR #8](https://github.com/fettpl/r
 Polecenia pełnej weryfikacji, instalacji narzędzi i projektów opisuje angielskie README, a dokładny zestaw MSRV znajduje się w .github/workflows/ci.yml. `npm run content:performance -- --fetch` trzeba wykonać przed offline `content:cargo`; wariant `--msrv` sprawdza ten sam pakiet przez exact Rust 1.85.0. E2E wymaga produkcyjnego serwera na 127.0.0.1:3002 i konfiguracji .github/playwright.production.config.ts z zerem retry. Offline uruchamia npm run test:offline, w tym wznowienie blanku Performance Evidence. Na macOS długi zestaw można poprzedzić caffeinate -i.
 
 Remaining scope includes version conflicts, dependency security and publication, unsafe abstraction variance, full property/fuzz coverage, RSS/retained-memory attribution, system operations and capstone release evidence. The capstone has bounded learner integration, but release remains Hold until two fresh, reviewed stable/MSRV JSON reports and a manual advisory/license review are complete. Miri Safety provides a limited supported pure-Rust fixture set and does not replace a full threat model or prove that every unsafe program is defined. The limited Unsafe/FFI wrapper does not prove that foreign code is trustworthy. The Log Analyzer benchmark and allocation probe are executable evidence for named workloads; neither establishes a regression time threshold or universal speed claim. Migration history and material provenance need further work. A learner pilot and manual screen-reader review are still required. Lesson availability and green tests do not guarantee professional readiness.
-## Borrowed memory soundness follow-up (exact head `216f13d`)
+## Historical borrowed memory soundness follow-up (exact head `216f13d`)
 
 The follow-up review was revalidated at implementation commit `216f13d` on branch
 `feat/soundness-borrowed-memory`. Learner-facing blank prompts now name the
