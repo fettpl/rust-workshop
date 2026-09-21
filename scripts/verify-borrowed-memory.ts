@@ -48,7 +48,16 @@ export interface BorrowedMemoryReport {
     exitCode: number | null;
     signal: string | null;
     source: string;
+    sourceHash: string;
+    authoredSourceHash: string;
     manifestPath: string;
+    manifest: string;
+    manifestHash: string;
+    tooling: {
+      rustfmt: CommandEvidence;
+      cargoFmt: CommandEvidence;
+      cargoClippy: CommandEvidence;
+    };
   }[];
   artifactPaths: string[];
   artifactHashes: Record<string, string>;
@@ -58,15 +67,16 @@ export interface BorrowedMemoryReport {
 
 const MIRI_TOOLCHAIN = "nightly-2026-08-08";
 const MSRV_TOOLCHAIN = "1.85.0";
-const MIRI_BODY_CONTRACT = JSON.stringify([
-  "raw-valid:bytes=[1,2];RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)",
-  "raw-null-range:RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)",
-  "maybe-uninitialized:MaintainerSlot::<u8>::empty();drop(slot)",
-  "maybe-double-drop:MaintainerSlot::<String>::empty();put;take;take",
-  "maybe-valid:MaintainerSlot::<String>::empty();put;take;drop;put",
-  "raw-alias:fixture-main",
-  "raw-wrapped-range:fixture-main",
-]);
+const MIRI_MANIFEST =
+  '[package]\nname = "borrowed_memory_fixture"\nversion = "0.1.0"\nedition = "2024"\n';
+type CommandEvidence = {
+  command: string[];
+  stdout: string;
+  stderr: string;
+  exitCode: number | null;
+  signal: string | null;
+  status: BorrowedMemoryPhaseStatus;
+};
 const REQUIRED_PHASES = ["compile", "tests", "report"] as const;
 const BUDGETS = {
   compileTimeoutMs: 120_000,
@@ -98,6 +108,59 @@ function expectedToolchain(mode: BorrowedMemoryMode) {
     : mode === "msrv"
       ? MSRV_TOOLCHAIN
       : MIRI_TOOLCHAIN;
+}
+
+type MiriVariant = "canonical" | "equivalent" | "mutant";
+type MiriFixture = (typeof unsafeBorrowedMemoryAssessmentFixtures)[number];
+
+/**
+ * The source body is authored once here. The same bytes feed the Miri cargo
+ * run, the per-check evidence, and the trusted current-source hashes.
+ */
+function generatedMiriSource(fixture: MiriFixture, variant: MiriVariant) {
+  const source =
+    variant === "canonical"
+      ? fixture.canonical
+      : variant === "equivalent"
+        ? fixture.equivalent
+        : fixture.mutant;
+  const hasOwnMain =
+    fixture.id.includes("alias") || fixture.id.includes("wrapped-range");
+  const body = hasOwnMain
+    ? ""
+    : fixture.id === "raw-borrowed-negative"
+      ? "fn main(){let _=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};}"
+      : fixture.id === "maybe-uninit-negative"
+        ? "fn main(){let slot=MaintainerSlot::<u8>::empty();drop(slot);}"
+        : fixture.id === "maybe-uninit-double-drop-negative"
+          ? 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let _=slot.take();let _=slot.take();}'
+          : fixture.id.startsWith("raw-borrowed")
+            ? "fn main(){let bytes=[1_u8,2];let _=unsafe{RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)};}"
+            : 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let value=slot.take().unwrap();drop(value);slot.put(String::from("drop")).unwrap();}';
+  return {
+    source,
+    body,
+    fullSource: `${source}\n${body}\n`,
+  };
+}
+
+function currentMiriSources() {
+  return unsafeBorrowedMemoryAssessmentFixtures
+    .filter((fixture) => fixture.mode.startsWith("miri"))
+    .flatMap((fixture) => {
+      const variants: MiriVariant[] =
+        fixture.mode === "miri-positive"
+          ? ["canonical", "equivalent"]
+          : ["mutant"];
+      return variants.map((variant) => {
+        const generated = generatedMiriSource(fixture, variant);
+        return {
+          id: `${fixture.id}:${variant}`,
+          source: generated.fullSource,
+          sourceHash: sha256(generated.fullSource),
+        };
+      });
+    });
 }
 
 function assertHashMap(values: Record<string, string>, label: string) {
@@ -132,15 +195,24 @@ function currentAuthoredHashes() {
     ]),
   );
   const allFixtureHashes = { ...fixtureHashes, ...compileFailHashes };
+  const miriSourceHashes = Object.fromEntries(
+    currentMiriSources().map((entry) => [
+      `miri-source:${entry.id}`,
+      entry.sourceHash,
+    ]),
+  );
+  const miriManifestHash = sha256(MIRI_MANIFEST);
   return {
     sourceHashes: {
       contracts: sha256(
         JSON.stringify({
           fixtures: allFixtureHashes,
-          miriBodyContract: MIRI_BODY_CONTRACT,
+          miriSourceHashes,
           varianceMutant: sha256(invariantVarianceMutant),
         }),
       ),
+      "miri-manifest": miriManifestHash,
+      ...miriSourceHashes,
     },
     fixtureHashes: allFixtureHashes,
   };
@@ -275,7 +347,26 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
           (check.exitCode !== null && !Number.isInteger(check.exitCode)) ||
           (check.signal !== null && typeof check.signal !== "string") ||
           typeof check.source !== "string" ||
-          !check.manifestPath,
+          !/^[0-9a-f]{64}$/.test(check.sourceHash) ||
+          !/^[0-9a-f]{64}$/.test(check.authoredSourceHash) ||
+          sha256(check.source) !== check.sourceHash ||
+          report.sourceHashes[`miri-source:${check.id}`] !==
+            check.authoredSourceHash ||
+          !check.manifestPath ||
+          typeof check.manifest !== "string" ||
+          check.manifestHash !== sha256(check.manifest) ||
+          check.manifestHash !== report.sourceHashes["miri-manifest"] ||
+          !check.tooling ||
+          Object.values(check.tooling).some(
+            (tooling) =>
+              tooling.status !== "passed" ||
+              !Array.isArray(tooling.command) ||
+              typeof tooling.stdout !== "string" ||
+              typeof tooling.stderr !== "string" ||
+              (tooling.exitCode !== null &&
+                !Number.isInteger(tooling.exitCode)) ||
+              (tooling.signal !== null && typeof tooling.signal !== "string"),
+          ),
       )
     )
       throw new Error("Miri raw command evidence is incomplete");
@@ -292,6 +383,8 @@ function command(
 ) {
   if (executionDeadline && Date.now() >= executionDeadline)
     throw new Error("total verifier budget exhausted before subprocess");
+  if (executionCount >= BUDGETS.maxSubprocesses)
+    throw new Error("maximum verifier subprocess count reached before spawn");
   executionCount += 1;
   const started = Date.now();
   const result = spawnSync(executable, args, {
@@ -342,6 +435,16 @@ function compileAndRun(
   if (formatted.status !== 0 || formatted.error)
     throw new Error(
       `${id} rustfmt error: ${formatted.stderr ?? formatted.error?.message ?? "unknown"}`,
+    );
+  const formatCheck = command(
+    "rustfmt",
+    ["--edition", "2024", "--check", file],
+    directory,
+    BUDGETS.compileTimeoutMs,
+  );
+  if (formatCheck.status !== 0 || formatCheck.error)
+    throw new Error(
+      `${id} rustfmt --check error: ${formatCheck.stderr ?? formatCheck.error?.message ?? "unknown"}`,
     );
   const compiled = command(
     rustc,
@@ -496,10 +599,7 @@ function runMiri(report: BorrowedMemoryReport) {
   ).stdout.trim();
   const directory = mkdtempSync(join(tmpdir(), "unsafe-borrowed-memory-miri-"));
   try {
-    writeFileSync(
-      join(directory, "Cargo.toml"),
-      '[package]\nname = "borrowed_memory_fixture"\nversion = "0.1.0"\nedition = "2024"\n',
-    );
+    writeFileSync(join(directory, "Cargo.toml"), MIRI_MANIFEST);
     const sourceDir = join(directory, "src");
     mkdirSync(sourceDir, { recursive: true });
     for (const fixture of unsafeBorrowedMemoryAssessmentFixtures.filter(
@@ -510,26 +610,90 @@ function runMiri(report: BorrowedMemoryReport) {
           ? (["canonical", "equivalent"] as const)
           : (["mutant"] as const);
       for (const variant of variants) {
-        const source =
-          variant === "canonical"
-            ? fixture.canonical
-            : variant === "equivalent"
-              ? fixture.equivalent
-              : fixture.mutant;
-        const hasOwnMain =
-          fixture.id.includes("alias") || fixture.id.includes("wrapped-range");
-        const body = hasOwnMain
-          ? ""
-          : fixture.id === "raw-borrowed-negative"
-            ? "fn main(){let _=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};}"
-            : fixture.id === "maybe-uninit-negative"
-              ? "fn main(){let slot=MaintainerSlot::<u8>::empty();drop(slot);}"
-              : fixture.id === "maybe-uninit-double-drop-negative"
-                ? 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let _=slot.take();let _=slot.take();}'
-                : fixture.id.startsWith("raw-borrowed")
-                  ? "fn main(){let bytes=[1_u8,2];let _=unsafe{RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)};}"
-                  : 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let value=slot.take().unwrap();drop(value);slot.put(String::from("drop")).unwrap();}';
-        writeFileSync(join(sourceDir, "main.rs"), `${source}\n${body}\n`);
+        const generated = generatedMiriSource(fixture, variant);
+        const sourcePath = join(sourceDir, "main.rs");
+        const manifestPath = join(directory, "Cargo.toml");
+        writeFileSync(sourcePath, generated.fullSource);
+        const formatCommand = [
+          "rustup",
+          "run",
+          MIRI_TOOLCHAIN,
+          "rustfmt",
+          "--edition",
+          "2024",
+          sourcePath,
+        ];
+        const formatted = command(
+          "rustup",
+          formatCommand.slice(1),
+          directory,
+          BUDGETS.compileTimeoutMs,
+        );
+        if (formatted.status !== 0 || formatted.error)
+          throw new Error(
+            `${fixture.id}:${variant} rustfmt error: ${formatted.stderr ?? formatted.error?.message ?? "unknown"}`,
+          );
+        const formatCheckCommand = [
+          ...formatCommand.slice(0, -1),
+          "--check",
+          sourcePath,
+        ];
+        const formatCheck = command(
+          "rustup",
+          formatCheckCommand.slice(1),
+          directory,
+          BUDGETS.compileTimeoutMs,
+        );
+        if (formatCheck.status !== 0 || formatCheck.error)
+          throw new Error(
+            `${fixture.id}:${variant} rustfmt --check error: ${formatCheck.stderr ?? formatCheck.error?.message ?? "unknown"}`,
+          );
+        const cargoFmtCommand = [
+          "rustup",
+          "run",
+          MIRI_TOOLCHAIN,
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          manifestPath,
+          "--",
+          "--check",
+        ];
+        const cargoFmt = command(
+          "rustup",
+          cargoFmtCommand.slice(1),
+          directory,
+          BUDGETS.compileTimeoutMs,
+        );
+        const cargoClippyCommand = [
+          "rustup",
+          "run",
+          MIRI_TOOLCHAIN,
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          manifestPath,
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings",
+        ];
+        const cargoClippy = command(
+          "rustup",
+          cargoClippyCommand.slice(1),
+          directory,
+          BUDGETS.compileTimeoutMs,
+        );
+        if (
+          cargoFmt.status !== 0 ||
+          cargoFmt.error ||
+          cargoClippy.status !== 0 ||
+          cargoClippy.error
+        )
+          throw new Error(
+            `${fixture.id}:${variant} Cargo format/lint failed: ${cargoFmt.stderr ?? cargoClippy.stderr ?? cargoFmt.error?.message ?? cargoClippy.error?.message ?? "unknown"}`,
+          );
+        const executedSource = readFileSync(sourcePath, "utf8");
         const executed = command(
           "rustup",
           [
@@ -539,7 +703,7 @@ function runMiri(report: BorrowedMemoryReport) {
             "miri",
             "run",
             "--manifest-path",
-            join(directory, "Cargo.toml"),
+            manifestPath,
             "--quiet",
           ],
           directory,
@@ -570,15 +734,45 @@ function runMiri(report: BorrowedMemoryReport) {
             "miri",
             "run",
             "--manifest-path",
-            join(directory, "Cargo.toml"),
+            manifestPath,
             "--quiet",
           ],
           stdout: executed.stdout ?? "",
           stderr: executed.stderr ?? "",
           exitCode: executed.status,
           signal: executed.signal ?? null,
-          source: `${source}\n${body}\n`,
-          manifestPath: join(directory, "Cargo.toml"),
+          source: executedSource,
+          sourceHash: sha256(executedSource),
+          authoredSourceHash: sha256(generated.fullSource),
+          manifestPath,
+          manifest: MIRI_MANIFEST,
+          manifestHash: sha256(MIRI_MANIFEST),
+          tooling: {
+            rustfmt: {
+              command: formatCommand,
+              stdout: formatted.stdout ?? "",
+              stderr: formatted.stderr ?? "",
+              exitCode: formatted.status,
+              signal: formatted.signal ?? null,
+              status: "passed",
+            },
+            cargoFmt: {
+              command: cargoFmtCommand,
+              stdout: cargoFmt.stdout ?? "",
+              stderr: cargoFmt.stderr ?? "",
+              exitCode: cargoFmt.status,
+              signal: cargoFmt.signal ?? null,
+              status: "passed",
+            },
+            cargoClippy: {
+              command: cargoClippyCommand,
+              stdout: cargoClippy.stdout ?? "",
+              stderr: cargoClippy.stderr ?? "",
+              exitCode: cargoClippy.status,
+              signal: cargoClippy.signal ?? null,
+              status: "passed",
+            },
+          },
         });
       }
     }

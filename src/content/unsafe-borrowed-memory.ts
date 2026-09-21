@@ -442,7 +442,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "blank",
         title: "Od pustej kartki: rozłączność",
         prompt:
-          "Napisz `partition_window<'a>(input: &'a mut [u8], cut: usize)` z wynikiem `Result<(&'a mut [u8], &'a mut [u8]), CutError>`. `cut == len` jest poprawne, większy cut zwraca `CutError::TooLarge`; nie używaj overlap ani unsafe.",
+          "Napisz `partition_window<'a>(input: &'a mut [u8], cut: usize)` z wynikiem `Result<(&'a mut [u8], &'a mut [u8]), CutError>`. `cut` oznacza długość prawego suffixu: zwróć lewy prefix i prawy suffix jako rozłączne slices; `cut == len` daje pusty lewy prefix i cały prawy suffix, a większy cut zwraca `CutError::TooLarge`. Nie używaj overlap ani unsafe.",
         solution: partitionWindowBlankCanonical,
         tests: partitionWindowBlankTests,
         gate: true,
@@ -527,7 +527,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "blank",
         title: "Od pustej kartki: InitCell",
         prompt:
-          "Napisz `InitCell<T>` z `vacant`, `insert_once`, `remove` i `occupied`, bez `MaybeUninit`, raw pointera i ukrytego unsafe. Drugi insert zwraca przekazaną wartość; test używa nie-Copy DropProbe.",
+          "Napisz `InitCell<T>` z `vacant`, `insert_once`, `remove` i `occupied`, bez `MaybeUninit`, raw pointera i ukrytego unsafe. `insert_once` jest operacją jednorazową: drugi insert zwraca przekazaną wartość także po `remove`; `remove` oddaje bieżącą wartość i zwalnia stan occupied, ale nie uzbraja ponownie komórki. Test używa nie-Copy DropProbe.",
         solution: initCellBlankCanonical,
         tests: initCellBlankTests,
         gate: true,
@@ -676,7 +676,7 @@ export const unsafeBorrowedMemoryReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: ownership slotu",
     prompt:
-      "Odtwórz `LeaseSlot<T>` z `new`, `store`, `release` i `clear`, zachowując exactly-once Drop.",
+      "Odtwórz `LeaseSlot<T>` z `new`, `store`, `release`, `clear` i `generation()`, zachowując exactly-once Drop. Generacja startuje od 0, rośnie po udanym `store`, po `release`/`clear` tylko gdy slot zawierał wartość; odrzucony `store` jej nie zmienia.",
     code: leaseSlotReviewMutant,
     solution: leaseSlotReviewEquivalent,
     tests: leaseSlotReviewTests,
