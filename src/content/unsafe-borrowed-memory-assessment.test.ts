@@ -8,6 +8,7 @@ import {
   unsafeBorrowedMemoryAssessmentFixtures,
   unsafeBorrowedMemoryCompileFailFixtures,
 } from "./unsafe-borrowed-memory-assessment-fixtures";
+import { invariantVarianceMutant } from "./unsafe-borrowed-memory-contracts";
 
 const fixtureById = (id: string) =>
   unsafeBorrowedMemoryAssessmentFixtures.find((fixture) => fixture.id === id)!;
@@ -141,6 +142,24 @@ it("runs canonical and equivalent safe contracts and rejects each behavioral mut
         mutant.status,
         `${fixture.id}: blanket Sync mutant must be detected`,
       ).toBe(0);
+    } else if (fixture.id === "unsafe-borrowed-reborrow-soundness-gate") {
+      const client = `${fixture.canonical}\n${unsafeBorrowedMemoryCompileFailFixtures
+        .find((entry) => entry.id === "borrowed-memory-invariant-write")!
+        .source.split("\n")
+        .at(-1)}`;
+      const canonical = compileClient(
+        `${fixture.id}-variance-canonical`,
+        client,
+      );
+      const mutant = compileClient(
+        `${fixture.id}-variance-mutant`,
+        `${invariantVarianceMutant}\n${unsafeBorrowedMemoryCompileFailFixtures
+          .find((entry) => entry.id === "borrowed-memory-invariant-write")!
+          .source.split("\n")
+          .at(-1)}`,
+      );
+      expect(canonical.status).not.toBe(0);
+      expect(mutant.status).toBe(0);
     } else {
       compileAndRun(
         `${fixture.id}-mutant`,

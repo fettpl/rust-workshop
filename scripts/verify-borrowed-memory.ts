@@ -14,6 +14,7 @@ import {
   unsafeBorrowedMemoryAssessmentFixtures,
   unsafeBorrowedMemoryCompileFailFixtures,
 } from "../src/content/unsafe-borrowed-memory-assessment-fixtures";
+import { invariantVarianceMutant } from "../src/content/unsafe-borrowed-memory-contracts";
 
 export type BorrowedMemoryMode = "stable" | "msrv" | "miri";
 export type BorrowedMemoryPhaseStatus =
@@ -97,6 +98,7 @@ function currentAuthoredHashes() {
           tests: fixture.tests,
           mode: fixture.mode,
           expectedDiagnostic: fixture.expectedDiagnostic ?? null,
+          autoTraitNegativeClient: fixture.autoTraitNegativeClient ?? null,
         }),
       ),
     ]),
@@ -111,7 +113,10 @@ function currentAuthoredHashes() {
   return {
     sourceHashes: {
       contracts: sha256(
-        JSON.stringify({ fixtures: allFixtureHashes, miriBodyContract: MIRI_BODY_CONTRACT }),
+        JSON.stringify({
+          fixtures: allFixtureHashes,
+          miriBodyContract: MIRI_BODY_CONTRACT,
+        }),
       ),
     },
     fixtureHashes: allFixtureHashes,
@@ -195,8 +200,13 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
       throw new Error("invalid artifact provenance");
   const expectedCompileIds: string[] =
     unsafeBorrowedMemoryCompileFailFixtures.map((fixture) => fixture.id);
-  if (
+  if (report.mode === "miri") {
+    if (report.compileFailChecks.length)
+      throw new Error("Miri report contains non-Miri compile-fail evidence");
+  } else if (
     report.compileFailChecks.length !== expectedCompileIds.length ||
+    new Set(report.compileFailChecks.map((check) => check.id)).size !==
+      expectedCompileIds.length ||
     report.compileFailChecks.some(
       (check) =>
         !expectedCompileIds.includes(check.id) || check.status !== "passed",
@@ -213,6 +223,8 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
       );
     if (
       report.miriChecks.length !== expectedMiriIds.length ||
+      new Set(report.miriChecks.map((check) => check.id)).size !==
+        expectedMiriIds.length ||
       report.miriChecks.some(
         (check) =>
           !expectedMiriIds.includes(check.id) || check.status !== "passed",
@@ -341,6 +353,32 @@ function runSafe(mode: BorrowedMemoryMode, report: BorrowedMemoryReport) {
           throw new Error(
             `${fixture.id} auto-trait mutant did not expose Sync leakage`,
           );
+      } else if (fixture.id === "unsafe-borrowed-reborrow-soundness-gate") {
+        const varianceClient = unsafeBorrowedMemoryCompileFailFixtures
+          .find((entry) => entry.id === "borrowed-memory-invariant-write")!
+          .source.split("\n")
+          .at(-1)!;
+        const canonical = join(
+          directory,
+          `${fixture.id}-variance-canonical.rs`,
+        );
+        const mutant = join(directory, `${fixture.id}-variance-mutant.rs`);
+        writeFileSync(canonical, `${fixture.canonical}\n${varianceClient}`);
+        writeFileSync(mutant, `${invariantVarianceMutant}\n${varianceClient}`);
+        const canonicalRejected = command(
+          rustc,
+          ["--edition=2024", canonical],
+          directory,
+        );
+        const mutantAccepted = command(
+          rustc,
+          ["--edition=2024", mutant],
+          directory,
+        );
+        if (canonicalRejected.status === 0 || mutantAccepted.status !== 0)
+          throw new Error(
+            `${fixture.id} variance mutant was not distinguished`,
+          );
       } else
         compileAndRun(
           fixture.mutant,
@@ -415,11 +453,11 @@ function runMiri(report: BorrowedMemoryReport) {
         const body = hasOwnMain
           ? ""
           : fixture.id === "raw-borrowed-negative"
-            ? 'fn main(){println!("BORROWED_MEMORY_UB_RAW_NULL_RANGE");let _=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};}'
+            ? "fn main(){let _=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};}"
             : fixture.id === "maybe-uninit-negative"
-              ? 'fn main(){println!("BORROWED_MEMORY_UB_MAYBE_UNINITIALIZED");let slot=MaintainerSlot::<u8>::empty();drop(slot);}'
+              ? "fn main(){let slot=MaintainerSlot::<u8>::empty();drop(slot);}"
               : fixture.id === "maybe-uninit-double-drop-negative"
-                ? 'fn main(){println!("BORROWED_MEMORY_UB_MAYBE_DOUBLE_DROP");let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let _=slot.take();let _=slot.take();}'
+                ? 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let _=slot.take();let _=slot.take();}'
                 : fixture.id.startsWith("raw-borrowed")
                   ? "fn main(){let bytes=[1_u8,2];let _=unsafe{RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)};}"
                   : 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let value=slot.take().unwrap();drop(value);slot.put(String::from("drop")).unwrap();}';
@@ -442,9 +480,10 @@ function runMiri(report: BorrowedMemoryReport) {
         const output = `${executed.stdout ?? ""}${executed.stderr ?? ""}`;
         const expectedPass = fixture.mode === "miri-positive";
         const passed = expectedPass
-          ? executed.status === 0 && !executed.signal
+          ? executed.status === 0 && !executed.signal && !executed.error
           : executed.status !== 0 &&
             !executed.signal &&
+            !executed.error &&
             output.includes(fixture.expectedDiagnostic ?? "") &&
             output.includes("Undefined Behavior");
         if (!passed)

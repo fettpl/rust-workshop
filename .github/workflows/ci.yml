@@ -345,7 +345,9 @@ jobs:
           components: rustfmt, clippy${{ matrix.mode == 'miri' && ', miri, rust-src' || '' }}
       - run: npm ci
       - name: Run authored borrowed-memory verifier
-        run: npm run content:borrowed-memory -- ${{ matrix.args }} > borrowed-memory-${{ matrix.mode }}.json
+        run: node --import tsx scripts/verify-borrowed-memory.ts ${{ matrix.args }} > borrowed-memory-${{ matrix.mode }}.json
+      - name: Check Rust tool metadata
+        run: rustfmt --version && cargo fmt --version && cargo clippy --version
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:

@@ -100,6 +100,7 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
   await page
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
+  const beforeReveal = await readState();
   await page
     .getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true })
     .click();
@@ -159,6 +160,23 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
   await page
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
+  await expect
+    .poll(async () =>
+      (await readState()).events.some(
+        (event) =>
+          event.lessonId === primary.id &&
+          event.stepId === blank.id &&
+          event.kind !== "exposure" &&
+          event.passed &&
+          event.hints === 0 &&
+          !event.revealed,
+      ),
+    )
+    .toBe(true);
+  const afterBlank = await readState();
+  expect(afterBlank.mastery[primary.conceptIds[0]]).toEqual(
+    beforeReveal.mastery[primary.conceptIds[0]],
+  );
   await page.getByText("Twój notatnik", { exact: true }).click();
   await page
     .getByLabel("Notatki do lekcji")

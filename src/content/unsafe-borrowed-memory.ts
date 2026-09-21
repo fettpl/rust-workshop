@@ -211,6 +211,7 @@ function run(
   title: string,
   prompt: string,
   code: string,
+  expected = "bytes=3\n",
 ): LessonStep {
   return {
     id,
@@ -219,7 +220,7 @@ function run(
     prompt,
     code,
     solution: code,
-    evaluator: { kind: "exact-output", expected: "bytes=3\n" },
+    evaluator: { kind: "exact-output", expected },
     expectedStatus: "success",
     evidenceKind: "exposure",
   };
@@ -292,7 +293,10 @@ function compileFail(id: string, prompt: string, code: string): LessonStep {
 }
 
 const simpleRun = String.raw`fn main(){let owner=[1_u8,2,3];let view=&owner[..];assert_eq!(view.len(),3);println!("bytes={}",view.len());}`;
-const invariantCompile = `${compileFailLifetime}\n\n${invariantBorrowCanonical}`;
+const partitionRun = String.raw`fn main(){let mut input=[1_u8,2,3];let (left,right)=input.split_at_mut(1);assert_eq!(left.len(),1);assert_eq!(right.len(),2);println!("parts=1+2");}`;
+const slotRun = String.raw`fn main(){let mut state=None;state=Some("live");assert!(state.is_some());println!("state=full");}`;
+const autoTraitRun = String.raw`fn assert_send<T:Send>(){}fn assert_sync<T:Sync>(){}fn main(){assert_send::<u8>();assert_sync::<u8>();println!("bounds=send-sync");}`;
+const invariantCompile = `${borrowedBytesCanonical}\n\n${compileFailLifetime}\n\n${invariantBorrowCanonical}`;
 
 export const unsafeBorrowedMemoryLessons: Lesson[] = [
   {
@@ -352,9 +356,9 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
       coding({
         id: "unsafe-borrowed-provenance-blank",
         kind: "blank",
-        title: "Od pustej kartki: BorrowedBytes",
+        title: "Od pustej kartki: BorrowedWindow",
         prompt:
-          "Od pustej kartki napisz `BorrowedBytes<'owner>` z `from_slice` i dokładnym `reborrow<'short>`. Safe blank nie wymaga raw pointera; test musi sprawdzać żywego właściciela i bajty.",
+          "Od pustej kartki napisz `BorrowedWindow<'owner>` z `new(owner: &'owner [u8])`, `tail(&self) -> &[u8]` i `bytes(&self) -> &[u8]`. Safe blank nie wymaga raw pointera; zachowaj długość w bajtach i pusty tail dla pustego właściciela.",
         solution: borrowedWindowBlankCanonical,
         tests: borrowedWindowBlankTests,
         gate: true,
@@ -403,7 +407,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-reborrow-run",
         "Uruchom split",
         "Uruchom mały program safe.",
-        simpleRun,
+        partitionRun,
+        "parts=1+2\n",
       ),
       explain(
         "unsafe-borrowed-reborrow-explain",
@@ -437,7 +442,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "blank",
         title: "Od pustej kartki: rozłączność",
         prompt:
-          "Napisz split z `mid == len` oraz inwariantny reborrow. Nie używaj overlap ani unsafe.",
+          "Napisz `partition_window<'a>(input: &'a mut [u8], cut: usize)` z wynikiem `Result<(&'a mut [u8], &'a mut [u8]), CutError>`. `cut == len` jest poprawne, większy cut zwraca `CutError::TooLarge`; nie używaj overlap ani unsafe.",
         solution: partitionWindowBlankCanonical,
         tests: partitionWindowBlankTests,
         gate: true,
@@ -487,7 +492,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-slot-run",
         "Uruchom stan",
         "Uruchom wynik safe slotu.",
-        simpleRun,
+        slotRun,
+        "state=full\n",
       ),
       explain(
         "unsafe-borrowed-slot-explain",
@@ -519,9 +525,9 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
       coding({
         id: "unsafe-borrowed-slot-blank",
         kind: "blank",
-        title: "Od pustej kartki: SafeSlot",
+        title: "Od pustej kartki: InitCell",
         prompt:
-          "Napisz safe `SafeSlot<T>` bez `MaybeUninit`, raw pointera i ukrytego unsafe. Test używa nie-Copy DropProbe.",
+          "Napisz `InitCell<T>` z `vacant`, `insert_once`, `remove` i `occupied`, bez `MaybeUninit`, raw pointera i ukrytego unsafe. Drugi insert zwraca przekazaną wartość; test używa nie-Copy DropProbe.",
         solution: initCellBlankCanonical,
         tests: initCellBlankTests,
         gate: true,
@@ -571,7 +577,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-auto-traits-run",
         "Uruchom bounds",
         "Uruchom positive trait bounds.",
-        simpleRun,
+        autoTraitRun,
+        "bounds=send-sync\n",
       ),
       explain(
         "unsafe-borrowed-auto-traits-explain",
@@ -584,7 +591,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Zachowaj marker",
         prompt:
           "Zaimplementuj `InvariantBorrow` z `PhantomData<&'owner mut T>` i markerem funkcji czyniącym lifetime invariant. Nie używaj unsafe impl.",
-        code: autoTraitsMutant,
+        code: autoTraitsEquivalent,
         solution: autoTraitsCanonical,
         tests: autoTraitsTests,
         gate: true,
@@ -605,7 +612,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "blank",
         title: "Od pustej kartki: marker",
         prompt:
-          "Napisz marker i konstruktor `InvariantBorrow` bez ręcznego unsafe impl. Opisz, że Cell jest Send lecz nie Sync, a Rc nie jest żadnym z nich.",
+          "Napisz `CellMarker<'owner, T>` z `borrow(&'owner mut T)` i `get(&self) -> &T` bez ręcznego unsafe impl. Opisz, że Cell jest Send lecz nie Sync, a Rc nie jest żadnym z nich.",
         solution: cellMarkerBlankCanonical,
         tests: cellMarkerBlankTests,
         gate: true,
@@ -615,7 +622,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "recall",
         title: "Powtórka: auto-traits",
         prompt: "Odtwórz positive Send/Sync bounds na innym układzie markera.",
-        code: autoTraitsMutant,
+        code: autoTraitsEquivalent,
         solution: autoTraitsEquivalent,
         tests: autoTraitsTests,
       }),
@@ -669,7 +676,7 @@ export const unsafeBorrowedMemoryReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: Send i Sync",
     prompt: "Odtwórz positive bounds oraz marker zależny od T.",
-    code: traitViewReviewMutant,
+    code: traitViewReviewCanonical,
     solution: traitViewReviewEquivalent,
     tests: traitViewReviewTests,
   }),

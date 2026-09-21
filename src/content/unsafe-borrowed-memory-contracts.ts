@@ -54,7 +54,7 @@ export const borrowedWindowBlankTests = String.raw`#[test]fn owner_bytes_and_tai
 export const borrowedTextReviewCanonical = String.raw`struct BorrowedText<'owner>{text:&'owner str}
 impl<'owner> BorrowedText<'owner>{fn from_text(text:&'owner str)->Self{Self{text}}fn words(&self)->impl Iterator<Item=&'owner str>{self.text.split_whitespace()}fn raw(&self)->&'owner [u8]{self.text.as_bytes()}}`;
 export const borrowedTextReviewEquivalent = String.raw`struct BorrowedText<'owner>{text:&'owner str}
-impl<'owner> BorrowedText<'owner>{fn from_text(text:&'owner str)->Self{let text=text;Self{text}}fn words(&self)->impl Iterator<Item=&'owner str>{self.text.split_ascii_whitespace()}fn raw(&self)->&'owner [u8]{&self.text.as_bytes()[..]}}`;
+impl<'owner> BorrowedText<'owner>{fn from_text(text:&'owner str)->Self{let text=text;Self{text}}fn words(&self)->impl Iterator<Item=&'owner str>{self.text.split_whitespace()}fn raw(&self)->&'owner [u8]{&self.text.as_bytes()[..]}}`;
 export const borrowedTextReviewMutant = borrowedTextReviewCanonical.replace(
   "self.text.split_whitespace()",
   "self.text.split_whitespace().skip(1)",
@@ -88,12 +88,12 @@ fn accepts_both_edges_and_rejects_only_out_of_bounds() {
 fn writes_stay_disjoint() { let mut data = [0_u8; 4]; let (a,b)=split_borrowed(&mut data,2).unwrap(); a[1]=4; b[1]=9; assert_eq!(data,[0,4,0,9]); }`;
 
 export const partitionWindowBlankCanonical = String.raw`#[derive(Debug,PartialEq,Eq)]enum CutError{TooLarge}
-fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{if cut>input.len(){return Err(CutError::TooLarge)}Ok(input.split_at_mut(cut))}`;
+fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{let suffix=input.len().checked_sub(cut).ok_or(CutError::TooLarge)?;let split=input.len()-suffix;Ok(input.split_at_mut(split))}`;
 export const partitionWindowBlankEquivalent = String.raw`#[derive(Debug,PartialEq,Eq)]enum CutError{TooLarge}
 fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{let right=input.get(cut..).ok_or(CutError::TooLarge)?;Ok(input.split_at_mut(input.len()-right.len()))}`;
 export const partitionWindowBlankMutant = partitionWindowBlankCanonical.replace(
-  "cut>input.len()",
-  "cut>=input.len()",
+  "let suffix=",
+  "if cut>=input.len(){return Err(CutError::TooLarge)}let suffix=",
 );
 export const partitionWindowBlankTests = String.raw`#[test]fn cut_edges_are_valid(){let mut bytes=[0,1,2];let(_,right)=partition_window(&mut bytes,3).unwrap();assert!(right.is_empty());assert_eq!(partition_window(&mut bytes,4),Err(CutError::TooLarge));}
 #[test]fn regions_are_disjoint(){let mut bytes=[0;4];let(left,right)=partition_window(&mut bytes,2).unwrap();left[1]=4;right[1]=9;assert_eq!(bytes,[0,4,0,9]);}`;
@@ -123,12 +123,11 @@ impl<'owner,T> InvariantBorrow<'owner,T>{
  fn reborrow<'short>(&'short mut self)->InvariantBorrow<'short,T>{let value:&'short mut T=&mut *self.value;InvariantBorrow{value,marker:PhantomData}}
  fn get(&self)->&T{&*self.value} fn get_mut(&mut self)->&mut T{&mut *self.value}
 }`;
-export const invariantBorrowMutant = invariantBorrowCanonical
-  .replace("PhantomData<fn(T)->T>", "PhantomData<fn()->&'owner T>")
-  .replace(
-    "fn get_mut(&mut self)->&mut T{self.value}",
-    'fn get_mut(&mut self)->&mut T{panic!("mutant")}',
-  );
+export const invariantBorrowMutant = invariantBorrowCanonical.replace(
+  "PhantomData<fn(T)->T>",
+  "PhantomData<fn()->&'owner T>",
+);
+export const invariantVarianceMutant = String.raw`use std::marker::PhantomData;struct InvariantBorrow<'owner,T>{marker:PhantomData<fn()->T>,owner:PhantomData<&'owner ()>}`;
 export const invariantBorrowTests = String.raw`#[test]
 fn short_reborrow_preserves_outer_access(){let mut value=4;let mut slot=InvariantBorrow::from_mut(&mut value);{let mut short=slot.reborrow();*short.get_mut()+=3;}*slot.get_mut()+=2;assert_eq!(value,9);}
 #[test]
@@ -247,9 +246,9 @@ export const rawBorrowedNegative = rawBorrowedPositive.replace(
   "if len>isize::MAX as usize{return None;}",
 );
 export const rawAliasNegative = String.raw`use std::slice;
-fn main(){println!("BORROWED_MEMORY_UB_RAW_ALIAS");let mut bytes=[1_u8,2];let first=unsafe{slice::from_raw_parts_mut(bytes.as_mut_ptr(),2)};let second=unsafe{slice::from_raw_parts_mut(bytes.as_mut_ptr(),2)};first[0]=3;second[0]=4;}`;
+fn main(){let mut bytes=[1_u8,2];let first=unsafe{slice::from_raw_parts_mut(bytes.as_mut_ptr(),2)};let second=unsafe{slice::from_raw_parts_mut(bytes.as_mut_ptr(),2)};first[0]=3;second[0]=4;}`;
 export const rawWrappedRangeNegative = String.raw`use std::slice;
-fn main(){println!("BORROWED_MEMORY_UB_RAW_WRAPPED_RANGE");let _=unsafe{slice::from_raw_parts(usize::MAX as *const u8,2)};}`;
+fn main(){let _=unsafe{slice::from_raw_parts(usize::MAX as *const u8,2)};}`;
 export const maybeUninitPositive = String.raw`use std::mem::MaybeUninit;
 struct MaintainerSlot<T>{value:MaybeUninit<T>,full:bool}
 impl<T> MaintainerSlot<T>{fn empty()->Self{Self{value:MaybeUninit::uninit(),full:false}}fn put(&mut self,v:T)->Result<(),T>{if self.full{Err(v)}else{self.value.write(v);self.full=true;Ok(())}}fn take(&mut self)->Option<T>{if !self.full{None}else{self.full=false;Some(unsafe{self.value.assume_init_read()})}}}impl<T>Drop for MaintainerSlot<T>{fn drop(&mut self){if self.full{unsafe{self.value.assume_init_drop();}}}}`;
@@ -267,7 +266,7 @@ export const maybeUninitDoubleDropNegative = maybeUninitPositive.replace(
 );
 export const compileFailLifetime = String.raw`fn escape<'a>()->&'a[u8]{let owner=vec![1_u8,2];let view=BorrowedBytes::from_slice(&owner);view.as_slice()}
 fn main(){let _escaped=escape();}`;
-export const compileFailInvariant = String.raw`fn write_short<'short>(slot:&mut InvariantBorrow<'static,&'static str>,value:&'short str){*slot.value=value}fn main(){}`;
+export const compileFailInvariant = String.raw`fn shorten<'short>(slot:InvariantBorrow<'static,&'static u8>,_borrow:&'short u8){let _shorter:InvariantBorrow<'static,&'short u8>=slot;}fn main(){let borrow=1u8;let slot:InvariantBorrow<'static,&'static u8>=unsafe{std::mem::MaybeUninit::zeroed().assume_init()};shorten(slot,&borrow);}`;
 export const compileFailCellSync = String.raw`use std::cell::Cell;fn assert_sync<T:Sync>(){}fn main(){assert_sync::<InvariantBorrow<'_,Cell<u8>>>();}`;
 export const autoTraitsCellSyncClient = String.raw`use std::cell::Cell;fn assert_cell_sync<T:Sync>(){}fn main(){assert_cell_sync::<InvariantBorrow<'_,Cell<u8>>>();}`;
 export const compileFailRcBounds = String.raw`use std::rc::Rc;fn assert_send<T:Send>(){}fn assert_sync<T:Sync>(){}fn main(){assert_send::<InvariantBorrow<'_,Rc<u8>>>();assert_sync::<InvariantBorrow<'_,Rc<u8>>>();}`;

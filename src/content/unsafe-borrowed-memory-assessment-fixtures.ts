@@ -251,7 +251,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: rawBorrowedNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "BORROWED_MEMORY_UB_RAW_NULL_RANGE",
+      expectedDiagnostic: "null pointer",
     },
     {
       id: "maybe-uninit-negative",
@@ -260,7 +260,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: maybeUninitNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "BORROWED_MEMORY_UB_MAYBE_UNINITIALIZED",
+      expectedDiagnostic: "uninitialized",
     },
     {
       id: "raw-borrowed-alias-negative",
@@ -269,7 +269,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: rawAliasNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "BORROWED_MEMORY_UB_RAW_ALIAS",
+      expectedDiagnostic: "already retagged",
     },
     {
       id: "raw-borrowed-wrapped-range-negative",
@@ -278,7 +278,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: rawWrappedRangeNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "BORROWED_MEMORY_UB_RAW_WRAPPED_RANGE",
+      expectedDiagnostic: "out-of-bounds pointer",
     },
     {
       id: "maybe-uninit-double-drop-negative",
@@ -287,7 +287,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: maybeUninitDoubleDropNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "BORROWED_MEMORY_UB_MAYBE_DOUBLE_DROP",
+      expectedDiagnostic: "deallocated memory",
     },
   ];
 
@@ -300,7 +300,7 @@ export const unsafeBorrowedMemoryCompileFailFixtures = [
   {
     id: "borrowed-memory-invariant-write",
     source: `${invariantBorrowCanonical}\n${compileFailInvariant}`,
-    expectedDiagnostic: "lifetime",
+    expectedDiagnostic: "long enough",
   },
   {
     id: "borrowed-memory-cell-sync",

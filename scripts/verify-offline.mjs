@@ -863,6 +863,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     fuzzAssistedPrimaryCode = await page
       .locator(".revealed-solution pre")
       .innerText();
+    const independentBeforeReveal = await readLearningState();
     expect(fuzzAssistedPrimaryCode).toContain("decode_case");
     requireFuzzAssistedCode = true;
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
@@ -902,6 +903,10 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("primary mock: ok");
+    const independentAfterReveal = await readLearningState();
+    expect(independentAfterReveal.mastery).toEqual(
+      independentBeforeReveal.mastery,
+    );
     const independentAfterAssisted = await readLearningState();
     const independentCountAfterAssisted =
       independentAfterAssisted.events.filter(
@@ -946,6 +951,19 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("test result: ok");
+    await expect
+      .poll(async () => {
+        const state = await readLearningState();
+        return state.events.some(
+          (event) =>
+            event.conceptIds.includes("fuzz-input-domain") &&
+            event.passed &&
+            event.hints === 0 &&
+            !event.revealed &&
+            event.kind !== "exposure",
+        );
+      })
+      .toBe(true);
     await page.getByText("Twój notatnik", { exact: true }).click();
     await page
       .getByLabel("Notatki do lekcji")
