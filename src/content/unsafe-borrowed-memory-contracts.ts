@@ -49,20 +49,20 @@ fn accepts_both_edges_and_rejects_only_out_of_bounds() {
 fn writes_stay_disjoint() { let mut data = [0_u8; 4]; let (a,b)=split_borrowed(&mut data,2).unwrap(); a[1]=4; b[1]=9; assert_eq!(data,[0,4,0,9]); }`;
 
 export const invariantBorrowCanonical = String.raw`use std::marker::PhantomData;
-struct InvariantBorrow<'owner,T>{ value: &'owner mut T, life: PhantomData<fn(&'owner T)->&'owner T>, auto_traits: PhantomData<&'owner mut T> }
+struct InvariantBorrow<'owner,T>{ value: &'owner mut T, life: PhantomData<fn(T)->T>, auto_traits: PhantomData<&'owner mut T> }
 impl<'owner,T> InvariantBorrow<'owner,T>{
  fn from_mut(owner:&'owner mut T)->Self{Self{value:owner,life:PhantomData,auto_traits:PhantomData}}
- fn reborrow<'short>(&'short mut self)->InvariantBorrow<'short,T>{Self::from_mut(&mut *self.value)}
+ fn reborrow<'short>(&'short mut self)->InvariantBorrow<'short,T>{InvariantBorrow{value:&mut *self.value,life:PhantomData,auto_traits:PhantomData}}
  fn get(&self)->&T{self.value} fn get_mut(&mut self)->&mut T{self.value}
 }`;
 export const invariantBorrowEquivalent = String.raw`use std::marker::PhantomData;
-struct InvariantBorrow<'owner,T>{value:&'owner mut T, marker:PhantomData<(&'owner mut T,fn(&'owner T)->&'owner T)>}
+struct InvariantBorrow<'owner,T>{value:&'owner mut T, marker:PhantomData<(&'owner mut T,fn(T)->T)>}
 impl<'owner,T> InvariantBorrow<'owner,T>{
  fn from_mut(owner:&'owner mut T)->Self{Self{value:owner,marker:PhantomData}}
- fn reborrow<'short>(&'short mut self)->InvariantBorrow<'short,T>{let value:&'short mut T=&mut *self.value;Self{value,marker:PhantomData}}
+ fn reborrow<'short>(&'short mut self)->InvariantBorrow<'short,T>{let value:&'short mut T=&mut *self.value;InvariantBorrow{value,marker:PhantomData}}
  fn get(&self)->&T{&*self.value} fn get_mut(&mut self)->&mut T{&mut *self.value}
 }`;
-export const invariantBorrowMutant = invariantBorrowCanonical.replace("PhantomData<fn(&'owner T)->&'owner T>", "PhantomData<fn()->&'owner T>");
+export const invariantBorrowMutant = invariantBorrowCanonical.replace("PhantomData<fn(T)->T>", "PhantomData<fn()->&'owner T>").replace("fn get_mut(&mut self)->&mut T{self.value}", "fn get_mut(&mut self)->&mut T{panic!(\"mutant\")}");
 export const invariantBorrowTests = String.raw`#[test]
 fn short_reborrow_preserves_outer_access(){let mut value=4;let mut slot=InvariantBorrow::from_mut(&mut value);{let mut short=slot.reborrow();*short.get_mut()+=3;}*slot.get_mut()+=2;assert_eq!(value,9);}
 #[test]
@@ -71,10 +71,10 @@ fn holds_non_static_borrow(){let text=String::from("życie");let mut selected=te
 export const safeSlotCanonical = String.raw`struct SafeSlot<T>{value:Option<T>}
 impl<T> SafeSlot<T>{fn empty()->Self{Self{value:None}} fn put(&mut self,value:T)->Result<(),T>{if self.value.is_some(){Err(value)}else{self.value=Some(value);Ok(())}} fn take(&mut self)->Option<T>{self.value.take()} fn drop_initialized(&mut self){let _=self.value.take();} fn is_full(&self)->bool{self.value.is_some()}}`;
 export const safeSlotEquivalent = String.raw`struct SafeSlot<T>{value:Option<T>}
-impl<T> SafeSlot<T>{fn empty()->Self{Self{value:None}} fn put(&mut self,value:T)->Result<(),T>{match self.value{Some(_)=>Err(value),None=>{self.value=Some(value);Ok(())}}} fn take(&mut self)->Option<T>{self.value.replace(None).flatten()} fn drop_initialized(&mut self){self.value=None;} fn is_full(&self)->bool{matches!(self.value,Some(_))}}`;
+impl<T> SafeSlot<T>{fn empty()->Self{Self{value:None}} fn put(&mut self,value:T)->Result<(),T>{match self.value{Some(_)=>Err(value),None=>{self.value=Some(value);Ok(())}}} fn take(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.value,&mut out);out} fn drop_initialized(&mut self){self.value=None;} fn is_full(&self)->bool{matches!(self.value,Some(_))}}`;
 export const safeSlotMutant = safeSlotCanonical.replace("if self.value.is_some(){Err(value)}else{self.value=Some(value);Ok(())}", "self.value=Some(value);Ok(())");
 export const safeSlotTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};
-struct Probe(Arc<AtomicUsize>);impl Drop for Probe{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
+#[derive(Debug)] struct Probe(Arc<AtomicUsize>);impl Drop for Probe{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
 #[test]fn state_and_drop_are_exact(){let d=Arc::new(AtomicUsize::new(0));{let mut s=SafeSlot::empty();s.put(Probe(d.clone())).unwrap();let v=s.take().unwrap();assert!(!s.is_full());drop(v);}assert_eq!(d.load(Ordering::SeqCst),1);}
 #[test]fn second_put_is_rejected(){let d=Arc::new(AtomicUsize::new(0));let mut s=SafeSlot::empty();s.put(Probe(d.clone())).unwrap();drop(s.put(Probe(d.clone())).unwrap_err());assert_eq!(d.load(Ordering::SeqCst),1);s.drop_initialized();assert_eq!(d.load(Ordering::SeqCst),2);}`;
 
@@ -99,5 +99,6 @@ impl<T> MaintainerSlot<T>{fn empty()->Self{Self{value:MaybeUninit::uninit(),full
 export const maybeUninitEquivalent = maybeUninitPositive.replace("if !self.full{None}else{self.full=false;Some(unsafe{self.value.assume_init_read()})}", "match self.full{false=>None,true=>{self.full=false;Some(unsafe{self.value.assume_init_read()})}}");
 export const maybeUninitNegative = maybeUninitPositive.replace("if self.full{unsafe{self.value.assume_init_drop();}}", "unsafe{self.value.assume_init_drop();}");
 export const compileFailLifetime = String.raw`fn escape<'a>()->&'a[u8]{let owner=vec![1_u8,2];BorrowedBytes::from_slice(&owner).as_slice()}`;
+export const compileFailInvariant = String.raw`fn write_short<'short>(slot:&mut InvariantBorrow<'static,&'static str>,value:&'short str){*slot.value=value}fn main(){}`;
 export const compileFailCellSync = String.raw`use std::cell::Cell;fn assert_sync<T:Sync>(){}fn main(){assert_sync::<InvariantBorrow<'_,Cell<u8>>>();}`;
 export const compileFailRcBounds = String.raw`use std::rc::Rc;fn assert_send<T:Send>(){}fn assert_sync<T:Sync>(){}fn main(){assert_send::<InvariantBorrow<'_,Rc<u8>>>();assert_sync::<InvariantBorrow<'_,Rc<u8>>>();}`;
