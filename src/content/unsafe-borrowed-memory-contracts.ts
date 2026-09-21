@@ -88,14 +88,14 @@ fn accepts_both_edges_and_rejects_only_out_of_bounds() {
 fn writes_stay_disjoint() { let mut data = [0_u8; 4]; let (a,b)=split_borrowed(&mut data,2).unwrap(); a[1]=4; b[1]=9; assert_eq!(data,[0,4,0,9]); }`;
 
 export const partitionWindowBlankCanonical = String.raw`#[derive(Debug,PartialEq,Eq)]enum CutError{TooLarge}
-fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{let suffix=input.len().checked_sub(cut).ok_or(CutError::TooLarge)?;let split=input.len()-suffix;Ok(input.split_at_mut(split))}`;
+fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{let prefix_len=input.len().checked_sub(cut).ok_or(CutError::TooLarge)?;Ok(input.split_at_mut(prefix_len))}`;
 export const partitionWindowBlankEquivalent = String.raw`#[derive(Debug,PartialEq,Eq)]enum CutError{TooLarge}
-fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{let right=input.get(cut..).ok_or(CutError::TooLarge)?;Ok(input.split_at_mut(input.len()-right.len()))}`;
+fn partition_window<'a>(input:&'a mut [u8],cut:usize)->Result<(&'a mut [u8],&'a mut [u8]),CutError>{let prefix_len=input.len().checked_sub(cut).ok_or(CutError::TooLarge)?;let (left,right)=input.split_at_mut(prefix_len);Ok((left,right))}`;
 export const partitionWindowBlankMutant = partitionWindowBlankCanonical.replace(
-  "let suffix=",
-  "if cut>=input.len(){return Err(CutError::TooLarge)}let suffix=",
+  "checked_sub(cut)",
+  "checked_sub(cut+1)",
 );
-export const partitionWindowBlankTests = String.raw`#[test]fn cut_edges_are_valid(){let mut bytes=[0,1,2];let(_,right)=partition_window(&mut bytes,3).unwrap();assert!(right.is_empty());assert_eq!(partition_window(&mut bytes,4),Err(CutError::TooLarge));}
+export const partitionWindowBlankTests = String.raw`#[test]fn cut_edges_are_valid(){let mut bytes=[0,1,2];let(left,right)=partition_window(&mut bytes,3).unwrap();assert!(left.is_empty());assert_eq!(right,&[0,1,2]);assert_eq!(partition_window(&mut bytes,4),Err(CutError::TooLarge));}
 #[test]fn regions_are_disjoint(){let mut bytes=[0;4];let(left,right)=partition_window(&mut bytes,2).unwrap();left[1]=4;right[1]=9;assert_eq!(bytes,[0,4,0,9]);}`;
 
 export const markerSplitReviewCanonical = String.raw`#[derive(Debug,PartialEq,Eq)]enum MarkerError{Missing}
@@ -157,27 +157,27 @@ export const safeSlotSoundnessMutant = safeSlotSoundnessCanonical.replace(
 export const safeSlotSoundnessTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};#[derive(Debug)]struct Counted(Arc<AtomicUsize>);impl Drop for Counted{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
 #[test]fn duplicate_insert_and_clear_have_one_drop_each(){let drops=Arc::new(AtomicUsize::new(0));let mut cell=OwnedCell::open();cell.insert(Counted(drops.clone())).unwrap();drop(cell.insert(Counted(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(cell.remove());assert_eq!(drops.load(Ordering::SeqCst),2);cell.insert(Counted(drops.clone())).unwrap();cell.clear();assert_eq!(drops.load(Ordering::SeqCst),3);}`;
 
-export const initCellBlankCanonical = String.raw`struct InitCell<T>{value:Option<T>,occupied:bool}
-impl<T>InitCell<T>{fn vacant()->Self{Self{value:None,occupied:false}}fn insert_once(&mut self,value:T)->Result<(),T>{if self.occupied{Err(value)}else{self.value=Some(value);self.occupied=true;Ok(())}}fn remove(&mut self)->Option<T>{let out=self.value.take();self.occupied=false;out}fn occupied(&self)->bool{self.occupied}}`;
-export const initCellBlankEquivalent = String.raw`struct InitCell<T>{value:Option<T>,occupied:bool}
-impl<T>InitCell<T>{fn vacant()->Self{Self{value:None,occupied:false}}fn insert_once(&mut self,value:T)->Result<(),T>{match self.occupied{true=>Err(value),false=>{self.value=Some(value);self.occupied=true;Ok(())}}}fn remove(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.value,&mut out);self.occupied=out.is_some();self.occupied=false;out}fn occupied(&self)->bool{self.occupied}}`;
+export const initCellBlankCanonical = String.raw`struct InitCell<T>{value:Option<T>,sealed:bool}
+impl<T>InitCell<T>{fn vacant()->Self{Self{value:None,sealed:false}}fn insert_once(&mut self,value:T)->Result<(),T>{if self.sealed{Err(value)}else{self.value=Some(value);self.sealed=true;Ok(())}}fn remove(&mut self)->Option<T>{self.value.take()}fn occupied(&self)->bool{self.value.is_some()}}`;
+export const initCellBlankEquivalent = String.raw`struct InitCell<T>{value:Option<T>,sealed:bool}
+impl<T>InitCell<T>{fn vacant()->Self{Self{value:None,sealed:false}}fn insert_once(&mut self,value:T)->Result<(),T>{if self.sealed{Err(value)}else{self.value=Some(value);self.sealed=true;Ok(())}}fn remove(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.value,&mut out);out}fn occupied(&self)->bool{self.value.is_some()}}`;
 export const initCellBlankMutant = initCellBlankCanonical.replace(
-  "if self.occupied{Err(value)}else{self.value=Some(value);self.occupied=true;Ok(())}",
-  "self.value=Some(value);self.occupied=true;Ok(())",
+  "if self.sealed{Err(value)}else{self.value=Some(value);self.sealed=true;Ok(())}",
+  "if self.value.is_some(){Err(value)}else{self.value=Some(value);Ok(())}",
 );
 export const initCellBlankTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};#[derive(Debug)]struct DropProbe(Arc<AtomicUsize>);impl Drop for DropProbe{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
-#[test]fn insert_remove_and_duplicate_are_exact(){let drops=Arc::new(AtomicUsize::new(0));let mut cell=InitCell::vacant();cell.insert_once(DropProbe(drops.clone())).unwrap();assert!(cell.occupied());drop(cell.insert_once(DropProbe(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(cell.remove());assert!(!cell.occupied());assert_eq!(drops.load(Ordering::SeqCst),2);}`;
+#[test]fn insert_remove_and_duplicate_are_exact(){let drops=Arc::new(AtomicUsize::new(0));let mut cell=InitCell::vacant();cell.insert_once(DropProbe(drops.clone())).unwrap();assert!(cell.occupied());drop(cell.insert_once(DropProbe(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(cell.remove());assert!(!cell.occupied());assert_eq!(drops.load(Ordering::SeqCst),2);assert!(cell.insert_once(DropProbe(drops.clone())).is_err());}`;
 
-export const leaseSlotReviewCanonical = String.raw`struct LeaseSlot<T>{item:Option<T>}
-impl<T>LeaseSlot<T>{fn new()->Self{Self{item:None}}fn store(&mut self,item:T)->Result<(),T>{if self.item.is_some(){Err(item)}else{self.item=Some(item);Ok(())}}fn release(&mut self)->Option<T>{self.item.take()}fn clear(&mut self){self.item=None}}`;
-export const leaseSlotReviewEquivalent = String.raw`struct LeaseSlot<T>{item:Option<T>}
-impl<T>LeaseSlot<T>{fn new()->Self{Self{item:None}}fn store(&mut self,item:T)->Result<(),T>{match self.item{Some(_)=>Err(item),None=>{self.item=Some(item);Ok(())}}}fn release(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.item,&mut out);out}fn clear(&mut self){let _=self.item.take();}}`;
+export const leaseSlotReviewCanonical = String.raw`struct LeaseSlot<T>{item:Option<T>,generation:u64}
+impl<T>LeaseSlot<T>{fn new()->Self{Self{item:None,generation:0}}fn store(&mut self,item:T)->Result<(),T>{if self.item.is_some(){Err(item)}else{self.item=Some(item);self.generation+=1;Ok(())}}fn release(&mut self)->Option<T>{let out=self.item.take();if out.is_some(){self.generation+=1;}out}fn clear(&mut self){if self.item.take().is_some(){self.generation+=1;}}fn generation(&self)->u64{self.generation}}`;
+export const leaseSlotReviewEquivalent = String.raw`struct LeaseSlot<T>{item:Option<T>,generation:u64}
+impl<T>LeaseSlot<T>{fn new()->Self{Self{item:None,generation:0}}fn store(&mut self,item:T)->Result<(),T>{match self.item{Some(_)=>Err(item),None=>{self.item=Some(item);self.generation+=1;Ok(())}}}fn release(&mut self)->Option<T>{let mut out=None;std::mem::swap(&mut self.item,&mut out);if out.is_some(){self.generation+=1;}out}fn clear(&mut self){if self.item.take().is_some(){self.generation+=1;}}fn generation(&self)->u64{self.generation}}`;
 export const leaseSlotReviewMutant = leaseSlotReviewCanonical.replace(
-  "if self.item.is_some(){Err(item)}else{self.item=Some(item);Ok(())}",
+  "if self.item.is_some(){Err(item)}else{self.item=Some(item);self.generation+=1;Ok(())}",
   "self.item=Some(item);Ok(())",
 );
 export const leaseSlotReviewTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};#[derive(Debug)]struct LeaseProbe(Arc<AtomicUsize>);impl Drop for LeaseProbe{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
-#[test]fn release_and_clear_drop_once(){let drops=Arc::new(AtomicUsize::new(0));let mut slot=LeaseSlot::new();slot.store(LeaseProbe(drops.clone())).unwrap();drop(slot.store(LeaseProbe(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(slot.release());assert_eq!(drops.load(Ordering::SeqCst),2);slot.store(LeaseProbe(drops.clone())).unwrap();slot.clear();assert_eq!(drops.load(Ordering::SeqCst),3);}`;
+#[test]fn release_and_clear_drop_once(){let drops=Arc::new(AtomicUsize::new(0));let mut slot=LeaseSlot::new();slot.store(LeaseProbe(drops.clone())).unwrap();assert_eq!(slot.generation(),1);drop(slot.store(LeaseProbe(drops.clone())).unwrap_err());assert_eq!(drops.load(Ordering::SeqCst),1);drop(slot.release());assert_eq!(drops.load(Ordering::SeqCst),2);assert_eq!(slot.generation(),2);slot.store(LeaseProbe(drops.clone())).unwrap();slot.clear();assert_eq!(drops.load(Ordering::SeqCst),3);assert_eq!(slot.generation(),4);}`;
 
 export const autoTraitsCanonical =
   invariantBorrowCanonical +

@@ -47,6 +47,8 @@ export interface BorrowedMemoryReport {
     stderr: string;
     exitCode: number | null;
     signal: string | null;
+    source: string;
+    manifestPath: string;
   }[];
   artifactPaths: string[];
   artifactHashes: Record<string, string>;
@@ -70,7 +72,10 @@ const BUDGETS = {
   compileTimeoutMs: 120_000,
   testTimeoutMs: 8_000,
   miriTimeoutMs: 60_000,
-  maxSubprocesses: 128,
+  // The safe matrix currently executes 145 bounded commands (including
+  // rustfmt, rustc, test binaries, compiler-version probes, and compile-fail
+  // clients). Keep headroom for toolchain probes while retaining a hard cap.
+  maxSubprocesses: 192,
 } as const;
 const sha256 = (value: string | Uint8Array) =>
   createHash("sha256").update(value).digest("hex");
@@ -268,7 +273,9 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
           typeof check.stdout !== "string" ||
           typeof check.stderr !== "string" ||
           (check.exitCode !== null && !Number.isInteger(check.exitCode)) ||
-          (check.signal !== null && typeof check.signal !== "string"),
+          (check.signal !== null && typeof check.signal !== "string") ||
+          typeof check.source !== "string" ||
+          !check.manifestPath,
       )
     )
       throw new Error("Miri raw command evidence is incomplete");
@@ -290,7 +297,9 @@ function command(
   const result = spawnSync(executable, args, {
     cwd,
     encoding: "utf8",
-    timeout,
+    timeout: executionDeadline
+      ? Math.min(timeout, Math.max(1, executionDeadline - started))
+      : timeout,
     maxBuffer: 4 * 1024 * 1024,
   });
   budgetUsedMs += Date.now() - started;
@@ -324,6 +333,16 @@ function compileAndRun(
   const file = join(directory, `${id}.rs`);
   const binary = join(directory, id);
   writeFileSync(file, appendHiddenTests(source, tests));
+  const formatted = command(
+    "rustfmt",
+    ["--edition", "2024", file],
+    directory,
+    BUDGETS.compileTimeoutMs,
+  );
+  if (formatted.status !== 0 || formatted.error)
+    throw new Error(
+      `${id} rustfmt error: ${formatted.stderr ?? formatted.error?.message ?? "unknown"}`,
+    );
   const compiled = command(
     rustc,
     ["--edition=2024", "--test", file, "-o", binary],
@@ -550,12 +569,16 @@ function runMiri(report: BorrowedMemoryReport) {
             "cargo",
             "miri",
             "run",
+            "--manifest-path",
+            join(directory, "Cargo.toml"),
             "--quiet",
           ],
           stdout: executed.stdout ?? "",
           stderr: executed.stderr ?? "",
           exitCode: executed.status,
           signal: executed.signal ?? null,
+          source: `${source}\n${body}\n`,
+          manifestPath: join(directory, "Cargo.toml"),
         });
       }
     }
@@ -624,7 +647,15 @@ export function runBorrowedMemoryVerification(
   }
   report.executionCount = executionCount;
   report.budgetUsedMs = budgetUsedMs;
-  if (report.status === "passed") validateBorrowedMemoryReport(report);
+  try {
+    if (report.status === "passed") validateBorrowedMemoryReport(report);
+  } catch (error) {
+    report.status = "failed";
+    report.phaseStatuses.report = "failed";
+    report.phaseErrors.push(
+      error instanceof Error ? error.message : String(error),
+    );
+  }
   return report;
 }
 
