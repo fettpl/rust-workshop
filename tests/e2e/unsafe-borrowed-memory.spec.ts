@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { lessons, modules } from "../../src/content/course";
 
 type State = {
-  mastery: Record<string, { level?: string; reason?: string }>;
+  mastery: Record<string, { level?: string; reason?: string; updatedAt?: number }>;
   events: Array<{
     lessonId: string;
     stepId: string;
@@ -11,6 +11,13 @@ type State = {
     hints: number;
     revealed: boolean;
   }>;
+};
+
+const stableMastery = (state: State, conceptId: string) => {
+  const record = state.mastery[conceptId];
+  return record
+    ? { level: record.level, reason: record.reason }
+    : undefined;
 };
 
 test("borrowed memory keeps assisted evidence separate from an independent blank", async ({
@@ -114,7 +121,13 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
     .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
     .click();
   const beforeAssisted = await readState();
-  const beforeMastery = beforeAssisted.mastery[primary.conceptIds[0]];
+  const beforeMastery = stableMastery(beforeAssisted, primary.conceptIds[0]);
+  const assistedCountBefore = beforeAssisted.events.filter(
+    (event) =>
+      event.lessonId === primary.id &&
+      event.stepId === gate.id &&
+      event.kind !== "exposure",
+  ).length;
   await page
     .getByLabel("Kroki lekcji")
     .getByRole("button")
@@ -133,7 +146,7 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
           event.kind !== "exposure",
       ),
     )
-    .toHaveLength(2);
+    .toHaveLength(assistedCountBefore + 1);
   const afterAssisted = await readState();
   const assisted = afterAssisted.events
     .filter(
@@ -145,7 +158,15 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
     .at(-1)!;
   expect(assisted).toMatchObject({ passed: true, hints: 2, revealed: true });
   expect(assisted.hints === 0 && !assisted.revealed).toBe(false);
-  expect(afterAssisted.mastery[primary.conceptIds[0]]).toEqual(beforeMastery);
+  expect(stableMastery(afterAssisted, primary.conceptIds[0])).toEqual(
+    beforeMastery,
+  );
+  const blankCountBefore = afterAssisted.events.filter(
+    (event) =>
+      event.lessonId === primary.id &&
+      event.stepId === blank.id &&
+      event.kind !== "exposure",
+  ).length;
   await page
     .getByLabel("Kroki lekcji")
     .getByRole("button")
@@ -162,7 +183,7 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
     .click();
   await expect
     .poll(async () =>
-      (await readState()).events.some(
+      (await readState()).events.filter(
         (event) =>
           event.lessonId === primary.id &&
           event.stepId === blank.id &&
@@ -170,9 +191,9 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
           event.passed &&
           event.hints === 0 &&
           !event.revealed,
-      ),
+      ).length,
     )
-    .toBe(true);
+    .toBe(blankCountBefore + 1);
   const afterBlank = await readState();
   expect(afterBlank.mastery[primary.conceptIds[0]]).toBeDefined();
   await page.getByText("Twój notatnik", { exact: true }).click();

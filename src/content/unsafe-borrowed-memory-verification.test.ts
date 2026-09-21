@@ -1,6 +1,8 @@
+import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import {
   buildBorrowedMemoryReport,
+  currentBorrowedMemoryMiriSources,
   parseBorrowedMemoryMode,
   runBorrowedMemoryVerification,
   validateBorrowedMemoryReport,
@@ -133,3 +135,62 @@ it("rejects stale hashes and partial phase reports", () => {
     }),
   ).toThrow();
 }, 60_000);
+
+it("rejects substituted Miri source even when its hash is recomputed", () => {
+  const sources = currentBorrowedMemoryMiriSources();
+  const executed = buildBorrowedMemoryReport("miri");
+  const tooling = {
+    command: ["fixture-tool"],
+    stdout: "",
+    stderr: "",
+    exitCode: 0,
+    signal: null,
+    status: "passed" as const,
+  };
+  executed.compilerVersion = "rustc nightly test";
+  executed.phaseStatuses = {
+    compile: "passed",
+    tests: "passed",
+    report: "passed",
+  };
+  executed.status = "passed";
+  executed.miriChecks = sources.map((entry) => ({
+    id: entry.id,
+    status: "passed" as const,
+    command: ["miri", "run", entry.id],
+    stdout: "",
+    stderr: "",
+    exitCode: 0,
+    signal: null,
+    source: entry.source,
+    sourceHash: entry.sourceHash,
+    authoredSourceHash: entry.sourceHash,
+    manifestPath: "/tmp/borrowed-memory/Cargo.toml",
+    manifest: entry.manifest,
+    manifestHash: entry.manifestHash,
+    tooling: {
+      rustfmt: tooling,
+      cargoFmt: tooling,
+      cargoClippy: tooling,
+    },
+  }));
+  expect(() => validateBorrowedMemoryReport(executed)).not.toThrow();
+
+  const tampered = {
+    ...executed,
+    miriChecks: executed.miriChecks.map((check, index) =>
+      index === 0
+        ? {
+            ...check,
+            source: `${check.source}\n// substituted fixture\n`,
+            sourceHash: createHash("sha256")
+              .update(`${check.source}\n// substituted fixture\n`)
+              .digest("hex"),
+          }
+        : check,
+    ),
+  };
+  expect(() => validateBorrowedMemoryReport(tampered)).toThrow(
+    "Miri raw command evidence is incomplete",
+  );
+});

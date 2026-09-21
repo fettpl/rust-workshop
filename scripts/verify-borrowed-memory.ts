@@ -129,13 +129,13 @@ function generatedMiriSource(fixture: MiriFixture, variant: MiriVariant) {
   const body = hasOwnMain
     ? ""
     : fixture.id === "raw-borrowed-negative"
-      ? "fn main(){let _=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};}"
+      ? "fn main(){let view=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};let _=view.map(|view|view.bytes.len());}"
       : fixture.id === "maybe-uninit-negative"
         ? "fn main(){let slot=MaintainerSlot::<u8>::empty();drop(slot);}"
         : fixture.id === "maybe-uninit-double-drop-negative"
           ? 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let _=slot.take();let _=slot.take();}'
           : fixture.id.startsWith("raw-borrowed")
-            ? "fn main(){let bytes=[1_u8,2];let _=unsafe{RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)};}"
+            ? "fn main(){let bytes=[1_u8,2];let view=unsafe{RawBorrowed::from_raw_parts_unchecked(bytes.as_ptr(),2)};let _=view.map(|view|view.bytes.len());}"
             : 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let value=slot.take().unwrap();drop(value);slot.put(String::from("drop")).unwrap();}';
   return {
     source,
@@ -161,6 +161,14 @@ function currentMiriSources() {
         };
       });
     });
+}
+
+export function currentBorrowedMemoryMiriSources() {
+  return currentMiriSources().map((entry) => ({
+    ...entry,
+    manifest: MIRI_MANIFEST,
+    manifestHash: sha256(MIRI_MANIFEST),
+  }));
 }
 
 function assertHashMap(values: Record<string, string>, label: string) {
@@ -328,6 +336,9 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
           ? [`${fixture.id}:canonical`, `${fixture.id}:equivalent`]
           : [`${fixture.id}:mutant`],
       );
+    const expectedMiriSources = new Map(
+      currentMiriSources().map((entry) => [entry.id, entry]),
+    );
     if (
       report.miriChecks.length !== expectedMiriIds.length ||
       new Set(report.miriChecks.map((check) => check.id)).size !==
@@ -350,6 +361,9 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
           !/^[0-9a-f]{64}$/.test(check.sourceHash) ||
           !/^[0-9a-f]{64}$/.test(check.authoredSourceHash) ||
           sha256(check.source) !== check.sourceHash ||
+          expectedMiriSources.get(check.id)?.source !== check.source ||
+          expectedMiriSources.get(check.id)?.sourceHash !==
+            check.authoredSourceHash ||
           report.sourceHashes[`miri-source:${check.id}`] !==
             check.authoredSourceHash ||
           !check.manifestPath ||
@@ -614,6 +628,15 @@ function runMiri(report: BorrowedMemoryReport) {
         const sourcePath = join(sourceDir, "main.rs");
         const manifestPath = join(directory, "Cargo.toml");
         writeFileSync(sourcePath, generated.fullSource);
+        const toolingDirectory = mkdtempSync(
+          join(directory, `tooling-${fixture.id}-${variant}-`),
+        );
+        const toolingSourceDir = join(toolingDirectory, "src");
+        mkdirSync(toolingSourceDir, { recursive: true });
+        const toolingManifestPath = join(toolingDirectory, "Cargo.toml");
+        const toolingSourcePath = join(toolingSourceDir, "main.rs");
+        writeFileSync(toolingManifestPath, MIRI_MANIFEST);
+        writeFileSync(toolingSourcePath, generated.fullSource);
         const formatCommand = [
           "rustup",
           "run",
@@ -621,7 +644,7 @@ function runMiri(report: BorrowedMemoryReport) {
           "rustfmt",
           "--edition",
           "2024",
-          sourcePath,
+          toolingSourcePath,
         ];
         const formatted = command(
           "rustup",
@@ -636,7 +659,7 @@ function runMiri(report: BorrowedMemoryReport) {
         const formatCheckCommand = [
           ...formatCommand.slice(0, -1),
           "--check",
-          sourcePath,
+          toolingSourcePath,
         ];
         const formatCheck = command(
           "rustup",
@@ -655,7 +678,7 @@ function runMiri(report: BorrowedMemoryReport) {
           "cargo",
           "fmt",
           "--manifest-path",
-          manifestPath,
+          toolingManifestPath,
           "--",
           "--check",
         ];
@@ -672,7 +695,7 @@ function runMiri(report: BorrowedMemoryReport) {
           "cargo",
           "clippy",
           "--manifest-path",
-          manifestPath,
+          toolingManifestPath,
           "--all-targets",
           "--",
           "-D",
