@@ -11,11 +11,31 @@ import {
   autoTraitsEquivalent,
   autoTraitsMutant,
   autoTraitsTests,
+  autoTraitsSoundnessCanonical,
+  autoTraitsSoundnessEquivalent,
+  autoTraitsSoundnessTests,
+  cellMarkerBlankMutant,
+  cellMarkerBlankTests,
+  traitViewReviewMutant,
+  traitViewReviewTests,
+  borrowedTextReviewCanonical,
+  borrowedTextReviewEquivalent,
+  borrowedWindowBlankCanonical,
+  borrowedWindowBlankEquivalent,
+  borrowedWindowBlankMutant,
+  borrowedWindowBlankTests,
   borrowedBytesCanonical,
   borrowedBytesEquivalent,
   borrowedBytesMutant,
   borrowedBytesTests,
+  borrowedBytesSoundnessCanonical,
+  borrowedBytesSoundnessEquivalent,
+  borrowedBytesSoundnessTests,
+  borrowedTextReviewMutant,
+  borrowedTextReviewTests,
   compileFailLifetime,
+  cellMarkerBlankCanonical,
+  cellMarkerBlankEquivalent,
   invariantBorrowCanonical,
   invariantBorrowEquivalent,
   invariantBorrowMutant,
@@ -24,10 +44,31 @@ import {
   safeSlotEquivalent,
   safeSlotMutant,
   safeSlotTests,
+  safeSlotSoundnessCanonical,
+  safeSlotSoundnessEquivalent,
+  safeSlotSoundnessTests,
+  initCellBlankCanonical,
+  initCellBlankEquivalent,
+  initCellBlankMutant,
+  initCellBlankTests,
+  leaseSlotReviewCanonical,
+  leaseSlotReviewEquivalent,
+  leaseSlotReviewMutant,
+  leaseSlotReviewTests,
+  markerSplitReviewCanonical,
+  markerSplitReviewEquivalent,
+  markerSplitReviewMutant,
+  markerSplitReviewTests,
+  partitionWindowBlankCanonical,
+  partitionWindowBlankEquivalent,
+  partitionWindowBlankMutant,
+  partitionWindowBlankTests,
   splitBorrowedCanonical,
   splitBorrowedEquivalent,
   splitBorrowedMutant,
   splitBorrowedTests,
+  traitViewReviewCanonical,
+  traitViewReviewEquivalent,
 } from "./unsafe-borrowed-memory-contracts";
 
 const reviewedAt = "2026-09-21";
@@ -178,7 +219,7 @@ function run(
     prompt,
     code,
     solution: code,
-    evaluator: { kind: "exact-output", expected: "ok\n" },
+    evaluator: { kind: "exact-output", expected: "bytes=3\n" },
     expectedStatus: "success",
     evidenceKind: "exposure",
   };
@@ -250,7 +291,7 @@ function compileFail(id: string, prompt: string, code: string): LessonStep {
   };
 }
 
-const simpleRun = String.raw`fn main(){ println!("ok"); }`;
+const simpleRun = String.raw`fn main(){let owner=[1_u8,2,3];let view=&owner[..];assert_eq!(view.len(),3);println!("bytes={}",view.len());}`;
 const invariantCompile = `${compileFailLifetime}\n\n${invariantBorrowCanonical}`;
 
 export const unsafeBorrowedMemoryLessons: Lesson[] = [
@@ -303,9 +344,9 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Sprawdź caller obligations",
         prompt:
           "Utrzymaj ten sam safe API i opisz w kodzie kontrakt: lifetime nie przedłuża właściciela, a multibyte długość jest długością bajtów.",
-        code: borrowedBytesEquivalent,
-        solution: borrowedBytesEquivalent,
-        tests: borrowedBytesTests,
+        code: borrowedBytesSoundnessEquivalent,
+        solution: borrowedBytesSoundnessCanonical,
+        tests: borrowedBytesSoundnessTests,
         gate: true,
       }),
       coding({
@@ -314,8 +355,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Od pustej kartki: BorrowedBytes",
         prompt:
           "Od pustej kartki napisz `BorrowedBytes<'owner>` z `from_slice` i dokładnym `reborrow<'short>`. Safe blank nie wymaga raw pointera; test musi sprawdzać żywego właściciela i bajty.",
-        solution: borrowedBytesCanonical,
-        tests: borrowedBytesTests,
+        solution: borrowedWindowBlankCanonical,
+        tests: borrowedWindowBlankTests,
         gate: true,
       }),
       coding({
@@ -397,8 +438,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Od pustej kartki: rozłączność",
         prompt:
           "Napisz split z `mid == len` oraz inwariantny reborrow. Nie używaj overlap ani unsafe.",
-        solution: splitBorrowedCanonical,
-        tests: splitBorrowedTests,
+        solution: partitionWindowBlankCanonical,
+        tests: partitionWindowBlankTests,
         gate: true,
       }),
       coding({
@@ -470,9 +511,9 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Sprawdź własność",
         prompt:
           "Zachowaj przejścia Empty/Full i exactly-once Drop dla nie-Copy wartości.",
-        code: safeSlotEquivalent,
-        solution: safeSlotEquivalent,
-        tests: safeSlotTests,
+        code: safeSlotSoundnessEquivalent,
+        solution: safeSlotSoundnessCanonical,
+        tests: safeSlotSoundnessTests,
         gate: true,
       }),
       coding({
@@ -481,8 +522,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Od pustej kartki: SafeSlot",
         prompt:
           "Napisz safe `SafeSlot<T>` bez `MaybeUninit`, raw pointera i ukrytego unsafe. Test używa nie-Copy DropProbe.",
-        solution: safeSlotCanonical,
-        tests: safeSlotTests,
+        solution: initCellBlankCanonical,
+        tests: initCellBlankTests,
         gate: true,
       }),
       coding({
@@ -553,10 +594,10 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "apply",
         title: "Sprawdź positive bounds",
         prompt:
-          "Dodaj `assert_send` i `assert_sync` dla `InvariantBorrow<'_, u8>` oraz zachowaj mutably-borrowed marker.",
-        code: autoTraitsEquivalent,
-        solution: autoTraitsEquivalent,
-        tests: autoTraitsTests,
+          "Dodaj `assert_send` i `assert_sync` dla `InvariantBorrow<'_, u8>` oraz zachowaj mutably-borrowed marker. Sprawdź osobno, że `Cell<u8>` jest Send, lecz nie Sync.",
+        code: autoTraitsSoundnessEquivalent,
+        solution: autoTraitsSoundnessCanonical,
+        tests: autoTraitsSoundnessTests,
         gate: true,
       }),
       coding({
@@ -565,8 +606,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Od pustej kartki: marker",
         prompt:
           "Napisz marker i konstruktor `InvariantBorrow` bez ręcznego unsafe impl. Opisz, że Cell jest Send lecz nie Sync, a Rc nie jest żadnym z nich.",
-        solution: autoTraitsCanonical,
-        tests: autoTraitsTests,
+        solution: cellMarkerBlankCanonical,
+        tests: cellMarkerBlankTests,
         gate: true,
       }),
       coding({
@@ -601,36 +642,36 @@ export const unsafeBorrowedMemoryReviewExercises: Record<string, LessonStep> = {
     title: "Powtórka: widok właściciela",
     prompt:
       "Zaimplementuj BorrowedBytes z innym ciałem funkcji i testem bajtów.",
-    code: borrowedBytesMutant,
-    solution: borrowedBytesEquivalent,
-    tests: borrowedBytesTests,
+    code: borrowedTextReviewMutant,
+    solution: borrowedTextReviewEquivalent,
+    tests: borrowedTextReviewTests,
   }),
   "unsafe-borrowed-reborrow-contract": coding({
     id: "review-unsafe-borrowed-reborrow",
     kind: "apply",
     title: "Powtórka: rozłączny split",
     prompt: "Odtwórz split i pokaż oba przypadki brzegowe.",
-    code: splitBorrowedMutant,
-    solution: splitBorrowedEquivalent,
-    tests: splitBorrowedTests,
+    code: markerSplitReviewMutant,
+    solution: markerSplitReviewEquivalent,
+    tests: markerSplitReviewTests,
   }),
   "unsafe-borrowed-slot-contract": coding({
     id: "review-unsafe-borrowed-slot",
     kind: "apply",
     title: "Powtórka: ownership slotu",
     prompt: "Odtwórz SafeSlot i exactly-once Drop.",
-    code: safeSlotMutant,
-    solution: safeSlotEquivalent,
-    tests: safeSlotTests,
+    code: leaseSlotReviewMutant,
+    solution: leaseSlotReviewEquivalent,
+    tests: leaseSlotReviewTests,
   }),
   "unsafe-borrowed-auto-traits-contract": coding({
     id: "review-unsafe-borrowed-auto-traits",
     kind: "apply",
     title: "Powtórka: Send i Sync",
     prompt: "Odtwórz positive bounds oraz marker zależny od T.",
-    code: autoTraitsMutant,
-    solution: autoTraitsEquivalent,
-    tests: autoTraitsTests,
+    code: traitViewReviewMutant,
+    solution: traitViewReviewEquivalent,
+    tests: traitViewReviewTests,
   }),
 };
 

@@ -1,27 +1,29 @@
-import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import {
+  buildBorrowedMemoryReport,
   parseBorrowedMemoryMode,
+  runBorrowedMemoryVerification,
   validateBorrowedMemoryReport,
   type BorrowedMemoryReport,
 } from "../../scripts/verify-borrowed-memory";
 
-const hash = (value: string) =>
-  createHash("sha256").update(value).digest("hex");
+import { unsafeBorrowedMemoryCompileFailFixtures } from "./unsafe-borrowed-memory-assessment-fixtures";
 
 function report(
   overrides: Partial<BorrowedMemoryReport> = {},
 ): BorrowedMemoryReport {
+  const base = buildBorrowedMemoryReport("stable");
   return {
-    schemaVersion: 1,
-    runId: "borrowed-memory-test",
-    mode: "stable",
-    toolchain: "stable",
-    sourceHashes: { authored: hash("source") },
-    fixtureHashes: { canonical: hash("fixture") },
+    ...base,
+    compilerVersion: "rustc test",
     phaseStatuses: { compile: "passed", tests: "passed", report: "passed" },
     phaseErrors: [],
-    compileFailChecks: [{ id: "lifetime", status: "passed" }],
+    compileFailChecks: unsafeBorrowedMemoryCompileFailFixtures.map(
+      (fixture) => ({
+        id: fixture.id,
+        status: "passed" as const,
+      }),
+    ),
     miriChecks: [],
     artifactPaths: [],
     artifactHashes: {},
@@ -89,3 +91,45 @@ it("requires exact mode toolchains and nonempty provenance", () => {
     validateBorrowedMemoryReport(report({ runId: "../other-run" })),
   ).toThrow();
 });
+
+it("does not treat an unexecuted or report-only dossier as passed", () => {
+  const pending = buildBorrowedMemoryReport("stable");
+  expect(pending.status).not.toBe("passed");
+  expect(() => validateBorrowedMemoryReport(pending)).toThrow();
+
+  expect(() =>
+    validateBorrowedMemoryReport(
+      report({
+        compileFailChecks: [],
+        phaseStatuses: { compile: "passed", tests: "passed", report: "passed" },
+      }),
+    ),
+  ).toThrow();
+  const executed = runBorrowedMemoryVerification("stable");
+  expect(executed.status).toBe("passed");
+  expect(executed.compileFailChecks).toHaveLength(4);
+}, 60_000);
+
+it("rejects stale hashes and partial phase reports", () => {
+  const executed = report();
+  expect(() =>
+    validateBorrowedMemoryReport({
+      ...executed,
+      fixtureHashes: {
+        ...executed.fixtureHashes,
+        [Object.keys(executed.fixtureHashes)[0]]: "0".repeat(64),
+      },
+    }),
+  ).toThrow();
+  expect(() =>
+    validateBorrowedMemoryReport({
+      ...executed,
+      status: "passed",
+      phaseStatuses: {
+        compile: "passed",
+        tests: "pending",
+        report: "passed",
+      } as never,
+    }),
+  ).toThrow();
+}, 60_000);

@@ -8,10 +8,9 @@ import {
   unsafeBorrowedMemoryAssessmentFixtures,
   unsafeBorrowedMemoryCompileFailFixtures,
 } from "./unsafe-borrowed-memory-assessment-fixtures";
-import {
-  autoTraitsMutant,
-  compileFailCellSync,
-} from "./unsafe-borrowed-memory-contracts";
+
+const fixtureById = (id: string) =>
+  unsafeBorrowedMemoryAssessmentFixtures.find((fixture) => fixture.id === id)!;
 
 function compileAndRun(
   id: string,
@@ -68,12 +67,29 @@ function compileMustFail(id: string, source: string, diagnostic: RegExp) {
   }
 }
 
+function compileClient(id: string, source: string) {
+  const directory = mkdtempSync(
+    join(tmpdir(), "unsafe-borrowed-memory-client-"),
+  );
+  try {
+    const file = join(directory, `${id}.rs`);
+    writeFileSync(file, source);
+    return spawnSync("rustc", ["--edition=2024", file], {
+      cwd: directory,
+      encoding: "utf8",
+      timeout: 60_000,
+    });
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
+
 it("keeps every fixture in an explicit execution mode", () => {
-  expect(unsafeBorrowedMemoryAssessmentFixtures).toHaveLength(20);
+  expect(unsafeBorrowedMemoryAssessmentFixtures).toHaveLength(23);
   expect(
     new Set(unsafeBorrowedMemoryAssessmentFixtures.map((fixture) => fixture.id))
       .size,
-  ).toBe(20);
+  ).toBe(23);
   expect(
     unsafeBorrowedMemoryAssessmentFixtures.filter(
       (fixture) => fixture.mode === "miri-positive",
@@ -83,7 +99,7 @@ it("keeps every fixture in an explicit execution mode", () => {
     unsafeBorrowedMemoryAssessmentFixtures.filter(
       (fixture) => fixture.mode === "miri-negative",
     ),
-  ).toHaveLength(2);
+  ).toHaveLength(5);
   expect(
     unsafeBorrowedMemoryAssessmentFixtures
       .filter((fixture) => fixture.mode === "safe-behavior")
@@ -107,12 +123,24 @@ it("runs canonical and equivalent safe contracts and rejects each behavioral mut
       fixture.tests,
       true,
     );
-    if (fixture.id.includes("auto-traits")) {
-      compileMustFail(
-        `${fixture.id}-mutant`,
-        `${autoTraitsMutant}\n${compileFailCellSync}`,
-        /Sync|trait bound/,
+    if (fixture.autoTraitNegativeClient) {
+      const client = `${fixture.autoTraitNegativeClient}\n`;
+      const canonical = compileClient(
+        `${fixture.id}-canonical-client`,
+        `${fixture.canonical}\n${client}`,
       );
+      const mutant = compileClient(
+        `${fixture.id}-mutant-client`,
+        `${fixture.mutant}\n${client}`,
+      );
+      expect(
+        canonical.status,
+        `${fixture.id}: canonical Cell Sync client`,
+      ).not.toBe(0);
+      expect(
+        mutant.status,
+        `${fixture.id}: blanket Sync mutant must be detected`,
+      ).toBe(0);
     } else {
       compileAndRun(
         `${fixture.id}-mutant`,
@@ -142,5 +170,26 @@ it("requires positive and negative Miri fixtures to carry distinct evidence", ()
     if (fixture.mode === "miri-negative")
       expect(fixture.expectedDiagnostic).toEqual(expect.any(String));
     else expect(fixture.expectedDiagnostic).toBeUndefined();
+  }
+});
+
+it("keeps primary, blank, and review fixtures materially independent", () => {
+  for (const prefix of ["provenance", "reborrow", "slot", "auto-traits"]) {
+    const fixtures = [
+      fixtureById(`unsafe-borrowed-${prefix}-boundary-gate`),
+      fixtureById(`unsafe-borrowed-${prefix}-blank`),
+      fixtureById(`review-unsafe-borrowed-${prefix}`),
+    ];
+    const identities = fixtures.map((fixture) =>
+      [
+        fixture.canonical,
+        fixture.equivalent,
+        fixture.mutant,
+        fixture.tests,
+      ].join("\n---\n"),
+    );
+    expect(new Set(identities).size, `${prefix} fixture identity`).toBe(3);
+    expect(new Set(fixtures.map((fixture) => fixture.tests)).size).toBe(3);
+    expect(new Set(fixtures.map((fixture) => fixture.mutant)).size).toBe(3);
   }
 });
