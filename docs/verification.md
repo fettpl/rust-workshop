@@ -1,6 +1,8 @@
 # Verification: fuzz evidence lifecycle and bounded course integration
 
-Date: 2026-09-20. Current catalog: 175 lessons in 45 modules, 178 concepts, 130 blank-page tasks, 318 sources and 13 Cargo projects. The fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks and four independent reviews. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The Mini grep verifier accepts only the generated authored archive and records stable replay separately from the pinned-nightly campaign. Earlier counts below are historical where explicitly labeled.
+Date: 2026-09-21. Current catalog: 179 lessons in 46 modules, 182 concepts, 134 blank-page tasks, 322 sources and 13 Cargo projects. The fuzz evidence lifecycle adds four Polish lessons, and the unsafe borrowed-memory soundness module adds four Polish lessons, twelve separate learner criteria, four blank tasks and four independent reviews. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The Mini grep verifier accepts only the generated authored archive and records stable replay separately from the pinned-nightly campaign. Earlier counts below are historical where explicitly labeled.
+
+The borrowed-memory milestone keeps learner-safe browser contracts separate from maintainer-only raw-pointer and `MaybeUninit` fixtures. Its four boundary/soundness/blank groups are represented by twelve ordinary `taskRefs` criteria because module criteria use OR semantics within a criterion. Stable and exact Rust 1.85.0 run the safe behavioral contracts and compile-fail clients; pinned nightly Miri is reserved for positive and expected-UB fixtures. Release remains Hold until the exact-head CI evidence is reviewed.
 
 ## Fuzz evidence lifecycle
 

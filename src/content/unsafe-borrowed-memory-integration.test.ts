@@ -29,9 +29,7 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
     lesson.steps.filter((step) => step.evidenceGate),
   );
   expect(evidenceSteps).toHaveLength(12);
-  expect(evidenceSteps.filter((step) => step.kind === "blank")).toHaveLength(
-    4,
-  );
+  expect(evidenceSteps.filter((step) => step.kind === "blank")).toHaveLength(4);
 
   for (const lesson of unsafeBorrowedMemoryLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
@@ -65,7 +63,9 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
   expect(refs.filter((ref) => ref.endsWith("-blank"))).toHaveLength(4);
   expect(
     modules.findIndex((module) => module.id === unsafeBorrowedMemoryModule.id),
-  ).toBe(modules.findIndex((module) => module.id === "unsafe-miri-contracts") + 1);
+  ).toBe(
+    modules.findIndex((module) => module.id === "unsafe-miri-contracts") + 1,
+  );
 });
 
 it("publishes learner-safe signatures and maintainer-only boundaries", () => {

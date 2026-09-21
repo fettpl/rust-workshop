@@ -4,7 +4,7 @@ Data audytu: 2026-09-18
 Odbiorca: osoba znająca podstawy programowania, ale zaczynająca Rust od zera.
 Status: mapa docelowa i audyt luk; nie jest deklaracją ukończenia kursu ani gwarancją pracy lub poziomu senior.
 
-Current catalog after the fuzz evidence milestone: 175 lessons, 45 modules, 178 concepts, 130 blank-page tasks, 318 sources and 13 projects. `profile-evidence` has two new Polish lessons, and `fuzz-evidence-lifecycle` has four lessons, eight gates and four independent retrievals.
+Current catalog after the borrowed-memory soundness milestone: 179 lessons, 46 modules, 182 concepts, 134 blank-page tasks, 322 sources and 13 projects. `profile-evidence` has two new Polish lessons, `fuzz-evidence-lifecycle` has four lessons, and `unsafe-borrowed-memory-soundness` has four Polish lessons, twelve independent evidence criteria, four blank tasks and four code retrievals.
 
 Końcowa walidacja poprzedniego etapu Performance Evidence: Vitest 287/287 w 54 plikach, content 138/141/7,
 1584/1587 autorskich przypadków Rust (trzy istniejące blank evaluator fixtures nadal zgłaszają brak niepustego zestawu przechodzących testów), Performance Evidence i Log Analyzer na stable
