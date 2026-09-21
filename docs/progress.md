@@ -2,7 +2,7 @@
 
 Current catalog after the borrowed-memory soundness milestone: 179 lessons, 46 modules, 182 concepts, 134 blank-page tasks, 322 sources and 13 projects. The `content:allocations` verifier compares baseline, candidate and materialization mutant on the same workload without making RSS claims.
 
-The borrowed-memory implementation is recorded at exact head `d0c91c2` on `feat/soundness-borrowed-memory`. Focused borrowed-memory tests pass 12/12 and full Vitest passes 506/506; stable and Rust 1.85.0 verifier runs pass. Pinned nightly Miri is infrastructure-limited because the component is unavailable locally, and offline Chromium is blocked by macOS bootstrap permissions, so CI must supply those exact-head results. Release remains Hold.
+The borrowed-memory implementation is recorded at exact head `a93205a` on `feat/soundness-borrowed-memory`. Focused borrowed-memory tests pass 12/12 and full Vitest passes 506/506; stable and Rust 1.85.0 verifier runs pass. Pinned nightly Miri is infrastructure-limited because the component is unavailable locally, and offline Chromium is blocked by macOS bootstrap permissions, so CI must supply those exact-head results. Release remains Hold.
 
 Etap `async-lending-contracts` dodaje pięć polskich lekcji, pięć kryteriów z dziesięcioma ocenianymi zadaniami (gate i blank dla każdego kontraktu) oraz pięć niezależnych powtórek: borrowed receiver z kontrolowanym `Pending -> Ready`, sekwencyjny `AsyncFnMut`, commit po callbacku, granicę `Send + 'static` oraz boxed adapter. Rozszerzenie `tokio-service-workshop` zawiera `lending.rs`, `report_source.rs`, lokalny przykład, kontrakt testowy i `ASYNC-LENDING.md`; `content:async-lending` porównuje oba ZIP-y, uruchamia stable oraz exact Rust 1.85.0 w trybie offline i wymaga odrzucenia startera. Dedykowane async gate/reveal/transfer/resume/offline/keyboard/console assertions są zapisane w E2E/offline, ale pozostają niezweryfikowane do przebiegu z działającym loopback.
 
@@ -69,7 +69,7 @@ Etap `unsafe-ffi-contracts` jest lokalnie dostępny jako 38. moduł i prowadzi d
 CI po scaleniu na `57c24f9`: [34751446523](https://github.com/fettpl/rustcrushcourse/actions/runs/34751446523), wszystkie trzy zadania zakończone sukcesem.
 ### Borrowed memory soundness review checkpoint
 
-Exact verification head: `d0c91c2` (`feat/soundness-borrowed-memory`). The
+Exact verification head: `a93205a` (`feat/soundness-borrowed-memory`). The
 review fixes preserve release Hold, keep unsafe fixtures maintainer-only, and
 separate learner contracts from Miri/compile-fail evidence. Focused tests are
 12/12, typecheck/content validation pass, and stable plus exact Rust 1.85.0
