@@ -69,7 +69,7 @@ Etap `unsafe-ffi-contracts` jest lokalnie dostępny jako 38. moduł i prowadzi d
 CI po scaleniu na `57c24f9`: [34751446523](https://github.com/fettpl/rustcrushcourse/actions/runs/34751446523), wszystkie trzy zadania zakończone sukcesem.
 ### Borrowed memory soundness review checkpoint
 
-Exact verification head: `634afe4` (`feat/soundness-borrowed-memory`). The
+Exact verification head: `d0c91c2` (`feat/soundness-borrowed-memory`). The
 review fixes preserve release Hold, keep unsafe fixtures maintainer-only, and
 separate learner contracts from Miri/compile-fail evidence. Focused tests are
 12/12, typecheck/content validation pass, and stable plus exact Rust 1.85.0
