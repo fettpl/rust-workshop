@@ -6,7 +6,7 @@ The borrowed-memory milestone keeps learner-safe browser contracts separate from
 
 ## Borrowed-memory exact-head record
 
-The implementation head is `39a12facaad8bbd26f0ae302dcefe714b391778b` on `feat/soundness-borrowed-memory`. At this head, the focused assessment/integration/verifier suite passes 20/20 and the full Vitest suite passes 506/506. `npm run typecheck`, `npm run lint` (zero errors, nine warnings), `npm run build`, `npm run content:check` (179/182/7), `npm run content:audit` (no broken references), CI YAML parsing, the dedicated Playwright `--list`, `node --check scripts/verify-offline.mjs`, and `git diff --check` pass. The authored borrowed-memory verifier passes on stable and exact Rust 1.85.0, including four compile-fail clients and all safe semantic mutants. The pinned nightly command returns an explicit `infrastructure` report because `miri` is not installed for `nightly-2026-08-08`; no Miri pass is claimed. The offline harness is authored but local execution is blocked before the flow by macOS Chromium `bootstrap_check_in ... Permission denied`; no local E2E pass is claimed. CI remains the required exact-head source for the Miri matrix and browser/offline flow. Release remains Hold.
+The current borrowed-memory implementation evidence is recorded at exact head `216f13d` on `feat/soundness-borrowed-memory`. Focused borrowed-memory checks pass 13/13, typecheck/content checks pass, and stable plus exact Rust 1.85.0 verifier runs pass. Pinned nightly Miri and browser/offline execution remain environment-limited; no unrun CI or local browser result is claimed. Release remains Hold.
 
 ## Fuzz evidence lifecycle
 
@@ -108,7 +108,7 @@ Polecenia pełnej weryfikacji, instalacji narzędzi i projektów opisuje angiels
 Remaining scope includes version conflicts, dependency security and publication, unsafe abstraction variance, full property/fuzz coverage, RSS/retained-memory attribution, system operations and capstone release evidence. The capstone has bounded learner integration, but release remains Hold until two fresh, reviewed stable/MSRV JSON reports and a manual advisory/license review are complete. Miri Safety provides a limited supported pure-Rust fixture set and does not replace a full threat model or prove that every unsafe program is defined. The limited Unsafe/FFI wrapper does not prove that foreign code is trustworthy. The Log Analyzer benchmark and allocation probe are executable evidence for named workloads; neither establishes a regression time threshold or universal speed claim. Migration history and material provenance need further work. A learner pilot and manual screen-reader review are still required. Lesson availability and green tests do not guarantee professional readiness.
 ## Borrowed memory soundness follow-up (exact head `216f13d`)
 
-The follow-up review was revalidated at commit `634afe4` on branch
+The follow-up review was revalidated at implementation commit `216f13d` on branch
 `feat/soundness-borrowed-memory`. Learner-facing blank prompts now name the
 contracts they actually publish (`BorrowedWindow`, `partition_window`,
 `InitCell`, and `CellMarker`); maintainer-only unsafe/Miri mutants stay in the
