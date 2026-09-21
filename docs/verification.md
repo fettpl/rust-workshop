@@ -106,3 +106,31 @@ Pożyczone API i angielskie README scalono w [PR #8](https://github.com/fettpl/r
 Polecenia pełnej weryfikacji, instalacji narzędzi i projektów opisuje angielskie README, a dokładny zestaw MSRV znajduje się w .github/workflows/ci.yml. `npm run content:performance -- --fetch` trzeba wykonać przed offline `content:cargo`; wariant `--msrv` sprawdza ten sam pakiet przez exact Rust 1.85.0. E2E wymaga produkcyjnego serwera na 127.0.0.1:3002 i konfiguracji .github/playwright.production.config.ts z zerem retry. Offline uruchamia npm run test:offline, w tym wznowienie blanku Performance Evidence. Na macOS długi zestaw można poprzedzić caffeinate -i.
 
 Remaining scope includes version conflicts, dependency security and publication, unsafe abstraction variance, full property/fuzz coverage, RSS/retained-memory attribution, system operations and capstone release evidence. The capstone has bounded learner integration, but release remains Hold until two fresh, reviewed stable/MSRV JSON reports and a manual advisory/license review are complete. Miri Safety provides a limited supported pure-Rust fixture set and does not replace a full threat model or prove that every unsafe program is defined. The limited Unsafe/FFI wrapper does not prove that foreign code is trustworthy. The Log Analyzer benchmark and allocation probe are executable evidence for named workloads; neither establishes a regression time threshold or universal speed claim. Migration history and material provenance need further work. A learner pilot and manual screen-reader review are still required. Lesson availability and green tests do not guarantee professional readiness.
+## Borrowed memory soundness follow-up (exact head `634afe4`)
+
+The follow-up review was revalidated at commit `634afe4` on branch
+`feat/soundness-borrowed-memory`. Learner-facing blank prompts now name the
+contracts they actually publish (`BorrowedWindow`, `partition_window`,
+`InitCell`, and `CellMarker`); maintainer-only unsafe/Miri mutants stay in the
+assessment fixtures. The verifier rejects pending, duplicate, stale, partial,
+and report-only evidence, validates current authored hashes and artifact bytes,
+and keeps Miri evidence separate from stable/MSRV compile-fail evidence.
+
+Observed checks at this exact head:
+
+- focused borrowed-memory Vitest and integration checks: 12/12 passed;
+- TypeScript typecheck and `content:check`: passed (179 lessons, 182 concepts,
+  7 traces);
+- stable verifier: passed with rustc 1.98.1;
+- exact Rust 1.85.0 verifier: passed with rustc 1.85.0;
+- CI emits clean JSON through the verifier entry point and records rustfmt,
+  cargo-fmt, and Clippy versions. This repository has no Cargo workspace at
+  the root, so Cargo formatting/lint execution is not applicable here;
+- the offline/E2E assertions now cover reveal invariance, assisted-source
+  validation, independent blank evidence, keyboard focus, and draft/note
+  resume. Local browser execution remains environment-dependent.
+
+Pinned nightly Miri remains an explicit CI/local phase. If its component is
+unavailable, the report is `infrastructure` with phase errors; it is never
+reported as passed. Release status remains Hold pending fresh reviewed CI
+artifacts and the existing manual review scope.
