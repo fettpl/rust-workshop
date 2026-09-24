@@ -251,7 +251,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: rawBorrowedNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "null pointer",
+      expectedDiagnostic: "null reference",
     },
     {
       id: "maybe-uninit-negative",
@@ -269,7 +269,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: rawAliasNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "already retagged",
+      expectedDiagnostic: "tag does not exist",
     },
     {
       id: "raw-borrowed-wrapped-range-negative",
@@ -278,7 +278,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: rawWrappedRangeNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "out-of-bounds pointer",
+      expectedDiagnostic: "dangling reference[\\s\\S]*no provenance",
     },
     {
       id: "maybe-uninit-double-drop-negative",
@@ -287,7 +287,7 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mutant: maybeUninitDoubleDropNegative,
       tests: "",
       mode: "miri-negative",
-      expectedDiagnostic: "deallocated memory",
+      expectedDiagnostic: "dangling reference \\(use-after-free\\)",
     },
   ];
 

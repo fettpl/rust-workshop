@@ -183,25 +183,24 @@ export const unsafeBorrowedMemoryConcepts: Concept[] = [
   },
 ];
 
-function predict(id: string, title: string, prompt: string): LessonStep {
+function predict(
+  id: string,
+  title: string,
+  prompt: string,
+  choices: [string, string, string],
+  correct: "0" | "1" | "2",
+  explanations: Record<string, string>,
+): LessonStep {
   return {
     id,
     kind: "predict",
     title,
     prompt,
-    choices: [
-      { id: "0", label: "Tak" },
-      { id: "1", label: "Nie" },
-      { id: "2", label: "Zależy od precondition" },
-    ],
+    choices: choices.map((label, index) => ({ id: String(index), label })),
     evaluator: {
       kind: "choice",
-      correct: "2",
-      explanations: {
-        "0": "Sam typ nie wystarcza.",
-        "1": "Trzeba wskazać warunek.",
-        "2": "Kontrakt i granica wyznaczają bezpieczny wynik.",
-      },
+      correct,
+      explanations,
     },
     evidenceKind: "prediction",
   };
@@ -318,7 +317,14 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
       predict(
         "unsafe-borrowed-provenance-predict",
         "Przewidź lifetime",
-        "Czy konstruktor może sam stworzyć dowolny lifetime?",
+        "Czy `from_slice` może samodzielnie wydłużyć lifetime właściciela?",
+        ["Tak", "Nie", "Tylko po skopiowaniu danych"],
+        "1",
+        {
+          "0": "Lifetime nie jest tworzony przez konstruktor; pochodzi z referencji właściciela.",
+          "1": "Nie; `from_slice` może jedynie związać widok z istniejącym lifetime właściciela.",
+          "2": "Skopiowanie danych tworzy nową własność, ale nie sprawia, że konstruktor wydłuża lifetime istniejącego właściciela.",
+        },
       ),
       run(
         "unsafe-borrowed-provenance-run",
@@ -402,6 +408,13 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-reborrow-predict",
         "Przewidź granicę",
         "Czy `mid == len` jest poprawne?",
+        ["Tak", "Nie", "Tylko gdy `mid < len`"],
+        "0",
+        {
+          "0": "Tak; `split_at_mut(len)` zwraca pełny lewy prefix i pusty prawy suffix.",
+          "1": "Nie; odrzucamy tylko `mid > len`, więc równość jest dozwolona.",
+          "2": "Nie trzeba wymagać `mid < len`; równość jest prawidłową granicą splitu.",
+        },
       ),
       run(
         "unsafe-borrowed-reborrow-run",
@@ -487,6 +500,13 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-slot-predict",
         "Przewidź Drop",
         "Czy sam adres MaybeUninit oznacza wartość gotową do Drop?",
+        ["Tak", "Nie", "Tak, jeśli adres jest wyrównany"],
+        "1",
+        {
+          "0": "Sam adres nie dowodzi, że `T` zostało zainicjalizowane i można je bezpiecznie dropować.",
+          "1": "Nie; `MaybeUninit<T>` nie uruchamia Drop dla niezainicjalizowanego `T`, a stan Full musi być dowiedziony.",
+          "2": "Wyrównanie adresu jest potrzebne, ale nadal nie dowodzi, że przechowywane `T` zostało zainicjalizowane.",
+        },
       ),
       run(
         "unsafe-borrowed-slot-run",
@@ -572,6 +592,13 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-auto-traits-predict",
         "Przewidź trait",
         "Czy output-only PhantomData może bezpiecznie dodać Sync?",
+        ["Tak", "Nie", "Tak, jeśli `T: Send`"],
+        "1",
+        {
+          "0": "Nie; output-only marker może ukryć zależność od `T` i sprawić, że wrapper wygląda na Sync bez uzasadnienia.",
+          "1": "Nie; marker musi zachować rzeczywistą zależność od `T`, aby auto-traits nie zostały dopisane.",
+          "2": "`Send` nie zastępuje zależności potrzebnej do bezpiecznego wyznaczenia `Sync`; output-only marker nadal ją ukrywa.",
+        },
       ),
       run(
         "unsafe-borrowed-auto-traits-run",

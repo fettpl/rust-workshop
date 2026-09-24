@@ -237,34 +237,73 @@ export const traitViewSyncClient = String.raw`use std::cell::Cell;fn assert_sync
 
 export const rawBorrowedPositive = String.raw`use std::slice;
 struct RawBorrowed<'a>{bytes:&'a[u8]}
-impl<'a> RawBorrowed<'a>{unsafe fn from_raw_parts_unchecked(raw:*const u8,len:usize)->Option<Self>{if len==0{return Some(Self{bytes:&[]});}if raw.is_null()||len>isize::MAX as usize{return None;}Some(Self{bytes:unsafe{slice::from_raw_parts(raw,len)}})}}`;
+impl<'a> RawBorrowed<'a>{
+/// # Safety
+/// For a non-empty slice, the caller must provide a properly aligned,
+/// non-null pointer to the first byte of one live allocation containing at least
+/// len initialized u8 values. The allocation size must fit in isize and pointer
+/// arithmetic for the whole range must stay within that allocation. The caller
+/// must keep that allocation alive for 'a, avoid mutable or exclusive aliases
+/// for 'a, and ensure the returned shared slice is not used after invalidation.
+unsafe fn from_raw_parts_unchecked(raw:*const u8,len:usize)->Option<Self>{if len==0{return Some(Self{bytes:&[]});}if raw.is_null()||len>isize::MAX as usize{return None;}Some(Self{bytes:unsafe{
+// SAFETY: The function's caller contract above establishes alignment,
+// provenance, initialization, range, aliasing and lifetime for this slice.
+slice::from_raw_parts(raw,len)}})}}`;
 export const rawBorrowedEquivalent = rawBorrowedPositive.replace(
   "if raw.is_null()||len>isize::MAX as usize{return None;}",
   "if len>isize::MAX as usize{return None;} let end=(raw as usize).checked_add(len)?; if raw.is_null()||end<raw as usize{return None;}",
 );
-export const rawBorrowedNegative = rawBorrowedPositive.replace(
-  "if raw.is_null()||len>isize::MAX as usize{return None;}",
-  "if len>isize::MAX as usize{return None;}",
-);
+export const rawBorrowedNegative = rawBorrowedPositive
+  .replace(
+    "if raw.is_null()||len>isize::MAX as usize{return None;}",
+    "if len>isize::MAX as usize{return None;}",
+  )
+  .replace(
+    "impl<'a> RawBorrowed<'a>{",
+    "impl<'a> RawBorrowed<'a>{\n// INTENTIONALLY UB NEGATIVE FIXTURE: maintainer-only Miri input; never execute\n// as learner code. It passes a null pointer for a non-empty slice.",
+  )
+  .replace(
+    "// SAFETY: The function's caller contract above establishes alignment,\n// provenance, initialization, range, aliasing and lifetime for this slice.",
+    "// INTENTIONALLY UB NEGATIVE FIXTURE: this call violates the caller contract\n// by passing a null pointer for a non-empty slice; Miri must reject it.",
+  );
 export const rawAliasNegative = String.raw`use std::slice;
+// INTENTIONALLY UB NEGATIVE FIXTURE: maintainer-only Miri input; never execute
+// as learner code. It creates overlapping mutable slices from one allocation.
 fn main(){let mut bytes=[1_u8,2];let first=unsafe{slice::from_raw_parts_mut(bytes.as_mut_ptr(),2)};let second=unsafe{slice::from_raw_parts_mut(bytes.as_mut_ptr(),2)};first[0]=3;second[0]=4;}`;
 export const rawWrappedRangeNegative = String.raw`use std::slice;
+// INTENTIONALLY UB NEGATIVE FIXTURE: maintainer-only Miri input; never execute
+// as learner code. The fabricated pointer is outside any live allocation.
 fn main(){let _=unsafe{slice::from_raw_parts(usize::MAX as *const u8,2)};}`;
 export const maybeUninitPositive = String.raw`use std::mem::MaybeUninit;
+// Invariant: full == false means value is uninitialized and must never be read
+// or dropped; full == true means value contains exactly one initialized T. The
+// private fields and methods preserve this state, so every T is moved or
+// dropped at most once.
 struct MaintainerSlot<T>{value:MaybeUninit<T>,full:bool}
-impl<T> MaintainerSlot<T>{fn empty()->Self{Self{value:MaybeUninit::uninit(),full:false}}fn put(&mut self,v:T)->Result<(),T>{if self.full{Err(v)}else{self.value.write(v);self.full=true;Ok(())}}fn take(&mut self)->Option<T>{if !self.full{None}else{self.full=false;Some(unsafe{self.value.assume_init_read()})}}}impl<T>Drop for MaintainerSlot<T>{fn drop(&mut self){if self.full{unsafe{self.value.assume_init_drop();}}}}`;
+impl<T> MaintainerSlot<T>{fn empty()->Self{Self{value:MaybeUninit::uninit(),full:false}}fn put(&mut self,v:T)->Result<(),T>{if self.full{Err(v)}else{self.value.write(v);self.full=true;Ok(())}}fn take(&mut self)->Option<T>{if !self.full{None}else{self.full=false;Some(unsafe{
+// SAFETY: full was true immediately before it was cleared, so this slot
+// contained exactly one initialized T and this read moves it exactly once.
+self.value.assume_init_read()})}}}impl<T>Drop for MaintainerSlot<T>{fn drop(&mut self){if self.full{unsafe{
+// SAFETY: full means the slot still owns its one initialized T; dropping it
+// here consumes that value exactly once before the storage is discarded.
+self.value.assume_init_drop();}}}}`;
 export const maybeUninitEquivalent = maybeUninitPositive.replace(
-  "if !self.full{None}else{self.full=false;Some(unsafe{self.value.assume_init_read()})}",
-  "match self.full{false=>None,true=>{self.full=false;Some(unsafe{self.value.assume_init_read()})}}",
+  "if !self.full{None}else{self.full=false;Some(unsafe{\n// SAFETY: full was true immediately before it was cleared, so this slot\n// contained exactly one initialized T and this read moves it exactly once.\nself.value.assume_init_read()})}",
+  "match self.full{false=>None,true=>{self.full=false;Some(unsafe{\n// SAFETY: full was true immediately before it was cleared, so this slot\n// contained exactly one initialized T and this read moves it exactly once.\nself.value.assume_init_read()})}}",
 );
 export const maybeUninitNegative = maybeUninitPositive.replace(
-  "if self.full{unsafe{self.value.assume_init_drop();}}",
-  "unsafe{self.value.assume_init_drop();}",
+  "if !self.full{None}else{self.full=false;Some(unsafe{\n// SAFETY: full was true immediately before it was cleared, so this slot\n// contained exactly one initialized T and this read moves it exactly once.\nself.value.assume_init_read()})}",
+  "self.full=false;Some(unsafe{\n// INTENTIONALLY UB NEGATIVE FIXTURE: full is false here, so this reads an\n// uninitialized slot. This maintainer-only Miri input never runs as learner code.\nself.value.assume_init_read()})",
 );
-export const maybeUninitDoubleDropNegative = maybeUninitPositive.replace(
-  "self.full=false;Some(unsafe{self.value.assume_init_read()})",
-  "Some(unsafe{self.value.assume_init_read()})",
-);
+export const maybeUninitDoubleDropNegative = maybeUninitPositive
+  .replace(
+    "self.full=false;Some(unsafe{\n// SAFETY: full was true immediately before it was cleared, so this slot\n// contained exactly one initialized T and this read moves it exactly once.\nself.value.assume_init_read()})",
+    "Some(unsafe{\n// INTENTIONALLY UB NEGATIVE FIXTURE: the state is not cleared after this move,\n// so a later read/drop can use the value again. Maintainer-only Miri input.\nself.value.assume_init_read()})",
+  )
+  .replace(
+    "// SAFETY: full means the slot still owns its one initialized T; dropping it\n// here consumes that value exactly once before the storage is discarded.",
+    "// INTENTIONALLY UB NEGATIVE FIXTURE: the slot state still claims ownership\n// after the first move, so a later read or drop observes a moved value; Miri must reject it.",
+  );
 export const compileFailLifetime = String.raw`fn escape<'a>()->&'a[u8]{let owner=vec![1_u8,2];let view=BorrowedBytes::from_slice(&owner);view.as_slice()}
 fn main(){let _escaped=escape();}`;
 export const compileFailInvariant = String.raw`fn shorten<'short>(slot:InvariantBorrow<'static,&'static u8>,_borrow:&'short u8){let _shorter:InvariantBorrow<'static,&'short u8>=slot;}fn main(){let borrow=1u8;let slot:InvariantBorrow<'static,&'static u8>=unsafe{std::mem::MaybeUninit::zeroed().assume_init()};shorten(slot,&borrow);}`;

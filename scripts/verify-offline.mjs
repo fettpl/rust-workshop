@@ -811,14 +811,25 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .getByLabel("Kroki lekcji")
       .getByRole("button", { name: /^(?:\d{2} )?Zmień$/ })
       .click();
+    await expect(
+      page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+    ).toBeVisible();
+    const fuzzAssistedPrimaryCode = await page
+      .locator(".revealed-solution pre")
+      .innerText();
+    expect(fuzzAssistedPrimaryCode).toContain("decode_case");
+    const fuzzRevealSummary = page
+      .getByRole("region", { name: "Zadanie" })
+      .locator("details.solution-warning > summary")
+      .filter({ hasText: /^Potrzebuję pełnego rozwiązania$/ });
+    await expect(fuzzRevealSummary).toHaveCount(0);
     const fuzzPrimaryEditor = page.getByRole("textbox", {
       name: "Kod Rust",
       exact: true,
     });
     await fuzzPrimaryEditor.fill(
-      "// Mocked primary run before the assisted reveal.\n",
+      "// Mocked primary run after the package solution exposure.\n",
     );
-    let fuzzAssistedPrimaryCode = "";
     let requireFuzzAssistedCode = false;
     await page.route("**/api/run", async (route) => {
       const request = route.request().postDataJSON();
@@ -828,7 +839,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({
-          status: accepted ? "success" : "failed",
+          status: accepted ? "success" : "test-failure",
           stdout: accepted ? "primary mock: ok" : "unexpected assisted source",
           stderr: accepted ? "" : "solution mismatch",
           diagnostics: [],
@@ -855,23 +866,10 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       ).length;
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
-    const fuzzRevealSummary = page
-      .getByRole("region", { name: "Zadanie" })
-      .locator("details.solution-warning > summary")
-      .filter({ hasText: /^Potrzebuję pełnego rozwiązania$/ });
-    await expect(fuzzRevealSummary).toBeVisible();
-    await fuzzRevealSummary.click();
-    await page
-      .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
-      .click();
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toBeVisible();
-    fuzzAssistedPrimaryCode = await page
-      .locator(".revealed-solution pre")
-      .innerText();
-    const independentBeforeReveal = await readLearningState();
-    expect(fuzzAssistedPrimaryCode).toContain("decode_case");
+    const independentBeforeHints = await readLearningState();
     requireFuzzAssistedCode = true;
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
     await page
@@ -900,6 +898,10 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .filter({ hasText: fuzzTitle })
       .click();
     await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Surowe bajty i granica harnessu" })
+      .click();
+    await page
       .getByLabel("Kroki lekcji")
       .getByRole("button", { name: /^(?:\d{2} )?Zmień$/ })
       .click();
@@ -911,8 +913,8 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("primary mock: ok");
     const independentAfterReveal = await readLearningState();
-    expect(independentAfterReveal.mastery).toEqual(
-      independentBeforeReveal.mastery,
+    expect(stableMastery(independentAfterReveal.mastery)).toEqual(
+      stableMastery(independentBeforeHints.mastery),
     );
     const independentAfterAssisted = await readLearningState();
     const independentCountAfterAssisted =
@@ -925,6 +927,17 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
           event.kind !== "exposure",
       ).length;
     expect(independentCountAfterAssisted).toBe(independentCountBeforeAssisted);
+    const fuzzGateEvidence = independentAfterAssisted.events.filter(
+      (event) =>
+        event.lessonId === "fuzz-input-domain" &&
+        event.stepId === "fuzz-input-domain-gate" &&
+        event.kind !== "exposure",
+    );
+    expect(fuzzGateEvidence.at(-1)).toMatchObject({
+      passed: true,
+      hints: 2,
+      revealed: true,
+    });
     await page
       .getByLabel("Kroki lekcji")
       .getByRole("button", { name: /^(?:\d{2} )?Od pustej kartki$/ })
@@ -1022,23 +1035,31 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       name: "Kod Rust",
       exact: true,
     });
-    await borrowedEditor.fill("// Offline authored borrowed-memory run.\n");
-    await page.route(
-      "**/api/run",
-      async (route) =>
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({
-            status: "success",
-            stdout: "test result: ok",
-            stderr: "",
-            diagnostics: [],
-            durationMs: 1,
-            tests: { passed: 1, failed: 0 },
-          }),
+    const borrowedGateDraft = `${await borrowedEditor.inputValue()}\n// Offline authored borrowed-memory run.\n`;
+    let expectedBorrowedSource = borrowedGateDraft;
+    let expectedBorrowedPhase = "authored borrowed-memory";
+    await borrowedEditor.fill(borrowedGateDraft);
+    await page.route("**/api/run", async (route) => {
+      const request = route.request().postDataJSON();
+      expect(request).toEqual({
+        code: expect.any(String),
+        mode: "test",
+        tests: expect.any(String),
+      });
+      const accepted = request.code === expectedBorrowedSource;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: accepted ? "success" : "test-failure",
+          stdout: accepted ? `${expectedBorrowedPhase}: ok` : "",
+          stderr: accepted ? "" : `unexpected ${expectedBorrowedPhase} source`,
+          diagnostics: [],
+          durationMs: 1,
+          tests: { passed: accepted ? 1 : 0, failed: accepted ? 0 : 1 },
         }),
-    );
+      });
+    });
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
@@ -1053,6 +1074,11 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
       .click();
+    const borrowedAssistedCode = await page
+      .locator(".revealed-solution pre")
+      .innerText();
+    expectedBorrowedSource = borrowedAssistedCode;
+    expectedBorrowedPhase = "assisted borrowed-memory";
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toBeVisible();
@@ -1061,7 +1087,10 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       (event) =>
         event.lessonId === "unsafe-borrowed-provenance" &&
         event.stepId === "unsafe-borrowed-provenance-boundary-gate" &&
-        event.kind !== "exposure",
+        event.kind !== "exposure" &&
+        event.passed &&
+        event.hints > 0 &&
+        event.revealed,
     ).length;
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
@@ -1076,7 +1105,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .getByLabel("Kroki lekcji")
       .getByRole("button", { name: /^(?:\d{2} )?Zmień$/ })
       .click();
-    await borrowedEditor.fill("// Assisted borrowed-memory completion.\n");
+    await borrowedEditor.fill(borrowedAssistedCode);
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
@@ -1123,7 +1152,20 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       name: "Kod Rust",
       exact: true,
     });
-    const borrowedDraft = "// Independent borrowed-memory blank.\n";
+    const borrowedBlankSource = String.raw`struct BorrowedWindow<'owner>{owner:&'owner [u8]}
+impl<'owner> BorrowedWindow<'owner>{fn new(owner:&'owner [u8])->Self{Self{owner}}fn tail(&self)->&[u8]{self.owner.get(1..).unwrap_or(&[])}fn bytes(&self)->&[u8]{self.owner}}`;
+    expectedBorrowedSource = borrowedBlankSource;
+    expectedBorrowedPhase = "independent blank";
+    const rejectedBorrowedDraft =
+      "// Unexpected borrowed-memory blank source.\n";
+    await borrowedBlankEditor.fill(rejectedBorrowedDraft);
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await expect(
+      page.getByRole("region", { name: "Wynik kompilatora" }),
+    ).toContainText("unexpected independent blank source");
+    const borrowedDraft = borrowedBlankSource;
     await borrowedBlankEditor.fill(borrowedDraft);
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
@@ -1146,6 +1188,9 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByLabel("Notatki do lekcji")
       .fill("Borrowed memory remains separate offline evidence.");
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(borrowedHeading);
     await expect(borrowedBlankEditor).toHaveValue(borrowedDraft);

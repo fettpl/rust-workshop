@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import {
   buildBorrowedMemoryReport,
+  classifyMiriResult,
   currentBorrowedMemoryMiriSources,
   parseBorrowedMemoryMode,
   runBorrowedMemoryVerification,
@@ -9,7 +10,10 @@ import {
   type BorrowedMemoryReport,
 } from "../../scripts/verify-borrowed-memory";
 
-import { unsafeBorrowedMemoryCompileFailFixtures } from "./unsafe-borrowed-memory-assessment-fixtures";
+import {
+  unsafeBorrowedMemoryAssessmentFixtures,
+  unsafeBorrowedMemoryCompileFailFixtures,
+} from "./unsafe-borrowed-memory-assessment-fixtures";
 
 function report(
   overrides: Partial<BorrowedMemoryReport> = {},
@@ -35,6 +39,116 @@ function report(
   };
 }
 
+function miriReport(): BorrowedMemoryReport {
+  const executed = buildBorrowedMemoryReport("miri");
+  const sources = currentBorrowedMemoryMiriSources();
+  const tooling = (kind: "rustfmt" | "cargoFmt" | "cargoClippy") => {
+    const sourcePath = "/tmp/borrowed-memory/src/main.rs";
+    const manifestPath = "/tmp/borrowed-memory/tooling/Cargo.toml";
+    const command =
+      kind === "rustfmt"
+        ? [
+            "rustup",
+            "run",
+            "nightly-2026-08-08",
+            "rustfmt",
+            "--edition",
+            "2024",
+            sourcePath,
+          ]
+        : kind === "cargoFmt"
+          ? [
+              "rustup",
+              "run",
+              "nightly-2026-08-08",
+              "cargo",
+              "fmt",
+              "--manifest-path",
+              manifestPath,
+              "--",
+              "--check",
+            ]
+          : [
+              "rustup",
+              "run",
+              "nightly-2026-08-08",
+              "cargo",
+              "clippy",
+              "--manifest-path",
+              manifestPath,
+              "--all-targets",
+              "--",
+              "-D",
+              "warnings",
+            ];
+    return {
+      command,
+      stdout: "",
+      stderr: "",
+      exitCode: 0,
+      signal: null,
+      status: "passed" as const,
+    };
+  };
+  executed.compilerVersion = "rustc nightly test";
+  executed.phaseStatuses = {
+    compile: "passed",
+    tests: "passed",
+    report: "passed",
+  };
+  executed.status = "passed";
+  executed.miriChecks = sources.map((entry) => {
+    const fixtureId = entry.id.slice(0, entry.id.lastIndexOf(":"));
+    const fixture = unsafeBorrowedMemoryAssessmentFixtures.find(
+      (candidate) => candidate.id === fixtureId,
+    )!;
+    const manifestPath = "/tmp/borrowed-memory/Cargo.toml";
+    const isPositive = fixture.mode === "miri-positive";
+    const diagnostic = fixture.expectedDiagnostic;
+    const outputDiagnostic =
+      fixture.id === "maybe-uninit-double-drop-negative"
+        ? "dangling reference (use-after-free)"
+        : fixture.id === "raw-borrowed-wrapped-range-negative"
+          ? "dangling reference: pointer has no provenance"
+          : diagnostic?.replaceAll("\\s", " ");
+    const output = isPositive
+      ? "Finished `dev` profile"
+      : `error: Undefined Behavior: ${outputDiagnostic ?? ""}`;
+    return {
+      id: entry.id,
+      status: "passed" as const,
+      diagnostic,
+      command: [
+        "rustup",
+        "run",
+        "nightly-2026-08-08",
+        "cargo",
+        "miri",
+        "run",
+        "--manifest-path",
+        manifestPath,
+        "--quiet",
+      ],
+      stdout: isPositive ? output : "",
+      stderr: isPositive ? "" : output,
+      exitCode: isPositive ? 0 : 1,
+      signal: null,
+      source: entry.source,
+      sourceHash: entry.sourceHash,
+      authoredSourceHash: entry.sourceHash,
+      manifestPath,
+      manifest: entry.manifest,
+      manifestHash: entry.manifestHash,
+      tooling: {
+        rustfmt: tooling("rustfmt"),
+        cargoFmt: tooling("cargoFmt"),
+        cargoClippy: tooling("cargoClippy"),
+      },
+    };
+  });
+  return executed;
+}
+
 it("accepts only the documented verifier modes", () => {
   expect(parseBorrowedMemoryMode([])).toBe("stable");
   expect(parseBorrowedMemoryMode(["--msrv"])).toBe("msrv");
@@ -46,6 +160,29 @@ it("accepts only the documented verifier modes", () => {
     ["--toolchain", "stable"],
   ])
     expect(() => parseBorrowedMemoryMode(args)).toThrow();
+});
+
+it("classifies a wrong Miri diagnostic as failed evidence", () => {
+  expect(
+    classifyMiriResult({
+      status: 1,
+      signal: null,
+      hasError: false,
+      output: "error: Undefined Behavior: encountered a different diagnostic",
+      expectedPass: false,
+      expectedDiagnostic: "tag does not exist",
+    }),
+  ).toBe("failed");
+  expect(
+    classifyMiriResult({
+      status: null,
+      signal: "SIGTERM",
+      hasError: true,
+      output: "",
+      expectedPass: false,
+      expectedDiagnostic: "tag does not exist",
+    }),
+  ).toBe("infrastructure");
 });
 
 it("rejects incomplete passed reports and preserves phase errors", () => {
@@ -137,43 +274,7 @@ it("rejects stale hashes and partial phase reports", () => {
 }, 60_000);
 
 it("rejects substituted Miri source even when its hash is recomputed", () => {
-  const sources = currentBorrowedMemoryMiriSources();
-  const executed = buildBorrowedMemoryReport("miri");
-  const tooling = {
-    command: ["fixture-tool"],
-    stdout: "",
-    stderr: "",
-    exitCode: 0,
-    signal: null,
-    status: "passed" as const,
-  };
-  executed.compilerVersion = "rustc nightly test";
-  executed.phaseStatuses = {
-    compile: "passed",
-    tests: "passed",
-    report: "passed",
-  };
-  executed.status = "passed";
-  executed.miriChecks = sources.map((entry) => ({
-    id: entry.id,
-    status: "passed" as const,
-    command: ["miri", "run", entry.id],
-    stdout: "",
-    stderr: "",
-    exitCode: 0,
-    signal: null,
-    source: entry.source,
-    sourceHash: entry.sourceHash,
-    authoredSourceHash: entry.sourceHash,
-    manifestPath: "/tmp/borrowed-memory/Cargo.toml",
-    manifest: entry.manifest,
-    manifestHash: entry.manifestHash,
-    tooling: {
-      rustfmt: tooling,
-      cargoFmt: tooling,
-      cargoClippy: tooling,
-    },
-  }));
+  const executed = miriReport();
   expect(() => validateBorrowedMemoryReport(executed)).not.toThrow();
 
   const tampered = {
@@ -192,5 +293,49 @@ it("rejects substituted Miri source even when its hash is recomputed", () => {
   };
   expect(() => validateBorrowedMemoryReport(tampered)).toThrow(
     "Miri raw command evidence is incomplete",
+  );
+});
+
+it("rejects forged positive and negative Miri evidence", () => {
+  const executed = miriReport();
+  const negativeIndex = executed.miriChecks.findIndex((check) =>
+    check.id.startsWith("raw-borrowed-negative:"),
+  );
+  const positiveIndex = executed.miriChecks.findIndex((check) =>
+    check.id.startsWith("raw-borrowed-positive:"),
+  );
+  expect(negativeIndex).toBeGreaterThanOrEqual(0);
+  expect(positiveIndex).toBeGreaterThanOrEqual(0);
+
+  const wrongDiagnostic = structuredClone(executed);
+  wrongDiagnostic.miriChecks[negativeIndex].stderr =
+    "error: Undefined Behavior: different diagnostic";
+  expect(() => validateBorrowedMemoryReport(wrongDiagnostic)).toThrow(
+    "wrong diagnostic",
+  );
+
+  const missingDiagnostic = structuredClone(executed);
+  missingDiagnostic.miriChecks[negativeIndex].stderr = "error: failed";
+  expect(() => validateBorrowedMemoryReport(missingDiagnostic)).toThrow(
+    "lacks UB evidence",
+  );
+
+  const wrongExit = structuredClone(executed);
+  wrongExit.miriChecks[positiveIndex].exitCode = 1;
+  expect(() => validateBorrowedMemoryReport(wrongExit)).toThrow(
+    "positive fixture did not exit successfully",
+  );
+
+  const wrongCommand = structuredClone(executed);
+  wrongCommand.miriChecks[positiveIndex].command[2] = "nightly";
+  expect(() => validateBorrowedMemoryReport(wrongCommand)).toThrow(
+    "pinned fixture invocation",
+  );
+
+  const wrongToolchain = structuredClone(executed);
+  wrongToolchain.miriChecks[positiveIndex].tooling.cargoFmt.command[2] =
+    "nightly";
+  expect(() => validateBorrowedMemoryReport(wrongToolchain)).toThrow(
+    "pinned and successful",
   );
 });

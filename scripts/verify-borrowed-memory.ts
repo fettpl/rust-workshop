@@ -7,7 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { appendHiddenTests } from "../src/runner";
 import {
@@ -112,6 +112,42 @@ function expectedToolchain(mode: BorrowedMemoryMode) {
 
 type MiriVariant = "canonical" | "equivalent" | "mutant";
 type MiriFixture = (typeof unsafeBorrowedMemoryAssessmentFixtures)[number];
+type VerificationErrorStatus = "failed" | "infrastructure";
+
+class BorrowedMemoryVerificationError extends Error {
+  constructor(
+    message: string,
+    readonly status: VerificationErrorStatus,
+  ) {
+    super(message);
+    this.name = "BorrowedMemoryVerificationError";
+  }
+}
+
+export function classifyMiriResult(input: {
+  status: number | null;
+  signal: string | null;
+  hasError: boolean;
+  output: string;
+  expectedPass: boolean;
+  expectedDiagnostic?: string;
+}): "passed" | "failed" | "infrastructure" {
+  if (input.hasError || input.signal || input.status === null)
+    return "infrastructure";
+  if (input.expectedPass) return input.status === 0 ? "passed" : "failed";
+  return input.status !== 0 &&
+    new RegExp(input.expectedDiagnostic ?? "").test(input.output) &&
+    input.output.includes("Undefined Behavior")
+    ? "passed"
+    : "failed";
+}
+
+function verificationError(
+  message: string,
+  status: VerificationErrorStatus,
+): BorrowedMemoryVerificationError {
+  return new BorrowedMemoryVerificationError(message, status);
+}
 
 /**
  * The source body is authored once here. The same bytes feed the Miri cargo
@@ -131,7 +167,7 @@ function generatedMiriSource(fixture: MiriFixture, variant: MiriVariant) {
     : fixture.id === "raw-borrowed-negative"
       ? "fn main(){let view=unsafe{RawBorrowed::from_raw_parts_unchecked(std::ptr::null(),1)};let _=view.map(|view|view.bytes.len());}"
       : fixture.id === "maybe-uninit-negative"
-        ? "fn main(){let slot=MaintainerSlot::<u8>::empty();drop(slot);}"
+        ? "fn main(){let mut initialized=MaintainerSlot::<u8>::empty();let _=initialized.put(1);let mut slot=MaintainerSlot::<u8>::empty();let _=slot.take();}"
         : fixture.id === "maybe-uninit-double-drop-negative"
           ? 'fn main(){let mut slot=MaintainerSlot::<String>::empty();slot.put(String::from("live")).unwrap();let _=slot.take();let _=slot.take();}'
           : fixture.id.startsWith("raw-borrowed")
@@ -228,6 +264,129 @@ function currentAuthoredHashes() {
 
 export function currentBorrowedMemoryFixtureHashes() {
   return currentAuthoredHashes();
+}
+
+function expectedMiriFixture(checkId: string) {
+  const separator = checkId.lastIndexOf(":");
+  if (separator < 1) return undefined;
+  const fixtureId = checkId.slice(0, separator);
+  const variant = checkId.slice(separator + 1);
+  const fixture = unsafeBorrowedMemoryAssessmentFixtures.find(
+    (entry) => entry.id === fixtureId,
+  );
+  if (!fixture || !["canonical", "equivalent", "mutant"].includes(variant))
+    return undefined;
+  if (
+    (fixture.mode === "miri-positive" &&
+      !["canonical", "equivalent"].includes(variant)) ||
+    (fixture.mode === "miri-negative" && variant !== "mutant")
+  )
+    return undefined;
+  return fixture;
+}
+
+function isPinnedToolingCommand(
+  command: string[],
+  kind: "rustfmt" | "cargoFmt" | "cargoClippy",
+) {
+  if (command.length < 4) return false;
+  if (
+    command[0] !== "rustup" ||
+    command[1] !== "run" ||
+    command[2] !== MIRI_TOOLCHAIN
+  )
+    return false;
+  if (kind === "rustfmt")
+    return (
+      command.length === 7 &&
+      command[3] === "rustfmt" &&
+      command[4] === "--edition" &&
+      command[5] === "2024" &&
+      command[6].endsWith(".rs")
+    );
+  return (
+    (kind === "cargoFmt" ? command.length === 9 : command.length === 11) &&
+    command[3] === "cargo" &&
+    command[4] === kind.replace("cargo", "").toLowerCase() &&
+    command[5] === "--manifest-path" &&
+    command[6].endsWith("Cargo.toml") &&
+    (kind === "cargoFmt"
+      ? command[7] === "--"
+      : command[7] === "--all-targets" && command[8] === "--") &&
+    (kind === "cargoFmt"
+      ? command[8] === "--check"
+      : command[9] === "-D" && command[10] === "warnings")
+  );
+}
+
+function isSuccessfulToolingEvidence(tooling: CommandEvidence) {
+  return (
+    tooling.status === "passed" &&
+    tooling.exitCode === 0 &&
+    tooling.signal === null &&
+    Array.isArray(tooling.command) &&
+    typeof tooling.stdout === "string" &&
+    typeof tooling.stderr === "string"
+  );
+}
+
+function validateMiriEvidence(
+  check: BorrowedMemoryReport["miriChecks"][number],
+  fixture: MiriFixture,
+) {
+  const expectedPass = fixture.mode === "miri-positive";
+  if (
+    check.diagnostic !== fixture.expectedDiagnostic ||
+    check.command.length !== 9 ||
+    check.command[0] !== "rustup" ||
+    check.command[1] !== "run" ||
+    check.command[2] !== MIRI_TOOLCHAIN ||
+    check.command[3] !== "cargo" ||
+    check.command[4] !== "miri" ||
+    check.command[5] !== "run" ||
+    check.command[6] !== "--manifest-path" ||
+    check.command[7] !== check.manifestPath ||
+    check.command[8] !== "--quiet"
+  )
+    throw new Error("Miri command is not the pinned fixture invocation");
+  if (
+    !isPinnedToolingCommand(check.tooling.rustfmt.command, "rustfmt") ||
+    !isPinnedToolingCommand(check.tooling.cargoFmt.command, "cargoFmt") ||
+    !isPinnedToolingCommand(check.tooling.cargoClippy.command, "cargoClippy") ||
+    !Object.values(check.tooling).every(isSuccessfulToolingEvidence)
+  )
+    throw new Error("Miri tooling evidence is not pinned and successful");
+
+  if (check.status !== "passed") return;
+  const output = `${check.stdout}${check.stderr}`;
+  if (expectedPass) {
+    if (check.exitCode !== 0 || check.signal !== null)
+      throw new Error("passed Miri positive fixture did not exit successfully");
+    if (output.includes("Undefined Behavior"))
+      throw new Error(
+        "passed Miri positive fixture reported undefined behavior",
+      );
+    return;
+  }
+  if (
+    check.exitCode === null ||
+    check.exitCode === 0 ||
+    check.signal !== null ||
+    !output.includes("Undefined Behavior")
+  )
+    throw new Error("passed Miri negative fixture lacks UB evidence");
+  let diagnosticMatches = false;
+  try {
+    diagnosticMatches = new RegExp(fixture.expectedDiagnostic ?? "").test(
+      output,
+    );
+  } catch {
+    throw new Error(
+      "Miri fixture diagnostic is not a valid regular expression",
+    );
+  }
+  if (!diagnosticMatches)
+    throw new Error("passed Miri negative fixture has the wrong diagnostic");
 }
 
 export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
@@ -345,10 +504,18 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
         expectedMiriIds.length ||
       report.miriChecks.some(
         (check) =>
-          !expectedMiriIds.includes(check.id) || check.status !== "passed",
+          !expectedMiriIds.includes(check.id) ||
+          (report.status === "passed"
+            ? check.status !== "passed"
+            : !["passed", "failed"].includes(check.status)),
       )
     )
       throw new Error("Miri evidence is incomplete");
+    if (
+      report.status === "failed" &&
+      !report.miriChecks.some((check) => check.status === "failed")
+    )
+      throw new Error("failed Miri report lacks failed fixture evidence");
     if (
       report.miriChecks.some(
         (check) =>
@@ -384,6 +551,12 @@ export function validateBorrowedMemoryReport(report: BorrowedMemoryReport) {
       )
     )
       throw new Error("Miri raw command evidence is incomplete");
+    for (const check of report.miriChecks) {
+      const fixture = expectedMiriFixture(check.id);
+      if (!fixture)
+        throw new Error("Miri evidence references an unknown fixture");
+      validateMiriEvidence(check, fixture);
+    }
   } else if (report.miriChecks.length)
     throw new Error("non-Miri report contains Miri evidence");
   return true;
@@ -394,6 +567,7 @@ function command(
   args: string[],
   cwd: string,
   timeout = 120_000,
+  env = process.env,
 ) {
   if (executionDeadline && Date.now() >= executionDeadline)
     throw new Error("total verifier budget exhausted before subprocess");
@@ -403,6 +577,7 @@ function command(
   const started = Date.now();
   const result = spawnSync(executable, args, {
     cwd,
+    env,
     encoding: "utf8",
     timeout: executionDeadline
       ? Math.min(timeout, Math.max(1, executionDeadline - started))
@@ -595,15 +770,38 @@ function runSafe(mode: BorrowedMemoryMode, report: BorrowedMemoryReport) {
 }
 
 function runMiri(report: BorrowedMemoryReport) {
+  const locatedCargo = command(
+    "rustup",
+    ["which", "--toolchain", MIRI_TOOLCHAIN, "cargo"],
+    process.cwd(),
+    15_000,
+  );
+  if (locatedCargo.status !== 0 || locatedCargo.error)
+    throw verificationError(
+      `Miri ${MIRI_TOOLCHAIN} cargo unavailable: ${locatedCargo.stderr ?? locatedCargo.error?.message ?? "unknown"}`,
+      "infrastructure",
+    );
+  const miriCargo = locatedCargo.stdout.trim();
+  if (!miriCargo)
+    throw verificationError(
+      `Miri ${MIRI_TOOLCHAIN} cargo path was empty`,
+      "infrastructure",
+    );
+  const miriEnv = {
+    ...process.env,
+    PATH: `${dirname(miriCargo)}${delimiter}${process.env.PATH ?? ""}`,
+  };
   const result = command(
     "rustup",
     ["run", MIRI_TOOLCHAIN, "cargo", "miri", "--version"],
     process.cwd(),
     30_000,
+    miriEnv,
   );
   if (result.status !== 0 || result.error)
-    throw new Error(
+    throw verificationError(
       `Miri ${MIRI_TOOLCHAIN} unavailable: ${result.stderr ?? result.error?.message ?? "unknown"}`,
+      "infrastructure",
     );
   report.compilerVersion = command(
     "rustup",
@@ -616,6 +814,7 @@ function runMiri(report: BorrowedMemoryReport) {
     writeFileSync(join(directory, "Cargo.toml"), MIRI_MANIFEST);
     const sourceDir = join(directory, "src");
     mkdirSync(sourceDir, { recursive: true });
+    const failures: string[] = [];
     for (const fixture of unsafeBorrowedMemoryAssessmentFixtures.filter(
       (entry) => entry.mode.startsWith("miri"),
     )) {
@@ -653,8 +852,9 @@ function runMiri(report: BorrowedMemoryReport) {
           BUDGETS.compileTimeoutMs,
         );
         if (formatted.status !== 0 || formatted.error)
-          throw new Error(
+          throw verificationError(
             `${fixture.id}:${variant} rustfmt error: ${formatted.stderr ?? formatted.error?.message ?? "unknown"}`,
+            formatted.error || formatted.signal ? "infrastructure" : "failed",
           );
         const formatCheckCommand = [
           ...formatCommand.slice(0, -1),
@@ -668,8 +868,11 @@ function runMiri(report: BorrowedMemoryReport) {
           BUDGETS.compileTimeoutMs,
         );
         if (formatCheck.status !== 0 || formatCheck.error)
-          throw new Error(
+          throw verificationError(
             `${fixture.id}:${variant} rustfmt --check error: ${formatCheck.stderr ?? formatCheck.error?.message ?? "unknown"}`,
+            formatCheck.error || formatCheck.signal
+              ? "infrastructure"
+              : "failed",
           );
         const cargoFmtCommand = [
           "rustup",
@@ -713,8 +916,14 @@ function runMiri(report: BorrowedMemoryReport) {
           cargoClippy.status !== 0 ||
           cargoClippy.error
         )
-          throw new Error(
+          throw verificationError(
             `${fixture.id}:${variant} Cargo format/lint failed: ${cargoFmt.stderr ?? cargoClippy.stderr ?? cargoFmt.error?.message ?? cargoClippy.error?.message ?? "unknown"}`,
+            cargoFmt.error ||
+              cargoFmt.signal ||
+              cargoClippy.error ||
+              cargoClippy.signal
+              ? "infrastructure"
+              : "failed",
           );
         const executedSource = readFileSync(sourcePath, "utf8");
         const executed = command(
@@ -731,23 +940,31 @@ function runMiri(report: BorrowedMemoryReport) {
           ],
           directory,
           BUDGETS.miriTimeoutMs,
+          miriEnv,
         );
         const output = `${executed.stdout ?? ""}${executed.stderr ?? ""}`;
         const expectedPass = fixture.mode === "miri-positive";
-        const passed = expectedPass
-          ? executed.status === 0 && !executed.signal && !executed.error
-          : executed.status !== 0 &&
-            !executed.signal &&
-            !executed.error &&
-            output.includes(fixture.expectedDiagnostic ?? "") &&
-            output.includes("Undefined Behavior");
+        const resultStatus = classifyMiriResult({
+          status: executed.status,
+          signal: executed.signal ?? null,
+          hasError: !!executed.error,
+          output,
+          expectedPass,
+          expectedDiagnostic: fixture.expectedDiagnostic,
+        });
+        const passed = resultStatus === "passed";
+        if (resultStatus === "infrastructure")
+          throw verificationError(
+            `${fixture.id}:${variant} Miri process did not complete: ${output || executed.error?.message || "unknown"}`,
+            "infrastructure",
+          );
         if (!passed)
-          throw new Error(
+          failures.push(
             `${fixture.id}:${variant} Miri result did not match ${fixture.expectedDiagnostic ?? "success"}: ${output}`,
           );
         report.miriChecks.push({
           id: `${fixture.id}:${variant}`,
-          status: "passed",
+          status: passed ? "passed" : "failed",
           diagnostic: fixture.expectedDiagnostic,
           command: [
             "rustup",
@@ -799,6 +1016,11 @@ function runMiri(report: BorrowedMemoryReport) {
         });
       }
     }
+    if (failures.length)
+      throw verificationError(
+        `Miri evidence failed:\n${failures.join("\n")}`,
+        "failed",
+      );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -851,7 +1073,12 @@ export function runBorrowedMemoryVerification(
     };
     report.status = "passed";
   } catch (error) {
-    const failureStatus = mode === "miri" ? "infrastructure" : "failed";
+    const failureStatus =
+      mode === "miri" && error instanceof BorrowedMemoryVerificationError
+        ? error.status
+        : mode === "miri"
+          ? "infrastructure"
+          : "failed";
     report.phaseStatuses = {
       compile: failureStatus,
       tests: failureStatus,
@@ -860,7 +1087,7 @@ export function runBorrowedMemoryVerification(
     report.phaseErrors.push(
       error instanceof Error ? error.message : String(error),
     );
-    report.status = mode === "miri" ? "infrastructure" : "failed";
+    report.status = failureStatus;
   }
   report.executionCount = executionCount;
   report.budgetUsedMs = budgetUsedMs;

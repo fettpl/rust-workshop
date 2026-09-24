@@ -2,7 +2,10 @@ import { expect, test } from "@playwright/test";
 import { lessons, modules } from "../../src/content/course";
 
 type State = {
-  mastery: Record<string, { level?: string; reason?: string; updatedAt?: number }>;
+  mastery: Record<
+    string,
+    { level?: string; reason?: string; updatedAt?: number }
+  >;
   events: Array<{
     lessonId: string;
     stepId: string;
@@ -15,9 +18,7 @@ type State = {
 
 const stableMastery = (state: State, conceptId: string) => {
   const record = state.mastery[conceptId];
-  return record
-    ? { level: record.level, reason: record.reason }
-    : undefined;
+  return record ? { level: record.level, reason: record.reason } : undefined;
 };
 
 test("borrowed memory keeps assisted evidence separate from an independent blank", async ({
@@ -86,24 +87,39 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
     .getByRole("button", { name: "Prosty edytor", exact: true })
     .click();
   const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
-  const draft = `${gate.code}\n// Assisted authored run.\n`;
-  await editor.fill(draft);
-  await page.route(
-    "**/api/run",
-    async (route) =>
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          status: "success",
-          stdout: "test result: ok",
-          stderr: "",
-          diagnostics: [],
-          durationMs: 1,
-          tests: { passed: 2, failed: 0 },
-        }),
+  const authoredGateDraft = `${gate.code}\n// Assisted authored run.\n`;
+  let expectedSource = authoredGateDraft;
+  let expectedPhase = "authored gate";
+  let expectedTests =
+    gate.evaluator?.kind === "tests" ? gate.evaluator.tests : undefined;
+  const requests: Array<{ code: string; mode: string; tests?: string }> = [];
+  await editor.fill(authoredGateDraft);
+  await page.route("**/api/run", async (route) => {
+    const request = route.request().postDataJSON() as {
+      code: string;
+      mode: string;
+      tests?: string;
+    };
+    expect(request).toEqual({
+      code: expect.any(String),
+      mode: "test",
+      tests: expectedTests,
+    });
+    requests.push(request);
+    const accepted = request.code === expectedSource;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: accepted ? "success" : "test-failure",
+        stdout: accepted ? `${expectedPhase}: ok` : "",
+        stderr: accepted ? "" : `unexpected ${expectedPhase} source`,
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: accepted ? 2 : 0, failed: accepted ? 0 : 1 },
       }),
-  );
+    });
+  });
   await page
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
@@ -120,6 +136,8 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
   await page
     .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
     .click();
+  expectedSource = gate.solution!;
+  expectedPhase = "revealed gate";
   const beforeAssisted = await readState();
   const beforeMastery = stableMastery(beforeAssisted, primary.conceptIds[0]);
   const assistedCountBefore = beforeAssisted.events.filter(
@@ -148,6 +166,7 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
     )
     .toHaveLength(assistedCountBefore + 1);
   const afterAssisted = await readState();
+  expect(requests.at(-1)?.code).toBe(gate.solution);
   const assisted = afterAssisted.events
     .filter(
       (event) =>
@@ -176,24 +195,38 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
     name: "Kod Rust",
     exact: true,
   });
-  const blankDraft = "// Independent borrowed-memory blank.\n";
+  expectedSource = blank.solution!;
+  expectedTests =
+    blank.evaluator?.kind === "tests" ? blank.evaluator.tests : undefined;
+  expectedPhase = "independent blank";
+  const rejectedBlankDraft = "// Unexpected borrowed-memory blank source.\n";
+  await blankEditor.fill(rejectedBlankDraft);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("unexpected independent blank source");
+  const blankDraft = blank.solution!;
   await blankEditor.fill(blankDraft);
   await page
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
   await expect
-    .poll(async () =>
-      (await readState()).events.filter(
-        (event) =>
-          event.lessonId === primary.id &&
-          event.stepId === blank.id &&
-          event.kind !== "exposure" &&
-          event.passed &&
-          event.hints === 0 &&
-          !event.revealed,
-      ).length,
+    .poll(
+      async () =>
+        (await readState()).events.filter(
+          (event) =>
+            event.lessonId === primary.id &&
+            event.stepId === blank.id &&
+            event.kind !== "exposure" &&
+            event.passed &&
+            event.hints === 0 &&
+            !event.revealed,
+        ).length,
     )
     .toBe(blankCountBefore + 1);
+  expect(requests.at(-1)?.code).toBe(blank.solution);
   const afterBlank = await readState();
   expect(afterBlank.mastery[primary.conceptIds[0]]).toBeDefined();
   await page.getByText("Twój notatnik", { exact: true }).click();

@@ -87,3 +87,71 @@ it("publishes learner-safe signatures and maintainer-only boundaries", () => {
   expect(blanks.every((step) => step.code === undefined)).toBe(true);
   expect(blanks.every((step) => step.solution)).toBe(true);
 });
+
+it("teaches the concrete answer for each borrowed-memory prediction", () => {
+  const predictions = Object.fromEntries(
+    unsafeBorrowedMemoryLessons
+      .flatMap((lesson) => lesson.steps)
+      .filter((step) => step.kind === "predict")
+      .map((step) => [step.id, step]),
+  );
+
+  const expected = {
+    "unsafe-borrowed-provenance-predict": {
+      prompt:
+        "Czy `from_slice` może samodzielnie wydłużyć lifetime właściciela?",
+      choices: ["Tak", "Nie", "Tylko po skopiowaniu danych"],
+      correct: "1",
+    },
+    "unsafe-borrowed-reborrow-predict": {
+      prompt: "Czy `mid == len` jest poprawne?",
+      choices: ["Tak", "Nie", "Tylko gdy `mid < len`"],
+      correct: "0",
+    },
+    "unsafe-borrowed-slot-predict": {
+      prompt: "Czy sam adres MaybeUninit oznacza wartość gotową do Drop?",
+      choices: ["Tak", "Nie", "Tak, jeśli adres jest wyrównany"],
+      correct: "1",
+    },
+    "unsafe-borrowed-auto-traits-predict": {
+      prompt: "Czy output-only PhantomData może bezpiecznie dodać Sync?",
+      choices: ["Tak", "Nie", "Tak, jeśli `T: Send`"],
+      correct: "1",
+    },
+  } as const;
+
+  expect(Object.keys(predictions).sort()).toEqual(Object.keys(expected).sort());
+
+  for (const [stepId, assertion] of Object.entries(expected)) {
+    const step = predictions[stepId];
+    expect(step).toBeDefined();
+    expect(step?.prompt).toBe(assertion.prompt);
+    expect(step?.choices?.map((choice) => choice.label)).toEqual(
+      assertion.choices,
+    );
+
+    const evaluator = step?.evaluator;
+    expect(evaluator?.kind).toBe("choice");
+    if (evaluator?.kind !== "choice") continue;
+
+    expect(evaluator.correct).toBe(assertion.correct);
+    expect(Object.keys(evaluator.explanations).sort()).toEqual(["0", "1", "2"]);
+    expect(
+      Object.values(evaluator.explanations).every(
+        (explanation) => explanation.trim().length > 0,
+      ),
+    ).toBe(true);
+  }
+
+  const reborrowEvaluator =
+    predictions["unsafe-borrowed-reborrow-predict"]?.evaluator;
+  expect(reborrowEvaluator?.kind).toBe("choice");
+  if (reborrowEvaluator?.kind === "choice") {
+    expect(reborrowEvaluator.explanations[reborrowEvaluator.correct]).toContain(
+      "pełny lewy prefix",
+    );
+    expect(reborrowEvaluator.explanations[reborrowEvaluator.correct]).toContain(
+      "pusty prawy suffix",
+    );
+  }
+});
