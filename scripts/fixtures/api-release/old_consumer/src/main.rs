@@ -30,7 +30,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{inspect, OldPacket};
-    use release_probe::LegacyView;
+    use release_probe::{LegacyView, Packet};
 
     #[test]
     fn old_dyn_consumer_and_implementer_still_work() {
@@ -40,6 +40,13 @@ mod tests {
         };
         let view: &dyn LegacyView = &old;
         assert_eq!(inspect(view), (11, 2));
+    }
+
+    #[test]
+    fn released_packet_preserves_payload_for_old_callers() {
+        let packet = Packet::new(12, [7, 6, 5]);
+        let view: &dyn LegacyView = &packet;
+        assert_eq!(inspect(view), (12, 3));
     }
 
     #[cfg(feature = "metrics")]

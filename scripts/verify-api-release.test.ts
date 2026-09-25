@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import {
+  classifyMutantRejection,
   currentApiReleaseFixture,
   isRejectedMutant,
   validateApiReleaseReport,
@@ -11,16 +12,16 @@ import {
 function report(): ApiReleaseReport {
   const commands: CommandEvidence[] = [
     command(["check", "--offline", "--locked"]),
-    command(["test", "--offline", "--locked"], "test result: ok. 2 passed; 0 failed;"),
+    command(["test", "--offline", "--locked"], "test result: ok. 3 passed; 0 failed;"),
     command(["check", "--offline", "--locked", "--no-default-features"]),
     command(
       ["test", "--offline", "--locked", "--no-default-features"],
-      "test result: ok. 1 passed; 0 failed;",
+      "test result: ok. 2 passed; 0 failed;",
     ),
     command(["check", "--offline", "--locked", "--no-default-features", "--features", "metrics"]),
     command(
       ["test", "--offline", "--locked", "--no-default-features", "--features", "metrics"],
-      "test result: ok. 2 passed; 0 failed;",
+      "test result: ok. 3 passed; 0 failed;",
     ),
     mutantCommand(),
     mutantCommand("error[E0038]: the trait `PacketView` is not dyn compatible"),
@@ -28,6 +29,7 @@ function report(): ApiReleaseReport {
       "error[E0432]: unresolved import `release_probe::LegacyView`",
       ["check", "--offline", "--locked", "--no-default-features"],
     ),
+    behaviorMutantCommand(),
   ];
   return {
     reportVersion: 1,
@@ -52,13 +54,37 @@ function report(): ApiReleaseReport {
       { id: "metrics", passed: true, commands: [4, 5] },
     ],
     mutants: [
-      { id: "removed-legacy-path", scenario: "default", rejected: true, command: 6 },
-      { id: "lost-dyn-compatibility", scenario: "default", rejected: true, command: 7 },
+      {
+        id: "removed-legacy-path",
+        scenario: "default",
+        rejected: true,
+        command: 6,
+        phase: "compile",
+        rejection: "compile-error",
+      },
+      {
+        id: "lost-dyn-compatibility",
+        scenario: "default",
+        rejected: true,
+        command: 7,
+        phase: "compile",
+        rejection: "compile-error",
+      },
       {
         id: "hidden-legacy-path-under-metrics",
         scenario: "no-default-features",
         rejected: true,
         command: 8,
+        phase: "compile",
+        rejection: "compile-error",
+      },
+      {
+        id: "behavior-regression",
+        scenario: "default",
+        rejected: true,
+        command: 9,
+        phase: "test",
+        rejection: "test-failure",
       },
     ],
   };
@@ -94,6 +120,22 @@ function mutantCommand(
     stderrSha256: createHash("sha256").update(message).digest("hex"),
     stdoutTail: "",
     stderrTail: message,
+  };
+}
+
+function behaviorMutantCommand(): CommandEvidence {
+  const message = "test result: FAILED. 2 passed; 1 failed; 0 ignored;";
+  return {
+    cwd: "old_consumer",
+    args: ["test", "--offline", "--locked"],
+    status: 101,
+    signal: null,
+    timedOut: false,
+    durationMs: 10,
+    stdoutSha256: createHash("sha256").update(message).digest("hex"),
+    stderrSha256: createHash("sha256").update("").digest("hex"),
+    stdoutTail: message,
+    stderrTail: "",
   };
 }
 
@@ -152,6 +194,12 @@ describe("API release verifier", () => {
     expect(() => validateApiReleaseReport(candidate)).toThrow(/toolchain|MSRV/i);
   });
 
+  it("rejects a behavior mutant labeled as a compiler mutant", () => {
+    const candidate = report();
+    candidate.mutants[3].rejection = "compile-error";
+    expect(() => validateApiReleaseReport(candidate)).toThrow(/behavior-regression|test-failure/i);
+  });
+
   it("accepts a compiler failure as a rejected mutant", () => {
     const evidence: CommandEvidence = {
       cwd: "old_consumer",
@@ -165,6 +213,12 @@ describe("API release verifier", () => {
       stdoutTail: "",
       stderrTail: "error[E0432]: unresolved import `release_probe::LegacyView`",
     };
+    expect(isRejectedMutant(evidence)).toBe(true);
+  });
+
+  it("classifies a compiling behavior regression as a test failure", () => {
+    const evidence = behaviorMutantCommand();
+    expect(classifyMutantRejection(evidence)).toBe("test-failure");
     expect(isRejectedMutant(evidence)).toBe(true);
   });
 

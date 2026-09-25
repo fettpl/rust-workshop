@@ -26,6 +26,7 @@ const REQUIRED_MUTANTS = [
   "removed-legacy-path",
   "lost-dyn-compatibility",
   "hidden-legacy-path-under-metrics",
+  "behavior-regression",
 ] as const;
 const ROOT = dirname(fileURLToPath(import.meta.url));
 export const API_RELEASE_FIXTURE_ROOT = join(ROOT, "fixtures/api-release");
@@ -70,6 +71,12 @@ export interface ScenarioEvidence {
 export interface MutantEvidence {
   id: (typeof REQUIRED_MUTANTS)[number];
   scenario: ScenarioId;
+  phase: "compile" | "test";
+  rejection:
+    | "compile-error"
+    | "test-failure"
+    | "unrejected"
+    | "infrastructure-error";
   rejected: boolean;
   command?: number;
   detail?: string;
@@ -224,15 +231,35 @@ function combinedOutput(evidence: CommandEvidence): string {
   return `${evidence.stdoutTail}\n${evidence.stderrTail}`;
 }
 
-export function isRejectedMutant(evidence: CommandEvidence): boolean {
-  return (
+export type MutantRejection =
+  | "compile-error"
+  | "test-failure"
+  | "unrejected"
+  | "infrastructure-error";
+
+export function classifyMutantRejection(
+  evidence: CommandEvidence,
+): MutantRejection {
+  if (commandInfrastructure(evidence)) return "infrastructure-error";
+  const output = combinedOutput(evidence);
+  if (
     evidence.status !== null &&
     evidence.status !== 0 &&
-    !evidence.signal &&
-    !evidence.timedOut &&
-    !evidence.errorCode &&
-    /error\[E\d+\]|could not compile|aborting due to/.test(combinedOutput(evidence))
-  );
+    /error\[E\d+\]|could not compile|aborting due to/.test(output)
+  )
+    return "compile-error";
+  if (
+    evidence.status !== null &&
+    evidence.status !== 0 &&
+    /test result: FAILED\. \d+ passed; \d+ failed;/.test(output)
+  )
+    return "test-failure";
+  return "unrejected";
+}
+
+export function isRejectedMutant(evidence: CommandEvidence): boolean {
+  const rejection = classifyMutantRejection(evidence);
+  return rejection === "compile-error" || rejection === "test-failure";
 }
 
 function runCommand(
@@ -293,6 +320,8 @@ function replaceOnce(source: string, from: string, to: string, label: string): s
 type Mutant = {
   id: (typeof REQUIRED_MUTANTS)[number];
   scenario: ScenarioId;
+  phase: "compile" | "test";
+  rejection: Exclude<MutantRejection, "unrejected" | "infrastructure-error">;
   description: string;
   apply: (root: string) => void;
 };
@@ -301,6 +330,8 @@ export const apiReleaseMutants: readonly Mutant[] = [
   {
     id: "removed-legacy-path",
     scenario: "default",
+    phase: "compile",
+    rejection: "compile-error",
     description: "renames the pre-release public re-export",
     apply(root) {
       const path = join(root, "release_probe/src/lib.rs");
@@ -319,6 +350,8 @@ export const apiReleaseMutants: readonly Mutant[] = [
   {
     id: "lost-dyn-compatibility",
     scenario: "default",
+    phase: "compile",
+    rejection: "compile-error",
     description: "adds Sized to the existing public trait",
     apply(root) {
       const path = join(root, "release_probe/src/lib.rs");
@@ -343,6 +376,8 @@ export const apiReleaseMutants: readonly Mutant[] = [
   {
     id: "hidden-legacy-path-under-metrics",
     scenario: "no-default-features",
+    phase: "compile",
+    rejection: "compile-error",
     description: "hides the old path behind the new feature",
     apply(root) {
       const path = join(root, "release_probe/src/lib.rs");
@@ -354,6 +389,26 @@ export const apiReleaseMutants: readonly Mutant[] = [
           "pub use PacketView as LegacyView;",
           "#[cfg(feature = \"metrics\")]\npub use PacketView as LegacyView;",
           "feature-gated legacy path",
+        ),
+      );
+    },
+  },
+  {
+    id: "behavior-regression",
+    scenario: "default",
+    phase: "test",
+    rejection: "test-failure",
+    description: "changes the bytes observed through the old public trait",
+    apply(root) {
+      const path = join(root, "release_probe/src/lib.rs");
+      const source = readFileSync(path, "utf8");
+      writeFileSync(
+        path,
+        replaceOnce(
+          source,
+          "        &self.bytes\n",
+          "        &self.bytes[..0]\n",
+          "behavior regression payload",
         ),
       );
     },
@@ -406,15 +461,23 @@ function runMutants(
       const evidence = runCommand(
         toolchain,
         join(mutantRoot, "old_consumer"),
-        ["check", "--offline", "--locked", ...scenarioFlags(mutant.scenario)],
+        [
+          mutant.phase === "test" ? "test" : "check",
+          "--offline",
+          "--locked",
+          ...scenarioFlags(mutant.scenario),
+        ],
         commands,
       );
       if (commandInfrastructure(evidence))
-        throw new InfrastructureError(`Mutant ${mutant.id} did not produce a compiler result`);
-      const rejected = isRejectedMutant(evidence);
+        throw new InfrastructureError(`Mutant ${mutant.id} did not produce a bounded result`);
+      const rejection = classifyMutantRejection(evidence);
+      const rejected = rejection === mutant.rejection;
       records.push({
         id: mutant.id,
         scenario: mutant.scenario,
+        phase: mutant.phase,
+        rejection,
         rejected,
         command: commands.length - 1,
         detail: mutant.description,
@@ -594,6 +657,8 @@ export function validateApiReleaseReport(value: unknown): asserts value is ApiRe
       const mutantCommand = mutant.command;
       if (
         mutant.scenario !== expected.scenario ||
+        mutant.phase !== expected.phase ||
+        mutant.rejection !== expected.rejection ||
         typeof mutantCommand !== "number" ||
         !Number.isInteger(mutantCommand) ||
         mutantCommand < 0 ||
@@ -604,10 +669,15 @@ export function validateApiReleaseReport(value: unknown): asserts value is ApiRe
       if (
         command.cwd !== "old_consumer" ||
         JSON.stringify(command.args) !==
-          JSON.stringify(["check", "--offline", "--locked", ...scenarioFlags(expected.scenario)]) ||
-        !isRejectedMutant(command)
+          JSON.stringify([
+            expected.phase === "test" ? "test" : "check",
+            "--offline",
+            "--locked",
+            ...scenarioFlags(expected.scenario),
+          ]) ||
+        classifyMutantRejection(command) !== expected.rejection
       )
-        throw new Error(`Mutant ${expected.id} lacks a rejected compiler failure`);
+        throw new Error(`Mutant ${expected.id} lacks the expected bounded rejection`);
       references.push(mutantCommand);
     }
     const sortedReferences = [...references].sort((left, right) => left - right);
