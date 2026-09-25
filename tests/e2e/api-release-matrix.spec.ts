@@ -3,19 +3,19 @@ import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
 
 async function openReleaseMatrix(page: Page) {
-  const module = modules.find((item) => item.id === "api-release-matrix")!;
+  const moduleData = modules.find((item) => item.id === "api-release-matrix")!;
   await page.goto("/");
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
   await page.getByRole("button", { name: "Przejdź do nauki" }).click();
   await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
   await page
     .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
-    .fill(module.title);
+    .fill(moduleData.title);
   await page
     .locator(".module-picker > button")
-    .filter({ hasText: module.title })
+    .filter({ hasText: moduleData.title })
     .click();
-  return module;
+  return moduleData;
 }
 
 function lessonStep(lessonId: string, stepId: string) {
@@ -33,13 +33,13 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     if (message.type() === "error") consoleErrors.push(message.text());
   });
 
-  const module = await openReleaseMatrix(page);
-  const primaryRef = module.gateCriteria![0].taskRefs[0];
-  const blankRef = module.gateCriteria![0].taskRefs[1];
+  const moduleData = await openReleaseMatrix(page);
+  const primaryRef = moduleData.gateCriteria![0].taskRefs[0];
+  const blankRef = moduleData.gateCriteria![0].taskRefs[1];
   const primary = lessonStep(primaryRef.lessonId, primaryRef.stepId);
   const blank = lessonStep(blankRef.lessonId, blankRef.stepId);
-  const secondPrimaryRef = module.gateCriteria![1].taskRefs[0];
-  const secondBlankRef = module.gateCriteria![1].taskRefs[1];
+  const secondPrimaryRef = moduleData.gateCriteria![1].taskRefs[0];
+  const secondBlankRef = moduleData.gateCriteria![1].taskRefs[1];
   const secondPrimary = lessonStep(
     secondPrimaryRef.lessonId,
     secondPrimaryRef.stepId,
@@ -131,7 +131,9 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
   await expect(page.locator(".feedback.passed")).toBeVisible();
-  await page.getByRole("button", { name: module.title, exact: true }).click();
+  await page
+    .getByRole("button", { name: moduleData.title, exact: true })
+    .click();
   await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
 
   await page.locator(".gate-action").first().click();
@@ -150,7 +152,9 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     .click();
   await expect(page.locator(".feedback.passed")).toBeVisible();
 
-  await page.getByRole("button", { name: module.title, exact: true }).click();
+  await page
+    .getByRole("button", { name: moduleData.title, exact: true })
+    .click();
   await expect(page.getByLabel("Potwierdzone")).toHaveCount(1);
   await page.locator(".gate-action").first().click();
   await expect(page.locator(".task-pane h1")).toHaveText(secondPrimary.title);
@@ -174,7 +178,9 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
   await expect(page.locator(".feedback.passed")).toBeVisible();
-  await page.getByRole("button", { name: module.title, exact: true }).click();
+  await page
+    .getByRole("button", { name: moduleData.title, exact: true })
+    .click();
   await expect(page.getByLabel("Potwierdzone")).toHaveCount(1);
 
   await page.locator(".gate-action").first().click();
@@ -208,7 +214,9 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     page.getByRole("textbox", { name: "Kod Rust", exact: true }),
   ).toBeFocused();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-  await page.getByRole("button", { name: module.title, exact: true }).click();
+  await page
+    .getByRole("button", { name: moduleData.title, exact: true })
+    .click();
   await expect(page.getByLabel("Potwierdzone")).toHaveCount(2);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
