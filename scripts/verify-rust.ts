@@ -166,8 +166,7 @@ export function verifyTrustedRust(
       if (
         options.expectStarterRejection &&
         !compile.error &&
-        compile.status !== null &&
-        compile.status !== 0 &&
+        compile.status === 1 &&
         !compile.signal &&
         sourceError
       ) {
