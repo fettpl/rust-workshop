@@ -216,7 +216,8 @@ pub fn classify(
     match (build, behavior) {
         (BuildOutcome::MissingPublicItem, BehaviorOutcome::NotObserved) => ClientObservation::PublicApiBreak,
         (BuildOutcome::MissingPublicItem, _) => ClientObservation::ContradictoryObservation,
-        (BuildOutcome::OtherCompileFailure, _) => ClientObservation::UnclassifiedBuildFailure,
+        (BuildOutcome::OtherCompileFailure, BehaviorOutcome::NotObserved) => ClientObservation::UnclassifiedBuildFailure,
+        (BuildOutcome::OtherCompileFailure, _) => ClientObservation::ContradictoryObservation,
         (BuildOutcome::Passed, BehaviorOutcome::Matching) => ClientObservation::Compatible,
         (BuildOutcome::Passed, BehaviorOutcome::Mismatch) => ClientObservation::BehaviorRegression,
         (BuildOutcome::Passed, BehaviorOutcome::NotObserved) => ClientObservation::MissingEvidence,
@@ -244,7 +245,8 @@ fn classifies_one_old_client_observation_before_release() {
     assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::Matching, true, false), ClientObservation::MissingEvidence);
     assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::NotObserved, true, true), ClientObservation::MissingEvidence);
     assert_eq!(classify(BuildOutcome::MissingPublicItem, BehaviorOutcome::Mismatch, true, true), ClientObservation::ContradictoryObservation);
-    assert_eq!(classify(BuildOutcome::OtherCompileFailure, BehaviorOutcome::Matching, true, true), ClientObservation::UnclassifiedBuildFailure);
+    assert_eq!(classify(BuildOutcome::OtherCompileFailure, BehaviorOutcome::Matching, true, true), ClientObservation::ContradictoryObservation);
+    assert_eq!(classify(BuildOutcome::OtherCompileFailure, BehaviorOutcome::Mismatch, true, true), ClientObservation::ContradictoryObservation);
     assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::Matching, true, true), ClientObservation::Compatible);
 
     assert_eq!(approve(ClientObservation::PublicApiBreak), ReleaseDecision::Hold("public-api"));
