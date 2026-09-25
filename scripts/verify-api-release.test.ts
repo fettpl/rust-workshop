@@ -12,15 +12,32 @@ import {
 function report(): ApiReleaseReport {
   const commands: CommandEvidence[] = [
     command(["check", "--offline", "--locked"]),
-    command(["test", "--offline", "--locked"], "test result: ok. 3 passed; 0 failed;"),
+    command(
+      ["test", "--offline", "--locked"],
+      "test result: ok. 3 passed; 0 failed;",
+    ),
     command(["check", "--offline", "--locked", "--no-default-features"]),
     command(
       ["test", "--offline", "--locked", "--no-default-features"],
       "test result: ok. 2 passed; 0 failed;",
     ),
-    command(["check", "--offline", "--locked", "--no-default-features", "--features", "metrics"]),
+    command([
+      "check",
+      "--offline",
+      "--locked",
+      "--no-default-features",
+      "--features",
+      "metrics",
+    ]),
     command(
-      ["test", "--offline", "--locked", "--no-default-features", "--features", "metrics"],
+      [
+        "test",
+        "--offline",
+        "--locked",
+        "--no-default-features",
+        "--features",
+        "metrics",
+      ],
       "test result: ok. 3 passed; 0 failed;",
     ),
     mutantCommand(),
@@ -160,9 +177,8 @@ describe("API release verifier", () => {
       { id: "no-default-features", passed: true },
       { id: "metrics", passed: true },
     ];
-    candidate.mutants = candidate.mutants.map(({ id, scenario }) => ({
-      id,
-      scenario,
+    candidate.mutants = candidate.mutants.map((mutant) => ({
+      ...mutant,
       rejected: true,
     }));
     expect(() => validateApiReleaseReport(candidate)).toThrow(/command/i);
@@ -172,7 +188,9 @@ describe("API release verifier", () => {
     const candidate = report();
     candidate.commands[1].status = 101;
     candidate.commands[1].stderrTail = "error[E0308]: mismatched types";
-    expect(() => validateApiReleaseReport(candidate)).toThrow(/scenario|successful/i);
+    expect(() => validateApiReleaseReport(candidate)).toThrow(
+      /scenario|successful/i,
+    );
   });
 
   it("rejects a stale fixture hash", () => {
@@ -184,20 +202,26 @@ describe("API release verifier", () => {
   it("rejects a mutant without its compiler command", () => {
     const candidate = report();
     delete candidate.mutants[0].command;
-    expect(() => validateApiReleaseReport(candidate)).toThrow(/mutant|command/i);
+    expect(() => validateApiReleaseReport(candidate)).toThrow(
+      /mutant|command/i,
+    );
   });
 
   it("rejects a report whose requested mode disagrees with its toolchain", () => {
     const candidate = report();
     candidate.mode = "msrv";
     candidate.toolchain!.requested = "stable";
-    expect(() => validateApiReleaseReport(candidate)).toThrow(/toolchain|MSRV/i);
+    expect(() => validateApiReleaseReport(candidate)).toThrow(
+      /toolchain|MSRV/i,
+    );
   });
 
   it("rejects a behavior mutant labeled as a compiler mutant", () => {
     const candidate = report();
     candidate.mutants[3].rejection = "compile-error";
-    expect(() => validateApiReleaseReport(candidate)).toThrow(/behavior-regression|test-failure/i);
+    expect(() => validateApiReleaseReport(candidate)).toThrow(
+      /behavior-regression|test-failure/i,
+    );
   });
 
   it("accepts a compiler failure as a rejected mutant", () => {

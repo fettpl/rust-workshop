@@ -73,10 +73,7 @@ export interface MutantEvidence {
   scenario: ScenarioId;
   phase: "compile" | "test";
   rejection:
-    | "compile-error"
-    | "test-failure"
-    | "unrejected"
-    | "infrastructure-error";
+    "compile-error" | "test-failure" | "unrejected" | "infrastructure-error";
   rejected: boolean;
   command?: number;
   detail?: string;
@@ -150,11 +147,11 @@ function locate(name: string): string {
 }
 
 function rustupPath(tool: string): string {
-  const result = spawnSync(
-    "rustup",
-    ["which", "--toolchain", MSRV, tool],
-    { encoding: "utf8", timeout: 10_000, maxBuffer: 16 * 1024 },
-  );
+  const result = spawnSync("rustup", ["which", "--toolchain", MSRV, tool], {
+    encoding: "utf8",
+    timeout: 10_000,
+    maxBuffer: 16 * 1024,
+  });
   if (result.error || result.status !== 0 || !result.stdout.trim())
     throw new InfrastructureError(
       `Exact Rust ${MSRV} toolchain is unavailable: ${tool}`,
@@ -169,14 +166,22 @@ interface ToolchainContext extends ToolchainEvidence {
 export function resolveToolchain(mode: ApiReleaseMode): ToolchainContext {
   const cargoPath = mode === "msrv" ? rustupPath("cargo") : locate("cargo");
   const rustcPath = mode === "msrv" ? rustupPath("rustc") : locate("rustc");
-  const rustdocPath = mode === "msrv" ? rustupPath("rustdoc") : locate("rustdoc");
+  const rustdocPath =
+    mode === "msrv" ? rustupPath("rustdoc") : locate("rustdoc");
   const cargo = version(cargoPath, "cargo");
   const rustc = version(rustcPath, "rustc");
   const rustdoc = version(rustdocPath, "rustdoc");
-  if (mode === "stable" && /nightly|dev|beta/i.test(`${cargo} ${rustc} ${rustdoc}`))
-    throw new InfrastructureError("Stable verifier selected a non-stable toolchain");
+  if (
+    mode === "stable" &&
+    /nightly|dev|beta/i.test(`${cargo} ${rustc} ${rustdoc}`)
+  )
+    throw new InfrastructureError(
+      "Stable verifier selected a non-stable toolchain",
+    );
   if (mode === "msrv" && !rustc.startsWith(`rustc ${MSRV} `))
-    throw new InfrastructureError(`Expected exact MSRV rustc ${MSRV}, got ${rustc}`);
+    throw new InfrastructureError(
+      `Expected exact MSRV rustc ${MSRV}, got ${rustc}`,
+    );
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
@@ -215,7 +220,9 @@ function fixtureFiles(root = API_RELEASE_FIXTURE_ROOT): FixtureEvidence {
     }
   }
   visit(root);
-  const manifest = files.map((file) => `${file.path}\0${file.sha256}\n`).join("");
+  const manifest = files
+    .map((file) => `${file.path}\0${file.sha256}\n`)
+    .join("");
   return {
     root: "scripts/fixtures/api-release",
     files,
@@ -232,10 +239,7 @@ function combinedOutput(evidence: CommandEvidence): string {
 }
 
 export type MutantRejection =
-  | "compile-error"
-  | "test-failure"
-  | "unrejected"
-  | "infrastructure-error";
+  "compile-error" | "test-failure" | "unrejected" | "infrastructure-error";
 
 export function classifyMutantRejection(
   evidence: CommandEvidence,
@@ -269,19 +273,27 @@ function runCommand(
   commands: CommandEvidence[],
 ): CommandEvidence {
   if (commands.length >= MAX_COMMANDS)
-    throw new InfrastructureError(`Verifier command bound exceeded (${MAX_COMMANDS})`);
+    throw new InfrastructureError(
+      `Verifier command bound exceeded (${MAX_COMMANDS})`,
+    );
   const started = Date.now();
-  const result: SpawnSyncReturns<string> = spawnSync(toolchain.cargoPath, args, {
-    cwd,
-    env: toolchain.env,
-    encoding: "utf8",
-    timeout: COMMAND_TIMEOUT_MS,
-    maxBuffer: 2 * 1024 * 1024,
-  });
+  const result: SpawnSyncReturns<string> = spawnSync(
+    toolchain.cargoPath,
+    args,
+    {
+      cwd,
+      env: toolchain.env,
+      encoding: "utf8",
+      timeout: COMMAND_TIMEOUT_MS,
+      maxBuffer: 2 * 1024 * 1024,
+    },
+  );
   const stdout = result.stdout ?? "";
   const stderr = result.stderr ?? "";
   const evidence: CommandEvidence = {
-    cwd: cwd.endsWith("/old_consumer") ? "old_consumer" : relative(process.cwd(), cwd).replaceAll("\\", "/") || ".",
+    cwd: cwd.endsWith("/old_consumer")
+      ? "old_consumer"
+      : relative(process.cwd(), cwd).replaceAll("\\", "/") || ".",
     args: [...args],
     status: result.status,
     signal: result.signal,
@@ -307,11 +319,18 @@ function commandInfrastructure(evidence: CommandEvidence): boolean {
 }
 
 function passedTests(evidence: CommandEvidence): boolean {
-  const match = combinedOutput(evidence).match(/test result: ok\. (\d+) passed;/);
+  const match = combinedOutput(evidence).match(
+    /test result: ok\. (\d+) passed;/,
+  );
   return evidence.status === 0 && !!match && Number(match[1]) > 0;
 }
 
-function replaceOnce(source: string, from: string, to: string, label: string): string {
+function replaceOnce(
+  source: string,
+  from: string,
+  to: string,
+  label: string,
+): string {
   const occurrences = source.split(from).length - 1;
   assert.equal(occurrences, 1, `${label} mutation anchor must occur once`);
   return source.replace(from, to);
@@ -387,7 +406,7 @@ export const apiReleaseMutants: readonly Mutant[] = [
         replaceOnce(
           source,
           "pub use PacketView as LegacyView;",
-          "#[cfg(feature = \"metrics\")]\npub use PacketView as LegacyView;",
+          '#[cfg(feature = "metrics")]\npub use PacketView as LegacyView;',
           "feature-gated legacy path",
         ),
       );
@@ -417,7 +436,8 @@ export const apiReleaseMutants: readonly Mutant[] = [
 
 function scenarioFlags(id: ScenarioId): string[] {
   if (id === "no-default-features") return ["--no-default-features"];
-  if (id === "metrics") return ["--no-default-features", "--features", "metrics"];
+  if (id === "metrics")
+    return ["--no-default-features", "--features", "metrics"];
   return [];
 }
 
@@ -430,18 +450,36 @@ function runScenario(
 ): ScenarioEvidence {
   const cwd = join(root, "old_consumer");
   const flags = scenarioFlags(id);
-  const check = runCommand(toolchain, cwd, ["check", "--offline", "--locked", ...flags], commands);
+  const check = runCommand(
+    toolchain,
+    cwd,
+    ["check", "--offline", "--locked", ...flags],
+    commands,
+  );
   if (commandInfrastructure(check))
-    throw new InfrastructureError(`Cargo check infrastructure failure for ${id}`);
+    throw new InfrastructureError(
+      `Cargo check infrastructure failure for ${id}`,
+    );
   if (check.status !== 0)
-    throw new ProductError(`Candidate failed external-client check for ${id}: ${combinedOutput(check)}`);
+    throw new ProductError(
+      `Candidate failed external-client check for ${id}: ${combinedOutput(check)}`,
+    );
   const indexes = [commands.length - 1];
   if (includeTests) {
-    const test = runCommand(toolchain, cwd, ["test", "--offline", "--locked", ...flags], commands);
+    const test = runCommand(
+      toolchain,
+      cwd,
+      ["test", "--offline", "--locked", ...flags],
+      commands,
+    );
     if (commandInfrastructure(test))
-      throw new InfrastructureError(`Cargo test infrastructure failure for ${id}`);
+      throw new InfrastructureError(
+        `Cargo test infrastructure failure for ${id}`,
+      );
     if (!passedTests(test))
-      throw new ProductError(`Candidate did not pass external-client tests for ${id}: ${combinedOutput(test)}`);
+      throw new ProductError(
+        `Candidate did not pass external-client tests for ${id}: ${combinedOutput(test)}`,
+      );
     indexes.push(commands.length - 1);
   }
   return { id, passed: true, commands: indexes };
@@ -470,7 +508,9 @@ function runMutants(
         commands,
       );
       if (commandInfrastructure(evidence))
-        throw new InfrastructureError(`Mutant ${mutant.id} did not produce a bounded result`);
+        throw new InfrastructureError(
+          `Mutant ${mutant.id} did not produce a bounded result`,
+        );
       const rejection = classifyMutantRejection(evidence);
       const rejected = rejection === mutant.rejection;
       records.push({
@@ -505,7 +545,9 @@ function successfulCommand(
   );
 }
 
-export function validateApiReleaseReport(value: unknown): asserts value is ApiReleaseReport {
+export function validateApiReleaseReport(
+  value: unknown,
+): asserts value is ApiReleaseReport {
   if (!value || typeof value !== "object")
     throw new Error("API release report must be an object");
   const report = value as Partial<ApiReleaseReport>;
@@ -617,7 +659,9 @@ export function validateApiReleaseReport(value: unknown): asserts value is ApiRe
       ) ||
       scenarios.some((scenario) => scenario.passed !== true)
     )
-      throw new Error("Passed report is missing successful feature matrix evidence");
+      throw new Error(
+        "Passed report is missing successful feature matrix evidence",
+      );
 
     const references: number[] = [];
     for (const scenario of scenarios) {
@@ -625,22 +669,39 @@ export function validateApiReleaseReport(value: unknown): asserts value is ApiRe
         !Array.isArray(scenario.commands) ||
         scenario.commands.length !== 2 ||
         scenario.commands.some(
-          (index) => !Number.isInteger(index) || index < 0 || index >= commands.length,
+          (index) =>
+            !Number.isInteger(index) || index < 0 || index >= commands.length,
         )
       )
-        throw new Error(`Scenario ${scenario.id} is missing check/test command evidence`);
+        throw new Error(
+          `Scenario ${scenario.id} is missing check/test command evidence`,
+        );
       const [checkIndex, testIndex] = scenario.commands;
       if (checkIndex === testIndex)
-        throw new Error(`Scenario ${scenario.id} reuses one command for check and test`);
+        throw new Error(
+          `Scenario ${scenario.id} reuses one command for check and test`,
+        );
       const expectedFlags = scenarioFlags(scenario.id);
       const check = commands[checkIndex];
       const test = commands[testIndex];
       if (
-        !successfulCommand(check, ["check", "--offline", "--locked", ...expectedFlags]) ||
-        !successfulCommand(test, ["test", "--offline", "--locked", ...expectedFlags]) ||
+        !successfulCommand(check, [
+          "check",
+          "--offline",
+          "--locked",
+          ...expectedFlags,
+        ]) ||
+        !successfulCommand(test, [
+          "test",
+          "--offline",
+          "--locked",
+          ...expectedFlags,
+        ]) ||
         !passedTests(test)
       )
-        throw new Error(`Scenario ${scenario.id} does not contain successful check/test evidence`);
+        throw new Error(
+          `Scenario ${scenario.id} does not contain successful check/test evidence`,
+        );
       references.push(checkIndex, testIndex);
     }
 
@@ -677,15 +738,21 @@ export function validateApiReleaseReport(value: unknown): asserts value is ApiRe
           ]) ||
         classifyMutantRejection(command) !== expected.rejection
       )
-        throw new Error(`Mutant ${expected.id} lacks the expected bounded rejection`);
+        throw new Error(
+          `Mutant ${expected.id} lacks the expected bounded rejection`,
+        );
       references.push(mutantCommand);
     }
-    const sortedReferences = [...references].sort((left, right) => left - right);
+    const sortedReferences = [...references].sort(
+      (left, right) => left - right,
+    );
     if (
       sortedReferences.length !== commands.length ||
       sortedReferences.some((index, position) => index !== position)
     )
-      throw new Error("Passed report command references have duplicate or missing indices");
+      throw new Error(
+        "Passed report command references have duplicate or missing indices",
+      );
   } else if (
     report.status !== "product-error" &&
     report.status !== "infrastructure-error"
@@ -734,7 +801,9 @@ export function runApiReleaseVerification(
     temporaryRoot = root;
     cpSync(API_RELEASE_FIXTURE_ROOT, root, { recursive: true });
     for (const id of ["default", "no-default-features", "metrics"] as const)
-      report.scenarios.push(runScenario(toolchain, root, id, report.commands, true));
+      report.scenarios.push(
+        runScenario(toolchain, root, id, report.commands, true),
+      );
     report.mutants = runMutants(toolchain, root, report.commands);
     report.status = "passed";
   } catch (error) {
@@ -742,7 +811,10 @@ export function runApiReleaseVerification(
     report.status = isInfrastructure ? "infrastructure-error" : "product-error";
     report.error = {
       kind: isInfrastructure ? "infrastructure" : "product",
-      message: error instanceof Error ? error.message.slice(0, 500) : String(error).slice(0, 500),
+      message:
+        error instanceof Error
+          ? error.message.slice(0, 500)
+          : String(error).slice(0, 500),
     };
   } finally {
     if (temporaryRoot) rmSync(temporaryRoot, { recursive: true, force: true });
