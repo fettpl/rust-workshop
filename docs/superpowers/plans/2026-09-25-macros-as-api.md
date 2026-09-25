@@ -33,4 +33,3 @@ After Task 1 is available, add `tests/e2e/macros-as-api.spec.ts` and a bounded a
 ## Integration and finish
 
 Cherry-pick independently reviewed Task 1/2/3 commits into a clean integration worktree based on PR #26. Run full Vitest, typecheck, content check/audit, lint, build, stable/MSRV verifier, production E2E, offline smoke and `git diff --check`. Resolve failures before publication; do not repeat unchanged suites without cause. Qualitative review checks the five spec risks and documentation honesty. Push new remote branch and create a draft English PR based on `feat/api-release-matrix-milestone`. Attach the PR artifact. Record exact-head status but do not merge while Actions jobs fail before starting.
-

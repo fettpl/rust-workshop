@@ -37,4 +37,3 @@ Start from PR #26 head `d0210272c38ca13699621d412f085662fff4ec2c` in isolated wo
 - https://doc.rust-lang.org/book/ch20-05-macros.html
 - https://doc.rust-lang.org/reference/macros-by-example.html
 - https://doc.rust-lang.org/edition-guide/rust-2024/macro-fragment-specifiers.html
-

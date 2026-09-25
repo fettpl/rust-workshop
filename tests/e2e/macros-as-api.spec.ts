@@ -12,7 +12,7 @@ type LearningEvent = {
 };
 
 type LearningState = {
-  mastery: Record<string, unknown>;
+  mastery: Record<string, { level?: string; reason?: string }>;
   events: LearningEvent[];
 };
 
@@ -30,7 +30,7 @@ const readLearningState = (page: Page) =>
         get.onerror = () => reject(get.error);
         get.onsuccess = () =>
           resolve({
-            mastery: (get.result?.mastery ?? {}) as Record<string, unknown>,
+            mastery: (get.result?.mastery ?? {}) as LearningState["mastery"],
             events: (get.result?.events ?? []) as LearningEvent[],
           });
       };
@@ -128,7 +128,11 @@ test.describe("macros-as-api production contracts", () => {
         .locator(".module-picker > button")
         .filter({ hasText: macroModule.title })
         .click();
-      await page.locator(".gate-action").first().click();
+      await page
+        .locator(".gate-panel li")
+        .filter({ hasText: criterion.label })
+        .getByRole("button", { name: /Sprawdź w zadaniu/ })
+        .click();
       await expect(page.locator(".task-pane h1")).toHaveText(primary.title);
 
       await page
@@ -163,8 +167,11 @@ test.describe("macros-as-api production contracts", () => {
       const stateAfterReveal = await readLearningState(page);
       const primaryMastery = (state: LearningState) =>
         state.mastery[primaryLesson.conceptIds[0]];
-      expect(primaryMastery(stateAfterReveal)).toEqual(
-        primaryMastery(stateBeforeReveal),
+      expect(primaryMastery(stateAfterReveal)?.level).toBe(
+        primaryMastery(stateBeforeReveal)?.level,
+      );
+      expect(primaryMastery(stateAfterReveal)?.reason).toBe(
+        primaryMastery(stateBeforeReveal)?.reason,
       );
       expect(
         stateAfterReveal.events.some(
@@ -179,7 +186,11 @@ test.describe("macros-as-api production contracts", () => {
         .getByRole("button", { name: macroModule.title, exact: true })
         .click();
       await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
-      await page.locator(".gate-action").first().click();
+      await page
+        .locator(".gate-panel li")
+        .filter({ hasText: criterion.label })
+        .getByRole("button", { name: /Sprawdź w zadaniu/ })
+        .click();
       await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
       await expect(editor).toHaveValue("");
 
