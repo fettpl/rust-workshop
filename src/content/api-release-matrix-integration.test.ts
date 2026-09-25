@@ -121,9 +121,11 @@ it("keeps the release lesson evidence distinct from Cargo proof", () => {
   const oldGate = oldLesson.steps.find(
     (step) => step.id === "api-release-old-contracts-gate",
   )!;
-  expect(oldGate.prompt).toMatch(/publicznej ścieżki|re-eksport|re-eksportu/i);
-  expect(oldGate.solution).toContain("pub use legacy::render;");
-  expect(oldGate.solution).toContain("checked_render");
+  expect(oldGate.prompt).toMatch(
+    /public API break|regresj|infrastruktur|evidence/i,
+  );
+  expect(oldGate.solution).toContain("ClientObservation");
+  expect(oldGate.solution).toContain("ReleaseDecision");
   expect(oldGate.solution).not.toContain("dyn Beacon");
 });
 
@@ -153,7 +155,7 @@ it("runs every primary, blank, and delayed retrieval fixture", () => {
   }
 });
 
-it("rejects a trivial decision and a breaking old-client mutant", () => {
+it("rejects a trivial decision and a behavior-classification mutant", () => {
   const decision = apiReleaseMatrixLessons[1].steps.find(
     (step) => step.id === "api-release-matrix-decision-gate",
   )!;
@@ -183,13 +185,18 @@ it("rejects a trivial decision and a breaking old-client mutant", () => {
     trivialResult.executed?.status ?? trivialResult.compiled.status,
   ).not.toBe(0);
 
-  const breaking = oldContract.solution!.replace("pub use legacy::render;", "");
+  const breaking = oldContract.solution!.replace(
+    'ClientObservation::BehaviorRegression => ReleaseDecision::Hold("behavior"),',
+    "ClientObservation::BehaviorRegression => ReleaseDecision::Ship,",
+  );
   const breakingResult = runFixture(
     breaking,
     oldContract.evaluator.tests,
     "breaking",
   );
-  expect(breakingResult.compiled.status).not.toBe(0);
+  expect(
+    breakingResult.executed?.status ?? breakingResult.compiled.status,
+  ).not.toBe(0);
 });
 
 it("keeps incorrect debug examples tied to their named compiler failures", () => {
@@ -210,7 +217,9 @@ it("keeps incorrect debug examples tied to their named compiler failures", () =>
   const dynResult = runFixture(dyn.code!, "", "dyn-debug");
   const msrvResult = runFixture(msrv.code!, "", "msrv-debug");
   expect(dynResult.compiled.status).not.toBe(0);
-  expect(dynResult.compiled.stderr).toContain("unresolved import `super::render`");
+  expect(dynResult.compiled.stderr).toContain(
+    "unresolved import `super::render`",
+  );
   expect(msrvResult.compiled.status).not.toBe(0);
   expect(msrvResult.compiled.stderr).toContain("mismatched types");
 });

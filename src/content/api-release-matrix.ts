@@ -130,132 +130,153 @@ fn main() {
     println!("{}", render(""));
 }`;
 
-const oldContractStarter = `mod layout {
-    pub fn compose(input: &str) -> String {
-        format!("entry:{}", input.trim())
-    }
+const oldContractStarter = `#[derive(Debug, PartialEq, Eq)]
+pub enum ClientObservation {
+    PublicApiBreak,
+    BehaviorRegression,
+    InfrastructureFailure,
+    MissingEvidence,
+    Compatible,
 }
 
-pub mod legacy {
-    pub fn render(input: &str) -> String {
-        super::layout::compose(input)
-    }
+#[derive(Debug, PartialEq, Eq)]
+pub enum ReleaseDecision {
+    Ship,
+    Hold(&'static str),
 }
 
-pub fn checked_render(input: &str) -> Result<String, &'static str> {
-    if input.is_empty() { Err("empty") } else { Ok(layout::compose(input)) }
+pub fn classify(
+    compiles: bool,
+    behavior_matches: bool,
+    infrastructure_ok: bool,
+    evidence_present: bool,
+) -> ClientObservation {
+    ClientObservation::Compatible
 }
 
-mod old_client {
-    use super::render;
-
-    pub fn call(input: &str) -> String {
-        render(input)
-    }
+pub fn approve(observation: ClientObservation) -> ReleaseDecision {
+    ReleaseDecision::Ship
 }`;
 
-const oldContractSolution = `mod layout {
-    pub fn compose(input: &str) -> String {
-        format!("entry:{}", input)
-    }
+const oldContractSolution = `#[derive(Debug, PartialEq, Eq)]
+pub enum ClientObservation {
+    PublicApiBreak,
+    BehaviorRegression,
+    InfrastructureFailure,
+    MissingEvidence,
+    Compatible,
 }
 
-pub mod legacy {
-    pub fn render(input: &str) -> String {
-        super::layout::compose(input)
-    }
+#[derive(Debug, PartialEq, Eq)]
+pub enum ReleaseDecision {
+    Ship,
+    Hold(&'static str),
 }
 
-pub use legacy::render;
-
-pub fn checked_render(input: &str) -> Result<String, &'static str> {
-    if input.is_empty() { Err("empty") } else { Ok(layout::compose(input)) }
+pub fn classify(
+    compiles: bool,
+    behavior_matches: bool,
+    infrastructure_ok: bool,
+    evidence_present: bool,
+) -> ClientObservation {
+    if !evidence_present { return ClientObservation::MissingEvidence; }
+    if !infrastructure_ok { return ClientObservation::InfrastructureFailure; }
+    if !compiles { return ClientObservation::PublicApiBreak; }
+    if !behavior_matches { return ClientObservation::BehaviorRegression; }
+    ClientObservation::Compatible
 }
 
-mod old_client {
-    use super::render;
-
-    pub fn call(input: &str) -> String {
-        render(input)
+pub fn approve(observation: ClientObservation) -> ReleaseDecision {
+    match observation {
+        ClientObservation::Compatible => ReleaseDecision::Ship,
+        ClientObservation::PublicApiBreak => ReleaseDecision::Hold("public-api"),
+        ClientObservation::BehaviorRegression => ReleaseDecision::Hold("behavior"),
+        ClientObservation::InfrastructureFailure => ReleaseDecision::Hold("infrastructure"),
+        ClientObservation::MissingEvidence => ReleaseDecision::Hold("missing-evidence"),
     }
 }`;
 
 const oldContractTests = `#[test]
-fn old_public_path_and_behavior_survive_new_checked_api() {
-    let module_path: fn(&str) -> String = legacy::render;
-    let root_path: fn(&str) -> String = render;
+fn classifies_one_old_client_observation_before_release() {
+    assert_eq!(classify(false, true, true, true), ClientObservation::PublicApiBreak);
+    assert_eq!(classify(true, false, true, true), ClientObservation::BehaviorRegression);
+    assert_eq!(classify(true, true, false, true), ClientObservation::InfrastructureFailure);
+    assert_eq!(classify(true, true, true, false), ClientObservation::MissingEvidence);
+    assert_eq!(classify(true, true, true, true), ClientObservation::Compatible);
 
-    assert_eq!(module_path(" żółć "), "entry: żółć ");
-    assert_eq!(root_path(""), "entry:");
-    assert_eq!(old_client::call(" 7 "), "entry: 7 ");
-    assert_eq!(checked_render("ok"), Ok(String::from("entry:ok")));
-    assert_eq!(checked_render(""), Err("empty"));
+    assert_eq!(approve(ClientObservation::PublicApiBreak), ReleaseDecision::Hold("public-api"));
+    assert_eq!(approve(ClientObservation::BehaviorRegression), ReleaseDecision::Hold("behavior"));
+    assert_eq!(approve(ClientObservation::InfrastructureFailure), ReleaseDecision::Hold("infrastructure"));
+    assert_eq!(approve(ClientObservation::MissingEvidence), ReleaseDecision::Hold("missing-evidence"));
+    assert_eq!(approve(ClientObservation::Compatible), ReleaseDecision::Ship);
 }`;
 
-const oldContractBlankSolution = `mod formatter {
-    pub fn line(input: &str) -> String {
-        format!("record|{}", input)
-    }
+const oldContractBlankSolution = `#[derive(Debug, PartialEq, Eq)]
+pub enum ProbeResult {
+    MissingSymbol,
+    ChangedOutput,
+    TimedOut,
+    NotRecorded,
+    SameContract,
 }
 
-pub mod classic {
-    pub fn pack(input: &str) -> String {
-        super::formatter::line(input)
-    }
+#[derive(Debug, PartialEq, Eq)]
+pub enum Verdict {
+    Release,
+    Stop(&'static str),
 }
 
-pub use classic::pack;
-
-pub fn checked_pack(input: &str) -> Result<String, &'static str> {
-    if input.is_empty() { Err("empty") } else { Ok(formatter::line(input)) }
-}
-
-mod installed_client {
-    use super::pack;
-
-    pub fn call(input: &str) -> String {
-        pack(input)
+pub fn inspect(result: ProbeResult) -> Verdict {
+    match result {
+        ProbeResult::MissingSymbol => Verdict::Stop("public-api"),
+        ProbeResult::ChangedOutput => Verdict::Stop("behavior"),
+        ProbeResult::TimedOut => Verdict::Stop("infrastructure"),
+        ProbeResult::NotRecorded => Verdict::Stop("missing-evidence"),
+        ProbeResult::SameContract => Verdict::Release,
     }
 }`;
 
 const oldContractBlankTests = `#[test]
-fn independent_classic_import_keeps_whitespace_and_adds_checked_pack() {
-    let module_path: fn(&str) -> String = classic::pack;
-    let root_path: fn(&str) -> String = pack;
-
-    assert_eq!(module_path(" a "), "record| a ");
-    assert_eq!(root_path(""), "record|");
-    assert_eq!(installed_client::call("x"), "record|x");
-    assert_eq!(checked_pack("x"), Ok(String::from("record|x")));
-    assert_eq!(checked_pack(""), Err("empty"));
+fn independent_probe_result_covers_each_release_outcome() {
+    assert_eq!(inspect(ProbeResult::MissingSymbol), Verdict::Stop("public-api"));
+    assert_eq!(inspect(ProbeResult::ChangedOutput), Verdict::Stop("behavior"));
+    assert_eq!(inspect(ProbeResult::TimedOut), Verdict::Stop("infrastructure"));
+    assert_eq!(inspect(ProbeResult::NotRecorded), Verdict::Stop("missing-evidence"));
+    assert_eq!(inspect(ProbeResult::SameContract), Verdict::Release);
 }`;
 
-const oldContractReviewSolution = `mod compatibility {
-    pub fn line(input: &str) -> String {
-        format!("note:{input}")
-    }
+const oldContractReviewSolution = `#[derive(Debug, PartialEq, Eq)]
+pub enum RunStatus {
+    CompileError,
+    WrongValue,
+    Timeout,
+    Absent,
+    Match,
 }
 
-pub mod compat {
-    pub fn line(input: &str) -> String {
-        super::compatibility::line(input)
-    }
+#[derive(Debug, PartialEq, Eq)]
+pub enum Decision {
+    Ship,
+    Hold(&'static str),
 }
 
-pub use compat::line;
-
-pub fn try_line(input: &str) -> Result<String, &'static str> {
-    if input.is_empty() { Err("empty") } else { Ok(compatibility::line(input)) }
+pub fn review(status: RunStatus) -> Decision {
+    match status {
+        RunStatus::CompileError => Decision::Hold("public-api"),
+        RunStatus::WrongValue => Decision::Hold("behavior"),
+        RunStatus::Timeout => Decision::Hold("infrastructure"),
+        RunStatus::Absent => Decision::Hold("missing-evidence"),
+        RunStatus::Match => Decision::Ship,
+    }
 }`;
 
 const oldContractReviewTests = `#[test]
-fn retrieval_checks_legacy_module_root_and_checked_route() {
-    let module_path: fn(&str) -> String = compat::line;
-    let root_path: fn(&str) -> String = line;
-
-    assert_eq!(module_path(" żółć "), "note: żółć ");
-    assert_eq!(root_path(""), "note:");
-    assert_eq!(try_line("ok"), Ok(String::from("note:ok")));
+fn retrieval_decision_keeps_compile_behavior_and_evidence_distinct() {
+    assert_eq!(review(RunStatus::CompileError), Decision::Hold("public-api"));
+    assert_eq!(review(RunStatus::WrongValue), Decision::Hold("behavior"));
+    assert_eq!(review(RunStatus::Timeout), Decision::Hold("infrastructure"));
+    assert_eq!(review(RunStatus::Absent), Decision::Hold("missing-evidence"));
+    assert_eq!(review(RunStatus::Match), Decision::Ship);
 }`;
 
 const matrixRun = `#[derive(Debug, PartialEq, Eq)]
@@ -304,7 +325,9 @@ pub struct Evidence {
 pub enum Decision { Ship, Hold(&'static str) }
 
 fn valid_hash(hash: &str) -> bool {
-    hash.starts_with("sha256:") && hash.len() == 71
+    hash.starts_with("sha256:")
+        && hash.len() == 71
+        && hash.as_bytes()[7..].iter().all(|byte| matches!(*byte, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F'))
 }
 
 pub fn approve(records: &[Evidence], as_of_ymd: u32) -> Decision {
@@ -335,7 +358,7 @@ pub fn approve(records: &[Evidence], as_of_ymd: u32) -> Decision {
         }
         if record.outcome != Outcome::Pass { return Decision::Hold("failed"); }
         if record.captured_ymd != as_of_ymd { return Decision::Hold("stale"); }
-        if !valid_hash(record.artifact_hash) { return Decision::Hold("hash"); }
+        if !valid_hash(record.artifact_hash) { return Decision::Hold("malformed-hash"); }
     }
     Decision::Ship
 }`;
@@ -373,9 +396,9 @@ fn provenance_matrix_requires_every_fresh_configuration() {
     let mut conflict = complete();
     conflict.push(Evidence { outcome: Outcome::Fail, ..conflict[0] });
     assert_eq!(approve(&conflict, 20260925), Decision::Hold("conflict"));
-    let mut forged = complete();
-    forged[1].artifact_hash = "sha256:forged";
-    assert_eq!(approve(&forged, 20260925), Decision::Hold("hash"));
+    let mut malformed = complete();
+    malformed[1].artifact_hash = "sha256:gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg";
+    assert_eq!(approve(&malformed, 20260925), Decision::Hold("malformed-hash"));
     let mut wrong_floor = complete();
     wrong_floor[4].toolchain = "stable";
     assert_eq!(approve(&wrong_floor, 20260925), Decision::Hold("provenance"));
@@ -414,7 +437,7 @@ pub fn decide(proofs: &[Proof], as_of_ymd: u32) -> Verdict {
         if proof.compiler != compiler || proof.mode != mode || proof.consumer != consumer { return Verdict::Defer("provenance"); }
         if proof.result != ResultKind::Pass { return Verdict::Defer("failed"); }
         if proof.observed_ymd != as_of_ymd { return Verdict::Defer("stale"); }
-        if !proof.digest.starts_with("sha256:") || proof.digest.len() != 71 { return Verdict::Defer("hash"); }
+        if !proof.digest.starts_with("sha256:") || proof.digest.len() != 71 || !proof.digest.as_bytes()[7..].iter().all(|byte| matches!(*byte, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F')) { return Verdict::Defer("malformed-hash"); }
     }
     Verdict::Accept
 }`;
@@ -432,7 +455,7 @@ fn ready() -> Vec<Proof> {
 }
 
 #[test]
-fn blank_proof_review_rejects_missing_stale_and_forged_records() {
+fn blank_proof_review_rejects_missing_stale_and_malformed_records() {
     assert_eq!(decide(&ready(), 20260925), Verdict::Accept);
     for key in ["caller", "default", "bare", "opt-in", "floor"] {
         let proofs = ready().into_iter().filter(|proof| proof.key != key).collect::<Vec<_>>();
@@ -441,9 +464,9 @@ fn blank_proof_review_rejects_missing_stale_and_forged_records() {
     let mut stale = ready();
     stale[0].observed_ymd = 20260924;
     assert_eq!(decide(&stale, 20260925), Verdict::Defer("stale"));
-    let mut forged = ready();
-    forged[1].digest = "sha256:forged";
-    assert_eq!(decide(&forged, 20260925), Verdict::Defer("hash"));
+    let mut malformed = ready();
+    malformed[1].digest = "sha256:gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg";
+    assert_eq!(decide(&malformed, 20260925), Verdict::Defer("malformed-hash"));
 }`;
 
 const matrixReviewSolution = `#[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -482,7 +505,7 @@ pub fn verdict(runs: &[Run], as_of_ymd: u32) -> Release {
         if run.compiler != compiler || run.feature_set != feature_set || run.client != "old-consumer" { return Release::Stop("provenance"); }
         if run.status != Status::Pass { return Release::Stop("failed"); }
         if run.observed_ymd != as_of_ymd { return Release::Stop("stale"); }
-        if !run.hash.starts_with("sha256:") || run.hash.len() != 71 { return Release::Stop("hash"); }
+        if !run.hash.starts_with("sha256:") || run.hash.len() != 71 || !run.hash.as_bytes()[7..].iter().all(|byte| matches!(*byte, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F')) { return Release::Stop("malformed-hash"); }
     }
     Release::Ready
 }`;
@@ -512,6 +535,9 @@ fn review_rejects_absent_stale_and_conflicting_evidence() {
     let mut conflict = ready();
     conflict.push(Run { status: Status::Fail, ..conflict[0] });
     assert_eq!(verdict(&conflict, 20260925), Release::Stop("conflict"));
+    let mut malformed = ready();
+    malformed[1].hash = "sha256:gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg";
+    assert_eq!(verdict(&malformed, 20260925), Release::Stop("malformed-hash"));
 }`;
 
 const pathBreakingDebug = `pub mod legacy {
@@ -544,57 +570,57 @@ export const apiReleaseMatrixLessons: Lesson[] = [
     conceptIds: ["api-release-old-contracts"],
     competencyIds: ["preserve-old-release-contract"],
     prerequisites: ["api-compatible-surface"],
-    title: "Wydanie bez zerwania starej ścieżki",
+    title: "Klasyfikacja obserwacji starego klienta",
     subtitle:
-      "Zachowaj dawny import i obserwowalne wyniki, gdy obok nich dodajesz sprawdzoną funkcję.",
+      "Rozróżnij zerwanie kompilacji, regresję zachowania, infrastrukturę i brak dowodu przed decyzją release.",
     minutes: 20,
     outcomes: [
-      "Wypiszesz dawną publiczną ścieżkę, sygnaturę i wyniki, które muszą przejść po zmianie API.",
-      "Zachowasz modułowy import i re-eksport, dodając obok nich sprawdzoną funkcję.",
-      "Rozpoznasz zmianę zachowania, taką jak niejawne trim, jako regresję starego klienta.",
+      "Odróżnisz public API break od regresji zachowania, gdy stary klient nadal się kompiluje.",
+      "Zaklasyfikujesz timeout lub brak uruchomienia jako infrastrukturę albo brak dowodu.",
+      "Zwrócisz typed Hold z powodem przed decyzją Ship dla zgodnej obserwacji.",
       "Oddzielisz model jednego pliku od dowodu osobnego crate klienta w zaufanym verifierze.",
     ],
     steps: [
       choiceStep({
         id: "api-release-old-contracts-predict",
         kind: "predict",
-        title: "Przewidź starą obietnicę",
+        title: "Przewidź klasę obserwacji",
         prompt:
-          "Biblioteka chce dodać sprawdzoną funkcję obok `legacy::render`. Co wpisujesz do kontraktu wydania przed zmianą środka?",
+          "Stary klient nie kompiluje się po usunięciu publicznej funkcji, a test nie dochodzi do porównania wyniku. Jak klasyfikujesz tę pojedynczą obserwację?",
         choices: [
           {
             id: "three",
             label:
-              "Stary import modułowy, re-eksport, dokładną sygnaturę i obserwowalne wyniki.",
+              "PublicApiBreak: brak publicznego elementu blokuje kompilację.",
           },
           {
             id: "own-tests",
             label:
-              "Tylko testy nowej funkcji, bo stary klient może zmienić import.",
+              "BehaviorRegression: wynik jest zły, choć kod się kompiluje.",
           },
           {
             id: "new-only",
             label:
-              "Wyłącznie nową funkcję, bo dawną ścieżkę można później usunąć.",
+              "InfrastructureFailure: każdy błąd starego klienta to problem runnera.",
           },
         ],
         correct: "three",
         explanations: {
           three:
-            "Import, re-eksport, sygnatura i wynik opisują stary kontrakt. Zaufany verifier dołoży jeszcze osobny crate.",
+            "Brak publicznego elementu jest compile break, zanim można ocenić zachowanie. To osobna klasa od złego wyniku.",
           "own-tests":
-            "Test nowej funkcji nie zachowuje starego importu ani dawnych wyników.",
+            "BehaviorRegression dotyczy kodu, który nadal się kompiluje, lecz zwraca inny obserwowalny wynik.",
           "new-only":
-            "Usunięcie starej ścieżki może być breaking nawet wtedy, gdy nowe API działa.",
+            "Nie każdy błąd jest infrastrukturą; najpierw rozróżnij brak symbolu, wynik, timeout i brak dowodu.",
         },
         evidenceKind: "prediction",
       }),
       {
         id: "api-release-old-contracts-run",
         kind: "run",
-        title: "Uruchom dawny odczyt",
+        title: "Uruchom obserwację starego klienta",
         prompt:
-          "Uruchom dawne wywołanie przez moduł i re-eksport. To obserwacja składni i wyniku w jednym źródle; nie jest dowodem zewnętrznego crate ani Cargo.",
+          "Uruchom dawny import i wynik. To przykład obserwacji w jednym źródle; nie jest dowodem zewnętrznego crate ani Cargo.",
         code: oldContractRun,
         solution: oldContractRun,
         evaluator: { kind: "exact-output", expected: "entry:żółć\nentry:\n" },
@@ -604,27 +630,27 @@ export const apiReleaseMatrixLessons: Lesson[] = [
       choiceStep({
         id: "api-release-old-contracts-explain",
         kind: "explain",
-        title: "Nazwij granicę modelu",
+        title: "Nazwij klasę dowodu",
         prompt:
-          "Co nadal musi sprawdzić zaufany verifier po przejściu ćwiczenia w przeglądarce?",
+          "Które rozróżnienie musi zachować zaufany verifier, gdy stary klient kompiluje się, lecz test wyniku kończy się timeoutem?",
         choices: [
           {
             id: "cargo",
             label:
-              "Osobny crate starego klienta, publiczny import, sygnaturę i wyniki; później także konfiguracje Cargo.",
+              "To InfrastructureFailure; nie wolno nazwać braku wyniku BehaviorRegression.",
           },
           {
             id: "none",
             label:
-              "Nic, bo kompilacja jednego pliku dowodzi całej zgodności wydania.",
+              "To BehaviorRegression, bo każdy timeout oznacza zły wynik funkcji.",
           },
           { id: "browser", label: "Wyłącznie wygląd kodu w edytorze." },
         ],
         correct: "cargo",
         explanations: {
           cargo:
-            "Browser ćwiczy ograniczony kontrakt. Osobny crate i Cargo są osobnym, zaufanym dowodem.",
-          none: "Jeden plik nie odtwarza granicy crate, resolvera ani zewnętrznego klienta.",
+            "Timeout nie dostarcza obserwacji wyniku, więc jego klasa jest infrastrukturalna. Zaufany verifier raportuje osobno zakres Cargo.",
+          none: "Błąd wykonania nie staje się regresją bez obserwowanego wyniku.",
           browser:
             "Formatowanie nie dowodzi zachowania ani kompilacji starego konsumenta.",
         },
@@ -633,27 +659,26 @@ export const apiReleaseMatrixLessons: Lesson[] = [
       {
         id: "api-release-old-contracts-gate",
         kind: "modify",
-        title: "Zachowaj starą ścieżkę i wynik",
+        title: "Sklasyfikuj obserwację release",
         prompt:
-          "Napraw przebudowę środka tak, aby dawny klient nadal mógł importować publiczną ścieżkę `legacy::render` i rootowy re-eksport `render` z dokładną sygnaturą `fn(&str) -> String`. Zachowaj spacje, Unicode i pusty tekst bez trim oraz dodaj `checked_render`, który odrzuca pustkę. Testy odrzucą usunięty re-eksport, zmianę wyniku i pusty stub. To test modelu Rust; dowód Cargo wykonuje osobny verifier.",
+          "Uzupełnij `classify` i `approve` dla jednej obserwacji starego klienta. Rozróżnij: brak publicznego API przy `compiles = false`, zły wynik przy kompilacji, timeout/infrastrukturę, brak evidence oraz pełną zgodność. Zwróć `Hold` z typowanym powodem dla pierwszych czterech klas i `Ship` wyłącznie dla `Compatible`. To model decyzji; zaufany verifier osobno potwierdza rzeczywisty crate i Cargo.",
         code: oldContractStarter,
         solution: oldContractSolution,
         evaluator: { kind: "tests", tests: oldContractTests },
-        expectedStatus: "compile-error",
-        expectedDiagnostic: "unresolved import `super::render`",
+        expectedStatus: "success",
         evidenceKind: "fix",
         evidenceGate: true,
         hints: [
-          "Stary wrapper zachowuje dawną ścieżkę, a nowe sprawdzenie może działać obok niego.",
-          "Nie normalizuj wejścia starego klienta; spacje i pusty tekst są częścią obserwowalnego wyniku.",
+          "Najpierw rozstrzygnij, czy stary klient się skompilował, dopiero potem oceniaj wynik.",
+          "Timeout i brak dowodu nie są równoważne z błędnym wynikiem funkcji.",
         ],
       },
       {
         id: "api-release-old-contracts-debug",
         kind: "debug",
-        title: "Zdiagnozuj usunięty re-eksport",
+        title: "Zobacz compile break przed klasyfikacją wyniku",
         prompt:
-          "Uruchom mutację, w której dawna ścieżka rootowa znika, choć `legacy::render` nadal istnieje. Kompilator pokazuje błąd starego klienta; to nie jest dowód pełnego release.",
+          "Uruchom mutację, w której dawny symbol znika. Kompilator pokazuje brak publicznego API; nie ma jeszcze obserwacji zachowania ani dowodu pełnego release.",
         code: pathBreakingDebug,
         solution: pathBreakingDebug,
         evaluator: {
@@ -667,29 +692,29 @@ export const apiReleaseMatrixLessons: Lesson[] = [
       {
         id: "api-release-old-contracts-blank",
         kind: "blank",
-        title: "Pusta strona: zachowaj klasyczny import",
+        title: "Pusta strona: sklasyfikuj sondę",
         prompt:
-          "Od zera napisz moduł `classic` z publicznym `pack(&str) -> String`, zachowaj jego rootowy re-eksport i dodaj `checked_pack(&str) -> Result<String, &'static str>`. Stary klient testu sprawdzi import modułowy, rootowy, spacje, pusty tekst i Unicode; checked route ma odrzucić pustkę.",
+          "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`. Rozróżnij `MissingSymbol`, `ChangedOutput`, `TimedOut`, `NotRecorded` i `SameContract`, mapując pierwsze cztery na osobne powody `Stop`, a ostatni na `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
         solution: oldContractBlankSolution,
         evaluator: { kind: "tests", tests: oldContractBlankTests },
         expectedStatus: "success",
         evidenceKind: "transfer",
         evidenceGate: true,
         hints: [
-          "Zachowaj dawną funkcję przez wrapper i re-eksport; nowa funkcja może mieć wynik `Result`.",
-          "Nie używaj trim w starej ścieżce, bo spacje są obserwowalnym wynikiem.",
+          "Każdy wariant enum powinien mieć własny, stabilny powód decyzji.",
+          "`TimedOut` i `NotRecorded` zatrzymują release, lecz nie udają błędnego wyniku funkcji.",
         ],
       },
     ],
     misconceptions: [
-      "Test nowej funkcji jest równoważny staremu klientowi.",
-      "Trim i inna normalizacja są niewidoczne dla klienta, jeśli nowy wynik wygląda sensownie.",
-      "Re-eksport można usunąć, gdy modułowa ścieżka nadal istnieje.",
+      "Każdy błąd starego klienta jest regresją zachowania.",
+      "Timeout można potraktować jak poprawny wynik, bo funkcja nie zwróciła złej wartości.",
+      "Brak evidence jest tym samym co zgodny klient.",
     ],
     transferTask:
-      "Przed zmianą publicznej biblioteki zapisz import modułowy, re-eksport, dokładną sygnaturę i przykłady wyników starego klienta; potem poproś zaufany verifier o osobny test Cargo.",
+      "Przed wydaniem zapisz pojedynczą obserwację starego klienta: kompilację, wynik, status infrastruktury i obecność evidence. Zaklasyfikuj ją typed decyzją, a zaufany verifier uruchom osobno.",
     evidenceGate:
-      "Gate wymaga starego importu modułowego, re-eksportu, dokładnego zachowania i nowej checked funkcji. Pusta strona jest niezależną drogą do tego samego kontraktu.",
+      "Gate wymaga odróżnienia public API break, regresji zachowania, infrastruktury i braku evidence oraz decyzji Hold/Ship. Pusta strona i retrieval używają innych nazw i domen.",
     sourceIds: [
       "api-release-semver-reference",
       "api-release-workspaces-reference",
@@ -821,7 +846,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "blank",
         title: "Pusta strona: decyzja dla konfiguracji",
         prompt:
-          "Od zera napisz `Proof`, `Verdict` oraz `decide`. Każdy rekord ma nazwę, compiler, tryb feature, klienta, wynik, datę i digest. Wymagaj starego klienta, default, no-default, opt-in feature i dokładnego compiler floor `1.85.0`; zwróć `Defer` dla braku, starej lub sfałszowanej obserwacji. Test jest modelem jednego źródła i nie udaje `cargo check` ani granicy external crate.",
+          "Od zera napisz `Proof`, `Verdict` oraz `decide`. Każdy rekord ma nazwę, compiler, tryb feature, klienta, wynik, datę i digest. Wymagaj starego klienta, default, no-default, opt-in feature i dokładnego compiler floor `1.85.0`; zwróć `Defer` dla braku, starej lub malformed obserwacji. Test jest modelem jednego źródła i nie udaje `cargo check` ani granicy external crate.",
         solution: matrixBlankSolution,
         evaluator: { kind: "tests", tests: matrixBlankTests },
         expectedStatus: "success",
@@ -841,7 +866,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
     transferTask:
       "Zbuduj release matrix dla własnej biblioteki: dla starego klienta, default, no-default, opt-in feature i exact MSRV zapisz klienta, toolchain, wynik, datę, hash oraz decyzję dla brakującego i sprzecznego rekordu.",
     evidenceGate:
-      "Gate wymaga provenance-bearing rekordów, świeżości, pojedynczości i exact MSRV. Blank odtwarza decyzję w innej domenie danych z przypadkiem forged/stale.",
+      "Gate wymaga provenance-bearing rekordów, świeżości, pojedynczości i exact MSRV. Blank odtwarza decyzję w innej domenie danych z malformed digest.",
     sourceIds: [
       "api-release-semver-reference",
       "api-release-features-reference",
@@ -855,9 +880,9 @@ export const apiReleaseMatrixReviewExercises: Record<string, LessonStep> = {
   "api-release-old-contracts": {
     id: "api-release-old-contracts-review",
     kind: "recall",
-    title: "Powtórka: dawny adres",
+    title: "Powtórka: status sondy",
     prompt:
-      "Odtwórz moduł `compat` z publicznym `line(&str) -> String`, rootowy re-eksport oraz `try_line` odrzucające pustkę. Test sprawdzi dawną ścieżkę modułową, wynik ze spacjami i nową checked funkcję.",
+      "Odtwórz `RunStatus`, `Decision` oraz `review`. Rozróżnij `CompileError`, `WrongValue`, `Timeout`, `Absent` i `Match`, mapując je na osobne powody Hold albo Ship. Test jest obserwacją starego klienta, a nie dowodem Cargo.",
     solution: oldContractReviewSolution,
     evaluator: { kind: "tests", tests: oldContractReviewTests },
     evidenceKind: "recall",
@@ -883,7 +908,7 @@ export const apiReleaseMatrixModule: CourseModule = {
   prerequisites: ["public-api-workspaces"],
   lessonIds: apiReleaseMatrixLessons.map((lesson) => lesson.id),
   exitGate: [
-    "Zachowasz starą ścieżkę modułową, re-eksport i obserwowalne wyniki, dodając checked API obok nich.",
+    "Sklasyfikujesz pojedynczą obserwację starego klienta jako public API break, regresję zachowania, infrastrukturę, brak evidence albo zgodność.",
     "Rozbijesz release na provenance-bearing rekordy starego klienta, default/no-default, opt-in feature i exact MSRV, zatrzymując decyzję po każdym braku dowodu.",
     "Wyjaśnisz, że browserowy kod jednego źródła nie zastępuje zaufanego verifiera workspace Cargo.",
   ],
@@ -894,7 +919,7 @@ export const apiReleaseMatrixModule: CourseModule = {
     {
       id: "api-release-old-contracts-gate",
       label:
-        "Stary import, re-eksport i obserwowalne wyniki pozostają używalne.",
+        "Typed decyzja odróżnia compile break, behavior regression, infrastrukturę, brak evidence i zgodność.",
       taskRefs: [
         {
           lessonId: "api-release-old-contracts",
