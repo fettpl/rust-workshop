@@ -75,6 +75,15 @@ jobs:
           path: test-results/api-release/stable/report.json
           if-no-files-found: warn
           retention-days: 7
+      - run: npm run test:macro-contracts
+      - run: npm run content:macro-contracts -- --stable
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: macro-contracts-stable-report
+          path: test-results/macro-contracts/stable/report.json
+          if-no-files-found: warn
+          retention-days: 7
       - run: npm run content:cargo
       - run: npm run content:manifests
       - run: npm run content:audit
@@ -157,6 +166,15 @@ jobs:
         with:
           name: api-release-msrv-report
           path: test-results/api-release/msrv/report.json
+          if-no-files-found: warn
+          retention-days: 7
+      - run: npm run test:macro-contracts
+      - run: npm run content:macro-contracts -- --msrv
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: macro-contracts-msrv-report
+          path: test-results/macro-contracts/msrv/report.json
           if-no-files-found: warn
           retention-days: 7
       - run: npm run content:cargo
