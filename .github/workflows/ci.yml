@@ -66,6 +66,15 @@ jobs:
           path: test-results/capstone/stable/report.json
           if-no-files-found: warn
           retention-days: 7
+      - run: npm run test:api-release
+      - run: npm run content:api-release -- --stable
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: api-release-stable-report
+          path: test-results/api-release/stable/report.json
+          if-no-files-found: warn
+          retention-days: 7
       - run: npm run content:cargo
       - run: npm run content:manifests
       - run: npm run content:audit
@@ -142,6 +151,14 @@ jobs:
       - run: npm run content:ffi -- --msrv
       # Fetch and run the restricted capstone archive verifier before the generic offline archive pass.
       - run: npm run content:capstone -- --fetch --msrv
+      - run: npm run content:api-release -- --msrv
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: api-release-msrv-report
+          path: test-results/api-release/msrv/report.json
+          if-no-files-found: warn
+          retention-days: 7
       - run: npm run content:cargo
       - run: npm run content:manifests -- --msrv
       - name: Verify GAT and Performance Evidence contracts on Rust 1.85.0

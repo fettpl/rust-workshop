@@ -1,0 +1,3 @@
+[workspace]
+members = ["release_probe", "old_consumer"]
+resolver = "2"
