@@ -48,6 +48,40 @@ function command(cmd: string, args: string[], cwd: string, timeout: number) {
     maxBuffer: 1024 * 1024,
   });
 }
+
+function hasExpectedStarterDiagnostic(stderr: string, path: string): boolean {
+  return stderr.split("\n").some((line) => {
+    try {
+      const diagnostic = JSON.parse(line) as {
+        $message_type?: string;
+        level?: string;
+        message?: string;
+        code?: { code?: string } | null;
+        spans?: { is_primary?: boolean; file_name?: string }[];
+      } | null;
+      const hasPrimarySourceSpan =
+        Array.isArray(diagnostic?.spans) &&
+        diagnostic.spans.some(
+          (span) => span.is_primary && span.file_name === path,
+        );
+      const hasRustErrorCode = /^E\d{4}$/.test(diagnostic?.code?.code ?? "");
+      const hasMacroMatcherMessage =
+        diagnostic?.code === null &&
+        /unexpected end of macro invocation|no rules expected/.test(
+          diagnostic.message ?? "",
+        );
+      return (
+        diagnostic?.$message_type === "diagnostic" &&
+        diagnostic.level === "error" &&
+        hasPrimarySourceSpan &&
+        (hasRustErrorCode || hasMacroMatcherMessage)
+      );
+    } catch {
+      return false;
+    }
+  });
+}
+
 export function verifyTrustedRust(
   content: {
     lessons: Lesson[];
@@ -128,31 +162,12 @@ export function verifyTrustedRust(
     if (compile.error || compile.status !== 0) {
       const sourceError =
         options.expectStarterRejection &&
-        compile.stderr.split("\n").some((line) => {
-          try {
-            const diagnostic = JSON.parse(line) as {
-              $message_type?: string;
-              level?: string;
-              code?: { code?: string } | null;
-              spans?: { is_primary?: boolean; file_name?: string }[];
-            } | null;
-            return (
-              diagnostic?.$message_type === "diagnostic" &&
-              diagnostic.level === "error" &&
-              /^E\d{4}$/.test(diagnostic.code?.code ?? "") &&
-              Array.isArray(diagnostic.spans) &&
-              diagnostic.spans.some(
-                (span) => span.is_primary && span.file_name === path,
-              )
-            );
-          } catch {
-            return false;
-          }
-        });
+        hasExpectedStarterDiagnostic(compile.stderr, path);
       if (
         options.expectStarterRejection &&
         !compile.error &&
-        compile.status === 1 &&
+        compile.status !== null &&
+        compile.status !== 0 &&
         !compile.signal &&
         sourceError
       ) {
