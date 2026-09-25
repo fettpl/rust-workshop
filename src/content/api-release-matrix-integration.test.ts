@@ -225,6 +225,21 @@ it("keeps incorrect debug examples tied to their named compiler failures", () =>
   );
   expect(msrvResult.compiled.status).not.toBe(0);
   expect(msrvResult.compiled.stderr).toContain("mismatched types");
+
+  const dynSolutionResult = runFixture(dyn.solution!, "", "dyn-solution");
+  const msrvSolutionResult = runFixture(
+    msrv.solution!,
+    "",
+    "msrv-solution",
+  );
+  expect(
+    dynSolutionResult.compiled.status,
+    dynSolutionResult.compiled.stderr,
+  ).toBe(0);
+  expect(
+    msrvSolutionResult.compiled.status,
+    msrvSolutionResult.compiled.stderr,
+  ).toBe(0);
 });
 
 it("exposes both concepts and their independent reviews in the course graph", () => {
