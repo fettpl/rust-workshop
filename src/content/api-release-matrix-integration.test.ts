@@ -117,6 +117,14 @@ it("keeps the release lesson evidence distinct from Cargo proof", () => {
       (source) => source.reviewedAt && source.recheckPolicy,
     ),
   ).toBe(true);
+  const oldLesson = apiReleaseMatrixLessons[0];
+  const oldGate = oldLesson.steps.find(
+    (step) => step.id === "api-release-old-contracts-gate",
+  )!;
+  expect(oldGate.prompt).toMatch(/publicznej ścieżki|re-eksport|re-eksportu/i);
+  expect(oldGate.solution).toContain("pub use legacy::render;");
+  expect(oldGate.solution).toContain("checked_render");
+  expect(oldGate.solution).not.toContain("dyn Beacon");
 });
 
 it("runs every primary, blank, and delayed retrieval fixture", () => {
@@ -159,10 +167,12 @@ it("rejects a trivial decision and a breaking old-client mutant", () => {
     oldContract.evaluator?.kind !== "tests"
   )
     return;
+  expect(decision.prompt).toMatch(/provenance|pochod|stale|duplik|konflikt/i);
+  expect(decision.evaluator.tests).toMatch(/stale|duplicate|conflict/i);
 
   const trivial = decision.solution!.replace(
-    /fn approve\([^}]+\) -> Decision \{[\s\S]*?\n\}/,
-    "fn approve(_: &Evidence) -> Decision { Decision::Ship }",
+    'if matches.is_empty() { return Decision::Hold("missing"); }',
+    "if matches.is_empty() { return Decision::Ship; }",
   );
   const trivialResult = runFixture(
     trivial,
@@ -173,10 +183,7 @@ it("rejects a trivial decision and a breaking old-client mutant", () => {
     trivialResult.executed?.status ?? trivialResult.compiled.status,
   ).not.toBe(0);
 
-  const breaking = oldContract.solution!.replace(
-    /fn label\(&self\) -> &\'static str \{[\s\S]*?\n    \}/,
-    "fn label(&self) -> &'static str;",
-  );
+  const breaking = oldContract.solution!.replace("pub use legacy::render;", "");
   const breakingResult = runFixture(
     breaking,
     oldContract.evaluator.tests,
@@ -194,7 +201,7 @@ it("keeps incorrect debug examples tied to their named compiler failures", () =>
   )!;
   expect(dyn.evaluator).toMatchObject({
     kind: "expected-error",
-    code: "E0038",
+    diagnostic: "unresolved import `super::render`",
   });
   expect(msrv.evaluator).toMatchObject({
     kind: "expected-error",
@@ -203,7 +210,7 @@ it("keeps incorrect debug examples tied to their named compiler failures", () =>
   const dynResult = runFixture(dyn.code!, "", "dyn-debug");
   const msrvResult = runFixture(msrv.code!, "", "msrv-debug");
   expect(dynResult.compiled.status).not.toBe(0);
-  expect(dynResult.compiled.stderr).toContain("E0038");
+  expect(dynResult.compiled.stderr).toContain("unresolved import `super::render`");
   expect(msrvResult.compiled.status).not.toBe(0);
   expect(msrvResult.compiled.stderr).toContain("mismatched types");
 });
