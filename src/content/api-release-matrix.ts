@@ -613,6 +613,22 @@ mod old_client {
     }
 }`;
 
+const pathBreakingDebugSolution = `pub mod legacy {
+    pub fn render(input: &str) -> String {
+        format!("entry:{input}")
+    }
+}
+
+pub use legacy::render;
+
+mod old_client {
+    use super::render;
+
+    pub fn call(input: &str) -> String {
+        render(input)
+    }
+}`;
+
 const msrvDebug = `fn declared_toolchain() -> &'static str {
     "1.85.0"
 }
@@ -620,6 +636,15 @@ const msrvDebug = `fn declared_toolchain() -> &'static str {
 fn main() {
     let numeric_floor: u32 = declared_toolchain();
     println!("{}", numeric_floor);
+}`;
+
+const msrvDebugSolution = `fn declared_toolchain() -> &'static str {
+    "1.85.0"
+}
+
+fn main() {
+    let exact_floor = declared_toolchain();
+    println!("{}", exact_floor);
 }`;
 
 export const apiReleaseMatrixLessons: Lesson[] = [
@@ -740,7 +765,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         prompt:
           "Uruchom mutację, w której dawny symbol znika. Kompilator pokazuje brak publicznego API; nie ma jeszcze obserwacji zachowania ani dowodu pełnego release.",
         code: pathBreakingDebug,
-        solution: pathBreakingDebug,
+        solution: pathBreakingDebugSolution,
         evaluator: {
           kind: "expected-error",
           diagnostic: "unresolved import `super::render`",
@@ -897,7 +922,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         prompt:
           "Uruchom mutację, która traktuje wersję toolchaina jako liczbę. Naprawa należy do reportu i verifiera: identyfikator `1.85.0` jest dokładnym napisem, a stable nie jest jego skrótem.",
         code: msrvDebug,
-        solution: msrvDebug,
+        solution: msrvDebugSolution,
         evaluator: { kind: "expected-error", diagnostic: "mismatched types" },
         expectedStatus: "compile-error",
         expectedDiagnostic: "mismatched types",
