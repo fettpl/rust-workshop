@@ -79,6 +79,8 @@ it("registers three late macro lessons with independent gates and retrieval", ()
     expect(
       lesson.steps.find((step) => step.kind === "blank")?.solution,
     ).not.toBe(lesson.steps.find((step) => step.kind === "modify")?.solution);
+    expect(lesson.evidenceGate).toMatch(/albo/);
+    expect(lesson.evidenceGate).not.toMatch(/wymaga.*i/);
     const concept = concepts.find((item) => item.id === lesson.conceptIds[0]);
     expect(concept).toBeDefined();
     expect(reviewExercises[lesson.conceptIds[0]]?.id).toBe(

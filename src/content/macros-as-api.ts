@@ -638,7 +638,7 @@ fn main() {
     transferTask:
       "Zaprojektuj małą funkcję dla stałej arności, a makro zostaw tylko tam, gdzie powtarzalna składnia wnosi wartość.",
     evidenceGate:
-      "Gate wymaga obserwacji kolejności i liczby efektów oraz niezależnej implementacji z pustej kartki.",
+      "Gate można zaliczyć przez obserwację kolejności i liczby efektów w zadaniu głównym albo przez niezależną implementację z pustej kartki.",
     sourceIds: ["macros-book-by-example", "macros-reference-by-example"],
   },
   {
@@ -774,7 +774,7 @@ fn main() {
     transferTask:
       "Przenieś ten kontrakt na listę nazw bez wartości, zachowując pusty input i pojedynczy separator końcowy.",
     evidenceGate:
-      "Gate wymaga działających przypadków 0/1/N/trailing comma i osobnej implementacji listy z innej domeny.",
+      "Gate można zaliczyć przez działające przypadki 0/1/N/trailing comma w zadaniu głównym albo przez osobną implementację listy z innej domeny.",
     sourceIds: ["macros-book-by-example", "macros-reference-by-example"],
   },
   {
@@ -909,7 +909,7 @@ fn main() {
     transferTask:
       "Zapisz krótką decyzję: kiedy publiczna funkcja jest lepsza od eksportowanego makra oraz jaki osobny test Cargo potwierdziłby granicę klienta.",
     evidenceGate:
-      "Gate wymaga lokalnego cienia typu, działającego `const { ... }` i niezależnej implementacji eksportu; zewnętrzny verifier dostarcza osobny dowód crate boundary.",
+      "Gate można zaliczyć przez lokalny cień typu i działające `const { ... }` w zadaniu głównym albo przez niezależną implementację eksportu; zewnętrzny verifier dostarcza osobny dowód crate boundary.",
     sourceIds: [
       "macros-book-by-example",
       "macros-reference-by-example",

@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
+import { moduleGate } from "../../src/engine/learning";
 
 type LearningEvent = {
   lessonId: string;
@@ -40,7 +41,9 @@ const readLearningState = (page: Page) =>
 const macroModule = modules.find((item) => item.id === "macros-as-api")!;
 
 test.describe("macros-as-api production contracts", () => {
-  for (const criterion of macroModule.gateCriteria ?? []) {
+  for (const [criterionIndex, criterion] of (
+    macroModule.gateCriteria ?? []
+  ).entries()) {
     test(`${criterion.id}: exact runner, independent blank and resume`, async ({
       page,
     }) => {
@@ -215,6 +218,14 @@ test.describe("macros-as-api production contracts", () => {
         .toContainEqual(
           expect.objectContaining({ passed: true, hints: 0, revealed: false }),
         );
+      const stateAfterBlank = await readLearningState(page);
+      expect(
+        moduleGate(
+          stateAfterBlank as Parameters<typeof moduleGate>[0],
+          lessons,
+          macroModule,
+        ).criteria[criterionIndex].passed,
+      ).toBe(true);
 
       const independentDraft = `${blank.solution}\n// independent blank draft\n`;
       await editor.fill(independentDraft);
