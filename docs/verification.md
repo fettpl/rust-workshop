@@ -1,4 +1,4 @@
-# Verification: runtime allocation evidence and bounded course integration
+# Verification: API release evidence, runtime allocation and bounded course integration
 
 Date: 2026-09-25. Current catalog: 173 lessons in 45 modules, 176 concepts, 128 blank-page tasks, 318 sources and 13 Cargo projects. The API Release Matrix milestone adds two Polish lessons, four gates, two blank-page tasks and two independent retrievals. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The API verifier records separate stable and exact Rust 1.85.0 evidence for an authored external-client fixture. Earlier counts below are historical where explicitly labeled.
 
@@ -16,7 +16,7 @@ The capstone verifier has bounded subprocess commands and writes one JSON report
 
 The `api-release-matrix` module teaches two bounded decisions: classify an old-client observation before calling it a public API break, behavior regression, or infrastructure/missing evidence; then require provenance-bearing records for the old client, default/no-default/opt-in features, and exact Rust 1.85.0. Each lesson has a primary gate, an independent blank-page gate, and a delayed retrieval. Browser evaluators model these decisions in single-source Rust and explicitly do not claim Cargo manifest, resolver, external-crate, or compiler-floor evidence.
 
-The trusted `content:api-release` verifier accepts only its authored std-only fixture. It runs the separate `old_consumer` crate on stable and exact Rust 1.85.0, records toolchain/configuration/client/outcome/hash provenance, and rejects three compile mutants plus a compiling behavior regression. Local focused evidence includes 12 verifier tests, stable and MSRV verifier runs, targeted production Playwright coverage, and the offline flow. These are local results; the fresh GitHub Actions rerun for PR #21 was blocked before any job step by the account billing annotation, so this milestone has no green Actions result or merge claim.
+The trusted `content:api-release` verifier accepts only its authored std-only fixture. It runs the separate `old_consumer` crate on stable and exact Rust 1.85.0, records toolchain/configuration/client/outcome/hash provenance, and rejects three compile mutants plus a compiling behavior regression. Local focused evidence includes 12 verifier tests, stable and MSRV verifier runs, targeted production Playwright coverage, and the offline flow. These are local results; the fresh GitHub Actions rerun for PR #21 (`35539213661`) was blocked before any job step by the account billing annotation. The new API Release Matrix milestone PR has not yet been created, so no green Actions result or merge claim is made for it.
 
 ## Historical preceding-stage details
 
