@@ -10,6 +10,15 @@ fn record(value: i32, events: &mut std::vec::Vec<&'static str>, label: &'static 
     value
 }
 
+fn label(
+    value: &'static str,
+    events: &mut std::vec::Vec<&'static str>,
+    event: &'static str,
+) -> &'static str {
+    events.push(event);
+    value
+}
+
 pub fn compile_probe() -> std::vec::Vec<macro_contracts::Reading> {
     readings!("probe" => const { 0 },)
 }
@@ -49,14 +58,31 @@ fn accepts_many_entries_with_trailing_comma() {
 }
 
 #[test]
-fn evaluates_each_value_once_in_input_order() {
+fn evaluates_each_name_and_value_once_in_input_order() {
     let mut events = std::vec::Vec::new();
     let entries = readings!(
-        "first" => record(1, &mut events, "first"),
-        "second" => record(2, &mut events, "second"),
-        "third" => record(3, &mut events, "third"),
+        label("first", &mut events, "name-first") => record(1, &mut events, "value-first"),
+        label("second", &mut events, "name-second") => record(2, &mut events, "value-second"),
+        label("third", &mut events, "name-third") => record(3, &mut events, "value-third"),
     );
-    assert_eq!(events, ["first", "second", "third"]);
+    assert_eq!(
+        events,
+        [
+            "name-first",
+            "value-first",
+            "name-second",
+            "value-second",
+            "name-third",
+            "value-third",
+        ]
+    );
+    assert_eq!(
+        entries
+            .iter()
+            .map(|entry| entry.name)
+            .collect::<std::vec::Vec<_>>(),
+        ["first", "second", "third"]
+    );
     assert_eq!(
         entries
             .iter()

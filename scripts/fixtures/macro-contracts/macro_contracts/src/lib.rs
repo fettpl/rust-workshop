@@ -12,7 +12,7 @@ impl Reading {
 
 #[macro_export]
 macro_rules! readings {
-    ($( $name:literal => $value:expr ),* $(,)?) => {{
+    ($( $name:expr => $value:expr ),* $(,)?) => {{
         let mut readings = ::std::vec::Vec::<$crate::Reading>::new();
         $(readings.push($crate::Reading::new($name, $value));)*
         readings

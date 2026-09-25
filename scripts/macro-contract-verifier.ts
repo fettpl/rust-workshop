@@ -388,7 +388,7 @@ export const macroContractMutants: readonly Mutant[] = [
     scenario: "external-client",
     phase: "test",
     rejection: "test-failure",
-    description: "expands each supplied value expression twice",
+    description: "expands each supplied name and value expression twice",
     apply(root) {
       const path = join(root, "macro_contracts/src/lib.rs");
       const source = readFileSync(path, "utf8");
@@ -397,7 +397,7 @@ export const macroContractMutants: readonly Mutant[] = [
         replaceOnce(
           source,
           "$crate::Reading::new($name, $value)",
-          "$crate::Reading::new($name, { $value; $value })",
+          "$crate::Reading::new({ $name; $name }, { $value; $value })",
           "duplicate evaluation",
         ),
       );
