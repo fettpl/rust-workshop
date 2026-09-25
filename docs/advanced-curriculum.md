@@ -10,10 +10,7 @@ Etap `macros-as-api` dodaje trzy polskie lekcje: obliczanie przechwyconych wyra�
 
 Verifier jest niezależnym, std-only workspace'em z dwoma crate'ami, edycją 2024, resolverem 3 i zadeklarowanym Rust 1.85.0. Przebiegi stable i exact MSRV używają Cargo offline/locked oraz ograniczonego dowodu JSON. Cztery kontrolowane mutanty obejmują niekwalifikowane ścieżki, podwójne obliczenie, ścisłą gramatykę i `expr_2021`. GitHub Actions nadal jest zablokowane przez billing konta do oczekiwanego przywrócenia 2026-10-01, więc lokalny etap nie twierdzi, że został scalony ani że CI jest zielone. Katalog ma 176 lekcji, 46 modułów, 179 pojęć, 131 zadań blank-page i 321 źródeł.
 
-Końcowa walidacja poprzedniego etapu Performance Evidence: Vitest 287/287 w 54 plikach, content 138/141/7,
-1584/1587 autorskich przypadków Rust (trzy istniejące blank evaluator fixtures nadal zgłaszają brak niepustego zestawu przechodzących testów), Performance Evidence i Log Analyzer na stable
-i dokładnym Rust 1.85.0, offline z podwyższonymi uprawnieniami oraz build — wszystkie
-przejścia zakończone. Historyczny review GPT-6-Astra medium tego etapu ma status APPROVED; bieżące follow-upy profilu są raportowane osobno.
+Historyczny raport poprzedniego etapu Performance Evidence: Vitest 287/287 w 54 plikach oraz 1584/1587 autorskich przypadków Rust; trzy błędy blank evaluatorów opisane w tamtym raporcie zostały później naprawione. Bieżący pełny verifier obejmujący późniejsze etapy zakończył 2167/2167 autorskich przypadków Rust z 0 błędów w 412.64 s na rustc 1.98.1. Historyczny review GPT-6-Astra medium tego etapu ma status APPROVED; bieżące follow-upy profilu są raportowane osobno.
 
 ## Jak czytać tę mapę
 

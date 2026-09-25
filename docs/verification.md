@@ -2,6 +2,10 @@
 
 Date: 2026-09-25. Current catalog: 176 lessons in 46 modules, 179 concepts, 131 blank-page tasks, 321 sources and 13 Cargo projects. The API Release Matrix milestone adds two Polish lessons, four gates, two blank-page tasks and two independent retrievals. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The API and macro verifiers record separate stable and exact Rust 1.85.0 evidence for authored external-client fixtures. Earlier counts below are historical where explicitly labeled.
 
+## Full authored Rust verification
+
+On 2026-09-25, \`npm run content:rust\` completed all 2,167 authored Rust cases with 2,167 passed and 0 failed in 412.64 seconds (real elapsed time). The run used rustc 1.98.1 on macOS and included the API Release Matrix and Macros as APIs fixtures. Progress reporting reached every 100-case checkpoint without a failure; this is local evidence for the authored cases and does not replace the blocked GitHub Actions run.
+
 ## Macros as API evidence
 
 The integrated `macros-as-api` module contains three Polish lessons: exactly-once expression capture and order, repetition grammar for empty/single/many entries with one optional trailing comma, and exported macro resolution through `$crate` plus the Rust 2024 `expr` fragment. Each lesson has a primary code gate, an independent blank-page gate and delayed retrieval. Browser exercises run one Rust source file and therefore prove only the browser model. The external fixture uses side-effectful `:expr` name and value arguments and proves their single evaluation in input order; it separately proves the external crate boundary and compiler-floor behavior.

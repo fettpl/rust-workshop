@@ -2,6 +2,8 @@
 
 Current catalog counts: 176 lessons, 46 modules, 179 concepts, 131 blank-page tasks, 321 sources, and 13 Cargo projects. The API Release Matrix milestone adds two Polish lessons, four gates, two independent blank-page tasks, and two retrieval reviews; release remains Hold until the broader evidence requirements are complete.
 
+Local verification on 2026-09-25 completed the full authored Rust suite at 2,167/2,167 cases with 0 failures in 412.64 seconds on rustc 1.98.1. The full Vitest suite passed 518/518 tests, TypeScript typecheck passed, content validation passed, and the source audit reported no missing evidence or broken references. ESLint reported zero errors and seven existing warnings. GitHub Actions remains blocked by account billing, so these local results do not constitute a green exact-head CI run or a merge decision.
+
 ## Macros-as-api milestone
 
 The macros-as-api milestone addresses the declarative-macro gap with three Polish lessons: exactly-once capture and evaluation order, repetition grammar including empty input and one optional trailing comma, and exported macro resolution through `$crate` plus Rust 2024 `expr`. Each lesson has prediction, observation, explanation, a code gate, debug observation, a blank-page transfer and delayed retrieval. The browser runner remains a single-source model; it cannot prove an external crate boundary or an exact compiler floor.
