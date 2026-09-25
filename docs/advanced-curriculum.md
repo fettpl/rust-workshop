@@ -6,6 +6,10 @@ Status: mapa docelowa i audyt luk; nie jest deklaracją ukończenia kursu ani gw
 
 Bieżący katalog po etapie API Release Matrix: 173 lekcje, 45 modułów, 176 pojęć, 128 zadań blank-page, 318 źródeł i 13 projektów. `api-release-matrix` ma dwie nowe polskie lekcje, cztery bramki, dwa blank-page, dwie niezależne powtórki i zaufany verifier stable/MSRV.
 
+The drafted `macros-as-api` milestone adds three Polish lessons: exactly-once expression capture, repetition grammar for zero or more entries with one optional trailing comma, and exported `macro_rules!` paths using `$crate` with the Rust 2024 `expr` fragment. It adds three primary gates, three independent blank-page gates and three delayed retrievals. Browser exercises run one Rust source file and prove only that source's model. The separate trusted Cargo fixture proves the external-client boundary, public path resolution, empty/single/many/trailing-comma calls and the 2024 `const { ... }` expression. Its current exactly-once external test observes value expressions; names remain literals until the integration fix is reviewed.
+
+The verifier is an independent std-only two-crate workspace with edition 2024, resolver 3 and declared Rust 1.85.0. Stable and exact MSRV runs use offline locked Cargo and bounded JSON evidence. Four controlled mutants cover unqualified paths, duplicate value evaluation, strict grammar and `expr_2021`. GitHub Actions is still blocked by account billing until the expected 2026-10-01 recovery, so this draft does not claim a merged or CI-green milestone. The draft projects 176 lessons, 46 modules, 179 concepts, 131 blank-page tasks and 321 sources; integration must recalculate these values.
+
 Końcowa walidacja poprzedniego etapu Performance Evidence: Vitest 287/287 w 54 plikach, content 138/141/7,
 1584/1587 autorskich przypadków Rust (trzy istniejące blank evaluator fixtures nadal zgłaszają brak niepustego zestawu przechodzących testów), Performance Evidence i Log Analyzer na stable
 i dokładnym Rust 1.85.0, offline z podwyższonymi uprawnieniami oraz build — wszystkie
