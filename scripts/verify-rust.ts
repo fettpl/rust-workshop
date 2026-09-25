@@ -8,7 +8,8 @@ import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
 import { getTrustedFixtureTarget } from "../src/domain/trusted-fixtures";
-type Verification = { id: string; passed: boolean; detail: string };
+export type Verification = { id: string; passed: boolean; detail: string };
+export type VerificationReporter = (result: Verification) => void;
 const COMPILE_TIMEOUT = 60_000;
 const EXECUTION_TIMEOUT = 8_000;
 function command(cmd: string, args: string[], cwd: string, timeout: number) {
@@ -25,10 +26,15 @@ export function verifyTrustedRust(
     reviewExercises: Record<string, LessonStep>;
     traces: Record<string, Trace>;
   } = { lessons, reviewExercises, traces },
+  reporter?: VerificationReporter,
 ): Verification[] {
   const dir = mkdtempSync(join(tmpdir(), "rust-workshop-authored-"));
   const results: Verification[] = [];
   let number = 0;
+  function record(result: Verification) {
+    results.push(result);
+    reporter?.(result);
+  }
   function verify(
     id: string,
     code: string,
@@ -44,7 +50,7 @@ export function verifyTrustedRust(
     } = {},
   ) {
     if (options.expectStarterRejection && !options.tests?.trim()) {
-      results.push({
+      record({
         id,
         passed: false,
         detail: "brak testów do oceny startera",
@@ -82,7 +88,7 @@ export function verifyTrustedRust(
           options.error === "any" ||
           compile.stderr.includes(`error[${options.error}]`)) &&
         (!options.diagnostic || compile.stderr.includes(options.diagnostic));
-      results.push({
+      record({
         id,
         passed,
         detail: passed
@@ -122,14 +128,14 @@ export function verifyTrustedRust(
         !compile.signal &&
         sourceError
       ) {
-        results.push({
+        record({
           id,
           passed: true,
           detail: "starter nie spełnia API wymaganego przez testy",
         });
         return;
       }
-      results.push({
+      record({
         id,
         passed: false,
         detail: `kompilacja: ${compile.error?.message ?? compile.stderr.slice(0, 900)}`,
@@ -137,7 +143,7 @@ export function verifyTrustedRust(
       return;
     }
     if ((!main && !testMode) || options.run === false) {
-      results.push({ id, passed: true, detail: "kompiluje się (biblioteka)" });
+      record({ id, passed: true, detail: "kompiluje się (biblioteka)" });
       return;
     }
     const execution = command(binary, [], dir, EXECUTION_TIMEOUT);
@@ -167,7 +173,7 @@ export function verifyTrustedRust(
               },
             })
           : undefined;
-      results.push({
+      record({
         id,
         passed: outcome !== undefined && !outcome.passed,
         detail: !validRun
@@ -189,7 +195,7 @@ export function verifyTrustedRust(
         execution.status !== 0 &&
         !!failed &&
         Number(failed[2]) > 0;
-      results.push({
+      record({
         id,
         passed,
         detail: passed
@@ -250,7 +256,7 @@ export function verifyTrustedRust(
       passed = outcome.passed;
       detail = outcome.feedback;
     }
-    results.push({
+    record({
       id,
       passed,
       detail: passed
@@ -332,13 +338,25 @@ export function verifyTrustedRust(
   return results;
 }
 if (process.argv[1]?.endsWith("verify-rust.ts")) {
+  const PROGRESS_INTERVAL = 100;
   const version = spawnSync("rustc", ["--version"], { encoding: "utf8" });
   console.log(version.stdout.trim());
-  const results = verifyTrustedRust();
-  for (const result of results)
-    console.log(
-      `${result.passed ? "ok" : "FAIL"} ${result.id}: ${result.detail}`,
-    );
+  let completed = 0;
+  let passed = 0;
+  let failed = 0;
+  console.log("Verifying authored Rust cases...");
+  const results = verifyTrustedRust(undefined, (result) => {
+    completed++;
+    if (result.passed) passed++;
+    else {
+      failed++;
+      console.log(`FAIL ${result.id}`);
+    }
+    if (completed % PROGRESS_INTERVAL === 0)
+      console.log(
+        `Progress: ${completed} authored Rust cases checked (${passed} passed, ${failed} failed).`,
+      );
+  });
   console.log(
     `${results.filter((r) => r.passed).length}/${results.length} authored Rust cases verified.`,
   );
