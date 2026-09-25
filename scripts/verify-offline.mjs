@@ -75,6 +75,47 @@ import { readFile } from "node:fs/promises";
       'fn main() { println!("offline draft"); }',
     );
     console.log("Offline runner honest, draft preserved");
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Makra deklaratywne jako publiczne API");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Makra deklaratywne jako publiczne API" })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const macroHeading = await page.locator(".task-pane h1").innerText();
+    const macroEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const macroDraft =
+      "// Makro zachowane offline; zaufany verifier Cargo działa osobno.\n";
+    await macroEditor.fill(macroDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await page
+      .getByLabel("Notatki do lekcji")
+      .fill("Oddzielić dowód browserowy od klienta zewnętrznego.");
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(macroHeading);
+    await expect(macroEditor).toHaveValue(macroDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(
+      "Oddzielić dowód browserowy od klienta zewnętrznego.",
+    );
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await expect(
+      page.getByText("Kompilator niedostępny", { exact: true }),
+    ).toBeVisible();
+    await expect(macroEditor).toHaveValue(macroDraft);
+    console.log(
+      "Macros lesson draft and note resume offline; compiler boundary stays honest",
+    );
     await context.setOffline(false);
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
