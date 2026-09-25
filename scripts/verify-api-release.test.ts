@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import {
+  currentApiReleaseFixture,
   isRejectedMutant,
   validateApiReleaseReport,
   type ApiReleaseReport,
@@ -7,16 +9,35 @@ import {
 } from "./api-release-verifier";
 
 function report(): ApiReleaseReport {
+  const commands: CommandEvidence[] = [
+    command(["check", "--offline", "--locked"]),
+    command(["test", "--offline", "--locked"], "test result: ok. 2 passed; 0 failed;"),
+    command(["check", "--offline", "--locked", "--no-default-features"]),
+    command(
+      ["test", "--offline", "--locked", "--no-default-features"],
+      "test result: ok. 1 passed; 0 failed;",
+    ),
+    command(["check", "--offline", "--locked", "--no-default-features", "--features", "metrics"]),
+    command(
+      ["test", "--offline", "--locked", "--no-default-features", "--features", "metrics"],
+      "test result: ok. 2 passed; 0 failed;",
+    ),
+    mutantCommand(),
+    mutantCommand("error[E0038]: the trait `PacketView` is not dyn compatible"),
+    mutantCommand(
+      "error[E0432]: unresolved import `release_probe::LegacyView`",
+      ["check", "--offline", "--locked", "--no-default-features"],
+    ),
+  ];
   return {
     reportVersion: 1,
     mode: "stable",
     status: "passed",
     fixture: {
-      root: "scripts/fixtures/api-release",
-      files: [{ path: "Cargo.lock", bytes: 1, sha256: "a".repeat(64) }],
-      sha256: "b".repeat(64),
+      ...currentApiReleaseFixture(),
     },
     toolchain: {
+      requested: "stable",
       cargo: "cargo 1.98.1",
       rustc: "rustc 1.98.1",
       rustdoc: "rustdoc 1.98.1",
@@ -24,21 +45,55 @@ function report(): ApiReleaseReport {
       rustcPath: "/usr/bin/rustc",
       rustdocPath: "/usr/bin/rustdoc",
     },
-    commands: [],
+    commands,
     scenarios: [
-      { id: "default", passed: true },
-      { id: "no-default-features", passed: true },
-      { id: "metrics", passed: true },
+      { id: "default", passed: true, commands: [0, 1] },
+      { id: "no-default-features", passed: true, commands: [2, 3] },
+      { id: "metrics", passed: true, commands: [4, 5] },
     ],
     mutants: [
-      { id: "removed-legacy-path", scenario: "default", rejected: true },
-      { id: "lost-dyn-compatibility", scenario: "default", rejected: true },
+      { id: "removed-legacy-path", scenario: "default", rejected: true, command: 6 },
+      { id: "lost-dyn-compatibility", scenario: "default", rejected: true, command: 7 },
       {
         id: "hidden-legacy-path-under-metrics",
         scenario: "no-default-features",
         rejected: true,
+        command: 8,
       },
     ],
+  };
+}
+
+function command(args: string[], stdout = ""): CommandEvidence {
+  return {
+    cwd: "old_consumer",
+    args,
+    status: 0,
+    signal: null,
+    timedOut: false,
+    durationMs: 10,
+    stdoutSha256: createHash("sha256").update(stdout).digest("hex"),
+    stderrSha256: createHash("sha256").update("").digest("hex"),
+    stdoutTail: stdout,
+    stderrTail: "",
+  };
+}
+
+function mutantCommand(
+  message = "error[E0432]: unresolved import `release_probe::LegacyView`",
+  args = ["check", "--offline", "--locked"],
+): CommandEvidence {
+  return {
+    cwd: "old_consumer",
+    args,
+    status: 101,
+    signal: null,
+    timedOut: false,
+    durationMs: 10,
+    stdoutSha256: "a".repeat(64),
+    stderrSha256: createHash("sha256").update(message).digest("hex"),
+    stdoutTail: "",
+    stderrTail: message,
   };
 }
 
@@ -53,6 +108,48 @@ describe("API release verifier", () => {
     expect(() => validateApiReleaseReport(candidate)).toThrow(
       /mutant.*rejected/i,
     );
+  });
+
+  it("rejects a forged passed report with no command evidence", () => {
+    const candidate = report();
+    candidate.commands = [];
+    candidate.scenarios = [
+      { id: "default", passed: true },
+      { id: "no-default-features", passed: true },
+      { id: "metrics", passed: true },
+    ];
+    candidate.mutants = candidate.mutants.map(({ id, scenario }) => ({
+      id,
+      scenario,
+      rejected: true,
+    }));
+    expect(() => validateApiReleaseReport(candidate)).toThrow(/command/i);
+  });
+
+  it("rejects a scenario with a failed command", () => {
+    const candidate = report();
+    candidate.commands[1].status = 101;
+    candidate.commands[1].stderrTail = "error[E0308]: mismatched types";
+    expect(() => validateApiReleaseReport(candidate)).toThrow(/scenario|successful/i);
+  });
+
+  it("rejects a stale fixture hash", () => {
+    const candidate = report();
+    candidate.fixture.sha256 = "0".repeat(64);
+    expect(() => validateApiReleaseReport(candidate)).toThrow(/fixture/i);
+  });
+
+  it("rejects a mutant without its compiler command", () => {
+    const candidate = report();
+    delete candidate.mutants[0].command;
+    expect(() => validateApiReleaseReport(candidate)).toThrow(/mutant|command/i);
+  });
+
+  it("rejects a report whose requested mode disagrees with its toolchain", () => {
+    const candidate = report();
+    candidate.mode = "msrv";
+    candidate.toolchain!.requested = "stable";
+    expect(() => validateApiReleaseReport(candidate)).toThrow(/toolchain|MSRV/i);
   });
 
   it("accepts a compiler failure as a rejected mutant", () => {
@@ -85,5 +182,16 @@ describe("API release verifier", () => {
       stderrTail: "",
     };
     expect(isRejectedMutant(evidence)).toBe(false);
+  });
+
+  it("preserves infrastructure status when no toolchain commands ran", () => {
+    const candidate = report();
+    candidate.status = "infrastructure-error";
+    candidate.toolchain = null;
+    candidate.commands = [];
+    candidate.scenarios = [];
+    candidate.mutants = [];
+    candidate.error = { kind: "infrastructure", message: "rustup unavailable" };
+    expect(() => validateApiReleaseReport(candidate)).not.toThrow();
   });
 });

@@ -45,6 +45,7 @@ export interface CommandEvidence {
 }
 
 export interface ToolchainEvidence {
+  requested: "stable" | "1.85.0";
   cargo: string;
   rustc: string;
   rustdoc: string;
@@ -180,7 +181,16 @@ export function resolveToolchain(mode: ApiReleaseMode): ToolchainContext {
   };
   if (mode === "msrv") env.RUSTUP_TOOLCHAIN = MSRV;
   else delete env.RUSTUP_TOOLCHAIN;
-  return { cargo, rustc, rustdoc, cargoPath, rustcPath, rustdocPath, env };
+  return {
+    requested: mode === "msrv" ? MSRV : "stable",
+    cargo,
+    rustc,
+    rustdoc,
+    cargoPath,
+    rustcPath,
+    rustdocPath,
+    env,
+  };
 }
 
 function fixtureFiles(root = API_RELEASE_FIXTURE_ROOT): FixtureEvidence {
@@ -204,6 +214,10 @@ function fixtureFiles(root = API_RELEASE_FIXTURE_ROOT): FixtureEvidence {
     files,
     sha256: sha256(manifest),
   };
+}
+
+export function currentApiReleaseFixture(): FixtureEvidence {
+  return fixtureFiles();
 }
 
 function combinedOutput(evidence: CommandEvidence): string {
@@ -414,58 +428,113 @@ function runMutants(
   return records;
 }
 
+function successfulCommand(
+  evidence: CommandEvidence,
+  expectedArgs: string[],
+): boolean {
+  return (
+    evidence.cwd === "old_consumer" &&
+    JSON.stringify(evidence.args) === JSON.stringify(expectedArgs) &&
+    evidence.status === 0 &&
+    evidence.signal === null &&
+    !evidence.timedOut &&
+    !evidence.errorCode
+  );
+}
+
 export function validateApiReleaseReport(value: unknown): asserts value is ApiReleaseReport {
-  if (!value || typeof value !== "object") throw new Error("API release report must be an object");
+  if (!value || typeof value !== "object")
+    throw new Error("API release report must be an object");
   const report = value as Partial<ApiReleaseReport>;
-  if (report.reportVersion !== 1) throw new Error("Unsupported API release report version");
-  if (report.mode !== "stable" && report.mode !== "msrv") throw new Error("Invalid API release report mode");
-  if (!report.fixture || report.fixture.root !== "scripts/fixtures/api-release") throw new Error("Report fixture provenance is invalid");
-  if (!/^[0-9a-f]{64}$/.test(report.fixture.sha256)) throw new Error("Report fixture hash is invalid");
-  if (!Array.isArray(report.fixture.files) || report.fixture.files.length === 0) throw new Error("Report fixture file list is empty");
+  if (report.reportVersion !== 1)
+    throw new Error("Unsupported API release report version");
+  if (report.mode !== "stable" && report.mode !== "msrv")
+    throw new Error("Invalid API release report mode");
+  if (!report.fixture || report.fixture.root !== "scripts/fixtures/api-release")
+    throw new Error("Report fixture provenance is invalid");
+  if (!/^[0-9a-f]{64}$/.test(report.fixture.sha256))
+    throw new Error("Report fixture hash is invalid");
+  if (!Array.isArray(report.fixture.files) || report.fixture.files.length === 0)
+    throw new Error("Report fixture file list is empty");
   for (const file of report.fixture.files) {
-    if (!file || typeof file.path !== "string" || file.path.startsWith("/") || file.path.includes(".."))
+    if (
+      !file ||
+      typeof file.path !== "string" ||
+      file.path.startsWith("/") ||
+      file.path.includes("..")
+    )
       throw new Error("Report contains an unsafe fixture path");
-    if (!Number.isInteger(file.bytes) || file.bytes < 0 || !/^[0-9a-f]{64}$/.test(file.sha256))
+    if (
+      !Number.isInteger(file.bytes) ||
+      file.bytes < 0 ||
+      !/^[0-9a-f]{64}$/.test(file.sha256)
+    )
       throw new Error("Report fixture file evidence is invalid");
   }
-  if (!Array.isArray(report.commands) || report.commands.length > MAX_COMMANDS) throw new Error("Report command evidence is unbounded or missing");
+  if (report.status === "passed") {
+    const expectedFixture = currentApiReleaseFixture();
+    if (JSON.stringify(report.fixture) !== JSON.stringify(expectedFixture))
+      throw new Error("Passed report fixture manifest is stale or forged");
+  }
+  if (
+    !Array.isArray(report.commands) ||
+    report.commands.length > MAX_COMMANDS ||
+    (report.status === "passed" && report.commands.length === 0)
+  )
+    throw new Error("Report command evidence is unbounded or missing");
   for (const command of report.commands) {
-    if (!command || !Array.isArray(command.args) || command.args.length === 0 || command.args.some((arg) => typeof arg !== "string"))
+    if (
+      !command ||
+      !Array.isArray(command.args) ||
+      command.args.length === 0 ||
+      command.args.some((arg) => typeof arg !== "string")
+    )
       throw new Error("Report command arguments are invalid");
-    if (!Number.isInteger(command.durationMs) || command.durationMs < 0 || typeof command.status !== "number" && command.status !== null)
+    if (
+      !Number.isInteger(command.durationMs) ||
+      command.durationMs < 0 ||
+      (typeof command.status !== "number" && command.status !== null)
+    )
       throw new Error("Report command status evidence is invalid");
     if (
       (typeof command.signal !== "string" && command.signal !== null) ||
       typeof command.timedOut !== "boolean" ||
       typeof command.stdoutTail !== "string" ||
-      typeof command.stderrTail !== "string"
+      typeof command.stderrTail !== "string" ||
+      (command.errorCode !== undefined && typeof command.errorCode !== "string")
     )
       throw new Error("Report command lifecycle evidence is invalid");
-    if (!/^[0-9a-f]{64}$/.test(command.stdoutSha256) || !/^[0-9a-f]{64}$/.test(command.stderrSha256))
+    if (
+      !/^[0-9a-f]{64}$/.test(command.stdoutSha256) ||
+      !/^[0-9a-f]{64}$/.test(command.stderrSha256)
+    )
       throw new Error("Report command hashes are invalid");
-    if (command.stdoutTail.length > MAX_OUTPUT_CHARS || command.stderrTail.length > MAX_OUTPUT_CHARS)
+    if (
+      command.stdoutTail.length > MAX_OUTPUT_CHARS ||
+      command.stderrTail.length > MAX_OUTPUT_CHARS
+    )
       throw new Error("Report command output exceeds bound");
   }
-  if (!Array.isArray(report.scenarios) || !Array.isArray(report.mutants)) throw new Error("Report matrix evidence is missing");
+  if (!Array.isArray(report.scenarios) || !Array.isArray(report.mutants))
+    throw new Error("Report matrix evidence is missing");
   if (report.status === "passed") {
     const scenarios = report.scenarios;
+    const mutants = report.mutants;
+    const commands = report.commands;
     const toolchain = report.toolchain;
     if (
       !toolchain ||
       Object.values(toolchain).some(
         (field) => typeof field !== "string" || field.length === 0,
       ) ||
-      scenarios.length !== 3 ||
-      new Set(scenarios.map((scenario) => scenario.id)).size !== 3 ||
-      (["default", "no-default-features", "metrics"] as ScenarioId[]).some(
-        (id) => !scenarios.some((scenario) => scenario.id === id),
-      ) ||
-      scenarios.some((scenario) => !scenario.passed)
+      toolchain.requested !== (report.mode === "msrv" ? MSRV : "stable")
     )
-      throw new Error("Passed report is missing successful feature matrix evidence");
+      throw new Error("Passed report toolchain mode is missing or incorrect");
     if (
       report.mode === "msrv" &&
-      !toolchain.rustc.startsWith(`rustc ${MSRV} `)
+      (!toolchain.cargo.startsWith(`cargo ${MSRV} `) ||
+        !toolchain.rustc.startsWith(`rustc ${MSRV} `) ||
+        !toolchain.rustdoc.startsWith(`rustdoc ${MSRV} `))
     )
       throw new Error(`Passed MSRV report does not prove exact Rust ${MSRV}`);
     if (
@@ -475,12 +544,82 @@ export function validateApiReleaseReport(value: unknown): asserts value is ApiRe
       )
     )
       throw new Error("Passed stable report contains a non-stable toolchain");
-    if (report.mutants.length < REQUIRED_MUTANTS.length) throw new Error("Report does not contain all controlled mutants");
-    for (const id of REQUIRED_MUTANTS) {
-      const mutant = report.mutants.find((candidate) => candidate.id === id);
-      if (!mutant || !mutant.rejected) throw new Error(`Mutant ${id} was not rejected`);
+    if (report.error)
+      throw new Error("Passed report cannot contain an error record");
+    if (
+      scenarios.length !== 3 ||
+      new Set(scenarios.map((scenario) => scenario.id)).size !== 3 ||
+      (["default", "no-default-features", "metrics"] as ScenarioId[]).some(
+        (id) => !scenarios.some((scenario) => scenario.id === id),
+      ) ||
+      scenarios.some((scenario) => scenario.passed !== true)
+    )
+      throw new Error("Passed report is missing successful feature matrix evidence");
+
+    const references: number[] = [];
+    for (const scenario of scenarios) {
+      if (
+        !Array.isArray(scenario.commands) ||
+        scenario.commands.length !== 2 ||
+        scenario.commands.some(
+          (index) => !Number.isInteger(index) || index < 0 || index >= commands.length,
+        )
+      )
+        throw new Error(`Scenario ${scenario.id} is missing check/test command evidence`);
+      const [checkIndex, testIndex] = scenario.commands;
+      if (checkIndex === testIndex)
+        throw new Error(`Scenario ${scenario.id} reuses one command for check and test`);
+      const expectedFlags = scenarioFlags(scenario.id);
+      const check = commands[checkIndex];
+      const test = commands[testIndex];
+      if (
+        !successfulCommand(check, ["check", "--offline", "--locked", ...expectedFlags]) ||
+        !successfulCommand(test, ["test", "--offline", "--locked", ...expectedFlags]) ||
+        !passedTests(test)
+      )
+        throw new Error(`Scenario ${scenario.id} does not contain successful check/test evidence`);
+      references.push(checkIndex, testIndex);
     }
-  } else if (report.status !== "product-error" && report.status !== "infrastructure-error") {
+
+    if (mutants.length !== REQUIRED_MUTANTS.length)
+      throw new Error("Report does not contain exactly the controlled mutants");
+    const mutantIds = new Set<string>();
+    for (const expected of apiReleaseMutants) {
+      const mutant = mutants.find((candidate) => candidate.id === expected.id);
+      if (!mutant || mutantIds.has(expected.id))
+        throw new Error(`Mutant ${expected.id} is missing or duplicated`);
+      mutantIds.add(expected.id);
+      if (mutant.rejected !== true)
+        throw new Error(`Mutant ${expected.id} was not rejected`);
+      const mutantCommand = mutant.command;
+      if (
+        mutant.scenario !== expected.scenario ||
+        typeof mutantCommand !== "number" ||
+        !Number.isInteger(mutantCommand) ||
+        mutantCommand < 0 ||
+        mutantCommand >= commands.length
+      )
+        throw new Error(`Mutant ${expected.id} is missing command evidence`);
+      const command = commands[mutantCommand];
+      if (
+        command.cwd !== "old_consumer" ||
+        JSON.stringify(command.args) !==
+          JSON.stringify(["check", "--offline", "--locked", ...scenarioFlags(expected.scenario)]) ||
+        !isRejectedMutant(command)
+      )
+        throw new Error(`Mutant ${expected.id} lacks a rejected compiler failure`);
+      references.push(mutantCommand);
+    }
+    const sortedReferences = [...references].sort((left, right) => left - right);
+    if (
+      sortedReferences.length !== commands.length ||
+      sortedReferences.some((index, position) => index !== position)
+    )
+      throw new Error("Passed report command references have duplicate or missing indices");
+  } else if (
+    report.status !== "product-error" &&
+    report.status !== "infrastructure-error"
+  ) {
     throw new Error("Invalid API release report status");
   }
 }
@@ -513,6 +652,7 @@ export function runApiReleaseVerification(
   try {
     const toolchain = resolveToolchain(mode);
     report.toolchain = {
+      requested: toolchain.requested,
       cargo: toolchain.cargo,
       rustc: toolchain.rustc,
       rustdoc: toolchain.rustdoc,
