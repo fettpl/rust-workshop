@@ -52,7 +52,7 @@ export const apiReleaseMatrixCompetencies: Competency[] = [
   {
     id: "preserve-old-release-contract",
     title:
-      "Rozpoznajesz i zachowujesz stare publiczne ścieżki, sygnatury oraz obserwowalne wyniki przed zaakceptowaniem zmiany API.",
+      "Klasyfikujesz obserwację starego klienta po nazwanym powodzie kompilacji, wyniku zachowania i jakości infrastruktury przed zaakceptowaniem zmiany API.",
   },
   {
     id: "evaluate-release-matrix",
@@ -68,9 +68,9 @@ export const apiReleaseMatrixConcepts: Concept[] = [
     prerequisites: ["api-compatible-surface"],
     competencyIds: ["preserve-old-release-contract"],
     reviewPrompt:
-      "Co musi pozostać takie samo, gdy biblioteka dodaje sprawdzoną funkcję obok dawnej publicznej ścieżki?",
+      "Jak rozróżnisz brakujący publiczny element, niezwiązany błąd kompilacji, regresję zachowania i brak wiarygodnej obserwacji?",
     reviewAnswer:
-      "Zachowaj dawny import, dokładną sygnaturę i obserwowalne wyniki, a nową funkcję dodaj obok nich. Jednoplikowy test może modelować starego klienta, ale osobny crate dopiero sprawdza granicę publicznego API.",
+      "Wymagaj nazwanego powodu: tylko MissingPublicItem oznacza PublicApiBreak. OtherCompileFailure zatrzymuje wydanie jako unclassified, mismatch po Passed oznacza regresję, a wynik zachowania bez udanej kompilacji jest sprzeczny. Jednoplikowy test to model; osobny crate dopiero sprawdza granicę publicznego API.",
     distinguish:
       "Dodatnia funkcja w jednym pliku jest przykładem kodu. Nie dowodzi prywatności modułu ani importu przez osobny crate; te obserwacje dostarcza zaufany verifier.",
     evidenceArtifact: "rust-code",
@@ -131,11 +131,27 @@ fn main() {
 }`;
 
 const oldContractStarter = `#[derive(Debug, PartialEq, Eq)]
+pub enum BuildOutcome {
+    Passed,
+    MissingPublicItem,
+    OtherCompileFailure,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum BehaviorOutcome {
+    Matching,
+    Mismatch,
+    NotObserved,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum ClientObservation {
     PublicApiBreak,
     BehaviorRegression,
     InfrastructureFailure,
     MissingEvidence,
+    UnclassifiedBuildFailure,
+    ContradictoryObservation,
     Compatible,
 }
 
@@ -146,8 +162,8 @@ pub enum ReleaseDecision {
 }
 
 pub fn classify(
-    compiles: bool,
-    behavior_matches: bool,
+    build: BuildOutcome,
+    behavior: BehaviorOutcome,
     infrastructure_ok: bool,
     evidence_present: bool,
 ) -> ClientObservation {
@@ -159,11 +175,27 @@ pub fn approve(observation: ClientObservation) -> ReleaseDecision {
 }`;
 
 const oldContractSolution = `#[derive(Debug, PartialEq, Eq)]
+pub enum BuildOutcome {
+    Passed,
+    MissingPublicItem,
+    OtherCompileFailure,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum BehaviorOutcome {
+    Matching,
+    Mismatch,
+    NotObserved,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum ClientObservation {
     PublicApiBreak,
     BehaviorRegression,
     InfrastructureFailure,
     MissingEvidence,
+    UnclassifiedBuildFailure,
+    ContradictoryObservation,
     Compatible,
 }
 
@@ -174,16 +206,21 @@ pub enum ReleaseDecision {
 }
 
 pub fn classify(
-    compiles: bool,
-    behavior_matches: bool,
+    build: BuildOutcome,
+    behavior: BehaviorOutcome,
     infrastructure_ok: bool,
     evidence_present: bool,
 ) -> ClientObservation {
     if !evidence_present { return ClientObservation::MissingEvidence; }
     if !infrastructure_ok { return ClientObservation::InfrastructureFailure; }
-    if !compiles { return ClientObservation::PublicApiBreak; }
-    if !behavior_matches { return ClientObservation::BehaviorRegression; }
-    ClientObservation::Compatible
+    match (build, behavior) {
+        (BuildOutcome::MissingPublicItem, BehaviorOutcome::NotObserved) => ClientObservation::PublicApiBreak,
+        (BuildOutcome::MissingPublicItem, _) => ClientObservation::ContradictoryObservation,
+        (BuildOutcome::OtherCompileFailure, _) => ClientObservation::UnclassifiedBuildFailure,
+        (BuildOutcome::Passed, BehaviorOutcome::Matching) => ClientObservation::Compatible,
+        (BuildOutcome::Passed, BehaviorOutcome::Mismatch) => ClientObservation::BehaviorRegression,
+        (BuildOutcome::Passed, BehaviorOutcome::NotObserved) => ClientObservation::MissingEvidence,
+    }
 }
 
 pub fn approve(observation: ClientObservation) -> ReleaseDecision {
@@ -193,28 +230,38 @@ pub fn approve(observation: ClientObservation) -> ReleaseDecision {
         ClientObservation::BehaviorRegression => ReleaseDecision::Hold("behavior"),
         ClientObservation::InfrastructureFailure => ReleaseDecision::Hold("infrastructure"),
         ClientObservation::MissingEvidence => ReleaseDecision::Hold("missing-evidence"),
+        ClientObservation::UnclassifiedBuildFailure => ReleaseDecision::Hold("unclassified-build"),
+        ClientObservation::ContradictoryObservation => ReleaseDecision::Hold("contradictory"),
     }
 }`;
 
 const oldContractTests = `#[test]
 fn classifies_one_old_client_observation_before_release() {
-    assert_eq!(classify(false, true, true, true), ClientObservation::PublicApiBreak);
-    assert_eq!(classify(true, false, true, true), ClientObservation::BehaviorRegression);
-    assert_eq!(classify(true, true, false, true), ClientObservation::InfrastructureFailure);
-    assert_eq!(classify(true, true, true, false), ClientObservation::MissingEvidence);
-    assert_eq!(classify(true, true, true, true), ClientObservation::Compatible);
+    assert_eq!(classify(BuildOutcome::MissingPublicItem, BehaviorOutcome::NotObserved, true, true), ClientObservation::PublicApiBreak);
+    assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::Mismatch, true, true), ClientObservation::BehaviorRegression);
+    assert_eq!(classify(BuildOutcome::OtherCompileFailure, BehaviorOutcome::NotObserved, true, true), ClientObservation::UnclassifiedBuildFailure);
+    assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::Matching, false, true), ClientObservation::InfrastructureFailure);
+    assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::Matching, true, false), ClientObservation::MissingEvidence);
+    assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::NotObserved, true, true), ClientObservation::MissingEvidence);
+    assert_eq!(classify(BuildOutcome::MissingPublicItem, BehaviorOutcome::Mismatch, true, true), ClientObservation::ContradictoryObservation);
+    assert_eq!(classify(BuildOutcome::OtherCompileFailure, BehaviorOutcome::Matching, true, true), ClientObservation::UnclassifiedBuildFailure);
+    assert_eq!(classify(BuildOutcome::Passed, BehaviorOutcome::Matching, true, true), ClientObservation::Compatible);
 
     assert_eq!(approve(ClientObservation::PublicApiBreak), ReleaseDecision::Hold("public-api"));
     assert_eq!(approve(ClientObservation::BehaviorRegression), ReleaseDecision::Hold("behavior"));
     assert_eq!(approve(ClientObservation::InfrastructureFailure), ReleaseDecision::Hold("infrastructure"));
     assert_eq!(approve(ClientObservation::MissingEvidence), ReleaseDecision::Hold("missing-evidence"));
+    assert_eq!(approve(ClientObservation::UnclassifiedBuildFailure), ReleaseDecision::Hold("unclassified-build"));
+    assert_eq!(approve(ClientObservation::ContradictoryObservation), ReleaseDecision::Hold("contradictory"));
     assert_eq!(approve(ClientObservation::Compatible), ReleaseDecision::Ship);
 }`;
 
 const oldContractBlankSolution = `#[derive(Debug, PartialEq, Eq)]
 pub enum ProbeResult {
     MissingSymbol,
+    OtherCompileFailure,
     ChangedOutput,
+    Contradictory,
     TimedOut,
     NotRecorded,
     SameContract,
@@ -229,7 +276,9 @@ pub enum Verdict {
 pub fn inspect(result: ProbeResult) -> Verdict {
     match result {
         ProbeResult::MissingSymbol => Verdict::Stop("public-api"),
+        ProbeResult::OtherCompileFailure => Verdict::Stop("unclassified-build"),
         ProbeResult::ChangedOutput => Verdict::Stop("behavior"),
+        ProbeResult::Contradictory => Verdict::Stop("contradictory"),
         ProbeResult::TimedOut => Verdict::Stop("infrastructure"),
         ProbeResult::NotRecorded => Verdict::Stop("missing-evidence"),
         ProbeResult::SameContract => Verdict::Release,
@@ -239,7 +288,9 @@ pub fn inspect(result: ProbeResult) -> Verdict {
 const oldContractBlankTests = `#[test]
 fn independent_probe_result_covers_each_release_outcome() {
     assert_eq!(inspect(ProbeResult::MissingSymbol), Verdict::Stop("public-api"));
+    assert_eq!(inspect(ProbeResult::OtherCompileFailure), Verdict::Stop("unclassified-build"));
     assert_eq!(inspect(ProbeResult::ChangedOutput), Verdict::Stop("behavior"));
+    assert_eq!(inspect(ProbeResult::Contradictory), Verdict::Stop("contradictory"));
     assert_eq!(inspect(ProbeResult::TimedOut), Verdict::Stop("infrastructure"));
     assert_eq!(inspect(ProbeResult::NotRecorded), Verdict::Stop("missing-evidence"));
     assert_eq!(inspect(ProbeResult::SameContract), Verdict::Release);
@@ -248,7 +299,9 @@ fn independent_probe_result_covers_each_release_outcome() {
 const oldContractReviewSolution = `#[derive(Debug, PartialEq, Eq)]
 pub enum RunStatus {
     CompileError,
+    OtherCompileError,
     WrongValue,
+    Contradictory,
     Timeout,
     Absent,
     Match,
@@ -263,7 +316,9 @@ pub enum Decision {
 pub fn review(status: RunStatus) -> Decision {
     match status {
         RunStatus::CompileError => Decision::Hold("public-api"),
+        RunStatus::OtherCompileError => Decision::Hold("unclassified-build"),
         RunStatus::WrongValue => Decision::Hold("behavior"),
+        RunStatus::Contradictory => Decision::Hold("contradictory"),
         RunStatus::Timeout => Decision::Hold("infrastructure"),
         RunStatus::Absent => Decision::Hold("missing-evidence"),
         RunStatus::Match => Decision::Ship,
@@ -273,7 +328,9 @@ pub fn review(status: RunStatus) -> Decision {
 const oldContractReviewTests = `#[test]
 fn retrieval_decision_keeps_compile_behavior_and_evidence_distinct() {
     assert_eq!(review(RunStatus::CompileError), Decision::Hold("public-api"));
+    assert_eq!(review(RunStatus::OtherCompileError), Decision::Hold("unclassified-build"));
     assert_eq!(review(RunStatus::WrongValue), Decision::Hold("behavior"));
+    assert_eq!(review(RunStatus::Contradictory), Decision::Hold("contradictory"));
     assert_eq!(review(RunStatus::Timeout), Decision::Hold("infrastructure"));
     assert_eq!(review(RunStatus::Absent), Decision::Hold("missing-evidence"));
     assert_eq!(review(RunStatus::Match), Decision::Ship);
@@ -572,10 +629,11 @@ export const apiReleaseMatrixLessons: Lesson[] = [
     prerequisites: ["api-compatible-surface"],
     title: "Klasyfikacja obserwacji starego klienta",
     subtitle:
-      "Rozróżnij zerwanie kompilacji, regresję zachowania, infrastrukturę i brak dowodu przed decyzją release.",
+      "Nazwij przyczynę obserwacji starego klienta, zanim odróżnisz zerwanie API, regresję zachowania, infrastrukturę i brak dowodu.",
     minutes: 20,
     outcomes: [
       "Odróżnisz public API break od regresji zachowania, gdy stary klient nadal się kompiluje.",
+      "Nie nazwiesz niezwiązanego błędu kompilacji public API break bez nazwanego braku elementu.",
       "Zaklasyfikujesz timeout lub brak uruchomienia jako infrastrukturę albo brak dowodu.",
       "Zwrócisz typed Hold z powodem przed decyzją Ship dla zgodnej obserwacji.",
       "Oddzielisz model jednego pliku od dowodu osobnego crate klienta w zaufanym verifierze.",
@@ -661,7 +719,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "modify",
         title: "Sklasyfikuj obserwację release",
         prompt:
-          "Uzupełnij `classify` i `approve` dla jednej obserwacji starego klienta. Rozróżnij: brak publicznego API przy `compiles = false`, zły wynik przy kompilacji, timeout/infrastrukturę, brak evidence oraz pełną zgodność. Zwróć `Hold` z typowanym powodem dla pierwszych czterech klas i `Ship` wyłącznie dla `Compatible`. To model decyzji; zaufany verifier osobno potwierdza rzeczywisty crate i Cargo.",
+          "Uzupełnij `classify` i `approve` dla jednej obserwacji starego klienta. Przyjmij `BuildOutcome` z nazwanym powodem (`MissingPublicItem`, `OtherCompileFailure` albo `Passed`) oraz `BehaviorOutcome`. Tylko nazwany brak publicznego elementu oznacza `PublicApiBreak`; niezwiązany błąd kompilacji zatrzymuje wydanie jako `UnclassifiedBuildFailure`, a wynik zachowania bez udanej kompilacji jest `ContradictoryObservation`. Oddziel timeout/infrastrukturę, brak evidence, regresję i zgodność. Zwróć `Hold` dla każdej niepewności i `Ship` wyłącznie dla `Compatible`. To model decyzji; zaufany verifier osobno potwierdza rzeczywisty crate i Cargo.",
         code: oldContractStarter,
         solution: oldContractSolution,
         evaluator: { kind: "tests", tests: oldContractTests },
@@ -669,8 +727,8 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         evidenceKind: "fix",
         evidenceGate: true,
         hints: [
-          "Najpierw rozstrzygnij, czy stary klient się skompilował, dopiero potem oceniaj wynik.",
-          "Timeout i brak dowodu nie są równoważne z błędnym wynikiem funkcji.",
+          "Nie zgaduj przyczyny z samego `compiles = false`: tylko nazwany `MissingPublicItem` jest public API break.",
+          "`OtherCompileFailure`, zachowanie bez `Passed`, timeout i brak dowodu zatrzymują release; nie dopisuj im obserwowanego wyniku.",
         ],
       },
       {
@@ -694,7 +752,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "blank",
         title: "Pusta strona: sklasyfikuj sondę",
         prompt:
-          "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`. Rozróżnij `MissingSymbol`, `ChangedOutput`, `TimedOut`, `NotRecorded` i `SameContract`, mapując pierwsze cztery na osobne powody `Stop`, a ostatni na `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
+          "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`. Rozróżnij brak publicznego symbolu, niezwiązany błąd kompilacji, zmianę wyniku, sprzeczny wynik bez udanej kompilacji, timeout, brak zapisu i zgodność; każdą niepewność mapuj na osobny powód `Stop`, a zgodność na `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
         solution: oldContractBlankSolution,
         evaluator: { kind: "tests", tests: oldContractBlankTests },
         expectedStatus: "success",
@@ -708,13 +766,15 @@ export const apiReleaseMatrixLessons: Lesson[] = [
     ],
     misconceptions: [
       "Każdy błąd starego klienta jest regresją zachowania.",
+      "Każde `compiles = false` dowodzi usunięcia publicznego API.",
+      "Wynik zachowania można uznać za wiarygodny, gdy kompilacja starego klienta się nie udała.",
       "Timeout można potraktować jak poprawny wynik, bo funkcja nie zwróciła złej wartości.",
       "Brak evidence jest tym samym co zgodny klient.",
     ],
     transferTask:
       "Przed wydaniem zapisz pojedynczą obserwację starego klienta: kompilację, wynik, status infrastruktury i obecność evidence. Zaklasyfikuj ją typed decyzją, a zaufany verifier uruchom osobno.",
     evidenceGate:
-      "Gate wymaga odróżnienia public API break, regresji zachowania, infrastruktury i braku evidence oraz decyzji Hold/Ship. Pusta strona i retrieval używają innych nazw i domen.",
+      "Gate wymaga nazwanego powodu kompilacji: tylko MissingPublicItem jest public API break, OtherCompileFailure jest unclassified, a zachowanie bez Passed jest sprzeczne. Pusta strona i retrieval sprawdzają osobno te klasy oraz decyzję Hold/Ship.",
     sourceIds: [
       "api-release-semver-reference",
       "api-release-workspaces-reference",
@@ -882,7 +942,7 @@ export const apiReleaseMatrixReviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: status sondy",
     prompt:
-      "Odtwórz `RunStatus`, `Decision` oraz `review`. Rozróżnij `CompileError`, `WrongValue`, `Timeout`, `Absent` i `Match`, mapując je na osobne powody Hold albo Ship. Test jest obserwacją starego klienta, a nie dowodem Cargo.",
+      "Odtwórz `RunStatus`, `Decision` oraz `review`. Rozróżnij brak publicznego elementu, niezwiązany błąd kompilacji, zły wynik, sprzeczny wynik bez kompilacji, timeout, brak zapisu i zgodność, mapując je na osobne powody Hold albo Ship. Test jest obserwacją starego klienta, a nie dowodem Cargo.",
     solution: oldContractReviewSolution,
     evaluator: { kind: "tests", tests: oldContractReviewTests },
     evidenceKind: "recall",

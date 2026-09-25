@@ -122,10 +122,13 @@ it("keeps the release lesson evidence distinct from Cargo proof", () => {
     (step) => step.id === "api-release-old-contracts-gate",
   )!;
   expect(oldGate.prompt).toMatch(
-    /public API break|regresj|infrastruktur|evidence/i,
+    /MissingPublicItem|OtherCompileFailure|ContradictoryObservation|public API break|regresj|infrastruktur|evidence/i,
   );
   expect(oldGate.solution).toContain("ClientObservation");
   expect(oldGate.solution).toContain("ReleaseDecision");
+  expect(oldGate.solution).toContain("BuildOutcome");
+  expect(oldGate.solution).toContain("OtherCompileFailure");
+  expect(oldGate.solution).toContain("ContradictoryObservation");
   expect(oldGate.solution).not.toContain("dyn Beacon");
 });
 
