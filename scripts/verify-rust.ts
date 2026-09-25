@@ -12,6 +12,34 @@ export type Verification = { id: string; passed: boolean; detail: string };
 export type VerificationReporter = (result: Verification) => void;
 const COMPILE_TIMEOUT = 60_000;
 const EXECUTION_TIMEOUT = 8_000;
+const FAILURE_REASON_LIMIT = 180;
+
+export function formatVerificationFailure(result: Verification): string {
+  const firstUsefulLine = result.detail
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(
+      (line) =>
+        line &&
+        !/^-->\s/.test(line) &&
+        !/^\d+\s*\|/.test(line) &&
+        !/^\|+$/.test(line),
+    );
+  const reason = (firstUsefulLine ?? "verification failed")
+    .replace(/\s+(?:stdout|stderr)=.*$/i, "")
+    .replace(
+      /(?:\/private\/tmp|\/tmp|\/var\/folders|[A-Za-z]:[\\/])\S*/g,
+      "<path>",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+  const boundedReason =
+    reason.length > FAILURE_REASON_LIMIT
+      ? `${reason.slice(0, FAILURE_REASON_LIMIT - 1).trimEnd()}…`
+      : reason;
+  return `FAIL ${result.id}: ${boundedReason || "verification failed"}`;
+}
+
 function command(cmd: string, args: string[], cwd: string, timeout: number) {
   return spawnSync(cmd, args, {
     cwd,
@@ -350,7 +378,7 @@ if (process.argv[1]?.endsWith("verify-rust.ts")) {
     if (result.passed) passed++;
     else {
       failed++;
-      console.log(`FAIL ${result.id}`);
+      console.log(formatVerificationFailure(result));
     }
     if (completed % PROGRESS_INTERVAL === 0)
       console.log(
