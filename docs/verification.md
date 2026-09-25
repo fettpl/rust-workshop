@@ -4,7 +4,7 @@ Date: 2026-09-25. Current catalog: 176 lessons in 46 modules, 179 concepts, 131 
 
 ## Full authored Rust verification
 
-On 2026-09-25, `npm run content:rust` completed all 2,167 authored Rust cases with 2,167 passed and 0 failed in 412.64 seconds (real elapsed time). The run used rustc 1.98.1 on macOS and included the API Release Matrix and Macros as APIs lesson cases; their separate external-client Cargo verifiers are reported above and below. Progress reporting reached every 100-case checkpoint without a failure; this is local evidence for the authored cases and does not replace the blocked GitHub Actions run.
+On 2026-09-25, `npm run content:rust` completed all 2,167 authored Rust cases with 2,167 passed and 0 failed in 412.64 seconds (real elapsed time). The run used rustc 1.98.1 on macOS and included the API Release Matrix and Macros as APIs lesson cases; their separate external-client Cargo verifiers are reported separately below. Progress reporting reached every 100-case checkpoint without a failure; this is local evidence for the authored cases and does not replace the blocked GitHub Actions run.
 
 ## Macros as API evidence
 
