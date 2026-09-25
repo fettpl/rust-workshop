@@ -38,26 +38,31 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
   const blankRef = module.gateCriteria![0].taskRefs[1];
   const primary = lessonStep(primaryRef.lessonId, primaryRef.stepId);
   const blank = lessonStep(blankRef.lessonId, blankRef.stepId);
-  expect(primary.evaluator?.kind).toBe("tests");
-  expect(blank.evaluator?.kind).toBe("tests");
+  const secondPrimaryRef = module.gateCriteria![1].taskRefs[0];
+  const secondBlankRef = module.gateCriteria![1].taskRefs[1];
+  const secondPrimary = lessonStep(
+    secondPrimaryRef.lessonId,
+    secondPrimaryRef.stepId,
+  );
+  const secondBlank = lessonStep(
+    secondBlankRef.lessonId,
+    secondBlankRef.stepId,
+  );
+  const gateTasks = [primary, blank, secondPrimary, secondBlank];
+  for (const task of gateTasks) expect(task.evaluator?.kind).toBe("tests");
   expect(blank.code).toBeUndefined();
+  expect(secondBlank.code).toBeUndefined();
 
   await page.route("**/api/run", async (route) => {
     const request = route.request().postDataJSON();
-    const primaryTests =
-      primary.evaluator?.kind === "tests" ? primary.evaluator.tests : "";
-    const blankTests =
-      blank.evaluator?.kind === "tests" ? blank.evaluator.tests : "";
-    const expected = [primary.solution, blank.solution].filter(
-      (code): code is string => typeof code === "string",
+    const recognizedTask = gateTasks.find(
+      (task) => task.solution === request.code,
     );
-    const recognized = expected.includes(request.code);
+    const recognized = !!recognizedTask;
     expect(request.mode).toBe("test");
     expect(typeof request.tests).toBe("string");
-    if (recognized)
-      expect(request.tests).toBe(
-        request.code === primary.solution ? primaryTests : blankTests,
-      );
+    if (recognizedTask && recognizedTask.evaluator?.kind === "tests")
+      expect(request.tests).toBe(recognizedTask.evaluator.tests);
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -145,6 +150,49 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     .click();
   await expect(page.locator(".feedback.passed")).toBeVisible();
 
+  await page.getByRole("button", { name: module.title, exact: true }).click();
+  await expect(page.getByLabel("Potwierdzone")).toHaveCount(1);
+  await page.locator(".gate-action").first().click();
+  await expect(page.locator(".task-pane h1")).toHaveText(secondPrimary.title);
+  await editor.fill("fn main() {}");
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(
+    page.getByText("Testy ujawniły problem", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+  await page
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+    .click();
+  await editor.fill(secondPrimary.solution!);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(page.locator(".feedback.passed")).toBeVisible();
+  await page.getByRole("button", { name: module.title, exact: true }).click();
+  await expect(page.getByLabel("Potwierdzone")).toHaveCount(1);
+
+  await page.locator(".gate-action").first().click();
+  await expect(page.locator(".task-pane h1")).toHaveText(secondBlank.title);
+  await expect(editor).toHaveValue("");
+  await editor.fill("fn main() {}");
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(
+    page.getByText("Testy ujawniły problem", { exact: true }),
+  ).toBeVisible();
+  await editor.fill(secondBlank.solution!);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(page.locator(".feedback.passed")).toBeVisible();
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("tab", { name: "Kod", exact: true }).focus();
   await page.keyboard.press("ArrowRight");
@@ -161,7 +209,7 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
   ).toBeFocused();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.getByRole("button", { name: module.title, exact: true }).click();
-  await expect(page.getByLabel("Potwierdzone")).toHaveCount(1);
+  await expect(page.getByLabel("Potwierdzone")).toHaveCount(2);
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
