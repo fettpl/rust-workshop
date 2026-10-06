@@ -217,15 +217,18 @@ it("keeps primary, blank, and review fixtures materially independent", () => {
   }
 });
 
-it("keeps published auto-trait starters incomplete until learner edits", () => {
-  const lesson = unsafeBorrowedMemoryLessons.find(
-    (entry) => entry.id === "unsafe-borrowed-auto-traits",
-  )!;
-  for (const id of [
+it("keeps published test starters incomplete until learner edits", () => {
+  const starterIds = [
     "unsafe-borrowed-auto-traits-boundary-gate",
-    "unsafe-borrowed-auto-traits-soundness-gate",
     "unsafe-borrowed-auto-traits-recall",
-  ]) {
+    ...unsafeBorrowedMemoryLessons.map(
+      (lesson) => `${lesson.id}-soundness-gate`,
+    ),
+  ];
+  for (const id of starterIds) {
+    const lesson = unsafeBorrowedMemoryLessons.find((entry) =>
+      id.startsWith(`${entry.id}-`),
+    )!;
     const step = lesson.steps.find((entry) => entry.id === id)!;
     if (step.evaluator?.kind !== "tests")
       throw new Error(`${id} lacks test evaluator`);

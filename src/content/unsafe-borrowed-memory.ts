@@ -30,6 +30,7 @@ import {
   borrowedBytesTests,
   borrowedBytesSoundnessCanonical,
   borrowedBytesSoundnessEquivalent,
+  borrowedBytesSoundnessMutant,
   borrowedBytesSoundnessTests,
   borrowedTextReviewMutant,
   borrowedTextReviewTests,
@@ -39,6 +40,7 @@ import {
   invariantBorrowCanonical,
   invariantBorrowEquivalent,
   invariantBorrowMutant,
+  invariantBorrowSoundnessMutant,
   invariantBorrowTests,
   safeSlotCanonical,
   safeSlotEquivalent,
@@ -46,6 +48,7 @@ import {
   safeSlotTests,
   safeSlotSoundnessCanonical,
   safeSlotSoundnessEquivalent,
+  safeSlotSoundnessMutant,
   safeSlotSoundnessTests,
   initCellBlankCanonical,
   initCellBlankEquivalent,
@@ -354,7 +357,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Sprawdź caller obligations",
         prompt:
           "Utrzymaj ten sam safe API i opisz w kodzie kontrakt: lifetime nie przedłuża właściciela, a multibyte długość jest długością bajtów.",
-        code: borrowedBytesSoundnessEquivalent,
+        code: borrowedBytesSoundnessMutant,
         solution: borrowedBytesSoundnessCanonical,
         tests: borrowedBytesSoundnessTests,
         gate: true,
@@ -445,7 +448,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Skróć outer loan",
         prompt:
           "Zaimplementuj `InvariantBorrow<'owner, T>` przez `from_mut` i dokładne `reborrow<'short>(&'short mut self)`. Lifetime outer loan może się skrócić, ale T pozostaje niezmiennicze.",
-        code: invariantBorrowMutant,
+        code: invariantBorrowSoundnessMutant,
         solution: invariantBorrowCanonical,
         tests: invariantBorrowTests,
         gate: true,
@@ -537,7 +540,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         title: "Sprawdź własność",
         prompt:
           "Zachowaj przejścia Empty/Full i exactly-once Drop dla nie-Copy wartości.",
-        code: safeSlotSoundnessEquivalent,
+        code: safeSlotSoundnessMutant,
         solution: safeSlotSoundnessCanonical,
         tests: safeSlotSoundnessTests,
         gate: true,
@@ -742,23 +745,13 @@ export const unsafeBorrowedMemoryModule: CourseModule = {
   projectConnection:
     "Dowód dotyczy wyłącznie authored fixtures i nie oznacza pełnej soundness arbitralnego unsafe code.",
   assessmentId: "unsafe-borrowed-auto-traits/unsafe-borrowed-auto-traits-blank",
-  gateCriteria: unsafeBorrowedMemoryLessons.flatMap((lesson) => [
-    {
-      id: `${lesson.id}-boundary-criterion`,
-      label: `${lesson.title}: boundary`,
-      taskRefs: [{ lessonId: lesson.id, stepId: `${lesson.id}-boundary-gate` }],
-    },
-    {
-      id: `${lesson.id}-soundness-criterion`,
-      label: `${lesson.title}: soundness`,
-      taskRefs: [
-        { lessonId: lesson.id, stepId: `${lesson.id}-soundness-gate` },
-      ],
-    },
-    {
-      id: `${lesson.id}-blank-criterion`,
-      label: `${lesson.title}: blank`,
-      taskRefs: [{ lessonId: lesson.id, stepId: `${lesson.id}-blank` }],
-    },
-  ]),
+  gateCriteria: unsafeBorrowedMemoryLessons.map((lesson) => ({
+    id: `${lesson.id}-criterion`,
+    label: `${lesson.title}: independent Rust evidence`,
+    taskRefs: [
+      { lessonId: lesson.id, stepId: `${lesson.id}-boundary-gate` },
+      { lessonId: lesson.id, stepId: `${lesson.id}-soundness-gate` },
+      { lessonId: lesson.id, stepId: `${lesson.id}-blank` },
+    ],
+  })),
 };

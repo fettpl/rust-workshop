@@ -1,4 +1,6 @@
 import { expect, it } from "vitest";
+import { moduleGate, recordEvidence } from "../engine/learning";
+import { createInitialState } from "../persistence/state";
 import { modules, reviewExercises } from "./course";
 import {
   unsafeBorrowedMemoryConcepts,
@@ -23,7 +25,7 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
     "unsafe-miri-contracts",
   ]);
   expect(unsafeBorrowedMemoryConcepts).toHaveLength(4);
-  expect(unsafeBorrowedMemoryModule.gateCriteria).toHaveLength(12);
+  expect(unsafeBorrowedMemoryModule.gateCriteria).toHaveLength(4);
 
   const evidenceSteps = unsafeBorrowedMemoryLessons.flatMap((lesson) =>
     lesson.steps.filter((step) => step.evidenceGate),
@@ -55,17 +57,56 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
   expect(new Set(refs).size).toBe(12);
   expect(
     unsafeBorrowedMemoryModule.gateCriteria!.every(
-      (criterion) => criterion.taskRefs.length === 1,
+      (criterion) => criterion.taskRefs.length === 3,
     ),
   ).toBe(true);
-  expect(refs.filter((ref) => ref.endsWith("-boundary-gate"))).toHaveLength(4);
-  expect(refs.filter((ref) => ref.endsWith("-soundness-gate"))).toHaveLength(4);
-  expect(refs.filter((ref) => ref.endsWith("-blank"))).toHaveLength(4);
+  for (const criterion of unsafeBorrowedMemoryModule.gateCriteria!) {
+    expect(criterion.taskRefs.map((ref) => ref.stepId)).toEqual([
+      `${criterion.taskRefs[0].lessonId}-boundary-gate`,
+      `${criterion.taskRefs[0].lessonId}-soundness-gate`,
+      `${criterion.taskRefs[0].lessonId}-blank`,
+    ]);
+  }
   expect(
     modules.findIndex((module) => module.id === unsafeBorrowedMemoryModule.id),
   ).toBe(
     modules.findIndex((module) => module.id === "unsafe-miri-contracts") + 1,
   );
+});
+
+it("allows a fresh blank alternative after a failed or revealed primary", () => {
+  let state = createInitialState();
+  for (const lesson of unsafeBorrowedMemoryLessons) {
+    const boundary = lesson.steps.find((step) => step.id.endsWith("-boundary-gate"))!;
+    state = recordEvidence(state, {
+      id: `${lesson.id}-revealed-boundary`,
+      conceptIds: lesson.conceptIds,
+      lessonId: lesson.id,
+      stepId: boundary.id,
+      kind: boundary.evidenceKind,
+      passed: true,
+      hints: 1,
+      revealed: true,
+      gate: true,
+      evaluator: boundary.evaluator?.kind,
+      at: state.updatedAt + 1,
+    });
+    const blank = lesson.steps.find((step) => step.id.endsWith("-blank"))!;
+    state = recordEvidence(state, {
+      id: `${lesson.id}-blank-success`,
+      conceptIds: lesson.conceptIds,
+      lessonId: lesson.id,
+      stepId: blank.id,
+      kind: blank.evidenceKind,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      gate: true,
+      evaluator: blank.evaluator?.kind,
+      at: state.updatedAt + 1,
+    });
+  }
+  expect(moduleGate(state, unsafeBorrowedMemoryLessons, unsafeBorrowedMemoryModule).passed).toBe(true);
 });
 
 it("publishes learner-safe signatures and maintainer-only boundaries", () => {

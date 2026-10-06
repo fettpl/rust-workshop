@@ -127,6 +127,10 @@ export const invariantBorrowMutant = invariantBorrowCanonical.replace(
   "PhantomData<fn(T)->T>",
   "PhantomData<fn()->&'owner T>",
 );
+export const invariantBorrowSoundnessMutant = invariantBorrowCanonical.replace(
+  "fn get_mut(&mut self)->&mut T{self.value}",
+  "fn get_mut(&mut self)->&mut T{panic!(\"TODO: preserve mutable access\")}",
+);
 export const invariantVarianceMutant = String.raw`use std::marker::PhantomData;struct InvariantBorrow<'owner,T>{marker:PhantomData<fn()->T>,owner:PhantomData<&'owner ()>}`;
 export const invariantBorrowTests = String.raw`#[test]
 fn short_reborrow_preserves_outer_access(){let mut value=4;let mut slot=InvariantBorrow::from_mut(&mut value);{let mut short=slot.reborrow();*short.get_mut()+=3;}*slot.get_mut()+=2;assert_eq!(value,9);}
