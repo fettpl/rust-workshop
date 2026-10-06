@@ -42,6 +42,7 @@ import {
   invariantBorrowMutant,
   invariantBorrowSoundnessMutant,
   invariantBorrowTests,
+  invariantVarianceMutant,
   safeSlotCanonical,
   safeSlotEquivalent,
   safeSlotMutant,
@@ -356,7 +357,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "apply",
         title: "Sprawdź caller obligations",
         prompt:
-          "Utrzymaj ten sam safe API i opisz w kodzie kontrakt: lifetime nie przedłuża właściciela, a multibyte długość jest długością bajtów.",
+          "Zaimplementuj `OwnedSlice<'owner>` z `attach(data: &'owner [u8])`, `shorten(&self) -> OwnedSlice<'short>` i `bytes(&self) -> &[u8]`. Test ma potwierdzić, że skrócenie zachowuje te same bajty właściciela oraz że długość wielobajtowego tekstu jest liczona w bajtach.",
         code: borrowedBytesSoundnessMutant,
         solution: borrowedBytesSoundnessCanonical,
         tests: borrowedBytesSoundnessTests,
@@ -380,6 +381,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         code: borrowedBytesMutant,
         solution: borrowedBytesEquivalent,
         tests: borrowedBytesTests,
+        gate: true,
       }),
     ],
     misconceptions: [
@@ -468,9 +470,10 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "recall",
         title: "Powtórka: reborrow",
         prompt: "Odtwórz reborrow na innym typie wartości.",
-        code: invariantBorrowMutant,
+        code: invariantVarianceMutant,
         solution: invariantBorrowEquivalent,
         tests: invariantBorrowTests,
+        gate: true,
       }),
     ],
     misconceptions: [
@@ -563,6 +566,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         code: safeSlotMutant,
         solution: safeSlotEquivalent,
         tests: safeSlotTests,
+        gate: true,
       }),
     ],
     misconceptions: [
@@ -664,6 +668,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         ),
         solution: autoTraitsEquivalent,
         tests: autoTraitsTests,
+        gate: true,
       }),
       compileFail(
         "unsafe-borrowed-auto-traits-compile-fail",
@@ -745,13 +750,22 @@ export const unsafeBorrowedMemoryModule: CourseModule = {
   projectConnection:
     "Dowód dotyczy wyłącznie authored fixtures i nie oznacza pełnej soundness arbitralnego unsafe code.",
   assessmentId: "unsafe-borrowed-auto-traits/unsafe-borrowed-auto-traits-blank",
-  gateCriteria: unsafeBorrowedMemoryLessons.map((lesson) => ({
-    id: `${lesson.id}-criterion`,
-    label: `${lesson.title}: independent Rust evidence`,
-    taskRefs: [
-      { lessonId: lesson.id, stepId: `${lesson.id}-boundary-gate` },
-      { lessonId: lesson.id, stepId: `${lesson.id}-soundness-gate` },
-      { lessonId: lesson.id, stepId: `${lesson.id}-blank` },
-    ],
-  })),
+  gateCriteria: unsafeBorrowedMemoryLessons.flatMap((lesson) => [
+    {
+      id: `${lesson.id}-boundary-criterion`,
+      label: `${lesson.title}: boundary evidence`,
+      taskRefs: [
+        { lessonId: lesson.id, stepId: `${lesson.id}-boundary-gate` },
+        { lessonId: lesson.id, stepId: `${lesson.id}-blank` },
+      ],
+    },
+    {
+      id: `${lesson.id}-soundness-criterion`,
+      label: `${lesson.title}: soundness evidence`,
+      taskRefs: [
+        { lessonId: lesson.id, stepId: `${lesson.id}-soundness-gate` },
+        { lessonId: lesson.id, stepId: `${lesson.id}-recall` },
+      ],
+    },
+  ]),
 };

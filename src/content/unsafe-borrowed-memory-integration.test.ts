@@ -25,12 +25,12 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
     "unsafe-miri-contracts",
   ]);
   expect(unsafeBorrowedMemoryConcepts).toHaveLength(4);
-  expect(unsafeBorrowedMemoryModule.gateCriteria).toHaveLength(4);
+  expect(unsafeBorrowedMemoryModule.gateCriteria).toHaveLength(8);
 
   const evidenceSteps = unsafeBorrowedMemoryLessons.flatMap((lesson) =>
     lesson.steps.filter((step) => step.evidenceGate),
   );
-  expect(evidenceSteps).toHaveLength(12);
+  expect(evidenceSteps).toHaveLength(16);
   expect(evidenceSteps.filter((step) => step.kind === "blank")).toHaveLength(4);
 
   for (const lesson of unsafeBorrowedMemoryLessons) {
@@ -53,19 +53,25 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
   const refs = unsafeBorrowedMemoryModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.flatMap((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(12);
-  expect(new Set(refs).size).toBe(12);
+  expect(refs).toHaveLength(16);
+  expect(new Set(refs).size).toBe(16);
   expect(
     unsafeBorrowedMemoryModule.gateCriteria!.every(
-      (criterion) => criterion.taskRefs.length === 3,
+      (criterion) => criterion.taskRefs.length === 2,
     ),
   ).toBe(true);
   for (const criterion of unsafeBorrowedMemoryModule.gateCriteria!) {
-    expect(criterion.taskRefs.map((ref) => ref.stepId)).toEqual([
-      `${criterion.taskRefs[0].lessonId}-boundary-gate`,
-      `${criterion.taskRefs[0].lessonId}-soundness-gate`,
-      `${criterion.taskRefs[0].lessonId}-blank`,
-    ]);
+    const suffixes = criterion.taskRefs.map((ref) => ref.stepId);
+    expect(
+      suffixes.every(
+        (stepId) =>
+          stepId === `${criterion.taskRefs[0].lessonId}-boundary-gate` ||
+          stepId === `${criterion.taskRefs[0].lessonId}-soundness-gate` ||
+          stepId === `${criterion.taskRefs[0].lessonId}-blank` ||
+          stepId === `${criterion.taskRefs[0].lessonId}-recall`,
+      ),
+    ).toBe(true);
+    expect(criterion.label).toMatch(/boundary evidence|soundness evidence/);
   }
   expect(
     modules.findIndex((module) => module.id === unsafeBorrowedMemoryModule.id),
@@ -74,7 +80,26 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
   );
 });
 
-it("allows a fresh blank alternative after a failed or revealed primary", () => {
+it("requires each lesson's boundary and soundness skills while allowing recovery", () => {
+  let boundaryOnly = createInitialState();
+  for (const lesson of unsafeBorrowedMemoryLessons) {
+    const boundary = lesson.steps.find((step) => step.id.endsWith("-boundary-gate"))!;
+    boundaryOnly = recordEvidence(boundaryOnly, {
+      id: `${lesson.id}-boundary-success`,
+      conceptIds: lesson.conceptIds,
+      lessonId: lesson.id,
+      stepId: boundary.id,
+      kind: boundary.evidenceKind,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      gate: true,
+      evaluator: boundary.evaluator?.kind,
+      at: boundaryOnly.updatedAt + 1,
+    });
+  }
+  expect(moduleGate(boundaryOnly, unsafeBorrowedMemoryLessons, unsafeBorrowedMemoryModule).passed).toBe(false);
+
   let state = createInitialState();
   for (const lesson of unsafeBorrowedMemoryLessons) {
     const boundary = lesson.steps.find((step) => step.id.endsWith("-boundary-gate"))!;
@@ -105,6 +130,20 @@ it("allows a fresh blank alternative after a failed or revealed primary", () => 
       evaluator: blank.evaluator?.kind,
       at: state.updatedAt + 1,
     });
+    const recall = lesson.steps.find((step) => step.id.endsWith("-recall"))!;
+    state = recordEvidence(state, {
+      id: `${lesson.id}-recall-success`,
+      conceptIds: lesson.conceptIds,
+      lessonId: lesson.id,
+      stepId: recall.id,
+      kind: recall.evidenceKind,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      gate: true,
+      evaluator: recall.evaluator?.kind,
+      at: state.updatedAt + 1,
+    });
   }
   expect(moduleGate(state, unsafeBorrowedMemoryLessons, unsafeBorrowedMemoryModule).passed).toBe(true);
 });
@@ -115,6 +154,8 @@ it("publishes learner-safe signatures and maintainer-only boundaries", () => {
     .map((step) => step.prompt)
     .join("\n");
   expect(prompts).toContain("BorrowedBytes");
+  expect(prompts).toContain("OwnedSlice<'owner>");
+  expect(prompts).toContain("długość wielobajtowego tekstu jest liczona w bajtach");
   expect(prompts).toContain("from_slice");
   expect(prompts).toContain("reborrow<'short>");
   expect(prompts).toContain("SafeSlot<T>");

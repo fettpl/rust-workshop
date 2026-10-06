@@ -220,9 +220,11 @@ it("keeps primary, blank, and review fixtures materially independent", () => {
 it("keeps published test starters incomplete until learner edits", () => {
   const starterIds = [
     "unsafe-borrowed-auto-traits-boundary-gate",
-    "unsafe-borrowed-auto-traits-recall",
     ...unsafeBorrowedMemoryLessons.map(
       (lesson) => `${lesson.id}-soundness-gate`,
+    ),
+    ...unsafeBorrowedMemoryLessons.map(
+      (lesson) => `${lesson.id}-recall`,
     ),
   ];
   for (const id of starterIds) {
