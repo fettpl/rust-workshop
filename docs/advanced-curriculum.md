@@ -4,7 +4,7 @@ Data audytu: 2026-09-18
 Odbiorca: osoba znająca podstawy programowania, ale zaczynająca Rust od zera.
 Status: mapa docelowa i audyt luk; nie jest deklaracją ukończenia kursu ani gwarancją pracy lub poziomu senior.
 
-Current catalog after the API Release Matrix and fuzz evidence milestones: 177 lessons, 45 modules, 180 concepts, 132 blank-page tasks, 318 sources and 13 projects. `profile-evidence` has two new Polish lessons, `api-release-matrix` has two new Polish lessons, and `fuzz-evidence-lifecycle` has four lessons, eight gates and four independent retrievals.
+Current catalog after the API Release Matrix and fuzz evidence milestones: 177 lessons, 46 modules, 180 concepts, 132 blank-page tasks, 322 sources and 13 projects. `profile-evidence` has two new Polish lessons, `api-release-matrix` has two new Polish lessons, and `fuzz-evidence-lifecycle` has four lessons, eight gates and four independent retrievals.
 
 Etap `api-release-matrix` rozwija ten kontrakt o dwie lekcje: klasyfikację obserwacji starego klienta oraz provenance-bearing decyzję macierzy features i exact MSRV. Każda lekcja ma primary gate i niezależny blank-page, a dwa concepts mają osobne retrievals. `content:api-release -- --stable` oraz `--msrv` uruchamiają zaufany, std-only fixture z osobnym klientem Cargo, konfiguracjami default/no-default/opt-in i dokładnym Rust 1.85.0; kontrolowane mutacje compile break, `dyn`/trait, feature i zachowania są odrzucane. Browser nie zastępuje Cargo ani dowodu z zewnętrznego klienta.
 
