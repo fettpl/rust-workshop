@@ -88,6 +88,36 @@ it("accepts only the intended oracle assertion with a saved counterexample", () 
   ).toBe(false);
 });
 
+it("accepts a crashing replay without requiring a new artifact", () => {
+  const replayFailure = result(
+    instrumented +
+      "Running: /tmp/crash-abc\n" +
+      "assertion `left == right` failed: mini-grep selection oracle mismatch\n" +
+      "SUMMARY: libFuzzer: deadly signal",
+    77,
+  );
+  expect(
+    verifyFuzzResult(replayFailure, { kind: "counterexample-replay" }),
+  ).toBe(true);
+  expect(
+    verifyFuzzResult(
+      { ...replayFailure, status: 0 },
+      { kind: "counterexample-replay" },
+    ),
+  ).toBe(false);
+  expect(
+    verifyFuzzResult(
+      result(
+        instrumented +
+          "Running: /tmp/crash-abc\n" +
+          "SUMMARY: libFuzzer: deadly signal",
+        77,
+      ),
+      { kind: "counterexample-replay" },
+    ),
+  ).toBe(false);
+});
+
 it("requires execution of the saved input after restoring the reference", () => {
   const expectation = { kind: "replay" } as const;
   expect(

@@ -37,6 +37,7 @@
     "content:ffi": "node --import tsx scripts/verify-ffi.ts",
     "precontent:miri": "npm run content:packages",
     "content:miri": "node --import tsx scripts/verify-miri.ts",
+    "content:borrowed-memory": "node --import tsx scripts/verify-borrowed-memory.ts",
     "precontent:workspace": "npm run content:packages",
     "content:workspace": "node --import tsx scripts/verify-workspace.ts",
     "content:supply-chain": "node --import tsx scripts/verify-supply-chain.ts",
@@ -53,7 +54,9 @@
     "precontent:guessing": "npm run content:packages",
     "content:guessing": "node --import tsx scripts/verify-number-guessing.ts",
     "content:api-release": "node --import tsx scripts/verify-api-release.ts",
-    "test:api-release": "vitest run scripts/verify-api-release.test.ts"
+    "test:api-release": "vitest run scripts/verify-api-release.test.ts",
+    "content:macro-contracts": "node --import tsx scripts/verify-macro-contracts.ts",
+    "test:macro-contracts": "vitest run scripts/verify-macro-contracts.test.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",

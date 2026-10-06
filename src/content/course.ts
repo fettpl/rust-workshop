@@ -61,6 +61,14 @@ import {
   propertyCounterexampleReviewExercises,
 } from "./property-counterexamples";
 import { propertyContractsProject } from "./projects/property-contracts";
+import { fuzzEvidenceModule } from "./fuzz-evidence-module";
+import {
+  fuzzEvidenceLessons,
+  fuzzEvidenceConcepts,
+  fuzzEvidenceCompetencies,
+  fuzzEvidenceSources,
+  fuzzEvidenceReviewExercises,
+} from "./fuzz-evidence";
 import { ffiBufferProject } from "./projects/ffi-buffer";
 import { miriSafetyProject } from "./projects/miri-safety";
 import {
@@ -109,6 +117,14 @@ import {
   apiReleaseMatrixReviewExercises,
   apiReleaseMatrixModule,
 } from "./api-release-matrix";
+import {
+  macrosAsApiLessons,
+  macrosAsApiConcepts,
+  macrosAsApiCompetencies,
+  macrosAsApiSources,
+  macrosAsApiReviewExercises,
+  macrosAsApiModule,
+} from "./macros-as-api";
 import { frameProtocolProject } from "./projects/frame-protocol";
 import { tokioNetworkModule } from "./tokio-network-module";
 import {
@@ -416,6 +432,14 @@ import {
   unsafeMiriModule,
 } from "./unsafe-miri";
 import {
+  unsafeBorrowedMemoryLessons,
+  unsafeBorrowedMemoryConcepts,
+  unsafeBorrowedMemoryCompetencies,
+  unsafeBorrowedMemorySources,
+  unsafeBorrowedMemoryReviewExercises,
+  unsafeBorrowedMemoryModule,
+} from "./unsafe-borrowed-memory";
+import {
   serviceOperationsLessons,
   serviceOperationsConcepts,
   serviceOperationsCompetencies,
@@ -496,14 +520,17 @@ export const modules = [
   asyncLendingModule,
   publicApiModule,
   apiReleaseMatrixModule,
+  macrosAsApiModule,
   cargoDependencyLifecycleModule,
   dependencyAssuranceModule,
   miniGrepModule,
   propertyContractsModule,
+  fuzzEvidenceModule,
   performanceEvidenceModule,
   profileEvidenceModule,
   unsafeFfiModule,
   unsafeMiriModule,
+  unsafeBorrowedMemoryModule,
   serviceOperationsModule,
   capstoneIntegrationModule,
 ];
@@ -556,6 +583,7 @@ export const lessons = [
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
   ...apiReleaseMatrixLessons,
+  ...macrosAsApiLessons,
   ...cargoDependencyLessons,
   ...cargoReleaseLessons,
   ...dependencyAssuranceLessons,
@@ -563,11 +591,13 @@ export const lessons = [
   ...miniGrepSystemLessons,
   ...propertyFoundationLessons,
   ...propertyCounterexampleLessons,
+  ...fuzzEvidenceLessons,
   ...performanceEvidenceLessons,
   ...profileEvidenceLessons,
   ...runtimeAllocationEvidenceLessons,
   ...unsafeFfiLessons,
   ...unsafeMiriLessons,
+  ...unsafeBorrowedMemoryLessons,
   ...serviceOperationsLessons,
   ...capstoneIntegrationLessons,
 ];
@@ -616,6 +646,7 @@ export const concepts = [
   ...publicApiValueConcepts,
   ...publicApiEvolutionConcepts,
   ...apiReleaseMatrixConcepts,
+  ...macrosAsApiConcepts,
   ...cargoDependencyConcepts,
   ...cargoReleaseConcepts,
   ...dependencyAssuranceConcepts,
@@ -623,11 +654,13 @@ export const concepts = [
   ...miniGrepSystemConcepts,
   ...propertyFoundationConcepts,
   ...propertyCounterexampleConcepts,
+  ...fuzzEvidenceConcepts,
   ...performanceEvidenceConcepts,
   ...profileEvidenceConcepts,
   ...runtimeAllocationEvidenceConcepts,
   ...unsafeFfiConcepts,
   ...unsafeMiriConcepts,
+  ...unsafeBorrowedMemoryConcepts,
   ...serviceOperationsConcepts,
   ...capstoneIntegrationConcepts,
 ];
@@ -676,6 +709,7 @@ export const competencies = [
   ...publicApiValueCompetencies,
   ...publicApiEvolutionCompetencies,
   ...apiReleaseMatrixCompetencies,
+  ...macrosAsApiCompetencies,
   ...cargoDependencyCompetencies,
   ...cargoReleaseCompetencies,
   ...dependencyAssuranceCompetencies,
@@ -683,10 +717,12 @@ export const competencies = [
   ...miniGrepSystemCompetencies,
   ...propertyFoundationCompetencies,
   ...propertyCounterexampleCompetencies,
+  ...fuzzEvidenceCompetencies,
   ...performanceEvidenceCompetencies,
   ...profileEvidenceCompetencies,
   ...unsafeFfiCompetencies,
   ...unsafeMiriCompetencies,
+  ...unsafeBorrowedMemoryCompetencies,
   ...serviceOperationsCompetencies,
   ...capstoneIntegrationCompetencies,
 ];
@@ -735,6 +771,7 @@ export const sources = [
   ...publicApiValueSources,
   ...publicApiEvolutionSources,
   ...apiReleaseMatrixSources,
+  ...macrosAsApiSources,
   ...cargoDependencySources,
   ...cargoReleaseSources,
   ...dependencyAssuranceSources,
@@ -742,10 +779,12 @@ export const sources = [
   ...miniGrepSystemSources,
   ...propertyFoundationSources,
   ...propertyCounterexampleSources,
+  ...fuzzEvidenceSources,
   ...performanceEvidenceSources,
   ...profileEvidenceSources,
   ...unsafeFfiSources,
   ...unsafeMiriSources,
+  ...unsafeBorrowedMemorySources,
   ...serviceOperationsSources,
   ...capstoneIntegrationSources,
 ];
@@ -794,6 +833,7 @@ export const reviewExercises = {
   ...publicApiValueReviewExercises,
   ...publicApiEvolutionReviewExercises,
   ...apiReleaseMatrixReviewExercises,
+  ...macrosAsApiReviewExercises,
   ...cargoDependencyReviewExercises,
   ...cargoReleaseReviewExercises,
   ...dependencyAssuranceReviewExercises,
@@ -801,11 +841,13 @@ export const reviewExercises = {
   ...miniGrepSystemReviewExercises,
   ...propertyFoundationReviewExercises,
   ...propertyCounterexampleReviewExercises,
+  ...fuzzEvidenceReviewExercises,
   ...performanceEvidenceReviewExercises,
   ...profileEvidenceReviewExercises,
   ...runtimeAllocationEvidenceReviewExercises,
   ...unsafeFfiReviewExercises,
   ...unsafeMiriReviewExercises,
+  ...unsafeBorrowedMemoryReviewExercises,
   ...serviceOperationsReviewExercises,
   ...capstoneIntegrationReviewExercises,
 };
@@ -927,6 +969,10 @@ export const roadmap = [
   },
   {
     title: "API Release Matrix: stary klient, features i MSRV",
+    status: "available",
+  },
+  {
+    title: "Makra deklaratywne jako publiczne API",
     status: "available",
   },
   {

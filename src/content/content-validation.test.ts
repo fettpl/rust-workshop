@@ -134,6 +134,53 @@ describe("curriculum content contract", () => {
       ),
     ).toBe(true);
   });
+  it("allows exposure-only expected-error observations without a redundant solution", () => {
+    const lesson = lessons.find((x) => x.id === "unsafe-borrowed-auto-traits")!;
+    const target = lesson.steps.find(
+      (x) => x.id === "unsafe-borrowed-auto-traits-compile-fail",
+    )!;
+    const changed = {
+      ...lesson,
+      steps: lesson.steps.map((x) =>
+        x === target ? { ...x, solution: undefined } : x,
+      ),
+    };
+    const errors = validateContent({
+      ...bundle,
+      lessons: lessons.map((x) => (x === lesson ? changed : x)),
+    });
+    expect(errors.filter((x) => x.includes("code but no solution"))).toEqual(
+      [],
+    );
+
+    const assertMissingSolutionIsRejected = (
+      override: Partial<typeof target>,
+    ) => {
+      const broken = {
+        ...target,
+        solution: undefined,
+        ...override,
+      } as typeof target;
+      const brokenLesson = {
+        ...lesson,
+        steps: lesson.steps.map((step) => (step === target ? broken : step)),
+      };
+      expect(
+        validateContent({
+          ...bundle,
+          lessons: lessons.map((item) =>
+            item === lesson ? brokenLesson : item,
+          ),
+        }).some((x) => x.includes("code but no solution")),
+      ).toBe(true);
+    };
+    assertMissingSolutionIsRejected({ kind: "modify" });
+    assertMissingSolutionIsRejected({ evidenceKind: "assessment" });
+    assertMissingSolutionIsRejected({ expectedStatus: "success" });
+    assertMissingSolutionIsRejected({
+      evaluator: { kind: "tests", tests: "#[test]fn checks(){}" },
+    });
+  });
   it("accepts the reviewed Tokio documentation and rejects lookalikes or another version", () => {
     const check = (url: string) =>
       validateContent({
@@ -238,7 +285,7 @@ describe("curriculum content contract", () => {
     expect(ownershipModule.lessonIds.length).toBeLessThanOrEqual(9);
     expect(
       lessons.every(
-        (lesson) => lesson.steps.length >= 5 && lesson.steps.length <= 8,
+        (lesson) => lesson.steps.length >= 5 && lesson.steps.length <= 9,
       ),
     ).toBe(true);
     expect(

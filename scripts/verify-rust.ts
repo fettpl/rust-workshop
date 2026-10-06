@@ -8,9 +8,38 @@ import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
 import { getTrustedFixtureTarget } from "../src/domain/trusted-fixtures";
-type Verification = { id: string; passed: boolean; detail: string };
+export type Verification = { id: string; passed: boolean; detail: string };
+export type VerificationReporter = (result: Verification) => void;
 const COMPILE_TIMEOUT = 60_000;
 const EXECUTION_TIMEOUT = 8_000;
+const FAILURE_REASON_LIMIT = 180;
+
+export function formatVerificationFailure(result: Verification): string {
+  const firstUsefulLine = result.detail
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(
+      (line) =>
+        line &&
+        !/^-->\s/.test(line) &&
+        !/^\d+\s*\|/.test(line) &&
+        !/^\|+$/.test(line),
+    );
+  const reason = (firstUsefulLine ?? "verification failed")
+    .replace(/\s+(?:stdout|stderr)=.*$/i, "")
+    .replace(
+      /(?:\/private\/tmp|\/tmp|\/var\/folders|[A-Za-z]:[\\/])\S*/g,
+      "<path>",
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+  const boundedReason =
+    reason.length > FAILURE_REASON_LIMIT
+      ? `${reason.slice(0, FAILURE_REASON_LIMIT - 1).trimEnd()}…`
+      : reason;
+  return `FAIL ${result.id}: ${boundedReason || "verification failed"}`;
+}
+
 function command(cmd: string, args: string[], cwd: string, timeout: number) {
   return spawnSync(cmd, args, {
     cwd,
@@ -19,16 +48,55 @@ function command(cmd: string, args: string[], cwd: string, timeout: number) {
     maxBuffer: 1024 * 1024,
   });
 }
+
+function hasExpectedStarterDiagnostic(stderr: string, path: string): boolean {
+  return stderr.split("\n").some((line) => {
+    try {
+      const diagnostic = JSON.parse(line) as {
+        $message_type?: string;
+        level?: string;
+        message?: string;
+        code?: { code?: string } | null;
+        spans?: { is_primary?: boolean; file_name?: string }[];
+      } | null;
+      const hasPrimarySourceSpan =
+        Array.isArray(diagnostic?.spans) &&
+        diagnostic.spans.some(
+          (span) => span.is_primary && span.file_name === path,
+        );
+      const hasRustErrorCode = /^E\d{4}$/.test(diagnostic?.code?.code ?? "");
+      const hasMacroMatcherMessage =
+        diagnostic?.code === null &&
+        /unexpected end of macro invocation|no rules expected/.test(
+          diagnostic.message ?? "",
+        );
+      return (
+        diagnostic?.$message_type === "diagnostic" &&
+        diagnostic.level === "error" &&
+        hasPrimarySourceSpan &&
+        (hasRustErrorCode || hasMacroMatcherMessage)
+      );
+    } catch {
+      return false;
+    }
+  });
+}
+
 export function verifyTrustedRust(
   content: {
     lessons: Lesson[];
     reviewExercises: Record<string, LessonStep>;
     traces: Record<string, Trace>;
   } = { lessons, reviewExercises, traces },
+  reporter?: VerificationReporter,
 ): Verification[] {
   const dir = mkdtempSync(join(tmpdir(), "rust-workshop-authored-"));
   const results: Verification[] = [];
   let number = 0;
+  function record(result: Verification) {
+    results.push(result);
+    reporter?.(result);
+  }
   function verify(
     id: string,
     code: string,
@@ -44,7 +112,7 @@ export function verifyTrustedRust(
     } = {},
   ) {
     if (options.expectStarterRejection && !options.tests?.trim()) {
-      results.push({
+      record({
         id,
         passed: false,
         detail: "brak testów do oceny startera",
@@ -82,7 +150,7 @@ export function verifyTrustedRust(
           options.error === "any" ||
           compile.stderr.includes(`error[${options.error}]`)) &&
         (!options.diagnostic || compile.stderr.includes(options.diagnostic));
-      results.push({
+      record({
         id,
         passed,
         detail: passed
@@ -94,27 +162,7 @@ export function verifyTrustedRust(
     if (compile.error || compile.status !== 0) {
       const sourceError =
         options.expectStarterRejection &&
-        compile.stderr.split("\n").some((line) => {
-          try {
-            const diagnostic = JSON.parse(line) as {
-              $message_type?: string;
-              level?: string;
-              code?: { code?: string } | null;
-              spans?: { is_primary?: boolean; file_name?: string }[];
-            } | null;
-            return (
-              diagnostic?.$message_type === "diagnostic" &&
-              diagnostic.level === "error" &&
-              /^E\d{4}$/.test(diagnostic.code?.code ?? "") &&
-              Array.isArray(diagnostic.spans) &&
-              diagnostic.spans.some(
-                (span) => span.is_primary && span.file_name === path,
-              )
-            );
-          } catch {
-            return false;
-          }
-        });
+        hasExpectedStarterDiagnostic(compile.stderr, path);
       if (
         options.expectStarterRejection &&
         !compile.error &&
@@ -122,14 +170,14 @@ export function verifyTrustedRust(
         !compile.signal &&
         sourceError
       ) {
-        results.push({
+        record({
           id,
           passed: true,
           detail: "starter nie spełnia API wymaganego przez testy",
         });
         return;
       }
-      results.push({
+      record({
         id,
         passed: false,
         detail: `kompilacja: ${compile.error?.message ?? compile.stderr.slice(0, 900)}`,
@@ -137,7 +185,7 @@ export function verifyTrustedRust(
       return;
     }
     if ((!main && !testMode) || options.run === false) {
-      results.push({ id, passed: true, detail: "kompiluje się (biblioteka)" });
+      record({ id, passed: true, detail: "kompiluje się (biblioteka)" });
       return;
     }
     const execution = command(binary, [], dir, EXECUTION_TIMEOUT);
@@ -167,7 +215,7 @@ export function verifyTrustedRust(
               },
             })
           : undefined;
-      results.push({
+      record({
         id,
         passed: outcome !== undefined && !outcome.passed,
         detail: !validRun
@@ -189,7 +237,7 @@ export function verifyTrustedRust(
         execution.status !== 0 &&
         !!failed &&
         Number(failed[2]) > 0;
-      results.push({
+      record({
         id,
         passed,
         detail: passed
@@ -250,7 +298,7 @@ export function verifyTrustedRust(
       passed = outcome.passed;
       detail = outcome.feedback;
     }
-    results.push({
+    record({
       id,
       passed,
       detail: passed
@@ -332,13 +380,25 @@ export function verifyTrustedRust(
   return results;
 }
 if (process.argv[1]?.endsWith("verify-rust.ts")) {
+  const PROGRESS_INTERVAL = 100;
   const version = spawnSync("rustc", ["--version"], { encoding: "utf8" });
   console.log(version.stdout.trim());
-  const results = verifyTrustedRust();
-  for (const result of results)
-    console.log(
-      `${result.passed ? "ok" : "FAIL"} ${result.id}: ${result.detail}`,
-    );
+  let completed = 0;
+  let passed = 0;
+  let failed = 0;
+  console.log("Verifying authored Rust cases...");
+  const results = verifyTrustedRust(undefined, (result) => {
+    completed++;
+    if (result.passed) passed++;
+    else {
+      failed++;
+      console.log(formatVerificationFailure(result));
+    }
+    if (completed % PROGRESS_INTERVAL === 0)
+      console.log(
+        `Progress: ${completed} authored Rust cases checked (${passed} passed, ${failed} failed).`,
+      );
+  });
   console.log(
     `${results.filter((r) => r.passed).length}/${results.length} authored Rust cases verified.`,
   );

@@ -17,7 +17,7 @@
 - First lesson/concept prerequisites: `hrtb-borrowed-projections`, `iterator-contracts`; following lessons/concepts form the ordered chain.
 - Primary `${id}-gate`, source-free `${id}-blank`, separate `${id}-review`. Each primary and blank has `evidenceGate: true` and a Rust tests evaluator. Reviews are independently coded retrievals.
 - Concepts use `evidenceArtifact: "rust-code"`. Producer source IDs are `gat-reference-associated-items`, `gat-slice-windows`, `gat-gats-stabilization`, `gat-error-e0499`; consumer IDs are `gat-reference-trait-bounds`, `gat-reference-dyn-compatibility`, `gat-iterator`, `gat-error-e0038`. Each source is registered once; lessons may reference either group's IDs.
-- Learner copy is Polish; README, commits and PRs remain English. No Java/Python prerequisite assumptions. Rust snippets use only std, edition 2024 and Rust 1.85-compatible features.
+- Learner copy is Polish; README, commits and PRs remain English. The audience needs basic programming knowledge; the course teaches Rust from zero. Rust snippets use only std, edition 2024 and Rust 1.85-compatible features.
 - No unsafe, leaked allocations or unnecessary Copy/Clone/Default/'static bounds. Declare implementation restrictions in learner prompts and enforce only the announced restrictions.
 - Preserve old IDs, progress schema v3, all eight projects and packages. No new dependency, execution endpoint, arbitrary-input author CLI or imported learner execution.
 - Execute only fixed authored sources. No live Playground POST, external publication or new deployment target.

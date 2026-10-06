@@ -1,0 +1,12 @@
+[workspace]
+members = ["macro_contracts", "external_consumer"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85.0"
+version = "0.1.0"
+publish = false
+
+[workspace.dependencies]
+macro_contracts = { path = "macro_contracts" }
