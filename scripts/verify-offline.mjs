@@ -235,17 +235,22 @@ import { readFile } from "node:fs/promises";
     await page.route("**/api/run", async (route) => {
       const request = route.request().postDataJSON();
       const accepted = request.code === fuzzPrimaryCode;
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: accepted ? "success" : "failed", stdout: accepted ? "primary mock: ok" : "unexpected assisted source", stderr: accepted ? "" : "solution mismatch", diagnostics: [], durationMs: 1, tests: { passed: accepted ? 1 : 0, failed: accepted ? 0 : 1 } }) });
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "success", stdout: accepted ? "primary mock: ok" : "unexpected assisted source", stderr: "", diagnostics: [], durationMs: 1, tests: { passed: accepted ? 1 : 0, failed: accepted ? 0 : 1 } }) });
     });
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
     await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("primary mock: ok");
     await page.unroute("**/api/run");
     let fuzzAssistedPrimaryCode = "";
     const independentBeforeAssisted = await readLearningState();
-    const independentCountBeforeAssisted = independentBeforeAssisted.events.filter(
-      (event) => event.lessonId === "fuzz-input-domain" && event.stepId === "fuzz-input-domain-gate" && event.passed && event.hints === 0 && !event.revealed && event.kind !== "exposure",
-    ).length;
+    const scopedPrimaryEvents = independentBeforeAssisted.events.filter(
+      (event) => event.lessonId === "fuzz-input-domain" && event.stepId === "fuzz-input-domain-gate",
+    );
+    const independentPrimaryEvents = scopedPrimaryEvents.filter(
+      (event) => event.passed && event.evaluator === "tests" && event.hints === 0 && !event.revealed,
+    );
+    const independentCountBeforeAssisted = independentPrimaryEvents.length;
     expect(independentCountBeforeAssisted).toBe(1);
+    expect(independentPrimaryEvents.at(-1)?.evaluator).toBe("tests");
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     const fuzzRevealSummary = page
@@ -279,15 +284,33 @@ import { readFile } from "node:fs/promises";
     await page.route("**/api/run", async (route) => {
       const request = route.request().postDataJSON();
       const accepted = request.code === fuzzAssistedPrimaryCode;
-      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: accepted ? "success" : "failed", stdout: accepted ? "primary mock: ok" : "unexpected assisted source", stderr: accepted ? "" : "solution mismatch", diagnostics: [], durationMs: 1, tests: { passed: accepted ? 1 : 0, failed: accepted ? 0 : 1 } }) });
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "success", stdout: accepted ? "primary mock: ok" : "unexpected assisted source", stderr: "", diagnostics: [], durationMs: 1, tests: { passed: accepted ? 1 : 0, failed: accepted ? 0 : 1 } }) });
     });
     await fuzzPrimaryEditor.fill(fuzzAssistedPrimaryCode);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
     await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("primary mock: ok");
     await page.unroute("**/api/run");
     const independentAfterAssisted = await readLearningState();
-    const independentCountAfterAssisted = independentAfterAssisted.events.filter(
-      (event) => event.lessonId === "fuzz-input-domain" && event.stepId === "fuzz-input-domain-gate" && event.passed && event.hints === 0 && !event.revealed && event.kind !== "exposure",
+    const scopedAssistedEvents = independentAfterAssisted.events.filter(
+      (event) => event.lessonId === "fuzz-input-domain" && event.stepId === "fuzz-input-domain-gate",
+    );
+    const primaryTestIds = new Set(
+      scopedPrimaryEvents
+        .filter((event) => event.evaluator === "tests")
+        .map((event) => event.id),
+    );
+    const newAssistedTestEvents = scopedAssistedEvents.filter(
+      (event) => event.evaluator === "tests" && !primaryTestIds.has(event.id),
+    );
+    expect(newAssistedTestEvents).toHaveLength(1);
+    expect(newAssistedTestEvents[0]).toMatchObject({
+      passed: true,
+      evaluator: "tests",
+      hints: 2,
+      revealed: true,
+    });
+    const independentCountAfterAssisted = scopedAssistedEvents.filter(
+      (event) => event.passed && event.evaluator === "tests" && event.hints === 0 && !event.revealed,
     ).length;
     expect(independentCountAfterAssisted).toBe(independentCountBeforeAssisted);
     await page
