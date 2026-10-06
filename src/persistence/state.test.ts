@@ -19,8 +19,41 @@ describe("state persistence", () => {
       stepIndex: 0,
       panel: "lesson",
     });
+    expect(state.routePreference).toBe("core");
     expect(createStepProgress("fn main() {}").code).toBe("fn main() {}");
     expect(stepKey("memory", "move")).toBe("memory:move");
+  });
+
+  it("accepts a missing or unknown optional route preference without moving resume state", () => {
+    const state = createInitialState();
+    state.resume = {
+      view: "lesson",
+      lessonId: "weak-links",
+      stepIndex: 4,
+      panel: "code",
+      focus: true,
+    };
+    state.steps[stepKey("weak-links", "weak-link-gate")] = {
+      ...createStepProgress("fn main() { /* saved advanced draft */ }"),
+      answer: "saved advanced answer",
+    };
+    const exported = JSON.parse(exportState(state)) as {
+      state: Record<string, unknown>;
+    };
+    delete exported.state.routePreference;
+    const missing = importState(
+      JSON.stringify({
+        ...exported,
+        state: { ...exported.state },
+      }),
+    );
+    expect(missing.routePreference).toBe("core");
+    expect(missing.resume).toEqual(state.resume);
+
+    exported.state.routePreference = "future-view";
+    const unknown = importState(JSON.stringify(exported));
+    expect(unknown.routePreference).toBe("future-view");
+    expect(unknown.resume).toEqual(state.resume);
   });
 
   it("migrates v2 state while preserving progress and removing the legacy onboarding background", () => {

@@ -151,6 +151,7 @@ const UserStateFields = {
     score: z.number().finite(),
     recommendation: z.string(),
   }),
+  routePreference: z.string().optional(),
   resume: z.strictObject({
     view: z.enum(views),
     lessonId: z.string(),
@@ -291,6 +292,7 @@ export function createInitialState(): UserState {
     updatedAt: Date.now(),
     onboarding: { completed: false, name: "", minutes: 15 },
     diagnostic: { completed: false, answers: {}, score: 0, recommendation: "" },
+    routePreference: "core",
     resume: {
       view: "dashboard",
       lessonId: "first-program",
@@ -311,7 +313,9 @@ export function createInitialState(): UserState {
 
 function parseCurrent(input: unknown): UserState | undefined {
   const parsed = UserStateSchema.safeParse(input);
-  return parsed.success ? parsed.data : undefined;
+  return parsed.success
+    ? { ...parsed.data, routePreference: parsed.data.routePreference ?? "core" }
+    : undefined;
 }
 
 type LegacyOnboarding = {

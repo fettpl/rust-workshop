@@ -492,6 +492,9 @@ import { readFile } from "node:fs/promises";
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
+      .getByRole("button", { name: "Rozszerzenia", exact: true })
+      .click();
+    await page
       .locator(".module-picker")
       .getByRole("button", { name: /Współdzielenie: Rc, RefCell i Weak/ })
       .click();

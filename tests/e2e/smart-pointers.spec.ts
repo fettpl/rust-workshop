@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
+import { mapModeForModule } from "../../src/engine/course-route";
 
 async function start(page: Page) {
   await page.goto("/");
@@ -12,6 +13,9 @@ async function openLesson(page: Page, id: string) {
   const lesson = lessons.find((item) => item.id === id)!;
   const courseModule = modules.find((item) => item.id === lesson.moduleId)!;
   await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  if (mapModeForModule(courseModule.id) === "extensions") {
+    await page.getByRole("button", { name: "Rozszerzenia", exact: true }).click();
+  }
   await page
     .locator(".module-picker")
     .getByRole("button", {

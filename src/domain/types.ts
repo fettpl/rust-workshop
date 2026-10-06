@@ -289,6 +289,8 @@ export interface UserState {
     score: number;
     recommendation: string;
   };
+  /** Optional map-only preference; unknown imported values resolve to core at read time. */
+  routePreference?: string;
   resume: {
     view: View;
     lessonId: string;

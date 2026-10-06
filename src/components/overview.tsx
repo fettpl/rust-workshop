@@ -28,6 +28,11 @@ import { Eyebrow, MasteryBadge, ProgressLine } from "./ui";
 import type { Lesson, ProjectContract } from "@/domain/types";
 import { ProjectPackage } from "./project-package";
 import { ModulePicker } from "./module-picker";
+import {
+  normalizeMapPreference,
+  recommendedModuleIds,
+  type CourseMapMode,
+} from "@/engine/course-route";
 export function useOpenLesson() {
   const { update } = useLearning();
   return (id: string, stepIndex?: number) =>
@@ -305,7 +310,7 @@ export function Dashboard() {
   );
 }
 export function CourseMap() {
-  const { state } = useLearning();
+  const { state, update } = useLearning();
   const open = useOpenLesson();
   const currentModule =
     modules.find((module) =>
@@ -314,10 +319,50 @@ export function CourseMap() {
   const [selected, setSelected] = useState(currentModule.id);
   const selectedModule =
     modules.find((module) => module.id === selected) ?? currentModule;
+  const mode = normalizeMapPreference(state.routePreference);
   const moduleLessons = lessons.filter(
     (lesson) => lesson.moduleId === selectedModule.id,
   );
   const gate = moduleGate(state, moduleLessons, selectedModule);
+  const prerequisiteModules = selectedModule.prerequisites
+    .map((id) => modules.find((module) => module.id === id))
+    .filter((module): module is (typeof modules)[number] => Boolean(module));
+  const recommendedModules = recommendedModuleIds(selectedModule.id)
+    .map((id) => modules.find((module) => module.id === id))
+    .filter((module): module is (typeof modules)[number] => Boolean(module));
+  const recoveryTargets = (selectedModule.gateCriteria ?? []).flatMap(
+    (criterion, index) => {
+      const target = nextGateTask(state, criterion);
+      const targetLesson = lessons.find(
+        (lesson) => lesson.id === target?.lessonId,
+      );
+      if (!target || !targetLesson) return [];
+      return [
+        {
+          id: `${criterion.id}-${target.stepId}`,
+          label: gate.criteria[index]?.label ?? "Najbliższe zadanie",
+          lessonId: target.lessonId,
+          stepIndex: targetLesson.steps.findIndex(
+            (step) => step.id === target.stepId,
+          ),
+        },
+      ];
+    },
+  );
+  const fallbackRecoveryLesson =
+    moduleLessons.find(
+      (lesson) => lessonProgress(lesson, state.steps) < lesson.steps.length,
+    ) ?? moduleLessons[0];
+  const fallbackRecoveryStep = fallbackRecoveryLesson
+    ? Math.max(
+        0,
+        fallbackRecoveryLesson.steps.findIndex(
+          (step) =>
+            !state.steps[stepKey(fallbackRecoveryLesson.id, step.id)]
+              ?.completed,
+        ),
+      )
+    : 0;
   return (
     <div className="course-page">
       <Eyebrow>MAPA NAUKI</Eyebrow>
@@ -326,7 +371,14 @@ export function CourseMap() {
         Zacznij od fundamentów albo wróć do konkretnego problemu. Każda lekcja
         jest dostępna.
       </p>
-      <ModulePicker selectedId={selectedModule.id} onSelect={setSelected} />
+      <ModulePicker
+        selectedId={selectedModule.id}
+        onSelect={setSelected}
+        mode={mode}
+        onModeChange={(next: CourseMapMode) =>
+          update((s) => ({ ...s, routePreference: next }))
+        }
+      />
       <div className="module-summary">
         <h2>{selectedModule.title}</h2>
         <p className="lede">{selectedModule.whyItMatters}</p>
@@ -352,6 +404,81 @@ export function CourseMap() {
           </div>
         </div>
       </div>
+      <section className="module-connections" aria-label="Powiązania modułu">
+        <div>
+          <h2>Wymagania wstępne</h2>
+          {prerequisiteModules.length ? (
+            <ul className="module-link-list">
+              {prerequisiteModules.map((module) => (
+                <li key={module.id}>
+                  <button
+                    className="text-button"
+                    onClick={() => setSelected(module.id)}
+                  >
+                    {module.title} <ArrowRight size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="footnote">Punkt wyjścia w tej trasie.</p>
+          )}
+        </div>
+        <div>
+          <h2>Polecane rozszerzenia</h2>
+          {recommendedModules.length ? (
+            <ul className="module-link-list">
+              {recommendedModules.map((module) => (
+                <li key={module.id}>
+                  <button
+                    className="text-button"
+                    onClick={() => setSelected(module.id)}
+                  >
+                    {module.title} <ArrowRight size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="footnote">
+              Odkrywaj rozszerzenia według własnego celu; ta sekcja nie tworzy
+              dodatkowych blokad.
+            </p>
+          )}
+        </div>
+        <div>
+          <h2>Jak wrócić do praktyki</h2>
+          <p className="footnote">
+            Wybierz zadanie, które pomoże odbudować dowód samodzielności. Każda
+            lekcja pozostaje dostępna.
+          </p>
+          {recoveryTargets.length ? (
+            <ul className="module-link-list">
+              {recoveryTargets.map((target) => (
+                <li key={target.id}>
+                  <button
+                    className="text-button"
+                    onClick={() => open(target.lessonId, target.stepIndex)}
+                  >
+                    {target.label} <ArrowRight size={16} />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : fallbackRecoveryLesson ? (
+            <button
+              className="text-button"
+              onClick={() =>
+                open(fallbackRecoveryLesson.id, fallbackRecoveryStep)
+              }
+            >
+              Otwórz pierwszą lekcję do powtórki <ArrowRight size={16} />
+            </button>
+          ) : (
+            <p className="footnote">Brak lekcji do wznowienia.</p>
+          )}
+        </div>
+      </section>
       <section>
         <div className="section-heading spread">
           <h2>Ścieżka eksperymentów</h2>
