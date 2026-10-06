@@ -132,6 +132,92 @@ it("keeps the release lesson evidence distinct from Cargo proof", () => {
   expect(oldGate.solution).not.toContain("dyn Beacon");
 });
 
+it("publishes the exact blank contracts without prefilled learner code", () => {
+  const oldBlank = apiReleaseMatrixLessons[0].steps.find(
+    (step) => step.id === "api-release-old-contracts-blank",
+  )!;
+  const matrixGate = apiReleaseMatrixLessons[1].steps.find(
+    (step) => step.id === "api-release-matrix-decision-gate",
+  )!;
+  const matrixBlank = apiReleaseMatrixLessons[1].steps.find(
+    (step) => step.id === "api-release-matrix-decision-blank",
+  )!;
+
+  expect(oldBlank.code).toBeUndefined();
+  expect(oldBlank.prompt).toMatch(
+    /ProbeResult.*MissingSymbol.*OtherCompileFailure.*ChangedOutput.*Contradictory.*TimedOut.*NotRecorded.*SameContract/s,
+  );
+  expect(oldBlank.prompt).toMatch(
+    /Verdict.*Release.*Stop\(&'static str\).*inspect\(result: ProbeResult\)/s,
+  );
+  expect(matrixGate.prompt).toMatch(
+    /Proof.*key.*compiler.*mode.*consumer.*result.*observed_ymd.*digest/s,
+  );
+  expect(matrixBlank.code).toBeUndefined();
+  expect(matrixBlank.prompt).toMatch(
+    /ResultKind.*Pass.*Fail.*Verdict.*Accept.*Defer\(&'static str\).*decide\(&\[Proof\], as_of_ymd: u32\)/s,
+  );
+  expect(matrixBlank.prompt).toMatch(
+    /caller.*stable.*external.*old-consumer.*default.*no-default.*opt-in.*diagnostics.*floor.*1\.85\.0/s,
+  );
+});
+
+it("runs independent correct solutions against both hidden contracts", () => {
+  const oldBlank = apiReleaseMatrixLessons[0].steps.find(
+    (step) => step.id === "api-release-old-contracts-blank",
+  )!;
+  const matrixBlank = apiReleaseMatrixLessons[1].steps.find(
+    (step) => step.id === "api-release-matrix-decision-blank",
+  )!;
+  expect(oldBlank.evaluator?.kind).toBe("tests");
+  expect(matrixBlank.evaluator?.kind).toBe("tests");
+  if (oldBlank.evaluator?.kind !== "tests" || matrixBlank.evaluator?.kind !== "tests") return;
+
+  const oldSolution = `
+#[derive(Debug, PartialEq)]
+enum ProbeResult { MissingSymbol, OtherCompileFailure, ChangedOutput, Contradictory, TimedOut, NotRecorded, SameContract }
+#[derive(Debug, PartialEq)]
+enum Verdict { Release, Stop(&'static str) }
+fn inspect(result: ProbeResult) -> Verdict {
+    match result {
+        ProbeResult::MissingSymbol => Verdict::Stop("public-api"),
+        ProbeResult::OtherCompileFailure => Verdict::Stop("unclassified-build"),
+        ProbeResult::ChangedOutput => Verdict::Stop("behavior"),
+        ProbeResult::Contradictory => Verdict::Stop("contradictory"),
+        ProbeResult::TimedOut => Verdict::Stop("infrastructure"),
+        ProbeResult::NotRecorded => Verdict::Stop("missing-evidence"),
+        ProbeResult::SameContract => Verdict::Release,
+    }
+}`;
+  const matrixSolution = `
+#[derive(Debug, PartialEq)]
+enum ResultKind { Pass, Fail }
+#[derive(Debug, PartialEq)]
+struct Proof { key: &'static str, compiler: &'static str, mode: &'static str, consumer: &'static str, result: ResultKind, observed_ymd: u32, digest: &'static str }
+#[derive(Debug, PartialEq)]
+enum Verdict { Accept, Defer(&'static str) }
+fn decide(proofs: &[Proof], as_of_ymd: u32) -> Verdict {
+    let required = [("caller", "stable", "external"), ("default", "stable", "default"), ("bare", "stable", "no-default"), ("opt-in", "stable", "diagnostics"), ("floor", "1.85.0", "default")];
+    for (key, compiler, mode) in required {
+        let matches: Vec<&Proof> = proofs.iter().filter(|proof| proof.key == key).collect();
+        if matches.is_empty() { return Verdict::Defer("missing"); }
+        if matches.len() > 1 { return Verdict::Defer("duplicate"); }
+        let proof = matches[0];
+        if proof.compiler != compiler || proof.mode != mode || proof.consumer != "old-consumer" { return Verdict::Defer("provenance"); }
+        if proof.result != ResultKind::Pass { return Verdict::Defer("failed"); }
+        if proof.observed_ymd != as_of_ymd { return Verdict::Defer("stale"); }
+        if !proof.digest.strip_prefix("sha256:").is_some_and(|hex| hex.len() == 64 && hex.bytes().all(|byte| byte.is_ascii_hexdigit())) { return Verdict::Defer("malformed-hash"); }
+    }
+    Verdict::Accept
+}`;
+  const oldResult = runFixture(oldSolution, oldBlank.evaluator.tests, "independent-old");
+  const matrixResult = runFixture(matrixSolution, matrixBlank.evaluator.tests, "independent-matrix");
+  expect(oldResult.compiled.status, oldResult.compiled.stderr).toBe(0);
+  expect(oldResult.executed?.status, oldResult.executed?.stderr).toBe(0);
+  expect(matrixResult.compiled.status, matrixResult.compiled.stderr).toBe(0);
+  expect(matrixResult.executed?.status, matrixResult.executed?.stderr).toBe(0);
+});
+
 it("runs every primary, blank, and delayed retrieval fixture", () => {
   const fixtures = [
     ...apiReleaseMatrixLessons.flatMap((lesson) =>

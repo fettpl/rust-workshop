@@ -779,7 +779,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "blank",
         title: "Pusta strona: sklasyfikuj sondę",
         prompt:
-          "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`. Rozróżnij brak publicznego symbolu, niezwiązany błąd kompilacji, zmianę wyniku, sprzeczny wynik bez udanej kompilacji, timeout, brak zapisu i zgodność; każdą niepewność mapuj na osobny powód `Stop`, a zgodność na `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
+          "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`. Kontrakt publiczny to `ProbeResult { MissingSymbol, OtherCompileFailure, ChangedOutput, Contradictory, TimedOut, NotRecorded, SameContract }`, `Verdict { Release, Stop(&'static str) }` oraz `inspect(result: ProbeResult) -> Verdict`. Rozróżnij brak publicznego symbolu, niezwiązany błąd kompilacji, zmianę wyniku, sprzeczny wynik bez udanej kompilacji, timeout, brak zapisu i zgodność; każdą niepewność mapuj na osobny powód `Stop`, a zgodność na `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
         solution: oldContractBlankSolution,
         evaluator: { kind: "tests", tests: oldContractBlankTests },
         expectedStatus: "success",
@@ -903,7 +903,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "modify",
         title: "Zaimplementuj decyzję z provenance",
         prompt:
-          "Uzupełnij `approve`, sprawdzając dla każdego rekordu nazwę konfiguracji, toolchain, klienta, wynik `Pass`, datę obserwacji i hash artefaktu. Wymagaj starego klienta, default, no-default, opt-in `diagnostics` i dokładnego MSRV `1.85.0`; odrzuć brak, stary, pusty, zduplikowany lub sprzeczny dowód. Zwróć `Ship` tylko przy kompletnej świeżej macierzy. To model decyzji; manifest i Cargo są dowodem zaufanego verifiera.",
+          "Uzupełnij `approve`, sprawdzając dla każdego rekordu nazwę konfiguracji, toolchain, klienta, wynik `Pass`, datę obserwacji i hash artefaktu. Kontrakt publiczny to `enum ResultKind { Pass, Fail }`, `struct Proof { key: &'static str, compiler: &'static str, mode: &'static str, consumer: &'static str, result: ResultKind, observed_ymd: u32, digest: &'static str }`, `enum Verdict { Accept, Defer(&'static str) }` oraz `fn decide(proofs: &[Proof], as_of_ymd: u32) -> Verdict`; każdy rekord ma dokładne pola `key`, `compiler`, `mode`, `consumer`, `result`, `observed_ymd` i `digest`. Wymagaj starego klienta, default, no-default, opt-in `diagnostics` i dokładnego MSRV `1.85.0`; odrzuć brak, stary, pusty, zduplikowany lub sprzeczny dowód. Zwróć `Ship` tylko przy kompletnej świeżej macierzy. To model decyzji; manifest i Cargo są dowodem zaufanego verifiera.",
         code: matrixStarter,
         solution: matrixSolution,
         evaluator: { kind: "tests", tests: matrixTests },
@@ -933,7 +933,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "blank",
         title: "Pusta strona: decyzja dla konfiguracji",
         prompt:
-          "Od zera napisz `Proof`, `Verdict` oraz `decide`. Każdy rekord ma nazwę, compiler, tryb feature, klienta, wynik, datę i digest. Wymagaj starego klienta, default, no-default, opt-in feature i dokładnego compiler floor `1.85.0`; zwróć `Defer` dla braku, starej lub malformed obserwacji. Test jest modelem jednego źródła i nie udaje `cargo check` ani granicy external crate.",
+          "Od zera napisz `Proof`, `ResultKind`, `Verdict` oraz `decide`. Kontrakt publiczny to `Proof { key: &'static str, compiler: &'static str, mode: &'static str, consumer: &'static str, result: ResultKind, observed_ymd: u32, digest: &'static str }`, `ResultKind { Pass, Fail }`, `Verdict { Accept, Defer(&'static str) }` oraz `decide(&[Proof], as_of_ymd: u32) -> Verdict`. Wymagane są dokładnie rekordy `(caller, stable, external, old-consumer)`, `(default, stable, default, old-consumer)`, `(bare, stable, no-default, old-consumer)`, `(opt-in, stable, diagnostics, old-consumer)` i `(floor, 1.85.0, default, old-consumer)`; zwróć `Defer` dla braku, starej lub malformed obserwacji. Test jest modelem jednego źródła i nie udaje `cargo check` ani granicy external crate.",
         solution: matrixBlankSolution,
         evaluator: { kind: "tests", tests: matrixBlankTests },
         expectedStatus: "success",
