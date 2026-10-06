@@ -195,10 +195,12 @@ fn assert_send<T:Send>(){} fn assert_sync<T:Sync>(){}
 fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}`;
 export const autoTraitsMutant = `${autoTraitsCanonical}
 unsafe impl<'owner,T> Sync for InvariantBorrow<'owner,T>{}`;
-export const autoTraitsTests = String.raw`#[test]fn positive_bounds_compile(){positive_bounds();}
-#[test]fn sync_bound_is_explicit(){assert_sync::<InvariantBorrow<'_,u8>>();}
+export const autoTraitsTests = String.raw`fn hidden_assert_send<T:Send>(){} fn hidden_assert_sync<T:Sync>(){}
+fn hidden_positive_bounds(){hidden_assert_send::<InvariantBorrow<'_,u8>>();hidden_assert_sync::<InvariantBorrow<'_,u8>>();hidden_assert_send::<InvariantBorrow<'_,std::cell::Cell<u8>>>();}
+#[test]fn positive_bounds_compile(){hidden_positive_bounds();}
+#[test]fn sync_bound_is_explicit(){hidden_assert_sync::<InvariantBorrow<'_,u8>>();}
 #[test]fn mutable_borrow_is_operational(){let mut v=8;let b=InvariantBorrow::from_mut(&mut v);assert_eq!(*b.get(),8);}
-#[test]fn cell_is_send_but_not_sync_in_the_client_contract(){use std::cell::Cell;assert_send::<InvariantBorrow<'_,Cell<u8>>>();}`;
+#[test]fn cell_is_send_in_the_client_contract(){use std::cell::Cell;hidden_assert_send::<InvariantBorrow<'_,Cell<u8>>>();}`;
 
 export const autoTraitsSoundnessCanonical =
   invariantBorrowCanonical +
@@ -212,7 +214,8 @@ fn soundness_send<T:Send>(){} fn soundness_sync<T:Sync>(){}
 fn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();soundness_sync::<InvariantBorrow<'_,u8>>();}`;
 export const autoTraitsSoundnessMutant = `${autoTraitsSoundnessCanonical}
 unsafe impl<'owner,T> Sync for InvariantBorrow<'owner,T>{}`;
-export const autoTraitsSoundnessTests = String.raw`#[test]fn soundness_bounds_are_explicit(){soundness_bounds();}
+export const autoTraitsSoundnessTests = String.raw`fn hidden_soundness_send<T:Send>(){} fn hidden_soundness_sync<T:Sync>(){}
+#[test]fn soundness_bounds_are_explicit(){hidden_soundness_send::<InvariantBorrow<'_,u8>>();hidden_soundness_sync::<InvariantBorrow<'_,u8>>();hidden_soundness_send::<InvariantBorrow<'_,std::cell::Cell<u8>>>();}
 #[test]fn soundness_reborrow_preserves_value(){let mut v=11;let view=InvariantBorrow::from_mut(&mut v);assert_eq!(*view.get(),11);}`;
 
 export const cellMarkerBlankCanonical = String.raw`use std::marker::PhantomData;

@@ -649,21 +649,28 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
           "2": "`Send` nie zastępuje zależności potrzebnej do bezpiecznego wyznaczenia `Sync`; output-only marker nadal ją ukrywa.",
         },
       ),
-      explain(
-        "unsafe-borrowed-auto-traits-explain",
-        "Wyjaśnij auto-traits",
-        "Wyjaśnij, skąd wrapper dziedziczy Send i Sync.",
+      run(
+        "unsafe-borrowed-auto-traits-run",
+        "Uruchom bounds",
+        "Uruchom positive trait bounds.",
+        autoTraitRun,
+        "bounds=send-sync\n",
       ),
       coding({
         id: "unsafe-borrowed-auto-traits-boundary-gate",
         kind: "modify",
         title: "Zachowaj marker",
         prompt:
-          "Zaimplementuj `InvariantBorrow` z `PhantomData<&'owner mut T>` i markerem funkcji czyniącym T invariant. Outer owner lifetime może skracać się przez reborrow; nie używaj unsafe impl.",
-        code: autoTraitsEquivalent.replace(
-          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
-          "",
-        ),
+          "Zaimplementuj `InvariantBorrow<'owner, T>` z polem `value: &'owner mut T`, funkcjami `from_mut`, `reborrow`, `get` i `get_mut`, markerem funkcji czyniącym T invariant oraz markerem `PhantomData<&'owner mut T>`. Ukryte testy bezpośrednio sprawdzają Send+Sync dla `u8`, Send dla `Cell<u8>`, reborrow i dostęp do wartości. Nie implementuj helperów testowych ani unsafe impl.",
+        code: autoTraitsEquivalent
+          .replace(
+            "PhantomData<(&'owner mut T,fn(T)->T)>",
+            "PhantomData<*mut T>",
+          )
+          .replace(
+            "fn assert_send<T:Send>(){} fn assert_sync<T:Sync>(){}\nfn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
+            "",
+          ),
         solution: autoTraitsCanonical,
         tests: autoTraitsTests,
         gate: true,
@@ -673,11 +680,16 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "apply",
         title: "Sprawdź positive bounds",
         prompt:
-          "Dodaj `assert_send` i `assert_sync` dla `InvariantBorrow<'_, u8>` oraz zachowaj mutably-borrowed marker. Sprawdź osobno, że `Cell<u8>` jest Send, lecz nie Sync.",
-        code: autoTraitsSoundnessEquivalent.replace(
-          "fn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();soundness_sync::<InvariantBorrow<'_,u8>>();}",
-          "",
-        ),
+          "Zachowaj `InvariantBorrow<'owner, T>` z `from_mut`, `reborrow`, `get`, `get_mut`, invariant markerem funkcji i markerem `PhantomData<&'owner mut T>`. Ukryte testy bezpośrednio sprawdzają Send+Sync dla `u8`, Send dla `Cell<u8>` oraz działanie reborrow. Nie implementuj helperów testowych ani unsafe impl.",
+        code: autoTraitsSoundnessEquivalent
+          .replace(
+            "PhantomData<(&'owner mut T,fn(T)->T)>",
+            "PhantomData<*mut T>",
+          )
+          .replace(
+            "fn soundness_send<T:Send>(){} fn soundness_sync<T:Sync>(){}\nfn soundness_bounds(){soundness_send::<InvariantBorrow<'_,u8>>();soundness_sync::<InvariantBorrow<'_,u8>>();}",
+            "",
+          ),
         solution: autoTraitsSoundnessCanonical,
         tests: autoTraitsSoundnessTests,
         gate: true,
@@ -709,7 +721,7 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         kind: "apply",
         title: "Transfer: współdzielony lease",
         prompt:
-          "Zaimplementuj `SharedLease<'owner, T>` przechowujący `&'owner T` z `attach`, `reborrow<'short>(&'short self) -> SharedLease<'short, T>` i `get(&self) -> &T`. Zachowaj pointer identity i positive Send+Sync dla `u8`; nie dodawaj unsafe impl ani kopiowania T. Negative clients dla `Cell<u8>` są sprawdzane osobno przez maintainer verifier.",
+          "Zaimplementuj `SharedLease<'owner, T>` przechowujący `&'owner T` z `attach`, `reborrow<'short>(&'short self) -> SharedLease<'short, T>` i `get(&self) -> &T`. Zachowaj pointer identity i positive Send+Sync dla `u8`; nie dodawaj unsafe impl ani kopiowania T. Ten fixture ocenia wyłącznie jawnie opisane pozytywne zachowanie.",
         code: sharedLeaseTransferMutant,
         solution: sharedLeaseTransferCanonical,
         tests: sharedLeaseTransferTests,

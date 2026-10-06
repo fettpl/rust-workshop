@@ -107,6 +107,38 @@ it("requires each lesson's boundary and soundness skills while allowing recovery
   }
   expect(moduleGate(boundaryOnly, unsafeBorrowedMemoryLessons, unsafeBorrowedMemoryModule).passed).toBe(false);
 
+  const firstLesson = unsafeBorrowedMemoryLessons[0];
+  const firstTransfer = firstLesson.steps.find((step) =>
+    step.id.endsWith("-soundness-transfer"),
+  )!;
+  const transferOnly = recordEvidence(createInitialState(), {
+    id: "first-lesson-transfer-only",
+    conceptIds: firstLesson.conceptIds,
+    lessonId: firstLesson.id,
+    stepId: firstTransfer.id,
+    kind: firstTransfer.evidenceKind,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    gate: true,
+    evaluator: firstTransfer.evaluator?.kind,
+    at: 1,
+  });
+  const transferGate = moduleGate(
+    transferOnly,
+    unsafeBorrowedMemoryLessons,
+    unsafeBorrowedMemoryModule,
+  );
+  expect(
+    transferGate.criteria.find((criterion) =>
+      criterion.label === `${firstLesson.title}: soundness evidence`,
+    ),
+  ).toMatchObject({ label: expect.stringContaining("soundness evidence"), passed: true });
+  expect(
+    transferGate.criteria.filter((criterion) => criterion.passed),
+  ).toHaveLength(1);
+  expect(transferGate.passed).toBe(false);
+
   let state = createInitialState();
   for (const lesson of unsafeBorrowedMemoryLessons) {
     const boundary = lesson.steps.find((step) => step.id.endsWith("-boundary-gate"))!;
