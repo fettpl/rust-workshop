@@ -424,6 +424,14 @@ import {
   unsafeMiriModule,
 } from "./unsafe-miri";
 import {
+  unsafeBorrowedMemoryLessons,
+  unsafeBorrowedMemoryConcepts,
+  unsafeBorrowedMemoryCompetencies,
+  unsafeBorrowedMemorySources,
+  unsafeBorrowedMemoryReviewExercises,
+  unsafeBorrowedMemoryModule,
+} from "./unsafe-borrowed-memory";
+import {
   serviceOperationsLessons,
   serviceOperationsConcepts,
   serviceOperationsCompetencies,
@@ -513,6 +521,7 @@ export const modules = [
   profileEvidenceModule,
   unsafeFfiModule,
   unsafeMiriModule,
+  unsafeBorrowedMemoryModule,
   serviceOperationsModule,
   capstoneIntegrationModule,
 ];
@@ -578,6 +587,7 @@ export const lessons = [
   ...runtimeAllocationEvidenceLessons,
   ...unsafeFfiLessons,
   ...unsafeMiriLessons,
+  ...unsafeBorrowedMemoryLessons,
   ...serviceOperationsLessons,
   ...capstoneIntegrationLessons,
 ];
@@ -639,6 +649,7 @@ export const concepts = [
   ...runtimeAllocationEvidenceConcepts,
   ...unsafeFfiConcepts,
   ...unsafeMiriConcepts,
+  ...unsafeBorrowedMemoryConcepts,
   ...serviceOperationsConcepts,
   ...capstoneIntegrationConcepts,
 ];
@@ -699,6 +710,7 @@ export const competencies = [
   ...profileEvidenceCompetencies,
   ...unsafeFfiCompetencies,
   ...unsafeMiriCompetencies,
+  ...unsafeBorrowedMemoryCompetencies,
   ...serviceOperationsCompetencies,
   ...capstoneIntegrationCompetencies,
 ];
@@ -759,6 +771,7 @@ export const sources = [
   ...profileEvidenceSources,
   ...unsafeFfiSources,
   ...unsafeMiriSources,
+  ...unsafeBorrowedMemorySources,
   ...serviceOperationsSources,
   ...capstoneIntegrationSources,
 ];
@@ -820,6 +833,7 @@ export const reviewExercises = {
   ...runtimeAllocationEvidenceReviewExercises,
   ...unsafeFfiReviewExercises,
   ...unsafeMiriReviewExercises,
+  ...unsafeBorrowedMemoryReviewExercises,
   ...serviceOperationsReviewExercises,
   ...capstoneIntegrationReviewExercises,
 };

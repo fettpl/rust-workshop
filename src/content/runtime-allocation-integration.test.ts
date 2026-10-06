@@ -5,8 +5,8 @@ import { runtimeAllocationEvidenceLessons } from "./runtime-allocation-evidence"
 
 it("registers the two runtime allocation lessons with four gates and six authored assessments", () => {
   expect(runtimeAllocationEvidenceLessons.map((lesson) => lesson.id)).toEqual(["runtime-allocation-scope", "runtime-allocation-comparison"]);
-  expect(lessons).toHaveLength(177);
-  expect(concepts).toHaveLength(180);
+  expect(lessons).toHaveLength(181);
+  expect(concepts).toHaveLength(184);
   const stage = modules.find((module) => module.id === "profile-evidence")!;
   expect(stage.lessonIds).toEqual(expect.arrayContaining(["runtime-allocation-scope", "runtime-allocation-comparison"]));
   expect(stage.gateCriteria?.filter((criterion) => criterion.id.startsWith("runtime-allocation-")).map((criterion) => criterion.taskRefs[0].stepId)).toEqual([

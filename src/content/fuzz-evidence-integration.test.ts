@@ -26,6 +26,6 @@ it("registers the bounded fuzz evidence module and four independent alternatives
     }
     expect(lesson.conceptIds).toEqual([lesson.id]);
   }
-  expect(lessons).toHaveLength(177);
-  expect(concepts).toHaveLength(180);
+  expect(lessons).toHaveLength(181);
+  expect(concepts).toHaveLength(184);
 });

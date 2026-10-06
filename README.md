@@ -1,8 +1,8 @@
 # Rust Workshop
 
-Current catalog: 177 lessons, 46 modules, 180 concepts, 132 blank-page tasks, 322 sources, and 13 downloadable Cargo projects. Runtime allocation evidence is scoped to an authored single-process `GlobalAlloc` probe and does not claim RSS or a universal threshold.
+Current catalog: 181 lessons, 47 modules, 184 concepts, 136 blank-page tasks, 326 sources, and 13 downloadable Cargo projects. Runtime allocation evidence is scoped to an authored single-process `GlobalAlloc` probe and does not claim RSS or a universal threshold.
 
-An interactive Rust learning application for someone who knows the basics of programming but is starting Rust from zero. The repository contains 177 lessons in 46 modules, 180 concepts, 132 blank-page tasks, 7 memory traces, 322 source entries, and 13 projects, each with a downloadable Cargo package. Learning progresses from prediction through experimentation and compiler interpretation to independent projects.
+An interactive Rust learning application for someone who knows the basics of programming but is starting Rust from zero. The repository contains 181 lessons in 47 modules, 184 concepts, 136 blank-page tasks, 7 memory traces, 326 source entries, and 13 projects, each with a downloadable Cargo package. Learning progresses from prediction through experimentation and compiler interpretation to independent projects.
 
 The curriculum includes public API design, Cargo workspaces and dependency policy, variance and HRTB callbacks, concurrency and Tokio, and projects such as Number Guessing+, Log Analyzer, Mini grep, and Frame Protocol. Cargo manifest exercises assess TOML declarations locally; separate maintainer checks verify actual features, archives, and compiler floors.
 
@@ -28,7 +28,7 @@ The Miri Safety module adds four Polish lessons on initialized `ByteView` constr
 
 The Dependency Assurance module adds four Polish lessons on dependency graph diagnosis, source/license policy, injected-date advisory exceptions, and artifact-bound release decisions. It contributes eight evidence gates, four blank-page tasks, and four coding retrievals. The Frame Protocol package includes a restricted verifier, duplicate evidence, an exception ledger, a pinned offline snapshot, extracted package checks, and an external consumer. `publish = false` remains required; because this fixture has no pinned cargo-deny binary/database, the result is explicitly `unsupported/infrastructure` and the release decision remains on hold.
 
-The current catalog validates as content 177/180/7 with 322 sources, 13 projects, and 132 blank-page tasks across 46 modules. The focused checks cover content validation, authored source-model, runtime allocation and Miri contracts, API release evidence, stable/MSRV archive verification, controlled mutants, the bounded fuzz evidence dossier, the bounded supply-chain dossier, and fresh external profiles when Valgrind is available. The fuzz dossier validates current artifact hashes and run provenance; local campaign execution remains infrastructure-limited when `cargo-fuzz` is unavailable. No Miri result is reported for the native FFI fixture, and no learner pilot or production readiness claim follows from these automated checks.
+The current catalog validates as content 181/184/7 with 326 sources, 13 projects, and 136 blank-page tasks across 47 modules. The focused checks cover content validation, authored source-model, runtime allocation and Miri contracts, API release evidence, stable/MSRV archive verification, controlled mutants, the bounded fuzz evidence dossier, the bounded supply-chain dossier, and fresh external profiles when Valgrind is available. The fuzz dossier validates current artifact hashes and run provenance; local campaign execution remains infrastructure-limited when `cargo-fuzz` is unavailable. No Miri result is reported for the native FFI fixture, and no learner pilot or production readiness claim follows from these automated checks.
 
 Repository language convention: commit messages and PR titles/descriptions use English; this README is in English, while the learner-facing course remains in Polish.
 
@@ -58,7 +58,7 @@ After the first open and resource download, the Service Worker stores the applic
 
 - Onboarding and four diagnostic activities without blocking access to lessons.
 - A dashboard with the precisely resumed session, reviews, project, concept states, and cross-cutting competencies.
-- A map of 46 modules with lesson-topic search, contracts, a dependency graph, and independence criteria leading to specific tasks. Search is case-insensitive and ignores Polish diacritics while preserving the module selection and learning position.
+- A map of 47 modules with lesson-topic search, contracts, a dependency graph, and independence criteria leading to specific tasks. Search is case-insensitive and ignores Polish diacritics while preserving the module selection and learning position.
 - A locally served Monaco editor, an alternative text editor, and Rust 2024 execution and tests.
 - The compiler's original stderr and a separate Compiler Coach with progressive hints.
 - Stack/heap models with steps for move, Copy, clone, borrowing, scope end, and the lifetime of values and `Rc`/`Weak` allocations.

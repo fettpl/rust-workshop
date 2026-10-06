@@ -101,6 +101,33 @@ describe("evaluate", () => {
     ).toBe(false);
   });
 
+  it("matches E0515 from a real lifetime diagnostic without trusting message text", () => {
+    const evaluator: Evaluator = { kind: "expected-error", code: "E0515" };
+    const result: RunResult = {
+      ...success(),
+      status: "compile-error",
+      diagnostics: [
+        {
+          code: "E0515",
+          message: "cannot return value referencing local variable `view`",
+          level: "error",
+        },
+      ],
+    };
+    expect(run(evaluator, { result }).passed).toBe(true);
+    expect(
+      run(evaluator, {
+        result: {
+          ...result,
+          diagnostics: [{ ...result.diagnostics[0], code: "E0597" }],
+        },
+      }).passed,
+    ).toBe(false);
+    expect(
+      run(evaluator, { result: { ...result, status: "success" } }).passed,
+    ).toBe(false);
+  });
+
   it("requires a passing test result and evaluates forbidden source outside comments", () => {
     const evaluator: Evaluator = {
       kind: "tests",
