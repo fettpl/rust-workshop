@@ -43,7 +43,8 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(inputGate?.prompt).toContain("context = bytes[0] % 20");
   expect(inputGate?.prompt).toContain("big-endian `u16`");
   const inputRecall = fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-recall");
-  expect(inputRecall?.evaluator).toEqual({ kind: "ordering", correct: ["3", "4096", "body"] });
+  expect(inputRecall?.evaluator?.kind).toBe("choice");
+  if (inputRecall?.evaluator?.kind === "choice") expect(inputRecall.evaluator.correct).toBe("0");
   expect(oracle?.code).toContain("fn same_result(");
   expect(oracleBlank?.solution).toContain("fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>>");
   expect(oracleBlank?.solution).toContain("bytes.len() > 4096");

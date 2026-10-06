@@ -141,6 +141,53 @@ describe("learning engine", () => {
     expect(state.mastery["manifest-concept"]?.level).toBe("understood");
   });
 
+  it("counts independent Rust campaign gate and transfer evidence for mastery", () => {
+    const campaignPolicy = evidencePolicyForConcepts([
+      {
+        id: "fuzz-campaign-evidence",
+        title: "Fuzz campaign",
+        prerequisites: [],
+        competencyIds: [],
+        reviewPrompt: "",
+        reviewAnswer: "",
+        distinguish: "",
+        evidenceArtifact: "rust-code",
+      },
+    ]);
+    let state = recordEvidence(
+      base(),
+      event({
+        id: "campaign-gate",
+        conceptIds: ["fuzz-campaign-evidence"],
+        lessonId: "fuzz-campaign-evidence",
+        stepId: "fuzz-campaign-evidence-gate",
+        kind: "assessment",
+        evaluator: "tests",
+      }),
+      campaignPolicy,
+    );
+    state = recordEvidence(
+      state,
+      event({
+        id: "campaign-blank",
+        conceptIds: ["fuzz-campaign-evidence"],
+        lessonId: "fuzz-campaign-evidence",
+        stepId: "fuzz-campaign-evidence-blank",
+        kind: "assessment",
+        evaluator: "tests",
+        at: 2_000,
+      }),
+      campaignPolicy,
+    );
+    expect(state.mastery["fuzz-campaign-evidence"]?.level).toBe("understood");
+    expect(state.review).toEqual([
+      expect.objectContaining({
+        conceptId: "fuzz-campaign-evidence",
+        intervalDays: 1,
+      }),
+    ]);
+  });
+
   it("filters Rust and manifest evidence in both directions", () => {
     let state = recordEvidence(
       base(),
