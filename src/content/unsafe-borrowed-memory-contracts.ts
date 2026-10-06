@@ -193,6 +193,15 @@ export const autoTraitsEquivalent =
   String.raw`
 fn assert_send<T:Send>(){} fn assert_sync<T:Sync>(){}
 fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}`;
+export const autoTraitsRecallMutant = autoTraitsEquivalent
+  .replace("PhantomData<(&'owner mut T,fn(T)->T)>", "PhantomData<*mut T>")
+  .replace(
+    "fn assert_send<T:Send>(){} fn assert_sync<T:Sync>(){}\nfn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
+    "",
+  );
+export const autoTraitsRecallTests = String.raw`fn hidden_assert_send<T:Send>(){} fn hidden_assert_sync<T:Sync>(){}
+#[test]fn positive_bounds_are_test_owned(){hidden_assert_send::<InvariantBorrow<'_,u8>>();hidden_assert_sync::<InvariantBorrow<'_,u8>>();hidden_assert_send::<InvariantBorrow<'_,std::cell::Cell<u8>>>();}
+#[test]fn mutable_reborrow_is_operational(){let mut v=8;let mut parent=InvariantBorrow::from_mut(&mut v);{let mut child=parent.reborrow();*child.get_mut()+=2;}assert_eq!(*parent.get(),10);}`;
 export const autoTraitsMutant = `${autoTraitsCanonical}
 unsafe impl<'owner,T> Sync for InvariantBorrow<'owner,T>{}`;
 export const autoTraitsTests = String.raw`fn hidden_assert_send<T:Send>(){} fn hidden_assert_sync<T:Sync>(){}
@@ -202,9 +211,6 @@ fn hidden_positive_bounds(){hidden_assert_send::<InvariantBorrow<'_,u8>>();hidde
 #[test]fn mutable_borrow_is_operational(){let mut v=8;let b=InvariantBorrow::from_mut(&mut v);assert_eq!(*b.get(),8);}
 #[test]fn scoped_reborrow_preserves_parent_access(){let mut v=8;let mut parent=InvariantBorrow::from_mut(&mut v);{let mut child=parent.reborrow();*child.get_mut()+=2;}*parent.get_mut()+=1;assert_eq!(v,11);}
 #[test]fn cell_is_send_in_the_client_contract(){use std::cell::Cell;hidden_assert_send::<InvariantBorrow<'_,Cell<u8>>>();}`;
-export const autoTraitsRecallTests = String.raw`#[test]
-fn positive_bounds_are_reachable(){positive_bounds();}`;
-
 export const autoTraitsSoundnessCanonical =
   invariantBorrowCanonical +
   String.raw`

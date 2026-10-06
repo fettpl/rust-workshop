@@ -9,6 +9,7 @@ import type {
 import {
   autoTraitsCanonical,
   autoTraitsEquivalent,
+  autoTraitsRecallMutant,
   autoTraitsRecallTests,
   autoTraitsMutant,
   autoTraitsTests,
@@ -300,7 +301,6 @@ function compileFail(id: string, prompt: string, code: string): LessonStep {
     title: "Compile-fail klienta",
     prompt,
     code,
-    solution: code,
     evaluator: { kind: "expected-error", code: "E0515" },
     expectedStatus: "compile-error",
     expectedError: "E0515",
@@ -714,11 +714,9 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         id: "unsafe-borrowed-auto-traits-recall",
         kind: "recall",
         title: "Powtórka: auto-traits",
-        prompt: "Odtwórz positive Send/Sync bounds na innym układzie markera.",
-        code: autoTraitsEquivalent.replace(
-          "fn positive_bounds(){assert_send::<InvariantBorrow<'_,u8>>();assert_sync::<InvariantBorrow<'_,u8>>();}",
-          "",
-        ),
+        prompt:
+          "Odtwórz positive bounds, naprawiając marker `PhantomData<*mut T>` na marker funkcji czyniący T invariant oraz `PhantomData<&'owner mut T>`. Ukryte testy niezależnie sprawdzają, że `InvariantBorrow<'_, u8>` jest Send+Sync, a `InvariantBorrow<'_, Cell<u8>>` jest Send, oraz sprawdzają działanie reborrow; nie implementuj helperów testowych ani unsafe impl.",
+        code: autoTraitsRecallMutant,
         solution: autoTraitsEquivalent,
         tests: autoTraitsRecallTests,
       }),

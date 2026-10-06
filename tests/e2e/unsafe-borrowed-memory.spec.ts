@@ -7,12 +7,16 @@ type State = {
     { level?: string; reason?: string; updatedAt?: number }
   >;
   events: Array<{
+    id?: string;
     lessonId: string;
     stepId: string;
     kind: string;
     passed: boolean;
     hints: number;
     revealed: boolean;
+    gate?: boolean;
+    delayed?: boolean;
+    evaluator?: string;
   }>;
 };
 
@@ -248,4 +252,178 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
   );
   expect(errors).toEqual([]);
   expect(consoleErrors).toEqual([]);
+});
+
+test("auto-traits recall stays editable and records one independent event", async ({
+  page,
+}) => {
+  const stage = modules.find(
+    (item) => item.id === "unsafe-borrowed-memory-soundness",
+  )!;
+  const lesson = lessons.find(
+    (item) => item.id === "unsafe-borrowed-auto-traits",
+  )!;
+  const recall = lesson.steps.find(
+    (step) => step.id === "unsafe-borrowed-auto-traits-recall",
+  )!;
+  const recallIndex = lesson.steps.findIndex((step) => step.id === recall.id);
+  const readState = () =>
+    page.evaluate(async (): Promise<State> => {
+      const request = indexedDB.open("rust-workshop-state", 1);
+      return await new Promise<State>((resolve, reject) => {
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const get = request.result
+            .transaction("user-state", "readonly")
+            .objectStore("user-state")
+            .get("current");
+          get.onsuccess = () =>
+            resolve({
+              mastery: get.result?.mastery ?? {},
+              events: get.result?.events ?? [],
+            });
+          get.onerror = () => reject(get.error);
+        };
+      });
+    });
+
+  await page.route("**/api/run", async (route) => {
+    const request = route.request().postDataJSON() as {
+      code: string;
+      mode: string;
+      tests?: string;
+    };
+    expect(request.mode).toBe("test");
+    expect(request.tests).toBe(
+      recall.evaluator?.kind === "tests" ? recall.evaluator.tests : undefined,
+    );
+    const accepted = request.code === recall.solution;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: accepted ? "success" : "test-failure",
+        stdout: accepted ? "recall: ok" : "",
+        stderr: accepted ? "" : "starter rejected by independent bounds",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: accepted ? 2 : 0, failed: accepted ? 0 : 1 },
+      }),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+    .fill(stage.title);
+  await page
+    .locator(".module-picker > button")
+    .filter({ hasText: stage.title })
+    .click();
+  await page
+    .locator(".lesson-list-item")
+    .filter({ hasText: lesson.title })
+    .click();
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(recallIndex)
+    .click();
+  await page
+    .getByRole("button", { name: "Prosty edytor", exact: true })
+    .click();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await expect(editor).toBeEditable();
+  await expect(editor).toHaveValue(recall.code!);
+
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Dalej", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("starter rejected by independent bounds");
+  expect(
+    (await readState()).events.filter(
+      (event) =>
+        event.lessonId === lesson.id &&
+        event.stepId === recall.id &&
+        event.kind !== "exposure" &&
+        event.passed,
+    ),
+  ).toHaveLength(0);
+
+  await editor.fill(recall.solution!);
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .locator(".lesson-list-item")
+    .filter({ hasText: lesson.title })
+    .click();
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(recallIndex)
+    .click();
+  await expect(editor).toHaveValue(recall.solution!);
+  await page.reload();
+  await expect(editor).toHaveValue(recall.solution!);
+  const beforeSuccessfulRun = await readState();
+  const priorEventIds = new Set(
+    beforeSuccessfulRun.events
+      .filter(
+        (event) => event.lessonId === lesson.id && event.stepId === recall.id,
+      )
+      .map((event) => event.id),
+  );
+  expect(
+    beforeSuccessfulRun.events.filter(
+      (event) =>
+        event.lessonId === lesson.id &&
+        event.stepId === recall.id &&
+        event.kind !== "exposure" &&
+        event.passed,
+    ),
+  ).toHaveLength(0);
+
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect
+    .poll(async () =>
+      (await readState()).events.filter(
+        (event) =>
+          event.lessonId === lesson.id &&
+          event.stepId === recall.id &&
+          event.kind !== "exposure" &&
+          event.passed,
+      ),
+    )
+    .toHaveLength(1);
+  const passed = (await readState()).events.filter(
+    (event) =>
+      event.lessonId === lesson.id &&
+      event.stepId === recall.id &&
+      event.kind !== "exposure" &&
+      event.passed,
+  );
+  expect(passed[0]).toMatchObject({
+    kind: "recall",
+    hints: 0,
+    revealed: false,
+    gate: false,
+    evaluator: "tests",
+  });
+  expect(passed[0].id).toBeTruthy();
+  expect(priorEventIds.has(passed[0].id)).toBe(false);
+  expect(passed[0].delayed).toBeUndefined();
+
+  await page.getByRole("button", { name: "Dalej", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Kod Rust", exact: true }),
+  ).toHaveAttribute("readonly", "");
 });
