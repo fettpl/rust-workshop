@@ -15,6 +15,7 @@ for (const moduleId of [
   "performance-evidence",
   "profile-evidence",
   "unsafe-ffi-contracts",
+  "fuzz-evidence-lifecycle",
 ]) {
   test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
     page,
