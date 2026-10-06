@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { concepts, lessons, modules, reviewExercises } from "./course";
-import { fuzzEvidenceLessons } from "./fuzz-evidence";
+import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";
 
 it("registers the bounded fuzz evidence module and four independent alternatives", () => {
   const stage = modules.find((item) => item.id === "fuzz-evidence-lifecycle")!;
@@ -8,6 +8,7 @@ it("registers the bounded fuzz evidence module and four independent alternatives
   expect(stage.lessonIds).toEqual(fuzzEvidenceLessons.map((lesson) => lesson.id));
   expect(stage.gateCriteria).toHaveLength(4);
   expect(fuzzEvidenceLessons).toHaveLength(4);
+  expect(fuzzEvidenceConcepts.find((concept) => concept.id === "fuzz-campaign-evidence")?.evidenceArtifact).toBe("rust-code");
   for (const lesson of fuzzEvidenceLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(1);
     const retrieval = reviewExercises[lesson.conceptIds[0]];

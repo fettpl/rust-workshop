@@ -38,6 +38,13 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(input?.code).toContain("fn decode_case(bytes: &[u8]) -> Option<Case<'_>>");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-blank")?.prompt).toContain("decode_command(bytes: &[u8]) -> Option<(&[u8], &[u8])>");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-blank")?.prompt).toContain("bytes.len() < length + 1");
+  const inputGate = gates.find((step) => step.id === "fuzz-input-domain-gate");
+  expect(inputGate?.prompt).toContain("3 <= bytes.len() <= 4096");
+  expect(inputGate?.prompt).toContain("context = bytes[0] % 20");
+  expect(inputGate?.prompt).toContain("big-endian `u16`");
+  const inputRecall = fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-recall");
+  expect(inputRecall?.evaluator?.kind).toBe("choice");
+  if (inputRecall?.evaluator?.kind === "choice") expect(inputRecall.evaluator.correct).toBe("0");
   expect(oracle?.code).toContain("fn same_result(");
   expect(oracleBlank?.solution).toContain("fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>>");
   expect(oracleBlank?.solution).toContain("bytes.len() > 4096");
@@ -47,14 +54,19 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(reducer?.code).toContain("struct Observation");
   expect(reducer?.code).toContain("fn executable_regression(bytes: &[u8]) -> bool");
   expect(reducer?.code).toContain("fn choose_witness(original: &[u8], candidates: &[Observation])");
+  expect(fuzzEvidenceAssessmentFixtures["fuzz-counterexample-regression-gate"].reference.slice(fuzzEvidenceAssessmentFixtures["fuzz-counterexample-regression-gate"].reference.indexOf("\n#[test]") + 1)).toContain("fn never_regresses");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-counterexample-regression")?.steps.find((step) => step.id === "fuzz-counterexample-regression-blank")?.prompt).toContain("reduce_frame(original: &[u8], candidate: &[u8], failure_class: &str) -> Vec<u8>");
   expect(campaign?.code).toContain("struct Dossier");
   expect(campaign?.code).toContain("fn classify_report(dossier: &Dossier, _: &str, _: &str, _: &str)");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-campaign-evidence")?.steps.find((step) => step.id === "fuzz-campaign-evidence-blank")?.prompt).toContain("triage_report(report: &Triage) -> &'static str");
   expect((reviewExercises["fuzz-input-domain"]?.prompt ?? "")).toContain("decode_tagged(bytes: &[u8]) -> Option<(&[u8], &[u8])>");
   expect((reviewExercises["fuzz-input-domain"]?.prompt ?? "")).toContain("tag: u8 = 7");
-  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("instrumented, normal, runs, replay_only");
-  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("runs >= 1000");
+  expect((reviewExercises["fuzz-counterexample-regression"]?.prompt ?? "")).toContain("shrink_window(original: &Window, candidate: Window, outcome: &str) -> Window");
+  expect((reviewExercises["fuzz-counterexample-regression"]?.prompt ?? "")).toContain("declared as usize == payload.len()");
+  expect((reviewExercises["fuzz-counterexample-regression"]?.prompt ?? "")).toContain('outcome == "LengthMismatch"');
+  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("classify_dossier(report: &Triage) -> &'static str");
+  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("toolchain, expected_toolchain");
+  expect((reviewExercises["fuzz-campaign-evidence"]?.prompt ?? "")).toContain("runs < 1000");
   expect((reviewExercises["fuzz-campaign-evidence"]?.code ?? "")).toContain("expected_archive_hash");
   expect(oracleBlank?.evaluator?.kind).toBe("tests");
   expect(oracleBlank?.evaluator?.kind === "tests" ? oracleBlank.evaluator.tests : "").toContain("decode_frame");
@@ -78,6 +90,8 @@ it("compiles and runs every correct gate, blank and retrieval reference, then re
     if (step.evaluator?.kind !== "tests" || !step.solution) continue;
     compileAndRun(step.id, step.solution, step.evaluator.tests, true);
   }
+  const reducerGate = steps.find((step) => step.id === "fuzz-counterexample-regression-gate");
+  if (reducerGate?.evaluator?.kind === "tests" && reducerGate.code) compileAndRun("fuzz-counterexample-regression-starter", reducerGate.code, reducerGate.evaluator.tests, false);
   for (const [id, fixture] of Object.entries(fuzzEvidenceAssessmentFixtures)) {
     const lessonStep = [...lessons.flatMap((lesson) => lesson.steps), ...retrievals].find((step) => step.id === id);
     expect(lessonStep?.evaluator?.kind, id).toBe("tests");
