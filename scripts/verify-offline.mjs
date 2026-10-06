@@ -514,9 +514,15 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       page.getByText("Zapisano na tym urządzeniu", { exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
-    await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
-    await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
-    await expect(page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true })).toBeVisible();
+    await page
+      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+      .click();
+    await expect(
+      page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
@@ -526,7 +532,9 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .filter({ hasText: asyncLendingTitle })
       .click();
     await page.locator(".gate-action").first().click();
-    await expect(page.locator(".task-pane h1")).not.toHaveText(asyncPrimaryHeading);
+    await expect(page.locator(".task-pane h1")).not.toHaveText(
+      asyncPrimaryHeading,
+    );
     await asyncEditor.focus();
     await asyncEditor.press("ControlOrMeta+End");
     const asyncLendingHeading = await page.locator(".task-pane h1").innerText();
@@ -548,8 +556,12 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     ).toBeFocused();
     await page.keyboard.press("Shift+Tab");
     await expect(asyncEditor).toBeFocused();
-    await expect(page.getByText("Tryb offline.", { exact: false })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Uruchom", exact: true })).toHaveCount(0);
+    await expect(
+      page.getByText("Tryb offline.", { exact: false }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Uruchom", exact: true }),
+    ).toHaveCount(0);
     console.log("Async lending gate, keyboard focus and draft resume offline");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
@@ -679,9 +691,144 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
     ).toBeVisible();
     console.log("Service Operations gate and draft resume offline");
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const apiReleaseMatrixTitle = "API Release Matrix: klient, features i MSRV";
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(apiReleaseMatrixTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: apiReleaseMatrixTitle })
+      .click();
+    await page.locator(".gate-action").first().click();
+    const apiReleaseEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const apiReleasePrimaryHeading = await page
+      .locator(".task-pane h1")
+      .innerText();
+    const apiReleasePrimaryDraft =
+      "// Klient, features i exact MSRV zapisane lokalnie.\n";
+    await apiReleaseEditor.fill(apiReleasePrimaryDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await page
+      .getByLabel("Notatki do lekcji")
+      .fill("Stable nie zastępuje uruchomienia Rust 1.85.0.");
+    await expect(
+      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await page
+      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+      .click();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(
+      apiReleasePrimaryHeading,
+    );
+    await expect(apiReleaseEditor).toHaveValue(apiReleasePrimaryDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(
+      "Stable nie zastępuje uruchomienia Rust 1.85.0.",
+    );
+    await page
+      .getByRole("button", { name: apiReleaseMatrixTitle, exact: true })
+      .click();
+    await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
+    await page.locator(".gate-action").first().click();
+    const apiReleaseBlankHeading = await page
+      .locator(".task-pane h1")
+      .innerText();
+    await expect(apiReleaseEditor).toHaveValue("");
+    const apiReleaseBlankDraft =
+      "// Niezależny rekord release zachowany bez sieci.\n";
+    await apiReleaseEditor.fill(apiReleaseBlankDraft);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("tab", { name: "Kod", exact: true }).focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(
+      page.getByRole("tab", { name: "Output", exact: false }),
+    ).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("ArrowLeft");
+    await expect(
+      page.getByRole("tab", { name: "Kod", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await apiReleaseEditor.focus();
+    await expect(apiReleaseEditor).toBeFocused();
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await expect(
+      page.getByText("Kompilator niedostępny", { exact: true }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(
+      apiReleaseBlankHeading,
+    );
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(apiReleaseEditor).toHaveValue(apiReleaseBlankDraft);
+    await expect(
+      page.getByText("Tryb offline.", { exact: false }),
+    ).toBeVisible();
+    const apiReleaseFirstBlankHeading = await page
+      .locator(".task-pane h1")
+      .innerText();
+    await page
+      .getByRole("button", { name: apiReleaseMatrixTitle, exact: true })
+      .click();
+    await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
+    await expect(page.locator(".gate-action")).toHaveCount(2);
+    await page.locator(".gate-action").nth(1).click();
+    const apiReleaseSecondPrimaryHeading = await page
+      .locator(".task-pane h1")
+      .innerText();
+    expect(apiReleaseSecondPrimaryHeading).not.toBe(
+      apiReleaseFirstBlankHeading,
+    );
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    const apiReleaseSecondEditor = page.locator(
+      'textarea[aria-label="Kod Rust"]',
+    );
+    const apiReleaseSecondDraft =
+      "// Macierz konfiguracji i MSRV zachowana offline.\n";
+    await apiReleaseSecondEditor.fill(apiReleaseSecondDraft);
+    await apiReleaseSecondEditor.blur();
+    await expect(page.locator(".save-status")).toHaveText(
+      "Zapisano na tym urządzeniu",
+    );
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(
+      apiReleaseSecondPrimaryHeading,
+    );
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(apiReleaseSecondEditor).toHaveValue(apiReleaseSecondDraft);
+    await context.setOffline(true);
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await expect(
+      page.getByText("Kompilator niedostępny", { exact: true }),
+    ).toBeVisible();
+    await expect(apiReleaseSecondEditor).toHaveValue(apiReleaseSecondDraft);
+    await expect(
+      page.getByText("Tryb offline.", { exact: false }),
+    ).toBeVisible();
+    await context.setOffline(false);
+    console.log(
+      "API release matrix navigation, both gate criteria, notes, keyboard and exact resume work offline",
+    );
     expect(errors).toEqual([]);
     expect(consoleErrors).toEqual([]);
-    console.log("Expected offline transport console errors", expectedOfflineConsoleErrors);
+    console.log(
+      "Expected offline transport console errors",
+      expectedOfflineConsoleErrors,
+    );
     console.log("Page errors", errors);
   } finally {
     await browser.close();

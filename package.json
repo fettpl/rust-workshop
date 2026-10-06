@@ -51,7 +51,9 @@
     "precontent:fuzz": "npm run content:packages",
     "content:fuzz": "node --import tsx scripts/verify-mini-grep-fuzz.ts",
     "precontent:guessing": "npm run content:packages",
-    "content:guessing": "node --import tsx scripts/verify-number-guessing.ts"
+    "content:guessing": "node --import tsx scripts/verify-number-guessing.ts",
+    "content:api-release": "node --import tsx scripts/verify-api-release.ts",
+    "test:api-release": "vitest run scripts/verify-api-release.test.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
