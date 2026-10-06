@@ -192,11 +192,13 @@ const exactReviewCode = `${macroPrelude}`;
 const exactReviewTests = `#[test]
 fn retrieval_keeps_one_evaluation_for_each_non_copy_value() {
     let mut calls = 0;
+    let mut events = Vec::new();
     let readings = metric_readings!(
-        { calls += 1; "temperature".to_owned() } => { calls += 1; 21 },
+        { calls += 1; events.push("name"); "temperature".to_owned() } => { calls += 1; events.push("value"); 21 },
     );
     assert_eq!(calls, 2);
-    assert_eq!(readings[0], Reading::new("temperature", 21));
+    assert_eq!(events, ["name", "value"]);
+    assert_eq!(readings, vec![Reading::new("temperature", 21)]);
 }`;
 
 const repetitionStarter = `#[derive(Debug, PartialEq, Eq)]
@@ -602,7 +604,11 @@ fn main() {
         kind: "blank",
         title: "Pusta strona: odczyty z dziennikiem",
         prompt:
-          "Od zera napisz publiczne `Reading`, konstruktor oraz `metric_readings!` z matcherem par `name => value`. Makro ma zachować kolejność i dokładnie jedno obliczenie każdego wyrażenia; ukryte testy wywołają funkcje zapisujące kolejno `first-name`, `first-value`, `second-name`, `second-value`, a wynik ma zawierać dwa odczyty. Nie dostajesz startera ani gotowej ścieżki biblioteki.",
+          [
+            "Od zera napisz publiczne `Reading`, konstruktor oraz `metric_readings!` z matcherem `($( $name:expr => $value:expr ),* $(,)? )`.",
+            "Kontrakt typu: `#[derive(Debug, PartialEq, Eq)] pub struct Reading { pub name: String, pub value: i32 }` oraz `pub fn new(name: impl Into<String>, value: i32) -> Self`.",
+            "Makro ma zwracać `Vec<Reading>`, zachować kolejność i dokładnie jedno obliczenie każdego wyrażenia; ukryte testy wywołają funkcje zapisujące kolejno `first-name`, `first-value`, `second-name`, `second-value`, a wynik ma zawierać dwa odczyty. Nie dostajesz startera ani gotowej ścieżki biblioteki.",
+          ].join("\n"),
         solution: exactBlankCode,
         tests: exactBlankTests,
         hints: [
@@ -872,7 +878,11 @@ fn main() {
         kind: "blank",
         title: "Pusta strona: publiczny helper",
         prompt:
-          "Od zera napisz publiczny `Reading` i eksportowane `exported_pairs!`, używając `$crate::Reading`, par `name => value` z opcjonalnym przecinkiem oraz `:expr` dla `const { 12 }` w Rust 2024. Dostarczony ukryty test klienta doda lokalny, niezwiązany `Reading` i porówna wynik do publicznego typu crate definiującego; nie udawaj dowodu zewnętrznego workspace.",
+          [
+            "Od zera napisz publiczny `Reading` i eksportowane `exported_pairs!`, używając matchera `($( $name:expr => $value:expr ),* $(,)? )` oraz `:expr` dla `const { 12 }` w Rust 2024.",
+            "Kontrakt typu: `#[derive(Debug, PartialEq, Eq)] pub struct Reading { pub name: String, pub value: i32 }` oraz `pub fn new(name: impl Into<String>, value: i32) -> Self`; makro ma zwracać `Vec<Reading>` przez `$crate::Reading` i `$crate::Reading::new`.",
+            "Dostarczony ukryty test klienta doda lokalny, niezwiązany `Reading` i porówna wynik do publicznego typu crate definiującego; nie udawaj dowodu zewnętrznego workspace.",
+          ].join("\n"),
         solution: exportedBlankCode,
         tests: exportedBlankTests,
         hints: [
@@ -923,7 +933,11 @@ export const macrosAsApiReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: pojedynczy odczyt",
     prompt:
-      "Odtwórz makro `metric_readings!`, tak aby niekopiowalny `String` oraz licznik pokazały, że nazwa i wartość są obliczone raz. Zachowaj kolejność i zwróć `Vec<Reading>`; dostarczony evaluator dołączy test sprawdzający ten kontrakt.",
+      [
+        "Odtwórz publiczny kontrakt `Reading` oraz makro `metric_readings!` dla wywołań `name => value` z matcherem `($( $name:expr => $value:expr ),* $(,)? )`.",
+        "Wymagane są `#[derive(Debug, PartialEq, Eq)] pub struct Reading { pub name: String, pub value: i32 }`, `pub fn new(name: impl Into<String>, value: i32) -> Self` oraz wynik `Vec<Reading>`.",
+        "Nie kopiuj ani nie obliczaj ponownie niekopiowalnego `String`; evaluator sprawdzi dwa wywołania, kolejność name przed value i dokładnie jeden odczyt.",
+      ].join("\n"),
     code: "",
     solution: exactReviewCode,
     tests: exactReviewTests,
@@ -937,7 +951,7 @@ export const macrosAsApiReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: lista progów",
     prompt:
-      "Odtwórz `readings!` dla pustej listy oraz dwóch par z jednym przecinkiem końcowym. Zwróć kolejność jako `Vec<(String, i32)>`, bez duplikowania reguły dla pustego inputu.",
+      "Odtwórz `readings!` dla gramatyki `name => value`, pustej listy oraz dwóch par z jednym przecinkiem końcowym. Zwróć kolejność jako `Vec<(String, i32)>`, bez duplikowania reguły dla pustego inputu.",
     code: "",
     solution: repetitionReviewCode,
     tests: repetitionReviewTests,
@@ -951,7 +965,11 @@ export const macrosAsApiReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: klient z cieniem",
     prompt:
-      "Odtwórz eksportowane makro i publiczny `Reading`, używając `$crate` oraz `:expr`. Dostarczony evaluator dołączy klienta z lokalnym typem o tej samej nazwie i wywoła makro z `const { 3 }`.",
+      [
+        "Odtwórz eksportowane `metric_readings!` dla par `name => value` z matcherem `($( $name:expr => $value:expr ),* $(,)? )`; wynik ma być `Vec<Reading>`.",
+        "Zdefiniuj `#[derive(Debug, PartialEq, Eq)] pub struct Reading { pub name: String, pub value: i32 }` oraz `pub fn new(name: impl Into<String>, value: i32) -> Self`, a w rozwinięciu użyj `$crate::Reading` i `$crate::Reading::new`.",
+        "Użyj `:expr`, aby przyjąć `const { 3 }` w Rust 2024. Dostarczony evaluator dołączy klienta z lokalnym typem o tej samej nazwie.",
+      ].join("\n"),
     code: "",
     solution: exportedReviewCode,
     tests: exportedReviewTests,

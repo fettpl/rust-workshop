@@ -306,3 +306,27 @@ test("runs an executable macro coding review from an empty editor", async ({
     page.getByText("Wszystkie testy zakończyły się powodzeniem."),
   ).toBeVisible();
 });
+
+test("runs an executable API release retrieval from an empty editor", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Stara publiczna ścieżka i obserwowalne zachowanie" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: status sondy" }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await expect(editor).toBeVisible();
+  await expect(editor).toHaveValue("");
+  await editor.fill(reviewExercises["api-release-old-contracts"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem."),
+  ).toBeVisible();
+});

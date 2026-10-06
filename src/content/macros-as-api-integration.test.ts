@@ -106,10 +106,28 @@ it("keeps blank helpers in the hidden harness and reviews executable", () => {
     expect(exactBlank.evaluator.tests).toContain("fn log_name");
     expect(exactBlank.evaluator.tests).toContain("fn log_value");
   }
+  expect(exactBlank.prompt).toContain("pub struct Reading");
+  expect(exactBlank.prompt).toContain("pub fn new(name: impl Into<String>");
+  expect(exactBlank.prompt).toContain("metric_readings!");
+  expect(exactBlank.prompt).toContain("Vec<Reading>");
+  const exportedBlank = macrosAsApiLessons[2].steps.find(
+    (step) => step.id === "macros-exported-paths-2024-blank",
+  )!;
+  expect(exportedBlank.prompt).toContain("exported_pairs!");
+  expect(exportedBlank.prompt).toContain("$crate::Reading");
   for (const review of Object.values(macrosAsApiReviewExercises)) {
     expect(review.code).toBe("");
     expect(review.evaluator?.kind).toBe("tests");
   }
+  expect(macrosAsApiReviewExercises["macros-exactly-once"].prompt).toContain(
+    "metric_readings!",
+  );
+  expect(macrosAsApiReviewExercises["macros-repetition-grammar"].prompt).toContain(
+    "name => value",
+  );
+  expect(macrosAsApiReviewExercises["macros-exported-paths-2024"].prompt).toContain(
+    "metric_readings!",
+  );
 });
 
 it("keeps official macro sources and separates browser evidence from Cargo proof", () => {
