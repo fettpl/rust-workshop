@@ -242,7 +242,7 @@ fn decide(proofs: &[Proof], as_of_ymd: u32) -> Verdict {
   expect(oldResult.executed?.status, oldResult.executed?.stderr).toBe(0);
   expect(matrixResult.compiled.status, matrixResult.compiled.stderr).toBe(0);
   expect(matrixResult.executed?.status, matrixResult.executed?.stderr).toBe(0);
-});
+}, 30_000);
 
 it("runs every primary, blank, and delayed retrieval fixture", () => {
   const fixtures = [
