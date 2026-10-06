@@ -524,7 +524,7 @@ fn blank_proof_review_enforces_reason_precedence_and_freshness() {
     stale[0].observed_ymd = 20260924;
     assert_eq!(decide(&stale, 20260925), Verdict::Defer("stale"));
     let mut duplicate = ready();
-    duplicate.push(duplicate[0].clone());
+    duplicate.push(Proof { key: "caller", compiler: "stable", mode: "external", consumer: "old-consumer", result: ResultKind::Pass, observed_ymd: 20260925, digest: DIGEST });
     assert_eq!(decide(&duplicate, 20260925), Verdict::Defer("duplicate"));
     let mut provenance = ready();
     provenance[0].mode = "wrong";
@@ -761,7 +761,11 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "modify",
         title: "Sklasyfikuj obserwację release",
         prompt:
-          "Uzupełnij `classify` i `approve` dla jednej obserwacji starego klienta. Przyjmij `BuildOutcome` z nazwanym powodem (`MissingPublicItem`, `OtherCompileFailure` albo `Passed`) oraz `BehaviorOutcome`. Tylko nazwany brak publicznego elementu oznacza `PublicApiBreak`; niezwiązany błąd kompilacji zatrzymuje wydanie jako `UnclassifiedBuildFailure`, a wynik zachowania bez udanej kompilacji jest `ContradictoryObservation`. Oddziel timeout/infrastrukturę, brak evidence, regresję i zgodność. Zwróć `Hold` dla każdej niepewności i `Ship` wyłącznie dla `Compatible`. To model decyzji; zaufany verifier osobno potwierdza rzeczywisty crate i Cargo.",
+          [
+            "Uzupełnij `classify` i `approve` dla jednej obserwacji starego klienta. Przyjmij `BuildOutcome` z nazwanym powodem (`MissingPublicItem`, `OtherCompileFailure` albo `Passed`) oraz `BehaviorOutcome`. Tylko nazwany brak publicznego elementu oznacza `PublicApiBreak`; niezwiązany błąd kompilacji zatrzymuje wydanie jako `UnclassifiedBuildFailure`, a wynik zachowania bez udanej kompilacji jest `ContradictoryObservation`.",
+            "Kolejność klasyfikacji jest częścią kontraktu: najpierw `evidence_present == false` daje `MissingEvidence`, potem `infrastructure_ok == false` daje `InfrastructureFailure`, a dopiero potem rozstrzygaj build i behavior.",
+            "`approve` mapuje literalnie `PublicApiBreak` → `Hold(\"public-api\")`, `BehaviorRegression` → `Hold(\"behavior\")`, `InfrastructureFailure` → `Hold(\"infrastructure\")`, `MissingEvidence` → `Hold(\"missing-evidence\")`, `UnclassifiedBuildFailure` → `Hold(\"unclassified-build\")`, `ContradictoryObservation` → `Hold(\"contradictory\")`, a `Compatible` → `Ship`. To model decyzji; zaufany verifier osobno potwierdza rzeczywisty crate i Cargo.",
+          ].join("\n"),
         code: oldContractStarter,
         solution: oldContractSolution,
         evaluator: { kind: "tests", tests: oldContractTests },
@@ -948,7 +952,7 @@ export const apiReleaseMatrixLessons: Lesson[] = [
             "pub enum Decision { Ship, Hold(&'static str) }",
             "pub fn approve(records: &[Evidence], as_of_ymd: u32) -> Decision",
             "",
-            "Wymagaj dokładnie wymiarów: `legacy-client/external/old-consumer/stable`, `default/default/old-consumer/stable`, `no-default/no-default/old-consumer/stable`, `diagnostics/diagnostics/old-consumer/stable` oraz `msrv/default/old-consumer/1.85.0`. Odrzuć nieznany wymiar jako `unknown`; dla wymaganego wymiaru zachowaj kolejność decyzji: brak → `missing`, sprzeczne lub powtórzone rekordy → `conflict` albo `duplicate`, błędny toolchain/config/client → `provenance`, `Fail` → `failed`, stara data → `stale`, a niepoprawny `sha256:` plus 64 znaki hex → `malformed-hash`. Zwróć `Ship` tylko przy kompletnej świeżej macierzy. To model decyzji; manifest i Cargo są dowodem zaufanego verifiera.",
+            "Wymagaj dokładnie wymiarów: `legacy-client/external/old-consumer/stable`, `default/default/old-consumer/stable`, `no-default/no-default/old-consumer/stable`, `diagnostics/diagnostics/old-consumer/stable` oraz `msrv/default/old-consumer/1.85.0`. Odrzuć nieznany wymiar jako `unknown`; dla wymaganego wymiaru zachowaj kolejność decyzji: brak → `missing`, sprzeczne lub powtórzone rekordy → `conflict` albo `duplicate`, błędny toolchain/config/client → `provenance`, `Fail` → `failed`, a `captured_ymd` różne od `as_of_ymd` (w tym przyszłe) → `stale`, a niepoprawny `sha256:` plus 64 znaki hex → `malformed-hash`. Wymagaj dokładnie `captured_ymd == as_of_ymd` i zwróć `Ship` tylko przy kompletnej świeżej macierzy. To model decyzji; manifest i Cargo są dowodem zaufanego verifiera.",
           ].join("\n"),
         code: matrixStarter,
         solution: matrixSolution,
@@ -1036,9 +1040,19 @@ export const apiReleaseMatrixReviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: status sondy",
     prompt:
-      "Odtwórz `RunStatus`, `Decision` oraz `review`. Rozróżnij brak publicznego elementu, niezwiązany błąd kompilacji, zły wynik, sprzeczny wynik bez kompilacji, timeout, brak zapisu i zgodność, mapując je na osobne powody Hold albo Ship. Test jest obserwacją starego klienta, a nie dowodem Cargo.",
+      [
+        "Odtwórz niezależny kontrakt retrieval `RunStatus`, `Decision` oraz `review`.",
+        "",
+        "#[derive(Debug, PartialEq, Eq)] enum RunStatus { CompileError, OtherCompileError, WrongValue, Contradictory, Timeout, Absent, Match }",
+        "#[derive(Debug, PartialEq, Eq)] enum Decision { Ship, Hold(&'static str) }",
+        "fn review(status: RunStatus) -> Decision",
+        "",
+        "Wymagane mapowanie: CompileError → Hold(\"public-api\"), OtherCompileError → Hold(\"unclassified-build\"), WrongValue → Hold(\"behavior\"), Contradictory → Hold(\"contradictory\"), Timeout → Hold(\"infrastructure\"), Absent → Hold(\"missing-evidence\"), Match → Ship. Każdy wariant i każda etykieta jest częścią publicznego kontraktu. Test jest obserwacją starego klienta, a nie dowodem Cargo.",
+      ].join("\n"),
+    code: "",
     solution: oldContractReviewSolution,
     evaluator: { kind: "tests", tests: oldContractReviewTests },
+    expectedStatus: "success",
     evidenceKind: "recall",
   },
   "api-release-feature-msrv-matrix": {
@@ -1046,9 +1060,20 @@ export const apiReleaseMatrixReviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: audyt rekordów",
     prompt:
-      "Odtwórz `Run`, `Release` oraz `verdict`. Wymagaj pięciu rekordów z klientem, compilerem, trybem, wynikiem, datą i hashem; odrzuć brak, stary i konfliktowy dowód. Dane są modelem do retrieval, a nie Cargo proof.",
+      [
+        "Odtwórz niezależny kontrakt retrieval `Run`, `Status`, `Release` oraz `verdict`.",
+        "",
+        "#[derive(Debug, PartialEq, Eq)] enum Status { Pass, Fail }",
+        "#[derive(Debug, PartialEq, Eq)] struct Run { name: &'static str, compiler: &'static str, feature_set: &'static str, client: &'static str, status: Status, observed_ymd: u32, hash: &'static str }",
+        "#[derive(Debug, PartialEq, Eq)] enum Release { Ready, Stop(&'static str) }",
+        "fn verdict(runs: &[Run], as_of_ymd: u32) -> Release",
+        "",
+        "Wymagane tuple: (legacy, stable, external, old-consumer), (default, stable, default, old-consumer), (minimal, stable, no-default, old-consumer), (diagnostics, stable, diagnostics, old-consumer), (msrv, 1.85.0, default, old-consumer). Odrzuć w kolejności missing, duplicate/conflict, provenance, failed, stale gdy observed_ymd != as_of_ymd, oraz malformed-hash dla sha256: i dokładnie 64 znaków hex; zwróć Ready wyłącznie dla kompletnej macierzy. Dane są modelem do retrieval, a nie Cargo proof.",
+      ].join("\n"),
+    code: "",
     solution: matrixReviewSolution,
     evaluator: { kind: "tests", tests: matrixReviewTests },
+    expectedStatus: "success",
     evidenceKind: "recall",
   },
 };
