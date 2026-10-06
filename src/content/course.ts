@@ -109,6 +109,14 @@ import {
   publicApiEvolutionSources,
   publicApiEvolutionReviewExercises,
 } from "./public-api-evolution";
+import {
+  apiReleaseMatrixLessons,
+  apiReleaseMatrixConcepts,
+  apiReleaseMatrixCompetencies,
+  apiReleaseMatrixSources,
+  apiReleaseMatrixReviewExercises,
+  apiReleaseMatrixModule,
+} from "./api-release-matrix";
 import { frameProtocolProject } from "./projects/frame-protocol";
 import { tokioNetworkModule } from "./tokio-network-module";
 import {
@@ -503,6 +511,7 @@ export const modules = [
   tokioNetworkModule,
   asyncLendingModule,
   publicApiModule,
+  apiReleaseMatrixModule,
   cargoDependencyLifecycleModule,
   dependencyAssuranceModule,
   miniGrepModule,
@@ -564,6 +573,7 @@ export const lessons = [
   ...asyncLendingBoundaryLessons,
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
+  ...apiReleaseMatrixLessons,
   ...cargoDependencyLessons,
   ...cargoReleaseLessons,
   ...dependencyAssuranceLessons,
@@ -625,6 +635,7 @@ export const concepts = [
   ...asyncLendingBoundaryConcepts,
   ...publicApiValueConcepts,
   ...publicApiEvolutionConcepts,
+  ...apiReleaseMatrixConcepts,
   ...cargoDependencyConcepts,
   ...cargoReleaseConcepts,
   ...dependencyAssuranceConcepts,
@@ -686,6 +697,7 @@ export const competencies = [
   ...asyncLendingBoundaryCompetencies,
   ...publicApiValueCompetencies,
   ...publicApiEvolutionCompetencies,
+  ...apiReleaseMatrixCompetencies,
   ...cargoDependencyCompetencies,
   ...cargoReleaseCompetencies,
   ...dependencyAssuranceCompetencies,
@@ -746,6 +758,7 @@ export const sources = [
   ...asyncLendingBoundarySources,
   ...publicApiValueSources,
   ...publicApiEvolutionSources,
+  ...apiReleaseMatrixSources,
   ...cargoDependencySources,
   ...cargoReleaseSources,
   ...dependencyAssuranceSources,
@@ -806,6 +819,7 @@ export const reviewExercises = {
   ...asyncLendingBoundaryReviewExercises,
   ...publicApiValueReviewExercises,
   ...publicApiEvolutionReviewExercises,
+  ...apiReleaseMatrixReviewExercises,
   ...cargoDependencyReviewExercises,
   ...cargoReleaseReviewExercises,
   ...dependencyAssuranceReviewExercises,
@@ -937,6 +951,10 @@ export const roadmap = [
   },
   {
     title: "Publiczne API: kontrakty i workspace Cargo",
+    status: "available",
+  },
+  {
+    title: "API Release Matrix: stary klient, features i MSRV",
     status: "available",
   },
   {
