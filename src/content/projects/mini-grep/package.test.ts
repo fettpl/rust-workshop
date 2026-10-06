@@ -10,7 +10,7 @@ describe("Mini grep archive contract", () => {
     expect(validateProjectPackage(miniGrepPackage)).toEqual([]);
     expect(miniGrepPackage.id).toBe("mini-grep-workshop");
     expect(miniGrepProject.id).toBe("mini-grep");
-    expect(miniGrepPackage.revealStepRefs).toHaveLength(4);
+    expect(miniGrepPackage.revealStepRefs).toHaveLength(8);
 
     const reference = projectFiles(miniGrepPackage, "solution");
     expect(Object.keys(reference)).toEqual(
@@ -24,6 +24,13 @@ describe("Mini grep archive contract", () => {
         "src/main.rs",
         "tests/search_contract.rs",
         "tests/cli.rs",
+        "FUZZ-MANIFEST.json",
+        "FUZZ-EVIDENCE.md",
+        "fuzz/support/case.rs",
+        "fuzz/support/check.rs",
+        "tests/fuzz_regressions.rs",
+        "fuzz/regressions/substring-prefix.seed",
+        "fuzz/regressions/substring-prefix-padded.seed",
       ]),
     );
     expect(reference["Cargo.toml"]).toContain('edition = "2024"');
@@ -34,5 +41,26 @@ describe("Mini grep archive contract", () => {
     const starter = projectFiles(miniGrepPackage, "starter");
     expect(starter["src/lib.rs"]).toContain("todo!");
     expect(starter["tests/search_contract.rs"]).toContain("select_context");
+  });
+
+  it("keeps the authored fuzz evidence files and exact binary regression", () => {
+    for (const variant of ["starter", "solution"] as const) {
+      const files = projectFiles(miniGrepPackage, variant);
+      const seed = new TextEncoder().encode(
+        files["fuzz/regressions/substring-prefix.seed"],
+      );
+      expect([...seed]).toEqual([0, 0, 1, 120, 97, 120, 10]);
+      expect(files["FUZZ-MANIFEST.json"]).toContain('"schemaVersion": 1');
+      expect(files["FUZZ-MANIFEST.json"]).toContain("fixedRegressionSha256");
+      expect(files["FUZZ-EVIDENCE.md"]).toContain("Replay and campaign");
+      expect(files["fuzz/support/check.rs"]).toContain("FailureKind");
+      expect(files["tests/fuzz_regressions.rs"]).toContain("substring_prefix_witness");
+      expect([...new TextEncoder().encode(files["fuzz/regressions/substring-prefix-padded.seed"])]).toEqual([
+        0, 0, 1, 120, 112, 97, 100, 100, 105, 110, 103, 10, 97, 120, 10,
+      ]);
+    }
+    expect(projectFiles(miniGrepPackage, "solution")["Cargo.toml"]).not.toContain(
+      "libfuzzer-sys",
+    );
   });
 });

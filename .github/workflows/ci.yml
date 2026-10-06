@@ -38,11 +38,11 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run content:packages
       - run: npm test
       - run: npm run content:check
       - run: npm run content:rust
       - run: npm run content:tokio -- --fetch
-      - run: npm run content:packages
       - run: npm run content:async-lending -- --fetch
       - run: npm run content:operations -- --fetch
       - run: npm run content:models -- --fetch
@@ -129,7 +129,7 @@ jobs:
 
   workspace-msrv:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       # v6.1.0
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -178,12 +178,18 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
       - run: npm run content:cargo
+      - run: npm run content:rust
       - run: npm run content:manifests -- --msrv
       - name: Verify GAT and Performance Evidence contracts on Rust 1.85.0
         run: |
           gat_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
           "$gat_rust_bin/rustc" --version
           PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts src/content/performance-evidence-assessment.test.ts src/content/capstone-integration-assessment.test.ts src/content/capstone-verification.test.ts
+      - name: Verify fuzz evidence assessments on Rust 1.85.0
+        run: |
+          fuzz_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
+          "$fuzz_rust_bin/rustc" --version
+          PATH="$fuzz_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/fuzz-evidence-assessment.test.ts src/content/fuzz-evidence-integration.test.ts src/content/fuzz-evidence-verification.test.ts
       # v7.0.1
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
@@ -211,7 +217,14 @@ jobs:
         with:
           toolchain: nightly-2026-08-08
           components: rustfmt
-      - run: cargo install cargo-fuzz --version 0.13.2 --locked
+      # The stable regression and MSRV replay are pinned independently from nightly instrumentation.
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+        with:
+          toolchain: 1.85.0
+      - name: Install cargo-fuzz with the pinned nightly
+        run: cargo +nightly-2026-08-08 install cargo-fuzz --version 0.13.2 --locked
+      - name: Check cargo-fuzz toolchain
+        run: cargo +nightly-2026-08-08 fuzz --version
       - run: npm ci
       - run: npm run content:fuzz -- --fetch
       # v7.0.1
@@ -336,3 +349,51 @@ jobs:
       - run: npm ci
       - run: npm run content:miri -- --fetch
       - run: npm run content:miri -- --msrv --fetch
+
+  unsafe-borrowed-memory:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: stable
+            toolchain: stable
+            args: ""
+          - mode: msrv
+            toolchain: 1.85.0
+            args: --msrv
+          - mode: miri
+            toolchain: nightly-2026-08-08
+            args: --miri
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rustfmt, clippy${{ matrix.mode == 'miri' && ', miri, rust-src' || '' }}
+      - run: npm ci
+      - name: Run authored borrowed-memory verifier
+        run: BORROWED_MEMORY_ARTIFACT_DIR=borrowed-memory-artifacts node --import tsx scripts/verify-borrowed-memory.ts ${{ matrix.args }} > borrowed-memory-${{ matrix.mode }}.json
+      - name: Check Rust tool metadata
+        run: rustfmt --version && cargo fmt --version && cargo clippy --version
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: unsafe-borrowed-memory-${{ matrix.mode }}
+          path: borrowed-memory-${{ matrix.mode }}.json
+          if-no-files-found: warn
+          retention-days: 7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: unsafe-borrowed-memory-evidence-${{ matrix.mode }}
+          path: borrowed-memory-artifacts
+          if-no-files-found: warn
+          retention-days: 7

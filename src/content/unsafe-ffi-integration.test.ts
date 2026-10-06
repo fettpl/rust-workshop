@@ -152,22 +152,23 @@ it("uses each gate and blank as an independent module criterion", () => {
 });
 
 it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
-  expect(modules).toHaveLength(46);
-  expect(lessons).toHaveLength(176);
-  expect(concepts).toHaveLength(179);
-  expect(sources).toHaveLength(321);
+  expect(modules).toHaveLength(47);
+  expect(lessons).toHaveLength(181);
+  expect(concepts).toHaveLength(184);
+  expect(sources).toHaveLength(326);
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(131);
+  ).toHaveLength(136);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
-  expect(index).toBe(modules.length - 4);
+  expect(index).toBe(modules.length - 5);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);
   expect(modules[index - 1].id).toBe("profile-evidence");
   expect(modules[index - 2].id).toBe("performance-evidence");
   expect(modules[index + 1].id).toBe("unsafe-miri-contracts");
-  expect(modules[index + 2].id).toBe("service-operations");
+  expect(modules[index + 2].id).toBe("unsafe-borrowed-memory-soundness");
+  expect(modules[index + 3].id).toBe("service-operations");
   expect(unsafeFfiSources).toHaveLength(4);
   expect(
     roadmap.find((entry) => entry.title.startsWith("Unsafe i FFI"))?.status,

@@ -76,13 +76,11 @@ export function LessonWorkspace() {
     ["exact-output", "compilation", "expected-error", "tests"].includes(
       step.evaluator.kind,
     );
-  const editable = ![
-    "predict",
-    "observe",
-    "explain",
-    "trace",
-    "recall",
-  ].includes(step.kind);
+  const editable =
+    !["predict", "observe", "explain", "trace", "recall"].includes(step.kind) ||
+    (step.kind === "recall" &&
+      step.code !== undefined &&
+      step.evaluator?.kind === "tests");
   const panel = !hasCode
     ? "lesson"
     : isToml && state.resume.panel === "output"

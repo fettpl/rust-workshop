@@ -229,8 +229,8 @@ export function validateContent(content: ContentBundle): string[] {
       errors.push(
         `lesson ${lesson.id} belongs to unknown module: ${lesson.moduleId}`,
       );
-    if (lesson.steps.length < 5 || lesson.steps.length > 8)
-      errors.push(`lesson ${lesson.id} must have 5-8 steps`);
+    if (lesson.steps.length < 5 || lesson.steps.length > 9)
+      errors.push(`lesson ${lesson.id} must have 5-9 steps`);
     if (!lesson.transferTask.trim())
       errors.push(`lesson ${lesson.id} is missing transferTask`);
     if (!lesson.evidenceGate.trim())
@@ -274,7 +274,12 @@ export function validateContent(content: ContentBundle): string[] {
         errors.push(`step ${stepKey} is missing prompt or title`);
       if (!step.evaluator) errors.push(`step ${stepKey} is missing evaluator`);
       if (step.code !== undefined) {
-        if (!step.solution?.trim())
+        const isExposureOnlyExpectedError =
+          step.kind === "observe" &&
+          step.evidenceKind === "exposure" &&
+          step.expectedStatus === "compile-error" &&
+          step.evaluator?.kind === "expected-error";
+        if (!step.solution?.trim() && !isExposureOnlyExpectedError)
           errors.push(`step ${stepKey} has code but no solution`);
         if (step.editorMode !== "toml" && !step.expectedStatus)
           errors.push(`step ${stepKey} has code but no expectedStatus`);
