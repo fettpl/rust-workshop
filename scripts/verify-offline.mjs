@@ -22,6 +22,29 @@ import { readFile } from "node:fs/promises";
             };
           }),
       );
+    const resetFuzzPrimaryProgress = () =>
+      page.evaluate(
+        () =>
+          new Promise((resolve, reject) => {
+            const request = indexedDB.open("rust-workshop-state");
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+              const database = request.result;
+              const transaction = database.transaction("user-state", "readwrite");
+              const store = transaction.objectStore("user-state");
+              const read = store.get("current");
+              read.onerror = () => reject(read.error);
+              read.onsuccess = () => {
+                const state = read.result;
+                delete state.steps["fuzz-input-domain:fuzz-input-domain-gate"];
+                state.updatedAt = Date.now();
+                store.put(state, "current");
+              };
+              transaction.oncomplete = () => resolve();
+              transaction.onerror = () => reject(transaction.error);
+            };
+          }),
+      );
     const errors = [];
     const consoleErrors = [];
     const expectedOfflineConsoleErrors = [];
@@ -760,6 +783,11 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       page.getByRole("button", { name: "Pokaż drugą wskazówkę" }),
     ).toBeVisible();
     console.log("Service Operations gate and draft resume offline");
+    // Mini grep's solution package intentionally exposes the linked fuzz gates.
+    // Keep that package evidence and its cached archives, but isolate this
+    // primary -> hints -> reveal flow so the warning assertion remains honest.
+    await resetFuzzPrimaryProgress();
+    await page.reload();
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const fuzzTitle = "Fuzz evidence: od bajtów do audytowalnej regresji";
     await page
@@ -823,9 +851,11 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(fuzzTitle);
     await page.locator(".module-picker > button").filter({ hasText: fuzzTitle }).click();
+    await page.locator(".lesson-list-item").first().click();
     await page
       .getByLabel("Kroki lekcji")
-      .getByRole("button", { name: /^(?:\d{2} )?Zmień$/ })
+      .getByRole("button")
+      .nth(3)
       .click();
     await fuzzPrimaryEditor.fill(fuzzAssistedPrimaryCode);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
