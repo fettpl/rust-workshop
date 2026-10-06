@@ -656,6 +656,11 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         autoTraitRun,
         "bounds=send-sync\n",
       ),
+      explain(
+        "unsafe-borrowed-auto-traits-explain",
+        "Wyjaśnij auto-traits",
+        "Wyjaśnij, skąd wrapper dziedziczy Send i Sync.",
+      ),
       coding({
         id: "unsafe-borrowed-auto-traits-boundary-gate",
         kind: "modify",
@@ -716,6 +721,11 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         solution: autoTraitsEquivalent,
         tests: autoTraitsTests,
       }),
+      compileFail(
+        "unsafe-borrowed-auto-traits-compile-fail",
+        "Uruchom compile-fail klienta safe API; musi odrzucić próbę lifetime escape.",
+        invariantCompile,
+      ),
       coding({
         id: "unsafe-borrowed-auto-traits-soundness-transfer",
         kind: "apply",
@@ -727,11 +737,6 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         tests: sharedLeaseTransferTests,
         gate: true,
       }),
-      compileFail(
-        "unsafe-borrowed-auto-traits-compile-fail",
-        "Uruchom compile-fail klienta safe API; musi odrzucić próbę lifetime escape.",
-        invariantCompile,
-      ),
     ],
     misconceptions: [
       "Send można dopisać blanket impl.",

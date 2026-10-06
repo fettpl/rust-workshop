@@ -16,6 +16,46 @@ const lessonIds = [
   "unsafe-borrowed-auto-traits",
 ];
 
+const originalPr25StepIds: Record<string, string[]> = {
+  "unsafe-borrowed-provenance": [
+    "unsafe-borrowed-provenance-predict",
+    "unsafe-borrowed-provenance-run",
+    "unsafe-borrowed-provenance-explain",
+    "unsafe-borrowed-provenance-boundary-gate",
+    "unsafe-borrowed-provenance-soundness-gate",
+    "unsafe-borrowed-provenance-blank",
+    "unsafe-borrowed-provenance-recall",
+  ],
+  "unsafe-borrowed-reborrow": [
+    "unsafe-borrowed-reborrow-predict",
+    "unsafe-borrowed-reborrow-run",
+    "unsafe-borrowed-reborrow-explain",
+    "unsafe-borrowed-reborrow-boundary-gate",
+    "unsafe-borrowed-reborrow-soundness-gate",
+    "unsafe-borrowed-reborrow-blank",
+    "unsafe-borrowed-reborrow-recall",
+  ],
+  "unsafe-borrowed-slot": [
+    "unsafe-borrowed-slot-predict",
+    "unsafe-borrowed-slot-run",
+    "unsafe-borrowed-slot-explain",
+    "unsafe-borrowed-slot-boundary-gate",
+    "unsafe-borrowed-slot-soundness-gate",
+    "unsafe-borrowed-slot-blank",
+    "unsafe-borrowed-slot-recall",
+  ],
+  "unsafe-borrowed-auto-traits": [
+    "unsafe-borrowed-auto-traits-predict",
+    "unsafe-borrowed-auto-traits-run",
+    "unsafe-borrowed-auto-traits-explain",
+    "unsafe-borrowed-auto-traits-boundary-gate",
+    "unsafe-borrowed-auto-traits-soundness-gate",
+    "unsafe-borrowed-auto-traits-blank",
+    "unsafe-borrowed-auto-traits-recall",
+    "unsafe-borrowed-auto-traits-compile-fail",
+  ],
+};
+
 it("registers the four borrowed-memory lessons with independent evidence gates", () => {
   expect(unsafeBorrowedMemoryLessons.map((lesson) => lesson.id)).toEqual(
     lessonIds,
@@ -26,6 +66,17 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
   ]);
   expect(unsafeBorrowedMemoryConcepts).toHaveLength(4);
   expect(unsafeBorrowedMemoryModule.gateCriteria).toHaveLength(8);
+
+  for (const lesson of unsafeBorrowedMemoryLessons) {
+    const originalIds = originalPr25StepIds[lesson.id];
+    expect(originalIds).toBeDefined();
+    expect(lesson.steps.slice(0, originalIds.length).map((step) => step.id)).toEqual(
+      originalIds,
+    );
+    expect(lesson.steps.slice(originalIds.length).map((step) => step.id)).toEqual([
+      `${lesson.id}-soundness-transfer`,
+    ]);
+  }
 
   const evidenceSteps = unsafeBorrowedMemoryLessons.flatMap((lesson) =>
     lesson.steps.filter((step) => step.evidenceGate),

@@ -229,8 +229,8 @@ export function validateContent(content: ContentBundle): string[] {
       errors.push(
         `lesson ${lesson.id} belongs to unknown module: ${lesson.moduleId}`,
       );
-    if (lesson.steps.length < 5 || lesson.steps.length > 8)
-      errors.push(`lesson ${lesson.id} must have 5-8 steps`);
+    if (lesson.steps.length < 5 || lesson.steps.length > 9)
+      errors.push(`lesson ${lesson.id} must have 5-9 steps`);
     if (!lesson.transferTask.trim())
       errors.push(`lesson ${lesson.id} is missing transferTask`);
     if (!lesson.evidenceGate.trim())

@@ -200,6 +200,7 @@ fn hidden_positive_bounds(){hidden_assert_send::<InvariantBorrow<'_,u8>>();hidde
 #[test]fn positive_bounds_compile(){hidden_positive_bounds();}
 #[test]fn sync_bound_is_explicit(){hidden_assert_sync::<InvariantBorrow<'_,u8>>();}
 #[test]fn mutable_borrow_is_operational(){let mut v=8;let b=InvariantBorrow::from_mut(&mut v);assert_eq!(*b.get(),8);}
+#[test]fn scoped_reborrow_preserves_parent_access(){let mut v=8;let mut parent=InvariantBorrow::from_mut(&mut v);{let mut child=parent.reborrow();*child.get_mut()+=2;}*parent.get_mut()+=1;assert_eq!(v,11);}
 #[test]fn cell_is_send_in_the_client_contract(){use std::cell::Cell;hidden_assert_send::<InvariantBorrow<'_,Cell<u8>>>();}`;
 
 export const autoTraitsSoundnessCanonical =
@@ -216,7 +217,8 @@ export const autoTraitsSoundnessMutant = `${autoTraitsSoundnessCanonical}
 unsafe impl<'owner,T> Sync for InvariantBorrow<'owner,T>{}`;
 export const autoTraitsSoundnessTests = String.raw`fn hidden_soundness_send<T:Send>(){} fn hidden_soundness_sync<T:Sync>(){}
 #[test]fn soundness_bounds_are_explicit(){hidden_soundness_send::<InvariantBorrow<'_,u8>>();hidden_soundness_sync::<InvariantBorrow<'_,u8>>();hidden_soundness_send::<InvariantBorrow<'_,std::cell::Cell<u8>>>();}
-#[test]fn soundness_reborrow_preserves_value(){let mut v=11;let view=InvariantBorrow::from_mut(&mut v);assert_eq!(*view.get(),11);}`;
+#[test]fn soundness_reborrow_preserves_value(){let mut v=11;let view=InvariantBorrow::from_mut(&mut v);assert_eq!(*view.get(),11);}
+#[test]fn scoped_reborrow_preserves_parent_access(){let mut v=11;let mut parent=InvariantBorrow::from_mut(&mut v);{let mut child=parent.reborrow();*child.get_mut()+=2;}*parent.get_mut()+=1;assert_eq!(v,14);}`;
 
 export const cellMarkerBlankCanonical = String.raw`use std::marker::PhantomData;
 struct CellMarker<'owner,T>{value:&'owner mut T,marker:PhantomData<fn(T)->T>,owner:PhantomData<&'owner mut T>}
