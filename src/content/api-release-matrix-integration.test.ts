@@ -124,6 +124,11 @@ it("keeps the release lesson evidence distinct from Cargo proof", () => {
   expect(oldGate.prompt).toMatch(
     /MissingPublicItem|OtherCompileFailure|ContradictoryObservation|public API break|regresj|infrastruktur|evidence/i,
   );
+  expect(oldGate.prompt).toContain("evidence_present == false");
+  expect(oldGate.prompt).toContain('Hold(\"public-api\")');
+  expect(oldGate.prompt).toContain('Hold(\"missing-evidence\")');
+  expect(oldGate.prompt).toContain('Hold(\"unclassified-build\")');
+  expect(oldGate.prompt).toContain('Hold(\"contradictory\")');
   expect(oldGate.solution).toContain("ClientObservation");
   expect(oldGate.solution).toContain("ReleaseDecision");
   expect(oldGate.solution).toContain("BuildOutcome");
@@ -161,6 +166,8 @@ it("publishes the exact blank contracts without prefilled learner code", () => {
   expect(matrixGate.prompt).toMatch(
     /legacy-client.*external.*old-consumer.*stable.*default.*no-default.*diagnostics.*msrv.*1\.85\.0/s,
   );
+  expect(matrixGate.prompt).toContain("captured_ymd == as_of_ymd");
+  expect(matrixGate.prompt).toContain("w tym przyszłe");
   expect(matrixBlank.code).toBeUndefined();
   expect(matrixBlank.prompt).toMatch(
     /ResultKind.*Pass.*Fail.*Verdict.*Accept.*Defer\(&'static str\).*decide\(proofs: &\[Proof\], as_of_ymd: u32\)/s,
@@ -170,6 +177,14 @@ it("publishes the exact blank contracts without prefilled learner code", () => {
   );
   expect(matrixBlank.prompt).toMatch(
     /observed_ymd == as_of_ymd.*sha256:.*64.*hex.*missing.*duplicate.*provenance.*failed.*stale.*malformed-hash/s,
+  );
+  expect(reviewExercises["api-release-old-contracts"]?.code).toBe("");
+  expect(reviewExercises["api-release-feature-msrv-matrix"]?.code).toBe("");
+  expect(reviewExercises["api-release-old-contracts"]?.prompt).toContain(
+    "RunStatus",
+  );
+  expect(reviewExercises["api-release-feature-msrv-matrix"]?.prompt).toContain(
+    "observed_ymd",
   );
 });
 
