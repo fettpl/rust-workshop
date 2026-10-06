@@ -150,15 +150,26 @@ it("publishes the exact blank contracts without prefilled learner code", () => {
   expect(oldBlank.prompt).toMatch(
     /Verdict.*Release.*Stop\(&'static str\).*inspect\(result: ProbeResult\)/s,
   );
+  expect(oldBlank.prompt).toMatch(
+    /derive\(Debug, PartialEq\).*public-api.*unclassified-build.*behavior.*contradictory.*infrastructure.*missing-evidence/s,
+  );
   expect(matrixGate.prompt).toMatch(
-    /Proof.*key.*compiler.*mode.*consumer.*result.*observed_ymd.*digest/s,
+    /Outcome.*Pass.*Fail.*Evidence.*dimension.*toolchain.*config.*client.*captured_ymd.*artifact_hash.*Decision.*Ship.*Hold\(&'static str\).*approve\(records: &\[Evidence\], as_of_ymd: u32\)/s,
+  );
+  expect(matrixGate.prompt).not.toContain("Proof");
+  expect(matrixGate.prompt).not.toContain("decide(");
+  expect(matrixGate.prompt).toMatch(
+    /legacy-client.*external.*old-consumer.*stable.*default.*no-default.*diagnostics.*msrv.*1\.85\.0/s,
   );
   expect(matrixBlank.code).toBeUndefined();
   expect(matrixBlank.prompt).toMatch(
-    /ResultKind.*Pass.*Fail.*Verdict.*Accept.*Defer\(&'static str\).*decide\(&\[Proof\], as_of_ymd: u32\)/s,
+    /ResultKind.*Pass.*Fail.*Verdict.*Accept.*Defer\(&'static str\).*decide\(proofs: &\[Proof\], as_of_ymd: u32\)/s,
   );
   expect(matrixBlank.prompt).toMatch(
     /caller.*stable.*external.*old-consumer.*default.*no-default.*opt-in.*diagnostics.*floor.*1\.85\.0/s,
+  );
+  expect(matrixBlank.prompt).toMatch(
+    /observed_ymd == as_of_ymd.*sha256:.*64.*hex.*missing.*duplicate.*provenance.*failed.*stale.*malformed-hash/s,
   );
 });
 
@@ -190,9 +201,9 @@ fn inspect(result: ProbeResult) -> Verdict {
     }
 }`;
   const matrixSolution = `
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum ResultKind { Pass, Fail }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Proof { key: &'static str, compiler: &'static str, mode: &'static str, consumer: &'static str, result: ResultKind, observed_ymd: u32, digest: &'static str }
 #[derive(Debug, PartialEq)]
 enum Verdict { Accept, Defer(&'static str) }

@@ -450,7 +450,7 @@ fn provenance_matrix_requires_every_fresh_configuration() {
     stale[0].captured_ymd = 20260924;
     assert_eq!(approve(&stale, 20260925), Decision::Hold("stale"));
     let mut duplicate = complete();
-    duplicate.push(duplicate[0]);
+    duplicate.push(duplicate[0].clone());
     assert_eq!(approve(&duplicate, 20260925), Decision::Hold("duplicate"));
     let mut conflict = complete();
     conflict.push(Evidence { outcome: Outcome::Fail, ..conflict[0] });
@@ -514,7 +514,7 @@ fn ready() -> Vec<Proof> {
 }
 
 #[test]
-fn blank_proof_review_rejects_missing_stale_and_malformed_records() {
+fn blank_proof_review_enforces_reason_precedence_and_freshness() {
     assert_eq!(decide(&ready(), 20260925), Verdict::Accept);
     for key in ["caller", "default", "bare", "opt-in", "floor"] {
         let proofs = ready().into_iter().filter(|proof| proof.key != key).collect::<Vec<_>>();
@@ -523,9 +523,24 @@ fn blank_proof_review_rejects_missing_stale_and_malformed_records() {
     let mut stale = ready();
     stale[0].observed_ymd = 20260924;
     assert_eq!(decide(&stale, 20260925), Verdict::Defer("stale"));
+    let mut duplicate = ready();
+    duplicate.push(duplicate[0].clone());
+    assert_eq!(decide(&duplicate, 20260925), Verdict::Defer("duplicate"));
+    let mut provenance = ready();
+    provenance[0].mode = "wrong";
+    assert_eq!(decide(&provenance, 20260925), Verdict::Defer("provenance"));
+    let mut failed = ready();
+    failed[0].result = ResultKind::Fail;
+    assert_eq!(decide(&failed, 20260925), Verdict::Defer("failed"));
     let mut malformed = ready();
     malformed[1].digest = "sha256:gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg";
     assert_eq!(decide(&malformed, 20260925), Verdict::Defer("malformed-hash"));
+    let mut precedence = ready();
+    precedence[0].mode = "wrong";
+    precedence[0].result = ResultKind::Fail;
+    precedence[0].observed_ymd = 20260924;
+    precedence[0].digest = "bad";
+    assert_eq!(decide(&precedence, 20260925), Verdict::Defer("provenance"));
 }`;
 
 const matrixReviewSolution = `#[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -779,7 +794,18 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "blank",
         title: "Pusta strona: sklasyfikuj sondę",
         prompt:
-          "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`. Kontrakt publiczny to `ProbeResult { MissingSymbol, OtherCompileFailure, ChangedOutput, Contradictory, TimedOut, NotRecorded, SameContract }`, `Verdict { Release, Stop(&'static str) }` oraz `inspect(result: ProbeResult) -> Verdict`. Rozróżnij brak publicznego symbolu, niezwiązany błąd kompilacji, zmianę wyniku, sprzeczny wynik bez udanej kompilacji, timeout, brak zapisu i zgodność; każdą niepewność mapuj na osobny powód `Stop`, a zgodność na `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
+          [
+            "Od zera napisz `ProbeResult`, `Verdict` oraz `inspect`.",
+            "",
+            "Kontrakt publiczny:",
+            "#[derive(Debug, PartialEq)]",
+            "pub enum ProbeResult { MissingSymbol, OtherCompileFailure, ChangedOutput, Contradictory, TimedOut, NotRecorded, SameContract }",
+            "#[derive(Debug, PartialEq)]",
+            "pub enum Verdict { Release, Stop(&'static str) }",
+            "pub fn inspect(result: ProbeResult) -> Verdict",
+            "",
+            "Rozróżnij warianty `ProbeResult` i zwróć dokładnie: `MissingSymbol` → `Stop(\"public-api\")`, `OtherCompileFailure` → `Stop(\"unclassified-build\")`, `ChangedOutput` → `Stop(\"behavior\")`, `Contradictory` → `Stop(\"contradictory\")`, `TimedOut` → `Stop(\"infrastructure\")`, `NotRecorded` → `Stop(\"missing-evidence\")`, a `SameContract` → `Release`. To świeży model obserwacji starego klienta, bez publicznych ścieżek i bez Cargo proof.",
+          ].join("\n"),
         solution: oldContractBlankSolution,
         evaluator: { kind: "tests", tests: oldContractBlankTests },
         expectedStatus: "success",
@@ -903,7 +929,27 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "modify",
         title: "Zaimplementuj decyzję z provenance",
         prompt:
-          "Uzupełnij `approve`, sprawdzając dla każdego rekordu nazwę konfiguracji, toolchain, klienta, wynik `Pass`, datę obserwacji i hash artefaktu. Kontrakt publiczny to `enum ResultKind { Pass, Fail }`, `struct Proof { key: &'static str, compiler: &'static str, mode: &'static str, consumer: &'static str, result: ResultKind, observed_ymd: u32, digest: &'static str }`, `enum Verdict { Accept, Defer(&'static str) }` oraz `fn decide(proofs: &[Proof], as_of_ymd: u32) -> Verdict`; każdy rekord ma dokładne pola `key`, `compiler`, `mode`, `consumer`, `result`, `observed_ymd` i `digest`. Wymagaj starego klienta, default, no-default, opt-in `diagnostics` i dokładnego MSRV `1.85.0`; odrzuć brak, stary, pusty, zduplikowany lub sprzeczny dowód. Zwróć `Ship` tylko przy kompletnej świeżej macierzy. To model decyzji; manifest i Cargo są dowodem zaufanego verifiera.",
+          [
+            "Uzupełnij `approve` dla następującego publicznego kontraktu.",
+            "",
+            "#[derive(Debug, PartialEq, Eq, Clone, Copy)]",
+            "pub enum Outcome { Pass, Fail }",
+            "#[derive(Debug, PartialEq, Eq, Clone, Copy)]",
+            "pub struct Evidence {",
+            "    pub dimension: &'static str,",
+            "    pub toolchain: &'static str,",
+            "    pub config: &'static str,",
+            "    pub client: &'static str,",
+            "    pub outcome: Outcome,",
+            "    pub captured_ymd: u32,",
+            "    pub artifact_hash: &'static str,",
+            "}",
+            "#[derive(Debug, PartialEq, Eq)]",
+            "pub enum Decision { Ship, Hold(&'static str) }",
+            "pub fn approve(records: &[Evidence], as_of_ymd: u32) -> Decision",
+            "",
+            "Wymagaj dokładnie wymiarów: `legacy-client/external/old-consumer/stable`, `default/default/old-consumer/stable`, `no-default/no-default/old-consumer/stable`, `diagnostics/diagnostics/old-consumer/stable` oraz `msrv/default/old-consumer/1.85.0`. Odrzuć nieznany wymiar jako `unknown`; dla wymaganego wymiaru zachowaj kolejność decyzji: brak → `missing`, sprzeczne lub powtórzone rekordy → `conflict` albo `duplicate`, błędny toolchain/config/client → `provenance`, `Fail` → `failed`, stara data → `stale`, a niepoprawny `sha256:` plus 64 znaki hex → `malformed-hash`. Zwróć `Ship` tylko przy kompletnej świeżej macierzy. To model decyzji; manifest i Cargo są dowodem zaufanego verifiera.",
+          ].join("\n"),
         code: matrixStarter,
         solution: matrixSolution,
         evaluator: { kind: "tests", tests: matrixTests },
@@ -933,7 +979,28 @@ export const apiReleaseMatrixLessons: Lesson[] = [
         kind: "blank",
         title: "Pusta strona: decyzja dla konfiguracji",
         prompt:
-          "Od zera napisz `Proof`, `ResultKind`, `Verdict` oraz `decide`. Kontrakt publiczny to `Proof { key: &'static str, compiler: &'static str, mode: &'static str, consumer: &'static str, result: ResultKind, observed_ymd: u32, digest: &'static str }`, `ResultKind { Pass, Fail }`, `Verdict { Accept, Defer(&'static str) }` oraz `decide(&[Proof], as_of_ymd: u32) -> Verdict`. Wymagane są dokładnie rekordy `(caller, stable, external, old-consumer)`, `(default, stable, default, old-consumer)`, `(bare, stable, no-default, old-consumer)`, `(opt-in, stable, diagnostics, old-consumer)` i `(floor, 1.85.0, default, old-consumer)`; zwróć `Defer` dla braku, starej lub malformed obserwacji. Test jest modelem jednego źródła i nie udaje `cargo check` ani granicy external crate.",
+          [
+            "Od zera napisz `Proof`, `ResultKind`, `Verdict` oraz `decide`.",
+            "",
+            "Kontrakt publiczny:",
+            "#[derive(Debug, PartialEq, Eq)]",
+            "pub enum ResultKind { Pass, Fail }",
+            "#[derive(Debug, PartialEq, Eq)]",
+            "pub struct Proof {",
+            "    pub key: &'static str,",
+            "    pub compiler: &'static str,",
+            "    pub mode: &'static str,",
+            "    pub consumer: &'static str,",
+            "    pub result: ResultKind,",
+            "    pub observed_ymd: u32,",
+            "    pub digest: &'static str,",
+            "}",
+            "#[derive(Debug, PartialEq, Eq)]",
+            "pub enum Verdict { Accept, Defer(&'static str) }",
+            "pub fn decide(proofs: &[Proof], as_of_ymd: u32) -> Verdict",
+            "",
+            "Wymagane są dokładnie rekordy `(caller, stable, external, old-consumer)`, `(default, stable, default, old-consumer)`, `(bare, stable, no-default, old-consumer)`, `(opt-in, stable, diagnostics, old-consumer)` i `(floor, 1.85.0, default, old-consumer)`. Wymagaj exact date equality (`observed_ymd == as_of_ymd`) oraz `sha256:` i dokładnie 64 znaki hex po prefiksie. Gdy rekord ma kilka wad, stosuj kolejność: `missing`, `duplicate`, `provenance`, `failed`, `stale`, `malformed-hash`; zwróć `Accept` wyłącznie dla kompletnej macierzy. Test jest modelem jednego źródła i nie udaje `cargo check` ani granicy external crate.",
+          ].join("\n"),
         solution: matrixBlankSolution,
         evaluator: { kind: "tests", tests: matrixBlankTests },
         expectedStatus: "success",
