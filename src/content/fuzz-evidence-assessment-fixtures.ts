@@ -154,7 +154,6 @@ fn bounded_frame_and_duplicate_selection_are_part_of_the_contract() {
   reducer: String.raw`type Regression = fn(&[u8]) -> bool;
 struct Observation { bytes: Vec<u8>, failure: &'static str, restored_replay: Option<&'static str>, regression: Option<Regression> }
 fn executable_regression(bytes: &[u8]) -> bool { bytes.is_empty() || bytes == b"A" || bytes == b"BC" }
-fn never_regresses(_: &[u8]) -> bool { false }
 fn choose_witness(original: &[u8], candidates: &[Observation]) -> Vec<u8> {
     candidates.iter()
         .filter(|candidate| !candidate.bytes.is_empty() && candidate.bytes.len() < original.len())
@@ -167,6 +166,7 @@ fn choose_witness(original: &[u8], candidates: &[Observation]) -> Vec<u8> {
 }
 #[test]
 fn reducer_requires_strict_size_named_failure_replay_and_regression() {
+    fn never_regresses(_: &[u8]) -> bool { false }
     let original = b"ABCDE";
     let candidates = vec![
         Observation { bytes: Vec::new(), failure: "SelectionMismatch", restored_replay: Some("passed"), regression: Some(executable_regression) },

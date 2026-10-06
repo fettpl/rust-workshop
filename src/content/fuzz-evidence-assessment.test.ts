@@ -54,6 +54,7 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(reducer?.code).toContain("struct Observation");
   expect(reducer?.code).toContain("fn executable_regression(bytes: &[u8]) -> bool");
   expect(reducer?.code).toContain("fn choose_witness(original: &[u8], candidates: &[Observation])");
+  expect(fuzzEvidenceAssessmentFixtures["fuzz-counterexample-regression-gate"].reference.slice(fuzzEvidenceAssessmentFixtures["fuzz-counterexample-regression-gate"].reference.indexOf("\n#[test]") + 1)).toContain("fn never_regresses");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-counterexample-regression")?.steps.find((step) => step.id === "fuzz-counterexample-regression-blank")?.prompt).toContain("reduce_frame(original: &[u8], candidate: &[u8], failure_class: &str) -> Vec<u8>");
   expect(campaign?.code).toContain("struct Dossier");
   expect(campaign?.code).toContain("fn classify_report(dossier: &Dossier, _: &str, _: &str, _: &str)");
@@ -89,6 +90,8 @@ it("compiles and runs every correct gate, blank and retrieval reference, then re
     if (step.evaluator?.kind !== "tests" || !step.solution) continue;
     compileAndRun(step.id, step.solution, step.evaluator.tests, true);
   }
+  const reducerGate = steps.find((step) => step.id === "fuzz-counterexample-regression-gate");
+  if (reducerGate?.evaluator?.kind === "tests" && reducerGate.code) compileAndRun("fuzz-counterexample-regression-starter", reducerGate.code, reducerGate.evaluator.tests, false);
   for (const [id, fixture] of Object.entries(fuzzEvidenceAssessmentFixtures)) {
     const lessonStep = [...lessons.flatMap((lesson) => lesson.steps), ...retrievals].find((step) => step.id === id);
     expect(lessonStep?.evaluator?.kind, id).toBe("tests");
