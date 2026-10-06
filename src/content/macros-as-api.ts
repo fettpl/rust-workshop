@@ -162,8 +162,9 @@ fn supplied_names_and_values_are_evaluated_once_in_input_order() {
 }`;
 
 const exactBlankCode = `${macroPrelude}
+`;
 
-fn log_name<'a>(events: &'a mut Vec<&'static str>, label: &'static str) -> &'static str {
+const exactBlankTests = `fn log_name<'a>(events: &'a mut Vec<&'static str>, label: &'static str) -> &'static str {
     events.push(label);
     label
 }
@@ -172,9 +173,7 @@ fn log_value<'a>(events: &'a mut Vec<&'static str>, label: &'static str, value: 
     value
 }
 
-`;
-
-const exactBlankTests = `#[test]
+#[test]
 fn blank_transfer_preserves_evaluation_order() {
     let mut events = Vec::new();
     let output = metric_readings!(
@@ -925,6 +924,7 @@ export const macrosAsApiReviewExercises: Record<string, LessonStep> = {
     title: "Powtórka: pojedynczy odczyt",
     prompt:
       "Odtwórz makro `metric_readings!`, tak aby niekopiowalny `String` oraz licznik pokazały, że nazwa i wartość są obliczone raz. Zachowaj kolejność i zwróć `Vec<Reading>`; dostarczony evaluator dołączy test sprawdzający ten kontrakt.",
+    code: "",
     solution: exactReviewCode,
     tests: exactReviewTests,
     hints: [
@@ -938,6 +938,7 @@ export const macrosAsApiReviewExercises: Record<string, LessonStep> = {
     title: "Powtórka: lista progów",
     prompt:
       "Odtwórz `readings!` dla pustej listy oraz dwóch par z jednym przecinkiem końcowym. Zwróć kolejność jako `Vec<(String, i32)>`, bez duplikowania reguły dla pustego inputu.",
+    code: "",
     solution: repetitionReviewCode,
     tests: repetitionReviewTests,
     hints: [
@@ -951,6 +952,7 @@ export const macrosAsApiReviewExercises: Record<string, LessonStep> = {
     title: "Powtórka: klient z cieniem",
     prompt:
       "Odtwórz eksportowane makro i publiczny `Reading`, używając `$crate` oraz `:expr`. Dostarczony evaluator dołączy klienta z lokalnym typem o tej samej nazwie i wywoła makro z `const { 3 }`.",
+    code: "",
     solution: exportedReviewCode,
     tests: exportedReviewTests,
     hints: [

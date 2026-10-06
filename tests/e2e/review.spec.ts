@@ -4,6 +4,7 @@ import {
   createStepProgress,
 } from "../../src/persistence/state";
 import { reviewSessionKey } from "../../src/engine/review-session";
+import { reviewExercises } from "../../src/content/course";
 import type { UserState } from "../../src/domain/types";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -278,4 +279,30 @@ test("keeps compiler output, code, and successful review evidence across reload"
     page.getByRole("heading", { name: "Po przerwie" }),
   ).toBeVisible();
   await expect(page.locator(".upcoming").getByText("Wybór naprawy własności")).toBeVisible();
+});
+
+test("runs an executable macro coding review from an empty editor", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Przechwycenie wyrażenia i dokładnie jedno obliczenie" })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Powtórka: pojedynczy odczyt",
+    }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await expect(editor).toBeVisible();
+  await expect(editor).toHaveValue("");
+  await editor.fill(reviewExercises["macros-exactly-once"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem."),
+  ).toBeVisible();
 });

@@ -95,6 +95,23 @@ it("registers three late macro lessons with independent gates and retrieval", ()
   }
 });
 
+it("keeps blank helpers in the hidden harness and reviews executable", () => {
+  const exactBlank = macrosAsApiLessons[0].steps.find(
+    (step) => step.id === "macros-exactly-once-blank",
+  )!;
+  expect(exactBlank.solution).not.toContain("fn log_name");
+  expect(exactBlank.solution).not.toContain("fn log_value");
+  expect(exactBlank.evaluator?.kind).toBe("tests");
+  if (exactBlank.evaluator?.kind === "tests") {
+    expect(exactBlank.evaluator.tests).toContain("fn log_name");
+    expect(exactBlank.evaluator.tests).toContain("fn log_value");
+  }
+  for (const review of Object.values(macrosAsApiReviewExercises)) {
+    expect(review.code).toBe("");
+    expect(review.evaluator?.kind).toBe("tests");
+  }
+});
+
 it("keeps official macro sources and separates browser evidence from Cargo proof", () => {
   expect(macrosAsApiSources.map((source) => source.url)).toEqual(
     expect.arrayContaining([
