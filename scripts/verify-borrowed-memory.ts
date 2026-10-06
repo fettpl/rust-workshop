@@ -78,14 +78,30 @@ type CommandEvidence = {
   status: BorrowedMemoryPhaseStatus;
 };
 const REQUIRED_PHASES = ["compile", "tests", "report"] as const;
+const SAFE_VERIFIER_SUBPROCESSES =
+  2 +
+  unsafeBorrowedMemoryAssessmentFixtures
+    .filter((entry) => entry.mode === "safe-behavior")
+    .reduce(
+      (count, fixture) =>
+        count +
+        8 +
+        (fixture.autoTraitNegativeClient ||
+        fixture.id === "unsafe-borrowed-reborrow-soundness-gate"
+          ? 2
+          : 4),
+      0,
+    ) +
+  unsafeBorrowedMemoryCompileFailFixtures.length;
 const BUDGETS = {
   compileTimeoutMs: 120_000,
   testTimeoutMs: 8_000,
   miriTimeoutMs: 60_000,
-  // The safe matrix currently executes 145 bounded commands (including
+  // The safe matrix currently executes 236 bounded commands (including
   // rustfmt, rustc, test binaries, compiler-version probes, and compile-fail
-  // clients). Keep headroom for toolchain probes while retaining a hard cap.
-  maxSubprocesses: 192,
+  // clients). Keep 20 finite slots for authored fixture additions while
+  // retaining a hard cap; the preflight below fails if the matrix outgrows it.
+  maxSubprocesses: 256,
 } as const;
 const sha256 = (value: string | Uint8Array) =>
   createHash("sha256").update(value).digest("hex");
@@ -652,6 +668,10 @@ function compileAndRun(
 }
 
 function runSafe(mode: BorrowedMemoryMode, report: BorrowedMemoryReport) {
+  if (SAFE_VERIFIER_SUBPROCESSES > BUDGETS.maxSubprocesses)
+    throw new Error(
+      `safe verifier subprocess preflight requires ${SAFE_VERIFIER_SUBPROCESSES}, budget allows ${BUDGETS.maxSubprocesses}`,
+    );
   const toolchain = expectedToolchain(mode);
   const rustc = rustcFor(toolchain);
   report.compilerVersion = command(
