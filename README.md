@@ -58,7 +58,7 @@ After the first open and resource download, the Service Worker stores the applic
 
 - Onboarding and four diagnostic activities without blocking access to lessons.
 - A dashboard with the precisely resumed session, reviews, project, concept states, and cross-cutting competencies.
-- A map of 43 modules with lesson-topic search, contracts, a dependency graph, and independence criteria leading to specific tasks. Search is case-insensitive and ignores Polish diacritics while preserving the module selection and learning position.
+- A map of 46 modules with lesson-topic search, contracts, a dependency graph, and independence criteria leading to specific tasks. Search is case-insensitive and ignores Polish diacritics while preserving the module selection and learning position.
 - A locally served Monaco editor, an alternative text editor, and Rust 2024 execution and tests.
 - The compiler's original stderr and a separate Compiler Coach with progressive hints.
 - Stack/heap models with steps for move, Copy, clone, borrowing, scope end, and the lifetime of values and `Rc`/`Weak` allocations.
