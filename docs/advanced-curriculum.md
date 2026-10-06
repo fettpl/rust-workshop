@@ -4,7 +4,9 @@ Data audytu: 2026-09-18
 Odbiorca: osoba znająca podstawy programowania, ale zaczynająca Rust od zera.
 Status: mapa docelowa i audyt luk; nie jest deklaracją ukończenia kursu ani gwarancją pracy lub poziomu senior.
 
-Current catalog after the API Release Matrix, fuzz evidence and borrowed-memory milestones: 181 lessons, 47 modules, 184 concepts, 136 blank-page tasks, 326 sources and 13 projects. `profile-evidence` has two new Polish lessons, `api-release-matrix` has two new Polish lessons, and `fuzz-evidence-lifecycle` has four lessons, eight gates and four independent retrievals.
+Current catalog after the API Release Matrix, fuzz evidence, borrowed-memory and Macros as APIs milestones: 184 lessons, 48 modules, 187 concepts, 139 blank-page tasks, 329 sources and 13 projects. `profile-evidence` has two new Polish lessons, `api-release-matrix` has two new Polish lessons, `fuzz-evidence-lifecycle` has four lessons, and `macros-as-api` has three lessons, three gates, three blank-page tasks and three independent retrievals.
+
+The `macros-as-api` milestone teaches exactly-once expression capture, repetition grammar for zero or more entries with one optional trailing comma, and exported `$crate` paths with the Rust 2024 `expr` fragment. Browser exercises prove only the single-source model; the separate std-only Cargo fixture checks an external client, side-effect order, grammar boundaries and the four reviewed mutants on stable and exact Rust 1.85.0.
 
 Etap `api-release-matrix` rozwija ten kontrakt o dwie lekcje: klasyfikację obserwacji starego klienta oraz provenance-bearing decyzję macierzy features i exact MSRV. Każda lekcja ma primary gate i niezależny blank-page, a dwa concepts mają osobne retrievals. `content:api-release -- --stable` oraz `--msrv` uruchamiają zaufany, std-only fixture z osobnym klientem Cargo, konfiguracjami default/no-default/opt-in i dokładnym Rust 1.85.0; kontrolowane mutacje compile break, `dyn`/trait, feature i zachowania są odrzucane. Browser nie zastępuje Cargo ani dowodu z zewnętrznego klienta.
 
