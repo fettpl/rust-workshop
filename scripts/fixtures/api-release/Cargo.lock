@@ -1,0 +1,13 @@
+# This lockfile contains only the two authored std-only path packages.
+version = 4
+
+[[package]]
+name = "old_consumer"
+version = "1.0.0"
+dependencies = [
+ "release_probe",
+]
+
+[[package]]
+name = "release_probe"
+version = "1.0.0"

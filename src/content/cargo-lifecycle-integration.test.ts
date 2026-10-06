@@ -10,7 +10,7 @@ it("offers four independent declaration gates after either Frame archive is expo
   );
   expect(stage).toBeDefined();
   expect(stage!.prerequisites).toEqual(["public-api-workspaces"]);
-  expect(modules[modules.indexOf(stage!) - 1].id).toBe("public-api-workspaces");
+  expect(modules[modules.indexOf(stage!) - 1].id).toBe("api-release-matrix");
   expect(stage!.gateCriteria).toHaveLength(4);
   const { recordCourseEvidence, revealCourseProjectPackageVariant } =
     await import("./learning-context");
