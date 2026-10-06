@@ -620,36 +620,35 @@ impl<T> Slot<T> {
 }
 impl<T> Drop for Slot<T> { fn drop(&mut self) { if let SlotState::Full = self.state { unsafe { self.value.assume_init_drop(); } } } }`;
 
-const slotRecallTests = String.raw`use std::sync::atomic::{AtomicUsize, Ordering};
+const slotRecallTests = String.raw`use std::sync::{Arc, atomic::{AtomicUsize, Ordering}};
 
-static RECALL_DROPS: AtomicUsize = AtomicUsize::new(0);
 #[derive(Debug)]
-struct RecallDrop;
-impl Drop for RecallDrop { fn drop(&mut self) { RECALL_DROPS.fetch_add(1, Ordering::SeqCst); } }
+struct RecallDrop(Arc<AtomicUsize>);
+impl Drop for RecallDrop { fn drop(&mut self) { self.0.fetch_add(1, Ordering::SeqCst); } }
 
 #[test]
 fn recalled_slot_transfers_full_value_once() {
-    RECALL_DROPS.store(0, Ordering::SeqCst);
+    let drops = Arc::new(AtomicUsize::new(0));
     let mut slot = Slot::empty();
-    slot.put(RecallDrop).unwrap();
+    slot.put(RecallDrop(drops.clone())).unwrap();
     let value = slot.take().unwrap();
     assert!(!slot.is_full());
     drop(value);
-    assert_eq!(RECALL_DROPS.load(Ordering::SeqCst), 1);
+    assert_eq!(drops.load(Ordering::SeqCst), 1);
     drop(slot);
-    assert_eq!(RECALL_DROPS.load(Ordering::SeqCst), 1);
+    assert_eq!(drops.load(Ordering::SeqCst), 1);
 }
 
 #[test]
 fn recalled_slot_rejects_second_value_without_replacing_first() {
-    RECALL_DROPS.store(0, Ordering::SeqCst);
+    let drops = Arc::new(AtomicUsize::new(0));
     let mut slot = Slot::empty();
-    slot.put(RecallDrop).unwrap();
-    let rejected = slot.put(RecallDrop).unwrap_err();
+    slot.put(RecallDrop(drops.clone())).unwrap();
+    let rejected = slot.put(RecallDrop(drops.clone())).unwrap_err();
     drop(rejected);
-    assert_eq!(RECALL_DROPS.load(Ordering::SeqCst), 1);
+    assert_eq!(drops.load(Ordering::SeqCst), 1);
     drop(slot);
-    assert_eq!(RECALL_DROPS.load(Ordering::SeqCst), 2);
+    assert_eq!(drops.load(Ordering::SeqCst), 2);
 }`;
 
 const mutSlotSolution = String.raw`struct MutSlot<'a, T> { value: &'a mut T }

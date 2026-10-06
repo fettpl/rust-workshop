@@ -142,6 +142,48 @@ it("keeps the compile-fail-like variance contract separate from runtime fixtures
   }
 });
 
+it("keeps Slot retrieval drop evidence independent under concurrent Rust tests", () => {
+  const step = unsafeMiriLessons
+    .flatMap((lesson) => lesson.steps)
+    .find((candidate) => candidate.id === "slot-state-recall")!;
+  expect(step.evaluator?.kind).toBe("tests");
+  if (step.evaluator?.kind !== "tests") return;
+
+  const directory = mkdtempSync(join(tmpdir(), "unsafe-miri-slot-recall-"));
+  try {
+    const fixtures = [
+      ["solution", step.solution!, true],
+      ["starter", step.code!, false],
+    ] as const;
+    for (const [name, source, shouldPass] of fixtures) {
+      const file = join(directory, `${name}.rs`);
+      const binary = join(directory, name);
+      writeFileSync(file, appendHiddenTests(source, step.evaluator.tests));
+      const compiled = spawnSync(
+        "rustc",
+        ["--edition=2024", "--test", file, "-o", binary],
+        { cwd: directory, encoding: "utf8", timeout: 60_000 },
+      );
+      expect(compiled.error, `${name}: compiler`).toBeUndefined();
+      expect(compiled.status, `${name}: ${compiled.stderr}`).toBe(0);
+
+      const attempts = shouldPass ? 20 : 1;
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        const executed = spawnSync(binary, ["--test-threads=2"], {
+          cwd: directory,
+          encoding: "utf8",
+          timeout: 8_000,
+        });
+        expect(executed.error, `${name}/${attempt}: runner`).toBeUndefined();
+        expect(executed.signal, `${name}/${attempt}: signal`).toBeNull();
+        expect(executed.status === 0, `${name}/${attempt}`).toBe(shouldPass);
+      }
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 it.each(unsafeMiriAssessmentFixtures)(
   "$id accepts an equivalent fixture and rejects its independent mutant",
   (fixture) => {
