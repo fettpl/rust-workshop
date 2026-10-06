@@ -1,0 +1,9 @@
+[package]
+name = "external_consumer"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+macro_contracts.workspace = true

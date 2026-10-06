@@ -22,7 +22,7 @@
 ## Task 3 — End-to-end and documentation
 
 - Add focused Playwright production and offline checks for navigation, gate evidence, reveal weakening, independent blank, exact resume, notes, keyboard and console errors using the existing mocked runner contract. Ensure mock success depends on the actual authored code; an unexpected source gets schema-valid `test-failure`.
-- Update `docs/advanced-curriculum.md`, `docs/requirements-audit.md`, `docs/progress.md`, and `docs/verification.md` with exact counts, local evidence and remaining limits. Keep README English, code/commit/PR text English, learner copy Polish, and no Java/Python prerequisite framing.
+- Update `docs/advanced-curriculum.md`, `docs/requirements-audit.md`, `docs/progress.md`, and `docs/verification.md` with exact counts, local evidence and remaining limits. Keep README English, code/commit/PR text English, and learner copy Polish. The audience needs basic programming knowledge; the course teaches Rust from zero.
 - Validate focused tests, full Vitest, typecheck, content check/audit, lint, build, stable/MSRV fixture verifier, targeted E2E and full offline. Check formatting and diff; commit an English milestone and push a reviewable PR. CI billing remains a separate external gate: never call the new release workflow green without an exact-head job result.
 
 ## Review focus

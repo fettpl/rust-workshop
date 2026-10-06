@@ -117,6 +117,14 @@ import {
   apiReleaseMatrixReviewExercises,
   apiReleaseMatrixModule,
 } from "./api-release-matrix";
+import {
+  macrosAsApiLessons,
+  macrosAsApiConcepts,
+  macrosAsApiCompetencies,
+  macrosAsApiSources,
+  macrosAsApiReviewExercises,
+  macrosAsApiModule,
+} from "./macros-as-api";
 import { frameProtocolProject } from "./projects/frame-protocol";
 import { tokioNetworkModule } from "./tokio-network-module";
 import {
@@ -512,6 +520,7 @@ export const modules = [
   asyncLendingModule,
   publicApiModule,
   apiReleaseMatrixModule,
+  macrosAsApiModule,
   cargoDependencyLifecycleModule,
   dependencyAssuranceModule,
   miniGrepModule,
@@ -574,6 +583,7 @@ export const lessons = [
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
   ...apiReleaseMatrixLessons,
+  ...macrosAsApiLessons,
   ...cargoDependencyLessons,
   ...cargoReleaseLessons,
   ...dependencyAssuranceLessons,
@@ -636,6 +646,7 @@ export const concepts = [
   ...publicApiValueConcepts,
   ...publicApiEvolutionConcepts,
   ...apiReleaseMatrixConcepts,
+  ...macrosAsApiConcepts,
   ...cargoDependencyConcepts,
   ...cargoReleaseConcepts,
   ...dependencyAssuranceConcepts,
@@ -698,6 +709,7 @@ export const competencies = [
   ...publicApiValueCompetencies,
   ...publicApiEvolutionCompetencies,
   ...apiReleaseMatrixCompetencies,
+  ...macrosAsApiCompetencies,
   ...cargoDependencyCompetencies,
   ...cargoReleaseCompetencies,
   ...dependencyAssuranceCompetencies,
@@ -759,6 +771,7 @@ export const sources = [
   ...publicApiValueSources,
   ...publicApiEvolutionSources,
   ...apiReleaseMatrixSources,
+  ...macrosAsApiSources,
   ...cargoDependencySources,
   ...cargoReleaseSources,
   ...dependencyAssuranceSources,
@@ -820,6 +833,7 @@ export const reviewExercises = {
   ...publicApiValueReviewExercises,
   ...publicApiEvolutionReviewExercises,
   ...apiReleaseMatrixReviewExercises,
+  ...macrosAsApiReviewExercises,
   ...cargoDependencyReviewExercises,
   ...cargoReleaseReviewExercises,
   ...dependencyAssuranceReviewExercises,
@@ -955,6 +969,10 @@ export const roadmap = [
   },
   {
     title: "API Release Matrix: stary klient, features i MSRV",
+    status: "available",
+  },
+  {
+    title: "Makra deklaratywne jako publiczne API",
     status: "available",
   },
   {

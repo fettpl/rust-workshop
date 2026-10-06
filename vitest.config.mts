@@ -3,7 +3,11 @@ import path from "node:path";
 export default defineConfig({
   resolve: { alias: { "@": path.resolve(import.meta.dirname, "src") } },
   test: {
-    include: ["src/**/*.test.ts", "scripts/verify-api-release.test.ts"],
+    include: [
+      "src/**/*.test.ts",
+      "scripts/verify-api-release.test.ts",
+      "scripts/verify-macro-contracts.test.ts",
+    ],
     environment: "node",
   },
 });
