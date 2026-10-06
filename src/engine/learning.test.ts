@@ -14,6 +14,7 @@ import { createInitialState } from "@/persistence/state";
 import {
   dueReviews,
   evidencePolicyForConcepts,
+  isIndependentSuccess,
   moduleGate,
   rateReview,
   recordEvidence,
@@ -89,11 +90,16 @@ describe("learning engine", () => {
   });
 
   it("does not award mastery for an expected-error observation", () => {
-    const state = recordEvidence(
-      base(),
-      event({ kind: "prediction", evaluator: "expected-error", passed: true }),
-    );
+    const observed = event({
+      id: "e0515",
+      kind: "assessment",
+      evaluator: "expected-error",
+      passed: true,
+    });
+    const state = recordEvidence(base(), observed);
     expect(state.mastery.ownership?.level).toBe("new");
+    expect(isIndependentSuccess(observed)).toBe(false);
+    expect(state.review).toEqual([]);
   });
 
   it("requires distinct unaided gate and transfer tasks for understood mastery", () => {

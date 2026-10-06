@@ -293,12 +293,7 @@ function coding(options: {
       : { expectedStatus: "success" as const }),
   };
 }
-function compileFail(
-  id: string,
-  prompt: string,
-  code: string,
-  expectedDiagnostic = "lifetime",
-): LessonStep {
+function compileFail(id: string, prompt: string, code: string): LessonStep {
   return {
     id,
     kind: "observe",
@@ -306,9 +301,9 @@ function compileFail(
     prompt,
     code,
     solution: code,
-    evaluator: { kind: "expected-error", diagnostic: "lifetime" },
+    evaluator: { kind: "expected-error", code: "E0515" },
     expectedStatus: "compile-error",
-    expectedDiagnostic,
+    expectedError: "E0515",
     evidenceKind: "exposure",
   };
 }
@@ -731,7 +726,6 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
         "unsafe-borrowed-auto-traits-compile-fail",
         "Uruchom compile-fail klienta safe API; musi odrzucić próbę lifetime escape.",
         invariantCompile,
-        "E0515",
       ),
       coding({
         id: "unsafe-borrowed-auto-traits-soundness-transfer",
