@@ -90,11 +90,11 @@ function compileClient(id: string, source: string) {
 }
 
 it("keeps every fixture in an explicit execution mode", () => {
-  expect(unsafeBorrowedMemoryAssessmentFixtures).toHaveLength(23);
+  expect(unsafeBorrowedMemoryAssessmentFixtures).toHaveLength(27);
   expect(
     new Set(unsafeBorrowedMemoryAssessmentFixtures.map((fixture) => fixture.id))
       .size,
-  ).toBe(23);
+  ).toBe(27);
   expect(
     unsafeBorrowedMemoryAssessmentFixtures.filter(
       (fixture) => fixture.mode === "miri-positive",
@@ -224,7 +224,7 @@ it("keeps published test starters incomplete until learner edits", () => {
       (lesson) => `${lesson.id}-soundness-gate`,
     ),
     ...unsafeBorrowedMemoryLessons.map(
-      (lesson) => `${lesson.id}-recall`,
+      (lesson) => `${lesson.id}-soundness-transfer`,
     ),
   ];
   for (const id of starterIds) {

@@ -239,6 +239,53 @@ export const traitViewReviewTests = String.raw`fn assert_send<T:Send>(){}fn asse
 #[test]fn u8_bounds_and_reborrow_hold(){assert_send::<TraitView<'_,u8>>();assert_sync::<TraitView<'_,u8>>();let mut value=4;let mut view=TraitView::attach(&mut value);{let mut short=view.reattach();assert_eq!(*short.get(),4);}assert_eq!(*view.get(),4);}`;
 export const traitViewSyncClient = String.raw`use std::cell::Cell;fn assert_sync<T:Sync>(){}fn main(){assert_sync::<TraitView<'_,Cell<u8>>>();}`;
 
+export const byteSpanTransferCanonical = String.raw`struct ByteSpan<'owner>{owner:&'owner [u8],start:usize,len:usize}
+impl<'owner>ByteSpan<'owner>{fn from_range(owner:&'owner [u8],start:usize,len:usize)->Option<Self>{let end=start.checked_add(len)?;if end>owner.len(){None}else{Some(Self{owner,start,len})}}fn subspan<'short>(&'short self,start:usize,len:usize)->Option<ByteSpan<'short>>{let end=start.checked_add(len)?;if end>self.len{None}else{Some(ByteSpan{owner:&self.owner[self.start..self.start+self.len],start,len})}}fn bytes(&self)->&[u8]{&self.owner[self.start..self.start+self.len]}}`;
+export const byteSpanTransferEquivalent = String.raw`struct ByteSpan<'owner>{owner:&'owner [u8],start:usize,len:usize}
+impl<'owner>ByteSpan<'owner>{fn from_range(owner:&'owner [u8],start:usize,len:usize)->Option<Self>{if start>owner.len(){return None;}let end=start.checked_add(len)?;owner.get(start..end).map(|_|Self{owner,start,len})}fn subspan<'short>(&'short self,start:usize,len:usize)->Option<ByteSpan<'short>>{let view=self.bytes();let end=start.checked_add(len)?;view.get(start..end).map(|_|ByteSpan{owner:view,start,len})}fn bytes(&self)->&[u8]{&self.owner[self.start..self.start+self.len]}}`;
+export const byteSpanTransferMutant = byteSpanTransferCanonical.replace(
+  "let end=start.checked_add(len)?;if end>owner.len(){None}else{Some(Self{owner,start,len})}",
+  "let end=start.wrapping_add(len);if end>owner.len(){None}else{Some(Self{owner,start,len})}",
+);
+export const byteSpanTransferTests = String.raw`#[test]fn nested_ranges_keep_bytes_and_identity(){let owner=[0_u8,255,2,3];let span=ByteSpan::from_range(&owner,1,2).unwrap();assert_eq!(span.bytes(),&[255,2]);let nested=span.subspan(1,1).unwrap();assert_eq!(nested.bytes(),&[2]);assert!(std::ptr::eq(nested.bytes().as_ptr(),owner[2..].as_ptr()));}
+#[test]fn invalid_and_empty_ranges_are_explicit(){let owner=[1_u8,2];assert!(ByteSpan::from_range(&owner,2,0).is_some());assert!(ByteSpan::from_range(&owner,3,0).is_none());assert!(ByteSpan::from_range(&owner,usize::MAX,1).is_none());assert!(ByteSpan::from_range(&owner,0,usize::MAX).is_none());let span=ByteSpan::from_range(&owner,1,1).unwrap();assert!(span.subspan(1,0).is_some());assert!(span.subspan(2,0).is_none());}
+#[test]fn raw_bytes_are_not_decoded_or_copied(){let owner=[0xff_u8,0];let span=ByteSpan::from_range(&owner,0,2).unwrap();assert_eq!(span.bytes(),&[0xff,0]);}`;
+
+export const pairLoanTransferCanonical = String.raw`struct PairLoan<'owner,T>{owner:&'owner mut (T,T)}
+impl<'owner,T>PairLoan<'owner,T>{fn attach(owner:&'owner mut (T,T))->Self{Self{owner}}fn reborrow<'short>(&'short mut self)->PairLoan<'short,T>{PairLoan{owner:&mut*self.owner}}fn swap(&mut self){std::mem::swap(&mut self.owner.0,&mut self.owner.1)}fn values(&self)->(&T,&T){(&self.owner.0,&self.owner.1)}}`;
+export const pairLoanTransferEquivalent = String.raw`struct PairLoan<'owner,T>{owner:&'owner mut (T,T)}
+impl<'owner,T>PairLoan<'owner,T>{fn attach(owner:&'owner mut (T,T))->Self{let owner=owner;Self{owner}}fn reborrow<'short>(&'short mut self)->PairLoan<'short,T>{let owner:&'short mut(T,T)=&mut*self.owner;PairLoan{owner}}fn swap(&mut self){let(left,right)=(&mut self.owner.0,&mut self.owner.1);std::mem::swap(left,right)}fn values(&self)->(&T,&T){let pair=&*self.owner;(&pair.0,&pair.1)}}`;
+export const pairLoanTransferMutant = pairLoanTransferCanonical.replace(
+  "fn reborrow<'short>(&'short mut self)->PairLoan<'short,T>{PairLoan{owner:&mut*self.owner}}",
+  "fn reborrow<'short>(&'short mut self)->PairLoan<'short,T>{panic!(\"TODO: preserve pair reborrow\")}",
+);
+export const pairLoanTransferTests = String.raw`#[test]fn child_swap_then_parent_use(){let mut pair=(String::from("left"),String::from("right"));let mut loan=PairLoan::attach(&mut pair);{let mut child=loan.reborrow();child.swap();assert_eq!(child.values().0,"right");}assert_eq!(loan.values().0,"right");loan.swap();assert_eq!(loan.values().0,"left");}
+#[test]fn two_swaps_restore_owner(){let mut pair=(1_u8,2_u8);let mut loan=PairLoan::attach(&mut pair);loan.swap();loan.swap();assert_eq!(loan.values(),(&1,&2));}`;
+
+export const replaceSlotTransferCanonical = String.raw`struct ReplaceSlot<T>{value:Option<T>}
+impl<T>ReplaceSlot<T>{fn empty()->Self{Self{value:None}}fn replace(&mut self,value:T)->Option<T>{self.value.replace(value)}fn take_if(&mut self,predicate:impl FnOnce(&T)->bool)->Option<T>{if self.value.as_ref().is_some_and(predicate){self.value.take()}else{None}}fn clear(&mut self){self.value=None}fn is_full(&self)->bool{self.value.is_some()}}`;
+export const replaceSlotTransferEquivalent = String.raw`struct ReplaceSlot<T>{value:Option<T>}
+impl<T>ReplaceSlot<T>{fn empty()->Self{Self{value:None}}fn replace(&mut self,value:T)->Option<T>{let old=self.value.take();self.value=Some(value);old}fn take_if(&mut self,predicate:impl FnOnce(&T)->bool)->Option<T>{match self.value.as_ref(){Some(value) if predicate(value)=>self.value.take(),_=>None}}fn clear(&mut self){let _=self.value.take();}fn is_full(&self)->bool{matches!(self.value,Some(_))}}`;
+export const replaceSlotTransferMutant = replaceSlotTransferCanonical.replace(
+  "if self.value.as_ref().is_some_and(predicate){self.value.take()}else{None}",
+  "if self.value.is_some(){self.value.take()}else{None}",
+);
+export const replaceSlotTransferTests = String.raw`use std::sync::{Arc,atomic::{AtomicUsize,Ordering}};struct DropProbe(Arc<AtomicUsize>);impl Drop for DropProbe{fn drop(&mut self){self.0.fetch_add(1,Ordering::SeqCst);}}
+#[test]fn empty_skips_predicate_and_replacement_returns_old(){let drops=Arc::new(AtomicUsize::new(0));let mut slot=ReplaceSlot::empty();let mut called=0;assert!(slot.take_if(|_|{called+=1;true}).is_none());assert_eq!(called,0);slot.replace(DropProbe(drops.clone()));let old=slot.replace(DropProbe(drops.clone())).unwrap();drop(old);assert_eq!(drops.load(Ordering::SeqCst),1);slot.clear();assert_eq!(drops.load(Ordering::SeqCst),2);}
+#[test]fn false_keeps_and_true_takes_once(){let drops=Arc::new(AtomicUsize::new(0));let mut slot=ReplaceSlot::empty();slot.replace(DropProbe(drops.clone()));assert!(slot.take_if(|_|false).is_none());assert!(slot.is_full());drop(slot.take_if(|_|true));assert!(!slot.is_full());assert_eq!(drops.load(Ordering::SeqCst),1);slot.clear();assert_eq!(drops.load(Ordering::SeqCst),1);}`;
+
+export const sharedLeaseTransferCanonical = String.raw`struct SharedLease<'owner,T>{value:&'owner T}
+impl<'owner,T>SharedLease<'owner,T>{fn attach(value:&'owner T)->Self{Self{value}}fn reborrow<'short>(&'short self)->SharedLease<'short,T>{SharedLease{value:self.value}}fn get(&self)->&T{self.value}}`;
+export const sharedLeaseTransferEquivalent = String.raw`struct SharedLease<'owner,T>{value:&'owner T}
+impl<'owner,T>SharedLease<'owner,T>{fn attach(value:&'owner T)->Self{let value=value;Self{value}}fn reborrow<'short>(&'short self)->SharedLease<'short,T>{Self::attach(self.value)}fn get(&self)->&T{&*self.value}}`;
+export const sharedLeaseTransferMutant = sharedLeaseTransferCanonical.replace(
+  "fn reborrow<'short>(&'short self)->SharedLease<'short,T>{SharedLease{value:self.value}}",
+  "fn reborrow<'short>(&'short self)->SharedLease<'short,T>{panic!(\"TODO: preserve shared reborrow\")}",
+);
+export const sharedLeaseTransferTests = String.raw`fn require_send<T:Send>(){}fn require_sync<T:Sync>(){}
+#[test]fn positive_bounds_and_pointer_identity(){require_send::<SharedLease<'_,u8>>();require_sync::<SharedLease<'_,u8>>();let value=String::from("pożyczka");let lease=SharedLease::attach(&value);assert!(std::ptr::eq(lease.get(),&value));let short=lease.reborrow();assert!(std::ptr::eq(short.get(),&value));assert_eq!(short.get(),"pożyczka");}
+#[test]fn shared_reborrow_keeps_non_static_data(){let value=String::from("lokalne");let lease=SharedLease::attach(&value);assert_eq!(lease.reborrow().get(),"lokalne");}`;
+
 export const rawBorrowedPositive = String.raw`use std::slice;
 struct RawBorrowed<'a>{bytes:&'a[u8]}
 impl<'a> RawBorrowed<'a>{

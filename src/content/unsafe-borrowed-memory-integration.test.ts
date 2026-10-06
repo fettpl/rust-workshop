@@ -48,6 +48,13 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
     expect(new Set(codeSteps.map((step) => step.id)).size).toBe(
       codeSteps.length,
     );
+    const transfer = lesson.steps.find((step) => step.id.endsWith("-soundness-transfer"))!;
+    const recall = lesson.steps.find((step) => step.id.endsWith("-recall"))!;
+    expect(transfer.kind).toBe("apply");
+    expect(transfer.code).toBeDefined();
+    expect(transfer.evidenceGate).toBe(true);
+    expect(recall.evidenceGate).toBe(false);
+    expect(transfer.id).not.toBe(recall.id);
   }
 
   const refs = unsafeBorrowedMemoryModule.gateCriteria!.flatMap((criterion) =>
@@ -68,7 +75,7 @@ it("registers the four borrowed-memory lessons with independent evidence gates",
           stepId === `${criterion.taskRefs[0].lessonId}-boundary-gate` ||
           stepId === `${criterion.taskRefs[0].lessonId}-soundness-gate` ||
           stepId === `${criterion.taskRefs[0].lessonId}-blank` ||
-          stepId === `${criterion.taskRefs[0].lessonId}-recall`,
+          stepId === `${criterion.taskRefs[0].lessonId}-soundness-transfer`,
       ),
     ).toBe(true);
     expect(criterion.label).toMatch(/boundary evidence|soundness evidence/);
@@ -130,18 +137,33 @@ it("requires each lesson's boundary and soundness skills while allowing recovery
       evaluator: blank.evaluator?.kind,
       at: state.updatedAt + 1,
     });
-    const recall = lesson.steps.find((step) => step.id.endsWith("-recall"))!;
+    const soundness = lesson.steps.find((step) => step.id.endsWith("-soundness-gate"))!;
     state = recordEvidence(state, {
-      id: `${lesson.id}-recall-success`,
+      id: `${lesson.id}-revealed-soundness`,
       conceptIds: lesson.conceptIds,
       lessonId: lesson.id,
-      stepId: recall.id,
-      kind: recall.evidenceKind,
+      stepId: soundness.id,
+      kind: soundness.evidenceKind,
+      passed: true,
+      hints: 1,
+      revealed: true,
+      gate: true,
+      evaluator: soundness.evaluator?.kind,
+      at: state.updatedAt + 1,
+    });
+    expect(moduleGate(state, unsafeBorrowedMemoryLessons, unsafeBorrowedMemoryModule).passed).toBe(false);
+    const transfer = lesson.steps.find((step) => step.id.endsWith("-soundness-transfer"))!;
+    state = recordEvidence(state, {
+      id: `${lesson.id}-transfer-success`,
+      conceptIds: lesson.conceptIds,
+      lessonId: lesson.id,
+      stepId: transfer.id,
+      kind: transfer.evidenceKind,
       passed: true,
       hints: 0,
       revealed: false,
       gate: true,
-      evaluator: recall.evaluator?.kind,
+      evaluator: transfer.evaluator?.kind,
       at: state.updatedAt + 1,
     });
   }

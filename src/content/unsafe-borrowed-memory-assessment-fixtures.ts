@@ -79,6 +79,22 @@ import {
   traitViewReviewMutant,
   traitViewReviewTests,
   traitViewSyncClient,
+  byteSpanTransferCanonical,
+  byteSpanTransferEquivalent,
+  byteSpanTransferMutant,
+  byteSpanTransferTests,
+  pairLoanTransferCanonical,
+  pairLoanTransferEquivalent,
+  pairLoanTransferMutant,
+  pairLoanTransferTests,
+  replaceSlotTransferCanonical,
+  replaceSlotTransferEquivalent,
+  replaceSlotTransferMutant,
+  replaceSlotTransferTests,
+  sharedLeaseTransferCanonical,
+  sharedLeaseTransferEquivalent,
+  sharedLeaseTransferMutant,
+  sharedLeaseTransferTests,
 } from "./unsafe-borrowed-memory-contracts";
 
 export type BorrowedMemoryFixtureMode =
@@ -129,6 +145,14 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mode: "safe-behavior",
     },
     {
+      id: "unsafe-borrowed-provenance-soundness-transfer",
+      canonical: byteSpanTransferCanonical,
+      equivalent: byteSpanTransferEquivalent,
+      mutant: byteSpanTransferMutant,
+      tests: byteSpanTransferTests,
+      mode: "safe-behavior",
+    },
+    {
       id: "unsafe-borrowed-reborrow-boundary-gate",
       canonical: splitBorrowedCanonical,
       equivalent: splitBorrowedEquivalent,
@@ -158,6 +182,14 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       equivalent: invariantBorrowEquivalent,
       mutant: invariantBorrowMutant,
       tests: invariantBorrowTests,
+      mode: "safe-behavior",
+    },
+    {
+      id: "unsafe-borrowed-reborrow-soundness-transfer",
+      canonical: pairLoanTransferCanonical,
+      equivalent: pairLoanTransferEquivalent,
+      mutant: pairLoanTransferMutant,
+      tests: pairLoanTransferTests,
       mode: "safe-behavior",
     },
     {
@@ -193,6 +225,14 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       mode: "safe-behavior",
     },
     {
+      id: "unsafe-borrowed-slot-soundness-transfer",
+      canonical: replaceSlotTransferCanonical,
+      equivalent: replaceSlotTransferEquivalent,
+      mutant: replaceSlotTransferMutant,
+      tests: replaceSlotTransferTests,
+      mode: "safe-behavior",
+    },
+    {
       id: "unsafe-borrowed-auto-traits-boundary-gate",
       canonical: autoTraitsCanonical,
       equivalent: autoTraitsEquivalent,
@@ -209,6 +249,14 @@ export const unsafeBorrowedMemoryAssessmentFixtures: UnsafeBorrowedMemoryAssessm
       tests: autoTraitsSoundnessTests,
       mode: "safe-behavior",
       autoTraitNegativeClient: autoTraitsCellSyncClient,
+    },
+    {
+      id: "unsafe-borrowed-auto-traits-soundness-transfer",
+      canonical: sharedLeaseTransferCanonical,
+      equivalent: sharedLeaseTransferEquivalent,
+      mutant: sharedLeaseTransferMutant,
+      tests: sharedLeaseTransferTests,
+      mode: "safe-behavior",
     },
     {
       id: "unsafe-borrowed-auto-traits-blank",
