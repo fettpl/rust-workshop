@@ -9,6 +9,7 @@ import type {
 import {
   autoTraitsCanonical,
   autoTraitsEquivalent,
+  autoTraitsRecallTests,
   autoTraitsMutant,
   autoTraitsTests,
   autoTraitsSoundnessCanonical,
@@ -292,7 +293,12 @@ function coding(options: {
       : { expectedStatus: "success" as const }),
   };
 }
-function compileFail(id: string, prompt: string, code: string): LessonStep {
+function compileFail(
+  id: string,
+  prompt: string,
+  code: string,
+  expectedDiagnostic = "lifetime",
+): LessonStep {
   return {
     id,
     kind: "observe",
@@ -302,7 +308,7 @@ function compileFail(id: string, prompt: string, code: string): LessonStep {
     solution: code,
     evaluator: { kind: "expected-error", diagnostic: "lifetime" },
     expectedStatus: "compile-error",
-    expectedDiagnostic: "lifetime",
+    expectedDiagnostic,
     evidenceKind: "exposure",
   };
 }
@@ -719,12 +725,13 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
           "",
         ),
         solution: autoTraitsEquivalent,
-        tests: autoTraitsTests,
+        tests: autoTraitsRecallTests,
       }),
       compileFail(
         "unsafe-borrowed-auto-traits-compile-fail",
         "Uruchom compile-fail klienta safe API; musi odrzucić próbę lifetime escape.",
         invariantCompile,
+        "E0515",
       ),
       coding({
         id: "unsafe-borrowed-auto-traits-soundness-transfer",

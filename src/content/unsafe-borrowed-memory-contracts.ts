@@ -202,6 +202,8 @@ fn hidden_positive_bounds(){hidden_assert_send::<InvariantBorrow<'_,u8>>();hidde
 #[test]fn mutable_borrow_is_operational(){let mut v=8;let b=InvariantBorrow::from_mut(&mut v);assert_eq!(*b.get(),8);}
 #[test]fn scoped_reborrow_preserves_parent_access(){let mut v=8;let mut parent=InvariantBorrow::from_mut(&mut v);{let mut child=parent.reborrow();*child.get_mut()+=2;}*parent.get_mut()+=1;assert_eq!(v,11);}
 #[test]fn cell_is_send_in_the_client_contract(){use std::cell::Cell;hidden_assert_send::<InvariantBorrow<'_,Cell<u8>>>();}`;
+export const autoTraitsRecallTests = String.raw`#[test]
+fn positive_bounds_are_reachable(){positive_bounds();}`;
 
 export const autoTraitsSoundnessCanonical =
   invariantBorrowCanonical +

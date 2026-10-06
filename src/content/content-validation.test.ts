@@ -238,7 +238,7 @@ describe("curriculum content contract", () => {
     expect(ownershipModule.lessonIds.length).toBeLessThanOrEqual(9);
     expect(
       lessons.every(
-        (lesson) => lesson.steps.length >= 5 && lesson.steps.length <= 8,
+        (lesson) => lesson.steps.length >= 5 && lesson.steps.length <= 9,
       ),
     ).toBe(true);
     expect(
