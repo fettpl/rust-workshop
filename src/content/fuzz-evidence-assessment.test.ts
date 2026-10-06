@@ -38,6 +38,12 @@ it("publishes the learner-facing Rust signatures without hiding the contract", (
   expect(input?.code).toContain("fn decode_case(bytes: &[u8]) -> Option<Case<'_>>");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-blank")?.prompt).toContain("decode_command(bytes: &[u8]) -> Option<(&[u8], &[u8])>");
   expect(fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-blank")?.prompt).toContain("bytes.len() < length + 1");
+  const inputGate = gates.find((step) => step.id === "fuzz-input-domain-gate");
+  expect(inputGate?.prompt).toContain("3 <= bytes.len() <= 4096");
+  expect(inputGate?.prompt).toContain("context = bytes[0] % 20");
+  expect(inputGate?.prompt).toContain("big-endian `u16`");
+  const inputRecall = fuzzEvidenceLessons.find((lesson) => lesson.id === "fuzz-input-domain")?.steps.find((step) => step.id === "fuzz-input-domain-recall");
+  expect(inputRecall?.evaluator).toEqual({ kind: "ordering", correct: ["3", "4096", "body"] });
   expect(oracle?.code).toContain("fn same_result(");
   expect(oracleBlank?.solution).toContain("fn decode_frame(bytes: &[u8]) -> Option<Frame<'_>>");
   expect(oracleBlank?.solution).toContain("bytes.len() > 4096");
