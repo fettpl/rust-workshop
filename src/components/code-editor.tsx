@@ -5,6 +5,9 @@ loader.config({ paths: { vs: "/monaco/vs" } });
 
 const LIGHT_THEME = "rust-workshop-light";
 const DARK_THEME = "rust-workshop-dark";
+const AUTOMATIC_FALLBACK_MESSAGE =
+  "Edytor ładuje się długo. Otworzono prosty edytor tekstowy. Twój szkic został zachowany.";
+type FallbackCause = "manual" | "automatic";
 
 const defineWorkshopThemes: BeforeMount = (monaco) => {
   if (
@@ -121,64 +124,113 @@ export default function CodeEditor({
   language?: "rust" | "toml";
 }) {
   const [fallback, setFallback] = useState(false);
+  const [fallbackCause, setFallbackCause] = useState<FallbackCause | null>(
+    null,
+  );
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingButtonRef = useRef<HTMLButtonElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const shouldFocusFallbackRef = useRef(false);
+
+  const transitionToFallback = (cause: FallbackCause) => {
+    shouldFocusFallbackRef.current =
+      cause === "manual" || document.activeElement === loadingButtonRef.current;
+    setFallbackCause(cause);
+    setFallback(true);
+  };
+
   useEffect(() => {
-    timer.current = setTimeout(() => setFallback(true), 12000);
+    if (accessible) return;
+    timer.current = setTimeout(() => transitionToFallback("automatic"), 12000);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
-  }, []);
+  }, [accessible]);
+  useEffect(() => {
+    if (!fallback || !shouldFocusFallbackRef.current) return;
+    const frame = window.requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      shouldFocusFallbackRef.current = false;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [fallback]);
+
+  const textarea = (
+    <textarea
+      ref={textareaRef}
+      className="code-textarea"
+      aria-label={language === "toml" ? "Kod TOML" : "Kod Rust"}
+      value={code}
+      readOnly={readOnly}
+      spellCheck={false}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ fontSize }}
+    />
+  );
+  const fallbackStatus = (
+    <div
+      className="sr-only monaco-fallback-status"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {fallbackCause === "automatic" ? AUTOMATIC_FALLBACK_MESSAGE : ""}
+    </div>
+  );
+
   if (accessible || fallback)
     return (
-      <textarea
-        className="code-textarea"
-        aria-label={language === "toml" ? "Kod TOML" : "Kod Rust"}
-        value={code}
-        readOnly={readOnly}
-        spellCheck={false}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ fontSize }}
-      />
+      <>
+        {textarea}
+        {fallbackStatus}
+      </>
     );
   return (
-    <Editor
-      height="100%"
-      language={language}
-      value={code}
-      theme={theme === "dark" ? DARK_THEME : LIGHT_THEME}
-      onChange={(value) => onChange(value ?? "")}
-      beforeMount={defineWorkshopThemes}
-      onMount={() => {
-        if (timer.current) clearTimeout(timer.current);
-        setFallback(false);
-      }}
-      loading={
-        <div className="editor-loading">
-          Wczytywanie edytora…{" "}
-          <button onClick={() => setFallback(true)}>
-            Otwórz prosty edytor
-          </button>
-        </div>
-      }
-      options={{
-        readOnly,
-        fontSize,
-        minimap: { enabled: false },
-        scrollBeyondLastLine: false,
-        lineNumbersMinChars: 3,
-        padding: { top: 20, bottom: 20 },
-        fontFamily: '"SFMono-Regular", Consolas, monospace',
-        wordWrap: "on",
-        automaticLayout: true,
-        tabSize: 4,
-        ariaLabel: language === "toml" ? "Kod TOML" : "Kod Rust",
-        accessibilitySupport: "on",
-        tabFocusMode: true,
-        renderLineHighlight: "none",
-        overviewRulerLanes: 0,
-        hideCursorInOverviewRuler: true,
-        contextmenu: false,
-      }}
-    />
+    <>
+      <Editor
+        height="100%"
+        language={language}
+        value={code}
+        theme={theme === "dark" ? DARK_THEME : LIGHT_THEME}
+        onChange={(value) => onChange(value ?? "")}
+        beforeMount={defineWorkshopThemes}
+        onMount={() => {
+          if (timer.current) clearTimeout(timer.current);
+          setFallback(false);
+          setFallbackCause(null);
+        }}
+        loading={
+          <div className="editor-loading">
+            Wczytywanie edytora…{" "}
+            <button
+              ref={loadingButtonRef}
+              onClick={() => transitionToFallback("manual")}
+            >
+              Otwórz prosty edytor
+            </button>
+          </div>
+        }
+        options={{
+          readOnly,
+          fontSize,
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          lineNumbersMinChars: 3,
+          padding: { top: 20, bottom: 20 },
+          fontFamily: '"SFMono-Regular", Consolas, monospace',
+          wordWrap: "on",
+          automaticLayout: true,
+          tabSize: 4,
+          ariaLabel: language === "toml" ? "Kod TOML" : "Kod Rust",
+          accessibilitySupport: "on",
+          tabFocusMode: true,
+          renderLineHighlight: "none",
+          overviewRulerLanes: 0,
+          hideCursorInOverviewRuler: true,
+          contextmenu: false,
+        }}
+      />
+      {fallbackStatus}
+    </>
   );
 }
