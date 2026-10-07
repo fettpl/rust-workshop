@@ -274,6 +274,7 @@ export interface ReviewSession {
   sessionId: string;
   startedAt: number;
   wasDue: boolean;
+  exerciseId?: string;
 }
 export type View =
   | "dashboard"

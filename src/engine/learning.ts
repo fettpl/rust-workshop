@@ -48,7 +48,7 @@ export function evidencePolicyForConcepts(
   };
 }
 
-const DAY = 24 * 60 * 60 * 1000;
+export const DAY = 24 * 60 * 60 * 1000;
 const STRONG_KINDS = new Set<EvidenceEvent["kind"]>([
   "fix",
   "transfer",
@@ -490,6 +490,46 @@ export function independentCodingTaskIds(
   ];
 }
 
+export function hasQuietInterval(
+  state: UserState,
+  conceptId: string,
+  at: number,
+): boolean {
+  const contact = [
+    ...state.events
+      .filter(
+        (event) =>
+          event.conceptIds.includes(conceptId) && event.at <= at,
+      )
+      .map((event) => event.at),
+    ...state.ratings
+      .filter(
+        (rating) => rating.conceptId === conceptId && rating.at <= at,
+      )
+      .map((rating) => rating.at),
+  ];
+  return contact.length > 0 && at - Math.max(...contact) > DAY;
+}
+
+export function delayedReviewEligibility(
+  state: UserState,
+  conceptId: string,
+  now: number,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
+): boolean {
+  const calibration = policy.calibrationForConcept?.(conceptId);
+  const due = state.review.some(
+    (item) => item.conceptId === conceptId && item.dueAt <= now,
+  );
+  return Boolean(
+    calibration &&
+      due &&
+      independentCodingTaskIds(state, conceptId, policy).length >=
+        calibration.minimumCodingTasks &&
+      hasQuietInterval(state, conceptId, now),
+  );
+}
+
 function isCalibratedRecall(
   state: UserState,
   index: number,
@@ -522,17 +562,7 @@ function isCalibratedRecall(
     return false;
   // Include legacy and neutral contact, and preceding same-millisecond events.
   // Queue dates and cached timestamps are not evidence of learner contact.
-  const contact = [
-    ...prior
-      .filter((event) => event.conceptIds.includes(conceptId))
-      .map((event) => event.at),
-    ...state.ratings
-      .filter(
-        (rating) => rating.conceptId === conceptId && rating.at <= candidate.at,
-      )
-      .map((rating) => rating.at),
-  ];
-  return contact.length > 0 && candidate.at - Math.max(...contact) > DAY;
+  return hasQuietInterval({ ...state, events: prior }, conceptId, candidate.at);
 }
 
 function hasCalibratedRetention(

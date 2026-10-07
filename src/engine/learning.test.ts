@@ -17,7 +17,10 @@ import {
   importState,
 } from "@/persistence/state";
 import {
+  DAY,
+  delayedReviewEligibility,
   deriveConceptMastery,
+  hasQuietInterval,
   independentCodingTaskIds,
   type EvidencePolicy,
   dueReviews,
@@ -29,7 +32,6 @@ import {
   recordLessonExposure,
 } from "./learning";
 
-const DAY = 24 * 60 * 60 * 1000;
 const event = (overrides: Partial<EvidenceEvent> = {}): EvidenceEvent => ({
   id: "e1",
   conceptIds: ["ownership"],
@@ -44,6 +46,70 @@ const event = (overrides: Partial<EvidenceEvent> = {}): EvidenceEvent => ({
   ...overrides,
 });
 const base = (): UserState => createInitialState();
+const functionOwnershipPolicy: EvidencePolicy = {
+  artifactForConcept: () => "rust-code",
+  calibrationForConcept: (conceptId) =>
+    conceptId === "function-ownership"
+      ? { version: 2, minimumCodingTasks: 2 }
+      : undefined,
+  definitionForEvent: (candidate) =>
+    candidate.conceptIds.includes("function-ownership") &&
+    candidate.evidenceVersion === 2
+      ? {
+          version: 2,
+          conceptIds: ["function-ownership"],
+          codingTaskId: candidate.stepId,
+        }
+      : undefined,
+};
+const functionEvent = (
+  id: string,
+  stepId: string,
+  at: number,
+): EvidenceEvent => ({
+  id,
+  conceptIds: ["function-ownership"],
+  lessonId: "function-ownership-calibration",
+  stepId,
+  kind: "fix",
+  passed: true,
+  hints: 0,
+  revealed: false,
+  at,
+  evidenceVersion: 2,
+  evaluator: "tests",
+  gate: false,
+});
+const functionOwnershipState = (contactAt: number, dueAt: number): UserState => ({
+  ...createInitialState(),
+  events: [
+    functionEvent("family-a", "ownership/read-length", 100),
+    functionEvent("family-b", "ownership/function-predicate-v1", 200),
+    {
+      id: "contact",
+      conceptIds: ["function-ownership"],
+      lessonId: "review",
+      stepId: "function-ownership:old-session",
+      kind: "exposure",
+      passed: false,
+      hints: 0,
+      revealed: false,
+      at: contactAt,
+      evidenceVersion: 2,
+      evaluator: "answer",
+      gate: false,
+    },
+  ],
+  review: [
+    {
+      conceptId: "function-ownership",
+      dueAt,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "test",
+    },
+  ],
+});
 const manifestPolicy = evidencePolicyForConcepts([
   {
     id: "manifest-concept",
@@ -58,6 +124,137 @@ const manifestPolicy = evidencePolicyForConcepts([
 ]);
 
 describe("learning engine", () => {
+  it("keeps DAY ordinary and DAY+1 delayed", () => {
+    const contactAt = 10_000;
+    const state = functionOwnershipState(contactAt, contactAt);
+    expect(hasQuietInterval(state, "function-ownership", contactAt + DAY)).toBe(
+      false,
+    );
+    expect(
+      delayedReviewEligibility(
+        state,
+        "function-ownership",
+        contactAt + DAY,
+        functionOwnershipPolicy,
+      ),
+    ).toBe(false);
+    expect(
+      delayedReviewEligibility(
+        state,
+        "function-ownership",
+        contactAt + DAY + 1,
+        functionOwnershipPolicy,
+      ),
+    ).toBe(true);
+  });
+
+  it("uses the latest event or rating as the quiet contact", () => {
+    const contactAt = 10_000;
+    const state = {
+      ...functionOwnershipState(contactAt, contactAt),
+      ratings: [
+        { conceptId: "function-ownership", rating: "good" as const, at: 50_000 },
+      ],
+    };
+    expect(hasQuietInterval(state, "function-ownership", 50_000 + DAY)).toBe(
+      false,
+    );
+    expect(hasQuietInterval(state, "function-ownership", 50_000 + DAY + 1)).toBe(
+      true,
+    );
+  });
+
+  it("does not count review events as a family", () => {
+    const state = functionOwnershipState(10_000, 10_000);
+    const before = independentCodingTaskIds(
+      state,
+      "function-ownership",
+      functionOwnershipPolicy,
+    );
+    const afterReview = {
+      ...state,
+      events: [
+        ...state.events,
+        {
+          ...state.events[2],
+          id: "review-success",
+          kind: "recall" as const,
+          passed: true,
+          delayed: true,
+          at: 20_000,
+          stepId: "review-function-ownership-delayed-v1:new-session",
+        },
+      ],
+    };
+    expect(
+      independentCodingTaskIds(
+        afterReview,
+        "function-ownership",
+        functionOwnershipPolicy,
+      ),
+    ).toEqual(before);
+  });
+
+  it("excludes revealed or hinted coding attempts from independent families", () => {
+    const baseState = functionOwnershipState(10_000, 10_000);
+    const assisted = {
+      ...baseState,
+      events: [
+        baseState.events[2],
+        { ...functionEvent("assisted", "ownership/function-predicate-v1", 300), hints: 1 },
+      ],
+    };
+    const revealed = {
+      ...baseState,
+      events: [
+        baseState.events[2],
+        { ...functionEvent("revealed", "ownership/function-predicate-v1", 300), revealed: true },
+      ],
+    };
+    expect(
+      independentCodingTaskIds(assisted, "function-ownership", functionOwnershipPolicy),
+    ).toEqual([]);
+    expect(
+      independentCodingTaskIds(revealed, "function-ownership", functionOwnershipPolicy),
+    ).toEqual([]);
+  });
+
+  it("does not count a failed attempt as an independent family", () => {
+    const state = functionOwnershipState(10_000, 10_000);
+    const failed = {
+      ...state,
+      events: [
+        ...state.events,
+        { ...functionEvent("failed", "ownership/new", 300), passed: false },
+      ],
+    };
+    expect(
+      independentCodingTaskIds(failed, "function-ownership", functionOwnershipPolicy),
+    ).toEqual(
+      independentCodingTaskIds(state, "function-ownership", functionOwnershipPolicy),
+    );
+  });
+
+  it("preserves authored event order while deduplicating family IDs", () => {
+    const state = functionOwnershipState(10_000, 10_000);
+    const duplicate = {
+      ...state,
+      events: [
+        ...state.events,
+        functionEvent("family-a-again", "ownership/read-length", 400),
+      ],
+    };
+    expect(duplicate.events.map((candidate) => candidate.id)).toEqual([
+      "family-a",
+      "family-b",
+      "contact",
+      "family-a-again",
+    ]);
+    expect(
+      independentCodingTaskIds(duplicate, "function-ownership", functionOwnershipPolicy),
+    ).toEqual(["ownership/read-length", "ownership/function-predicate-v1"]);
+  });
+
   it("does not make self-rating or a revealed answer strong evidence", () => {
     let state = recordEvidence(
       base(),
