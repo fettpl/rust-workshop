@@ -17,6 +17,11 @@ import {
   roadmap,
   sources,
 } from "./course";
+import {
+  nestedPatternConcepts,
+  nestedPatternLessons,
+  nestedPatternSources,
+} from "./nested-patterns";
 
 const lessonIds = [
   "unsafe-ffi-checked-view",
@@ -153,14 +158,18 @@ it("uses each gate and blank as an independent module criterion", () => {
 
 it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
   expect(modules).toHaveLength(48);
-  expect(lessons).toHaveLength(186);
-  expect(concepts).toHaveLength(190);
-  expect(sources).toHaveLength(332);
+  // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
+  expect(lessons).toHaveLength(186 + nestedPatternLessons.length);
+  expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
+  expect(sources).toHaveLength(332 + nestedPatternSources.length);
+  const nestedBlankSteps = nestedPatternLessons
+    .flatMap((lesson) => lesson.steps)
+    .filter((step) => step.kind === "blank").length;
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(141);
+  ).toHaveLength(141 + nestedBlankSteps);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
   expect(index).toBe(modules.length - 5);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);

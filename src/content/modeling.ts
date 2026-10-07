@@ -13,6 +13,7 @@ import {
   variantsSources,
   variantsReviewExercises,
 } from "./modeling-variants";
+import { nestedPatternLessons } from "./nested-patterns";
 
 export const modelingLessons = [...recordsLessons, ...variantsLessons];
 export const modelingConcepts = [...recordsConcepts, ...variantsConcepts];
@@ -39,7 +40,10 @@ export const modelingModule: CourseModule = {
     "Zbudujesz mały model zadania i przetestujesz przejścia stanu oraz przypadki brzegowe.",
   ],
   prerequisites: ["ownership"],
-  lessonIds: modelingLessons.map((lesson) => lesson.id),
+  lessonIds: [
+    ...modelingLessons.map((lesson) => lesson.id),
+    ...nestedPatternLessons.map((lesson) => lesson.id),
+  ],
   exitGate: [
     "Funkcja operuje na pożyczonym wycinku i daje poprawne wyniki dla różnych danych.",
     "Rekord oraz metody zachowują własność danych i prawidłowo zmieniają stan.",
@@ -99,6 +103,20 @@ export const modelingModule: CourseModule = {
       taskRefs: [
         { lessonId: "modeling-assessment", stepId: "modeling-blank" },
         { lessonId: "modeling-assessment", stepId: "modeling-alt" },
+      ],
+    },
+    {
+      id: "nested-pattern-gate",
+      label: "Zagnieżdżone wzorce rozróżniają brak, stan i dane pożyczone",
+      taskRefs: [
+        {
+          lessonId: "nested-patterns-and-destructuring",
+          stepId: "nested-repair",
+        },
+        {
+          lessonId: "nested-patterns-and-destructuring",
+          stepId: "nested-transfer",
+        },
       ],
     },
   ],

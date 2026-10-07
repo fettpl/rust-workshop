@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
 import { concepts, lessons, modules, reviewExercises } from "./course";
 import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";
+import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
 
 it("registers the bounded fuzz evidence module and four independent alternatives", () => {
   const stage = modules.find((item) => item.id === "fuzz-evidence-lifecycle")!;
@@ -26,6 +27,7 @@ it("registers the bounded fuzz evidence module and four independent alternatives
     }
     expect(lesson.conceptIds).toEqual([lesson.id]);
   }
-  expect(lessons).toHaveLength(186);
-  expect(concepts).toHaveLength(190);
+  // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
+  expect(lessons).toHaveLength(186 + nestedPatternLessons.length);
+  expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
 });

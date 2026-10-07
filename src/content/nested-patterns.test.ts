@@ -35,8 +35,11 @@ it("exports stable six-step nested-pattern content", () => {
   ]);
   expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(1);
   expect(lesson.steps.find((step) => step.id === "nested-transfer")?.code).toBe(
-    "",
+    undefined,
   );
+  expect(
+    lesson.steps.find((step) => step.id === "nested-transfer")?.expectedStatus,
+  ).toBe("success");
   expect(
     lesson.steps.find((step) => step.id === "nested-repair"),
   ).toMatchObject({
@@ -98,6 +101,9 @@ it("keeps repair, transfer, and review contracts distinct", () => {
   expect(transfer.solution).not.toContain("fn describe(reading: &Reading)");
   expect(review.code).toContain("Option<String>");
   expect(review.code).not.toContain("enum ReadingState");
+  expect(review.code).not.toEqual(review.solution);
+  expect(review.code).toContain("let _ = banner;");
+  expect(review.expectedStatus).toBe("test-failure");
   expect(review.solution).toContain("Banner::On { message: Some(_) }");
   expect(review.solution).toContain("Banner::On { message: None }");
 });
@@ -172,7 +178,13 @@ it("keeps semantic fixture coverage independent from learner prose", () => {
   );
   expect(
     reviewFixtures.filter((item) => item.outcome === "assertion-failure"),
-  ).toHaveLength(2);
+  ).toHaveLength(3);
+  expect(
+    reviewFixtures.find((item) => item.name === "starter-rejected-missing-some"),
+  ).toMatchObject({
+    source: review.code,
+    outcome: "assertion-failure",
+  });
 });
 
 const rustc = process.env.RUSTC_BIN ?? "rustc";

@@ -115,6 +115,17 @@ enum Banner {
 }
 
 fn has_message(banner: &Banner) -> bool {
+    let _ = banner;
+    false
+}`;
+
+const bannerSolution = `#[derive(Debug, PartialEq)]
+enum Banner {
+    Off,
+    On { message: Option<String> },
+}
+
+fn has_message(banner: &Banner) -> bool {
     match banner {
         Banner::Off => false,
         Banner::On { message: Some(_) } => true,
@@ -320,11 +331,11 @@ fn main() {
         title: "Przenieś wzorzec do Notice",
         prompt:
           "W pustym edytorze zdefiniuj `Notice`, `Details` i `needs_attention(notice: &Notice) -> bool`. Zwróć `true` wyłącznie dla `Ready { detail: Some(details) }`, gdy `urgent` jest prawdziwe, a `headline` nie jest pusty. Obsłuż też `Disabled` i `Ready { detail: None }`.",
-        code: "",
         solution: noticeStarter,
         evaluator: { kind: "tests", tests: noticeTests },
         evidenceKind: "transfer",
         evidenceGate: true,
+        expectedStatus: "success",
         hints: [
           "Najpierw dopasuj zewnętrzny wariant Notice, potem Some i pola Details.",
           "Warunek dla danych w Some łączy `details.urgent` z `!details.headline.is_empty()`.",
@@ -388,8 +399,9 @@ export const nestedPatternReviewExercises: Record<string, LessonStep> = {
     prompt:
       "Zaimplementuj `has_message(banner: &Banner) -> bool`. Zwróć `true` dla On z Some, także dla pustego String, oraz `false` dla Off i On z None.",
     code: bannerStarter,
-    solution: bannerStarter,
+    solution: bannerSolution,
     evaluator: { kind: "tests", tests: bannerTests },
     evidenceKind: "transfer",
+    expectedStatus: "test-failure",
   },
 };

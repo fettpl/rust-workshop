@@ -2,11 +2,13 @@ import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { concepts, lessons, modules, reviewExercises } from "./course";
 import { runtimeAllocationEvidenceLessons } from "./runtime-allocation-evidence";
+import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
 
 it("registers the two runtime allocation lessons with four gates and six authored assessments", () => {
   expect(runtimeAllocationEvidenceLessons.map((lesson) => lesson.id)).toEqual(["runtime-allocation-scope", "runtime-allocation-comparison"]);
-  expect(lessons).toHaveLength(186);
-  expect(concepts).toHaveLength(190);
+  // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
+  expect(lessons).toHaveLength(186 + nestedPatternLessons.length);
+  expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
   const stage = modules.find((module) => module.id === "profile-evidence")!;
   expect(stage.lessonIds).toEqual(expect.arrayContaining(["runtime-allocation-scope", "runtime-allocation-comparison"]));
   expect(stage.gateCriteria?.filter((criterion) => criterion.id.startsWith("runtime-allocation-")).map((criterion) => criterion.taskRefs[0].stepId)).toEqual([

@@ -8,6 +8,7 @@ import {
 import type { UserState } from "../../src/domain/types";
 
 const traits = modules.find((module) => module.id === "traits")!;
+const dataModeling = modules.find((module) => module.id === "data-modeling")!;
 const freshIds = ["conversion-ownership-views", "checked-conversions"];
 async function saved(page: Page): Promise<UserState> {
   await expect(page.locator(".save-status")).toHaveText(
@@ -85,6 +86,27 @@ async function openThroughTraits(page: Page, lessonId: string) {
   await page
     .locator(".module-picker > button")
     .filter({ hasText: traits.title })
+    .click();
+  const card = page
+    .locator(".lesson-list-item")
+    .filter({ hasText: lesson.title });
+  await card.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".task-pane h1")).toHaveText(lesson.steps[0].title);
+}
+async function openThroughDataModeling(page: Page, lessonId: string) {
+  const courseModule = modules.find((item) => item.id === "data-modeling")!;
+  const lesson = lessons.find((item) => item.id === lessonId)!;
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+    .fill(courseModule.title);
+  await page
+    .locator(".module-picker > button")
+    .filter({ hasText: courseModule.title })
     .click();
   const card = page
     .locator(".lesson-list-item")
@@ -334,5 +356,161 @@ test("real API smoke executes the maintained standard conversion example", async
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("żółć 8");
+  expect(errors).toEqual([]);
+});
+
+test("nested patterns: mocked repair persists UI state and recovers a fresh transfer", async ({
+  page,
+}) => {
+  const errors = errorLog(page);
+  const lesson = lessons.find(
+    (item) => item.id === "nested-patterns-and-destructuring",
+  )!;
+  const repair = lesson.steps.find((step) => step.id === "nested-repair")!;
+  const transfer = lesson.steps.find((step) => step.id === "nested-transfer")!;
+  await openThroughDataModeling(page, lesson.id);
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button", { name: /Napraw/ })
+    .focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".task-pane h1")).toHaveText(repair.title);
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+  await page
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  const draft = repair.solution + "\n// nested-pattern UI fixture.\n";
+  await editor.fill(draft);
+  const note = "Notatka nested patterns: brak, stan i dane.";
+  await page.getByText("Twój notatnik", { exact: true }).click();
+  await page.getByRole("textbox", { name: "Notatki do lekcji", exact: true }).fill(note);
+  await page.getByRole("button", { name: "Dodaj zakładkę", exact: true }).click();
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toMatchObject({
+      code: draft,
+      mode: "test",
+      tests:
+        repair.evaluator?.kind === "tests" ? repair.evaluator.tests : undefined,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout: "Mocked nested pattern result",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: 1, failed: 0 },
+      }),
+    });
+  });
+  await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("Mocked nested pattern result");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("tab", { name: /^Output/ }).click();
+  const beforeReload = await saved(page);
+  expect(beforeReload.resume).toMatchObject({
+    lessonId: lesson.id,
+    stepIndex: 2,
+    panel: "output",
+  });
+  expect(beforeReload.notes[lesson.id]).toBe(note);
+  expect(beforeReload.bookmarks).toContain(lesson.id);
+  expect(beforeReload.steps[stepKey(lesson.id, repair.id)].code).toBe(draft);
+  await page.reload();
+  await expect(page.getByRole("tab", { name: /^Output/ })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("Mocked nested pattern result");
+  const outputTab = page.getByRole("tab", { name: /^Output/ });
+  await outputTab.focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.getByRole("tab", { name: "Kod", exact: true })).toBeFocused();
+  await expect(editor).toHaveValue(draft);
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await page.getByRole("button", { name: dataModeling.title, exact: true }).click();
+  const criterion = dataModeling.gateCriteria!.find(
+    (gate) => gate.id === "nested-pattern-gate",
+  )!;
+  const row = page
+    .locator(".gate-panel li")
+    .filter({ hasText: criterion.label });
+  await row.locator(".gate-action").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  await expect(editor).toHaveValue("");
+  await expect(
+    page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+  ).toHaveCount(0);
+  const transferDraft = "// Fresh nested transfer draft.\nstruct Draft;\n";
+  await editor.fill(transferDraft);
+  const afterRecovery = await saved(page);
+  expect(afterRecovery.steps[stepKey(lesson.id, transfer.id)]).toMatchObject({
+    code: transferDraft,
+    hints: 0,
+    revealed: false,
+    completed: false,
+  });
+  expect(afterRecovery.steps[stepKey(lesson.id, repair.id)]).toMatchObject({
+    code: draft,
+    hints: 2,
+    revealed: true,
+  });
+  expect(afterRecovery.notes[lesson.id]).toBe(note);
+  expect(afterRecovery.bookmarks).toContain(lesson.id);
+  await page.reload();
+  await expect(editor).toHaveValue(transferDraft);
+  expect((await saved(page)).resume).toMatchObject({
+    lessonId: lesson.id,
+    stepIndex: 3,
+    panel: "code",
+  });
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+  ).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test("real API smoke executes the maintained nested pattern example", async ({
+  page,
+}) => {
+  test.setTimeout(75_000);
+  const errors = errorLog(page);
+  const lesson = lessons.find(
+    (item) => item.id === "nested-patterns-and-destructuring",
+  )!;
+  const step = lesson.steps.find((item) => item.id === "nested-run")!;
+  await openThroughDataModeling(page, lesson.id);
+  const button = page.getByLabel("Kroki lekcji").getByRole("button").nth(1);
+  await button.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".task-pane h1")).toHaveText(step.title);
+  const responsePromise = page.waitForResponse((response) =>
+    response.url().endsWith("/api/run"),
+  );
+  await page.getByRole("button", { name: "Uruchom", exact: true }).click();
+  const response = await responsePromise;
+  expect(response.ok()).toBe(true);
+  const result = await response.json();
+  expect(result.status).toBe("success");
+  expect(result.stdout).toBe(
+    step.evaluator?.kind === "exact-output"
+      ? step.evaluator.expected
+      : "missing authored output",
+  );
+  expect(result.stdout).toContain("failed: failed");
   expect(errors).toEqual([]);
 });

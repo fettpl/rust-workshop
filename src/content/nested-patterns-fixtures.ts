@@ -146,6 +146,11 @@ export const nestedPatternFixtures: Record<string, NestedPatternFixture[]> = {
     },
   ],
   "review-nested-pattern-matching": [
+    {
+      name: "starter-rejected-missing-some",
+      source: review.code!,
+      outcome: "assertion-failure",
+    },
     { name: "authored-solution", source: review.solution!, outcome: "pass" },
     { name: "equivalent-if-let", source: bannerEquivalent, outcome: "pass" },
     {

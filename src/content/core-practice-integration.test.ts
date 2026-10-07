@@ -4,8 +4,23 @@ import { readFileSync } from "node:fs";
 import * as course from "./course";
 import legacy from "./core-practice-legacy-baseline.json";
 import { traitsModule as originalTraitsModule } from "./traits";
-import { coreConversionsLessons } from "./core-conversions";
-import { coreCheckedConversionsLessons } from "./core-checked-conversions";
+import {
+  coreConversionsConcepts,
+  coreConversionsLessons,
+  coreConversionsSources,
+} from "./core-conversions";
+import {
+  coreCheckedConversionsConcepts,
+  coreCheckedConversionsLessons,
+  coreCheckedConversionsSources,
+} from "./core-checked-conversions";
+import {
+  nestedPatternConcepts,
+  nestedPatternCompetencies,
+  nestedPatternLessons,
+  nestedPatternReviewExercises,
+  nestedPatternSources,
+} from "./nested-patterns";
 import { nextLessonForNavigation } from "../engine/course-route";
 import { gateRecovery, moduleGate } from "../engine/learning";
 import {
@@ -22,15 +37,11 @@ import {
 } from "./learning-context";
 
 const newLessonIds = ["conversion-ownership-views", "checked-conversions"];
+const nestedLessonIds = ["nested-patterns-and-destructuring"];
 const newConceptIds = [
   "from-owned-conversions",
   "asref-borrowed-views",
   "checked-conversion-errors",
-];
-const newSourceIds = [
-  "core-conversions-std-from",
-  "core-conversions-std-asref",
-  "core-conversions-std-tryfrom",
 ];
 const traits = () => course.modules.find((module) => module.id === "traits")!;
 
@@ -65,6 +76,8 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
     expect(current.lessonIds).toEqual(
       original.id === "traits"
         ? [...original.lessonIds, ...newLessonIds]
+        : original.id === "data-modeling"
+          ? [...original.lessonIds, ...nestedLessonIds]
         : original.lessonIds,
     );
     expect(
@@ -90,13 +103,79 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   expect(course.lessons.slice(legacy.lessons.length)).toEqual([
     ...coreConversionsLessons,
     ...coreCheckedConversionsLessons,
+    ...nestedPatternLessons,
+  ]);
+  expect(course.concepts.slice(legacy.conceptIds.length)).toEqual([
+    ...coreConversionsConcepts,
+    ...coreCheckedConversionsConcepts,
+    ...nestedPatternConcepts,
+  ]);
+  expect(course.sources.slice(legacy.sourceIds.length)).toEqual([
+    ...coreConversionsSources,
+    ...coreCheckedConversionsSources,
+    ...nestedPatternSources,
+  ]);
+  expect(course.lessons.at(-1)).toEqual(nestedPatternLessons[0]);
+  expect(nestedPatternLessons[0].prerequisites).toEqual([
+    "modeling-assessment",
+  ]);
+  expect(nestedPatternLessons[0].steps.map((step) => step.id)).toEqual([
+    "nested-predict",
+    "nested-run",
+    "nested-repair",
+    "nested-transfer",
+    "nested-explain",
+    "nested-recall",
   ]);
   expect(
-    course.concepts.slice(legacy.conceptIds.length).map((item) => item.id),
-  ).toEqual(newConceptIds);
+    nestedPatternLessons[0].steps.filter((step) => step.kind === "blank"),
+  ).toHaveLength(1);
   expect(
-    course.sources.slice(legacy.sourceIds.length).map((item) => item.id),
-  ).toEqual(newSourceIds);
+    nestedPatternLessons[0].steps.filter(
+      (step) => step.evaluator?.kind === "tests",
+    ),
+  ).toHaveLength(2);
+  expect(nestedPatternReviewExercises["nested-pattern-matching"]?.evaluator).toMatchObject({
+    kind: "tests",
+  });
+  expect(nestedPatternSources).toMatchObject([
+    {
+      id: "core-patterns-book",
+      url: "https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html",
+      classification: "stable",
+      reviewedAt: "2026-10-07",
+    },
+    {
+      id: "core-patterns-reference",
+      url: "https://doc.rust-lang.org/reference/patterns.html",
+      classification: "stable",
+      reviewedAt: "2026-10-07",
+    },
+  ]);
+  expect(nestedPatternConcepts[0].prerequisites).toEqual([
+    "enum-variants",
+    "exhaustive-match",
+    "optional-values",
+  ]);
+  expect(nestedPatternConcepts[0].evidenceCalibration).toBeUndefined();
+  expect(nestedPatternCompetencies).toHaveLength(1);
+  for (const step of nestedPatternLessons[0].steps) {
+    expect(step.evidence, step.id).toMatchObject({
+      version: 2,
+      conceptIds: ["nested-pattern-matching"],
+    });
+    expect(step.evidence?.conceptIds).toEqual([
+      "nested-pattern-matching",
+    ]);
+  }
+  expect(
+    nestedPatternLessons[0].steps.find((step) => step.id === "nested-repair")
+      ?.evidence?.codingTaskId,
+  ).toBe("nested-repair");
+  expect(
+    nestedPatternLessons[0].steps.find((step) => step.id === "nested-transfer")
+      ?.evidence?.codingTaskId,
+  ).toBeUndefined();
   expect({
     lessons: course.lessons.length,
     modules: course.modules.length,
@@ -114,17 +193,17 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ).length,
     reviews: Object.keys(course.reviewExercises).length,
   }).toEqual({
-    lessons: 186,
+    lessons: 187,
     modules: 48,
-    concepts: 190,
-    blank: 141,
-    sources: 332,
+    concepts: 191,
+    blank: 142,
+    sources: 334,
     projects: 13,
     traces: 7,
-    competencies: 194,
-    steps: 1199,
-    testEvaluators: 444,
-    reviews: 190,
+    competencies: 195,
+    steps: 1205,
+    testEvaluators: 446,
+    reviews: 191,
   });
   for (const registry of [
     course.modules,
@@ -158,20 +237,30 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     expect(review.evidence).toMatchObject({ version: 2, conceptIds: [id] });
     expect(review.evaluator?.kind).toBe("tests");
   }
+  const nestedConcept = course.concepts.find(
+    (concept) => concept.id === "nested-pattern-matching",
+  )!;
+  expect(nestedConcept.evidenceCalibration).toBeUndefined();
+  expect(course.reviewExercises["nested-pattern-matching"]).toEqual(
+    nestedPatternReviewExercises["nested-pattern-matching"],
+  );
+  expect(course.reviewExercises["nested-pattern-matching"].evaluator?.kind).toBe(
+    "tests",
+  );
   expect(newConceptIds.map((id) => course.reviewExercises[id].id)).toEqual([
     "review-from-owned-conversions",
     "review-asref-borrowed-views",
     "review-checked-conversion-errors",
   ]);
   const fresh = course.lessons.filter((lesson) =>
-    newLessonIds.includes(lesson.id),
+    [...newLessonIds, ...nestedLessonIds].includes(lesson.id),
   );
-  expect(fresh.flatMap((lesson) => lesson.steps)).toHaveLength(14);
+  expect(fresh.flatMap((lesson) => lesson.steps)).toHaveLength(20);
   expect(
     fresh.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evaluator?.kind === "tests"),
     ),
-  ).toHaveLength(6);
+  ).toHaveLength(8);
   for (const lesson of fresh)
     for (const step of lesson.steps) {
       expect(step.evidence?.version).toBe(2);
@@ -355,4 +444,88 @@ describe("saved pre-integration state", () => {
       ).toBe(original.stepIds[3]);
     },
   );
+});
+
+it("round-trips an advanced resume before nested navigation and recovers a fresh transfer", () => {
+  const advancedLesson = course.lessons.find(
+    (lesson) => lesson.id === "capstone-release-evidence",
+  )!;
+  const advancedStep = advancedLesson.steps[3];
+  const state = createInitialState();
+  delete state.routePreference;
+  state.resume = {
+    view: "lesson",
+    lessonId: advancedLesson.id,
+    stepIndex: 3,
+    panel: "output",
+    focus: true,
+  };
+  const advancedKey = stepKey(advancedLesson.id, advancedStep.id);
+  state.steps[advancedKey] = {
+    ...createStepProgress("// zachowany szkic advanced ż\n"),
+    answer: "history",
+    hints: 2,
+    revealed: true,
+    completed: true,
+    attempts: [{ at: 50, answer: "history", passed: false, feedback: "keep" }],
+  };
+  state.notes = { [advancedLesson.id]: "historyczna notatka" };
+  state.bookmarks = [advancedLesson.id, "trait-contracts"];
+  state.events = [
+    {
+      id: "advanced-history",
+      lessonId: advancedLesson.id,
+      stepId: advancedStep.id,
+      conceptIds: [advancedLesson.conceptIds[0]],
+      kind: "self-rating",
+      evaluator: "rubric",
+      passed: true,
+      hints: 2,
+      revealed: true,
+      at: 40,
+    },
+  ];
+  state.mastery = {
+    legacy: { level: "retained", reason: "saved cache", updatedAt: 40 },
+  };
+  state.review = [
+    {
+      conceptId: "legacy",
+      dueAt: 80,
+      intervalDays: 1,
+      attempts: 2,
+      reason: "saved queue",
+    },
+  ];
+  state.ratings = [{ conceptId: "legacy", rating: "good", at: 40 }];
+
+  const restored = importState(exportState(state));
+  expect(restored).toEqual({ ...state, routePreference: "core" });
+  const beforeNavigation = structuredClone(restored);
+  expect(
+    nextLessonForNavigation(
+      "modeling-assessment",
+      course.lessons,
+      course.modules,
+    )?.id,
+  ).toBe("nested-patterns-and-destructuring");
+  const modeling = course.modules.find((module) => module.id === "data-modeling")!;
+  expect(moduleGate(restored, course.lessons, modeling).passed).toBe(false);
+  expect(restored).toEqual(beforeNavigation);
+  expect(restored.events).toEqual(beforeNavigation.events);
+
+  const criterion = modeling.gateCriteria!.find(
+    (gate) => gate.id === "nested-pattern-gate",
+  )!;
+  let assisted = submit(restored, criterion, 0, true);
+  assisted = submit(assisted, criterion, 0, true);
+  expect(gateRecovery(assisted, criterion, course.lessons)).toEqual({
+    status: "available",
+    task: criterion.taskRefs[1],
+  });
+  const clean = submit(createInitialState(), criterion, 1, false);
+  expect(
+    moduleGate(clean, course.lessons, { ...modeling, gateCriteria: [criterion] })
+      .passed,
+  ).toBe(true);
 });
