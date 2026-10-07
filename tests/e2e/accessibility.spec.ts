@@ -365,6 +365,10 @@ test("persistence error clears the live save status without a lifecycle warning"
     await expect(page.locator(".save-status")).toHaveText(savedText, {
       timeout: 5_000,
     });
+    const radios = page.getByRole("radio");
+    const initiallyChecked = await radios.first().isChecked();
+    await radios.nth(initiallyChecked ? 1 : 0).check();
+    await expect(live).toHaveText(savedText, { timeout: 5_000 });
     await page.evaluate(() => {
       const quotaError = new DOMException(
         "Quota exceeded for test",
@@ -378,9 +382,7 @@ test("persistence error clears the live save status without a lifecycle warning"
         writable: true,
       });
     });
-    const radios = page.getByRole("radio");
-    const initiallyChecked = await radios.first().isChecked();
-    await radios.nth(initiallyChecked ? 1 : 0).check();
+    await radios.nth(initiallyChecked ? 0 : 1).check();
     await expect(page.locator(".global-alert")).toContainText(
       "Brak dostępu do lokalnego zapisu",
       { timeout: 5_000 },
