@@ -21,10 +21,21 @@ import {
   projects,
   roadmap,
 } from "@/content/course";
-import { competencyProgress, nextGateTask } from "@/engine/progress";
+import { nextGateTask, gateRecovery } from "@/engine/progress";
+import {
+  courseMastery,
+  courseEvidenceSummary,
+  courseCompetencyProgress,
+} from "@/content/learning-context";
 import { dueReviews, moduleGate } from "@/engine/learning";
 import { stepKey } from "@/persistence/state";
-import { Eyebrow, MasteryBadge, ProgressLine } from "./ui";
+import {
+  Eyebrow,
+  MasteryBadge,
+  ProgressLine,
+  OwnershipPolicyNote,
+  OwnershipEvidenceCount,
+} from "./ui";
 import type { Lesson, ProjectContract } from "@/domain/types";
 import { ProjectPackage } from "./project-package";
 import { ModulePicker } from "./module-picker";
@@ -92,7 +103,7 @@ export function Dashboard() {
     ),
   );
   const practiced = moduleConcepts.filter((concept) =>
-    ["understood", "retained"].includes(state.mastery[concept.id]?.level),
+    ["understood", "retained"].includes(courseMastery(state, concept.id).level),
   ).length;
   const project =
     projects.find((item) =>
@@ -258,6 +269,7 @@ export function Dashboard() {
             {practiced} / {moduleConcepts.length} Z DOWODEM ROZUMIENIA
           </span>
         </div>
+        {activeModule.id === "ownership" && <OwnershipPolicyNote />}
         <div className="concept-grid">
           {moduleConcepts.map((concept, index) => (
             <div key={concept.id} className="concept-row">
@@ -265,7 +277,24 @@ export function Dashboard() {
                 {String(index + 1).padStart(2, "0")}
               </span>
               <span>{concept.title}</span>
-              <MasteryBadge level={state.mastery[concept.id]?.level} />
+              <span>
+                <MasteryBadge
+                  level={courseMastery(state, concept.id).level}
+                  scope={concept.evidenceCalibration ? "ownership" : undefined}
+                />
+                {concept.evidenceCalibration && (
+                  <OwnershipEvidenceCount
+                    count={
+                      courseEvidenceSummary(state, concept.id)
+                        .qualifyingCodingTasks
+                    }
+                    required={concept.evidenceCalibration.minimumCodingTasks}
+                    legacy={
+                      courseEvidenceSummary(state, concept.id).hasLegacyEvidence
+                    }
+                  />
+                )}
+              </span>
             </div>
           ))}
         </div>
@@ -281,15 +310,15 @@ export function Dashboard() {
           nie potwierdza kompetencji.
         </p>
         {competencies.map((competency) => {
-          const result = competencyProgress(state, concepts, competency.id);
+          const result = courseCompetencyProgress(state, competency.id);
           return (
             <div className="competency-row" key={competency.id}>
               <div>
                 <strong>{competency.title}</strong>
                 <small>
                   {result.proven} / {result.total} pojęć z dowodem rozumienia ·{" "}
-                  samodzielne zadania: {result.independentTasks} · lekcje:{" "}
-                  {result.lessonCount}
+                  kwalifikujące zadania w powiązanych pojęciach:{" "}
+                  {result.independentTasks} · lekcje: {result.lessonCount}
                 </small>
               </div>
               <MasteryBadge level={result.level} />
@@ -332,7 +361,7 @@ export function CourseMap() {
     .filter((module): module is (typeof modules)[number] => Boolean(module));
   const recoveryTargets = (selectedModule.gateCriteria ?? []).flatMap(
     (criterion, index) => {
-      const target = nextGateTask(state, criterion);
+      const target = nextGateTask(state, criterion, lessons);
       const targetLesson = lessons.find(
         (lesson) => lesson.id === target?.lessonId,
       );
@@ -348,6 +377,11 @@ export function CourseMap() {
         },
       ];
     },
+  );
+  const exhaustedCriteria = (selectedModule.gateCriteria ?? []).filter(
+    (criterion) =>
+      criterion.requiredIndependentCodingTasks !== undefined &&
+      gateRecovery(state, criterion, lessons).status === "exhausted",
   );
   const fallbackRecoveryLesson =
     moduleLessons.find(
@@ -382,6 +416,7 @@ export function CourseMap() {
       <div className="module-summary">
         <h2>{selectedModule.title}</h2>
         <p className="lede">{selectedModule.whyItMatters}</p>
+        {selectedModule.id === "ownership" && <OwnershipPolicyNote />}
       </div>
       <div className="module-contract">
         <div>
@@ -452,6 +487,13 @@ export function CourseMap() {
             Wybierz zadanie, które pomoże odbudować dowód samodzielności. Każda
             lekcja pozostaje dostępna.
           </p>
+          {exhaustedCriteria.length > 0 && (
+            <p className="footnote">
+              Brak świeżego samodzielnego wariantu: pozostałe zadania mają
+              zapisane podpowiedzi lub rozwiązanie. Możesz nadal ćwiczyć;
+              powtórzenie nie usuwa wcześniejszej pomocy.
+            </p>
+          )}
           {recoveryTargets.length ? (
             <ul className="module-link-list">
               {recoveryTargets.map((target) => (
@@ -465,7 +507,7 @@ export function CourseMap() {
                 </li>
               ))}
             </ul>
-          ) : fallbackRecoveryLesson ? (
+          ) : fallbackRecoveryLesson && !exhaustedCriteria.length ? (
             <button
               className="text-button"
               onClick={() =>
@@ -475,7 +517,9 @@ export function CourseMap() {
               Otwórz pierwszą lekcję do powtórki <ArrowRight size={16} />
             </button>
           ) : (
-            <p className="footnote">Brak lekcji do wznowienia.</p>
+            <p className="footnote">
+              Każdą lekcję możesz otworzyć ze ścieżki eksperymentów.
+            </p>
           )}
         </div>
       </section>
@@ -529,7 +573,11 @@ export function CourseMap() {
         <ul className="check-list">
           {gate.criteria.map((criterion, index) => {
             const contract = selectedModule.gateCriteria?.[index];
-            const target = contract && nextGateTask(state, contract);
+            const target = contract && nextGateTask(state, contract, lessons);
+            const exhausted =
+              contract &&
+              contract.requiredIndependentCodingTasks !== undefined &&
+              gateRecovery(state, contract, lessons).status === "exhausted";
             const targetLesson =
               target && lessons.find((lesson) => lesson.id === target.lessonId);
             return (
@@ -541,7 +589,10 @@ export function CourseMap() {
                 >
                   {criterion.passed ? "✓" : "○"}
                 </span>
-                <span>{criterion.label}</span>
+                <span>
+                  {criterion.label}
+                  {exhausted && " · Brak świeżego samodzielnego wariantu"}
+                </span>
                 {!criterion.passed && target && targetLesson && (
                   <button
                     className="text-button gate-action"

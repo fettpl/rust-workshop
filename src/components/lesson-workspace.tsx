@@ -13,12 +13,14 @@ import {
   TestTube2,
 } from "lucide-react";
 import { useLearning } from "./learning-provider";
-import { lessons, traces, sources, modules } from "@/content/course";
+import { concepts, lessons, traces, sources, modules } from "@/content/course";
 import { createStepProgress, stepKey } from "@/persistence/state";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
 import {
   recordCourseEvidence,
+  evidenceForLessonStep,
+  courseEvidenceSummary,
   recordCourseLessonExposure,
 } from "@/content/learning-context";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
@@ -150,7 +152,7 @@ export function LessonWorkspace() {
       };
       return recordCourseEvidence(next, {
         id: crypto.randomUUID(),
-        conceptIds: lesson.conceptIds,
+        ...evidenceForLessonStep(lesson, step),
         lessonId: lesson.id,
         stepId: step.id,
         kind:
@@ -415,8 +417,28 @@ export function LessonWorkspace() {
           <p className="task-prompt">
             <LearningText>{step.prompt}</LearningText>
           </p>
+          {step.evidence?.codingTaskId && (
+            <p className="footnote">
+              Bieżący kontrakt: wersja {step.evidence.version}. Zapisany szkic i
+              ukończenie pozostają dostępne. Potwierdzenie wymaga przejścia
+              obecnych testów; wcześniejsze podpowiedzi pozostają przypisane do
+              zadania.
+            </p>
+          )}
+          {step.evidence?.conceptIds.map((conceptId) => {
+            const summary = courseEvidenceSummary(state, conceptId);
+            return summary.requiredCodingTasks === undefined ? null : (
+              <p className="footnote" key={conceptId}>
+                {concepts.find((concept) => concept.id === conceptId)?.title}:
+                samodzielne zadania kodowe {summary.qualifyingCodingTasks}/
+                {summary.requiredCodingTasks}
+                {summary.hasLegacyEvidence &&
+                  " · Starsze wyniki pozostają w historii."}
+              </p>
+            );
+          })}
           {step.evidenceGate && (
-            <p className="gate-label">◇ Dowód samodzielności · nowy problem</p>
+            <p className="gate-label">◇ Zadanie samodzielności</p>
           )}
           {step.evaluator && !usesRun && !isManifest && (
             <div className="answer-area">
