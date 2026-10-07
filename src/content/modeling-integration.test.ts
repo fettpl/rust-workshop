@@ -3,9 +3,10 @@ import { lessons, modules, concepts, reviewExercises } from "./course";
 import { createInitialState } from "../persistence/state";
 import { evaluate } from "../engine/evaluate";
 import { moduleGate } from "../engine/learning";
+import { nextLessonForNavigation } from "../engine/course-route";
 
 describe("data modeling learning path", () => {
-  it("connects ownership to six modeling lessons without moving an existing resume", () => {
+  it("connects ownership to seven modeling lessons without moving an existing resume", () => {
     const courseModule = modules.find((item) => item.id === "data-modeling");
     expect(courseModule).toBeDefined();
     expect(courseModule!.prerequisites).toEqual(["ownership"]);
@@ -16,11 +17,43 @@ describe("data modeling learning path", () => {
       "enums-and-match",
       "option-and-absence",
       "modeling-assessment",
+      "nested-patterns-and-destructuring",
     ]);
     const state = createInitialState();
     state.resume.lessonId = "scenario-assessment";
     state.resume.stepIndex = 3;
     expect(moduleGate(state, lessons, courseModule!).passed).toBe(false);
+    expect(state.resume).toMatchObject({
+      lessonId: "scenario-assessment",
+      stepIndex: 3,
+    });
+    const nestedGate = courseModule!.gateCriteria!.find(
+      (criterion) => criterion.id === "nested-pattern-gate",
+    );
+    expect(nestedGate).toEqual({
+      id: "nested-pattern-gate",
+      label: "Zagnieżdżone wzorce rozróżniają brak, stan i dane pożyczone",
+      taskRefs: [
+        {
+          lessonId: "nested-patterns-and-destructuring",
+          stepId: "nested-repair",
+        },
+        {
+          lessonId: "nested-patterns-and-destructuring",
+          stepId: "nested-transfer",
+        },
+      ],
+    });
+    expect(nestedGate?.requiredIndependentCodingTasks).toBeUndefined();
+    expect(moduleGate(state, lessons, courseModule!).passed).toBe(false);
+    expect(state.events).toEqual([]);
+    expect(
+      nextLessonForNavigation(
+        "modeling-assessment",
+        lessons,
+        modules,
+      )?.id,
+    ).toBe("nested-patterns-and-destructuring");
     expect(state.resume).toMatchObject({
       lessonId: "scenario-assessment",
       stepIndex: 3,
@@ -48,6 +81,7 @@ describe("data modeling learning path", () => {
       "exhaustive-match",
       "optional-values",
       "modeling-transfer",
+      "nested-pattern-matching",
     ];
     for (const id of ids) {
       expect(
@@ -62,6 +96,20 @@ describe("data modeling learning path", () => {
         id,
       ).toBe(false);
     }
+  });
+
+  it("keeps the nested review outside lesson steps and uses its executable evaluator", () => {
+    const review = reviewExercises["nested-pattern-matching"];
+    expect(review).toMatchObject({
+      id: "review-nested-pattern-matching",
+      evaluator: { kind: "tests" },
+    });
+    expect(reviewExercises["nested-pattern-matching"].evaluator).toMatchObject({
+      kind: "tests",
+    });
+    expect(
+      lessons.flatMap((lesson) => lesson.steps).includes(review),
+    ).toBe(false);
   });
 });
 

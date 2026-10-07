@@ -494,6 +494,13 @@ import {
   coreCheckedConversionsSources,
   coreCheckedConversionsReviewExercises,
 } from "./core-checked-conversions";
+import {
+  nestedPatternLessons,
+  nestedPatternConcepts,
+  nestedPatternCompetencies,
+  nestedPatternSources,
+  nestedPatternReviewExercises,
+} from "./nested-patterns";
 
 const traitsModule = {
   ...baseTraitsModule,
@@ -661,6 +668,7 @@ export const lessons = [
   ...capstoneIntegrationLessons,
   ...coreConversionsLessons,
   ...coreCheckedConversionsLessons,
+  ...nestedPatternLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -726,6 +734,7 @@ export const concepts = [
   ...capstoneIntegrationConcepts,
   ...coreConversionsConcepts,
   ...coreCheckedConversionsConcepts,
+  ...nestedPatternConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -790,6 +799,7 @@ export const competencies = [
   ...capstoneIntegrationCompetencies,
   ...coreConversionsCompetencies,
   ...coreCheckedConversionsCompetencies,
+  ...nestedPatternCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -854,6 +864,7 @@ export const sources = [
   ...capstoneIntegrationSources,
   ...coreConversionsSources,
   ...coreCheckedConversionsSources,
+  ...nestedPatternSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -919,6 +930,7 @@ export const reviewExercises = {
   ...capstoneIntegrationReviewExercises,
   ...coreConversionsReviewExercises,
   ...coreCheckedConversionsReviewExercises,
+  ...nestedPatternReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {

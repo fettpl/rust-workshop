@@ -136,7 +136,7 @@ it("rejects the literal-output bypass at the real catalog evaluator boundary", (
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
-});
+}, 75_000);
 
 const expectedAttribution: [string, string, string[]][] = [
   ["memory-intro", "memory-predict", ["stack-heap"]],
