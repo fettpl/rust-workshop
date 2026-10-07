@@ -44,6 +44,33 @@ const newConceptIds = [
   "checked-conversion-errors",
 ];
 const traits = () => course.modules.find((module) => module.id === "traits")!;
+const frozenPreNestedInventory = {
+  lessons: 186,
+  modules: 48,
+  concepts: 190,
+  blank: 141,
+  sources: 332,
+  projects: 13,
+  traces: 7,
+  competencies: 194,
+  steps: 1199,
+  testEvaluators: 444,
+  reviews: 190,
+};
+const nestedInventory = {
+  lessons: nestedPatternLessons.length,
+  concepts: nestedPatternConcepts.length,
+  competencies: nestedPatternCompetencies.length,
+  sources: nestedPatternSources.length,
+  steps: nestedPatternLessons.flatMap((lesson) => lesson.steps).length,
+  blank: nestedPatternLessons
+    .flatMap((lesson) => lesson.steps)
+    .filter((step) => step.kind === "blank").length,
+  testEvaluators: nestedPatternLessons
+    .flatMap((lesson) => lesson.steps)
+    .filter((step) => step.evaluator?.kind === "tests").length,
+  reviews: Object.keys(nestedPatternReviewExercises).length,
+};
 
 it("preserves the immutable legacy prefixes, module order and every old step index", () => {
   expect(
@@ -193,17 +220,19 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ).length,
     reviews: Object.keys(course.reviewExercises).length,
   }).toEqual({
-    lessons: 187,
-    modules: 48,
-    concepts: 191,
-    blank: 142,
-    sources: 334,
-    projects: 13,
-    traces: 7,
-    competencies: 195,
-    steps: 1205,
-    testEvaluators: 446,
-    reviews: 191,
+    lessons: frozenPreNestedInventory.lessons + nestedInventory.lessons,
+    modules: frozenPreNestedInventory.modules,
+    concepts: frozenPreNestedInventory.concepts + nestedInventory.concepts,
+    blank: frozenPreNestedInventory.blank + nestedInventory.blank,
+    sources: frozenPreNestedInventory.sources + nestedInventory.sources,
+    projects: frozenPreNestedInventory.projects,
+    traces: frozenPreNestedInventory.traces,
+    competencies:
+      frozenPreNestedInventory.competencies + nestedInventory.competencies,
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps,
+    testEvaluators:
+      frozenPreNestedInventory.testEvaluators + nestedInventory.testEvaluators,
+    reviews: frozenPreNestedInventory.reviews + nestedInventory.reviews,
   });
   for (const registry of [
     course.modules,
