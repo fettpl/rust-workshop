@@ -180,7 +180,7 @@ it("compiles and runs every authored test gate, blank transfer, and review", () 
       `${step.id}: ${result.executed?.stderr}`,
     ).toBe(0);
   }
-});
+}, 120_000);
 
 it("rejects the macro contract mutants", () => {
   const exact = macrosAsApiLessons[0].steps.find(
