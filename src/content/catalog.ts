@@ -1,3 +1,9 @@
+import {
+  appendSuffixContract,
+  replaceTextContract,
+  surroundContract,
+  removeTrailingMarkContract,
+} from "./ownership-evidence-contracts";
 import type {
   Competency,
   Concept,
@@ -111,6 +117,7 @@ export const competencies: Competency[] = [
 export const concepts: Concept[] = [
   {
     id: "stack-heap",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Rola stosu i sterty",
     prerequisites: [],
     competencyIds: ["predict-memory"],
@@ -123,6 +130,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "scope-drop",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Zakres i drop",
     prerequisites: ["stack-heap"],
     competencyIds: ["predict-memory"],
@@ -135,6 +143,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "move-semantics",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Semantyka move",
     prerequisites: ["stack-heap", "scope-drop"],
     competencyIds: ["classify-copy-move", "repair-compiler-feedback"],
@@ -147,6 +156,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "copy-semantics",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Semantyka Copy",
     prerequisites: ["move-semantics"],
     competencyIds: ["classify-copy-move"],
@@ -159,6 +169,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "function-ownership",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Własność na granicy funkcji",
     prerequisites: ["move-semantics", "copy-semantics"],
     competencyIds: ["design-function-boundary", "repair-compiler-feedback"],
@@ -171,6 +182,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "shared-borrow",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Pożyczka współdzielona",
     prerequisites: ["function-ownership"],
     competencyIds: ["borrow-without-taking", "repair-compiler-feedback"],
@@ -183,6 +195,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "mutable-borrow",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Pożyczka mutowalna",
     prerequisites: ["shared-borrow"],
     competencyIds: ["borrow-without-taking", "repair-compiler-feedback"],
@@ -194,6 +207,7 @@ export const concepts: Concept[] = [
   },
   {
     id: "ownership-repair",
+    evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
     title: "Wybór naprawy własności",
     prerequisites: ["function-ownership", "shared-borrow", "mutable-borrow"],
     competencyIds: ["repair-compiler-feedback", "avoid-unnecessary-clone"],
@@ -683,6 +697,7 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "memory-predict",
+        evidence: { version: 2, conceptIds: ["stack-heap"] },
         kind: "predict",
         title: "Przewidź liczbę",
         prompt:
@@ -722,6 +737,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "memory-run",
+        evidence: { version: 2, conceptIds: ["stack-heap"] },
         kind: "run",
         title: "Uruchom przykład",
         prompt:
@@ -739,6 +755,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "memory-trace",
+        evidence: { version: 2, conceptIds: [] },
         kind: "trace",
         title: "Śledź własność String",
         prompt:
@@ -774,6 +791,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "memory-explain",
+        evidence: { version: 2, conceptIds: ["scope-drop"] },
         kind: "explain",
         title: "Nazwij sprzątanie",
         prompt:
@@ -788,6 +806,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "memory-modify",
+        evidence: { version: 2, conceptIds: [] },
         kind: "modify",
         title: "Zmień wynik",
         prompt:
@@ -810,6 +829,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "memory-transfer",
+        evidence: { version: 2, conceptIds: ["scope-drop"] },
         kind: "trace",
         title: "Dwa zakresy, dwa momenty drop",
         prompt:
@@ -854,6 +874,10 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "move-predict",
+        evidence: {
+          version: 2,
+          conceptIds: ["move-semantics", "copy-semantics"],
+        },
         kind: "predict",
         title: "Dwa przypisania",
         prompt:
@@ -895,6 +919,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "move-error",
+        evidence: { version: 2, conceptIds: ["move-semantics"] },
         kind: "debug",
         title: "Przeczytaj E0382",
         prompt:
@@ -917,6 +942,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "move-string-run",
+        evidence: { version: 2, conceptIds: ["move-semantics"] },
         kind: "predict",
         title: "Uruchom String",
         prompt: "Przewidź wynik, a następnie uruchom kod.",
@@ -933,6 +959,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "copy-int-run",
+        evidence: { version: 2, conceptIds: ["copy-semantics"] },
         kind: "predict",
         title: "Uruchom Copy",
         prompt: "Przewidź wynik, a następnie uruchom kod.",
@@ -949,6 +976,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "copy-trace",
+        evidence: { version: 2, conceptIds: ["copy-semantics"] },
         kind: "trace",
         title: "Śledź Copy",
         prompt:
@@ -982,6 +1010,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "copy-clone-trace",
+        evidence: { version: 2, conceptIds: ["move-semantics"] },
         kind: "trace",
         title: "Śledź jawne clone",
         prompt:
@@ -1036,6 +1065,7 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "function-call-run",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "predict",
         title: "Uruchom wywołanie",
         prompt: "Przewidź wynik wywołania funkcji, a następnie go sprawdź.",
@@ -1052,6 +1082,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "function-error",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "debug",
         title: "Właściciel nie wraca do wywołującego",
         prompt:
@@ -1076,6 +1107,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "return-ownership",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "modify",
         title: "Zwróć wartość",
         prompt: "Dokończ transfer własności, zwracając String z funkcji.",
@@ -1096,6 +1128,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "function-expression-run",
+        evidence: { version: 2, conceptIds: [] },
         kind: "run",
         title: "Uruchom wyrażenie",
         prompt: "Przewidź wartość wyrażenia blokowego i sprawdź ją.",
@@ -1112,6 +1145,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "function-explain",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "explain",
         title: "Przeczytaj sygnaturę",
         prompt: "Jednym zdaniem wyjaśnij, co sygnatura obiecuje o własności.",
@@ -1122,11 +1156,12 @@ export const lessons: Lesson[] = [
             "Wyjaśnia, że zwrot String przekazuje własność z powrotem do wywołującego.",
           ],
         },
-        evidenceKind: "recall",
+        evidenceKind: "self-rating",
         evidenceGate: false,
       },
       {
         id: "function-transfer",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "apply",
         title: "Wybierz granicę",
         prompt:
@@ -1181,6 +1216,7 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "borrow-read-run",
+        evidence: { version: 2, conceptIds: ["shared-borrow"] },
         kind: "predict",
         title: "Uruchom odczyt",
         prompt:
@@ -1202,6 +1238,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "borrow-trace",
+        evidence: { version: 2, conceptIds: ["shared-borrow"] },
         kind: "trace",
         title: "Właściciel kontra widok",
         prompt:
@@ -1230,49 +1267,52 @@ export const lessons: Lesson[] = [
       },
       {
         id: "borrow-conflict",
+        evidence: {
+          version: 2,
+          conceptIds: ["mutable-borrow"],
+          codingTaskId: "ownership/mutate-append",
+        },
         kind: "debug",
         title: "Jedna ścieżka mutacji",
         prompt:
-          "Uruchom celowo błędny kod. Który dostęp nakłada się na pożyczkę mutowalną? Napraw zakres lub kolejność dostępów, zachowując zmianę tekstu przez pożyczkę mutowalną. Program ma wypisać hi! dokładnie raz.",
-        code: 'fn main() {\n    let mut text = String::from("hi");\n    let view = &text;\n    let edit = &mut text;\n    edit.push(\'!\');\n    println!("{view}");\n}',
-        solution:
-          'fn main() {\n    let mut text = String::from("hi");\n    let edit = &mut text;\n    edit.push(\'!\');\n    println!("{text}");\n}',
-        evaluator: {
-          kind: "exact-output",
-          expected: "hi!\n",
-        },
+          "Uruchom starter z konfliktem E0502 i zakończ współdzielony widok przed mutacją. Wymagana publiczna funkcja `pub fn append_suffix(text: &mut String, suffix: &str)` ma zachować istniejący tekst i dopisać przekazany suffix dokładnie raz. Testy sprawdzają bufor wywołującego, także po kolejnych wywołaniach. Kontrakt v2: zapisany szkic i ukończenie pozostają; wcześniejszy program wypisujący hi! wymaga dostosowania do tego API.",
+        code: appendSuffixContract.starter,
+        solution: appendSuffixContract.solution,
+        evaluator: { kind: "tests", tests: appendSuffixContract.tests },
         evidenceKind: "fix",
         expectedStatus: "compile-error",
         expectedError: "E0502",
         evidenceGate: true,
         hints: [
-          "Wskaż aktywny widok i edycję.",
-          "Zakończ widok przed utworzeniem &mut.",
+          "Znajdź ostatnie użycie view: utrzymuje pożyczkę współdzieloną przez wywołanie mutujące.",
+          "Zakończ odczyt view przed append_suffix albo utwórz go po mutacji; funkcja dopisuje przekazany suffix.",
         ],
       },
       {
         id: "borrow-mutable-run",
+        evidence: {
+          version: 2,
+          conceptIds: ["mutable-borrow"],
+          codingTaskId: "ownership/mutate-replace",
+        },
         kind: "modify",
         title: "Zmień przez pożyczkę",
         prompt:
-          "Zmień kod tak, aby dopisał wykrzyknik zamiast znaku zapytania.",
-        code: 'fn main() {\n    let mut text = String::from("hi");\n    let edit = &mut text;\n    edit.push(\'?\');\n    println!("{text}");\n}',
-        solution:
-          'fn main() {\n    let mut text = String::from("hi");\n    let edit = &mut text;\n    edit.push(\'!\');\n    println!("{text}");\n}',
-        evaluator: {
-          kind: "answer",
-          accepted: ["hi!"],
-          feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
-        },
-        evidenceKind: "prediction",
+          "Zastąp dopisywanie wymianą całej zawartości. Wymagana publiczna funkcja `pub fn replace_text(text: &mut String, replacement: &str)` ma zostawić w buforze wywołującego dokładnie replacement, także pusty tekst. Zmień kod; odpowiedź tekstowa nie rozwiązuje tego zadania. Kontrakt v2: zapisany szkic i ukończenie pozostają; wcześniejsze rozwiązanie z hi! wymaga dostosowania do nowego API.",
+        code: replaceTextContract.starter,
+        solution: replaceTextContract.solution,
+        evaluator: { kind: "tests", tests: replaceTextContract.tests },
+        evidenceKind: "transfer",
         expectedStatus: "success",
+        evidenceGate: true,
         hints: [
-          "Znajdź push na referencji edit.",
-          "Zmień argument push na wykrzyknik.",
+          "Starter zachowuje stary tekst, choć wymagana jest wymiana całej zawartości.",
+          "Najpierw usuń dotychczasową zawartość bufora, potem zapisz replacement; sprawdź także pusty replacement.",
         ],
       },
       {
         id: "borrow-explain",
+        evidence: { version: 2, conceptIds: ["shared-borrow"] },
         kind: "explain",
         title: "Pożyczyć czy przenieść?",
         prompt:
@@ -1284,11 +1324,12 @@ export const lessons: Lesson[] = [
             "Podaje obserwowalny dowód: wywołujący może użyć text po pomiarze.",
           ],
         },
-        evidenceKind: "recall",
+        evidenceKind: "self-rating",
         evidenceGate: false,
       },
       {
         id: "borrow-transfer",
+        evidence: { version: 2, conceptIds: ["mutable-borrow"] },
         kind: "apply",
         title: "Transfer: bezpieczna edycja",
         prompt:
@@ -1349,6 +1390,7 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "project-contract",
+        evidence: { version: 2, conceptIds: [] },
         kind: "apply",
         title: "Przeczytaj kontrakt",
         prompt:
@@ -1377,6 +1419,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "project-result-run",
+        evidence: { version: 2, conceptIds: [] },
         kind: "run",
         title: "Uruchom komunikat wyniku",
         prompt: "Przewidź wynik dla poprawnego strzału i sprawdź go.",
@@ -1393,6 +1436,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "project-blank",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "blank",
         title: "Pusta kartka: napisz zachowanie",
         prompt:
@@ -1414,6 +1458,14 @@ export const lessons: Lesson[] = [
       },
       {
         id: "project-error",
+        evidence: {
+          version: 2,
+          conceptIds: [
+            "function-ownership",
+            "shared-borrow",
+            "ownership-repair",
+          ],
+        },
         kind: "debug",
         title: "Zachowaj jednego właściciela komunikatu",
         prompt:
@@ -1438,6 +1490,14 @@ export const lessons: Lesson[] = [
       },
       {
         id: "project-reasoning",
+        evidence: {
+          version: 2,
+          conceptIds: [
+            "function-ownership",
+            "shared-borrow",
+            "ownership-repair",
+          ],
+        },
         kind: "explain",
         title: "Uzasadnij granicę",
         prompt:
@@ -1449,11 +1509,12 @@ export const lessons: Lesson[] = [
             "Wyjaśnia, że zwracany String musi mieć właściciela po zakończeniu funkcji.",
           ],
         },
-        evidenceKind: "recall",
+        evidenceKind: "self-rating",
         evidenceGate: false,
       },
       {
         id: "project-check",
+        evidence: { version: 2, conceptIds: [] },
         kind: "apply",
         title: "Dodaj przypadek regresji",
         prompt:
@@ -1513,6 +1574,7 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "blank-plan",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "apply",
         title: "Zaplanuj właściciela",
         prompt: "Kto powinien posiadać zwrócony status po powrocie funkcji?",
@@ -1540,6 +1602,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "blank-code",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "blank",
         title: "Napisz najmniejszą implementację",
         prompt:
@@ -1561,6 +1624,14 @@ export const lessons: Lesson[] = [
       },
       {
         id: "blank-error",
+        evidence: {
+          version: 2,
+          conceptIds: [
+            "move-semantics",
+            "function-ownership",
+            "ownership-repair",
+          ],
+        },
         kind: "debug",
         title: "Napraw bez clone",
         prompt:
@@ -1585,6 +1656,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "blank-test",
+        evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "run",
         title: "Sprawdź świeży argument",
         prompt:
@@ -1605,6 +1677,14 @@ export const lessons: Lesson[] = [
       },
       {
         id: "blank-reason",
+        evidence: {
+          version: 2,
+          conceptIds: [
+            "move-semantics",
+            "function-ownership",
+            "ownership-repair",
+          ],
+        },
         kind: "explain",
         title: "Uzasadnij naprawę",
         prompt: "Który fragment E0382 skłonił Cię do zmiany sygnatury?",
@@ -1616,11 +1696,15 @@ export const lessons: Lesson[] = [
             "Łączy zmianę parametru i argumentu z obserwowalnym przejściem testów.",
           ],
         },
-        evidenceKind: "recall",
+        evidenceKind: "self-rating",
         evidenceGate: false,
       },
       {
         id: "blank-transfer",
+        evidence: {
+          version: 2,
+          conceptIds: ["function-ownership", "ownership-repair"],
+        },
         kind: "apply",
         title: "Świeży transfer",
         prompt:
@@ -1634,7 +1718,7 @@ export const lessons: Lesson[] = [
             "Podaje przypadek testowy, w którym wywołujący używa oryginału po wywołaniu.",
           ],
         },
-        evidenceKind: "transfer",
+        evidenceKind: "self-rating",
         evidenceGate: false,
       },
     ],
@@ -1665,6 +1749,10 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "adversarial-diagnose",
+        evidence: {
+          version: 2,
+          conceptIds: ["shared-borrow", "ownership-repair"],
+        },
         kind: "assessment",
         title: "Nazwij prawdziwą potrzebę",
         prompt:
@@ -1698,6 +1786,11 @@ export const lessons: Lesson[] = [
       },
       {
         id: "adversarial-code",
+        evidence: {
+          version: 2,
+          conceptIds: ["shared-borrow", "ownership-repair"],
+          codingTaskId: "ownership/read-length",
+        },
         kind: "modify",
         title: "Zaimplementuj logger z ograniczeniem",
         prompt:
@@ -1708,7 +1801,7 @@ export const lessons: Lesson[] = [
         evaluator: {
           kind: "tests",
           tests:
-            '#[test]\nfn caller_keeps_ownership() {\n    for label in ["ok", "try again", ""] {\n        let message = String::from(label);\n        assert_eq!(show_result(&message), label.len());\n        assert_eq!(message, label);\n    }\n}',
+            '#[test]\nfn caller_keeps_ownership() {\n    let read: fn(&str) -> usize = show_result;\n    for label in ["ok", "try again", "", "żółw 🦀"] {\n        let message = String::from(label);\n        assert_eq!(read(&message), label.len());\n        assert_eq!(read(&message), label.as_bytes().len());\n        assert_eq!(message, label);\n    }\n}',
           forbiddenPatterns: [".clone(", "Clone::clone("],
         },
         evidenceKind: "project",
@@ -1721,28 +1814,33 @@ export const lessons: Lesson[] = [
       },
       {
         id: "adversarial-conflict",
+        evidence: {
+          version: 2,
+          conceptIds: ["mutable-borrow"],
+          codingTaskId: "ownership/mutate-surround",
+        },
         kind: "debug",
         title: "Napraw konflikt",
         prompt:
-          "Wyjaśnij, dlaczego mutacja nie może nakładać się na widok współdzielony. Napraw zakres lub kolejność dostępu.",
-        code: 'fn main() {\n    let mut result = String::from("try");\n    let view = &result;\n    result.push_str(" again");\n    println!("{view}");\n}',
-        solution:
-          'fn main() {\n    let mut result = String::from("try");\n    result.push_str(" again");\n    let view = &result;\n    println!("{view}");\n}',
-        evaluator: {
-          kind: "exact-output",
-          expected: "try again\n",
-        },
+          "Napraw konflikt E0502, kończąc współdzielony widok przed mutacją. Wymagana publiczna funkcja `pub fn surround(text: &mut String, prefix: &str, suffix: &str)` ma zachować obecny środek bufora i otoczyć go przekazanym prefiksem i sufiksem, także przy pustych i Unicode danych. Kontrakt v2: zapisany szkic i ukończenie pozostają; samo wypisanie try again nie sprawdza tej mutacji.",
+        code: surroundContract.starter,
+        solution: surroundContract.solution,
+        evaluator: { kind: "tests", tests: surroundContract.tests },
         evidenceKind: "fix",
         expectedStatus: "compile-error",
         expectedError: "E0502",
         evidenceGate: true,
         hints: [
-          "Mutacja musi zakończyć się przed widokiem.",
-          "Przenieś utworzenie view za push_str.",
+          "view pozostaje używany po surround, więc jego pożyczka nakłada się na mutację.",
+          "Przenieś ostatni odczyt view przed mutację albo utwórz widok później; zachowaj środek pomiędzy prefix i suffix.",
         ],
       },
       {
         id: "adversarial-reason",
+        evidence: {
+          version: 2,
+          conceptIds: ["shared-borrow", "ownership-repair"],
+        },
         kind: "explain",
         title: "Wyjaśnij kompromis",
         prompt:
@@ -1755,11 +1853,12 @@ export const lessons: Lesson[] = [
             "Wskazuje dowód w kodzie: logger działa z &str, a message pozostaje użyteczny.",
           ],
         },
-        evidenceKind: "recall",
+        evidenceKind: "self-rating",
         evidenceGate: false,
       },
       {
         id: "adversarial-trace",
+        evidence: { version: 2, conceptIds: ["shared-borrow"] },
         kind: "trace",
         title: "Śledź współdzielony dostęp",
         prompt:
@@ -1788,6 +1887,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "adversarial-transfer",
+        evidence: { version: 2, conceptIds: ["ownership-repair"] },
         kind: "apply",
         title: "Transfer ograniczenia",
         prompt:
@@ -1853,6 +1953,7 @@ export const lessons: Lesson[] = [
     steps: [
       {
         id: "assessment-unseen-copy",
+        evidence: { version: 2, conceptIds: ["copy-semantics"] },
         kind: "assessment",
         title: "Niewidziana klasyfikacja",
         prompt:
@@ -1872,6 +1973,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "assessment-unseen-move",
+        evidence: { version: 2, conceptIds: ["move-semantics"] },
         kind: "assessment",
         title: "Niewidziane move",
         prompt:
@@ -1892,6 +1994,16 @@ export const lessons: Lesson[] = [
       },
       {
         id: "assessment-repair",
+        evidence: {
+          version: 2,
+          conceptIds: [
+            "move-semantics",
+            "function-ownership",
+            "shared-borrow",
+            "ownership-repair",
+          ],
+          codingTaskId: "ownership/read-length",
+        },
         kind: "debug",
         title: "Napraw bez przepisu",
         prompt:
@@ -1902,7 +2014,7 @@ export const lessons: Lesson[] = [
         evaluator: {
           kind: "tests",
           tests:
-            '#[test]\nfn measures_without_consuming() {\n    for label in ["new case", "Rust", ""] {\n        let text = String::from(label);\n        assert_eq!(measure(&text), label.len());\n        assert_eq!(text, label);\n    }\n}',
+            '#[test]\nfn measures_without_consuming() {\n    let read: fn(&String) -> usize = measure;\n    for label in ["new case", "Rust", "", "żółw 🦀"] {\n        let text = String::from(label);\n        assert_eq!(read(&text), label.len());\n        assert_eq!(read(&text), label.as_bytes().len());\n        assert_eq!(text, label);\n    }\n}',
           forbiddenPatterns: [".clone(", "Clone::clone("],
         },
         evidenceKind: "fix",
@@ -1916,6 +2028,15 @@ export const lessons: Lesson[] = [
       },
       {
         id: "assessment-reasoning",
+        evidence: {
+          version: 2,
+          conceptIds: [
+            "move-semantics",
+            "function-ownership",
+            "shared-borrow",
+            "ownership-repair",
+          ],
+        },
         kind: "explain",
         title: "Rozumuj, nie oceniaj się sam",
         prompt:
@@ -1938,6 +2059,10 @@ export const lessons: Lesson[] = [
       },
       {
         id: "assessment-retrieval",
+        evidence: {
+          version: 2,
+          conceptIds: ["shared-borrow", "ownership-repair"],
+        },
         kind: "recall",
         title: "Odroczone przypomnienie",
         prompt:
@@ -1959,6 +2084,10 @@ export const lessons: Lesson[] = [
       },
       {
         id: "assessment-transfer",
+        evidence: {
+          version: 2,
+          conceptIds: ["function-ownership", "ownership-repair"],
+        },
         kind: "apply",
         title: "Końcowy transfer",
         prompt:
@@ -2088,9 +2217,11 @@ export const ownershipModule: CourseModule = {
     },
     {
       id: "borrowing",
-      label: "Praca przez pożyczkę bez przejęcia własności",
+      label: "Dwa różne zadania mutacji przez pożyczkę bez podpowiedzi",
+      requiredIndependentCodingTasks: 2,
       taskRefs: [
         { lessonId: "borrow-intro", stepId: "borrow-conflict" },
+        { lessonId: "borrow-intro", stepId: "borrow-mutable-run" },
         { lessonId: "adversarial-no-clone", stepId: "adversarial-conflict" },
       ],
       supplementaryStepRefs: [
@@ -2147,6 +2278,7 @@ export const project: ProjectContract = {
 export const reviewExercises: Record<string, LessonStep> = {
   "stack-heap": {
     id: "review-stack-heap",
+    evidence: { version: 2, conceptIds: ["stack-heap"] },
     kind: "recall",
     title: "Powtórka: bufor i wiązanie",
     prompt:
@@ -2169,6 +2301,7 @@ export const reviewExercises: Record<string, LessonStep> = {
   },
   "scope-drop": {
     id: "review-scope-drop",
+    evidence: { version: 2, conceptIds: ["scope-drop"] },
     kind: "recall",
     title: "Powtórka: zakres",
     prompt:
@@ -2190,6 +2323,7 @@ export const reviewExercises: Record<string, LessonStep> = {
   },
   "move-semantics": {
     id: "review-move-semantics",
+    evidence: { version: 2, conceptIds: ["move-semantics"] },
     kind: "recall",
     title: "Powtórka: przeniesiony String",
     prompt:
@@ -2211,6 +2345,7 @@ export const reviewExercises: Record<string, LessonStep> = {
   },
   "copy-semantics": {
     id: "review-copy-semantics",
+    evidence: { version: 2, conceptIds: ["copy-semantics"] },
     kind: "recall",
     title: "Powtórka: krotka Copy",
     prompt:
@@ -2228,6 +2363,7 @@ export const reviewExercises: Record<string, LessonStep> = {
   },
   "function-ownership": {
     id: "review-function-ownership",
+    evidence: { version: 2, conceptIds: ["function-ownership"] },
     kind: "recall",
     title: "Powtórka: parametr własnościowy",
     prompt:
@@ -2250,6 +2386,7 @@ export const reviewExercises: Record<string, LessonStep> = {
   },
   "shared-borrow": {
     id: "review-shared-borrow",
+    evidence: { version: 2, conceptIds: ["shared-borrow"] },
     kind: "recall",
     title: "Powtórka: pomocnik tylko do odczytu",
     prompt:
@@ -2278,29 +2415,28 @@ export const reviewExercises: Record<string, LessonStep> = {
   },
   "mutable-borrow": {
     id: "review-mutable-borrow",
-    kind: "recall",
-    title: "Powtórka: napraw wyłączną edycję",
-    prompt:
-      "Kod nie kompiluje się, bo współdzielony widok i `&mut` nakładają się. Napraw go tak, aby `append_mark` modyfikowało tekst, a testy przeszły bez `.clone()`.",
-    code: 'fn main() {\n    let mut text = String::from("hi");\n    let view = &text;\n    append_mark(&mut text);\n    println!("{view} {text}");\n}\n\nfn append_mark(text: &mut String) {\n    text.push(\'!\');\n}',
-    solution:
-      'fn main() {\n    let mut text = String::from("hi");\n    let view = &text;\n    println!("{view}");\n    append_mark(&mut text);\n    println!("{text}");\n}\n\nfn append_mark(text: &mut String) {\n    text.push(\'!\');\n}',
-    evaluator: {
-      kind: "tests",
-      tests:
-        '#[test]\nfn appends_for_new_input() {\n    for value in ["hi", "Rust"] {\n        let mut text = String::from(value);\n        append_mark(&mut text);\n        assert_eq!(text, format!("{value}!"));\n    }\n}',
-      forbiddenPatterns: [".clone(", "Clone::clone("],
+    evidence: {
+      version: 2,
+      conceptIds: ["mutable-borrow"],
+      codingTaskId: "ownership/recall-remove-trailing-mark",
     },
+    kind: "recall",
+    title: "Powtórka: usuń końcowy znak",
+    prompt:
+      "Odtwórz publiczną funkcję `pub fn remove_trailing_mark(text: &mut String, mark: char) -> bool`. Usuń dokładnie jeden końcowy znak, jeśli jest równy mark, i zwróć true. W przeciwnym razie pozostaw tekst bez zmian i zwróć false. Pusty tekst pozostaje pusty. Możesz sprawdzić dokumentację ends_with i pop. Kontrakt v2: zapisany szkic pozostaje; wcześniejsze append_mark trzeba dostosować do nowego API.",
+    code: removeTrailingMarkContract.starter,
+    solution: removeTrailingMarkContract.solution,
+    evaluator: { kind: "tests", tests: removeTrailingMarkContract.tests },
     evidenceKind: "recall",
-    expectedStatus: "compile-error",
-    expectedError: "E0502",
+    expectedStatus: "success",
     hints: [
-      "Współdzielony widok musi skończyć się przed wyłączną mutacją.",
-      "Przenieś odczyt view wcześniej albo usuń go, zanim wywołasz append_mark.",
+      "Porównaj ostatni znak z mark, również dla pustego tekstu.",
+      "pop usuwa jeden znak Unicode; wynik bool musi opisywać rzeczywistą zmianę.",
     ],
   },
   "ownership-repair": {
     id: "review-ownership-repair",
+    evidence: { version: 2, conceptIds: ["ownership-repair"] },
     kind: "recall",
     title: "Powtórka: napraw granicę odczytu",
     prompt:

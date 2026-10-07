@@ -35,7 +35,7 @@ import { readFile } from "node:fs/promises";
         consoleErrors.push(text);
       }
     });
-    await page.goto("http://127.0.0.1:3002");
+    await page.goto(process.env.OFFLINE_BASE_URL ?? "http://127.0.0.1:3002");
     await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
     await page.getByRole("button", { name: "Przejdź do nauki" }).click();
     await page.getByRole("button", { name: "Wejdź do lekcji" }).click();
@@ -1072,6 +1072,117 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await context.setOffline(false);
     console.log(
       "API release matrix navigation, both gate criteria, notes, keyboard and exact resume work offline",
+    );
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Własność");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Własność: pokaż odpowiedzialność" })
+      .click();
+    await expect(page.locator(".module-summary")).toContainText(
+      "Historia i ukończone kroki pozostają zapisane",
+    );
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Pożycz, zanim zduplikujesz" })
+      .click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(5).click();
+    await page.getByRole("radio", { name: "&mut String", exact: true }).check();
+    await page
+      .getByRole("button", { name: "Sprawdź odpowiedź", exact: true })
+      .click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(2).click();
+    const ownershipEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const ownershipDraft =
+      "// Wersjonowany szkic ownership, bez wykonania kompilatora.\n";
+    await ownershipEditor.fill(ownershipDraft);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect(page.locator(".task-pane")).toContainText(
+      "samodzielne zadania kodowe 0/2",
+    );
+    await expect(page.locator(".save-status")).toHaveText(
+      "Zapisano na tym urządzeniu",
+    );
+    const ownershipBefore = await readLearningState();
+    const ownershipChoice = ownershipBefore.events.findLast(
+      (event) =>
+        event.lessonId === "borrow-intro" &&
+        event.stepId === "borrow-transfer" &&
+        event.evaluator === "choice",
+    );
+    expect(ownershipChoice).toMatchObject({
+      evidenceVersion: 2,
+      passed: true,
+      conceptIds: ["mutable-borrow"],
+    });
+    const ownershipRawTests = ownershipBefore.events.filter(
+      (event) =>
+        event.lessonId === "borrow-intro" && event.evaluator === "tests",
+    );
+    expect(ownershipRawTests).toEqual([]);
+    await context.setOffline(true);
+    await page.reload();
+    await expect(ownershipEditor).toHaveValue(ownershipDraft);
+    await expect(
+      page.getByText("WSKAZÓWKA 1 · OBSZAR", { exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".task-pane")).toContainText(
+      "samodzielne zadania kodowe 0/2",
+    );
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await expect(
+      page.getByText("Kompilator niedostępny", { exact: true }),
+    ).toBeVisible();
+    await expect(ownershipEditor).toHaveValue(ownershipDraft);
+    const ownershipAfter = await readLearningState();
+    expect(
+      ownershipAfter.events.slice(0, ownershipBefore.events.length),
+    ).toEqual(ownershipBefore.events);
+    expect(
+      ownershipAfter.events
+        .slice(ownershipBefore.events.length)
+        .every(
+          (event) =>
+            event.kind === "exposure" &&
+            event.passed &&
+            !event.gate &&
+            event.evidenceVersion === undefined,
+        ),
+    ).toBe(true);
+    expect(
+      ownershipAfter.events.filter(
+        (event) =>
+          event.lessonId === "borrow-intro" && event.evaluator === "tests",
+      ),
+    ).toEqual([]);
+    expect(ownershipAfter.steps["borrow-intro:borrow-conflict"]).toMatchObject({
+      code: ownershipDraft,
+      hints: 1,
+      revealed: false,
+      completed: false,
+    });
+    expect(
+      ownershipAfter.steps["borrow-intro:borrow-conflict"].attempts.at(-1),
+    ).toMatchObject({
+      passed: false,
+      result: { status: "infrastructure-error" },
+    });
+    await page.reload();
+    await expect(ownershipEditor).toHaveValue(ownershipDraft);
+    await expect(page.locator(".task-pane")).toContainText(
+      "samodzielne zadania kodowe 0/2",
+    );
+    await context.setOffline(false);
+    console.log(
+      "Ownership versioned choice/history, assisted draft and current 0/2 resume offline; unavailable runner awards no assessment",
     );
     expect(errors).toEqual([]);
     expect(consoleErrors).toEqual([]);

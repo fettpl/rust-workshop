@@ -10,6 +10,9 @@ import { concepts, reviewExercises } from "@/content/course";
 import { dueReviews, rateReview } from "@/engine/learning";
 import {
   recordCourseEvidence,
+  evidenceForReview,
+  courseMastery,
+  courseEvidenceSummary,
   recordCourseLessonExposure,
 } from "@/content/learning-context";
 import { reviewSessionKey, startReviewSession } from "@/engine/review-session";
@@ -17,7 +20,12 @@ import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
 import { createStepProgress } from "@/persistence/state";
 import type { RunResult, StepProgress } from "@/domain/types";
-import { Eyebrow, MasteryBadge } from "./ui";
+import {
+  Eyebrow,
+  MasteryBadge,
+  OwnershipPolicyNote,
+  OwnershipEvidenceCount,
+} from "./ui";
 
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 
@@ -175,7 +183,7 @@ export function ReviewView() {
       };
       next = recordCourseEvidence(next, {
         id: crypto.randomUUID(),
-        conceptIds: [concept.id],
+        ...evidenceForReview(concept.id, step),
         lessonId: "review",
         stepId: `${concept.id}:${session.sessionId}`,
         kind: "recall",
@@ -284,7 +292,7 @@ export function ReviewView() {
       };
       return recordCourseEvidence(next, {
         id: crypto.randomUUID(),
-        conceptIds: [concept.id],
+        ...evidenceForReview(concept.id, step),
         lessonId: "review",
         stepId: `${concept.id}:${session.sessionId}`,
         kind: "recall",
@@ -350,8 +358,30 @@ export function ReviewView() {
           </button>
           <div className="section-heading spread">
             <h2>{concept.title}</h2>
-            <MasteryBadge level={state.mastery[concept.id]?.level} />
+            <MasteryBadge
+              level={courseMastery(state, concept.id).level}
+              scope={concept.evidenceCalibration ? "ownership" : undefined}
+            />
           </div>
+          {concept.evidenceCalibration && (
+            <>
+              <OwnershipPolicyNote />
+              <OwnershipEvidenceCount
+                count={
+                  courseEvidenceSummary(state, concept.id).qualifyingCodingTasks
+                }
+                required={concept.evidenceCalibration.minimumCodingTasks}
+                legacy={
+                  courseEvidenceSummary(state, concept.id).hasLegacyEvidence
+                }
+              />
+              <p className="footnote">
+                Odtworzenie po czasie wymaga dwóch wcześniejszych samodzielnych
+                zadań kodowych i ponad 24 godzin bez kontaktu z pojęciem. Ta
+                powtórka nie dodaje kolejnego zadania do tego licznika.
+              </p>
+            </>
+          )}
           <div className="segmented">
             <button
               className={mode === "challenge" ? "selected" : ""}
@@ -626,7 +656,9 @@ export function ReviewView() {
             </div>
             <p className="footnote">
               Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź
-              po czasie jest dowodem utrwalenia.
+              po czasie może potwierdzić odtworzenie. Dla ownership potrzebne są
+              dwa wcześniejsze zadania kodowe i ponad 24 godziny bez kontaktu z
+              pojęciem.
             </p>
           </section>
         </>

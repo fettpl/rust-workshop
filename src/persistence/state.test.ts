@@ -317,3 +317,61 @@ describe("state persistence", () => {
     ).toThrow(/wersj/i);
   });
 });
+
+describe("additive event evidence version", () => {
+  const versionedState = (version: unknown) => {
+    const state = createInitialState();
+    state.events = [
+      {
+        id: "versioned",
+        conceptIds: [],
+        lessonId: "old",
+        stepId: "saved",
+        kind: "assessment",
+        passed: true,
+        hints: 1,
+        revealed: true,
+        at: 42,
+        gate: false,
+        evaluator: "tests",
+        evidenceVersion: version,
+      } as never,
+    ];
+    return state;
+  };
+  it.each([2, 999])(
+    "roundtrips positive version %i without resetting saved state",
+    (version) => {
+      const state = versionedState(version);
+      state.steps["old:saved"] = {
+        ...createStepProgress("old draft"),
+        completed: true,
+        hints: 1,
+        revealed: true,
+      };
+      const restored = importState(exportState(state));
+      expect(restored).toEqual(state);
+      expect(restored.schemaVersion).toBe(3);
+      expect(restored.events).toEqual(state.events);
+    },
+  );
+  it("leaves legacy events unstamped and preserves raw array order", () => {
+    const state = versionedState(2);
+    const old = {
+      ...state.events[0],
+      id: "legacy",
+      conceptIds: ["copy-semantics", "move-semantics"],
+    };
+    delete old.evidenceVersion;
+    state.events.unshift(old);
+    expect(importState(exportState(state)).events).toEqual(state.events);
+  });
+  it.each([0, -1, 1.5, "2"])(
+    "rejects invalid evidence version %s",
+    (version) => {
+      const envelope = JSON.parse(exportState(createInitialState()));
+      envelope.state = versionedState(version);
+      expect(() => importState(JSON.stringify(envelope))).toThrow();
+    },
+  );
+});

@@ -244,13 +244,20 @@ it("keeps published test starters incomplete until learner edits", () => {
       const compiled = spawnSync(
         "rustc",
         ["--edition=2024", "--test", file, "-o", binary],
-        { cwd: directory, encoding: "utf8" },
+        { cwd: directory, encoding: "utf8", timeout: 60_000 },
       );
+      expect(compiled.error, `${id}: compiler`).toBeUndefined();
+      expect(compiled.signal, `${id}: compiler signal`).toBeNull();
+      expect(compiled.status, `${id}: compiler status`).not.toBeNull();
       if (compiled.status === 0) {
         const executed = spawnSync(binary, ["--test-threads=1"], {
           cwd: directory,
           encoding: "utf8",
+          timeout: 8_000,
         });
+        expect(executed.error, `${id}: runner`).toBeUndefined();
+        expect(executed.signal, `${id}: runner signal`).toBeNull();
+        expect(executed.status, `${id}: runner status`).not.toBeNull();
         expect(executed.status, `${id} starter unexpectedly passes`).not.toBe(
           0,
         );
@@ -267,4 +274,4 @@ it("keeps published test starters incomplete until learner edits", () => {
     unsafeBorrowedMemoryReviewExercises["unsafe-borrowed-auto-traits-contract"];
   expect(review.code).not.toContain("unsafe impl");
   expect(review.code).not.toContain("reattach<'short>");
-});
+}, 120_000);

@@ -123,6 +123,71 @@ export function validateContent(content: ContentBundle): string[] {
   const traceIds = new Set(Object.keys(content.traces));
   const moduleIds = new Set(content.modules.map((module) => module.id));
   const stepsByRef = new Map<string, Lesson["steps"][number]>();
+  const codingFamilies = new Map<
+    string,
+    { version: number; evaluator: string | undefined }
+  >();
+  const calibrationById = new Map(
+    content.concepts.map((concept) => [
+      concept.id,
+      concept.evidenceCalibration,
+    ]),
+  );
+  function evidenceIssues(step: LessonStep, scopeIds: string[], label: string) {
+    const definition = step.evidence;
+    const calibrations = scopeIds.flatMap((id) =>
+      calibrationById.get(id) ? [calibrationById.get(id)!] : [],
+    );
+    if (!definition) {
+      if (calibrations.length)
+        errors.push(`${label} requires calibrated evidence metadata`);
+      return;
+    }
+    if (!Number.isInteger(definition.version) || definition.version <= 0)
+      errors.push(`${label} evidence version must be a positive integer`);
+    if (
+      new Set(definition.conceptIds).size !== definition.conceptIds.length ||
+      definition.conceptIds.some(
+        (id) => !conceptIds.has(id) || !scopeIds.includes(id),
+      )
+    )
+      errors.push(
+        `${label} evidence concepts must be a known unique subset of its scope`,
+      );
+    if (
+      calibrations.some(
+        (calibration) => calibration.version !== definition.version,
+      )
+    )
+      errors.push(`${label} evidence version must match its calibration`);
+    if (definition.codingTaskId !== undefined) {
+      if (
+        !definition.codingTaskId.trim() ||
+        !definition.conceptIds.length ||
+        step.evaluator?.kind !== "tests" ||
+        !["fix", "transfer", "project", "assessment", "recall"].includes(
+          step.evidenceKind,
+        )
+      )
+        errors.push(
+          `${label} coding task must have a nonempty identity and concepts with a tests-backed coding evidence kind`,
+        );
+      const previous = codingFamilies.get(definition.codingTaskId);
+      if (
+        previous &&
+        (previous.version !== definition.version ||
+          previous.evaluator !== step.evaluator?.kind ||
+          previous.evaluator !== "tests")
+      )
+        errors.push(
+          `${label} coding task family must share its version and tests evaluator`,
+        );
+      codingFamilies.set(definition.codingTaskId, {
+        version: definition.version,
+        evaluator: step.evaluator?.kind,
+      });
+    }
+  }
 
   checkUnique(
     content.lessons.map((lesson) => lesson.id),
@@ -160,6 +225,16 @@ export function validateContent(content: ContentBundle): string[] {
   for (const concept of content.concepts) {
     conceptGraph.set(concept.id, concept.prerequisites);
     if (
+      concept.evidenceCalibration &&
+      (!Number.isInteger(concept.evidenceCalibration.version) ||
+        concept.evidenceCalibration.version <= 0 ||
+        !Number.isInteger(concept.evidenceCalibration.minimumCodingTasks) ||
+        concept.evidenceCalibration.minimumCodingTasks <= 0)
+    )
+      errors.push(
+        `concept ${concept.id} evidence calibration requires positive integers`,
+      );
+    if (
       !concept.title.trim() ||
       !concept.reviewPrompt.trim() ||
       !concept.reviewAnswer.trim() ||
@@ -181,6 +256,15 @@ export function validateContent(content: ContentBundle): string[] {
     }
     const review = content.reviewExercises[concept.id];
     if (review) {
+      evidenceIssues(review, [concept.id], `review ${concept.id}`);
+      if (
+        concept.evidenceCalibration &&
+        (review.evidence?.conceptIds.length !== 1 ||
+          review.evidence.conceptIds[0] !== concept.id)
+      )
+        errors.push(
+          `review ${concept.id} evidence must claim exactly its concept`,
+        );
       errors.push(
         ...manifestStepIssues(review).map(
           (error) => `review ${concept.id}: ${error}`,
@@ -258,6 +342,7 @@ export function validateContent(content: ContentBundle): string[] {
     const localStepIds = new Set<string>();
     for (const step of lesson.steps) {
       const stepKey = `${lesson.id}/${step.id}`;
+      evidenceIssues(step, lesson.conceptIds, `step ${stepKey}`);
       errors.push(
         ...manifestStepIssues(step).map((error) => `step ${stepKey}: ${error}`),
       );
@@ -424,6 +509,33 @@ export function validateContent(content: ContentBundle): string[] {
             role: "supplementary" as const,
           })),
         ];
+        if (criterion.requiredIndependentCodingTasks !== undefined) {
+          const required = criterion.requiredIndependentCodingTasks;
+          const families = new Set(
+            criterion.taskRefs.flatMap((ref) => {
+              const step = stepsByRef.get(`${ref.lessonId}/${ref.stepId}`);
+              const definition = step?.evidence;
+              return step?.evaluator?.kind === "tests" &&
+                definition?.codingTaskId?.trim() &&
+                definition.conceptIds.length &&
+                Number.isInteger(definition.version) &&
+                definition.version > 0 &&
+                ["fix", "transfer", "project", "assessment"].includes(
+                  step.evidenceKind,
+                )
+                ? [definition.codingTaskId]
+                : [];
+            }),
+          );
+          if (
+            !Number.isInteger(required) ||
+            required <= 0 ||
+            required > families.size
+          )
+            errors.push(
+              `module counted gate ${criterion.id} must require a positive integer no larger than its distinct eligible coding task families`,
+            );
+        }
         const seenRefs = new Set<string>();
         for (const { ref, role } of refs) {
           const key = `${ref.lessonId}/${ref.stepId}`;

@@ -1,10 +1,18 @@
 import type {
   Concept,
   MasteryLevel,
+  Lesson,
   ModuleGateCriterion,
   UserState,
 } from "@/domain/types";
-import { isIndependentSuccess } from "./learning";
+import {
+  deriveConceptMastery,
+  independentCodingTaskIdForEvent,
+  isIndependentSuccess,
+  gateRecovery,
+  type EvidencePolicy,
+} from "./learning";
+export { gateRecovery, type GateRecovery } from "./learning";
 import { stepKey } from "@/persistence/state";
 
 const levels: MasteryLevel[] = [
@@ -20,34 +28,68 @@ export function competencyProgress(
   state: UserState,
   concepts: Concept[],
   competencyId: string,
+  policy?: EvidencePolicy,
 ) {
   const related = concepts.filter((concept) =>
     concept.competencyIds.includes(competencyId),
   );
   const ids = new Set(related.map((concept) => concept.id));
   const ranks = related.map((concept) =>
-    levels.indexOf(state.mastery[concept.id]?.level ?? "new"),
+    levels.indexOf(
+      policy?.calibrationForConcept?.(concept.id)
+        ? deriveConceptMastery(state, concept.id, policy).level
+        : (state.mastery[concept.id]?.level ?? "new"),
+    ),
   );
-  const evidence = state.events.filter(
-    (event) =>
-      event.conceptIds.some((id) => ids.has(id)) && isIndependentSuccess(event),
-  );
+  const evidence = state.events.flatMap((event, index) => {
+    const relatedIds = event.conceptIds.filter((id) => ids.has(id));
+    const codingIds = relatedIds.flatMap((id) => {
+      const taskId = policy?.calibrationForConcept?.(id)
+        ? independentCodingTaskIdForEvent(state, index, id, policy)
+        : undefined;
+      return taskId ? [taskId] : [];
+    });
+    // An accepted calibrated family is one task even when its exact subset
+    // also supports an uncalibrated concept in this competency.
+    const taskIds =
+      codingIds.length > 0
+        ? codingIds.map((id) => `coding:${id}`)
+        : relatedIds.some(
+              (id) =>
+                !policy?.calibrationForConcept?.(id) &&
+                (policy
+                  ? isIndependentSuccess(event, id, policy)
+                  : isIndependentSuccess(event)),
+            )
+          ? [stepKey(event.lessonId, event.stepId)]
+          : [];
+    return taskIds.length > 0 ? [{ event, taskIds }] : [];
+  });
   return {
     level: levels[ranks.length ? Math.min(...ranks) : 0],
     proven: ranks.filter((rank) => rank >= 3).length,
     total: related.length,
-    independentTasks: new Set(
-      evidence.map((event) => stepKey(event.lessonId, event.stepId)),
-    ).size,
+    independentTasks: new Set(evidence.flatMap(({ taskIds }) => taskIds)).size,
     lessonCount: new Set(
       evidence
-        .filter((event) => event.lessonId !== "review")
-        .map((event) => event.lessonId),
+        .filter(({ event }) => event.lessonId !== "review")
+        .map(({ event }) => event.lessonId),
     ).size,
   };
 }
 
-export function nextGateTask(state: UserState, criterion: ModuleGateCriterion) {
+export function nextGateTask(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+  lessons: readonly Lesson[] = [],
+) {
+  if (
+    criterion.requiredIndependentCodingTasks !== undefined ||
+    lessons.length > 0
+  ) {
+    const recovery = gateRecovery(state, criterion, lessons);
+    return recovery.status === "available" ? recovery.task : undefined;
+  }
   const taskPassed = criterion.taskRefs.some((ref) =>
     state.events.some(
       (event) =>

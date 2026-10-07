@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { concepts, lessons, projects } from "./course";
+import { concepts, lessons, projects, reviewExercises } from "./course";
 import {
   recordCourseEvidence,
+  evidenceForLessonStep,
+  evidenceForReview,
+  courseMastery,
+  courseEvidenceSummary,
+  courseCompetencyProgress,
+  assistanceForLessonStep,
   revealCourseProjectPackageVariant,
 } from "./learning-context";
 import type { EvidenceEvent, ProjectPackage } from "@/domain/types";
-import { createInitialState, stepKey } from "@/persistence/state";
+import {
+  createInitialState,
+  createStepProgress,
+  stepKey,
+  exportState,
+  importState,
+} from "@/persistence/state";
 
 const rustEvent = (overrides: Partial<EvidenceEvent> = {}): EvidenceEvent => ({
   id: "course-rust",
@@ -168,3 +180,335 @@ function recordLaterExposure(
     at: 2_000 + 24 * 60 * 60 * 1000 + 2,
   });
 }
+
+const day = 24 * 60 * 60 * 1000;
+function authoredEvent(
+  lessonId: string,
+  stepId: string,
+  at = 1_000,
+): EvidenceEvent {
+  const lesson = lessons.find((item) => item.id === lessonId)!;
+  const step = lesson.steps.find((item) => item.id === stepId)!;
+  return rustEvent({
+    id: `${lessonId}/${stepId}/${at}`,
+    lessonId,
+    stepId,
+    at,
+    conceptIds: [...step.evidence!.conceptIds],
+    evidenceVersion: step.evidence!.version,
+    evaluator: step.evaluator!.kind,
+    kind: step.evaluator!.kind === "rubric" ? "self-rating" : step.evidenceKind,
+  });
+}
+function twoPrimaryTasks() {
+  let state = recordCourseEvidence(
+    createInitialState(),
+    authoredEvent("borrow-intro", "borrow-conflict"),
+  );
+  state = recordCourseEvidence(
+    state,
+    authoredEvent("borrow-intro", "borrow-mutable-run", 2_000),
+  );
+  return state;
+}
+function reviewEvent(
+  at: number,
+  overrides: Partial<EvidenceEvent> = {},
+): EvidenceEvent {
+  return rustEvent({
+    id: `recall/${at}`,
+    lessonId: "review",
+    stepId: "mutable-borrow:session-a",
+    kind: "recall",
+    evaluator: "tests",
+    conceptIds: ["mutable-borrow"],
+    evidenceVersion: 2,
+    delayed: true,
+    at,
+    ...overrides,
+  });
+}
+describe("current authored ownership evidence", () => {
+  it("emits exact lesson metadata only for submissions with an uncalibrated fallback", () => {
+    const lesson = lessons.find((item) => item.id === "move-copy-discovery")!;
+    const step = lesson.steps.find((item) => item.id === "move-error")!;
+    expect(evidenceForLessonStep(lesson, step)).toEqual({
+      conceptIds: ["move-semantics"],
+      evidenceVersion: 2,
+    });
+    const nonclaim = lessons
+      .filter((item) => item.moduleId === "ownership")
+      .flatMap((item) => item.steps)
+      .find((item) => item.evidence?.conceptIds.length === 0)!;
+    expect(evidenceForLessonStep(lesson, nonclaim)).toEqual({
+      conceptIds: [],
+      evidenceVersion: 2,
+    });
+    expect(
+      evidenceForLessonStep(lessons[0], {
+        ...lessons[0].steps[0],
+        evidence: undefined,
+      }),
+    ).toEqual({ conceptIds: lessons[0].conceptIds });
+    expect(
+      evidenceForReview("mutable-borrow", reviewExercises["mutable-borrow"]),
+    ).toEqual({ conceptIds: ["mutable-borrow"], evidenceVersion: 2 });
+  });
+
+  it("keeps broad legacy/cache/completion/drafts unchanged while deriving current labels", () => {
+    const state = createInitialState();
+    state.events = [authoredEvent("move-copy-discovery", "move-error")];
+    delete state.events[0].evidenceVersion;
+    state.events[0].conceptIds = ["move-semantics", "copy-semantics"];
+    state.mastery["copy-semantics"] = {
+      level: "retained",
+      reason: "old cache",
+      updatedAt: 55,
+    };
+    state.steps[stepKey("move-copy-discovery", "move-error")] = {
+      ...createStepProgress("saved legacy code"),
+      completed: true,
+      hints: 2,
+      revealed: true,
+    };
+    const before = structuredClone(state);
+    expect(courseMastery(state, "copy-semantics").level).toBe("exposed");
+    expect(courseEvidenceSummary(state, "copy-semantics")).toMatchObject({
+      qualifyingCodingTasks: 0,
+      requiredCodingTasks: 2,
+      hasLegacyEvidence: true,
+    });
+    const imported = importState(exportState(state));
+    expect(imported.events).toEqual(before.events);
+    expect(imported.mastery).toEqual(before.mastery);
+    expect(imported.steps).toEqual(before.steps);
+    expect(state).toEqual(before);
+  });
+
+  it("records Move without spilling practice or queue entries into Copy", () => {
+    const event = authoredEvent("move-copy-discovery", "move-error");
+    const state = recordCourseEvidence(createInitialState(), event);
+    expect(courseMastery(state, "move-semantics").level).toBe("practiced");
+    expect(courseMastery(state, "copy-semantics").level).toBe("new");
+    expect(state.review.map((item) => item.conceptId)).toEqual([
+      "move-semantics",
+    ]);
+  });
+
+  it.each([
+    { stepId: "missing" },
+    { lessonId: "missing" },
+    { evaluator: "exact-output" as const },
+    { kind: "transfer" as const },
+    { evidenceVersion: 1 },
+    { evidenceVersion: 3 },
+    { conceptIds: ["mutable-borrow", "copy-semantics"] },
+    { conceptIds: [] },
+  ])("retains malformed current evidence raw without awards: %j", (changes) => {
+    const event = {
+      ...authoredEvent("borrow-intro", "borrow-conflict"),
+      ...changes,
+    };
+    const state = recordCourseEvidence(createInitialState(), event);
+    expect(state.events).toEqual([event]);
+    expect(state.review).toEqual([]);
+    expect(
+      courseEvidenceSummary(state, "mutable-borrow").qualifyingCodingTasks,
+    ).toBe(0);
+  });
+
+  it("preserves an intentional empty claim without mastery or review awards", () => {
+    const lesson = lessons.find((item) =>
+      item.steps.some((step) => step.evidence?.conceptIds.length === 0),
+    )!;
+    const step = lesson.steps.find(
+      (item) => item.evidence?.conceptIds.length === 0,
+    )!;
+    const event = authoredEvent(lesson.id, step.id);
+    const state = recordCourseEvidence(createInitialState(), event);
+    expect(state.events).toEqual([event]);
+    expect(state.mastery).toEqual({});
+    expect(state.review).toEqual([]);
+    const imported = importState(exportState(state));
+    expect(imported.events).toEqual([event]);
+  });
+
+  it("counts actual primary families and shares the conservative competency policy", () => {
+    const state = twoPrimaryTasks();
+    expect(courseEvidenceSummary(state, "mutable-borrow")).toMatchObject({
+      qualifyingCodingTasks: 2,
+      requiredCodingTasks: 2,
+      mastery: { level: "understood" },
+    });
+    const repeated = recordCourseEvidence(state, {
+      ...state.events[0],
+      id: "repeat",
+      at: 3_000,
+    });
+    expect(
+      courseEvidenceSummary(repeated, "mutable-borrow").qualifyingCodingTasks,
+    ).toBe(2);
+    const competencyId = concepts.find((item) => item.id === "mutable-borrow")!
+      .competencyIds[0];
+    expect(
+      courseCompetencyProgress(repeated, competencyId).independentTasks,
+    ).toBe(2);
+  });
+
+  it("retains through the real recorder after queue/cache changes and raw state roundtrip", () => {
+    const state = recordCourseEvidence(
+      twoPrimaryTasks(),
+      reviewEvent(2_000 + day + 1),
+    );
+    expect(state.mastery["mutable-borrow"].level).toBe("retained");
+    expect(state.mastery["mutable-borrow"].updatedAt).toBe(2_000 + day + 1);
+    expect(
+      state.review.find((item) => item.conceptId === "mutable-borrow")!.dueAt,
+    ).toBeGreaterThan(2_000 + day + 1);
+    expect(courseMastery(state, "mutable-borrow").level).toBe("retained");
+    const imported = importState(exportState(state));
+    expect(imported.events).toEqual(state.events);
+    expect(imported.mastery).toEqual(state.mastery);
+    expect(courseMastery(imported, "mutable-borrow").level).toBe("retained");
+  });
+
+  it.each([
+    { at: 2_000 + day },
+    { revealed: true },
+    { stepId: "copy-semantics:session-a" },
+    { stepId: "mutable-borrow" },
+    { stepId: "mutable-borrow:" },
+    { evaluator: "choice" as const },
+    { conceptIds: ["mutable-borrow", "shared-borrow"] },
+  ])(
+    "does not retain a mismatched or non-independent review: %j",
+    (changes) => {
+      const state = recordCourseEvidence(
+        twoPrimaryTasks(),
+        reviewEvent(2_000 + day + 1, changes),
+      );
+      expect(courseMastery(state, "mutable-borrow").level).toBe("understood");
+      expect(
+        courseEvidenceSummary(state, "mutable-borrow").qualifyingCodingTasks,
+      ).toBe(2);
+    },
+  );
+
+  it("includes neutral and same-time preceding exposure in the review quiet interval", () => {
+    for (const at of [2_000 + day, 2_000 + day + 1]) {
+      const contact = rustEvent({
+        conceptIds: ["mutable-borrow"],
+        kind: "exposure",
+        at,
+      });
+      const state = recordCourseEvidence(
+        recordCourseEvidence(twoPrimaryTasks(), contact),
+        reviewEvent(2_000 + day + 1),
+      );
+      expect(courseMastery(state, "mutable-borrow").level).toBe("understood");
+    }
+    const state = recordCourseEvidence(
+      recordCourseEvidence(
+        createInitialState(),
+        authoredEvent("borrow-intro", "borrow-conflict"),
+      ),
+      reviewEvent(1_000 + day + 1),
+    );
+    expect(courseMastery(state, "mutable-borrow").level).not.toBe("retained");
+  });
+});
+
+describe("saved assistance at the current primary submission boundary", () => {
+  const sibling = lessons.find((item) => item.id === "adversarial-no-clone")!;
+  const siblingStep = sibling.steps.find(
+    (item) => item.id === "adversarial-code",
+  )!;
+  const target = lessons.find((item) => item.id === "scenario-assessment")!;
+  const targetStep = target.steps.find(
+    (item) => item.id === "assessment-repair",
+  )!;
+  function submit(
+    state: ReturnType<typeof createInitialState>,
+    lesson = target,
+    step = targetStep,
+    at = 2_000,
+  ) {
+    return recordCourseEvidence(state, {
+      ...authoredEvent(lesson.id, step.id, at),
+      ...assistanceForLessonStep(state, lesson, step),
+    });
+  }
+  it.each([
+    { hints: 1, revealed: false },
+    { hints: 0, revealed: true },
+  ])(
+    "inherits imported sibling assistance in each new event without rewriting history: %j",
+    (flags) => {
+      const raw = createInitialState();
+      raw.steps[stepKey(sibling.id, siblingStep.id)] = {
+        ...createStepProgress("legacy sibling draft"),
+        completed: true,
+        ...flags,
+      };
+      const imported = importState(exportState(raw));
+      expect(imported.steps).toEqual(raw.steps);
+      const before = structuredClone(imported);
+      const next = submit(imported);
+      expect(next.events.at(-1)).toMatchObject(flags);
+      expect(
+        courseEvidenceSummary(next, "shared-borrow").qualifyingCodingTasks,
+      ).toBe(0);
+      expect(
+        courseEvidenceSummary(next, "ownership-repair").qualifyingCodingTasks,
+      ).toBe(0);
+      expect(next.steps).toEqual(before.steps);
+      expect(imported).toEqual(before);
+      expect(importState(exportState(next)).events).toEqual(next.events);
+    },
+  );
+  it("preserves clean credit earned before sibling help and permits a different fresh family", () => {
+    const state = submit(createInitialState(), target, targetStep, 1_000);
+    state.steps[stepKey(sibling.id, siblingStep.id)] = {
+      ...createStepProgress("later draft"),
+      hints: 2,
+      revealed: true,
+    };
+    const after = submit(state);
+    expect(after.events[0]).toMatchObject({ hints: 0, revealed: false });
+    expect(after.events[1]).toMatchObject({ hints: 2, revealed: true });
+    expect(
+      courseEvidenceSummary(after, "shared-borrow").qualifyingCodingTasks,
+    ).toBe(1);
+    const mutableLesson = lessons.find((item) => item.id === "borrow-intro")!;
+    const mutableStep = mutableLesson.steps.find(
+      (item) => item.id === "borrow-conflict",
+    )!;
+    const fresh = submit(after, mutableLesson, mutableStep);
+    expect(fresh.events.at(-1)).toMatchObject({ hints: 0, revealed: false });
+    expect(
+      courseEvidenceSummary(fresh, "mutable-borrow").qualifyingCodingTasks,
+    ).toBe(1);
+  });
+  it("retains exact-ref flags and keeps separate review assistance out of primary submissions", () => {
+    const state = createInitialState();
+    state.steps[stepKey(target.id, targetStep.id)] = {
+      ...createStepProgress("target draft"),
+      hints: 3,
+      revealed: true,
+    };
+    expect(assistanceForLessonStep(state, target, targetStep)).toEqual({
+      hints: 3,
+      revealed: true,
+    });
+    delete state.steps[stepKey(target.id, targetStep.id)];
+    state.steps["review:old-session"] = {
+      ...createStepProgress(),
+      hints: 4,
+      revealed: true,
+    };
+    expect(assistanceForLessonStep(state, target, targetStep)).toEqual({
+      hints: 0,
+      revealed: false,
+    });
+  });
+});

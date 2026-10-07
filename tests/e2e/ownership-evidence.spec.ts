@@ -1,0 +1,765 @@
+import { expect, test, type Page } from "@playwright/test";
+import { readFile } from "node:fs/promises";
+import { lessons, modules, reviewExercises } from "../../src/content/course";
+import {
+  recordCourseEvidence,
+  courseEvidenceSummary,
+} from "../../src/content/learning-context";
+import {
+  createInitialState,
+  createStepProgress,
+  exportState,
+  stepKey,
+} from "../../src/persistence/state";
+import type { EvidenceEvent, UserState } from "../../src/domain/types";
+
+const DAY = 24 * 60 * 60 * 1000;
+const NOW = Date.UTC(2026, 9, 7, 12);
+const ownership = modules.find((module) => module.id === "ownership")!;
+const borrowing = ownership.gateCriteria!.find(
+  (criterion) => criterion.id === "borrowing",
+)!;
+function authored(lessonId: string, stepId: string) {
+  const lesson = lessons.find((item) => item.id === lessonId)!;
+  return { lesson, step: lesson.steps.find((item) => item.id === stepId)! };
+}
+const append = authored("borrow-intro", "borrow-conflict");
+const replace = authored("borrow-intro", "borrow-mutable-run");
+function readyState(view: UserState["resume"]["view"] = "lesson") {
+  const state = createInitialState();
+  state.onboarding = { completed: true, name: "Ada", minutes: 15 };
+  state.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 0,
+    recommendation: "",
+  };
+  state.settings.accessibleEditor = true;
+  state.resume = {
+    ...state.resume,
+    view,
+    lessonId: append.lesson.id,
+    stepIndex: append.lesson.steps.indexOf(append.step),
+  };
+  return state;
+}
+function primaryEvent(stepId: string, at: number): EvidenceEvent {
+  const { lesson, step } = authored("borrow-intro", stepId);
+  return {
+    id: `${stepId}/${at}`,
+    lessonId: lesson.id,
+    stepId,
+    kind: step.evidenceKind,
+    evaluator: step.evaluator!.kind,
+    conceptIds: [...step.evidence!.conceptIds],
+    evidenceVersion: step.evidence!.version,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    gate: true,
+    at,
+  };
+}
+async function seedState(page: Page, state: UserState) {
+  await page.goto("/");
+  await page.evaluate(async (nextState) => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("rust-workshop-state", 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("user-state"))
+          request.result.createObjectStore("user-state");
+      };
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const database = request.result;
+        const transaction = database.transaction("user-state", "readwrite");
+        transaction.objectStore("user-state").put(nextState, "current");
+        transaction.oncomplete = () => {
+          database.close();
+          resolve();
+        };
+        transaction.onerror = () => reject(transaction.error);
+      };
+    });
+  }, state);
+  await page.reload();
+}
+async function savedState(page: Page): Promise<UserState> {
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  return page.evaluate(
+    () =>
+      new Promise<UserState>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          const read = db
+            .transaction("user-state", "readonly")
+            .objectStore("user-state")
+            .get("current");
+          read.onsuccess = () => {
+            db.close();
+            resolve(read.result as UserState);
+          };
+          read.onerror = () => reject(read.error);
+        };
+      }),
+  );
+}
+async function exportedState(page: Page) {
+  await page.getByRole("button", { name: "Ustawienia i postęp" }).click();
+  const pending = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Eksportuj postęp" }).click();
+  const download = await pending;
+  expect(await download.failure()).toBeNull();
+  return JSON.parse(await readFile((await download.path())!, "utf8"))
+    .state as UserState;
+}
+async function importThroughUi(page: Page, state: UserState) {
+  await page.getByRole("button", { name: "Ustawienia i postęp" }).click();
+  await page.getByLabel("Importuj postęp").setInputFiles({
+    name: "ownership-state.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(exportState(state)),
+  });
+  await expect(page.getByText("Gotowy do importu")).toBeVisible();
+  await page.getByRole("button", { name: "Zastąp postęp tym plikiem" }).click();
+}
+const editor = (page: Page) =>
+  page.getByRole("textbox", { name: "Kod Rust", exact: true });
+async function runTests(page: Page) {
+  const before = await savedState(page);
+  const response = page.waitForResponse((response) =>
+    response.url().endsWith("/api/run"),
+  );
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await response;
+  await expect
+    .poll(async () => (await savedState(page)).events.length)
+    .toBeGreaterThan(before.events.length);
+  await expect(
+    page.getByRole("region", {
+      name: "Wynik kompilatora",
+      includeHidden: true,
+    }),
+  ).toBeAttached();
+}
+async function mockTests(page: Page) {
+  // These interceptions prove UI/payload/state boundaries. Task 2's real compiler fixtures prove Rust behavior.
+  await page.route("**/api/run", async (route) => {
+    const request = route.request().postDataJSON();
+    expect(request.mode).toBe("test");
+    const step = [
+      append.step,
+      replace.step,
+      authored("scenario-assessment", "assessment-repair").step,
+      reviewExercises["mutable-borrow"],
+    ].find(
+      (candidate) =>
+        candidate.evaluator?.kind === "tests" &&
+        candidate.evaluator.tests === request.tests,
+    );
+    expect(step, "exact current authored tests sent to runner").toBeDefined();
+    const passed = request.code === step!.solution;
+    const starter = request.code === append.step.code;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        starter
+          ? {
+              status: "compile-error",
+              stdout: "",
+              stderr:
+                "error[E0502]: cannot borrow `message` as mutable because it is also borrowed as immutable",
+              diagnostics: [
+                {
+                  code: "E0502",
+                  message: "borrow conflict",
+                  line: 4,
+                  level: "error",
+                },
+              ],
+              durationMs: 1,
+            }
+          : {
+              status: passed ? "success" : "test-failure",
+              stdout: passed
+                ? "ownership UI test response"
+                : "assertion failed: caller buffer mutation\ntest result: FAILED",
+              stderr: "",
+              diagnostics: [],
+              durationMs: 1,
+              tests: { passed: passed ? 3 : 0, failed: passed ? 0 : 1 },
+            },
+      ),
+    });
+  });
+}
+async function overview(page: Page) {
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+    .fill(ownership.title);
+  await page
+    .locator(".module-picker > button")
+    .filter({ hasText: ownership.title })
+    .click();
+}
+function borrowingRow(page: Page) {
+  return page.locator(".gate-panel li").filter({ hasText: borrowing.label });
+}
+
+test("grades exact mutable contracts, keeps diagnostics and counts two distinct primary tasks", async ({
+  page,
+}) => {
+  await mockTests(page);
+  await seedState(page, readyState());
+  await expect(page.locator(".task-pane h1")).toHaveText(append.step.title);
+  await expect(page.locator(".task-pane")).toContainText(
+    "Bieżący kontrakt: wersja 2",
+  );
+  await expect(page.getByLabel("Twoja odpowiedź")).toHaveCount(0);
+  await expect(editor(page)).toHaveValue(append.step.code!);
+  await runTests(page);
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("E0502");
+  await editor(page).fill('fn main() { println!("hi!"); }');
+  await runTests(page);
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("caller buffer mutation");
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 0/2",
+  );
+  await editor(page).fill(append.step.solution!);
+  await runTests(page);
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 1/2",
+  );
+  await runTests(page);
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 1/2",
+  );
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(5).click();
+  const choice = append.lesson.steps[5];
+  await page
+    .getByRole("radio", {
+      name: choice.choices!.find(
+        (item) => item.id === (choice.evaluator as { correct: string }).correct,
+      )!.label,
+    })
+    .check();
+  await page
+    .getByRole("button", { name: "Sprawdź odpowiedź", exact: true })
+    .click();
+  const afterChoice = await savedState(page);
+  expect(
+    courseEvidenceSummary(afterChoice, "mutable-borrow").qualifyingCodingTasks,
+  ).toBe(1);
+  expect(
+    courseEvidenceSummary(afterChoice, "mutable-borrow").mastery.level,
+  ).toBe("practiced");
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(3).click();
+  await expect(page.getByLabel("Twoja odpowiedź")).toHaveCount(0);
+  await editor(page).fill(replace.step.solution!);
+  await runTests(page);
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 2/2",
+  );
+  const state = await savedState(page);
+  const coding = state.events.filter((event) => event.evaluator === "tests");
+  expect(
+    coding.every(
+      (event) =>
+        event.evidenceVersion === 2 &&
+        event.conceptIds.length === 1 &&
+        event.conceptIds[0] === "mutable-borrow",
+    ),
+  ).toBe(true);
+  expect(state.review.some((item) => item.conceptId === "shared-borrow")).toBe(
+    false,
+  );
+  expect(
+    courseEvidenceSummary(state, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(0);
+  await page
+    .getByRole("button", { name: "Twój warsztat", exact: true })
+    .click();
+  await expect(
+    page.locator(".concept-row").filter({ hasText: "Pożyczka mutowalna" }),
+  ).toContainText("Potwierdzone w zadaniach");
+});
+
+test("preserves assisted completion, code, flags and raw export/import while offering another family", async ({
+  page,
+}) => {
+  await mockTests(page);
+  await seedState(page, readyState());
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+  await page
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+    .click();
+  await editor(page).fill(append.step.solution!);
+  await runTests(page);
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 0/2",
+  );
+  const before = await savedState(page);
+  expect(before.steps[stepKey(append.lesson.id, append.step.id)]).toMatchObject(
+    { completed: true, hints: 2, revealed: true, code: append.step.solution },
+  );
+  await page.reload();
+  await expect(editor(page)).toHaveValue(append.step.solution!);
+  await expect(
+    page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+  ).toBeVisible();
+  const exported = await exportedState(page);
+  expect(exported.events.slice(0, before.events.length)).toEqual(before.events);
+  expect(exported.steps).toEqual(before.steps);
+  await importThroughUi(page, exported);
+  await page
+    .getByRole("button", { name: "Twój warsztat", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Kontynuuj naukę", exact: true })
+    .click();
+  await expect(editor(page)).toHaveValue(append.step.solution!);
+  await runTests(page);
+  const after = await savedState(page);
+  expect(
+    after.events.filter((event) => event.evaluator === "tests").at(-1),
+  ).toMatchObject({ hints: 2, revealed: true, evidenceVersion: 2 });
+  await overview(page);
+  await borrowingRow(page)
+    .getByRole("button", { name: "Sprawdź w zadaniu" })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(replace.step.title);
+  await editor(page).fill(replace.step.solution!);
+  await runTests(page);
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 1/2",
+  );
+  await overview(page);
+  await borrowingRow(page)
+    .getByRole("button", { name: "Sprawdź w zadaniu" })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(
+    authored("adversarial-no-clone", "adversarial-conflict").step.title,
+  );
+});
+
+test("labels exhausted counted variants without offering a fake independent reset", async ({
+  page,
+}) => {
+  const state = readyState("course");
+  for (const ref of borrowing.taskRefs)
+    state.steps[stepKey(ref.lessonId, ref.stepId)] = {
+      ...createStepProgress("// retained assisted draft"),
+      hints: 1,
+      revealed: true,
+      completed: true,
+    };
+  await seedState(page, state);
+  await expect(borrowingRow(page)).toContainText(
+    "Brak świeżego samodzielnego wariantu",
+  );
+  await expect(borrowingRow(page).getByRole("button")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Otwórz pierwszą lekcję do powtórki" }),
+  ).toHaveCount(0);
+  await expect(page.locator(".module-connections")).toContainText(
+    "powtórzenie nie usuwa wcześniejszej pomocy",
+  );
+  await page
+    .locator(".lesson-list-item")
+    .filter({ hasText: append.lesson.title })
+    .click();
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(2).click();
+  await expect(editor(page)).toHaveValue("// retained assisted draft");
+});
+
+test("shows legacy interpretation on first render and exports the exact raw prefix/cache/drafts", async ({
+  page,
+}) => {
+  const state = readyState("dashboard");
+  state.events = [
+    {
+      ...primaryEvent("borrow-conflict", NOW - 3 * DAY),
+      evidenceVersion: undefined,
+      conceptIds: ["mutable-borrow", "shared-borrow"],
+    },
+  ];
+  for (const id of ["mutable-borrow", "shared-borrow"])
+    state.mastery[id] = {
+      level: "retained",
+      reason: "legacy cached result",
+      updatedAt: NOW - DAY,
+    };
+  state.steps[stepKey(append.lesson.id, append.step.id)] = {
+    ...createStepProgress("// old saved draft"),
+    completed: true,
+    hints: 2,
+    revealed: true,
+  };
+  state.notes = { personal: "keep historical note" };
+  await seedState(page, state);
+  const row = page
+    .locator(".concept-row")
+    .filter({ hasText: "Pożyczka mutowalna" });
+  await expect(row).toContainText("Samodzielne zadania kodowe: 0/2");
+  await expect(row).toContainText(
+    "Starsze wyniki nie spełniają bieżącego wymagania",
+  );
+  await expect(row).not.toContainText("Odtworzone po czasie");
+  await expect(page.locator(".competency-section")).toContainText(
+    "Historia i ukończone kroki pozostają zapisane",
+  );
+  const firstExport = await exportedState(page);
+  expect(firstExport.events).toEqual(state.events);
+  expect(firstExport.mastery).toEqual(state.mastery);
+  expect(firstExport.steps).toEqual(state.steps);
+  expect(firstExport.notes).toEqual(state.notes);
+  await page
+    .getByRole("button", { name: "Twój warsztat", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Kontynuuj naukę", exact: true })
+    .click();
+  await expect(editor(page)).toHaveValue("// old saved draft");
+  const after = await savedState(page);
+  expect(after.events.slice(0, state.events.length)).toEqual(state.events);
+  expect(
+    after.events
+      .slice(state.events.length)
+      .every(
+        (event) =>
+          event.kind === "exposure" &&
+          event.passed &&
+          !event.gate &&
+          event.evidenceVersion === undefined,
+      ),
+  ).toBe(true);
+  expect(after.steps).toEqual(state.steps);
+});
+
+for (const scenario of [
+  "delayed",
+  "exact24",
+  "recent exposure",
+  "one task",
+  "revealed reminder",
+] as const) {
+  test(`current executable recall: ${scenario}`, async ({ page }) => {
+    await page.clock.setFixedTime(new Date(NOW));
+    await mockTests(page);
+    let state = readyState("review");
+    const lastContact = scenario === "exact24" ? NOW - DAY : NOW - DAY - 1;
+    state = recordCourseEvidence(
+      state,
+      primaryEvent("borrow-conflict", lastContact - 1_000),
+    );
+    if (scenario !== "one task")
+      state = recordCourseEvidence(
+        state,
+        primaryEvent("borrow-mutable-run", lastContact),
+      );
+    if (scenario === "recent exposure")
+      state = recordCourseEvidence(state, {
+        id: "recent-open",
+        conceptIds: ["mutable-borrow"],
+        lessonId: append.lesson.id,
+        stepId: append.step.id,
+        kind: "exposure",
+        passed: true,
+        hints: 0,
+        revealed: false,
+        at: NOW - 1,
+      });
+    state.reviewSession = {
+      conceptId: "mutable-borrow",
+      sessionId: "controlled-recall",
+      mode: "challenge",
+      startedAt: NOW,
+      wasDue: true,
+    };
+    state.review = [
+      {
+        conceptId: "mutable-borrow",
+        dueAt: NOW - DAY,
+        attempts: 1,
+        intervalDays: 1,
+        reason: "controlled queue",
+      },
+    ];
+    await seedState(page, state);
+    await expect(page.locator(".review-session h2")).toHaveText(
+      "Pożyczka mutowalna",
+    );
+    if (scenario === "revealed reminder") {
+      await page
+        .getByRole("button", { name: "Karta przypomnienia", exact: true })
+        .click();
+      await page
+        .getByPlaceholder("Zanim odsłonisz odpowiedź…")
+        .fill("Moja próba przed przypomnieniem");
+      await page
+        .getByRole("button", { name: "Odsłoń odpowiedź", exact: true })
+        .click();
+      await page
+        .getByRole("button", { name: "Mały eksperyment", exact: true })
+        .click();
+    }
+    await editor(page).fill(reviewExercises["mutable-borrow"].solution!);
+    await runTests(page);
+    const expectedLevel =
+      scenario === "delayed"
+        ? "retained"
+        : scenario === "one task"
+          ? "practiced"
+          : "understood";
+    const recorded = await savedState(page);
+    expect(recorded.events.at(-1)).toMatchObject({
+      lessonId: "review",
+      stepId: "mutable-borrow:controlled-recall",
+      conceptIds: ["mutable-borrow"],
+      evidenceVersion: 2,
+      evaluator: "tests",
+      kind: "recall",
+      passed: true,
+      revealed: scenario === "revealed reminder",
+    });
+    expect(recorded.mastery["mutable-borrow"].level).toBe(expectedLevel);
+    expect(
+      courseEvidenceSummary(recorded, "mutable-borrow").mastery.level,
+    ).toBe(expectedLevel);
+    await expect(page.locator(".review-session .mastery-badge")).toHaveText(
+      new RegExp(
+        scenario === "delayed"
+          ? "Odtworzone po czasie"
+          : scenario === "one task"
+            ? "Ćwiczone"
+            : "Potwierdzone w zadaniach",
+      ),
+    );
+    await page.reload();
+    await expect(editor(page)).toHaveValue(
+      reviewExercises["mutable-borrow"].solution!,
+    );
+    await expect(
+      page.getByRole("region", { name: "Wynik kompilatora" }),
+    ).toContainText("ownership UI test response");
+    const exported = await exportedState(page);
+    expect(exported.events).toEqual(recorded.events);
+    expect(exported.mastery).toEqual(recorded.mastery);
+    expect(exported.steps).toEqual(recorded.steps);
+  });
+}
+
+test("discards an in-flight old-generation ownership response after importing another raw state", async ({
+  page,
+}) => {
+  let release!: () => void;
+  let arrived!: () => void;
+  const started = new Promise<void>((resolve) => {
+    arrived = resolve;
+  });
+  const blocked = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/run", async (route) => {
+    arrived();
+    await blocked;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout: "stale result",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: 3, failed: 0 },
+      }),
+    });
+  });
+  await seedState(page, readyState());
+  await editor(page).fill(append.step.solution!);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await started;
+  const replacement = readyState("dashboard");
+  replacement.notes.personal = "import wins";
+  await importThroughUi(page, replacement);
+  release();
+  await expect(
+    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+  ).toBeVisible();
+  await page.waitForTimeout(100);
+  const after = await savedState(page);
+  expect(after.events).toEqual(replacement.events);
+  expect(after.steps).toEqual(replacement.steps);
+  expect(after.notes).toEqual(replacement.notes);
+});
+
+for (const flags of [
+  { hints: 1, revealed: false },
+  { hints: 0, revealed: true },
+]) {
+  test(`direct submission inherits imported read-length sibling assistance ${JSON.stringify(flags)}`, async ({
+    page,
+  }) => {
+    const state = readyState();
+    const target = authored("scenario-assessment", "assessment-repair");
+    state.resume.lessonId = target.lesson.id;
+    state.resume.stepIndex = target.lesson.steps.indexOf(target.step);
+    state.steps[stepKey("adversarial-no-clone", "adversarial-code")] = {
+      ...createStepProgress("// old sibling draft"),
+      completed: true,
+      ...flags,
+    };
+    await mockTests(page);
+    await seedState(page, state);
+    await expect(page.locator(".task-pane")).toContainText(
+      "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+    );
+    await editor(page).fill(target.step.solution!);
+    await runTests(page);
+    const recorded = await savedState(page);
+    expect(
+      recorded.events.filter((event) => event.evaluator === "tests").at(-1),
+    ).toMatchObject({
+      ...flags,
+      evidenceVersion: 2,
+      lessonId: target.lesson.id,
+      stepId: target.step.id,
+    });
+    expect(
+      recorded.steps[stepKey("adversarial-no-clone", "adversarial-code")],
+    ).toEqual(state.steps[stepKey("adversarial-no-clone", "adversarial-code")]);
+    expect(
+      recorded.steps[stepKey(target.lesson.id, target.step.id)].completed,
+    ).toBe(true);
+    expect(
+      courseEvidenceSummary(recorded, "shared-borrow").qualifyingCodingTasks,
+    ).toBe(0);
+    const exported = await exportedState(page);
+    expect(exported.events).toEqual(recorded.events);
+    expect(exported.steps).toEqual(recorded.steps);
+  });
+}
+
+test("Move assessment schedules only its exact concept and keeps Copy provisional", async ({
+  page,
+}) => {
+  const state = readyState();
+  const target = authored("move-copy-discovery", "move-error");
+  state.resume.lessonId = target.lesson.id;
+  state.resume.stepIndex = target.lesson.steps.indexOf(target.step);
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      code: target.step.solution,
+      mode: "run",
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout:
+          target.step.evaluator!.kind === "exact-output"
+            ? target.step.evaluator!.expected
+            : "",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+      }),
+    });
+  });
+  await seedState(page, state);
+  await editor(page).fill(target.step.solution!);
+  const response = page.waitForResponse((response) =>
+    response.url().endsWith("/api/run"),
+  );
+  await page.getByRole("button", { name: "Uruchom", exact: true }).click();
+  await response;
+  await expect
+    .poll(async () =>
+      (await savedState(page)).events.some(
+        (event) => event.evaluator === "exact-output",
+      ),
+    )
+    .toBe(true);
+  const recorded = await savedState(page);
+  expect(
+    recorded.events.filter((event) => event.evaluator === "exact-output"),
+  ).toHaveLength(1);
+  expect(
+    recorded.events.filter((event) => event.evaluator === "exact-output")[0],
+  ).toMatchObject({
+    evidenceVersion: 2,
+    conceptIds: ["move-semantics"],
+    passed: true,
+  });
+  expect(recorded.review.map((item) => item.conceptId)).toEqual([
+    "move-semantics",
+  ]);
+  expect(
+    courseEvidenceSummary(recorded, "copy-semantics").qualifyingCodingTasks,
+  ).toBe(0);
+  expect(courseEvidenceSummary(recorded, "copy-semantics").mastery.level).toBe(
+    "exposed",
+  ); // Normal opening remains lesson-wide neutral exposure.
+});
+
+test("ownership mobile tabs preserve keyboard focus, raw failure and exact draft/panel resume", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockTests(page);
+  await seedState(page, readyState());
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  const draft = "// mobile caller buffer mutation draft\n";
+  await editor(page).fill(draft);
+  await editor(page).focus();
+  await expect(editor(page)).toBeFocused();
+  await runTests(page);
+  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("caller buffer mutation");
+  await page.getByRole("tab", { name: "Output", exact: false }).focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(
+    page.getByRole("tab", { name: "Kod", exact: true }),
+  ).toBeFocused();
+  await expect(
+    page.getByRole("tab", { name: "Kod", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  const before = await savedState(page);
+  expect(before.resume.panel).toBe("code");
+  await page.reload();
+  await expect(
+    page.getByRole("tab", { name: "Kod", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(editor(page)).toHaveValue(draft);
+  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("caller buffer mutation");
+  const recorded = await savedState(page);
+  expect(recorded.events.slice(0, before.events.length)).toEqual(before.events);
+  expect(
+    courseEvidenceSummary(recorded, "mutable-borrow").qualifyingCodingTasks,
+  ).toBe(0);
+});

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { Lesson } from "@/domain/types";
 import { evaluate } from "../engine/evaluate";
 import {
   lessons,
@@ -525,6 +526,131 @@ describe("curriculum content contract", () => {
     ).toBe(true);
     expect(
       errors.some((error) => error.includes("no active review exercise")),
+    ).toBe(true);
+  });
+});
+
+describe("ownership evidence authoring validation", () => {
+  function changedStep(
+    change: (step: Lesson["steps"][number]) => void,
+    lessonId = "borrow-intro",
+    stepId = "borrow-conflict",
+  ) {
+    const copy = structuredClone(bundle);
+    const step = copy.lessons
+      .find((item) => item.id === lessonId)!
+      .steps.find((item) => item.id === stepId)!;
+    change(step);
+    return validateContent(copy).filter((error) =>
+      /evidence|coding task|counted gate/.test(error),
+    );
+  }
+  it("accepts precise empty claims and different subsets of one family in the real catalog", () => {
+    expect(validateContent(bundle)).toEqual([]);
+    expect(
+      changedStep((step) => {
+        step.evidence = { version: 2, conceptIds: [] };
+      }),
+    ).toEqual([]);
+  });
+  it.each([0, -1, 1.5, 1, 3])(
+    "rejects invalid or calibration-mismatched step version %s",
+    (version) => {
+      expect(
+        changedStep((step) => {
+          step.evidence!.version = version;
+        }),
+      ).not.toEqual([]);
+    },
+  );
+  it.each([
+    { ids: ["unknown"] },
+    { ids: ["mutable-borrow", "mutable-borrow"] },
+    { ids: ["copy-semantics"] },
+  ])(
+    "rejects a concept list outside the known unique lesson subset %j",
+    ({ ids }) => {
+      expect(
+        changedStep((step) => {
+          step.evidence!.conceptIds = ids;
+        }),
+      ).not.toEqual([]);
+    },
+  );
+  it("requires metadata for calibrated lesson steps and singleton reviews", () => {
+    expect(
+      changedStep((step) => {
+        delete step.evidence;
+      }),
+    ).not.toEqual([]);
+    const copy = structuredClone(bundle);
+    delete copy.reviewExercises["mutable-borrow"].evidence;
+    expect(
+      validateContent(copy).some((error) => error.includes("evidence")),
+    ).toBe(true);
+    copy.reviewExercises["mutable-borrow"].evidence = {
+      version: 2,
+      conceptIds: ["shared-borrow"],
+    };
+    expect(
+      validateContent(copy).some((error) => error.includes("evidence")),
+    ).toBe(true);
+  });
+  it.each([
+    (step: Lesson["steps"][number]) => {
+      step.evidence!.codingTaskId = " ";
+    },
+    (step: Lesson["steps"][number]) => {
+      step.evidence!.conceptIds = [];
+    },
+    (step: Lesson["steps"][number]) => {
+      step.evidenceKind = "prediction";
+    },
+    (step: Lesson["steps"][number]) => {
+      step.evaluator = { kind: "exact-output", expected: "hi!" };
+    },
+  ])("rejects unauditable coding families", (change) => {
+    expect(changedStep(change)).not.toEqual([]);
+  });
+  it("rejects conflicting versions of a shared coding family", () => {
+    const copy = structuredClone(bundle);
+    const a = copy.lessons
+      .find((item) => item.id === "adversarial-no-clone")!
+      .steps.find((item) => item.id === "adversarial-code")!;
+    const b = copy.lessons
+      .find((item) => item.id === "scenario-assessment")!
+      .steps.find((item) => item.id === "assessment-repair")!;
+    b.evidence!.version = a.evidence!.version + 1;
+    expect(
+      validateContent(copy).some((error) => error.includes("coding task")),
+    ).toBe(true);
+  });
+  it.each([0, -1, 1.5, 4])(
+    "rejects an impossible counted gate requirement %s",
+    (required) => {
+      const copy = structuredClone(bundle);
+      copy.modules
+        .find((item) => item.id === "ownership")!
+        .gateCriteria!.find(
+          (item) => item.id === "borrowing",
+        )!.requiredIndependentCodingTasks = required;
+      expect(
+        validateContent(copy).some((error) => error.includes("counted gate")),
+      ).toBe(true);
+    },
+  );
+  it("counts stable families rather than repeated refs for a counted gate", () => {
+    const copy = structuredClone(bundle);
+    const replace = copy.lessons
+      .find((item) => item.id === "borrow-intro")!
+      .steps.find((item) => item.id === "borrow-mutable-run")!;
+    replace.evidence!.codingTaskId = "ownership/mutate-append";
+    const surround = copy.lessons
+      .find((item) => item.id === "adversarial-no-clone")!
+      .steps.find((item) => item.id === "adversarial-conflict")!;
+    surround.evidence!.codingTaskId = "ownership/mutate-append";
+    expect(
+      validateContent(copy).some((error) => error.includes("counted gate")),
     ).toBe(true);
   });
 });

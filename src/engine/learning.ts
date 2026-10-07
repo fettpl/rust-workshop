@@ -5,6 +5,10 @@ import type {
   Lesson,
   LessonExposure,
   MasteryLevel,
+  MasteryRecord,
+  ModuleGateCriterion,
+  ModuleGateTaskRef,
+  StepEvidenceDefinition,
   ReviewItem,
   UserState,
 } from "@/domain/types";
@@ -13,6 +17,15 @@ export type EvidenceArtifact = "rust-code" | "manifest";
 
 export interface EvidencePolicy {
   artifactForConcept(conceptId: string): EvidenceArtifact;
+  calibrationForConcept?(
+    conceptId: string,
+  ): { version: number; minimumCodingTasks: number } | undefined;
+  definitionForEvent?(event: EvidenceEvent): StepEvidenceDefinition | undefined;
+  /** Authored identity only; never upgrades historical evidence into current proof. */
+  definitionForTask?(
+    lessonId: string,
+    stepId: string,
+  ): StepEvidenceDefinition | undefined;
 }
 
 const DEFAULT_EVIDENCE_POLICY: EvidencePolicy = {
@@ -30,6 +43,8 @@ export function evidencePolicyForConcepts(
   );
   return {
     artifactForConcept: (conceptId) => artifacts.get(conceptId) ?? "rust-code",
+    calibrationForConcept: (conceptId) =>
+      concepts.find((concept) => concept.id === conceptId)?.evidenceCalibration,
   };
 }
 
@@ -62,6 +77,7 @@ function eventMatchesConceptArtifact(
   // reference. They remain useful for every concept, including manifest ones,
   // while verified manifest evidence still requires manifest-contract.
   if (event.kind === "exposure") return true;
+  if (!hasCurrentAttribution(event, policy)) return false;
   const expected = policy.artifactForConcept(conceptId);
   if (NEUTRAL_EVALUATORS.has(event.evaluator ?? "")) return true;
   const actual: EvidenceArtifact =
@@ -69,7 +85,17 @@ function eventMatchesConceptArtifact(
   return actual === expected;
 }
 
-export function isIndependentSuccess(event: EvidenceEvent): boolean {
+export function isIndependentSuccess(
+  event: EvidenceEvent,
+  conceptId?: string,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
+): boolean {
+  if (
+    conceptId &&
+    (!event.conceptIds.includes(conceptId) ||
+      !eventMatchesConceptArtifact(event, conceptId, policy))
+  )
+    return false;
   return (
     event.passed &&
     event.hints === 0 &&
@@ -81,14 +107,121 @@ export function isIndependentSuccess(event: EvidenceEvent): boolean {
   );
 }
 
+function matchesDefinition(
+  event: EvidenceEvent,
+  definition: StepEvidenceDefinition | undefined,
+): definition is StepEvidenceDefinition {
+  return (
+    definition !== undefined &&
+    Number.isInteger(definition.version) &&
+    definition.version > 0 &&
+    event.evidenceVersion === definition.version &&
+    event.conceptIds.length === definition.conceptIds.length &&
+    new Set(event.conceptIds).size === event.conceptIds.length &&
+    event.conceptIds.every((id) => definition.conceptIds.includes(id))
+  );
+}
+
+function hasCurrentAttribution(
+  event: EvidenceEvent,
+  policy: EvidencePolicy,
+): boolean {
+  const calibratedClaim = event.conceptIds.some((id) =>
+    policy.calibrationForConcept?.(id),
+  );
+  if (
+    !calibratedClaim &&
+    !(policy.definitionForEvent && event.evidenceVersion !== undefined)
+  )
+    return true;
+  const definition = policy.definitionForEvent?.(event);
+  return (
+    matchesDefinition(event, definition) &&
+    event.conceptIds.every((id) => {
+      const calibration = policy.calibrationForConcept?.(id);
+      return !calibration || definition.version === calibration.version;
+    })
+  );
+}
+
+function currentDefinition(
+  event: EvidenceEvent,
+  conceptId: string,
+  policy: EvidencePolicy,
+): StepEvidenceDefinition | undefined {
+  const calibration = policy.calibrationForConcept?.(conceptId);
+  const definition = policy.definitionForEvent?.(event);
+  return calibration &&
+    matchesDefinition(event, definition) &&
+    definition.version === calibration.version &&
+    definition.conceptIds.includes(conceptId) &&
+    eventMatchesConceptArtifact(event, conceptId, policy)
+    ? definition
+    : undefined;
+}
+
+function hasTaskAssistance(
+  candidate: Pick<EvidenceEvent, "lessonId" | "stepId" | "at">,
+  definition: StepEvidenceDefinition,
+  prior: readonly EvidenceEvent[],
+  definitionForTask?: EvidencePolicy["definitionForTask"],
+): boolean {
+  return prior.some((event) => {
+    if (event.at > candidate.at || (event.hints === 0 && !event.revealed))
+      return false;
+    if (
+      event.lessonId === candidate.lessonId &&
+      event.stepId === candidate.stepId
+    )
+      return true;
+    const historical = definitionForTask?.(event.lessonId, event.stepId);
+    return (
+      !!definition.codingTaskId &&
+      historical?.codingTaskId === definition.codingTaskId
+    );
+  });
+}
+
+// One qualification boundary for selectors, competency counts and counted gates.
+// A recall may use an executable contract, but cannot add a primary task family.
+function codingTaskId(
+  event: EvidenceEvent,
+  definition: StepEvidenceDefinition | undefined,
+  prior: readonly EvidenceEvent[] = [],
+  definitionForTask?: EvidencePolicy["definitionForTask"],
+): string | undefined {
+  return matchesDefinition(event, definition) &&
+    definition.conceptIds.length > 0 &&
+    definition.codingTaskId &&
+    isIndependentSuccess(event) &&
+    event.evaluator === "tests" &&
+    CODING_KINDS.has(event.kind) &&
+    !hasTaskAssistance(event, definition, prior, definitionForTask)
+    ? definition.codingTaskId
+    : undefined;
+}
+
+function definitionForStep(
+  event: EvidenceEvent,
+  step: Lesson["steps"][number] | undefined,
+): StepEvidenceDefinition | undefined {
+  const kind =
+    step?.evaluator?.kind === "rubric" ? "self-rating" : step?.evidenceKind;
+  return step && event.kind === kind && event.evaluator === step.evaluator?.kind
+    ? step.evidence
+    : undefined;
+}
+
 function isIndependentTaskSuccess(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
 ): boolean {
   if (!isIndependentSuccess(event)) return false;
-  // Gate counters do not receive the course concept policy. A manifest
-  // evaluator still gives us enough local information to reject a Rust proof
-  // attached to a TOML gate (and vice versa) without importing course data.
+  if (
+    step?.evidence &&
+    !matchesDefinition(event, definitionForStep(event, step))
+  )
+    return false;
   if (step?.evaluator?.kind === "manifest-contract")
     return event.evaluator === "manifest-contract";
   return event.evaluator !== "manifest-contract";
@@ -318,6 +451,182 @@ function deriveMastery(
   };
 }
 
+export function independentCodingTaskIdForEvent(
+  state: UserState,
+  eventIndex: number,
+  conceptId: string,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
+): string | undefined {
+  const event = state.events[eventIndex];
+  if (!event) return undefined;
+  if (!policy.calibrationForConcept?.(conceptId)) {
+    return hasVerifiedCodingEvidence([event], conceptId, policy)
+      ? `${event.lessonId}:${event.stepId}`
+      : undefined;
+  }
+  const definition = currentDefinition(event, conceptId, policy);
+  if (!definition) return undefined;
+  return codingTaskId(
+    event,
+    definition,
+    state.events.slice(0, eventIndex),
+    policy.definitionForTask,
+  );
+}
+
+export function independentCodingTaskIds(
+  state: UserState,
+  conceptId: string,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
+): string[] {
+  return [
+    ...new Set(
+      state.events
+        .map((_, index) =>
+          independentCodingTaskIdForEvent(state, index, conceptId, policy),
+        )
+        .filter((id): id is string => id !== undefined),
+    ),
+  ];
+}
+
+function isCalibratedRecall(
+  state: UserState,
+  index: number,
+  conceptId: string,
+  policy: EvidencePolicy,
+  required: number,
+): boolean {
+  const candidate = state.events[index];
+  const definition = currentDefinition(candidate, conceptId, policy);
+  if (
+    !definition?.codingTaskId ||
+    candidate.evaluator !== "tests" ||
+    candidate.kind !== "recall" ||
+    candidate.delayed !== true ||
+    !isIndependentSuccess(candidate) ||
+    hasTaskAssistance(
+      candidate,
+      { ...definition, codingTaskId: undefined },
+      state.events.slice(0, index),
+    )
+  )
+    return false;
+  const prior = state.events
+    .slice(0, index)
+    .filter((event) => event.at <= candidate.at);
+  if (
+    independentCodingTaskIds({ ...state, events: prior }, conceptId, policy)
+      .length < required
+  )
+    return false;
+  // Include legacy and neutral contact, and preceding same-millisecond events.
+  // Queue dates and cached timestamps are not evidence of learner contact.
+  const contact = [
+    ...prior
+      .filter((event) => event.conceptIds.includes(conceptId))
+      .map((event) => event.at),
+    ...state.ratings
+      .filter(
+        (rating) => rating.conceptId === conceptId && rating.at <= candidate.at,
+      )
+      .map((rating) => rating.at),
+  ];
+  return contact.length > 0 && candidate.at - Math.max(...contact) > DAY;
+}
+
+function hasCalibratedRetention(
+  state: UserState,
+  conceptId: string,
+  policy: EvidencePolicy,
+  required: number,
+): boolean {
+  return state.events.some((_, index) =>
+    isCalibratedRecall(state, index, conceptId, policy, required),
+  );
+}
+
+export function deriveConceptMastery(
+  state: UserState,
+  conceptId: string,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
+): MasteryRecord {
+  const calibration = policy.calibrationForConcept?.(conceptId);
+  if (!calibration) {
+    return {
+      ...deriveMastery(
+        state.events,
+        conceptId,
+        state.mastery[conceptId]?.level,
+        state.ratings,
+        policy,
+      ),
+      updatedAt: state.mastery[conceptId]?.updatedAt ?? 0,
+    };
+  }
+  const relevant = state.events.filter((event) =>
+    event.conceptIds.includes(conceptId),
+  );
+  const updatedAt = Math.max(
+    0,
+    ...relevant.map((event) => event.at),
+    ...state.ratings
+      .filter((rating) => rating.conceptId === conceptId)
+      .map((rating) => rating.at),
+  );
+  const tasks = independentCodingTaskIds(state, conceptId, policy);
+  if (
+    hasCalibratedRetention(
+      state,
+      conceptId,
+      policy,
+      calibration.minimumCodingTasks,
+    )
+  )
+    return {
+      level: "retained",
+      reason:
+        "Samodzielne rozwiązanie kodowe odtworzone po ponad 24 godzinach.",
+      updatedAt,
+    };
+  if (tasks.length >= calibration.minimumCodingTasks)
+    return {
+      level: "understood",
+      reason: "Potwierdzone w różnych zadaniach kodowych bez podpowiedzi.",
+      updatedAt,
+    };
+  const current = relevant.filter((event) =>
+    currentDefinition(event, conceptId, policy),
+  );
+  if (tasks.length > 0 || strongEvidence(current, conceptId, policy).length > 0)
+    return {
+      level: "practiced",
+      reason:
+        "Praktyka wymaga jeszcze różnych niezależnych rozwiązań kodowych.",
+      updatedAt,
+    };
+  // Legacy history establishes contact, never current coding confirmation.
+  if (
+    relevant.some(
+      (event) =>
+        event.kind === "exposure" || event.evidenceVersion === undefined,
+    ) ||
+    passedEvidence(current, conceptId, policy).length > 0 ||
+    state.ratings.some((rating) => rating.conceptId === conceptId)
+  )
+    return {
+      level: "exposed",
+      reason:
+        "Historia kontaktu pozostaje zapisana; bieżące potwierdzenie wymaga nowych dowodów kodowych.",
+      updatedAt,
+    };
+  return {
+    level: "new",
+    reason: "Brak bieżących zweryfikowanych dowodów.",
+    updatedAt,
+  };
+}
+
 function queueFailure(
   review: ReviewItem[],
   conceptId: string,
@@ -342,6 +651,7 @@ function queueSuccess(
   review: ReviewItem[],
   conceptId: string,
   event: EvidenceEvent,
+  verifiedRecallOverride?: boolean,
 ): void {
   const existing = review.find((item) => item.conceptId === conceptId);
   if (!existing) {
@@ -355,10 +665,11 @@ function queueSuccess(
     return;
   }
   const verifiedRecall =
-    event.kind === "recall" &&
-    event.delayed === true &&
-    event.hints === 0 &&
-    !event.revealed;
+    verifiedRecallOverride ??
+    (event.kind === "recall" &&
+      event.delayed === true &&
+      event.hints === 0 &&
+      !event.revealed);
   if (verifiedRecall) {
     existing.intervalDays = Math.max(1, existing.intervalDays * 2);
     existing.dueAt = event.at + existing.intervalDays * DAY;
@@ -384,6 +695,13 @@ export function recordEvidence(
   next.events.push({ ...event, conceptIds: [...event.conceptIds] });
   for (const conceptId of event.conceptIds) {
     if (!eventMatchesConceptArtifact(event, conceptId, policy)) continue;
+    const calibration = policy.calibrationForConcept?.(conceptId);
+    if (
+      calibration &&
+      event.kind !== "exposure" &&
+      !currentDefinition(event, conceptId, policy)
+    )
+      continue;
     if (
       !event.passed &&
       event.kind !== "self-rating" &&
@@ -396,17 +714,23 @@ export function recordEvidence(
       event.evaluator !== "expected-error" &&
       event.evaluator !== "rubric"
     )
-      queueSuccess(next.review, conceptId, event);
+      queueSuccess(
+        next.review,
+        conceptId,
+        event,
+        calibration
+          ? isCalibratedRecall(
+              next,
+              next.events.length - 1,
+              conceptId,
+              policy,
+              calibration.minimumCodingTasks,
+            )
+          : undefined,
+      );
   }
   for (const conceptId of event.conceptIds) {
-    const previous = state.mastery[conceptId]?.level;
-    const derived = deriveMastery(
-      next.events,
-      conceptId,
-      previous,
-      next.ratings,
-      policy,
-    );
+    const derived = deriveConceptMastery(next, conceptId, policy);
     next.mastery[conceptId] = { ...derived, updatedAt: event.at };
   }
   next.updatedAt = Math.max(next.updatedAt, event.at);
@@ -494,6 +818,134 @@ export function dueReviews(state: UserState, now: number): ReviewItem[] {
     .map((item) => ({ ...item }));
 }
 
+export type GateRecovery =
+  | { status: "complete" }
+  | { status: "available"; task: ModuleGateTaskRef }
+  | { status: "exhausted" };
+
+function stepForRef(lessons: readonly Lesson[], ref: ModuleGateTaskRef) {
+  return lessons
+    .find((lesson) => lesson.id === ref.lessonId)
+    ?.steps.find((step) => step.id === ref.stepId);
+}
+
+function eventForRef(event: EvidenceEvent, ref: ModuleGateTaskRef): boolean {
+  return event.lessonId === ref.lessonId && event.stepId === ref.stepId;
+}
+
+function supplementaryPassed(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+): boolean {
+  return (
+    !criterion.supplementaryStepRefs?.length ||
+    criterion.supplementaryStepRefs.some((ref) =>
+      state.events.some(
+        (event) =>
+          eventForRef(event, ref) &&
+          event.passed &&
+          event.kind === "self-rating" &&
+          event.evaluator === "rubric",
+      ),
+    )
+  );
+}
+
+function creditedGateTasks(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+  lessons: readonly Lesson[],
+): Set<string> {
+  const ids = new Set<string>();
+  for (const ref of criterion.taskRefs) {
+    const step = stepForRef(lessons, ref);
+    for (const [index, event] of state.events.entries()) {
+      if (!eventForRef(event, ref)) continue;
+      if (criterion.requiredIndependentCodingTasks !== undefined) {
+        const id = codingTaskId(
+          event,
+          definitionForStep(event, step),
+          state.events.slice(0, index),
+          (lessonId, stepId) =>
+            stepForRef(lessons, { lessonId, stepId })?.evidence,
+        );
+        if (id) ids.add(id);
+      } else if (isIndependentTaskSuccess(event, step)) {
+        ids.add(`${ref.lessonId}:${ref.stepId}`);
+      }
+    }
+  }
+  return ids;
+}
+
+function familyHasSavedAssistance(
+  state: UserState,
+  codingTaskId: string,
+  lessons: readonly Lesson[],
+): boolean {
+  return lessons.some((lesson) =>
+    lesson.steps.some((step) => {
+      if (step.evidence?.codingTaskId !== codingTaskId) return false;
+      const progress = state.steps[`${lesson.id}:${step.id}`];
+      return !!progress?.hints || progress?.revealed === true;
+    }),
+  );
+}
+
+export function gateRecovery(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+  lessons: readonly Lesson[],
+): GateRecovery {
+  const credited = creditedGateTasks(state, criterion, lessons);
+  const required = criterion.requiredIndependentCodingTasks ?? 1;
+  if (credited.size >= required) {
+    if (supplementaryPassed(state, criterion)) return { status: "complete" };
+    return { status: "available", task: criterion.supplementaryStepRefs![0] };
+  }
+  const task = criterion.taskRefs.find((ref) => {
+    const progress = state.steps[`${ref.lessonId}:${ref.stepId}`];
+    if (
+      progress?.hints ||
+      progress?.revealed ||
+      state.events.some(
+        (event) =>
+          eventForRef(event, ref) && (event.hints > 0 || event.revealed),
+      )
+    )
+      return false;
+    if (criterion.requiredIndependentCodingTasks !== undefined) {
+      const step = stepForRef(lessons, ref);
+      return (
+        step?.evaluator?.kind === "tests" &&
+        step.evidence?.codingTaskId &&
+        step.evidence.conceptIds.length > 0 &&
+        !credited.has(step.evidence.codingTaskId) &&
+        !familyHasSavedAssistance(state, step.evidence.codingTaskId, lessons) &&
+        !hasTaskAssistance(
+          { ...ref, at: Infinity },
+          step.evidence,
+          state.events,
+          (lessonId, stepId) =>
+            stepForRef(lessons, { lessonId, stepId })?.evidence,
+        )
+      );
+    }
+    return (
+      !progress?.completed || stepForRef(lessons, ref)?.evidence !== undefined
+    );
+  });
+  if (task) return { status: "available", task };
+  // Preserve existing uncounted practice navigation; counted recovery must never
+  // pretend a credited or assisted task is a fresh independent variant.
+  if (
+    criterion.requiredIndependentCodingTasks === undefined &&
+    criterion.taskRefs[0]
+  )
+    return { status: "available", task: criterion.taskRefs[0] };
+  return { status: "exhausted" };
+}
+
 export function moduleGate(
   state: UserState,
   lessons: Lesson[],
@@ -503,33 +955,9 @@ export function moduleGate(
     const criteria = courseModule.gateCriteria.map((criterion) => ({
       label: criterion.label,
       passed:
-        criterion.taskRefs.some((taskRef) =>
-          state.events.some((event) => {
-            const lesson = lessons.find(
-              (candidate) => candidate.id === taskRef.lessonId,
-            );
-            const step = lesson?.steps.find(
-              (candidate) => candidate.id === taskRef.stepId,
-            );
-            return (
-              event.lessonId === taskRef.lessonId &&
-              event.stepId === taskRef.stepId &&
-              isIndependentTaskSuccess(event, step)
-            );
-          }),
-        ) &&
-        (criterion.supplementaryStepRefs === undefined ||
-          criterion.supplementaryStepRefs.length === 0 ||
-          criterion.supplementaryStepRefs.some((stepRef) =>
-            state.events.some(
-              (event) =>
-                event.lessonId === stepRef.lessonId &&
-                event.stepId === stepRef.stepId &&
-                event.passed &&
-                event.kind === "self-rating" &&
-                event.evaluator === "rubric",
-            ),
-          )),
+        creditedGateTasks(state, criterion, lessons).size >=
+          (criterion.requiredIndependentCodingTasks ?? 1) &&
+        supplementaryPassed(state, criterion),
     }));
     return {
       criteria,

@@ -18,6 +18,7 @@ import {
   MAX_IMPORT_BYTES,
 } from "@/persistence/state";
 import { lessons, concepts, sources, projects } from "@/content/course";
+import { courseMastery } from "@/content/learning-context";
 import { useOpenLesson } from "./overview";
 import { Eyebrow, MasteryBadge } from "./ui";
 import type { UserState } from "@/domain/types";
@@ -355,8 +356,11 @@ export function SettingsView() {
           {concepts.map((c) => (
             <div className="inspector-row" key={c.id}>
               <strong>{c.id}</strong>
-              <MasteryBadge level={state.mastery[c.id]?.level} />
-              <p>{state.mastery[c.id]?.reason ?? "Brak dowodów"}</p>
+              <MasteryBadge
+                level={courseMastery(state, c.id).level}
+                scope={c.evidenceCalibration ? "ownership" : undefined}
+              />
+              <p>{courseMastery(state, c.id).reason}</p>
               <small>
                 {state.review.find((r) => r.conceptId === c.id)?.reason ??
                   "Brak zaplanowanej powtórki"}
