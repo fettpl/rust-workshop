@@ -199,3 +199,59 @@ including the broader screen-reader/editor/small-screen review and
 manual advisory/license work. The inherited dependency audit is not
 security-clean. PR40 and docs-only PR41 historical records above are preserved
 byte-for-byte; this section is the current local candidate snapshot only.
+
+<a id="whole-fix-1-focus-indication-7-october-2026"></a>
+## Whole fix 1 focus indication verification — 7 October 2026
+
+This dated addendum records the bounded `WS-A11Y-001` follow-up for the
+focused controlled fallback textarea. The product source tested is commit
+`f5b2cbd755a65469fdfc4217f262bdd88d7729f5` with tree
+`3af718517d426c126582cb880874a787feec2b80`, based on accepted normal-main
+commit `c1f9146caaad758bcee3ed2e6ec3468750e9a04a`. The later docs-only
+publication commit is separate from this tested source commit and is recorded
+by Git after this append. Earlier Task 5 broad `106/106`, runner, offline and
+visual evidence remains historical evidence for the prior product candidate;
+this addendum does not relabel it as a fresh whole-suite run for this CSS fix.
+
+The source change adds `.code-textarea:focus-visible { outline-offset: -3px; }`
+in `src/app/globals.css`, keeping the existing 3px solid accent outline inside
+the `overflow: hidden` editor wrapper. Existing manual and automatic fallback
+behavior, controlled Rust/TOML drafts, labels, read-only behavior and Monaco
+loader classification remain unchanged. The focused e2e spec now checks the
+computed outline style, width and inset offset plus the textarea and wrapper
+rectangles in the narrow Rust and TOML flows; it retains the existing draft,
+focus-transfer, outside-focus, 12-second and intentional-error checks.
+
+The dirty RED evidence is preserved under
+`test-results/a11y-whole-fix-1/`: the production fallback run exercised five
+cases, passed two and failed the three new focused geometry assertions on the
+unchanged CSS because computed `outlineOffset` was `5px` rather than `-3px`.
+The raw wrapper ended with process exit `143` after the recorded server was
+stopped separately; its focused test output, screenshots, trace artifacts,
+dirty test diff and diff hash remain unchanged. This is development RED
+evidence, not a clean committed acceptance run.
+
+After the source/test commit, a fresh Webpack production build exited `0`.
+The committed focused production fallback run passed `5/5` tests with retries
+`0`: manual Rust, clean Monaco, automatic Rust focus transfer, outside-focus
+preservation and automatic TOML draft/focus transfer. The run used Node
+`v22.23.3` at `/opt/homebrew/Cellar/node@22/22.23.3_1/bin/node`, private port
+`3317`, exact source/tree/base/design guards, server PID/cwd/parent/listener
+checks and numeric cleanup (`kill 0`, expected wait `143`, listener-gone `0`).
+
+A helper-only visual rerun against that unchanged fresh build passed with the
+same identity guards and cleanup. It wrote separate PNG, HTML and JSON files
+under `test-results/a11y-whole-fix-1/visuals-final/`. The narrow light Rust
+and dark TOML focused captures each record actual `data-theme`, focused
+`Kod Rust`/`Kod TOML`, a solid 3px outline with computed offset `-3px`, the
+outline contained within the textarea, textarea and wrapper rectangles, and
+wrapper `overflow: hidden`. Clean light/dark paths had no unexpected console,
+request or page errors. Fallback paths classify only the correlated
+`/monaco/vs/loader.js` `net::ERR_FAILED`, Monaco `Event` diagnostics and page
+error `Event` as intentional; unexpected error arrays are empty.
+
+No full unit, Rust, 106-test, API, offline or natural PR/main gate was repeated
+for this two-file CSS/test fix. External latest-PR and normal-main jobs remain
+separate pending release gates. Manual VoiceOver/NVDA speech, WCAG conformance,
+human efficacy, security-clean status and broader screen-reader/editor review
+remain unproven.
