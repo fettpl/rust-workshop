@@ -7,6 +7,7 @@ import {
   courseMastery,
   courseEvidenceSummary,
   courseCompetencyProgress,
+  assistanceForLessonStep,
   revealCourseProjectPackageVariant,
 } from "./learning-context";
 import type { EvidenceEvent, ProjectPackage } from "@/domain/types";
@@ -414,5 +415,100 @@ describe("current authored ownership evidence", () => {
       reviewEvent(1_000 + day + 1),
     );
     expect(courseMastery(state, "mutable-borrow").level).not.toBe("retained");
+  });
+});
+
+describe("saved assistance at the current primary submission boundary", () => {
+  const sibling = lessons.find((item) => item.id === "adversarial-no-clone")!;
+  const siblingStep = sibling.steps.find(
+    (item) => item.id === "adversarial-code",
+  )!;
+  const target = lessons.find((item) => item.id === "scenario-assessment")!;
+  const targetStep = target.steps.find(
+    (item) => item.id === "assessment-repair",
+  )!;
+  function submit(
+    state: ReturnType<typeof createInitialState>,
+    lesson = target,
+    step = targetStep,
+    at = 2_000,
+  ) {
+    return recordCourseEvidence(state, {
+      ...authoredEvent(lesson.id, step.id, at),
+      ...assistanceForLessonStep(state, lesson, step),
+    });
+  }
+  it.each([
+    { hints: 1, revealed: false },
+    { hints: 0, revealed: true },
+  ])(
+    "inherits imported sibling assistance in each new event without rewriting history: %j",
+    (flags) => {
+      const raw = createInitialState();
+      raw.steps[stepKey(sibling.id, siblingStep.id)] = {
+        ...createStepProgress("legacy sibling draft"),
+        completed: true,
+        ...flags,
+      };
+      const imported = importState(exportState(raw));
+      expect(imported.steps).toEqual(raw.steps);
+      const before = structuredClone(imported);
+      const next = submit(imported);
+      expect(next.events.at(-1)).toMatchObject(flags);
+      expect(
+        courseEvidenceSummary(next, "shared-borrow").qualifyingCodingTasks,
+      ).toBe(0);
+      expect(
+        courseEvidenceSummary(next, "ownership-repair").qualifyingCodingTasks,
+      ).toBe(0);
+      expect(next.steps).toEqual(before.steps);
+      expect(imported).toEqual(before);
+      expect(importState(exportState(next)).events).toEqual(next.events);
+    },
+  );
+  it("preserves clean credit earned before sibling help and permits a different fresh family", () => {
+    const state = submit(createInitialState(), target, targetStep, 1_000);
+    state.steps[stepKey(sibling.id, siblingStep.id)] = {
+      ...createStepProgress("later draft"),
+      hints: 2,
+      revealed: true,
+    };
+    const after = submit(state);
+    expect(after.events[0]).toMatchObject({ hints: 0, revealed: false });
+    expect(after.events[1]).toMatchObject({ hints: 2, revealed: true });
+    expect(
+      courseEvidenceSummary(after, "shared-borrow").qualifyingCodingTasks,
+    ).toBe(1);
+    const mutableLesson = lessons.find((item) => item.id === "borrow-intro")!;
+    const mutableStep = mutableLesson.steps.find(
+      (item) => item.id === "borrow-conflict",
+    )!;
+    const fresh = submit(after, mutableLesson, mutableStep);
+    expect(fresh.events.at(-1)).toMatchObject({ hints: 0, revealed: false });
+    expect(
+      courseEvidenceSummary(fresh, "mutable-borrow").qualifyingCodingTasks,
+    ).toBe(1);
+  });
+  it("retains exact-ref flags and keeps separate review assistance out of primary submissions", () => {
+    const state = createInitialState();
+    state.steps[stepKey(target.id, targetStep.id)] = {
+      ...createStepProgress("target draft"),
+      hints: 3,
+      revealed: true,
+    };
+    expect(assistanceForLessonStep(state, target, targetStep)).toEqual({
+      hints: 3,
+      revealed: true,
+    });
+    delete state.steps[stepKey(target.id, targetStep.id)];
+    state.steps["review:old-session"] = {
+      ...createStepProgress(),
+      hints: 4,
+      revealed: true,
+    };
+    expect(assistanceForLessonStep(state, target, targetStep)).toEqual({
+      hints: 0,
+      revealed: false,
+    });
   });
 });

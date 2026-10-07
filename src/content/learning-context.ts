@@ -17,6 +17,7 @@ import type {
   ProjectPackage,
   UserState,
 } from "@/domain/types";
+import { stepKey } from "@/persistence/state";
 import { competencyProgress } from "@/engine/progress";
 import { concepts, lessons, reviewExercises } from "./course";
 
@@ -67,6 +68,33 @@ export function evidenceForLessonStep(
         evidenceVersion: step.evidence.version,
       }
     : { conceptIds: [...lesson.conceptIds] };
+}
+/** Saved assistance affects only the newly submitted primary, never earlier raw evidence. */
+export function assistanceForLessonStep(
+  state: UserState,
+  lesson: Lesson,
+  step: LessonStep,
+): Pick<EvidenceEvent, "hints" | "revealed"> {
+  const current = state.steps[stepKey(lesson.id, step.id)];
+  const flags = {
+    hints: current?.hints ?? 0,
+    revealed: current?.revealed ?? false,
+  };
+  const family = step.evidence?.codingTaskId;
+  if (
+    !family?.trim() ||
+    !["fix", "transfer", "project", "assessment"].includes(step.evidenceKind)
+  )
+    return flags;
+  for (const authoredLesson of lessons) {
+    for (const authoredStep of authoredLesson.steps) {
+      if (authoredStep.evidence?.codingTaskId !== family) continue;
+      const saved = state.steps[stepKey(authoredLesson.id, authoredStep.id)];
+      flags.hints = Math.max(flags.hints, saved?.hints ?? 0);
+      flags.revealed ||= saved?.revealed ?? false;
+    }
+  }
+  return flags;
 }
 export function evidenceForReview(
   conceptId: string,

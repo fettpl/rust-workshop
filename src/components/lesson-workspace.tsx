@@ -20,6 +20,7 @@ import { choicesForStep } from "@/engine/choices";
 import {
   recordCourseEvidence,
   evidenceForLessonStep,
+  assistanceForLessonStep,
   courseEvidenceSummary,
   recordCourseLessonExposure,
 } from "@/content/learning-context";
@@ -158,8 +159,7 @@ export function LessonWorkspace() {
         kind:
           step.evaluator?.kind === "rubric" ? "self-rating" : step.evidenceKind,
         passed: outcome.passed,
-        hints: prior.hints,
-        revealed: prior.revealed,
+        ...assistanceForLessonStep(s, lesson, step),
         at: Date.now(),
         gate: !!step.evidenceGate && step.evaluator?.kind !== "rubric",
         evaluator: step.evaluator?.kind,
@@ -423,6 +423,16 @@ export function LessonWorkspace() {
               ukończenie pozostają dostępne. Potwierdzenie wymaga przejścia
               obecnych testów; wcześniejsze podpowiedzi pozostają przypisane do
               zadania.
+            </p>
+          )}
+          {(assistanceForLessonStep(state, lesson, step).hints >
+            progress.hints ||
+            (assistanceForLessonStep(state, lesson, step).revealed &&
+              !progress.revealed)) && (
+            <p className="footnote">
+              Ten sam kontrakt ma zapisaną pomoc w innym kroku. Bieżąca próba
+              zachowa te podpowiedzi lub odsłonięcie; nadal możesz ukończyć
+              zadanie i ćwiczyć.
             </p>
           )}
           {step.evidence?.conceptIds.map((conceptId) => {
