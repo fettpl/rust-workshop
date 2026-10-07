@@ -87,10 +87,15 @@ async function readStoredLearningSnapshot(page: Page) {
   });
 }
 
-test("returns from the last course step to its map without losing the resume", async ({
+test("returns from an extension's final step to its map without losing the resume", async ({
   page,
 }) => {
-  const lesson = lessons.at(-1)!;
+  const extension = modules.find(
+    (module) => module.id === "capstone-integration",
+  )!;
+  const lesson = lessons.find(
+    (candidate) => candidate.id === extension.lessonIds.at(-1),
+  )!;
   await resumeAtLastStep(page, lesson);
   await page.getByRole("button", { name: "Wróć do mapy", exact: true }).click();
   await expect(

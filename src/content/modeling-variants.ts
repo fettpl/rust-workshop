@@ -372,7 +372,7 @@ export const variantsLessons: Lesson[] = [
         evaluator: {
           kind: "tests",
           tests:
-            "#[test]\nfn keeps_absence_and_zero() {\n    assert_eq!(add_bonus(None), None);\n    assert_eq!(add_bonus(Some(0)), Some(1));\n    assert_eq!(add_bonus(Some(5)), Some(6));\n}",
+            "#[test]\nfn keeps_absence_and_zero() {\n    for (input, expected) in [(-1000, -999), (-2, -1), (-1, 0), (0, 1), (5, 6), (i32::MAX - 1, i32::MAX)] {\n        assert_eq!(add_bonus(Some(input)), Some(expected));\n    }\n    assert_eq!(add_bonus(None), None);\n}",
         },
         evidenceKind: "transfer",
         expectedStatus: "success",
