@@ -77,3 +77,68 @@ export const readLengthFixtures = [
     ],
   },
 ];
+
+/** Function-boundary controls whose failures are compiler diagnostics, not semantic mutants. */
+export const functionOwnershipCompileControls = {
+  isEmptyTextOwning: `fn main() {
+    let text = String::from("Rust");
+    println!("{} {}", is_empty_text(&text), text);
+}
+
+fn is_empty_text(text: String) -> bool {
+    text.is_empty()
+}`,
+  addMarkBorrowedSignature: `fn main() {
+    let text = String::from("ready");
+    let marked: fn(&String) -> String = add_mark;
+    println!("{}", marked(&text));
+}
+fn add_mark(text: String) -> String { text }`,
+  addMarkBorrowedLocalReturn: `fn add_mark<'a>(text: String) -> &'a str {
+    text.as_str()
+}`,
+  frameTextBorrowedSignature: `fn main() {
+    let text = String::from("ready!");
+    let framed: fn(&String) -> String = frame_text;
+    println!("{}", framed(&text));
+}
+fn frame_text(text: String) -> String { text }`,
+  frameTextBorrowedLocalReturn: `fn frame_text<'a>(text: String) -> &'a str {
+    text.as_str()
+}`,
+};
+
+/** Complete function-boundary implementations and compiling semantic mutants. */
+export const functionOwnershipFixtures = {
+  "function-predicate-v1": {
+    signature: "is_empty_text: fn(&String) -> bool",
+    equivalent: `fn is_empty_text(text: &String) -> bool { text.as_bytes().is_empty() }`,
+    mutants: {
+      "always-true": `fn is_empty_text(text: &String) -> bool { let _ = text; true }`,
+      "always-false": `fn is_empty_text(text: &String) -> bool { let _ = text; false }`,
+      "trimmed": `fn is_empty_text(text: &String) -> bool { text.trim().is_empty() }`,
+    },
+  },
+  "function-return-owned-v1": {
+    signature: "add_mark: fn(String) -> String",
+    equivalent: `fn add_mark(mut text: String) -> String { text.push('!'); text }`,
+    mutants: {
+      unchanged: `fn add_mark(text: String) -> String { text }`,
+      "hard-coded": `fn add_mark(text: String) -> String { let _ = text; String::from("fixed!") }`,
+      "delimiter-loss": `fn add_mark(text: String) -> String { text + "" }`,
+      "delimiter-duplicated": `fn add_mark(text: String) -> String { text + "!!" }`,
+    },
+  },
+  "function-frame-owned-v1": {
+    signature: "frame_text: fn(String) -> String",
+    equivalent: `fn frame_text(text: String) -> String { let mut out = String::from("<"); out.push_str(&text); out.push('>'); out }`,
+    mutants: {
+      unchanged: `fn frame_text(text: String) -> String { text }`,
+      "hard-coded": `fn frame_text(text: String) -> String { let _ = text; String::from("<fixed>") }`,
+      "trimmed": `fn frame_text(text: String) -> String { format!("<{}>", text.trim()) }`,
+      "delimiter-loss": `fn frame_text(text: String) -> String { format!("<{}", text) }`,
+      "delimiter-duplicated": `fn frame_text(text: String) -> String { format!("<<{}>>", text) }`,
+      "unicode-altered": `fn frame_text(text: String) -> String { format!("<{}>", text.replace("🦀", "?")) }`,
+    },
+  },
+} as const;
