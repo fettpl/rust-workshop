@@ -8,6 +8,7 @@ import {
   hasRustTestAttribute,
   trustedFixtureIssues,
 } from "../domain/trusted-fixtures";
+import { frameTextContract } from "./ownership-evidence-contracts";
 import type {
   Competency,
   Concept,
@@ -25,6 +26,7 @@ export interface ContentBundle {
   competencies: Competency[];
   modules: CourseModule[];
   reviewExercises: Record<string, LessonStep>;
+  delayedReviewExercises?: Record<string, LessonStep>;
   sources: Source[];
   traces: Record<string, Trace>;
   project: ProjectContract;
@@ -294,6 +296,65 @@ export function validateContent(content: ContentBundle): string[] {
         `review ${concept.id} has code without a verifiable solution`,
       );
   }
+  const delayedReviewExercises = content.delayedReviewExercises ?? {};
+  for (const [conceptId, review] of Object.entries(delayedReviewExercises)) {
+    const label = `delayed review ${conceptId}`;
+    if (!conceptIds.has(conceptId))
+      errors.push(`${label} references unknown concept`);
+    evidenceIssues(review, [conceptId], label);
+    if (
+      review.evidence?.conceptIds.length !== 1 ||
+      review.evidence.conceptIds[0] !== conceptId
+    )
+      errors.push(`${label} evidence must claim exactly its concept`);
+    errors.push(
+      ...manifestStepIssues(review).map((error) => `${label}: ${error}`),
+    );
+    errors.push(
+      ...trustedFixtureIssues(review).map((error) => `${label}: ${error}`),
+    );
+    if (!review.evaluator || !review.prompt.trim())
+      errors.push(`${label} has no active review exercise`);
+    if (
+      review.evaluator?.kind === "tests" &&
+      !hasRustTestAttribute(review.evaluator.tests)
+    )
+      errors.push(
+        `${label} tests evaluator must contain a Rust #[test] or #[tokio::test]`,
+      );
+    if (review.evaluator?.kind === "tests" && !review.evaluator.tests.trim())
+      errors.push(`${label} has empty tests evaluator`);
+    if (
+      review.code !== undefined &&
+      (!review.solution?.trim() ||
+        (review.editorMode !== "toml" && !review.expectedStatus))
+    )
+      errors.push(`${label} has code without a verifiable solution`);
+    if (conceptId === "function-ownership") {
+      if (
+        review.id !== "review-function-ownership-delayed-v1" ||
+        review.evidence?.version !== 2 ||
+        review.evidence.codingTaskId !==
+          "ownership/function-delayed-recall-v1" ||
+        review.evaluator?.kind !== "tests" ||
+        review.code !== frameTextContract.starter ||
+        review.solution !== frameTextContract.solution ||
+        review.evaluator.tests !== frameTextContract.tests ||
+        review.expectedStatus !== "success"
+      )
+        errors.push(
+          `${label} does not match the authored delayed frame contract`,
+        );
+    }
+  }
+  checkUnique(
+    [
+      ...Object.values(content.reviewExercises),
+      ...Object.values(delayedReviewExercises),
+    ].map((step) => step.id),
+    "review step",
+    errors,
+  );
   checkAcyclic(conceptGraph, "concept", errors);
 
   const lessonGraph = new Map<string, string[]>();

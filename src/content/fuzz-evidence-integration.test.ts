@@ -2,16 +2,25 @@ import { expect, it } from "vitest";
 import { concepts, lessons, modules, reviewExercises } from "./course";
 import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
+import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
 
 it("registers the bounded fuzz evidence module and four independent alternatives", () => {
   const stage = modules.find((item) => item.id === "fuzz-evidence-lifecycle")!;
   expect(stage.prerequisites).toEqual(["property-contracts"]);
-  expect(stage.lessonIds).toEqual(fuzzEvidenceLessons.map((lesson) => lesson.id));
+  expect(stage.lessonIds).toEqual(
+    fuzzEvidenceLessons.map((lesson) => lesson.id),
+  );
   expect(stage.gateCriteria).toHaveLength(4);
   expect(fuzzEvidenceLessons).toHaveLength(4);
-  expect(fuzzEvidenceConcepts.find((concept) => concept.id === "fuzz-campaign-evidence")?.evidenceArtifact).toBe("rust-code");
+  expect(
+    fuzzEvidenceConcepts.find(
+      (concept) => concept.id === "fuzz-campaign-evidence",
+    )?.evidenceArtifact,
+  ).toBe("rust-code");
   for (const lesson of fuzzEvidenceLessons) {
-    expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(1);
+    expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
+      1,
+    );
     const retrieval = reviewExercises[lesson.conceptIds[0]];
     expect(retrieval).toBeDefined();
     expect(retrieval.code).toBeTruthy();
@@ -23,11 +32,13 @@ it("registers the bounded fuzz evidence module and four independent alternatives
     }
     for (const gate of lesson.steps.filter((step) => step.evidenceGate)) {
       expect(gate.evaluator?.kind).toBe("tests");
-      if (gate.evaluator?.kind === "tests") expect(gate.evaluator.tests).not.toContain("assert!(true)");
+      if (gate.evaluator?.kind === "tests")
+        expect(gate.evaluator.tests).not.toContain("assert!(true)");
     }
     expect(lesson.conceptIds).toEqual([lesson.id]);
   }
   // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
-  expect(lessons).toHaveLength(186 + nestedPatternLessons.length);
+  expect(lessons).toHaveLength(186 + nestedPatternLessons.length + 1);
+  expect(lessons.at(-1)).toEqual(functionOwnershipCalibrationLesson);
   expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
 });

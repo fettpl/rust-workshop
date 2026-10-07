@@ -58,6 +58,7 @@ describe("property contract foundations", () => {
     const results = verifyTrustedRust({
       lessons: propertyFoundationLessons,
       reviewExercises: propertyFoundationReviewExercises,
+      delayedReviewExercises: {},
       traces: {},
     });
     expect(

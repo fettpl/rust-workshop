@@ -3,7 +3,12 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { lessons, reviewExercises, traces } from "../src/content/course";
+import {
+  delayedReviewExercises,
+  lessons,
+  reviewExercises,
+  traces,
+} from "../src/content/course";
 import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
@@ -86,8 +91,9 @@ export function verifyTrustedRust(
   content: {
     lessons: Lesson[];
     reviewExercises: Record<string, LessonStep>;
+    delayedReviewExercises: Record<string, LessonStep>;
     traces: Record<string, Trace>;
-  } = { lessons, reviewExercises, traces },
+  } = { lessons, reviewExercises, delayedReviewExercises, traces },
   reporter?: VerificationReporter,
 ): Verification[] {
   const dir = mkdtempSync(join(tmpdir(), "rust-workshop-authored-"));
@@ -368,6 +374,10 @@ export function verifyTrustedRust(
       for (const step of lesson.steps) stepCases(lesson.id, step);
     for (const [concept, step] of Object.entries(content.reviewExercises))
       stepCases(`review/${concept}`, step);
+    for (const [concept, step] of Object.entries(
+      content.delayedReviewExercises,
+    ))
+      stepCases(`delayed-review/${concept}`, step);
     for (const [id, trace] of Object.entries(content.traces))
       verify(`trace/${id}`, `fn main() {\n${trace.code}\n}`);
     verify("diagnostic/double", "fn double(n: i32) -> i32 { n * 2 }", {

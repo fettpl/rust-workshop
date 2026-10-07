@@ -1,4 +1,5 @@
 import { borrowedCallbacksModule } from "./borrowed-callbacks-module";
+import type { LessonStep } from "@/domain/types";
 import { gatLendingModule } from "./gat-lending-module";
 import {
   gatProducerLessons,
@@ -501,6 +502,10 @@ import {
   nestedPatternSources,
   nestedPatternReviewExercises,
 } from "./nested-patterns";
+import {
+  functionOwnershipCalibrationLesson,
+  delayedReviewExercises as functionOwnershipDelayedReviewExercises,
+} from "./function-ownership-calibration";
 
 const traitsModule = {
   ...baseTraitsModule,
@@ -669,6 +674,7 @@ export const lessons = [
   ...coreConversionsLessons,
   ...coreCheckedConversionsLessons,
   ...nestedPatternLessons,
+  functionOwnershipCalibrationLesson,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -932,6 +938,28 @@ export const reviewExercises = {
   ...coreCheckedConversionsReviewExercises,
   ...nestedPatternReviewExercises,
 };
+export const delayedReviewExercises = functionOwnershipDelayedReviewExercises;
+const allReviewSteps = [
+  ...Object.values(reviewExercises),
+  ...Object.values(delayedReviewExercises),
+];
+const duplicateReviewIds = allReviewSteps
+  .map((step) => step.id)
+  .filter((id, index, ids) => ids.indexOf(id) !== index);
+if (duplicateReviewIds.length > 0)
+  throw new Error(
+    "Duplicate authored review step IDs: " +
+      [...new Set(duplicateReviewIds)].join(", "),
+  );
+export const reviewExercisesById: Record<string, LessonStep> =
+  Object.fromEntries(allReviewSteps.map((step) => [step.id, step]));
+export function reviewExerciseForId(
+  exerciseId: string,
+): LessonStep | undefined {
+  return Object.prototype.hasOwnProperty.call(reviewExercisesById, exerciseId)
+    ? reviewExercisesById[exerciseId]
+    : undefined;
+}
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
   ...ownership.traces,

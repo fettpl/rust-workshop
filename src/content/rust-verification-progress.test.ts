@@ -8,7 +8,12 @@ import type { Verification } from "../../scripts/verify-rust";
 
 vi.mock("node:child_process", () => ({ spawnSync: vi.fn() }));
 const spawn = vi.mocked(spawnSync);
-const emptyCourse = { lessons: [], reviewExercises: {}, traces: {} };
+const emptyCourse = {
+  lessons: [],
+  reviewExercises: {},
+  delayedReviewExercises: {},
+  traces: {},
+};
 const processResult = (stdout = "", status: number | null = 0) => ({
   pid: 1,
   output: [null, stdout, ""],

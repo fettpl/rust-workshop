@@ -21,6 +21,7 @@ import {
   nestedPatternReviewExercises,
   nestedPatternSources,
 } from "./nested-patterns";
+import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
 import { nextLessonForNavigation } from "../engine/course-route";
 import { gateRecovery, moduleGate } from "../engine/learning";
 import {
@@ -105,7 +106,9 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
         ? [...original.lessonIds, ...newLessonIds]
         : original.id === "data-modeling"
           ? [...original.lessonIds, ...nestedLessonIds]
-        : original.lessonIds,
+          : original.id === "ownership"
+            ? [...original.lessonIds, "function-ownership-calibration"]
+            : original.lessonIds,
     );
     expect(
       current.gateCriteria
@@ -131,6 +134,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ...coreConversionsLessons,
     ...coreCheckedConversionsLessons,
     ...nestedPatternLessons,
+    functionOwnershipCalibrationLesson,
   ]);
   expect(course.concepts.slice(legacy.conceptIds.length)).toEqual([
     ...coreConversionsConcepts,
@@ -142,7 +146,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ...coreCheckedConversionsSources,
     ...nestedPatternSources,
   ]);
-  expect(course.lessons.at(-1)).toEqual(nestedPatternLessons[0]);
+  expect(course.lessons.at(-1)).toEqual(functionOwnershipCalibrationLesson);
   expect(nestedPatternLessons[0].prerequisites).toEqual([
     "modeling-assessment",
   ]);
@@ -162,7 +166,9 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
       (step) => step.evaluator?.kind === "tests",
     ),
   ).toHaveLength(2);
-  expect(nestedPatternReviewExercises["nested-pattern-matching"]?.evaluator).toMatchObject({
+  expect(
+    nestedPatternReviewExercises["nested-pattern-matching"]?.evaluator,
+  ).toMatchObject({
     kind: "tests",
   });
   expect(nestedPatternSources).toMatchObject([
@@ -191,9 +197,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
       version: 2,
       conceptIds: ["nested-pattern-matching"],
     });
-    expect(step.evidence?.conceptIds).toEqual([
-      "nested-pattern-matching",
-    ]);
+    expect(step.evidence?.conceptIds).toEqual(["nested-pattern-matching"]);
   }
   expect(
     nestedPatternLessons[0].steps.find((step) => step.id === "nested-repair")
@@ -220,7 +224,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ).length,
     reviews: Object.keys(course.reviewExercises).length,
   }).toEqual({
-    lessons: frozenPreNestedInventory.lessons + nestedInventory.lessons,
+    lessons: frozenPreNestedInventory.lessons + nestedInventory.lessons + 1,
     modules: frozenPreNestedInventory.modules,
     concepts: frozenPreNestedInventory.concepts + nestedInventory.concepts,
     blank: frozenPreNestedInventory.blank + nestedInventory.blank,
@@ -229,9 +233,11 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     traces: frozenPreNestedInventory.traces,
     competencies:
       frozenPreNestedInventory.competencies + nestedInventory.competencies,
-    steps: frozenPreNestedInventory.steps + nestedInventory.steps,
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 5,
     testEvaluators:
-      frozenPreNestedInventory.testEvaluators + nestedInventory.testEvaluators,
+      frozenPreNestedInventory.testEvaluators +
+      nestedInventory.testEvaluators +
+      2,
     reviews: frozenPreNestedInventory.reviews + nestedInventory.reviews,
   });
   for (const registry of [
@@ -273,9 +279,9 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   expect(course.reviewExercises["nested-pattern-matching"]).toEqual(
     nestedPatternReviewExercises["nested-pattern-matching"],
   );
-  expect(course.reviewExercises["nested-pattern-matching"].evaluator?.kind).toBe(
-    "tests",
-  );
+  expect(
+    course.reviewExercises["nested-pattern-matching"].evaluator?.kind,
+  ).toBe("tests");
   expect(newConceptIds.map((id) => course.reviewExercises[id].id)).toEqual([
     "review-from-owned-conversions",
     "review-asref-borrowed-views",
@@ -538,7 +544,9 @@ it("round-trips an advanced resume before nested navigation and recovers a fresh
       course.modules,
     )?.id,
   ).toBe("nested-patterns-and-destructuring");
-  const modeling = course.modules.find((module) => module.id === "data-modeling")!;
+  const modeling = course.modules.find(
+    (module) => module.id === "data-modeling",
+  )!;
   expect(moduleGate(restored, course.lessons, modeling).passed).toBe(false);
   expect(restored).toEqual(beforeNavigation);
   expect(restored.events).toEqual(beforeNavigation.events);
@@ -554,7 +562,9 @@ it("round-trips an advanced resume before nested navigation and recovers a fresh
   });
   const clean = submit(createInitialState(), criterion, 1, false);
   expect(
-    moduleGate(clean, course.lessons, { ...modeling, gateCriteria: [criterion] })
-      .passed,
+    moduleGate(clean, course.lessons, {
+      ...modeling,
+      gateCriteria: [criterion],
+    }).passed,
   ).toBe(true);
 });
