@@ -27,6 +27,7 @@ import { CompilerCoach } from "./compiler-coach";
 import { CompilerOutput } from "./compiler-output";
 import { OwnershipVisualizer } from "./ownership-visualizer";
 import { Eyebrow, ProgressLine } from "./ui";
+import { nextLessonForNavigation } from "@/engine/course-route";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 const kindLabels = {
   predict: "Przewidź",
@@ -49,8 +50,7 @@ export function LessonWorkspace() {
     lessons.find((l) => l.id === state.resume.lessonId) ?? lessons[0];
   const index = Math.min(state.resume.stepIndex, lesson.steps.length - 1);
   const step = lesson.steps[index];
-  const nextLesson =
-    lessons[lessons.findIndex((item) => item.id === lesson.id) + 1];
+  const nextLesson = nextLessonForNavigation(lesson.id, lessons, modules);
   const nextLabel =
     index < lesson.steps.length - 1
       ? "Dalej"
@@ -268,10 +268,14 @@ export function LessonWorkspace() {
         ...s,
         resume: {
           ...s.resume,
-          view: nextLesson ? "lesson" : "course",
-          lessonId: nextLesson?.id ?? lesson.id,
-          stepIndex: nextLesson ? 0 : index,
-          panel: "lesson",
+          ...(nextLesson
+            ? {
+                view: "lesson" as const,
+                lessonId: nextLesson.id,
+                stepIndex: 0,
+                panel: "lesson" as const,
+              }
+            : { view: "course" as const }),
         },
       }));
     }
