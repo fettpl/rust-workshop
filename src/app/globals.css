@@ -2968,7 +2968,7 @@ button svg {
   letter-spacing: normal;
 }
 @media (min-width: 851px) {
-  .workspace-context-title {
+  .mobile-editor-title {
     display: none;
   }
 }

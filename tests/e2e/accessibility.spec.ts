@@ -60,12 +60,34 @@ test("mobile workspace tabs resolve tabpanels and expose only the selected panel
     );
     await expect(page.locator("#workspace-panel-code")).toBeVisible();
     await expect(page.locator("#workspace-panel-lesson")).toBeHidden();
+    for (const [selector, expected] of [
+      ["#workspace-panel-lesson", false],
+      ["#workspace-panel-code", true],
+      ["#workspace-panel-output", false],
+    ] as const) {
+      const rect = await page.locator(selector).evaluate((element) => {
+        const { width, height } = element.getBoundingClientRect();
+        return width > 0 && height > 0;
+      });
+      expect(rect, selector).toBe(expected);
+    }
     await page.getByRole("tab", { name: /Output/ }).click();
     await expect(page.locator("#workspace-output")).toBeVisible();
     await expect(
       page.locator(".output-content[aria-live='polite']"),
     ).toHaveCount(1);
     await expect(page.locator("#workspace-panel-code")).toBeHidden();
+    for (const [selector, expected] of [
+      ["#workspace-panel-lesson", false],
+      ["#workspace-panel-code", false],
+      ["#workspace-panel-output", true],
+    ] as const) {
+      const rect = await page.locator(selector).evaluate((element) => {
+        const { width, height } = element.getBoundingClientRect();
+        return width > 0 && height > 0;
+      });
+      expect(rect, selector).toBe(expected);
+    }
   } finally {
     await close();
   }
@@ -93,8 +115,29 @@ test("desktop workspace keeps three visible named panels with the hidden tablist
       await expect(panel).toBeVisible();
       await expect(panel).toHaveAttribute("role", "tabpanel");
       await expect(panel).toHaveAccessibleName(tabLabel);
+      const rect = await panel.evaluate((element) => {
+        const { width, height } = element.getBoundingClientRect();
+        return width > 0 && height > 0;
+      });
+      expect(rect, panelId).toBe(true);
     }
     await expect(page.locator("#workspace-output")).toBeVisible();
+  } finally {
+    await close();
+  }
+});
+
+test("no-code workspace step omits the tabpanel relation without a dangling tab", async ({ browser }) => {
+  test.setTimeout(45_000);
+  const { page, close } = await freshLessonPage(browser);
+  try {
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(2).click();
+    await expect(page.locator(".mobile-workspace-tabs")).toHaveCount(0);
+    const lessonPanel = page.locator("#workspace-panel-lesson");
+    await expect(lessonPanel).toBeVisible();
+    await expect(lessonPanel).toHaveAttribute("aria-label", "Zadanie");
+    await expect(lessonPanel).not.toHaveAttribute("role", "tabpanel");
+    await expect(lessonPanel).not.toHaveAttribute("aria-labelledby");
   } finally {
     await close();
   }

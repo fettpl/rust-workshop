@@ -311,7 +311,9 @@ export function LessonWorkspace() {
   return (
     <div className={`lesson-workspace step-${step.kind} mobile-panel-${panel}`}>
       {panel !== "lesson" && (
-        <h1 className="sr-only workspace-context-title">{step.title}</h1>
+        <h1 className="sr-only mobile-editor-title">
+          {step.title} · {panel === "code" ? "Kod" : "Wynik"}
+        </h1>
       )}
       <div className="lesson-top">
         <button
@@ -426,8 +428,8 @@ export function LessonWorkspace() {
         <section
           className="task-pane workspace-panel-lesson"
           id="workspace-panel-lesson"
-          role="tabpanel"
-          aria-labelledby="workspace-tab-lesson"
+          role={hasCode ? "tabpanel" : undefined}
+          aria-labelledby={hasCode ? "workspace-tab-lesson" : undefined}
           aria-label="Zadanie"
         >
           <Eyebrow>
