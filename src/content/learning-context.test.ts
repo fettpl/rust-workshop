@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { concepts, lessons, projects, reviewExercises } from "./course";
+import {
+  concepts,
+  delayedReviewExercises,
+  lessons,
+  projects,
+  reviewExercises,
+} from "./course";
+import { ownershipModule } from "./catalog";
 import {
   recordCourseEvidence,
   evidenceForLessonStep,
@@ -9,8 +16,13 @@ import {
   courseCompetencyProgress,
   assistanceForLessonStep,
   revealCourseProjectPackageVariant,
+  courseDelayedReviewEligibility,
+  courseEvidencePolicy,
+  resolveReviewExercise,
+  reviewExerciseIdForOrigin,
 } from "./learning-context";
-import type { EvidenceEvent, ProjectPackage } from "@/domain/types";
+import type { EvidenceEvent, ProjectPackage, UserState } from "@/domain/types";
+import { DAY, independentCodingTaskIds, moduleGate } from "@/engine/learning";
 import {
   createInitialState,
   createStepProgress,
@@ -509,6 +521,231 @@ describe("saved assistance at the current primary submission boundary", () => {
     expect(assistanceForLessonStep(state, target, targetStep)).toEqual({
       hints: 0,
       revealed: false,
+    });
+  });
+});
+
+const contactAt = 10_000;
+const atDay = contactAt + DAY;
+const now = contactAt + DAY + 1;
+
+function authoredSuccess(
+  lessonId: string,
+  stepId: string,
+  id: string,
+  at: number,
+): EvidenceEvent {
+  const lesson = lessons.find((candidate) => candidate.id === lessonId);
+  const step = lesson?.steps.find((candidate) => candidate.id === stepId);
+  if (!step?.evidence || !step.evaluator || !step.evidenceKind)
+    throw new Error("missing authored step evidence kind");
+  return {
+    id,
+    conceptIds: [...step.evidence.conceptIds],
+    lessonId,
+    stepId,
+    kind: step.evidenceKind,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    at,
+    evidenceVersion: step.evidence.version,
+    evaluator: step.evaluator.kind,
+    gate: false,
+  };
+}
+
+function dueState(
+  conceptId: string,
+  refs: Array<[string, string]>,
+  contactAt: number,
+): UserState {
+  const base = createInitialState();
+  return {
+    ...base,
+    events: refs
+      .map(([lessonId, stepId], index) =>
+        authoredSuccess(lessonId, stepId, "family-" + index, 100 + index),
+      )
+      .concat({
+        id: "contact",
+        conceptIds: [conceptId],
+        lessonId: "review",
+        stepId: conceptId + ":old-session",
+        kind: "exposure",
+        passed: false,
+        hints: 0,
+        revealed: false,
+        at: contactAt,
+        evidenceVersion: 2,
+        evaluator: "answer",
+        gate: false,
+      }),
+    review: [
+      {
+        conceptId,
+        dueAt: contactAt,
+        intervalDays: 1,
+        attempts: 1,
+        reason: "test",
+      },
+    ],
+  };
+}
+
+const stateEligibleForFunctionOwnership = dueState(
+  "function-ownership",
+  [
+    ["scenario-assessment", "assessment-repair"],
+    ["function-ownership-calibration", "function-is-empty-text"],
+  ],
+  contactAt,
+);
+const stateDueForMutableBorrow = dueState(
+  "mutable-borrow",
+  [
+    ["borrow-intro", "borrow-conflict"],
+    ["borrow-intro", "borrow-mutable-run"],
+  ],
+  contactAt,
+);
+
+describe("stable review exercise routing", () => {
+  it("resolves an absent exercise ID through the historical concept map", () => {
+    const old = resolveReviewExercise("function-ownership");
+    expect(old).toMatchObject({
+      status: "ready",
+      exerciseId: reviewExercises["function-ownership"].id,
+    });
+  });
+
+  it("does not treat a historical concept key as a stable exercise ID", () => {
+    expect(
+      resolveReviewExercise("function-ownership", "function-ownership"),
+    ).toEqual({
+      status: "unavailable",
+      reason: "unknown-id",
+    });
+  });
+
+  it("resolves the delayed stable ID", () => {
+    const delayed = resolveReviewExercise(
+      "function-ownership",
+      "review-function-ownership-delayed-v1",
+    );
+    expect(delayed).toMatchObject({
+      status: "ready",
+      exerciseId: delayedReviewExercises["function-ownership"].id,
+    });
+  });
+
+  it("keeps unknown and wrong-concept pinned IDs unavailable", () => {
+    expect(
+      resolveReviewExercise("function-ownership", "removed-review-id"),
+    ).toEqual({
+      status: "unavailable",
+      reason: "unknown-id",
+    });
+    expect(
+      resolveReviewExercise(
+        "function-ownership",
+        reviewExercises["mutable-borrow"].id,
+      ),
+    ).toEqual({ status: "unavailable", reason: "wrong-concept" });
+  });
+
+  it("counts the authored legacy and fresh families for delayed eligibility", () => {
+    expect(
+      courseEvidenceSummary(
+        stateEligibleForFunctionOwnership,
+        "function-ownership",
+      ).qualifyingCodingTasks,
+    ).toBe(2);
+    expect(
+      independentCodingTaskIds(
+        stateEligibleForFunctionOwnership,
+        "function-ownership",
+        courseEvidencePolicy,
+      ),
+    ).toEqual(["ownership/read-length", "ownership/function-predicate-v1"]);
+    expect(
+      moduleGate(
+        stateEligibleForFunctionOwnership,
+        lessons,
+        ownershipModule,
+      ).criteria.find(
+        (criterion) =>
+          criterion.label === "Dwie niezależne granice własności funkcji",
+      ),
+    ).toEqual({
+      label: "Dwie niezależne granice własności funkcji",
+      passed: false,
+    });
+  });
+
+  it("routes only eligible delayed due reviews dynamically by concept", () => {
+    expect(
+      courseDelayedReviewEligibility(
+        stateEligibleForFunctionOwnership,
+        "function-ownership",
+        atDay,
+      ),
+    ).toBe(false);
+    expect(
+      courseDelayedReviewEligibility(
+        stateEligibleForFunctionOwnership,
+        "function-ownership",
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      reviewExerciseIdForOrigin(
+        stateEligibleForFunctionOwnership,
+        "function-ownership",
+        "due",
+        now,
+      ),
+    ).toBe(delayedReviewExercises["function-ownership"].id);
+    expect(
+      reviewExerciseIdForOrigin(
+        stateDueForMutableBorrow,
+        "mutable-borrow",
+        "due",
+        now,
+      ),
+    ).toBeUndefined();
+    expect(
+      reviewExerciseIdForOrigin(
+        stateDueForMutableBorrow,
+        "mutable-borrow",
+        "practice",
+        now,
+      ),
+    ).toBeUndefined();
+  });
+
+  it("keeps a legacy concept-key review event on the historical course definition", () => {
+    const state = createInitialState();
+    const historical = reviewExercises["function-ownership"];
+    const event: EvidenceEvent = {
+      id: "legacy-review-event",
+      conceptIds: ["function-ownership"],
+      lessonId: "review",
+      stepId: "function-ownership:legacy-session",
+      kind: historical.evidenceKind!,
+      evaluator: historical.evaluator!.kind,
+      evidenceVersion: historical.evidence!.version,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 10_000,
+      delayed: false,
+    };
+    const recorded = recordCourseEvidence(state, event);
+    expect(recorded.events).toEqual([event]);
+    expect(evidenceForReview("function-ownership", historical)).toEqual({
+      conceptIds: ["function-ownership"],
+      evidenceVersion: historical.evidence!.version,
     });
   });
 });

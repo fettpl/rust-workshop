@@ -1,6 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-import { lessons, modules, reviewExercises } from "../../src/content/course";
+import {
+  delayedReviewExercises,
+  lessons,
+  modules,
+  reviewExercises,
+} from "../../src/content/course";
 import {
   recordCourseEvidence,
   courseEvidenceSummary,
@@ -11,6 +16,7 @@ import {
   exportState,
   stepKey,
 } from "../../src/persistence/state";
+import { reviewSessionKey } from "../../src/engine/review-session";
 import type { EvidenceEvent, UserState } from "../../src/domain/types";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -158,6 +164,7 @@ async function mockTests(page: Page) {
       replace.step,
       authored("scenario-assessment", "assessment-repair").step,
       reviewExercises["mutable-borrow"],
+      delayedReviewExercises["function-ownership"],
     ].find(
       (candidate) =>
         candidate.evaluator?.kind === "tests" &&
@@ -165,27 +172,56 @@ async function mockTests(page: Page) {
     );
     expect(step, "exact current authored tests sent to runner").toBeDefined();
     const passed = request.code === step!.solution;
-    const starter = request.code === append.step.code;
+    const expectedStarterStatus: Record<
+      string,
+      "compile-error" | "test-failure"
+    > = {
+      "borrow-conflict": "compile-error",
+      "borrow-mutable-run": "test-failure",
+      "assessment-repair": "compile-error",
+      "review-mutable-borrow": "test-failure",
+      "review-function-ownership-delayed-v1": "test-failure",
+    };
+    const starter = request.code === step!.code;
+    const starterStatus = expectedStarterStatus[step!.id];
+    if (!starterStatus)
+      throw new Error(`missing starter status for ${step!.id}`);
+    const starterResult =
+      starterStatus === "compile-error"
+        ? {
+            status: "compile-error",
+            stdout: "",
+            stderr:
+              step!.id === "borrow-conflict"
+                ? "error[E0502]: cannot borrow `message` as mutable because it is also borrowed as immutable"
+                : "starter diagnostic",
+            diagnostics:
+              step!.id === "borrow-conflict"
+                ? [
+                    {
+                      code: "E0502",
+                      message: "borrow conflict",
+                      line: 4,
+                      level: "error" as const,
+                    },
+                  ]
+                : [],
+            durationMs: 1,
+          }
+        : {
+            status: "test-failure",
+            stdout: "test result: FAILED",
+            stderr: "",
+            diagnostics: [],
+            durationMs: 1,
+            tests: { passed: 0, failed: 1 },
+          };
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify(
         starter
-          ? {
-              status: "compile-error",
-              stdout: "",
-              stderr:
-                "error[E0502]: cannot borrow `message` as mutable because it is also borrowed as immutable",
-              diagnostics: [
-                {
-                  code: "E0502",
-                  message: "borrow conflict",
-                  line: 4,
-                  level: "error",
-                },
-              ],
-              durationMs: 1,
-            }
+          ? starterResult
           : {
               status: passed ? "success" : "test-failure",
               stdout: passed
@@ -565,6 +601,268 @@ for (const scenario of [
   });
 }
 
+function pinnedDelayedState(exerciseId: string): UserState {
+  const state = readyState("review");
+  const sessionId = "delayed-ownership-session";
+  state.reviewSession = {
+    conceptId: "function-ownership",
+    mode: "challenge",
+    sessionId,
+    startedAt: NOW,
+    wasDue: true,
+    exerciseId,
+  };
+  state.steps[reviewSessionKey(sessionId)] = {
+    ...createStepProgress(),
+    code: delayedReviewExercises["function-ownership"].code!,
+    answer: "draft delayed answer",
+  };
+  return state;
+}
+
+function functionOwnershipPrimaryEvent(
+  stepId: string,
+  at: number,
+): EvidenceEvent {
+  const { lesson, step } = authored(
+    stepId === "assessment-repair"
+      ? "scenario-assessment"
+      : "function-ownership-calibration",
+    stepId,
+  );
+  if (!step.evidence || !step.evaluator || !step.evidenceKind)
+    throw new Error("missing function-ownership authored evidence");
+  return {
+    id: `${lesson.id}/${step.id}/${at}`,
+    conceptIds: [...step.evidence.conceptIds],
+    lessonId: lesson.id,
+    stepId: step.id,
+    kind: step.evidenceKind,
+    evaluator: step.evaluator.kind,
+    evidenceVersion: step.evidence.version,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    gate: true,
+    at,
+  };
+}
+
+test("opening a delayed question records no neutral contact", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await mockTests(page);
+  await seedState(
+    page,
+    pinnedDelayedState(delayedReviewExercises["function-ownership"].id),
+  );
+  const before = await savedState(page);
+  await expect(page.locator(".review-session h2")).toBeVisible();
+  expect((await savedState(page)).events).toEqual(before.events);
+});
+
+function delayedRecallState(): UserState {
+  const state = pinnedDelayedState(
+    delayedReviewExercises["function-ownership"].id,
+  );
+  state.events = [
+    functionOwnershipPrimaryEvent("assessment-repair", NOW - 2 * DAY),
+    functionOwnershipPrimaryEvent("function-is-empty-text", NOW - 2 * DAY + 1),
+    {
+      id: "delayed-contact",
+      conceptIds: ["function-ownership"],
+      lessonId: "review",
+      stepId: "function-ownership:delayed-contact",
+      kind: "exposure",
+      passed: false,
+      hints: 0,
+      revealed: false,
+      at: NOW - DAY - 1,
+      evidenceVersion: 2,
+      evaluator: "answer",
+    },
+  ];
+  state.review = [
+    {
+      conceptId: "function-ownership",
+      dueAt: NOW - DAY,
+      attempts: 1,
+      intervalDays: 1,
+      reason: "delayed test",
+    },
+  ];
+  return state;
+}
+
+async function runNoEventAttempt(
+  page: Page,
+  status: "timeout" | "infrastructure-error",
+) {
+  await page.route("**/api/run", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status,
+        stdout: "",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+      }),
+    });
+  });
+  const before = await savedState(page);
+  const sessionKey = reviewSessionKey(before.reviewSession!.sessionId);
+  const attemptsBefore = before.steps[sessionKey]?.attempts.length ?? 0;
+  const response = page.waitForResponse((item) =>
+    item.url().endsWith("/api/run"),
+  );
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await response;
+  await expect
+    .poll(async () => {
+      const after = await savedState(page);
+      return {
+        attempts: after.steps[sessionKey]?.attempts.length ?? 0,
+        result: after.steps[sessionKey]?.attempts.at(-1)?.result?.status,
+      };
+    })
+    .toEqual({ attempts: attemptsBefore + 1, result: status });
+  const after = await savedState(page);
+  expect(after.events).toEqual(before.events);
+}
+
+test("assisted delayed success remains uncredited", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await mockTests(page);
+  await seedState(page, delayedRecallState());
+  await editor(page).fill(delayedReviewExercises["function-ownership"].code!);
+  await runTests(page);
+  const afterFailure = await savedState(page);
+  expect(afterFailure.events.at(-1)).toMatchObject({
+    kind: "recall",
+    passed: false,
+    delayed: true,
+  });
+  await page
+    .getByRole("button", { name: "Karta przypomnienia", exact: true })
+    .click();
+  await page.getByPlaceholder("Zanim odsłonisz odpowiedź…").fill("próba");
+  await page
+    .getByRole("button", { name: "Odsłoń odpowiedź", exact: true })
+    .click();
+  const afterReveal = await savedState(page);
+  expect(afterReveal.events.some((event) => event.revealed)).toBe(true);
+  await page
+    .getByRole("button", { name: "Mały eksperyment", exact: true })
+    .click();
+  await editor(page).fill(
+    delayedReviewExercises["function-ownership"].solution!,
+  );
+  await runTests(page);
+  const afterSuccess = await savedState(page);
+  expect(afterSuccess.events.at(-1)).toMatchObject({
+    kind: "recall",
+    passed: true,
+    delayed: true,
+    revealed: true,
+  });
+  expect(
+    courseEvidenceSummary(afterSuccess, "function-ownership").mastery.level,
+  ).not.toBe("retained");
+  expect(afterSuccess.events.length).toBeGreaterThan(
+    afterFailure.events.length,
+  );
+});
+
+test("clean delayed success after two primary families is credited", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await mockTests(page);
+  await seedState(page, delayedRecallState());
+  await editor(page).fill(
+    delayedReviewExercises["function-ownership"].solution!,
+  );
+  await runTests(page);
+  const recorded = await savedState(page);
+  expect(recorded.events.at(-1)).toMatchObject({
+    kind: "recall",
+    passed: true,
+    delayed: true,
+    revealed: false,
+  });
+  expect(
+    courseEvidenceSummary(recorded, "function-ownership").mastery.level,
+  ).toBe("retained");
+  const laterAssistance = recordCourseEvidence(recorded, {
+    id: "later-assistance",
+    conceptIds: ["function-ownership"],
+    lessonId: "review",
+    stepId: delayedReviewExercises["function-ownership"].id + ":later",
+    kind: "recall",
+    passed: false,
+    hints: 1,
+    revealed: true,
+    delayed: true,
+    at: NOW + 1,
+    evidenceVersion: 2,
+    evaluator: "tests",
+  });
+  expect(
+    courseEvidenceSummary(laterAssistance, "function-ownership").mastery.level,
+  ).toBe("retained");
+});
+
+test("timeout does not append a delayed event", async ({ page }) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await seedState(page, delayedRecallState());
+  await runNoEventAttempt(page, "timeout");
+});
+
+test("infrastructure failure does not append a delayed event", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await seedState(page, delayedRecallState());
+  await runNoEventAttempt(page, "infrastructure-error");
+});
+
+test("reload keeps the delayed exercise ID and opaque draft key", async ({
+  page,
+}) => {
+  await seedState(
+    page,
+    pinnedDelayedState(delayedReviewExercises["function-ownership"].id),
+  );
+  await page.reload();
+  const state = await savedState(page);
+  expect(state.reviewSession?.exerciseId).toBe(
+    delayedReviewExercises["function-ownership"].id,
+  );
+  expect(
+    state.steps[reviewSessionKey("delayed-ownership-session")].answer,
+  ).toBe("draft delayed answer");
+});
+
+test("unknown pinned ID is unavailable and return to queue preserves its draft", async ({
+  page,
+}) => {
+  await seedState(page, pinnedDelayedState("removed-review-id"));
+  await expect(
+    page.getByText("Ta powtórka nie jest dostępna w tej wersji."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Do kolejki", exact: false }).click();
+  const after = await savedState(page);
+  expect(after.reviewSession).toBeUndefined();
+  expect(
+    after.steps[reviewSessionKey("delayed-ownership-session")].answer,
+  ).toBe("draft delayed answer");
+});
+
 test("discards an in-flight old-generation ownership response after importing another raw state", async ({
   page,
 }) => {
@@ -603,7 +901,9 @@ test("discards an in-flight old-generation ownership response after importing an
   await importThroughUi(page, replacement);
   release();
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.waitForTimeout(100);
   const after = await savedState(page);
