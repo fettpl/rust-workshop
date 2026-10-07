@@ -46,7 +46,7 @@ test("keeps a generic draft and moves from revealed help to an independent gate"
   ).toBeVisible();
   await expect(editor).toHaveValue(draft);
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);

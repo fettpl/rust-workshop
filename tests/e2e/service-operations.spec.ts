@@ -43,7 +43,7 @@ test("navigates, resumes a Service Operations gate, and downloads its authored p
   const draft = `${step.code ?? ""}\n// Trust and accounting stay explicit.\n`;
   await editor.fill(draft);
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: step.title, exact: true })).toBeVisible();

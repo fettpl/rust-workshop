@@ -50,7 +50,7 @@ import { readFile } from "node:fs/promises";
       .getByLabel("Notatki do lekcji")
       .fill("Właściciel pozostaje zapisany offline.");
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready;
@@ -112,7 +112,7 @@ import { readFile } from "node:fs/promises";
       .getByLabel("Notatki do lekcji")
       .fill("Oddzielić dowód browserowy od klienta zewnętrznego.");
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(macroHeading);
@@ -163,7 +163,7 @@ import { readFile } from "node:fs/promises";
       .getByLabel("Notatki do lekcji")
       .fill("Sprawdzić limity bajtów przed zapisem do magazynu.");
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await context.setOffline(true);
     await page.reload();
@@ -372,7 +372,7 @@ import { readFile } from "node:fs/promises";
     await page.unroute("**/api/run");
     await page.getByText("Twój notatnik", { exact: true }).click();
     await page.getByLabel("Notatki do lekcji").fill("Blank i replay mają osobne dowody.");
-    await expect(page.locator(".save-status")).toBeVisible();
+    await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(fuzzHeading);
     await expect(fuzzEditor).toHaveValue(fuzzDraft);
@@ -508,7 +508,7 @@ import { readFile } from "node:fs/promises";
       await visualizer.getByRole("button", { name: "Następna linia" }).click();
     }
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(visualizer).toContainText("Jawne uchwyty Rc: 0 · Weak: 1");
@@ -539,7 +539,7 @@ import { readFile } from "node:fs/promises";
       .getByRole("button", { name: "02 Zaobserwuj", exact: true })
       .click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(
@@ -564,7 +564,7 @@ import { readFile } from "node:fs/promises";
     await editor.fill(asyncDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(asyncHeading);
@@ -590,7 +590,7 @@ import { readFile } from "node:fs/promises";
     await editor.fill(tokioDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(tokioHeading);
@@ -615,7 +615,7 @@ import { readFile } from "node:fs/promises";
     await editor.fill(flowDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(flowHeading);
@@ -651,7 +651,7 @@ import { readFile } from "node:fs/promises";
       await editor.fill(draft);
       await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
       await expect(
-        page.locator(".save-status"),
+        page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
       ).toBeVisible();
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(heading);
@@ -696,7 +696,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
 `;
     await tomlEditor.fill(manifestDraft);
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(tomlEditor).toHaveValue(manifestDraft);
@@ -732,7 +732,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       "// Własny producent pożyczanych wartości, zapisany offline.\n";
     await gatEditor.fill(gatDraft);
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(gatHeading);
@@ -761,7 +761,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await asyncEditor.fill(asyncPrimaryDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     await page
@@ -793,7 +793,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await asyncEditor.fill(asyncLendingDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(asyncLendingHeading);
@@ -839,7 +839,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await propertyEditor.fill(propertyDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(propertyHeading);
@@ -875,7 +875,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await performanceEditor.fill(performanceDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(performanceHeading);
@@ -906,7 +906,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await ffiEditor.fill(ffiDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(ffiHeading);
@@ -932,7 +932,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await operationsEditor.fill(operationsDraft);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(operationsHeading);
@@ -966,7 +966,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .getByLabel("Notatki do lekcji")
       .fill("Stable nie zastępuje uruchomienia Rust 1.85.0.");
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();

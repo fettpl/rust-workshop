@@ -23,7 +23,7 @@ test("keeps separate project notes and schedules the selected project's concepts
     .first()
     .click();
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   const saved = await page.evaluate(
     async () =>
@@ -140,7 +140,7 @@ test("opens the expanded map and retains a new collection solution", async ({
     .click();
   await expect(page.getByText(/Testy: 1 poprawnych/)).toBeVisible();
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(step.solution!);

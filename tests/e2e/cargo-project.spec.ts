@@ -81,7 +81,7 @@ test("downloads the Cargo starter, separates reference help and preserves it aft
     panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
   ).toBeVisible();
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   const after = await readState();

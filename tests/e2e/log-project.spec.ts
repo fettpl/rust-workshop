@@ -61,7 +61,7 @@ test("shows a failed assertion as test feedback and preserves the corrected test
     .click();
   await expect(page.getByText(/Testy: 2 poprawnych/)).toBeVisible();
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(step.solution!);
@@ -121,7 +121,7 @@ test("switches Cargo projects without leaking solution view, notes or help", asy
     panel.getByRole("link", { name: "Pobierz pakiet startowy" }),
   ).toHaveAttribute("href", "/projects/todo-cli-workshop/starter.zip");
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await picker.getByRole("button", { name: new RegExp(log!.title) }).click();
@@ -167,7 +167,7 @@ test("resumes the blank log report from its project card without revealing a sol
   await expect(editor).toHaveValue("");
   await editor.fill("// Raport: stała kolejność i osobny licznik błędów.\n");
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Projekt", exact: true }).click();

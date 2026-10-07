@@ -52,7 +52,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   });
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
-  await expect(page.locator(".save-status")).toBeVisible();
+  await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
   await page.getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true }).click();
   await expect(page.getByText("Potrzebuję pełnego rozwiązania", { exact: true })).toBeVisible();
@@ -98,7 +98,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("textbox", { name: "Kod Rust", exact: true }).fill(gate.solution!);
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
-  await expect(page.locator(".save-status")).toBeVisible();
+  await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
   const assistedEventsFor = async () => {
     const state = await readLearningState();
     return state.events.slice(stateAfterReveal.events.length).filter(
@@ -130,7 +130,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
   await page.getByText("Twój notatnik", { exact: true }).click();
   await page.getByLabel("Notatki do lekcji").fill("Prediction, replay and blank stay separate.");
-  await expect(page.locator(".save-status")).toBeVisible();
+  await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
   const heading = await page.locator(".task-pane h1").innerText();
   await blankEditor.focus();
   await page.keyboard.press("Tab");

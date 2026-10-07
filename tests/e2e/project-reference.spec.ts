@@ -54,7 +54,7 @@ for (const [projectId, moduleId] of [
       panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
     ).toBeVisible();
     await expect(
-      page.locator(".save-status"),
+      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await page

@@ -183,7 +183,7 @@ test("skip navigation and mobile workspace work with keyboard", async ({
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
   await page.getByRole("button", { name: "Przejdź do nauki" }).click();
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Wejdź do lekcji" }).waitFor();
@@ -313,26 +313,31 @@ test("mobile persistence exposes one quiet save status live node", async ({
       ).__saveLiveValues = values;
     });
     await radios.nth(initiallyChecked ? 0 : 1).check();
-    await expect(page.locator(".save-status")).toHaveText("Zapisywanie…", {
-      timeout: 2_000,
-    });
     await expect
       .poll(
         () =>
           page.evaluate(
-            () =>
-              (window as typeof window & { __saveLiveValues?: string[] })
-                .__saveLiveValues ?? [],
+            () => {
+              const values =
+                (window as typeof window & { __saveLiveValues?: string[] })
+                  .__saveLiveValues ?? [];
+              const clearIndex = values.indexOf("");
+              const savedIndex = values.indexOf("Zapisano na tym urządzeniu");
+              return clearIndex >= 0 && savedIndex > clearIndex;
+            },
           ),
         { timeout: 5_000 },
       )
-      .toContain(savedText);
+      .toBe(true);
     const liveValues = await page.evaluate(
       () =>
         (window as typeof window & { __saveLiveValues?: string[] })
           .__saveLiveValues ?? [],
     );
-    expect(liveValues).toContain("");
+    const clearIndex = liveValues.indexOf("");
+    const savedIndex = liveValues.indexOf(savedText);
+    expect(clearIndex).toBeGreaterThanOrEqual(0);
+    expect(savedIndex).toBeGreaterThan(clearIndex);
     await expect(page.locator(".save-status")).toHaveText(savedText, {
       timeout: 5_000,
     });

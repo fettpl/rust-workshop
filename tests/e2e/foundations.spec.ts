@@ -58,7 +58,7 @@ test("starts with Rust foundations and keeps code while moving between modules",
     page.getByText("Dane wyjściowe są zgodne.", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.locator(".save-status"),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);
