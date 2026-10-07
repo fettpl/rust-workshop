@@ -58,6 +58,7 @@ export interface Concept {
   reviewAnswer: string;
   distinguish: string;
   evidenceArtifact?: "rust-code" | "manifest";
+  evidenceCalibration?: { version: number; minimumCodingTasks: number };
 }
 export interface Competency {
   id: string;
@@ -115,7 +116,13 @@ export type StepKind =
   | "trace"
   | "blank"
   | "assessment";
+export interface StepEvidenceDefinition {
+  version: number;
+  conceptIds: string[];
+  codingTaskId?: string;
+}
 export interface LessonStep {
+  evidence?: StepEvidenceDefinition;
   id: string;
   kind: StepKind;
   title: string;
@@ -164,6 +171,7 @@ export interface ModuleGateCriterion {
   label: string;
   taskRefs: ModuleGateTaskRef[];
   supplementaryStepRefs?: ModuleGateTaskRef[];
+  requiredIndependentCodingTasks?: number;
 }
 export interface CourseModule {
   id: string;
@@ -217,6 +225,7 @@ export interface EvidenceEvent {
   hints: number;
   revealed: boolean;
   at: number;
+  evidenceVersion?: number;
   delayed?: boolean;
   gate?: boolean;
   evaluator?: Evaluator["kind"];

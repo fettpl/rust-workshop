@@ -10,8 +10,16 @@ import type {
   Lesson,
   UserState,
 } from "@/domain/types";
-import { createInitialState } from "@/persistence/state";
 import {
+  createInitialState,
+  createStepProgress,
+  exportState,
+  importState,
+} from "@/persistence/state";
+import {
+  deriveConceptMastery,
+  independentCodingTaskIds,
+  type EvidencePolicy,
   dueReviews,
   evidencePolicyForConcepts,
   isIndependentSuccess,
@@ -1183,4 +1191,541 @@ it("opening every gate task does not satisfy any module capability", () => {
   const result = moduleGate(state, curriculum, ownershipModule);
   expect(result.criteria.some((criterion) => criterion.passed)).toBe(false);
   expect(result.passed).toBe(false);
+});
+
+// Synthetic authored definitions resolve exact source, evaluator and kind;
+// qualification/scoring remains entirely in the production engine.
+const currentDefinitions = {
+  append: {
+    version: 2,
+    conceptIds: ["mutable-borrow"],
+    codingTaskId: "append",
+  },
+  appendCopy: {
+    version: 2,
+    conceptIds: ["mutable-borrow", "shared-borrow"],
+    codingTaskId: "append",
+  },
+  replace: {
+    version: 2,
+    conceptIds: ["mutable-borrow"],
+    codingTaskId: "replace",
+  },
+  surround: {
+    version: 2,
+    conceptIds: ["mutable-borrow"],
+    codingTaskId: "surround",
+  },
+  choice: { version: 2, conceptIds: ["mutable-borrow"] },
+  recallAgain: {
+    version: 2,
+    conceptIds: ["mutable-borrow"],
+    codingTaskId: "recall-only",
+  },
+  recall: {
+    version: 2,
+    conceptIds: ["mutable-borrow"],
+    codingTaskId: "recall-only",
+  },
+};
+const calibratedPolicy: EvidencePolicy = {
+  definitionForTask: (lessonId, stepId) =>
+    lessonId === "authored"
+      ? currentDefinitions[stepId as keyof typeof currentDefinitions]
+      : undefined,
+  artifactForConcept: () => "rust-code",
+  calibrationForConcept: (id) =>
+    ["mutable-borrow", "shared-borrow", "copy-semantics"].includes(id)
+      ? { version: 2, minimumCodingTasks: 2 }
+      : undefined,
+  definitionForEvent: (candidate) => {
+    const definition =
+      currentDefinitions[candidate.stepId as keyof typeof currentDefinitions];
+    if (!definition || candidate.lessonId !== "authored") return undefined;
+    const evaluator = candidate.stepId === "choice" ? "choice" : "tests";
+    const kind = candidate.stepId.startsWith("recall")
+      ? "recall"
+      : "assessment";
+    if (candidate.evaluator !== evaluator || candidate.kind !== kind)
+      return undefined;
+    return definition;
+  },
+};
+const currentEvent = (
+  stepId: keyof typeof currentDefinitions,
+  overrides: Partial<EvidenceEvent> = {},
+): EvidenceEvent =>
+  event({
+    id: stepId,
+    lessonId: "authored",
+    stepId,
+    conceptIds: [...currentDefinitions[stepId].conceptIds],
+    evidenceVersion: 2,
+    kind: stepId.startsWith("recall") ? "recall" : "assessment",
+    evaluator: stepId === "choice" ? "choice" : "tests",
+    ...overrides,
+  });
+const recordCurrent = (state: UserState, candidate: EvidenceEvent) =>
+  recordEvidence(state, candidate, calibratedPolicy);
+const twoTasks = () =>
+  recordCurrent(
+    recordCurrent(base(), currentEvent("append")),
+    currentEvent("replace", { at: 2000 }),
+  );
+
+describe("versioned independent evidence", () => {
+  it("does not count recognition as a second coding task", () => {
+    const state = recordCurrent(
+      recordCurrent(base(), currentEvent("append")),
+      currentEvent("choice"),
+    );
+    expect(state.mastery["mutable-borrow"].level).toBe("practiced");
+    expect(
+      independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+    ).toEqual(["append"]);
+  });
+
+  it("requires distinct authored task families, even across refs and event IDs", () => {
+    let state = recordCurrent(base(), currentEvent("append"));
+    state = recordCurrent(
+      state,
+      currentEvent("appendCopy", { id: "revision", at: 2000 }),
+    );
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("practiced");
+    expect(
+      independentCodingTaskIds(state, "shared-borrow", calibratedPolicy),
+    ).toEqual(["append"]);
+    state = recordCurrent(state, currentEvent("replace", { at: 3000 }));
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("understood");
+  });
+
+  it.each([{ hints: 1 }, { revealed: true }])(
+    "needs two fresh tasks after an assisted primary %o",
+    (assistance) => {
+      let state = recordCurrent(base(), currentEvent("append", assistance));
+      state = recordCurrent(state, currentEvent("replace"));
+      expect(
+        independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+      ).toEqual(["replace"]);
+      expect(state.mastery["mutable-borrow"].level).toBe("practiced");
+      state = recordCurrent(state, currentEvent("surround"));
+      expect(state.mastery["mutable-borrow"].level).toBe("understood");
+    },
+  );
+
+  it.each([
+    { evidenceVersion: undefined },
+    { evidenceVersion: 1 },
+    { evidenceVersion: 3 },
+    { conceptIds: ["mutable-borrow", "copy-semantics"] },
+    { evaluator: "exact-output" as const },
+    { stepId: "wrong" },
+    { lessonId: "wrong" },
+    { kind: "transfer" as const },
+  ])(
+    "keeps mismatched evidence raw without current assessment or scheduling %o",
+    (mismatch) => {
+      const candidate = currentEvent("append", mismatch);
+      const state = recordCurrent(base(), candidate);
+      expect(state.events).toEqual([candidate]);
+      expect(state.review).toEqual([]);
+      expect(["understood", "retained", "practiced"]).not.toContain(
+        state.mastery["mutable-borrow"]?.level,
+      );
+      expect(
+        independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+      ).toEqual([]);
+      expect(
+        deriveConceptMastery(state, "copy-semantics", calibratedPolicy).level,
+      ).not.toBe("understood");
+    },
+  );
+
+  it("interprets stale high caches purely without changing history or saved progress", () => {
+    const state = base();
+    state.events = [
+      currentEvent("append", { evidenceVersion: undefined }),
+      currentEvent("choice", {
+        evidenceVersion: undefined,
+        id: "legacy-choice",
+      }),
+    ];
+    state.mastery["mutable-borrow"] = {
+      level: "retained",
+      reason: "old proof",
+      updatedAt: 9999999,
+    };
+    state.steps["authored:append"] = {
+      ...createStepProgress("saved draft"),
+      completed: true,
+      hints: 2,
+      revealed: true,
+    };
+    state.review = [
+      {
+        conceptId: "mutable-borrow",
+        dueAt: 100,
+        intervalDays: 2,
+        attempts: 1,
+        reason: "old",
+      },
+    ];
+    state.ratings = [{ conceptId: "mutable-borrow", rating: "good", at: 3000 }];
+    const before = structuredClone(state);
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy),
+    ).toMatchObject({ level: "exposed", updatedAt: 3000 });
+    expect(state).toEqual(before);
+    const restored = importState(exportState(state));
+    expect(restored).toEqual(before);
+    expect(
+      deriveConceptMastery(restored, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("exposed");
+  });
+
+  it("records delayed executable retention using only history, then preserves it across roundtrip and later contact", () => {
+    let state = twoTasks();
+    const at = 2000 + DAY + 1;
+    state = recordCurrent(state, currentEvent("recall", { delayed: true, at }));
+    expect(state.review[0].dueAt).toBeGreaterThan(at);
+    expect(state.mastery["mutable-borrow"]).toMatchObject({
+      level: "retained",
+      updatedAt: at,
+    });
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("retained");
+    state = importState(exportState(state));
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("retained");
+    state = recordLessonExposure(
+      state,
+      {
+        conceptIds: ["mutable-borrow"],
+        lessonId: "authored",
+        stepId: "choice",
+        at: at + 1,
+      },
+      calibratedPolicy,
+    );
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("retained");
+  });
+
+  it.each([
+    { at: 2000 + DAY },
+    { hints: 1 },
+    { revealed: true },
+    { delayed: false },
+    { evaluator: "choice" as const },
+    { passed: false },
+    { evidenceVersion: 3 },
+  ])("does not retain from ineligible recall %o", (override) => {
+    const state = recordCurrent(
+      twoTasks(),
+      currentEvent("recall", {
+        delayed: true,
+        at: 2000 + DAY + 1,
+        ...override,
+      }),
+    );
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("understood");
+  });
+
+  it("recall sessions never supply a missing primary task", () => {
+    let state = recordCurrent(base(), currentEvent("append"));
+    state = recordCurrent(
+      state,
+      currentEvent("recall", { delayed: true, at: 1000 + DAY + 1 }),
+    );
+    state = recordCurrent(
+      state,
+      currentEvent("recall", {
+        id: "another-session",
+        delayed: true,
+        at: 1000 + 2 * DAY + 2,
+      }),
+    );
+    expect(
+      independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+    ).toEqual(["append"]);
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("practiced");
+  });
+
+  it.each([
+    "recent exposure",
+    "same-time exposure",
+    "recent rating",
+    "same-time rating",
+  ])("includes %s in the quiet interval", (contact) => {
+    let state = twoTasks();
+    const at = 2000 + DAY + 1;
+    const contactAt = contact.startsWith("same-time") ? at : at - 1;
+    if (contact.endsWith("rating"))
+      state = rateReview(state, "mutable-borrow", "good", contactAt);
+    else
+      state = recordLessonExposure(
+        state,
+        {
+          conceptIds: ["mutable-borrow"],
+          lessonId: "authored",
+          stepId: "append",
+          at: contactAt,
+        },
+        calibratedPolicy,
+      );
+    state = recordCurrent(state, currentEvent("recall", { delayed: true, at }));
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("understood");
+  });
+
+  it("ignores future ratings and mutable cache timestamps in historical retention", () => {
+    let state = twoTasks();
+    state = rateReview(state, "mutable-borrow", "good", 2000 + 10 * DAY);
+    state = recordCurrent(
+      state,
+      currentEvent("recall", { delayed: true, at: 2000 + DAY + 1 }),
+    );
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy),
+    ).toMatchObject({ level: "retained", updatedAt: 2000 + 10 * DAY });
+  });
+
+  it("retains empty attribution without an award or review", () => {
+    const candidate = currentEvent("append", { conceptIds: [] });
+    const state = recordCurrent(base(), candidate);
+    expect(state.events).toEqual([candidate]);
+    expect(state.mastery).toEqual({});
+    expect(state.review).toEqual([]);
+  });
+});
+
+it("rejects surplus uncalibrated attribution for awards and unrelated reviews", () => {
+  const state = recordCurrent(
+    base(),
+    currentEvent("append", {
+      conceptIds: ["mutable-borrow", "unrelated-concept"],
+    }),
+  );
+  expect(state.review).toEqual([]);
+  expect(
+    deriveConceptMastery(state, "unrelated-concept", calibratedPolicy).level,
+  ).toBe("new");
+  expect(state.events[0].conceptIds).toEqual([
+    "mutable-borrow",
+    "unrelated-concept",
+  ]);
+});
+
+it("keeps a forged versioned event attributed only to an unrelated concept raw and neutral", () => {
+  const state = recordCurrent(
+    base(),
+    currentEvent("append", { conceptIds: ["unrelated-concept"] }),
+  );
+  expect(state.review).toEqual([]);
+  expect(
+    deriveConceptMastery(state, "unrelated-concept", calibratedPolicy).level,
+  ).toBe("new");
+});
+
+describe("chronological task-family assistance", () => {
+  it("preserves a clean success earned before later assistance", () => {
+    let state = recordCurrent(base(), currentEvent("append"));
+    state = recordCurrent(
+      state,
+      currentEvent("append", { id: "later-assisted", hints: 1, at: 2000 }),
+    );
+    state = recordCurrent(state, currentEvent("replace", { at: 3000 }));
+    expect(
+      independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+    ).toEqual(["append", "replace"]);
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("understood");
+    state.steps["authored:append"] = {
+      ...createStepProgress(),
+      hints: 2,
+      revealed: true,
+    };
+    expect(
+      independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+    ).toEqual(["append", "replace"]);
+  });
+  it.each(["append", "appendCopy"] as const)(
+    "blocks later clean flags after stale assistance on %s",
+    (stepId) => {
+      let state = recordCurrent(
+        base(),
+        currentEvent(stepId, {
+          id: "prior-assisted",
+          hints: 1,
+          evidenceVersion: undefined,
+        }),
+      );
+      state = importState(exportState(state));
+      const before = structuredClone(state.events);
+      state = recordCurrent(state, currentEvent("append", { at: 2000 }));
+      expect(
+        independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+      ).toEqual([]);
+      expect(state.events.slice(0, 1)).toEqual(before);
+      state = recordCurrent(state, currentEvent("replace", { at: 3000 }));
+      expect(
+        independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+      ).toEqual(["replace"]);
+    },
+  );
+  it.each([false, true])(
+    "neutral exposure taints a task only when revealed=%s",
+    (revealed) => {
+      let state = recordLessonExposure(
+        base(),
+        {
+          conceptIds: ["mutable-borrow"],
+          lessonId: "authored",
+          stepId: "appendCopy",
+          at: 1000,
+          revealed,
+        },
+        calibratedPolicy,
+      );
+      state = recordCurrent(state, currentEvent("append", { at: 2000 }));
+      expect(
+        independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+      ).toEqual(revealed ? [] : ["append"]);
+    },
+  );
+  it("does not treat revised evidence or review IDs as clearing earlier recall assistance", () => {
+    let state = recordCurrent(
+      twoTasks(),
+      currentEvent("recall", {
+        id: "old-recall",
+        evidenceVersion: 1,
+        hints: 1,
+        at: 3000,
+      }),
+    );
+    state = recordCurrent(
+      state,
+      currentEvent("recall", {
+        id: "new-session",
+        delayed: true,
+        at: 3000 + DAY + 1,
+      }),
+    );
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("understood");
+    expect(state.review[0].reason).not.toMatch(/Samodzielne odtworzenie/);
+  });
+});
+
+it.each([24 * 60 * 60 * 1000, 24 * 60 * 60 * 1000 + 1])(
+  "permits separate unaided review after old reveal only beyond quiet interval %i",
+  (elapsed) => {
+    let state = recordCurrent(
+      twoTasks(),
+      currentEvent("recall", {
+        id: "revealed-session",
+        revealed: true,
+        at: 3000,
+      }),
+    );
+    state = recordCurrent(
+      state,
+      currentEvent("recallAgain", { delayed: true, at: 3000 + elapsed }),
+    );
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe(elapsed > DAY ? "retained" : "understood");
+    expect(
+      independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+    ).toEqual(["append", "replace"]);
+  },
+);
+
+it("passes authored calibration from concepts into the evidence policy", () => {
+  const policy = evidencePolicyForConcepts([
+    {
+      id: "calibrated",
+      title: "",
+      prerequisites: [],
+      competencyIds: [],
+      reviewPrompt: "",
+      reviewAnswer: "",
+      distinguish: "",
+      evidenceCalibration: { version: 2, minimumCodingTasks: 2 },
+    },
+  ]);
+  const state = base();
+  state.mastery.calibrated = {
+    level: "retained",
+    reason: "cached",
+    updatedAt: 999,
+  };
+  expect(deriveConceptMastery(state, "calibrated", policy)).toMatchObject({
+    level: "new",
+    updatedAt: 0,
+  });
+});
+
+it("retains one-argument eligibility while rejecting wrong artifacts with context", () => {
+  const rust = event({ conceptIds: ["manifest-concept"], evaluator: "tests" });
+  expect(isIndependentSuccess(rust)).toBe(true);
+  expect(isIndependentSuccess(rust, "manifest-concept", manifestPolicy)).toBe(
+    false,
+  );
+});
+
+it.each(["timeout", "infrastructure-error"] as const)(
+  "does not award evidence from an infrastructure-only %s attempt",
+  (status) => {
+    const state = base();
+    state.steps["authored:append"] = {
+      ...createStepProgress("saved"),
+      attempts: [
+        {
+          at: 1000,
+          code: "saved",
+          passed: false,
+          feedback: status,
+          result: {
+            status,
+            stdout: "",
+            stderr: "",
+            diagnostics: [],
+            durationMs: 1,
+          },
+        },
+      ],
+    };
+    expect(
+      deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+    ).toBe("new");
+    expect(
+      independentCodingTaskIds(state, "mutable-borrow", calibratedPolicy),
+    ).toEqual([]);
+    expect(state.events).toEqual([]);
+  },
+);
+
+it("keeps current proof after a later failed primary", () => {
+  const state = recordCurrent(
+    twoTasks(),
+    currentEvent("surround", { passed: false, at: 3000 }),
+  );
+  expect(
+    deriveConceptMastery(state, "mutable-borrow", calibratedPolicy).level,
+  ).toBe("understood");
 });

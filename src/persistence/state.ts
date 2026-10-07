@@ -96,6 +96,7 @@ const EvidenceEventSchema = z.strictObject({
   hints: z.number().int().nonnegative(),
   revealed: z.boolean(),
   at: z.number().finite().nonnegative(),
+  evidenceVersion: z.number().int().positive().optional(),
   delayed: z.boolean().optional(),
   gate: z.boolean().optional(),
   evaluator: z
