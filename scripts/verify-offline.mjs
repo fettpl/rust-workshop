@@ -295,7 +295,7 @@ import { readFile } from "node:fs/promises";
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     const fuzzRevealSummary = page
-      .getByRole("region", { name: "Zadanie" })
+      .locator("#workspace-panel-lesson")
       .locator("details.solution-warning > summary")
       .filter({ hasText: /^Potrzebuję pełnego rozwiązania$/ });
     await expect(fuzzRevealSummary).toBeVisible();
