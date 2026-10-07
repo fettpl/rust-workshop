@@ -164,6 +164,46 @@ async function freshTomlLesson(
   return { page, events, draft, close: () => context.close() };
 }
 
+async function assertInsetFallbackFocus(page: Page): Promise<void> {
+  const textarea = page.getByRole("textbox", { name: /Kod (Rust|TOML)/ });
+  const editor = page.locator(".editor-wrap");
+  await expect(textarea).toBeFocused();
+  const geometry = await textarea.evaluate((element) => {
+    const editorWrap = element.closest(".editor-wrap");
+    if (!(editorWrap instanceof HTMLElement)) {
+      throw new Error("focused fallback textarea is outside .editor-wrap");
+    }
+    const style = getComputedStyle(element);
+    const textareaRect = element.getBoundingClientRect();
+    const editorRect = editorWrap.getBoundingClientRect();
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: style.outlineWidth,
+      outlineOffset: style.outlineOffset,
+      textarea: {
+        top: textareaRect.top,
+        right: textareaRect.right,
+        bottom: textareaRect.bottom,
+        left: textareaRect.left,
+      },
+      editor: {
+        top: editorRect.top,
+        right: editorRect.right,
+        bottom: editorRect.bottom,
+        left: editorRect.left,
+      },
+    };
+  });
+  expect(geometry.outlineStyle).toBe("solid");
+  expect(geometry.outlineWidth).toBe("3px");
+  expect(geometry.outlineOffset).toBe("-3px");
+  expect(geometry.textarea.left).toBeGreaterThanOrEqual(geometry.editor.left);
+  expect(geometry.textarea.right).toBeLessThanOrEqual(geometry.editor.right);
+  expect(geometry.textarea.top).toBeGreaterThanOrEqual(geometry.editor.top);
+  expect(geometry.textarea.bottom).toBeLessThanOrEqual(geometry.editor.bottom);
+  await expect(editor).toHaveCSS("overflow", "hidden");
+}
+
 test("manual fallback focuses the labeled textarea and preserves the draft", async ({
   browser,
 }) => {
@@ -176,6 +216,7 @@ test("manual fallback focuses the labeled textarea and preserves the draft", asy
     await expect(
       page.getByRole("textbox", { name: "Kod Rust", exact: true }),
     ).toBeFocused();
+    await assertInsetFallbackFocus(page);
     await expect(
       page.getByRole("textbox", { name: "Kod Rust", exact: true }),
     ).toHaveValue(/fn main/);
@@ -219,6 +260,7 @@ test("automatic fallback moves focus only when the loading button is removed", a
     await expect(
       page.getByRole("textbox", { name: "Kod Rust", exact: true }),
     ).toBeFocused();
+    await assertInsetFallbackFocus(page);
     await expect(page.locator(".monaco-fallback-status")).toHaveText(
       "Edytor ładuje się długo. Otworzono prosty edytor tekstowy. Twój szkic został zachowany.",
     );
@@ -256,12 +298,14 @@ test("automatic TOML fallback preserves the owned draft and language label", asy
   test.setTimeout(45_000);
   const { page, events, draft, close } = await freshTomlLesson(browser);
   try {
+    await page.getByRole("button", { name: "Otwórz prosty edytor" }).focus();
     await expect(
       page.getByRole("textbox", { name: "Kod TOML", exact: true }),
     ).toBeVisible({ timeout: 20_000 });
     await expect(
       page.getByRole("textbox", { name: "Kod TOML", exact: true }),
     ).toHaveValue(draft);
+    await assertInsetFallbackFocus(page);
     await expect(page.locator(".monaco-fallback-status")).toHaveText(
       /Edytor ładuje się długo/,
     );

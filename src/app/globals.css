@@ -1672,6 +1672,9 @@ button svg {
   padding: 20px !important;
   tab-size: 4;
 }
+.code-textarea:focus-visible {
+  outline-offset: -3px;
+}
 .editor-loading {
   padding: 25px;
   font-size: 0.9rem;
