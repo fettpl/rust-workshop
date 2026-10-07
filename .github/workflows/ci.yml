@@ -36,6 +36,22 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy
       - run: npm ci
+      - name: Test native runtime version minimums
+        run: npm run test:sharp-runtime
+      - name: Verify Linux sharp native runtime and SVG decoder
+        run: node scripts/verify-sharp-runtime.mjs
+      - name: Verify production audit gate failure propagation
+        run: npm run test:audit-production
+      - name: Run full and production dependency audits
+        run: npm run audit:production
+      # v7.0.1
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: dependency-audit-reports
+          path: test-results/dependency-audit/
+          if-no-files-found: error
+          retention-days: 7
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run content:packages
