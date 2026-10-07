@@ -2478,7 +2478,7 @@ button svg {
   .mobile-menu {
     display: inline-flex;
   }
-  .sidebar.mobile-open {
+  .sidebar#mobile-navigation.mobile-open {
     display: flex;
     position: fixed;
     z-index: 30;
