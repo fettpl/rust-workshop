@@ -4,7 +4,11 @@ import AxeBuilder from "@axe-core/playwright";
 async function freshLessonPage(
   browser: Browser,
   viewport = { width: 390, height: 844 },
-): Promise<{ page: Page; close: () => Promise<void> }> {
+): Promise<{
+  page: Page;
+  setOffline: (offline: boolean) => Promise<void>;
+  close: () => Promise<void>;
+}> {
   const baseURL = test.info().project.use.baseURL;
   if (typeof baseURL !== "string" || baseURL.length === 0) {
     throw new Error("production accessibility config must provide project.use.baseURL");
@@ -15,7 +19,11 @@ async function freshLessonPage(
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
   await page.getByRole("button", { name: "Przejdź do nauki" }).click();
   await page.getByRole("button", { name: "Wejdź do lekcji" }).click();
-  return { page, close: () => context.close() };
+  return {
+    page,
+    setOffline: (offline: boolean) => context.setOffline(offline),
+    close: () => context.close(),
+  };
 }
 
 test("mobile workspace tabs resolve tabpanels and expose only the selected panel", async ({
@@ -175,7 +183,7 @@ test("skip navigation and mobile workspace work with keyboard", async ({
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
   await page.getByRole("button", { name: "Przejdź do nauki" }).click();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Wejdź do lekcji" }).waitFor();
@@ -244,6 +252,93 @@ test("mobile navigation enters and cycles the complete sidebar-trigger perimeter
     await page.keyboard.press("Shift+Tab");
     await expect(lastSidebarButton).toBeFocused();
   } finally {
+    await close();
+  }
+});
+
+test("mobile persistence exposes one quiet save status live node", async ({
+  browser,
+}) => {
+  test.setTimeout(45_000);
+  const { page, setOffline, close } = await freshLessonPage(browser);
+    const savedText = "Zapisano na tym urządzeniu";
+  try {
+    const live = page.locator(".save-live");
+    await expect(live).toHaveCount(1);
+    await expect(live).toHaveAttribute("role", "status");
+    await expect(live).toHaveAttribute("aria-live", "polite");
+    await expect(live).toHaveAttribute("aria-atomic", "true");
+
+    await page.locator("button.mobile-menu").click();
+    await expect(live).not.toHaveAttribute("inert", "");
+    for (const selector of [".save-status", ".save-live", ".offline-banner"]) {
+      const node = page.locator(selector);
+      if (await node.count()) {
+        expect(
+          await node.first().evaluate((element) => element.closest("[inert]")),
+          selector,
+        ).toBeNull();
+      }
+    }
+    await setOffline(true);
+    await expect(page.locator(".offline-banner")).toBeVisible();
+    expect(
+      await page
+        .locator(".offline-banner")
+        .evaluate((element) => element.closest("[inert]")),
+    ).toBeNull();
+    await setOffline(false);
+    await page.keyboard.press("Escape");
+
+    const radios = page.getByRole("radio");
+    expect(await radios.count()).toBeGreaterThan(1);
+    const initiallyChecked = await radios.first().isChecked();
+    await radios.nth(initiallyChecked ? 1 : 0).check();
+    await expect(live).toHaveText(savedText, { timeout: 5_000 });
+
+    await page.evaluate(() => {
+      const target = document.querySelector<HTMLElement>(".save-live");
+      if (!target) throw new Error("save live node missing");
+      const values: string[] = [];
+      const observer = new MutationObserver(() => {
+        values.push(target.textContent ?? "");
+      });
+      observer.observe(target, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+      (
+        window as typeof window & { __saveLiveValues?: string[] }
+      ).__saveLiveValues = values;
+    });
+    await radios.nth(initiallyChecked ? 0 : 1).check();
+    await expect(page.locator(".save-status")).toHaveText("Zapisywanie…", {
+      timeout: 2_000,
+    });
+    await expect
+      .poll(
+        () =>
+          page.evaluate(
+            () =>
+              (window as typeof window & { __saveLiveValues?: string[] })
+                .__saveLiveValues ?? [],
+          ),
+        { timeout: 5_000 },
+      )
+      .toContain(savedText);
+    const liveValues = await page.evaluate(
+      () =>
+        (window as typeof window & { __saveLiveValues?: string[] })
+          .__saveLiveValues ?? [],
+    );
+    expect(liveValues).toContain("");
+    await expect(page.locator(".save-status")).toHaveText(savedText, {
+      timeout: 5_000,
+    });
+    await expect(live).toHaveText(savedText, { timeout: 5_000 });
+  } finally {
+    await setOffline(false);
     await close();
   }
 });

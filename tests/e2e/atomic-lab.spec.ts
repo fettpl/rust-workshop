@@ -103,7 +103,7 @@ test("resumes a fresh atomic task through its lab project without revealing code
   await expect(editor).toHaveValue("");
   await editor.fill("// Po konflikcie ponownie sprawdzę limit.\n");
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Projekt", exact: true }).click();

@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { flushSync } from "react-dom";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   BookOpen,
@@ -33,6 +34,11 @@ import { Journal, SettingsView } from "./personal";
 import type { View } from "@/domain/types";
 import { lessons, modules } from "@/content/course";
 import { dueReviews } from "@/engine/learning";
+import {
+  createSaveStatusAnnouncer,
+  type SaveAnnouncementEvent,
+  type SaveStatusAnnouncer,
+} from "./save-status-announcer";
 const navItems: { id: View; label: string; icon: typeof Compass }[] = [
   { id: "dashboard", label: "Twój warsztat", icon: Compass },
   { id: "course", label: "Mapa nauki", icon: BookOpen },
@@ -53,6 +59,8 @@ function AppShell() {
   const { state, update, saveStatus, storageError } = useLearning();
   const [online, setOnline] = useState(true);
   const [menu, setMenu] = useState(false);
+  const [liveMessage, setLiveMessage] = useState("");
+  const saveStatusAnnouncerRef = useRef<SaveStatusAnnouncer | null>(null);
   const headingRef = useRef<HTMLElement>(null);
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const firstNavRef = useRef<HTMLButtonElement>(null);
@@ -74,6 +82,28 @@ function AppShell() {
   );
   const focus = state.resume.focus && view === "lesson";
   const due = dueReviews(state, now).length;
+  useEffect(() => {
+    const announcer = createSaveStatusAnnouncer(
+      (event: SaveAnnouncementEvent) => {
+        if (event.type === "clear") {
+          flushSync(() => setLiveMessage(""));
+        } else {
+          flushSync(() => setLiveMessage(event.text));
+        }
+      },
+    );
+    saveStatusAnnouncerRef.current = announcer;
+    return () => {
+      announcer.dispose();
+      saveStatusAnnouncerRef.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    saveStatusAnnouncerRef.current?.update({
+      saveStatus,
+      storageError: storageError || null,
+    });
+  }, [saveStatus, storageError]);
   const closeMenu = useCallback((reason: MenuCloseReason): void => {
     setMenu(false);
     if (reason === "escape") {
@@ -275,6 +305,14 @@ function AppShell() {
           </div>
         </div>
       </aside>
+      <span
+        className="sr-only save-live"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {liveMessage}
+      </span>
       <div className="app-main">
         <header className="topbar">
           <div className="breadcrumb">
@@ -297,7 +335,7 @@ function AppShell() {
             </strong>
           </div>
           <div className="topbar-actions">
-            <span className="save-status">
+            <span className="save-status" aria-hidden="true">
               <Check size={13} />
               {saveStatus}
             </span>

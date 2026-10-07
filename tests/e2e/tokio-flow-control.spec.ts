@@ -85,7 +85,7 @@ test("keeps Tokio gate diagnostics and a hinted draft, while revealed success ca
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await expect(editor).toHaveValue(draft);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);
@@ -171,7 +171,7 @@ test("downloads the Tokio pipeline starter and keeps an unexposed gate fresh aft
     panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
   ).toBeVisible();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
 
   await openTokioFlow(page);

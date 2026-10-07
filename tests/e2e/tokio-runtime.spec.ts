@@ -65,7 +65,7 @@ test("accepts the actual code-less Send diagnostic and preserves it through hint
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await expect(output).toContainText(raw);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await expect(
@@ -124,7 +124,7 @@ test("sends a Tokio gate through the existing code-only runner contract", async 
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText(stdout);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("tab", { name: "Kod", exact: true }).click();

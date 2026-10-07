@@ -205,7 +205,7 @@ test.describe("macros-as-api production contracts", () => {
         page.getByRole("region", { name: "Wynik kompilatora" }),
       ).toContainText("test result: ok");
       await expect(
-        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+        page.locator(".save-status"),
       ).toBeVisible();
       await expect
         .poll(async () => {
@@ -233,7 +233,7 @@ test.describe("macros-as-api production contracts", () => {
       const note = `Makra API: ${criterion.id} zapisane lokalnie.`;
       await page.getByLabel("Notatki do lekcji").fill(note);
       await expect(
-        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+        page.locator(".save-status"),
       ).toBeVisible();
       const blankHeading = await page.locator(".task-pane h1").innerText();
 

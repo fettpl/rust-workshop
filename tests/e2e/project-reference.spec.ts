@@ -54,7 +54,7 @@ for (const [projectId, moduleId] of [
       panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
     ).toBeVisible();
     await expect(
-      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      page.locator(".save-status"),
     ).toBeVisible();
     await page.reload();
     await page

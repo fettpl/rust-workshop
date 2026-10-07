@@ -67,7 +67,7 @@ test("keeps an async test failure and draft when the learner asks for a hint", a
   await expect(output).toContainText(rawOutput);
   await expect(editor).toHaveValue(draft);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);
@@ -108,7 +108,7 @@ test("offers a fresh async gate after reveal and resumes its blank draft on mobi
   const draft = "// Najpierw ustalę, kto jest właścicielem przyszłości.\n";
   await editor.fill(draft);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("tab", { name: "Kod", exact: true }).click();

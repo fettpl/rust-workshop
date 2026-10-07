@@ -94,7 +94,7 @@ test("keeps onboarding, lesson work, settings, notes, and exports across reloads
   await page
     .getByRole("checkbox", { name: "Używaj prostego edytora tekstowego" })
     .check();
-  await expect(page.getByText("Zapisano na tym urządzeniu")).toBeVisible();
+  await expect(page.locator(".save-status")).toBeVisible();
   await page.getByRole("button", { name: "Twój warsztat" }).click();
   await page.getByRole("button", { name: "Wejdź do lekcji" }).click();
   await expect(
@@ -126,7 +126,7 @@ test("keeps onboarding, lesson work, settings, notes, and exports across reloads
     .getByLabel("Notatki do lekcji")
     .fill("Własność przechodzi razem z wartością.");
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await expect(

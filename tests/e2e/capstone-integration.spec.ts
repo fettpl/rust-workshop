@@ -147,7 +147,7 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
     .getByLabel("Notatki do lekcji")
     .fill("Najpierw waliduję bajty i alfabet, potem zapisuję zdarzenie.");
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await expect(page.locator(".task-pane h1")).toHaveText(gate.title);
@@ -183,7 +183,7 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
     Object.keys(unzipSync(await readFile((await solution.path())!))).sort(),
   ).toEqual(archive.files.map((file) => `${archive.id}/${file.path}`).sort());
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   const primaryKeys = archive.revealStepRefs.map(

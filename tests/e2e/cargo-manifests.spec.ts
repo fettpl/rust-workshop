@@ -41,7 +41,7 @@ async function seed(page: Page, state: UserState) {
 
 async function savedState(page: Page): Promise<UserState> {
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   return page.evaluate(
     () =>

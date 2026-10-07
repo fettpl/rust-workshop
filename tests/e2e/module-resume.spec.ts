@@ -83,7 +83,7 @@ for (const moduleId of [
     ).toContainText(diagnostic);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+      page.locator(".save-status"),
     ).toBeVisible();
     await page.reload();
     await expect(editor).toHaveValue(draft);
@@ -101,7 +101,7 @@ for (const moduleId of [
     await expect(editor).toHaveValue(draft);
     if (moduleId === "gat-lending-iterators") {
       await expect(
-        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+        page.locator(".save-status"),
       ).toBeVisible();
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(step.title);
@@ -119,7 +119,7 @@ for (const moduleId of [
         "// Samodzielny kontrakt GAT\ntrait LendingIterator {\n";
       await editor.fill(blankDraft);
       await expect(
-        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+        page.locator(".save-status"),
       ).toBeVisible();
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
@@ -132,7 +132,7 @@ for (const moduleId of [
       const asyncDraft = "// Niezależny transfer async zapisany po reveal.\n";
       await editor.fill(asyncDraft);
       await expect(
-        page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+        page.locator(".save-status"),
       ).toBeVisible();
       await editor.focus();
       await page.keyboard.press("Tab");

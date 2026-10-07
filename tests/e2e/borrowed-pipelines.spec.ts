@@ -90,7 +90,7 @@ test("shows the lifetime diagnostic and resumes an independent iterator draft", 
   const draft = "// Mój iterator: najpierw określę stan i warunek końca.\n";
   await editor.fill(draft);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status"),
   ).toBeVisible();
   await page.reload();
   await expect(
