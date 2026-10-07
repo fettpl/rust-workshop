@@ -18,6 +18,88 @@ async function freshLessonPage(
   return { page, close: () => context.close() };
 }
 
+test("mobile workspace tabs resolve tabpanels and expose only the selected panel", async ({
+  browser,
+}) => {
+  test.setTimeout(45_000);
+  const { page, close } = await freshLessonPage(browser);
+  try {
+    for (const tab of await page.getByRole("tab").all()) {
+      const tabId = await tab.getAttribute("id");
+      const panelId = await tab.getAttribute("aria-controls");
+      expect(tabId).toMatch(/^workspace-tab-/);
+      expect(panelId).toMatch(/^workspace-panel-/);
+      const panel = page.locator(`#${panelId}`);
+      await expect(panel).toHaveAttribute("role", "tabpanel");
+      await expect(panel).toHaveAttribute("aria-labelledby", tabId!);
+    }
+    await page.route("**/api/run", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "success",
+          stdout: "workspace mocked stdout\n",
+          stderr: "workspace mocked stderr\n",
+          diagnostics: [],
+          durationMs: 7,
+        }),
+      });
+    });
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(1).click();
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await page.getByRole("button", { name: "Uruchom", exact: true }).click();
+    await expect(page.locator("#workspace-output")).toContainText(
+      "Wykonano poprawnie",
+    );
+    await expect(page.locator("#workspace-output")).toContainText(
+      "workspace mocked stdout",
+    );
+    await expect(page.locator("#workspace-output")).toContainText(
+      "workspace mocked stderr",
+    );
+    await expect(page.locator("#workspace-panel-code")).toBeVisible();
+    await expect(page.locator("#workspace-panel-lesson")).toBeHidden();
+    await page.getByRole("tab", { name: /Output/ }).click();
+    await expect(page.locator("#workspace-output")).toBeVisible();
+    await expect(
+      page.locator(".output-content[aria-live='polite']"),
+    ).toHaveCount(1);
+    await expect(page.locator("#workspace-panel-code")).toBeHidden();
+  } finally {
+    await close();
+  }
+});
+
+test("desktop workspace keeps three visible named panels with the hidden tablist relation", async ({
+  browser,
+}) => {
+  test.setTimeout(45_000);
+  const { page, close } = await freshLessonPage(browser, {
+    width: 1280,
+    height: 900,
+  });
+  try {
+    await expect(page.locator(".mobile-workspace-tabs")).toBeHidden();
+    for (const [panelId, tabLabel] of [
+      ["workspace-panel-lesson", "Zadanie"],
+      ["workspace-panel-code", "Kod"],
+      ["workspace-panel-output", /Output/],
+    ] as const) {
+      const panel = page.locator(`#${panelId}`);
+      const tabId = await panel.getAttribute("aria-labelledby");
+      expect(tabId).toBeTruthy();
+      await expect(page.locator(`#${tabId!}`)).toContainText(tabLabel);
+      await expect(panel).toBeVisible();
+      await expect(panel).toHaveAttribute("role", "tabpanel");
+      await expect(panel).toHaveAccessibleName(tabLabel);
+    }
+    await expect(page.locator("#workspace-output")).toBeVisible();
+  } finally {
+    await close();
+  }
+});
+
 test("key screens have no automated accessibility violations", async ({
   page,
 }) => {

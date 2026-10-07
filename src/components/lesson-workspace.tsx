@@ -45,6 +45,13 @@ const kindLabels = {
   blank: "Od pustej kartki",
   assessment: "Sprawdź model",
 };
+type WorkspacePanel = "lesson" | "code" | "output";
+type PanelDescriptor = {
+  key: WorkspacePanel;
+  tabId: `workspace-tab-${WorkspacePanel}`;
+  panelId: `workspace-panel-${WorkspacePanel}`;
+  label: string;
+};
 export function LessonWorkspace() {
   const { state, update, generation } = useLearning();
   const [pending, setPending] = useState(false);
@@ -89,6 +96,17 @@ export function LessonWorkspace() {
     : isToml && state.resume.panel === "output"
       ? "code"
       : state.resume.panel;
+  const panelDescriptors: PanelDescriptor[] = panels.map((key) => ({
+    key,
+    tabId: `workspace-tab-${key}`,
+    panelId: `workspace-panel-${key}`,
+    label:
+      key === "lesson"
+        ? "Zadanie"
+        : key === "code"
+          ? "Kod"
+          : `Output${result ? " • " + (result.status === "success" ? "OK" : "!") : ""}`,
+  }));
   const openedStep = useRef("");
   useEffect(() => {
     if (openedStep.current === key) return;
@@ -293,9 +311,7 @@ export function LessonWorkspace() {
   return (
     <div className={`lesson-workspace step-${step.kind} mobile-panel-${panel}`}>
       {panel !== "lesson" && (
-        <h1 className="sr-only mobile-editor-title">
-          {step.title} · {panel === "code" ? "Kod" : "Wynik"}
-        </h1>
+        <h1 className="sr-only workspace-context-title">{step.title}</h1>
       )}
       <div className="lesson-top">
         <button
@@ -359,15 +375,18 @@ export function LessonWorkspace() {
           role="tablist"
           aria-label="Panele zadania"
         >
-          {panels.map((p) => (
+          {panelDescriptors.map((descriptor) => (
             <button
               role="tab"
-              key={p}
-              aria-selected={panel === p}
-              aria-controls={`workspace-${p}`}
-              tabIndex={panel === p ? 0 : -1}
+              key={descriptor.key}
+              id={descriptor.tabId}
+              aria-selected={panel === descriptor.key}
+              aria-controls={descriptor.panelId}
+              tabIndex={panel === descriptor.key ? 0 : -1}
               onKeyDown={(event) => {
-                const position = panels.findIndex((item) => item === p);
+                const position = panelDescriptors.findIndex(
+                  (item) => item.key === descriptor.key,
+                );
                 const nextIndex =
                   event.key === "ArrowRight"
                     ? (position + 1) % panels.length
@@ -380,7 +399,7 @@ export function LessonWorkspace() {
                           : -1;
                 if (nextIndex < 0) return;
                 event.preventDefault();
-                const target = panels[nextIndex];
+                const target = panelDescriptors[nextIndex].key;
                 update((s) => ({
                   ...s,
                   resume: { ...s.resume, panel: target },
@@ -392,22 +411,23 @@ export function LessonWorkspace() {
                 )?.focus();
               }}
               onClick={() =>
-                update((s) => ({ ...s, resume: { ...s.resume, panel: p } }))
+                update((s) => ({
+                  ...s,
+                  resume: { ...s.resume, panel: descriptor.key },
+                }))
               }
             >
-              {p === "lesson"
-                ? "Zadanie"
-                : p === "code"
-                  ? "Kod"
-                  : `Output${result ? " • " + (result.status === "success" ? "OK" : "!") : ""}`}
+              {descriptor.label}
             </button>
           ))}
         </div>
       )}
       <div className={`workspace-grid ${!hasCode ? "concept-workspace" : ""}`}>
         <section
-          className="task-pane"
-          id="workspace-lesson"
+          className="task-pane workspace-panel-lesson"
+          id="workspace-panel-lesson"
+          role="tabpanel"
+          aria-labelledby="workspace-tab-lesson"
           aria-label="Zadanie"
         >
           <Eyebrow>
@@ -654,101 +674,117 @@ export function LessonWorkspace() {
             id="workspace-code"
             aria-label="Edytor kodu"
           >
-            <div className="editor-toolbar">
-              <span>
-                <span className="file-dot" />{" "}
-                {step.editorFile ??
-                  (isToml
-                    ? "Cargo.toml"
-                    : step.evaluator?.kind === "tests"
-                      ? "lib.rs"
-                      : "main.rs")}
-              </span>
-              <div>
-                <button
-                  className="icon-button"
-                  aria-label="Przywróć kod początkowy"
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        "Przywrócić kod początkowy tego kroku? Obecny szkic zostanie zastąpiony.",
-                      )
-                    )
-                      patch({ code: step.code ?? "" });
-                  }}
-                >
-                  <RotateCcw size={15} />
-                </button>
-                {(!isToml || isManifest) && (
+            <div
+              className="workspace-panel-code"
+              id="workspace-panel-code"
+              role="tabpanel"
+              aria-labelledby="workspace-tab-code"
+            >
+              <div className="editor-toolbar">
+                <span>
+                  <span className="file-dot" />{" "}
+                  {step.editorFile ??
+                    (isToml
+                      ? "Cargo.toml"
+                      : step.evaluator?.kind === "tests"
+                        ? "lib.rs"
+                        : "main.rs")}
+                </span>
+                <div>
                   <button
-                    className="run-button"
-                    disabled={
-                      pending ||
-                      !code.trim() ||
-                      (step.kind === "predict" && !progress.attempts.length)
-                    }
-                    onClick={isManifest ? checkAnswer : () => void run()}
+                    className="icon-button"
+                    aria-label="Przywróć kod początkowy"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          "Przywrócić kod początkowy tego kroku? Obecny szkic zostanie zastąpiony.",
+                        )
+                      )
+                        patch({ code: step.code ?? "" });
+                    }}
                   >
-                    {isManifest ? (
-                      <Check size={15} />
-                    ) : step.evaluator?.kind === "tests" ? (
-                      <TestTube2 size={15} />
-                    ) : (
-                      <Play size={15} />
-                    )}{" "}
-                    {isManifest
-                      ? "Sprawdź manifest"
-                      : pending
-                        ? "Kompilowanie…"
-                        : step.evaluator?.kind === "tests"
-                          ? "Uruchom testy"
-                          : "Uruchom"}
+                    <RotateCcw size={15} />
                   </button>
-                )}
+                  {(!isToml || isManifest) && (
+                    <button
+                      className="run-button"
+                      disabled={
+                        pending ||
+                        !code.trim() ||
+                        (step.kind === "predict" && !progress.attempts.length)
+                      }
+                      onClick={isManifest ? checkAnswer : () => void run()}
+                    >
+                      {isManifest ? (
+                        <Check size={15} />
+                      ) : step.evaluator?.kind === "tests" ? (
+                        <TestTube2 size={15} />
+                      ) : (
+                        <Play size={15} />
+                      )}{" "}
+                      {isManifest
+                        ? "Sprawdź manifest"
+                        : pending
+                          ? "Kompilowanie…"
+                          : step.evaluator?.kind === "tests"
+                            ? "Uruchom testy"
+                            : "Uruchom"}
+                    </button>
+                  )}
+                </div>
               </div>
+              <div className="editor-wrap">
+                <CodeEditor
+                  language={step.editorMode}
+                  code={code}
+                  onChange={(code) => patch({ code })}
+                  readOnly={!editable || pending}
+                  fontSize={state.settings.editorFontSize}
+                  theme={state.settings.theme}
+                  accessible={state.settings.accessibleEditor}
+                />
+              </div>
+              <div className="editor-status">
+                <span>
+                  {isToml
+                    ? "TOML 1.0 · sprawdzenie deklaracji"
+                    : "Rust · stable · edition 2024"}
+                </span>
+                <button
+                  onClick={() =>
+                    update((s) => ({
+                      ...s,
+                      settings: {
+                        ...s.settings,
+                        accessibleEditor: !s.settings.accessibleEditor,
+                      },
+                    }))
+                  }
+                >
+                  {state.settings.accessibleEditor
+                    ? "Monaco Editor"
+                    : "Prosty edytor"}
+                </button>
+              </div>
+              {!isToml &&
+                lastRun?.code !== undefined &&
+                lastRun.code !== code && (
+                  <p className="output-stale" role="status">
+                    Output pochodzi z poprzedniej wersji kodu. Uruchom ponownie
+                    po zmianach.
+                  </p>
+                )}
             </div>
-            <div className="editor-wrap">
-              <CodeEditor
-                language={step.editorMode}
-                code={code}
-                onChange={(code) => patch({ code })}
-                readOnly={!editable || pending}
-                fontSize={state.settings.editorFontSize}
-                theme={state.settings.theme}
-                accessible={state.settings.accessibleEditor}
-              />
-            </div>
-            <div className="editor-status">
-              <span>
-                {isToml
-                  ? "TOML 1.0 · sprawdzenie deklaracji"
-                  : "Rust · stable · edition 2024"}
-              </span>
-              <button
-                onClick={() =>
-                  update((s) => ({
-                    ...s,
-                    settings: {
-                      ...s.settings,
-                      accessibleEditor: !s.settings.accessibleEditor,
-                    },
-                  }))
-                }
+            {!isToml && (
+              <div
+                className="workspace-panel-output"
+                id="workspace-panel-output"
+                role="tabpanel"
+                aria-labelledby="workspace-tab-output"
               >
-                {state.settings.accessibleEditor
-                  ? "Monaco Editor"
-                  : "Prosty edytor"}
-              </button>
-            </div>
-            {!isToml &&
-              lastRun?.code !== undefined &&
-              lastRun.code !== code && (
-                <p className="output-stale" role="status">
-                  Output pochodzi z poprzedniej wersji kodu. Uruchom ponownie po
-                  zmianach.
-                </p>
-              )}
-            {!isToml && <CompilerOutput result={result} pending={pending} />}
+                <CompilerOutput result={result} pending={pending} />
+              </div>
+            )}
           </section>
         )}
       </div>

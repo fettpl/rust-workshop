@@ -2529,22 +2529,19 @@ button svg {
     border-color: var(--accent);
     color: var(--accent);
   }
-  .mobile-panel-lesson .code-pane {
+  .mobile-panel-lesson .workspace-panel-code,
+  .mobile-panel-lesson .workspace-panel-output {
     display: none;
   }
-  .mobile-panel-code .task-pane,
-  .mobile-panel-output .task-pane {
+  .mobile-panel-code .workspace-panel-lesson,
+  .mobile-panel-output .workspace-panel-lesson {
     display: none;
   }
-  .mobile-panel-code .compiler-output {
+  .mobile-panel-code .workspace-panel-output,
+  .mobile-panel-output .workspace-panel-code {
     display: none;
   }
-  .mobile-panel-output .editor-toolbar,
-  .mobile-panel-output .editor-wrap,
-  .mobile-panel-output .editor-status {
-    display: none;
-  }
-  .mobile-panel-output .compiler-output {
+  .mobile-panel-output .workspace-panel-output {
     min-height: 400px;
   }
   .editor-wrap {
@@ -2971,7 +2968,7 @@ button svg {
   letter-spacing: normal;
 }
 @media (min-width: 851px) {
-  .mobile-editor-title {
+  .workspace-context-title {
     display: none;
   }
 }
