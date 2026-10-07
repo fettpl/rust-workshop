@@ -261,7 +261,7 @@ it("runs the standard conversion example with its exact output", () => {
     });
     completed(executed, "run/execute");
     expect(executed.status, executed.stderr).toBe(0);
-    expect(executed.stdout.trim()).toBe(step.evaluator.expected.trim());
+    expect(executed.stdout).toBe(step.evaluator.expected);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

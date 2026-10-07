@@ -267,7 +267,7 @@ export const coreConversionsLessons: Lesson[] = [
           "Uruchom przykład i sprawdź, że source nadal działa po obu wywołaniach. String::from przyjmuje tu &str przez wartość. Samo &str jest pożyczoną wartością, więc From nie oznacza zawsze przejęcia alokacji źródła.",
         code: runCode,
         solution: runCode,
-        evaluator: { kind: "exact-output", expected: "żółć 8\nżółć" },
+        evaluator: { kind: "exact-output", expected: "żółć 8\nżółć\n" },
         expectedStatus: "success",
         explanation:
           "String::from(&str) tworzy własny tekst z pożyczonego wejścia. AsRef::<str>::as_ref(&source) zwraca pożyczony widok. Oba pozostawiają source dostępne.",
