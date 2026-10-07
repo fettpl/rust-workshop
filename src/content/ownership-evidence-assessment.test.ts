@@ -208,6 +208,26 @@ it.each(["constructor", "__proto__", "toString"])(
   (id) => expect(reviewExerciseForId(id)).toBeUndefined(),
 );
 it("combines ordinary and delayed reviews with distinct stable IDs", () => {
+  const ordinaryFunctionOwnershipEntries = Object.entries(
+    courseReviewExercises,
+  ).filter(([key]) => key === "function-ownership");
+  const delayedFunctionOwnershipEntries = Object.entries(
+    delayedReviewExercises,
+  ).filter(([key]) => key === "function-ownership");
+  expect(ordinaryFunctionOwnershipEntries).toHaveLength(1);
+  expect(ordinaryFunctionOwnershipEntries[0][1]).toBe(
+    courseReviewExercises["function-ownership"],
+  );
+  expect(ordinaryFunctionOwnershipEntries[0][1].id).toBe(
+    "review-function-ownership",
+  );
+  expect(delayedFunctionOwnershipEntries).toHaveLength(1);
+  expect(delayedFunctionOwnershipEntries[0][1]).toBe(
+    delayedReviewExercises["function-ownership"],
+  );
+  expect(delayedFunctionOwnershipEntries[0][1].id).toBe(
+    "review-function-ownership-delayed-v1",
+  );
   expect(reviewExercisesById["review-function-ownership"]).toBe(
     courseReviewExercises["function-ownership"],
   );
