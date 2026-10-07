@@ -497,15 +497,10 @@ export function hasQuietInterval(
 ): boolean {
   const contact = [
     ...state.events
-      .filter(
-        (event) =>
-          event.conceptIds.includes(conceptId) && event.at <= at,
-      )
+      .filter((event) => event.conceptIds.includes(conceptId) && event.at <= at)
       .map((event) => event.at),
     ...state.ratings
-      .filter(
-        (rating) => rating.conceptId === conceptId && rating.at <= at,
-      )
+      .filter((rating) => rating.conceptId === conceptId && rating.at <= at)
       .map((rating) => rating.at),
   ];
   return contact.length > 0 && at - Math.max(...contact) > DAY;
@@ -523,10 +518,10 @@ export function delayedReviewEligibility(
   );
   return Boolean(
     calibration &&
-      due &&
-      independentCodingTaskIds(state, conceptId, policy).length >=
-        calibration.minimumCodingTasks &&
-      hasQuietInterval(state, conceptId, now),
+    due &&
+    independentCodingTaskIds(state, conceptId, policy).length >=
+      calibration.minimumCodingTasks &&
+    hasQuietInterval(state, conceptId, now),
   );
 }
 

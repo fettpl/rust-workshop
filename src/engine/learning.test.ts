@@ -80,7 +80,10 @@ const functionEvent = (
   evaluator: "tests",
   gate: false,
 });
-const functionOwnershipState = (contactAt: number, dueAt: number): UserState => ({
+const functionOwnershipState = (
+  contactAt: number,
+  dueAt: number,
+): UserState => ({
   ...createInitialState(),
   events: [
     functionEvent("family-a", "ownership/read-length", 100),
@@ -153,15 +156,19 @@ describe("learning engine", () => {
     const state = {
       ...functionOwnershipState(contactAt, contactAt),
       ratings: [
-        { conceptId: "function-ownership", rating: "good" as const, at: 50_000 },
+        {
+          conceptId: "function-ownership",
+          rating: "good" as const,
+          at: 50_000,
+        },
       ],
     };
     expect(hasQuietInterval(state, "function-ownership", 50_000 + DAY)).toBe(
       false,
     );
-    expect(hasQuietInterval(state, "function-ownership", 50_000 + DAY + 1)).toBe(
-      true,
-    );
+    expect(
+      hasQuietInterval(state, "function-ownership", 50_000 + DAY + 1),
+    ).toBe(true);
   });
 
   it("does not count review events as a family", () => {
@@ -201,21 +208,35 @@ describe("learning engine", () => {
       ...baseState,
       events: [
         baseState.events[2],
-        { ...functionEvent("assisted", "ownership/function-predicate-v1", 300), hints: 1 },
+        {
+          ...functionEvent("assisted", "ownership/function-predicate-v1", 300),
+          hints: 1,
+        },
       ],
     };
     const revealed = {
       ...baseState,
       events: [
         baseState.events[2],
-        { ...functionEvent("revealed", "ownership/function-predicate-v1", 300), revealed: true },
+        {
+          ...functionEvent("revealed", "ownership/function-predicate-v1", 300),
+          revealed: true,
+        },
       ],
     };
     expect(
-      independentCodingTaskIds(assisted, "function-ownership", functionOwnershipPolicy),
+      independentCodingTaskIds(
+        assisted,
+        "function-ownership",
+        functionOwnershipPolicy,
+      ),
     ).toEqual([]);
     expect(
-      independentCodingTaskIds(revealed, "function-ownership", functionOwnershipPolicy),
+      independentCodingTaskIds(
+        revealed,
+        "function-ownership",
+        functionOwnershipPolicy,
+      ),
     ).toEqual([]);
   });
 
@@ -229,9 +250,17 @@ describe("learning engine", () => {
       ],
     };
     expect(
-      independentCodingTaskIds(failed, "function-ownership", functionOwnershipPolicy),
+      independentCodingTaskIds(
+        failed,
+        "function-ownership",
+        functionOwnershipPolicy,
+      ),
     ).toEqual(
-      independentCodingTaskIds(state, "function-ownership", functionOwnershipPolicy),
+      independentCodingTaskIds(
+        state,
+        "function-ownership",
+        functionOwnershipPolicy,
+      ),
     );
   });
 
@@ -251,7 +280,11 @@ describe("learning engine", () => {
       "family-a-again",
     ]);
     expect(
-      independentCodingTaskIds(duplicate, "function-ownership", functionOwnershipPolicy),
+      independentCodingTaskIds(
+        duplicate,
+        "function-ownership",
+        functionOwnershipPolicy,
+      ),
     ).toEqual(["ownership/read-length", "ownership/function-predicate-v1"]);
   });
 
