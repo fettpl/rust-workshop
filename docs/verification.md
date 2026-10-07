@@ -1,8 +1,39 @@
-# Verification: fuzz evidence lifecycle and bounded course integration
+# Verification records
 
-Date: 2026-10-06. Current catalog: 184 lessons in 48 modules, 187 concepts, 139 blank-page tasks, 329 sources and 13 Cargo projects. The API Release Matrix adds two Polish lessons, four gates, two blank-page tasks and two retrievals; the fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks and four independent reviews; Macros as APIs adds three Polish lessons, three gates, three blank tasks and three retrievals. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The Mini grep verifier accepts only the generated authored archive and records stable replay separately from the pinned-nightly campaign. Earlier counts below are historical where explicitly labeled.
+<a id="current-verified-source-cut-7-october-2026"></a>
+## Current verified source cut — 7 October 2026
 
-## Fuzz evidence lifecycle
+This snapshot records the product source cut normally merged by PR40 on 7 October 2026: main `230be35b918178f893341061e54650a7ac7bf8f1`, tree `842262a0afacdfa3551e2ca2124e2cda9d7121d6`, reviewed candidate `d2b9e10826f2a1d3584f0c95b2b2557ecfee1627`. Its ordered parents are `d2389c525cb79e7779c89c10b978ca788e713f18` and the reviewed candidate. Link [PR40](https://github.com/fettpl/rustcrushcourse/pull/40), [merged source](https://github.com/fettpl/rustcrushcourse/commit/230be35b918178f893341061e54650a7ac7bf8f1) and [reviewed candidate](https://github.com/fettpl/rustcrushcourse/commit/d2b9e10826f2a1d3584f0c95b2b2557ecfee1627). It records PR40 product evidence, not future acceptance of documentation changes.
+
+Natural pull-request run [37609680264](https://github.com/fettpl/rustcrushcourse/actions/runs/37609680264) and natural push-main run [37613268933](https://github.com/fettpl/rustcrushcourse/actions/runs/37613268933), attempt 1, each completed all eleven required jobs successfully. Exact checkout identities, logs, artifacts and dependency-audit reports were independently reviewed; no failed, cancelled, timed-out, skipped, neutral or active job remained. A conditional failure-only diagnostics artifact step being skipped is distinct from a skipped required job.
+
+Current source catalog: 186 lessons, 48 modules, 190 concepts, 141 **constrained empty-editor tasks with prescribed test APIs**, 332 sources, 13 downloadable Cargo projects, 7 traces; 194 competencies, 1,199 lesson steps, 444 lesson test evaluators, 190 review entries. These totals describe implemented content, not skill or efficacy.
+
+### Accepted evidence by scope
+
+| Scope | Accepted result | Boundary |
+| --- | --- | --- |
+| Main unit checks | 93 files, 816/816 tests. | Unit coverage is evidence for the checked repository. |
+| Full authored Rust CI | 2,350/2,350 on actual rustc 1.99.0; full MSRV 2,350/2,350 on exact Rust 1.85.0. | These are maintained authored fixtures, not arbitrary learner programs. |
+| Production browser | 90/90, zero retries/flaky/skipped; mocked runner cases establish request/UI/state behavior. Separate unmocked maintained-example browser/API smoke checks exact stdout. | The smoke path is not proof about arbitrary learner code. |
+| Offline | Page errors []; only expected disconnected transport errors. | Rust execution requires connectivity and offline failure awards no assessment. |
+| Types/content/build/lint/native/audit | Completed in the accepted full pipeline; lint 0 errors/26 inherited warnings. | The native probe is bounded environment evidence, not whole-product safety. |
+| Local pre-merge evidence, separately labeled | Full authored Rust 2,350/2,350 on explicit stable 1.98.1; affected focused checks 82 tests/79 real Rust fixtures per toolchain, on 1.98.1 and exact 1.85.0. | Local focused MSRV is a different scope from the local full run and from full CI MSRV. |
+| Dependency audit | Production 2 moderate/0 high/0 critical; full 2 moderate/5 high/0 critical. Production gate exit 0 and informational full audit exit 1 are expected distinct results. | Findings remain unresolved; a high/critical gate pass is not security-clean. |
+
+### Implemented and deferred review map
+
+PR38 merged Core17 plus 31 discovery entries with no reorder. PR39 merged exact ownership evidence; only `mutable-borrow` has the complete two-primary path. PR40 merged two conversion lessons, six primary executable tasks, three independent reviews, and the Option negative-input regression. Matching, Option, Result, borrowed access, iterator, and compiler-led debugging already have substantive practice.
+
+Still open are the deeper ordinary-fluency audit, nested patterns, other ownership calibration, unrestricted portfolio decomposition/rationale/unseen follow-up, beginner timing and delayed-transfer pilot, full screen-reader/editor/small-screen audit, live advisory/license and production release requirements. Provisional estimates and fixed authored tests cannot close these gaps. Green CI and content counts do not establish mastery, efficacy, professional or senior readiness, general unsafe soundness, or unrestricted architecture skill.
+
+## Historical verification records — superseded for current status by the snapshot above
+
+The records below retain their dated source cuts, old failures, pending and Hold decisions, environment limitations, and historical uses of “current.” Product acceptance of PR40 is distinct from still-open release, publication, security, accessibility, and readiness prerequisites. Historical browser mocks, local compiler runs, and interrupted or infrastructure-limited jobs must not be read as evidence that their original environment later succeeded.
+
+Date: 2026-10-06. Historical catalog snapshot: 184 lessons in 48 modules, 187 concepts, 139 blank-page tasks, 329 sources and 13 Cargo projects. The API Release Matrix adds two Polish lessons, four gates, two blank-page tasks and two retrievals; the fuzz evidence lifecycle adds four Polish lessons, eight gates, four blank tasks and four independent reviews; Macros as APIs adds three Polish lessons, three gates, three blank tasks and three retrievals. Browser checks use the existing mocked runner contract; Cargo, SQLite and TCP are exercised only by trusted authored archive verifiers. The Mini grep verifier accepts only the generated authored archive and records stable replay separately from the pinned-nightly campaign. The counts and claims below belong to that dated source cut.
+
+### Historical fuzz evidence lifecycle
 
 The latest review hardening is committed as `38fbdb061336a222b6db077630b1fd4c0943ca74` (`Exercise progressive fuzz reveal hints`). A `passed` dossier now requires trusted current run/archive/manifest/regression provenance, a nonzero bounded reduction with a strict smaller artifact, a reproducing mutant replay and a successful restored replay. The stable mutant control must show a successful compilation followed by the named regression failure; compiler, timeout and infrastructure errors are rejected. Public fixture contracts expose `same_result`, `executable_regression`, and the bounded `decode_frame` header/body contract used by the oracle blank; its prompt states the owned lossy query, borrowed raw body, big-endian header, `context = bytes[0] % 20`, clamp and 4096-byte rejection semantics; vectors reject 64-byte limits, missing clamps, strict UTF-8 and unnormalized context. Retrieval fixtures reject length-only, field-loss, matched-flag and order-normalizing mutants. The offline verifier now exercises prediction, a mocked primary run, reveal/download, assisted primary completion, independent mastery invariance, blank work, draft/note persistence and keyboard focus; local execution remains subject to the documented browser limits.
 
@@ -12,19 +43,19 @@ The reviewed implementation is covered by commits `a73aa37d7d8da7c3152343c54db1c
 
 The campaign is capped at seed 20260913, 20,000 runs or 30 seconds, input length 3..=4096, timeout 3 seconds and RSS limit 1024 MB. The deterministic deletion reducer is capped at 256 attempts and a 30-second total deadline and accepts only strict reductions retaining `SelectionMismatch`; timeout, compile error or another assertion is rejected. A replay-only report, stale hash, missing instrumentation, timeout, or merely successful build is not campaign evidence. This milestone does not claim discovery of an unknown bug, universal input coverage, absence of bugs, production readiness, live advisory/license review, registry publication, or a learner pilot. Release remains Hold.
 
-## Macros as API evidence
+### Historical Macros as API evidence
 
 The integrated `macros-as-api` module contains three Polish lessons: exactly-once expression capture and order, repetition grammar for empty/single/many entries with one optional trailing comma, and exported macro resolution through `$crate` plus the Rust 2024 `expr` fragment. Each lesson has a primary code gate, an independent blank-page gate and delayed retrieval. Browser exercises run one Rust source file and therefore prove only the browser model. The external fixture uses side-effectful `:expr` name and value arguments and proves their single evaluation in input order; it separately proves the external crate boundary and compiler-floor behavior.
 
 The trusted fixture at `scripts/fixtures/macro-contracts` is a std-only two-crate workspace. Its stable and exact Rust 1.85.0 runs use offline locked Cargo commands, record fixture hashes and toolchain identity, and reject four controlled mutants: an unqualified library path, duplicate evaluation, strict repetition grammar, and `expr_2021` for top-level `const { ... }`. Missing toolchains and timeouts remain infrastructure failures; local verifier evidence does not replace exact-head CI.
 
-## Current verification record
+### Historical verification record
 
 The preceding fuzz-only validation report recorded passing focused fuzz assessment/verification/integration tests (13 tests), full Vitest (496/496), `npm run typecheck`, `npm run lint` (seven pre-existing warnings, zero errors), `npm run build`, `npm run content:check`, and the exact authored nightly rustfmt check for all five Mini grep fuzz/regression sources. Those results belong to that earlier tree. Historical PR21 evidence at `7e3755d76e3f283384ed1a1edc394934c2aeb2a9` recorded the exact-lock build/offline flow, full Vitest (80 files, 519 tests) and `content:rust` (2,179/2,179); its exact-head full eight-job CI run `37466704677` passed and it was merged to `main` as `5f24e16`. The post-merge main run `37470629408` also passed all eight jobs. PR25’s exact e1 head `e1d595ea02fb7d798a6ee6d2ccf1023f74e71503` then passed full eleven-job CI run `37472355611` and was merged to `main` as `ba15a44b7674a030e30e40f81fdb8c681e845256`. As observed at 2026-10-06 14:08:12Z, post-merge main run `37475705431` remained `IN_PROGRESS`: its `verify` job had terminally failed only because the default 5-second Vitest timeout expired in `api-release-matrix-integration.test.ts:191`, with 82 files and 538 passing tests and no semantic assertion failure, while `workspace-msrv` remained active in `content:performance`. No whole-pipeline terminal status is claimed. The bounded harness repair remains under investigation; no concrete commit or QA status is claimed here. The combined local candidate at `467f857374ff048dd08cb7c1ed82172af665ecc0` has 87 test files and 558 passing Vitest tests, `npm run content:rust` 2,312/2,312 authored cases, the derived 184/187/7 catalog counts, `npm run typecheck`, and ESLint with 0 errors and 26 warnings inherited from the approved PR27, PR21, and PR25 parents. A clean lock-matched Node 22 `npm ci` used Next.js 16.3.5; macro stable/MSRV, API stable, borrowed-memory stable (236/236), content validation, package generation and the Webpack production build passed. Browser evidence remains targeted or mocked; no full local production browser E2E result is claimed. The Rust verifiers are compiler-backed authored-fixture evidence, while browser mocks do not prove Rust semantics. This local evidence does not replace pending exact-head CI checks. The Mini grep verifier reduces and replays the authored padded witness through the actual SelectionMismatch mutant, treats compile failures as infrastructure observations, bounds reducer subprocesses, and exits nonzero for phase, lockfile or report-validation errors. The CI job installs nightly-2026-08-08, exact Rust 1.85.0 and cargo-fuzz 0.13.2. Earlier sandbox-limited reports recorded loopback and Chromium permission failures; those remain historical. Local nightly campaign evidence remains unclaimed without cargo-fuzz. Release remains Hold pending the required CI and broader evidence.
 
-## Runtime allocation evidence
+### Historical runtime allocation evidence
 
-## API Release Matrix evidence
+### Historical API Release Matrix evidence
 
 The `api-release-matrix` module teaches two bounded decisions: classify an old-client observation before calling it a public API break, behavior regression, or infrastructure/missing evidence; then require provenance-bearing records for the old client, default/no-default/opt-in features, and exact Rust 1.85.0. Each lesson has a primary gate, an independent blank-page gate, and a delayed retrieval. Browser evaluators model these decisions in single-source Rust and do not claim Cargo manifest, resolver, external-crate, or compiler-floor evidence.
 
@@ -32,21 +63,21 @@ The trusted `content:api-release` verifier accepts only its authored std-only fi
 
 `content:allocations` regenerates and byte-compares the authored Log Analyzer starter and solution archives, validates `ALLOCATION-MANIFEST.json` and source hashes, then runs formatting, locked/offline Cargo checks, tests and Clippy. Its single-process probe runs baseline, candidate and a materialization mutant in separate processes over eight identical workloads, including a controlled reader error and exact 4096/4097 line boundaries. The counter records `alloc`, `alloc_zeroed`, `dealloc` and successful `realloc` events plus requested and freed bytes; setup, warm-up, formatting and teardown stay outside the measurement window. Reports include archive SHA-256, toolchain, target, workload and explicit limits. They do not claim RSS, retained memory for the whole process, a platform-independent threshold or a universal performance result.
 
-## Current capstone integration status
+### Historical capstone integration status
 
 Task 6 covers the learner path searched as `trwaly serwis`, a mocked gate attempt, exact lesson/draft/note resume, project selection and both ZIP downloads. The offline harness preserves all prior package checks, adds the existing Miri package to the twelve-package set, caches both capstone variants, compares their bytes after an offline reload, and resumes a capstone draft and note.
 
 The capstone verifier has bounded subprocess commands and writes one JSON report per toolchain. A release is not reported as a full archive pass unless both stable and Rust 1.85.0 runs finish and their JSON evidence is reviewed. Full property/fuzz scope, live advisory refresh, registry publication, production operations and the learner pilot remain open.
 
-## Historical preceding-stage details
+### Historical preceding-stage details
 
-## Historical Dependency Assurance
+### Historical Dependency Assurance
 
 Etap `dependency-assurance` ma cztery polskie lekcje, osiem evidence gates, cztery zadania blank-page i cztery kodowe retrievals. Pure-Rust contracts są deterministyczne: diagnozują duplicate package/version/source, egzekwują registry plus MIT/Apache-2.0, oceniają advisory exception przez wstrzyknięte `as_of_ymd` oraz zatrzymują release przy pustym artefakcie, braku external consumera lub `publish = true`.
 
 `content:supply-chain -- --fetch` regeneruje autorski ZIP, rozpakowuje wyłącznie solution, sprawdza `deny.toml`, policy, exception ledger, duplicate evidence, pinned `cargo-deny` snapshot i release evidence manifest (w tym SHA-256 rzeczywistych `Cargo.toml`/`Cargo.lock`), a następnie wykonuje offline/locked `cargo metadata`, `cargo tree`, workspace check i `fixtures/external-consumer` po wygenerowaniu jego lockfile. Weryfikator odrzuca argumenty poza `--fetch`/`--msrv`, nie przyjmuje ścieżek ani kodu ucznia i nie uruchamia sieciowego cargo-deny. Snapshot ma `execution_status = unsupported/infrastructure`, więc decyzja pozostaje `hold-until-local-verifier`; ten etap nie twierdzi, że ma aktualną bazę advisory, kompletny SBOM, ocenę prawną ani publikację crate.
 
-## Historical preceding-stage controls
+### Historical preceding-stage controls
 
 | Sprawdzenie                   | Wynik                                                                                                                                                                                                                                                                                                                                       |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -65,7 +96,7 @@ Etap `dependency-assurance` ma cztery polskie lekcje, osiem evidence gates, czte
 | Dependency Assurance          | `content:supply-chain -- --fetch` passes archive freshness, authored policy/ledger structure checks, pinned offline cargo-deny snapshot checks, locked/offline workspace Cargo checks, and an extracted external consumer; `publish = false` is required while cargo-deny remains unsupported/infrastructure.                               |
 | Ręczny UI                     | Mapa → kryterium → Monaco; czytelny prompt i starter. Klawiaturowe otwarcie blanku prowadzi do pustego edytora; brak błędów konsoli                                                                                                                                                                                                         |
 
-## Zakres dowodów
+### Historical evidence scope
 
 Stały harness obejmuje dokładnie 14 nowych kontraktów fixture: osiem zadań gate/blank (cztery główne bramki i cztery blanki), dwa dodatkowe recall w lekcjach kontrprzykładów oraz cztery niezależne review. Każde rozwiązanie referencyjne, poprawny wariant i mutant kompilują się osobno przez Rust 2024. Poprawne odpowiedzi muszą wykonać niepusty zestaw testów. Mutant musi się skompilować, a następnie zakończyć statusem 101 z rzeczywistą nieudaną asercją. Timeout, sygnał procesu i błąd kompilacji nie zastępują dowodu. Produkcyjny evaluator otrzymuje faktyczny raport Rust.
 
@@ -93,11 +124,11 @@ Historyczna weryfikacja GAT sprawdzała arytmetykę nasycającą ordinali przez 
 
 The integration checks four criteria: reveal does not grant independence, blanks remain fresh, export/import preserves evidence, and the earlier draft and note resume. Implementation and tests used GPT-5.6-Luna high; earlier milestone reviews used GPT-6-Astra medium and their APPROVED status is historical. The current follow-up covers the profile boundary and mutant validation. E2E supplies mocked runner responses and does not prove Rust semantics. Only fixed authored sources run locally, never learner drafts or imported code. No new POST was sent to the public Playground.
 
-## Zakłócenie środowiska
+### Historical environment disruption
 
 Pierwszy E2E zatrzymał się w istniejącej kontroli Axe scenariusza Tokio. Ślad obejmuje przerwę 17:52:14–18:07:12, a dziennik zasilania potwierdza uśpienie 17:52:12–18:07:13 (901 sekund). Dwa przypadki Rust zgłosiły ETIMEDOUT. Nie zmieniano implementacji, limitów ani retry. Dotknięte kontrole przeszły bez zmian; pełne powtórzenie używa tymczasowego caffeinate -i na macOS.
 
-## CI i wydania
+### Historical CI and release
 
 Etap GAT jest zapisany w commicie `4c7e499` i PR #10, scalonym jako `054a12de`. Lokalna weryfikacja i trzy zadania CI przeszły dla dokładnego head `2b6500e`, a post-merge workflow `35248633175` przeszedł dla `main@054a12de`. Stable uruchamia pełny zestaw, workspace-msrv dodatkowo trzy zestawy GAT na dokładnym Rust 1.85.0, a mini-grep-fuzz zachowuje zakres. Krok MSRV dodaje do PATH rzeczywisty katalog z rustup which: samo rustup run może nadal wybrać systemowy kompilator. Property Contracts ma osobny krok `content:property` w stable oraz workspace-msrv, z dokładnie tym samym ograniczeniem do autorskiego pakietu. Service Operations ma osobny krok `content:operations -- --fetch` w obu jobach przed generycznym `content:cargo`; MSRV używa dokładnego Rust 1.85.0.
 
@@ -107,7 +138,7 @@ Performance Evidence jest zintegrowane z `main` w commitcie `b8043d2`; wcześnie
 
 Pożyczone API i angielskie README scalono w [PR #8](https://github.com/fettpl/rustcrushcourse/pull/8) jako 57c24f9, po sukcesie [CI head](https://github.com/fettpl/rustcrushcourse/actions/runs/34750981784) i [CI main](https://github.com/fettpl/rustcrushcourse/actions/runs/34832213874). Number Guessing+ scalono w [PR #7](https://github.com/fettpl/rustcrushcourse/pull/7), Mini grep w [PR #2](https://github.com/fettpl/rustcrushcourse/pull/2), wcześniejszy etap w [PR #1](https://github.com/fettpl/rustcrushcourse/pull/1). Zasady i ograniczenia ochrony gałęzi opisuje [CI/CD](ci-cd.md). Hosting nadal nie został wybrany.
 
-## Odtworzenie i pozostały zakres
+### Historical reproduction and remaining scope
 
 Polecenia pełnej weryfikacji, instalacji narzędzi i projektów opisuje angielskie README, a dokładny zestaw MSRV znajduje się w .github/workflows/ci.yml. `npm run content:performance -- --fetch` trzeba wykonać przed offline `content:cargo`; wariant `--msrv` sprawdza ten sam pakiet przez exact Rust 1.85.0. E2E wymaga produkcyjnego serwera na 127.0.0.1:3002 i konfiguracji .github/playwright.production.config.ts z zerem retry. Offline uruchamia npm run test:offline, w tym wznowienie blanku Performance Evidence. Na macOS długi zestaw można poprzedzić caffeinate -i.
 
