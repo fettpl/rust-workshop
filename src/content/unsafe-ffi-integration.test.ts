@@ -153,14 +153,14 @@ it("uses each gate and blank as an independent module criterion", () => {
 
 it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
   expect(modules).toHaveLength(48);
-  expect(lessons).toHaveLength(184);
-  expect(concepts).toHaveLength(187);
-  expect(sources).toHaveLength(329);
+  expect(lessons).toHaveLength(186);
+  expect(concepts).toHaveLength(190);
+  expect(sources).toHaveLength(332);
   expect(
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(139);
+  ).toHaveLength(141);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
   expect(index).toBe(modules.length - 5);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);

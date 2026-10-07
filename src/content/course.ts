@@ -331,7 +331,7 @@ import {
   traitsConcepts,
   traitsCompetencies,
   traitsReviewExercises,
-  traitsModule,
+  traitsModule as baseTraitsModule,
   traitsSources,
 } from "./traits";
 import {
@@ -480,6 +480,65 @@ import {
 } from "./async-lending-boundaries";
 import { asyncLendingModule } from "./async-lending-module";
 
+import {
+  coreConversionsLessons,
+  coreConversionsConcepts,
+  coreConversionsCompetencies,
+  coreConversionsSources,
+  coreConversionsReviewExercises,
+} from "./core-conversions";
+import {
+  coreCheckedConversionsLessons,
+  coreCheckedConversionsConcepts,
+  coreCheckedConversionsCompetencies,
+  coreCheckedConversionsSources,
+  coreCheckedConversionsReviewExercises,
+} from "./core-checked-conversions";
+
+const traitsModule = {
+  ...baseTraitsModule,
+  lessonIds: [
+    ...baseTraitsModule.lessonIds,
+    "conversion-ownership-views",
+    "checked-conversions",
+  ],
+  capabilities: [
+    ...baseTraitsModule.capabilities,
+    "Ćwiczysz From i pożyczone widoki AsRef w jawnych kontraktach API.",
+    "Ćwiczysz sprawdzane konwersje i przenoszenie błędów przez Result oraz ?.",
+  ],
+  exitGate: [
+    ...baseTraitsModule.exitGate,
+    "Naprawiasz widok Label albo implementujesz konwersję i widok Samples w testowanym API.",
+    "Naprawiasz mapowanie błędu Level albo implementujesz sprawdzaną konwersję Percent w testowanym API.",
+  ],
+  gateCriteria: [
+    ...(baseTraitsModule.gateCriteria ?? []),
+    {
+      id: "traits-conversion-views-gate",
+      label: "Naprawiony AsRef dla Label albo From i AsRef dla Samples.",
+      taskRefs: [
+        {
+          lessonId: "conversion-ownership-views",
+          stepId: "conversions-label-repair",
+        },
+        {
+          lessonId: "conversion-ownership-views",
+          stepId: "conversions-samples-transfer",
+        },
+      ],
+    },
+    {
+      id: "traits-checked-conversions-gate",
+      label: "Naprawione mapowanie błędu Level albo TryFrom dla Percent.",
+      taskRefs: [
+        { lessonId: "checked-conversions", stepId: "checked-level-repair" },
+        { lessonId: "checked-conversions", stepId: "checked-percent-transfer" },
+      ],
+    },
+  ],
+};
+
 export const ownershipModule = {
   ...ownership.ownershipModule,
   prerequisites: [foundationsModule.id],
@@ -600,6 +659,8 @@ export const lessons = [
   ...unsafeBorrowedMemoryLessons,
   ...serviceOperationsLessons,
   ...capstoneIntegrationLessons,
+  ...coreConversionsLessons,
+  ...coreCheckedConversionsLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -663,6 +724,8 @@ export const concepts = [
   ...unsafeBorrowedMemoryConcepts,
   ...serviceOperationsConcepts,
   ...capstoneIntegrationConcepts,
+  ...coreConversionsConcepts,
+  ...coreCheckedConversionsConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -725,6 +788,8 @@ export const competencies = [
   ...unsafeBorrowedMemoryCompetencies,
   ...serviceOperationsCompetencies,
   ...capstoneIntegrationCompetencies,
+  ...coreConversionsCompetencies,
+  ...coreCheckedConversionsCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -787,6 +852,8 @@ export const sources = [
   ...unsafeBorrowedMemorySources,
   ...serviceOperationsSources,
   ...capstoneIntegrationSources,
+  ...coreConversionsSources,
+  ...coreCheckedConversionsSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -850,6 +917,8 @@ export const reviewExercises = {
   ...unsafeBorrowedMemoryReviewExercises,
   ...serviceOperationsReviewExercises,
   ...capstoneIntegrationReviewExercises,
+  ...coreConversionsReviewExercises,
+  ...coreCheckedConversionsReviewExercises,
 };
 export const project = numberGuessingProject;
 export const traces: typeof ownership.traces = {
