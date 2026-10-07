@@ -28,3 +28,14 @@ it("keeps Rust as the default accessible editor language", () => {
   expect(html).toContain('aria-label="Kod Rust"');
   expect(html).toContain("fn main() {}");
 });
+
+it("renders an empty polite fallback status without changing the Rust draft", () => {
+  const html = renderToStaticMarkup(
+    createElement(CodeEditor, { code: "fn main() {}", onChange: () => {} }),
+  );
+  expect(html).toContain("monaco-fallback-status");
+  expect(html).toContain('role="status"');
+  expect(html).toContain('aria-live="polite"');
+  expect(html).toContain('aria-atomic="true"');
+  expect(html).not.toContain("Edytor ładuje się długo.");
+});

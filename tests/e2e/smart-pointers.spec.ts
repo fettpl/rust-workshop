@@ -54,7 +54,7 @@ test("keeps the Rc value and allocation lifetimes distinct while stepping and re
   );
   await expect(visualizer).not.toContainText("Zwolniono pamięć");
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(visualizer).toContainText(
@@ -107,7 +107,7 @@ test("preserves a new loop draft through old modules and shows raw Box diagnosti
     "// Mój warunek i krok postępu pozostają do uzupełnienia.\n",
   );
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await openLesson(page, "functions-expressions");
   await openLesson(page, "while-progress");
@@ -116,7 +116,7 @@ test("preserves a new loop draft through old modules and shows raw Box diagnosti
     "// Mój warunek i krok postępu pozostają do uzupełnienia.\n",
   );
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(

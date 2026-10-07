@@ -1,5 +1,13 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { flushSync } from "react-dom";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import {
   BookOpen,
   Compass,
@@ -26,6 +34,11 @@ import { Journal, SettingsView } from "./personal";
 import type { View } from "@/domain/types";
 import { lessons, modules } from "@/content/course";
 import { dueReviews } from "@/engine/learning";
+import {
+  createSaveStatusAnnouncer,
+  type SaveAnnouncementEvent,
+  type SaveStatusAnnouncer,
+} from "./save-status-announcer";
 const navItems: { id: View; label: string; icon: typeof Compass }[] = [
   { id: "dashboard", label: "Twój warsztat", icon: Compass },
   { id: "course", label: "Mapa nauki", icon: BookOpen },
@@ -33,6 +46,7 @@ const navItems: { id: View; label: string; icon: typeof Compass }[] = [
   { id: "project", label: "Projekt", icon: FolderCode },
   { id: "journal", label: "Notatnik", icon: NotebookPen },
 ];
+type MenuCloseReason = "escape" | "navigation" | "resize" | "toggle";
 export default function App() {
   return (
     <LearningProvider>
@@ -45,7 +59,13 @@ function AppShell() {
   const { state, update, saveStatus, storageError } = useLearning();
   const [online, setOnline] = useState(true);
   const [menu, setMenu] = useState(false);
+  const [liveMessage, setLiveMessage] = useState("");
+  const saveStatusAnnouncerRef = useRef<SaveStatusAnnouncer | null>(null);
   const headingRef = useRef<HTMLElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const firstNavRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
+  const resizeClosePendingRef = useRef(false);
   const view = state.resume.view;
   const navigationKey =
     view === "lesson"
@@ -62,6 +82,70 @@ function AppShell() {
   );
   const focus = state.resume.focus && view === "lesson";
   const due = dueReviews(state, now).length;
+  useEffect(() => {
+    const announcer = createSaveStatusAnnouncer(
+      (event: SaveAnnouncementEvent) => {
+        if (event.type === "clear") {
+          flushSync(() => setLiveMessage(""));
+        } else {
+          flushSync(() => setLiveMessage(event.text));
+        }
+      },
+    );
+    saveStatusAnnouncerRef.current = announcer;
+    return () => {
+      announcer.dispose();
+      saveStatusAnnouncerRef.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    saveStatusAnnouncerRef.current?.update({
+      saveStatus,
+      storageError: storageError || null,
+    });
+  }, [saveStatus, storageError]);
+  const closeMenu = useCallback((reason: MenuCloseReason): void => {
+    setMenu(false);
+    if (reason === "escape") {
+      requestAnimationFrame(() => {
+        menuTriggerRef.current?.focus({ preventScroll: true });
+      });
+    }
+  }, []);
+  function sidebarButtons(): HTMLButtonElement[] {
+    return Array.from(
+      sidebarRef.current?.querySelectorAll<HTMLButtonElement>(
+        "button:not([disabled])",
+      ) ?? [],
+    );
+  }
+  function handleShellKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+    if (!menu) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeMenu("escape");
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const buttons = sidebarButtons();
+    const first = buttons[0];
+    const last = buttons.at(-1);
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !first || !last) return;
+    if (target === last && !event.shiftKey) {
+      event.preventDefault();
+      menuTriggerRef.current?.focus();
+    } else if (target === menuTriggerRef.current && !event.shiftKey) {
+      event.preventDefault();
+      first.focus();
+    } else if (target === menuTriggerRef.current && event.shiftKey) {
+      event.preventDefault();
+      last.focus();
+    } else if (target === first && event.shiftKey) {
+      event.preventDefault();
+      menuTriggerRef.current?.focus();
+    }
+  }
   useLayoutEffect(() => {
     // Preserve the browser's initial focus; reset only when moving to new content.
     // Finish before another interaction can move focus into the new content.
@@ -70,6 +154,30 @@ function AppShell() {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     headingRef.current?.focus({ preventScroll: true });
   }, [navigationKey]);
+  useLayoutEffect(() => {
+    if (menu) firstNavRef.current?.focus({ preventScroll: true });
+  }, [menu]);
+  useLayoutEffect(() => {
+    if (menu || !resizeClosePendingRef.current) return;
+    resizeClosePendingRef.current = false;
+    const sidebar = sidebarRef.current;
+    const active = document.activeElement;
+    const desktopTarget = sidebar?.querySelector<HTMLElement>(
+      "nav button:not([disabled])",
+    );
+    const sidebarVisible =
+      sidebar !== null && window.getComputedStyle(sidebar).display !== "none";
+    const targetVisible =
+      desktopTarget !== null &&
+      desktopTarget !== undefined &&
+      window.getComputedStyle(desktopTarget).display !== "none" &&
+      desktopTarget.getClientRects().length > 0;
+    if (sidebarVisible && sidebar?.contains(active) && targetVisible) {
+      desktopTarget.focus({ preventScroll: true });
+    } else {
+      headingRef.current?.focus({ preventScroll: true });
+    }
+  }, [menu]);
   useEffect(() => {
     setOnline(navigator.onLine);
     const on = () => setOnline(true);
@@ -81,9 +189,27 @@ function AppShell() {
       window.removeEventListener("offline", off);
     };
   }, []);
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 850px)");
+    let wasMobile = media.matches;
+    const onResize = () => {
+      const isMobile = media.matches;
+      if (wasMobile && !isMobile && menu) {
+        resizeClosePendingRef.current = true;
+        closeMenu("resize");
+      }
+      wasMobile = isMobile;
+    };
+    media.addEventListener?.("change", onResize);
+    window.addEventListener("resize", onResize);
+    return () => {
+      media.removeEventListener?.("change", onResize);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [closeMenu, menu]);
   function navigate(next: View) {
+    closeMenu("navigation");
     update((s) => ({ ...s, resume: { ...s.resume, view: next } }));
-    setMenu(false);
     if (next === view) {
       requestAnimationFrame(() => {
         window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -94,13 +220,18 @@ function AppShell() {
   if (!state.onboarding.completed) return <Onboarding />;
   if (!state.diagnostic.completed) return <Diagnostic />;
   return (
-    <div className={`app-shell ${focus ? "focus-mode" : ""}`}>
-      <a className="skip-link" href="#main-content">
+    <div
+      className={`app-shell ${focus ? "focus-mode" : ""}`}
+      onKeyDown={handleShellKeyDown}
+    >
+      <a className="skip-link" href="#main-content" inert={menu}>
         Przejdź do treści
       </a>
       <aside
+        id="mobile-navigation"
         className={`sidebar ${menu ? "mobile-open" : ""}`}
         aria-label="Nawigacja główna"
+        ref={sidebarRef}
       >
         <button className="brand" onClick={() => navigate("dashboard")}>
           <span className="brand-mark">r.</span>rust
@@ -111,6 +242,7 @@ function AppShell() {
           {navItems.map((item) => (
             <button
               key={item.id}
+              ref={item.id === "dashboard" ? firstNavRef : undefined}
               className={`nav-item ${view === item.id ? "active" : ""}`}
               aria-current={view === item.id ? "page" : undefined}
               onClick={() => navigate(item.id)}
@@ -143,8 +275,8 @@ function AppShell() {
                 key={lesson.id}
                 className={lesson.id === state.resume.lessonId ? "current" : ""}
                 onClick={() => {
+                  closeMenu("navigation");
                   openLesson(lesson.id);
-                  setMenu(false);
                 }}
               >
                 <span>{String(index + 1).padStart(2, "0")}</span>
@@ -173,16 +305,26 @@ function AppShell() {
           </div>
         </div>
       </aside>
+      <span
+        className="sr-only save-live"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {liveMessage}
+      </span>
       <div className="app-main">
         <header className="topbar">
           <div className="breadcrumb">
             <button
+              ref={menuTriggerRef}
               className="icon-button mobile-menu"
-              aria-label="Otwórz nawigację"
+              aria-label={menu ? "Zamknij nawigację" : "Otwórz nawigację"}
+              aria-controls="mobile-navigation"
               aria-expanded={menu}
-              onClick={() => setMenu(!menu)}
+              onClick={() => (menu ? closeMenu("toggle") : setMenu(true))}
             >
-              <Menu size={20} />
+              <Menu size={20} aria-hidden="true" />
             </button>
             <span>Warsztat</span>
             <span className="breadcrumb-slash">/</span>
@@ -193,12 +335,13 @@ function AppShell() {
             </strong>
           </div>
           <div className="topbar-actions">
-            <span className="save-status">
+            <span className="save-status" aria-hidden="true">
               <Check size={13} />
               {saveStatus}
             </span>
             <button
               className="icon-button"
+              inert={menu}
               aria-label={
                 state.settings.theme === "light"
                   ? "Włącz ciemny motyw"
@@ -223,6 +366,7 @@ function AppShell() {
             {view === "lesson" && (
               <button
                 className="quiet-button"
+                inert={menu}
                 aria-pressed={focus}
                 onClick={() =>
                   update((s) => ({
@@ -257,6 +401,7 @@ function AppShell() {
           id="main-content"
           tabIndex={-1}
           ref={headingRef}
+          inert={menu}
           className={view === "lesson" ? "workspace-main" : "page-main"}
         >
           {view === "dashboard" ? (

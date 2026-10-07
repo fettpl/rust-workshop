@@ -114,7 +114,7 @@ test("returns from an extension's final step to its map without losing the resum
     }),
   ).toBeVisible();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(
@@ -443,7 +443,7 @@ test("opens modeling, repairs a slice and retains the work across a module switc
     .click();
   await expect(page.getByText(/Testy: 2 poprawnych/)).toBeVisible();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(step.solution!);

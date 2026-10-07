@@ -143,3 +143,115 @@ Pożyczone API i angielskie README scalono w [PR #8](https://github.com/fettpl/r
 Polecenia pełnej weryfikacji, instalacji narzędzi i projektów opisuje angielskie README, a dokładny zestaw MSRV znajduje się w .github/workflows/ci.yml. `npm run content:performance -- --fetch` trzeba wykonać przed offline `content:cargo`; wariant `--msrv` sprawdza ten sam pakiet przez exact Rust 1.85.0. E2E wymaga produkcyjnego serwera na 127.0.0.1:3002 i konfiguracji .github/playwright.production.config.ts z zerem retry. Offline uruchamia npm run test:offline, w tym wznowienie blanku Performance Evidence. Na macOS długi zestaw można poprzedzić caffeinate -i.
 
 Remaining scope includes version conflicts, dependency security and publication, unsafe abstraction variance, full property/fuzz coverage, RSS/retained-memory attribution, system operations and capstone release evidence. The capstone has bounded learner integration, but release remains Hold until two fresh, reviewed stable/MSRV JSON reports and a manual advisory/license review are complete. Miri Safety provides a limited supported pure-Rust fixture set and does not replace a full threat model or prove that every unsafe program is defined. The limited Unsafe/FFI wrapper does not prove that foreign code is trustworthy. The Log Analyzer benchmark and allocation probe are executable evidence for named workloads; neither establishes a regression time threshold or universal speed claim. Migration history and material provenance need further work. A learner pilot and manual screen-reader review are still required. Lesson availability and green tests do not guarantee professional readiness.
+
+<a id="local-workspace-candidate-7-october-2026"></a>
+## Local workspace candidate verification — 7 October 2026
+
+This dated section records a local verification candidate after the accepted
+two-file integration repair. The tested product source is
+`9b70b6487913abb7789ae6854f8390181786a3cd` with tree
+`dcf7d952968ccc036434a787c918d5665e7f7ee8`, tested against accepted normal-main
+base `c1f9146caaad758bcee3ed2e6ec3468750e9a04a`. The later docs-only
+publication commit is a separate Git commit created from this append; it is not
+the tested product source and is intentionally identified by Git after
+publication. The accepted externally reviewed PR42/base evidence runs
+`37653130324` and `37656388270` remain separate evidence states. No future PR or
+resulting main acceptance is claimed here.
+
+The fresh local run used Node 22.23.3 at
+`/opt/homebrew/Cellar/node@22/22.23.3_1/bin/node`, a private production server
+on `127.0.0.1:3317`, and a temporary Playwright config under the ignored
+`test-results/a11y-task5-final-round2/` folder. Exact source HEAD/tree, base
+ancestry, R..M UI zero-diff, clean status, Node identity, empty port, server
+PID/cwd/parent/listener/readiness and listener-gone cleanup were recorded in
+the raw wrapper output. The fresh Webpack production build exited 0.
+
+The complete production browser run passed 106/106 tests with retries 0,
+including the existing Axe checks. It exercises the four changed behavior
+areas: the single polite atomic save-live sibling and clear-to-saved behavior;
+mobile drawer inert boundaries with keyboard focus and Escape return; named
+tabpanel relationships with all three desktop regions visible; and controlled
+Rust/TOML fallback ownership, labels and focus. A separate authored
+`scripts/smoke-cargo-io.ts` run passed 7 live API cases and 11 authored tests,
+asserting status, raw stdout/stderr and live output. This is maintained authored
+fixture evidence using the runner's temporary filesystem; it does not prove
+arbitrary learner execution, a local Cargo package, or persistence between
+requests. The offline verifier passed with page errors `[]`; its five expected
+disconnected transport console messages remain classified as offline evidence.
+
+Owned visual captures are preserved at
+`test-results/a11y-task5-final-round2/visuals-rerun-final/`. The narrow light
+capture records reduced-motion, an actual light `data-theme`, keyboard-open
+drawer focus with a solid 3px focus outline, Escape focus return, and Code and
+Output panel visibility. The desktop dark capture records an actual dark
+`data-theme`, reduced-motion and three visible named panels. Rust and TOML
+fallback captures record their labels and focused textareas. Clean paths had no
+unexpected console, request or page errors. Monaco-block paths classify only
+the correlated loader `net::ERR_FAILED`, its Monaco diagnostic messages and
+page error `Event` as intentional. The invalid historical
+`raw/mobile-menu-open-dom.txt` remains unsuccessful and is not cited as proof.
+
+These automated checks cannot prove Escape announcements, live-region speech,
+focus interpretation, or screen-reader output. No VoiceOver/NVDA evidence,
+human efficacy or beginner-pilot evidence, WCAG conformance, or unrestricted
+learner-code claim is made. The 6 October review limitations remain open,
+including the broader screen-reader/editor/small-screen review and
+manual advisory/license work. The inherited dependency audit is not
+security-clean. PR40 and docs-only PR41 historical records above are preserved
+byte-for-byte; this section is the current local candidate snapshot only.
+
+<a id="whole-fix-1-focus-indication-7-october-2026"></a>
+## Whole fix 1 focus indication verification — 7 October 2026
+
+This dated addendum records the bounded `WS-A11Y-001` follow-up for the
+focused controlled fallback textarea. The product source tested is commit
+`f5b2cbd755a65469fdfc4217f262bdd88d7729f5` with tree
+`3af718517d426c126582cb880874a787feec2b80`, based on accepted normal-main
+commit `c1f9146caaad758bcee3ed2e6ec3468750e9a04a`. The later docs-only
+publication commit is separate from this tested source commit and is recorded
+by Git after this append. Earlier Task 5 broad `106/106`, runner, offline and
+visual evidence remains historical evidence for the prior product candidate;
+this addendum does not relabel it as a fresh whole-suite run for this CSS fix.
+
+The source change adds `.code-textarea:focus-visible { outline-offset: -3px; }`
+in `src/app/globals.css`, keeping the existing 3px solid accent outline inside
+the `overflow: hidden` editor wrapper. Existing manual and automatic fallback
+behavior, controlled Rust/TOML drafts, labels, read-only behavior and Monaco
+loader classification remain unchanged. The focused e2e spec now checks the
+computed outline style, width and inset offset plus the textarea and wrapper
+rectangles in the narrow Rust and TOML flows; it retains the existing draft,
+focus-transfer, outside-focus, 12-second and intentional-error checks.
+
+The dirty RED evidence is preserved under
+`test-results/a11y-whole-fix-1/`: the production fallback run exercised five
+cases, passed two and failed the three new focused geometry assertions on the
+unchanged CSS because computed `outlineOffset` was `5px` rather than `-3px`.
+The raw wrapper ended with process exit `143` after the recorded server was
+stopped separately; its focused test output, screenshots, trace artifacts,
+dirty test diff and diff hash remain unchanged. This is development RED
+evidence, not a clean committed acceptance run.
+
+After the source/test commit, a fresh Webpack production build exited `0`.
+The committed focused production fallback run passed `5/5` tests with retries
+`0`: manual Rust, clean Monaco, automatic Rust focus transfer, outside-focus
+preservation and automatic TOML draft/focus transfer. The run used Node
+`v22.23.3` at `/opt/homebrew/Cellar/node@22/22.23.3_1/bin/node`, private port
+`3317`, exact source/tree/base/design guards, server PID/cwd/parent/listener
+checks and numeric cleanup (`kill 0`, expected wait `143`, listener-gone `0`).
+
+A helper-only visual rerun against that unchanged fresh build passed with the
+same identity guards and cleanup. It wrote separate PNG, HTML and JSON files
+under `test-results/a11y-whole-fix-1/visuals-final/`. The narrow light Rust
+and dark TOML focused captures each record actual `data-theme`, focused
+`Kod Rust`/`Kod TOML`, a solid 3px outline with computed offset `-3px`, the
+outline contained within the textarea, textarea and wrapper rectangles, and
+wrapper `overflow: hidden`. Clean light/dark paths had no unexpected console,
+request or page errors. Fallback paths classify only the correlated
+`/monaco/vs/loader.js` `net::ERR_FAILED`, Monaco `Event` diagnostics and page
+error `Event` as intentional; unexpected error arrays are empty.
+
+No full unit, Rust, 106-test, API, offline or natural PR/main gate was repeated
+for this two-file CSS/test fix. External latest-PR and normal-main jobs remain
+separate pending release gates. Manual VoiceOver/NVDA speech, WCAG conformance,
+human efficacy, security-clean status and broader screen-reader/editor review
+remain unproven.

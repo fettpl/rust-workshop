@@ -38,7 +38,9 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await expect(page.locator(".task-pane h1")).toHaveText(primary.steps[0].title);
   await page.getByRole("radio").first().check();
   await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
-  await expect(page.getByRole("status")).toBeVisible();
+  await expect(
+    page.locator('[aria-label="Zadanie"]').getByRole("status"),
+  ).toBeVisible();
   await page.getByLabel("Kroki lekcji").getByRole("button").nth(gateIndex).click();
   await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();
   const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
@@ -52,7 +54,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   });
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
-  await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
   await page.getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true }).click();
   await expect(page.getByText("Potrzebuję pełnego rozwiązania", { exact: true })).toBeVisible();
@@ -98,7 +100,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await page.getByRole("textbox", { name: "Kod Rust", exact: true }).fill(gate.solution!);
   await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
-  await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
   const assistedEventsFor = async () => {
     const state = await readLearningState();
     return state.events.slice(stateAfterReveal.events.length).filter(
@@ -130,7 +132,7 @@ test("fuzz evidence keeps prediction, mocked success, reveal, independent blank 
   await expect(page.getByRole("region", { name: "Wynik kompilatora" })).toContainText("test result: ok");
   await page.getByText("Twój notatnik", { exact: true }).click();
   await page.getByLabel("Notatki do lekcji").fill("Prediction, replay and blank stay separate.");
-  await expect(page.getByText("Zapisano na tym urządzeniu", { exact: true })).toBeVisible();
+  await expect(page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" })).toBeVisible();
   const heading = await page.locator(".task-pane h1").innerText();
   await blankEditor.focus();
   await page.keyboard.press("Tab");

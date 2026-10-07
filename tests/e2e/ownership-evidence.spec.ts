@@ -603,7 +603,7 @@ test("discards an in-flight old-generation ownership response after importing an
   await importThroughUi(page, replacement);
   release();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.waitForTimeout(100);
   const after = await savedState(page);

@@ -21,7 +21,7 @@ test("keeps reordered choices and selected meaning through reload", async ({
   const correct = page.locator('input[type="radio"][value="main"]');
   await correct.check();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(correct).toBeChecked();
@@ -60,7 +60,7 @@ test("resumes a reordered review choice by its meaning", async ({ page }) => {
   });
   await answer.check();
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(answer).toBeChecked();

@@ -51,7 +51,7 @@ test("keeps a concurrency draft after reveal and offers the fresh gate alternati
     .click();
   await expect(editor).toHaveValue(draft);
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);

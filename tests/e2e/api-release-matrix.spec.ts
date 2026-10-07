@@ -108,7 +108,7 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
     .getByLabel("Notatki do lekcji")
     .fill("Stable nie zastępuje exact MSRV.");
   await expect(
-    page.getByText("Zapisano na tym urządzeniu", { exact: true }),
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(page.locator(".task-pane h1")).toHaveText(primary.title);
