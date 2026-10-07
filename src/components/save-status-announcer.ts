@@ -23,6 +23,10 @@ export function createSaveStatusAnnouncer(
     clearTimeout(handle),
 ): SaveStatusAnnouncer {
   type TimerHandle = ReturnType<typeof setTimeout>;
+  type SaveAnnouncementText = Extract<
+    SaveAnnouncementEvent,
+    { type: "message" }
+  >["text"];
   const loading = "Wczytywanie…";
   const saving = "Zapisywanie…";
   const saved = "Zapisano na tym urządzeniu";
@@ -32,6 +36,8 @@ export function createSaveStatusAnnouncer(
   let burstToken = 0;
   let pendingTimer: TimerHandle | null = null;
   let settledTimer: TimerHandle | null = null;
+  let errorClearTimer: TimerHandle | null = null;
+  let liveAnnouncement: SaveAnnouncementText | null = null;
   let disposed = false;
 
   function cancelPending(): void {
@@ -44,6 +50,22 @@ export function createSaveStatusAnnouncer(
     if (settledTimer === null) return;
     cancel(settledTimer);
     settledTimer = null;
+  }
+
+  function cancelErrorClear(): void {
+    if (errorClearTimer === null) return;
+    cancel(errorClearTimer);
+    errorClearTimer = null;
+  }
+
+  function emitClear(): void {
+    liveAnnouncement = null;
+    emit({ type: "clear" });
+  }
+
+  function emitMessage(text: SaveAnnouncementText): void {
+    liveAnnouncement = text;
+    emit({ type: "message", text });
   }
 
   function hasCurrentStatus(status: string, token: number): boolean {
@@ -59,7 +81,7 @@ export function createSaveStatusAnnouncer(
     pendingTimer = schedule(() => {
       pendingTimer = null;
       if (!hasCurrentStatus(saving, token)) return;
-      emit({ type: "message", text: saving });
+      emitMessage(saving);
     }, 0);
   }
 
@@ -67,7 +89,7 @@ export function createSaveStatusAnnouncer(
     settledTimer = schedule(() => {
       settledTimer = null;
       if (!hasCurrentStatus(saved, token)) return;
-      emit({ type: "message", text: saved });
+      emitMessage(saved);
     }, 0);
   }
 
@@ -75,7 +97,7 @@ export function createSaveStatusAnnouncer(
     pendingTimer = schedule(() => {
       pendingTimer = null;
       if (!hasCurrentStatus(saving, token)) return;
-      emit({ type: "clear" });
+      emitClear();
       if (hasCurrentStatus(saving, token)) schedulePendingMessage(token);
     }, 750);
   }
@@ -84,9 +106,23 @@ export function createSaveStatusAnnouncer(
     settledTimer = schedule(() => {
       settledTimer = null;
       if (!hasCurrentStatus(saved, token)) return;
-      emit({ type: "clear" });
+      emitClear();
       if (hasCurrentStatus(saved, token)) scheduleSettledMessage(token);
     }, 1_000);
+  }
+
+  function scheduleErrorClear(token: number): void {
+    errorClearTimer = schedule(() => {
+      errorClearTimer = null;
+      if (
+        disposed ||
+        burstToken !== token ||
+        !current.storageError ||
+        liveAnnouncement === null
+      )
+        return;
+      emitClear();
+    }, 0);
   }
 
   function update(input: SaveStatusInput): void {
@@ -96,11 +132,14 @@ export function createSaveStatusAnnouncer(
     if (hasError) {
       cancelPending();
       cancelSettled();
+      cancelErrorClear();
       burstToken += 1;
       previousStatus = input.saveStatus;
+      if (liveAnnouncement !== null) scheduleErrorClear(burstToken);
       return;
     }
 
+    cancelErrorClear();
     if (input.saveStatus === saving) {
       initialTransition = false;
       burstToken += 1;
@@ -132,6 +171,7 @@ export function createSaveStatusAnnouncer(
     burstToken += 1;
     cancelPending();
     cancelSettled();
+    cancelErrorClear();
   }
 
   return { update, dispose };

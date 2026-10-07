@@ -348,6 +348,56 @@ test("mobile persistence exposes one quiet save status live node", async ({
   }
 });
 
+test("persistence error clears the live save status without a lifecycle warning", async ({
+  browser,
+}) => {
+  test.setTimeout(45_000);
+  const { page, close } = await freshLessonPage(browser);
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  try {
+    const savedText = "Zapisano na tym urządzeniu";
+    const live = page.locator(".save-live");
+    await expect(page.locator(".save-status")).toHaveText(savedText, {
+      timeout: 5_000,
+    });
+    await page.evaluate(() => {
+      const quotaError = new DOMException(
+        "Quota exceeded for test",
+        "QuotaExceededError",
+      );
+      Object.defineProperty(IDBObjectStore.prototype, "put", {
+        configurable: true,
+        value: () => {
+          throw quotaError;
+        },
+        writable: true,
+      });
+    });
+    const radios = page.getByRole("radio");
+    const initiallyChecked = await radios.first().isChecked();
+    await radios.nth(initiallyChecked ? 1 : 0).check();
+    await expect(page.locator(".global-alert")).toContainText(
+      "Brak dostępu do lokalnego zapisu",
+      { timeout: 5_000 },
+    );
+    await expect(page.locator(".global-alert")).toHaveAttribute(
+      "role",
+      "alert",
+    );
+    await expect(page.locator(".global-alert")).toBeVisible();
+    await expect(live).toHaveText("", { timeout: 5_000 });
+    expect(pageErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+  } finally {
+    await close();
+  }
+});
+
 test("Escape closes mobile navigation and returns focus to the trigger", async ({ browser }) => {
   test.setTimeout(45_000);
   const { page, close } = await freshLessonPage(browser);

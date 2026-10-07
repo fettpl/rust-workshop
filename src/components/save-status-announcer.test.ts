@@ -268,7 +268,127 @@ describe("createSaveStatusAnnouncer", () => {
     expect(events).toEqual([
       { type: "clear" },
       { type: "message", text: "Zapisywanie…" },
+      { type: "clear" },
     ]);
     announcer.dispose();
+  });
+
+  it("clears previously announced saved text when a storage error arrives", async () => {
+    vi.useFakeTimers();
+    const { announcer, events } = harness();
+    announcer.update({ saveStatus: "Wczytywanie…", storageError: null });
+    announcer.update({ saveStatus: "Zapisywanie…", storageError: null });
+    vi.advanceTimersByTime(750);
+    await vi.runOnlyPendingTimersAsync();
+    announcer.update({
+      saveStatus: "Zapisano na tym urządzeniu",
+      storageError: null,
+    });
+    vi.advanceTimersByTime(1_000);
+    await vi.runOnlyPendingTimersAsync();
+    expect(events.at(-1)).toEqual({
+      type: "message",
+      text: "Zapisano na tym urządzeniu",
+    });
+    announcer.update({
+      saveStatus: "Zapis nie powiódł się",
+      storageError: "Brak dostępu do lokalnego zapisu.",
+    });
+    await vi.runOnlyPendingTimersAsync();
+    expect(events.at(-1)).toEqual({ type: "clear" });
+    announcer.dispose();
+  });
+
+  it("clears previously announced pending text when a storage error arrives", async () => {
+    vi.useFakeTimers();
+    const { announcer, events } = harness();
+    announcer.update({ saveStatus: "Wczytywanie…", storageError: null });
+    announcer.update({ saveStatus: "Zapisywanie…", storageError: null });
+    vi.advanceTimersByTime(750);
+    await vi.runOnlyPendingTimersAsync();
+    expect(events.at(-1)).toEqual({ type: "message", text: "Zapisywanie…" });
+    announcer.update({
+      saveStatus: "Zapis nie powiódł się",
+      storageError: "Brak dostępu do lokalnego zapisu.",
+    });
+    await vi.runOnlyPendingTimersAsync();
+    expect(events.slice(-2)).toEqual([
+      { type: "message", text: "Zapisywanie…" },
+      { type: "clear" },
+    ]);
+    announcer.dispose();
+  });
+
+  it("does not queue an error clear after the live message was already cleared", async () => {
+    vi.useFakeTimers();
+    const { announcer, events } = harness();
+    announcer.update({ saveStatus: "Wczytywanie…", storageError: null });
+    announcer.update({ saveStatus: "Zapisywanie…", storageError: null });
+    vi.advanceTimersByTime(750);
+    expect(events).toEqual([{ type: "clear" }]);
+    announcer.update({
+      saveStatus: "Zapis nie powiódł się",
+      storageError: "Brak dostępu do lokalnego zapisu.",
+    });
+    await vi.runOnlyPendingTimersAsync();
+    expect(events).toEqual([{ type: "clear" }]);
+    announcer.dispose();
+  });
+
+  it("cancels a queued error clear when a new save burst starts", async () => {
+    vi.useFakeTimers();
+    const { announcer, events } = harness();
+    announcer.update({ saveStatus: "Wczytywanie…", storageError: null });
+    announcer.update({ saveStatus: "Zapisywanie…", storageError: null });
+    vi.advanceTimersByTime(750);
+    await vi.runOnlyPendingTimersAsync();
+    announcer.update({
+      saveStatus: "Zapisano na tym urządzeniu",
+      storageError: null,
+    });
+    vi.advanceTimersByTime(1_000);
+    await vi.runOnlyPendingTimersAsync();
+    announcer.update({
+      saveStatus: "Zapis nie powiódł się",
+      storageError: "Brak dostępu do lokalnego zapisu.",
+    });
+    announcer.update({ saveStatus: "Zapisywanie…", storageError: null });
+    await Promise.resolve();
+    expect(events.at(-1)).toEqual({
+      type: "message",
+      text: "Zapisano na tym urządzeniu",
+    });
+    vi.advanceTimersByTime(750);
+    await vi.runOnlyPendingTimersAsync();
+    expect(events.slice(-2)).toEqual([
+      { type: "clear" },
+      { type: "message", text: "Zapisywanie…" },
+    ]);
+    announcer.dispose();
+  });
+
+  it("cancels a queued error clear on dispose", async () => {
+    vi.useFakeTimers();
+    const { announcer, events } = harness();
+    announcer.update({ saveStatus: "Wczytywanie…", storageError: null });
+    announcer.update({ saveStatus: "Zapisywanie…", storageError: null });
+    vi.advanceTimersByTime(750);
+    await vi.runOnlyPendingTimersAsync();
+    announcer.update({
+      saveStatus: "Zapisano na tym urządzeniu",
+      storageError: null,
+    });
+    vi.advanceTimersByTime(1_000);
+    await vi.runOnlyPendingTimersAsync();
+    announcer.update({
+      saveStatus: "Zapis nie powiódł się",
+      storageError: "Brak dostępu do lokalnego zapisu.",
+    });
+    announcer.dispose();
+    await vi.runOnlyPendingTimersAsync();
+    expect(events.at(-1)).toEqual({
+      type: "message",
+      text: "Zapisano na tym urządzeniu",
+    });
   });
 });
