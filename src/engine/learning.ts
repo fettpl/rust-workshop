@@ -215,10 +215,17 @@ function definitionForStep(
 function isIndependentTaskSuccess(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
+  allowLegacyOrdinaryV1 = false,
 ): boolean {
   if (!isIndependentSuccess(event)) return false;
+  const legacyOrdinaryV1 =
+    allowLegacyOrdinaryV1 &&
+    step?.evidence?.version === 1 &&
+    step.evidence.codingTaskId === undefined &&
+    event.evidenceVersion === undefined;
   if (
     step?.evidence &&
+    !legacyOrdinaryV1 &&
     !matchesDefinition(event, definitionForStep(event, step))
   )
     return false;
@@ -895,7 +902,13 @@ function creditedGateTasks(
             stepForRef(lessons, { lessonId, stepId })?.evidence,
         );
         if (id) ids.add(id);
-      } else if (isIndependentTaskSuccess(event, step)) {
+      } else if (
+        isIndependentTaskSuccess(
+          event,
+          step,
+          criterion.requiredIndependentCodingTasks === undefined,
+        )
+      ) {
         ids.add(`${ref.lessonId}:${ref.stepId}`);
       }
     }
@@ -998,7 +1011,7 @@ export function moduleGate(
         (event) =>
           event.lessonId === lesson.id &&
           event.stepId === step.id &&
-          isIndependentTaskSuccess(event, step),
+          isIndependentTaskSuccess(event, step, true),
       );
       criteria.push({ label: `${lesson.title}: ${step.title}`, passed });
     }

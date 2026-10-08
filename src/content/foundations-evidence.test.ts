@@ -1,12 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { foundationsLessons } from "./foundations";
+import { foundationsLessons, foundationsModule } from "./foundations";
+import { lessons as courseLessons, ownershipModule } from "./catalog";
 import {
   courseMastery,
   evidenceForLessonStep,
   recordCourseEvidence,
 } from "./learning-context";
+import {
+  gateRecovery,
+  independentCodingTaskIds,
+  moduleGate,
+} from "../engine/learning";
 import { evaluate } from "../engine/evaluate";
-import { createInitialState } from "../persistence/state";
+import {
+  createInitialState,
+  createStepProgress,
+  stepKey,
+} from "../persistence/state";
+import type { EvidenceEvent } from "../domain/types";
 
 const outputTasks = [
   { lesson: "bindings-types", step: "mut-error" },
@@ -14,6 +25,53 @@ const outputTasks = [
   { lesson: "control-flow", step: "flow-modify" },
   { lesson: "control-flow", step: "flow-transfer" },
 ];
+
+const legacyFoundationGateCases = [
+  {
+    criterionId: "program-entry-gate",
+    lessonId: "first-program",
+    stepId: "entry-modify",
+  },
+  {
+    criterionId: "bindings-gate",
+    lessonId: "bindings-types",
+    stepId: "mut-error",
+  },
+] as const;
+
+function foundationGateCriterion(criterionId: string) {
+  const criterion = foundationsModule.gateCriteria?.find(
+    (candidate) => candidate.id === criterionId,
+  );
+  if (!criterion) throw new Error(`Missing foundation criterion ${criterionId}`);
+  return criterion;
+}
+
+function foundationEvent(
+  gateCase: (typeof legacyFoundationGateCases)[number],
+  overrides: Partial<EvidenceEvent> = {},
+): EvidenceEvent {
+  const lesson = foundationsLessons.find(
+    (candidate) => candidate.id === gateCase.lessonId,
+  )!;
+  const step = lesson.steps.find(
+    (candidate) => candidate.id === gateCase.stepId,
+  )!;
+  return {
+    id: `foundation-${gateCase.stepId}`,
+    lessonId: gateCase.lessonId,
+    stepId: gateCase.stepId,
+    conceptIds: [...lesson.conceptIds],
+    kind: step.evidenceKind,
+    evaluator: step.evaluator?.kind,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    at: 100,
+    gate: true,
+    ...overrides,
+  };
+}
 
 describe("foundation coding evidence", () => {
   it.each(outputTasks)(
@@ -211,6 +269,209 @@ describe("foundation attribution and learner-owned parcel work", () => {
     expect(courseMastery(afterShadow, "scalar-types").level).toBe(
       courseMastery(shadowState, "scalar-types").level,
     );
+  });
+
+  describe("ordinary gate compatibility for pre-attribution history", () => {
+    it.each(legacyFoundationGateCases)(
+      "keeps an unversioned independent success credited for $criterionId without rewriting state",
+      (gateCase) => {
+        const criterion = foundationGateCriterion(gateCase.criterionId);
+        const legacy = foundationEvent(gateCase);
+        expect(legacy).not.toHaveProperty("evidenceVersion");
+
+        const state = createInitialState();
+        state.events = [legacy];
+        state.mastery[legacy.conceptIds[0]] = {
+          level: "retained",
+          reason: "cached legacy level",
+          updatedAt: 99,
+        };
+        state.steps[stepKey(gateCase.lessonId, gateCase.stepId)] = {
+          ...createStepProgress("cached legacy draft"),
+          completed: true,
+        };
+        const before = structuredClone(state);
+        const masteryBefore = courseMastery(state, legacy.conceptIds[0]);
+        const codingTasksBefore = independentCodingTaskIds(
+          state,
+          legacy.conceptIds[0],
+        );
+
+        const result = moduleGate(state, foundationsLessons, foundationsModule);
+        expect(
+          result.criteria.find(
+            (candidate) => candidate.label === criterion.label,
+          ),
+        ).toMatchObject({ passed: true });
+        expect(gateRecovery(state, criterion, foundationsLessons)).toEqual({
+          status: "complete",
+        });
+        expect(state).toEqual(before);
+        expect(courseMastery(state, legacy.conceptIds[0])).toEqual(
+          masteryBefore,
+        );
+        expect(
+          independentCodingTaskIds(state, legacy.conceptIds[0]),
+        ).toEqual(codingTasksBefore);
+      },
+    );
+
+    it.each(legacyFoundationGateCases)(
+      "credits a pre-metadata success without an evaluator field for $criterionId",
+      (gateCase) => {
+        const criterion = foundationGateCriterion(gateCase.criterionId);
+        const legacy = foundationEvent(gateCase);
+        delete legacy.evaluator;
+        delete legacy.gate;
+        const state = createInitialState();
+        state.events = [legacy];
+
+        expect(
+          moduleGate(state, foundationsLessons, foundationsModule).criteria.find(
+            (candidate) => candidate.label === criterion.label,
+          ),
+        ).toMatchObject({ passed: true });
+        expect(gateRecovery(state, criterion, foundationsLessons)).toEqual({
+          status: "complete",
+        });
+      },
+    );
+
+    const rejectedLegacyVariants = [
+      { label: "failed", overrides: { passed: false } },
+      { label: "hinted", overrides: { hints: 1 } },
+      { label: "revealed", overrides: { revealed: true } },
+      {
+        label: "rubric",
+        overrides: {
+          kind: "self-rating" as const,
+          evaluator: "rubric" as const,
+        },
+      },
+      {
+        label: "expected-error",
+        overrides: { evaluator: "expected-error" as const },
+      },
+      {
+        label: "exposure",
+        overrides: { kind: "exposure" as const, evaluator: undefined },
+      },
+      { label: "mismatched version", overrides: { evidenceVersion: 2 } },
+    ] as const;
+
+    for (const gateCase of legacyFoundationGateCases) {
+      it.each(rejectedLegacyVariants)(
+        `does not credit $label history for ${gateCase.criterionId}`,
+        ({ label, overrides }) => {
+          const criterion = foundationGateCriterion(gateCase.criterionId);
+          const state = createInitialState();
+          state.events = [foundationEvent(gateCase, overrides)];
+
+          const result = moduleGate(
+            state,
+            foundationsLessons,
+            foundationsModule,
+          );
+          expect(
+            result.criteria.find(
+              (candidate) => candidate.label === criterion.label,
+            ),
+          ).toMatchObject({ passed: false });
+          const expectedTask =
+            label === "hinted" || label === "revealed"
+              ? criterion.taskRefs[1]
+              : criterion.taskRefs[0];
+          expect(gateRecovery(state, criterion, foundationsLessons)).toEqual({
+            status: "available",
+            task: expectedTask,
+          });
+        },
+      );
+    }
+
+    it.each(legacyFoundationGateCases)(
+      "keeps current v1 attribution exact for $criterionId",
+      (gateCase) => {
+        const lesson = foundationsLessons.find(
+          (candidate) => candidate.id === gateCase.lessonId,
+        )!;
+        const step = lesson.steps.find(
+          (candidate) => candidate.id === gateCase.stepId,
+        )!;
+        const criterion = foundationGateCriterion(gateCase.criterionId);
+        const precise = createInitialState();
+        precise.events = [
+          foundationEvent(gateCase, {
+            conceptIds: [...step.evidence!.conceptIds],
+            evidenceVersion: 1,
+          }),
+        ];
+        expect(
+          moduleGate(
+            precise,
+            foundationsLessons,
+            foundationsModule,
+          ).criteria.find((candidate) => candidate.label === criterion.label),
+        ).toMatchObject({ passed: true });
+
+        const broadVersioned = createInitialState();
+        broadVersioned.events = [
+          foundationEvent(gateCase, { evidenceVersion: 1 }),
+        ];
+        expect(
+          moduleGate(
+            broadVersioned,
+            foundationsLessons,
+            foundationsModule,
+          ).criteria.find((candidate) => candidate.label === criterion.label),
+        ).toMatchObject({ passed: false });
+      },
+    );
+
+    it("keeps counted coding-family gates strict for unversioned history", () => {
+      const sourceCriterion = ownershipModule.gateCriteria?.find(
+        (criterion) => criterion.id === "borrowing",
+      );
+      if (!sourceCriterion) throw new Error("Missing ownership borrowing gate");
+      const ref = sourceCriterion.taskRefs[0];
+      const lesson = courseLessons.find(
+        (candidate) => candidate.id === ref.lessonId,
+      )!;
+      const step = lesson.steps.find(
+        (candidate) => candidate.id === ref.stepId,
+      )!;
+      expect(step.evidence?.codingTaskId).toBeDefined();
+      const criterion = {
+        id: sourceCriterion.id,
+        label: sourceCriterion.label,
+        taskRefs: [ref],
+        requiredIndependentCodingTasks: 1,
+      };
+      const countedModule = { ...ownershipModule, gateCriteria: [criterion] };
+      const state = createInitialState();
+      state.events = [
+        {
+          id: "legacy-counted-family",
+          lessonId: ref.lessonId,
+          stepId: ref.stepId,
+          conceptIds: [...lesson.conceptIds],
+          kind: step.evidenceKind,
+          evaluator: step.evaluator?.kind,
+          passed: true,
+          hints: 0,
+          revealed: false,
+          at: 100,
+          gate: true,
+        },
+      ];
+      expect(
+        moduleGate(state, courseLessons, countedModule).criteria[0],
+      ).toMatchObject({ passed: false });
+      expect(gateRecovery(state, criterion, courseLessons)).toEqual({
+        status: "available",
+        task: ref,
+      });
+    });
   });
 
   it("describes the parcel milestone as an open self-rated local check", () => {

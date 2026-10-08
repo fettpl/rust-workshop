@@ -160,19 +160,22 @@ export function LessonWorkspace() {
           ? "Kod"
           : `Output${result ? " • " + (result.status === "success" ? "OK" : "!") : ""}`,
   }));
+  const lessonId = lesson.id;
+  const stepId = step.id;
+  const exposureConceptIds = step.evidence?.conceptIds ?? lesson.conceptIds;
   const openedStep = useRef("");
   useEffect(() => {
     if (openedStep.current === key) return;
     openedStep.current = key;
     update((s) =>
       recordCourseLessonExposure(s, {
-        lessonId: lesson.id,
-        stepId: step.id,
-        conceptIds: lesson.conceptIds,
+        lessonId,
+        stepId,
+        conceptIds: exposureConceptIds,
         at: Date.now(),
       }),
     );
-  }, [key, lesson, step.id, update]);
+  }, [key, lessonId, stepId, exposureConceptIds, update]);
   function patch(values: Partial<StepProgress>) {
     update((s) => {
       const next = {
@@ -189,9 +192,9 @@ export function LessonWorkspace() {
         values.revealed ||
         values.traceIndex !== undefined
         ? recordCourseLessonExposure(next, {
-            lessonId: lesson.id,
-            stepId: step.id,
-            conceptIds: lesson.conceptIds,
+            lessonId,
+            stepId,
+            conceptIds: exposureConceptIds,
             at: Date.now(),
             revealed: Boolean(values.revealed || values.hints),
           })
