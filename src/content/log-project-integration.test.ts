@@ -8,6 +8,72 @@ import {
 import { revealProjectSolution } from "../domain/project-package";
 import { moduleGate, recordEvidence } from "../engine/learning";
 
+type AuthoredInstructionCard = {
+  title: string;
+  summary?: string;
+  points: string[];
+  followUp?: AuthoredInstructionCard;
+};
+
+function learnerInstructionOf(project: unknown):
+  | AuthoredInstructionCard
+  | undefined {
+  return (project as { learnerInstruction?: AuthoredInstructionCard })
+    .learnerInstruction;
+}
+
+function authoredInstructionText(card: AuthoredInstructionCard): string {
+  return [card.title, card.summary ?? "", ...card.points].join("\n");
+}
+
+function expectEveryMarker(text: string, markers: string[]): void {
+  for (const marker of markers) expect(text).toContain(marker);
+}
+
+it("publishes the learner-owned Study Session contract with an honest staged follow-up", () => {
+  const project = projects.find((item) => item.id === "log-analyzer-project");
+  expect(project).toBeDefined();
+  const instruction = learnerInstructionOf(project);
+  expect(instruction).toBeDefined();
+  expect(instruction!.title).toBe("Twój program od zera");
+
+  const body = authoredInstructionText(instruction!);
+  expectEveryMarker(body, [
+    "Cargo",
+    "UTF-8",
+    "name;minutes",
+    "1440",
+    "Unicode",
+    "stderr",
+    "exit 2",
+    "exit 1",
+    "exit 0",
+    "Basia;30",
+    "Ada;5",
+    "Basia; 15",
+    "Ada;5",
+    "Basia;45",
+  ]);
+  expect(body).toMatch(/jeden|jedną/);
+  expect(body).toMatch(/średnik|separator/);
+  expect(body).toMatch(/sort|kolejnoś/);
+  expect(body).toMatch(/test/);
+  expect(body).toMatch(/przepełn|overflow/i);
+  expect(body).toMatch(/właściciel|własnoś|pożycz|borrow|owned/i);
+  expect(body).toMatch(/struktur|map|danych/);
+  expect(body).toMatch(/review|obserw|sprawdz|ocen|weryfik|człowiek/);
+
+  const followUp = instruction!.followUp;
+  expect(followUp).toBeDefined();
+  const followUpBody = authoredInstructionText(followUp!);
+  expectEveryMarker(followUpBody, ["--min-total N", "--min-total 10"]);
+  expect(followUpBody).toMatch(/review|obserw|sprawdz|ocen|weryfik|człowiek/);
+  expect(followUpBody).toMatch(/pierwsz/);
+  expect(followUpBody).toMatch(/stare|dotychczas|bez zmian|nadal/);
+  expect(followUpBody).toMatch(/zapis.*liczb|narzucon/);
+  expect(followUpBody).toMatch(/obsług.*błęd|własnym kontrak/);
+});
+
 it("keeps Log Analyzer package help separate from Todo and leaves a fresh route through each gate", () => {
   const project = projects.find(
     (item) => item.package?.id === "log-analyzer-workshop",

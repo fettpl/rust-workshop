@@ -54,7 +54,63 @@ const recallIds = [
   "capstone-release-recall",
 ];
 
+type AuthoredInstructionCard = {
+  title: string;
+  summary?: string;
+  points: string[];
+  followUp?: AuthoredInstructionCard;
+};
+
+function learnerInstructionOf(project: unknown):
+  | AuthoredInstructionCard
+  | undefined {
+  return (project as { learnerInstruction?: AuthoredInstructionCard })
+    .learnerInstruction;
+}
+
+function authoredInstructionText(card: AuthoredInstructionCard): string {
+  return [card.title, card.summary ?? "", ...card.points].join("\n");
+}
+
 describe("Capstone: trwały serwis logów", () => {
+  it("publishes the bounded per-stream K change card without changing capstone gates", () => {
+    const project = projects.find(
+      (candidate) => candidate.id === "durable-log-service",
+    );
+    expect(project).toBeDefined();
+    const instruction = learnerInstructionOf(project);
+    expect(instruction).toBeDefined();
+    const body = authoredInstructionText(instruction!);
+
+    for (const marker of ["K=1", "K=2", "idempot", "konflikt", "transakcj"]) {
+      expect(body).toContain(marker);
+    }
+    expect(body).toMatch(/restart|uruchomien/);
+    expect(body).toMatch(/storage|magazyn/i);
+    expect(body).toMatch(/strumień|strumieni/);
+    expect(body).toMatch(/nowe|nowy.*ID|identyfikator/);
+    expect(body).toMatch(/wiersz|zapis/);
+    expect(body).toMatch(/potwierd|acknowledg|sukces/);
+    expect(body).toMatch(/pojemn|capacity/i);
+    expect(body).toMatch(/współbież|jednoproces|concurr/i);
+    expect(body).toMatch(/uzasadn|decyzj.*gran|miejsce/);
+
+    expect(project!.lessonIds).toEqual(lessonIds);
+    expect(project!.reviewConceptIds).toEqual(
+      lessonIds.map((id) => `${id}-contract`),
+    );
+    expect(project!.package?.id).toBe("durable-log-service-workspace");
+    expect(project!.adversarialLessonId).toBe("capstone-release-evidence");
+    expect(project!.adversarialInject).toContain(
+      "Po utracie odpowiedzi klient ponawia to samo żądanie, a raport wydania może dotyczyć innego digestu.",
+    );
+    expect(
+      capstoneIntegrationLessons.flatMap((lesson) =>
+        lesson.steps.filter((step) => step.evidenceGate),
+      ),
+    ).toHaveLength(12);
+  });
+
   it("publikuje dokładnie sześć lekcji, pojęć, kompetencji i źródeł", () => {
     expect(capstoneIntegrationLessons.map((lesson) => lesson.id)).toEqual(
       lessonIds,

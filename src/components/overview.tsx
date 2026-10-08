@@ -38,6 +38,7 @@ import {
 } from "./ui";
 import type { Lesson, ProjectContract } from "@/domain/types";
 import { ProjectPackage } from "./project-package";
+import { LearningText } from "./learning-text";
 import { ModulePicker } from "./module-picker";
 import {
   normalizeMapPreference,
@@ -780,6 +781,50 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
           <ArrowRight size={18} />
         </button>
       </div>
+      {project.learnerInstruction && (
+        <section
+          className="project-package learner-instruction"
+          aria-labelledby={`project-instruction-${project.id}`}
+        >
+          <Eyebrow>PRACA WŁASNA</Eyebrow>
+          <h2 id={`project-instruction-${project.id}`}>
+            {project.learnerInstruction.title}
+          </h2>
+          {project.learnerInstruction.summary && (
+            <p>
+              <LearningText>{project.learnerInstruction.summary}</LearningText>
+            </p>
+          )}
+          <ol>
+            {project.learnerInstruction.points.map((point) => (
+              <li key={point}>
+                <LearningText>{point}</LearningText>
+              </li>
+            ))}
+          </ol>
+          {project.learnerInstruction.followUp && (
+            <details className="learner-instruction-followup">
+              <summary>
+                <LearningText>{project.learnerInstruction.followUp.title}</LearningText>
+              </summary>
+              {project.learnerInstruction.followUp.summary && (
+                <p>
+                  <LearningText>
+                    {project.learnerInstruction.followUp.summary}
+                  </LearningText>
+                </p>
+              )}
+              <ol>
+                {project.learnerInstruction.followUp.points.map((point) => (
+                  <li key={point}>
+                    <LearningText>{point}</LearningText>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
+        </section>
+      )}
       {project.package && (
         <ProjectPackage key={project.package.id} project={project.package} />
       )}

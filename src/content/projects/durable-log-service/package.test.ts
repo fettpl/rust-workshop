@@ -22,6 +22,54 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
     expect(durableLogServiceWorkspacePaths).toHaveLength(35);
   });
 
+  it("documents bounded K as a problem-only change card without adding artifacts", () => {
+    const readmes = {
+      starter: projectFiles(durableLogServicePackage, "starter")["README.md"],
+      solution: projectFiles(durableLogServicePackage, "solution")["README.md"],
+    };
+    for (const [variant, documentation] of Object.entries(readmes)) {
+      for (const marker of [
+        "K=1",
+        "K=2",
+        "idempot",
+        "konflikt",
+        "restart",
+        "wiersz",
+        "potwierdzenia sukcesu",
+      ]) {
+        expect(documentation, variant + " README").toContain(marker);
+      }
+      expect(documentation, variant + " README").toMatch(
+        /Istniejące żądania klienta pozostają zgodne poza\s+opisanym odrzuceniem z powodu\s+pełnego limitu\./,
+      );
+      expect(documentation, variant + " README").toMatch(/strumień|strumieni/);
+      expect(documentation, variant + " README").toMatch(
+        /identyczna\s+próba\s+nadal\s+jest\s+sukcesem/i,
+      );
+      expect(documentation, variant + " README").toMatch(
+        /konflikt\s+pozostaje\s+konfliktem/i,
+      );
+      expect(documentation, variant + " README").toMatch(
+        /restart\s+zachowuje\s+rozliczenie\s+pojemności/i,
+      );
+      expect(documentation, variant + " README").toMatch(
+        /jednoprocesowa\s+może\s+opisać\s+i\s+zademonstrować\s+swoją\s+granicę/i,
+      );
+      expect(documentation, variant + " README").toMatch(/magazyn|storage/i);
+      expect(documentation, variant + " README").toMatch(/transakcj|granica.*przyję|admission/i);
+      expect(documentation, variant + " README").toMatch(/awari|błąd.*zapisu|storage failure/i);
+      expect(documentation, variant + " README").toMatch(/współbież|concurr|jednoproces/i);
+    }
+    expect(durableLogServicePackage.workspaceMembers).toEqual([
+      "crates/ingest-core",
+      "crates/ingest-store",
+      "crates/ingest-service",
+    ]);
+    expect(durableLogServiceWorkspacePaths).toHaveLength(35);
+    expect(durableLogServicePackage.revealStepRefs).toHaveLength(12);
+    expect(durableLogServicePackage.starterRevealStepRefs).toEqual([]);
+  });
+
   it("wiąże ekspozycję z ujawnionymi bramkami i zostawia blank/review niezależne", () => {
     const starterFiles = projectFiles(durableLogServicePackage, "starter");
     expect(Object.keys(starterFiles)).toHaveLength(35);

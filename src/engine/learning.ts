@@ -201,12 +201,17 @@ function codingTaskId(
     : undefined;
 }
 
+function authoredEvidenceKind(
+  step: Lesson["steps"][number] | undefined,
+): EvidenceEvent["kind"] | undefined {
+  return step?.evaluator?.kind === "rubric" ? "self-rating" : step?.evidenceKind;
+}
+
 function definitionForStep(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
 ): StepEvidenceDefinition | undefined {
-  const kind =
-    step?.evaluator?.kind === "rubric" ? "self-rating" : step?.evidenceKind;
+  const kind = authoredEvidenceKind(step);
   return step && event.kind === kind && event.evaluator === step.evaluator?.kind
     ? step.evidence
     : undefined;
@@ -215,10 +220,24 @@ function definitionForStep(
 function isIndependentTaskSuccess(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
+  allowLegacyOrdinaryV1 = false,
 ): boolean {
   if (!isIndependentSuccess(event)) return false;
+  const legacyOrdinaryV1 =
+    allowLegacyOrdinaryV1 &&
+    step?.evidence?.version === 1 &&
+    step.evidence.codingTaskId === undefined &&
+    event.evidenceVersion === undefined;
+  if (
+    legacyOrdinaryV1 &&
+    (event.kind !== authoredEvidenceKind(step) ||
+      (event.evaluator !== undefined &&
+        event.evaluator !== step?.evaluator?.kind))
+  )
+    return false;
   if (
     step?.evidence &&
+    !legacyOrdinaryV1 &&
     !matchesDefinition(event, definitionForStep(event, step))
   )
     return false;
@@ -895,7 +914,13 @@ function creditedGateTasks(
             stepForRef(lessons, { lessonId, stepId })?.evidence,
         );
         if (id) ids.add(id);
-      } else if (isIndependentTaskSuccess(event, step)) {
+      } else if (
+        isIndependentTaskSuccess(
+          event,
+          step,
+          criterion.requiredIndependentCodingTasks === undefined,
+        )
+      ) {
         ids.add(`${ref.lessonId}:${ref.stepId}`);
       }
     }
@@ -998,7 +1023,7 @@ export function moduleGate(
         (event) =>
           event.lessonId === lesson.id &&
           event.stepId === step.id &&
-          isIndependentTaskSuccess(event, step),
+          isIndependentTaskSuccess(event, step, true),
       );
       criteria.push({ label: `${lesson.title}: ${step.title}`, passed });
     }

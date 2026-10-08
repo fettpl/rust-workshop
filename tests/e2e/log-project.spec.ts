@@ -3,6 +3,8 @@ import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
 import { lessons, modules, projects } from "../../src/content/course";
+import type { UserState } from "../../src/domain/types";
+import { stepKey } from "../../src/persistence/state";
 
 test("shows a failed assertion as test feedback and preserves the corrected test", async ({
   page,
@@ -91,6 +93,31 @@ test("switches Cargo projects without leaking solution view, notes or help", asy
   await picker.getByRole("button", { name: new RegExp(todo.title) }).click();
   await notes.fill("Todo: potwierdzam dopiero po zapisie.");
   await picker.getByRole("button", { name: new RegExp(log!.title) }).click();
+  const learnerInstruction = page.locator(".learner-instruction");
+  await expect(
+    learnerInstruction.getByRole("heading", {
+      name: "Twój program od zera",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(learnerInstruction).toContainText("Pierwsza linia zaczyna się jedną spacją.");
+  const followUp = learnerInstruction.locator(
+    "details.learner-instruction-followup",
+  );
+  await expect(followUp).toBeVisible();
+  await expect(followUp).toContainText("--min-total N");
+  await expect(followUp).not.toHaveAttribute("open", "");
+  const followUpSummary = followUp.locator("summary");
+  await expect(followUpSummary).toContainText("--min-total N");
+  await followUpSummary.focus();
+  await expect(followUpSummary).toBeFocused();
+  await followUpSummary.press("Enter");
+  await expect(followUp).toHaveAttribute("open", "");
+  await expect(followUp).toContainText("--min-total 10");
+  await picker.getByRole("button", { name: new RegExp(todo.title) }).click();
+  await expect(page.locator(".learner-instruction")).toHaveCount(0);
+  await picker.getByRole("button", { name: new RegExp(log!.title) }).click();
+  await expect(learnerInstruction).toBeVisible();
   await expect(notes).toHaveValue("");
   await notes.fill("Logi: błędny wiersz nie znika przez filtr.");
   const started = page.waitForEvent("download");
@@ -216,4 +243,114 @@ test("downloads the Log Analyzer benchmark and result contract", async ({
   expect(
     strFromU8(files[`${archive.id}/tests/performance_contract.rs`]),
   ).toContain("baseline_and_candidate_have_the_same_result_shape");
+});
+
+test("keeps the appended parcel self-rating separate from independent coding and retention evidence", async ({
+  page,
+}) => {
+  const foundation = lessons.find((item) => item.id === "foundations-assessment");
+  expect(foundation).toBeDefined();
+  const parcel = foundation?.steps.find(
+    (step) => step.id === "foundations-local-parcel-program",
+  );
+  expect(
+    parcel,
+    "foundations-assessment must append the parcel local-program step",
+  ).toBeDefined();
+  if (!foundation || !parcel) return;
+  expect(parcel.evaluator?.kind).toBe("rubric");
+  expect(parcel.evidenceGate).not.toBe(true);
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .locator(".module-picker")
+    .getByRole("button", { name: /Fundamenty Rust/ })
+    .click();
+  await page
+    .locator(".lesson-list-item")
+    .filter({ hasText: foundation.title })
+    .click();
+  await page
+    .locator('[aria-label="Kroki lekcji"] button')
+    .nth(foundation.steps.indexOf(parcel))
+    .click();
+  await expect(page.getByRole("heading", { name: parcel.title })).toBeVisible();
+  const rubric = page.locator("details.rubric");
+  await expect(rubric).toBeVisible();
+  await rubric.locator("summary").click();
+  await expect(rubric).toHaveAttribute("open", "");
+  await expect(
+    rubric.getByText(/To samoocena wyjaśnienia, nie automatyczna ocena/),
+  ).toBeVisible();
+  await page
+    .getByRole("textbox", { name: "Twoje wyjaśnienie" })
+    .fill("Samodzielnie opisałem granice i sprawdziłem je lokalnie.");
+  const criteria = rubric.locator('input[type="checkbox"]');
+  const criterionCount = await criteria.count();
+  expect(criterionCount).toBeGreaterThan(0);
+  for (let index = 0; index < criterionCount; index += 1)
+    await criteria.nth(index).check();
+  await page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true }).click();
+  await expect(
+    page.locator(".feedback").filter({ hasText: "Sprawdziłeś każde kryterium" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+  ).toBeVisible();
+
+  const observed = await page.evaluate(
+    async ({ key, lessonId, stepId, conceptIds }) => {
+      const state = await new Promise<UserState>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const read = request.result
+            .transaction("user-state", "readonly")
+            .objectStore("user-state")
+            .get("current");
+          read.onerror = () => reject(read.error);
+          read.onsuccess = () => {
+            request.result.close();
+            resolve(read.result);
+          };
+        };
+      });
+      return {
+        events: state.events.filter(
+          (event: { lessonId: string; stepId: string }) =>
+            event.lessonId === lessonId && event.stepId === stepId,
+        ),
+        progress: state.steps?.[key],
+        mastery: conceptIds.map(
+          (conceptId: string) => state.mastery?.[conceptId]?.level ?? "new",
+        ),
+      };
+    },
+    {
+      key: stepKey(foundation.id, parcel.id),
+      lessonId: foundation.id,
+      stepId: parcel.id,
+      conceptIds: parcel.evidence?.conceptIds ?? foundation.conceptIds,
+    },
+  );
+  expect(observed.progress).toMatchObject({ completed: true });
+  expect(observed.events.at(-1)).toMatchObject({
+    kind: "self-rating",
+    evaluator: "rubric",
+    passed: true,
+    revealed: false,
+  });
+  expect(observed.events.some((event: { gate?: boolean }) => event.gate === true)).toBe(
+    false,
+  );
+  expect(
+    observed.events.filter((event: { kind: string }) =>
+      ["fix", "transfer", "project"].includes(event.kind),
+    ),
+  ).toHaveLength(0);
+  expect(observed.mastery).not.toContain("understood");
+  expect(observed.mastery).not.toContain("retained");
 });

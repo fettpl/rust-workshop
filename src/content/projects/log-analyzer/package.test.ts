@@ -17,6 +17,30 @@ describe("Log Analyzer performance archive contract", () => {
     ]);
   });
 
+  it("documents the problem-only Study Session brief without changing the reference archive", () => {
+    const documentation = [
+      logAnalyzerPackage.description,
+      ...logAnalyzerPackage.instructions,
+      projectFiles(logAnalyzerPackage, "starter")["README.md"],
+    ].join("\n");
+    expect(documentation).toContain("Twój program od zera");
+    expect(documentation).toContain("name;minutes");
+    expect(documentation).toContain("Basia;30");
+    expect(documentation).toContain("Ada;5");
+    expect(documentation).toContain("Basia; 15");
+    expect(documentation).toContain("--min-total N");
+    expect(documentation).toContain("exit 2");
+    expect(documentation).toContain("exit 1");
+    expect(documentation).toContain("UTF-8");
+    expect(documentation).toMatch(/problem|zadani|własny|od zera/i);
+    expect(logAnalyzerPackage.files).toHaveLength(20);
+    expect(logAnalyzerPackage.revealStepRefs.map((ref) => ref.stepId)).toEqual([
+      "records-debug",
+      "stream-debug",
+      "report-blank",
+    ]);
+  });
+
   it("ships a dev-only Criterion benchmark with deterministic result coverage", () => {
     const solution = projectFiles(logAnalyzerPackage, "solution");
     const manifest = solution["Cargo.toml"];

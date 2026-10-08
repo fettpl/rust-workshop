@@ -267,6 +267,28 @@ Paczka używa Rust 2024, minimalnej wersji Rust 1.85.0, rusqlite 0.40.2 z
 kompilowanym SQLite oraz Tokio 1.53.1. Magazyn zapisuje receipt w transakcji,
 rozpoznaje bezpieczne powtórzenia i zachowuje dane po ponownym otwarciu. Nie jest to obietnica dostarczenia
 z dokładnie jednym skutkiem ani dowód bezpieczeństwa dla publicznej sieci.
+
+## Zmiana wymagania: limit K na strumień
+
+Rozszerz własny lokalny projekt o konfigurowalny limit K dla nowo zatwierdzanych
+rekordów każdego strumienia. Wcześniej zatwierdzone rekordy liczą się do K. Dla
+\`K=1\` pokaż pierwszy zapis, identyczną idempotentną ponowną próbę przy pełnym
+limicie, konflikt przy ponownym użyciu tego samego ID oraz odrzucenie nowego ID
+przy pełnym limicie. To odrzucenie nie może utworzyć zatwierdzonego wiersza ani
+potwierdzenia sukcesu; identyczna próba nadal jest sukcesem, a konflikt pozostaje
+konfliktem.
+
+Pokaż \`K=2\` dla co najmniej dwóch strumieni i sprawdź, że restart zachowuje
+rozliczenie pojemności. Istniejące żądania klienta pozostają zgodne poza
+opisanym odrzuceniem z powodu pełnego limitu. Zbadaj awarię magazynu i brak częściowego zapisu. Próby
+jednoczesne dodaj tylko przy deklarowanej obsłudze współbieżności; implementacja
+jednoprocesowa może opisać i zademonstrować swoją granicę.
+
+Wybierz miejsce reguły oraz uzasadnij granicę transakcji i przyjęcia żądania.
+Przygotuj własne testy i dowody dla sekwencji \`K=1\`, dwóch strumieni przy \`K=2\`,
+restartu, awarii magazynu i zadeklarowanej granicy współbieżności. Pobrany pakiet
+oraz znane studium przypadku są pomocą, nie
+automatycznym wykonaniem kodu uczącego się ani zaliczeniem.
 `;
 
 const starterReadme = `# Trwały dziennik zdarzeń
@@ -285,6 +307,24 @@ Paczka używa Rust 2024, minimalnej wersji Rust 1.85.0, rusqlite 0.40.2 z
 kompilowanym SQLite oraz Tokio 1.53.1. Granice procesu, danych i wydania są
 częścią ćwiczenia. Nie uruchamiaj publicznego nasłuchu i nie traktuj pobrania
 pliku jako dowodu samodzielności.
+
+## Zmiana wymagania: limit K na strumień
+
+Rozszerz własny lokalny projekt o konfigurowalny limit K dla nowo zatwierdzanych
+rekordów każdego strumienia. Wcześniej zatwierdzone rekordy liczą się do K. Dla
+\`K=1\` pokaż pierwszy zapis, identyczną idempotentną ponowną próbę przy pełnym
+limicie, konflikt przy ponownym użyciu tego samego ID oraz odrzucenie nowego ID
+przy pełnym limicie. Odrzucenie nie może utworzyć zatwierdzonego wiersza ani
+potwierdzenia sukcesu; identyczna próba nadal jest sukcesem, a konflikt pozostaje konfliktem.
+Istniejące żądania klienta pozostają zgodne poza opisanym odrzuceniem z powodu
+pełnego limitu.
+
+Pokaż \`K=2\` dla co najmniej dwóch strumieni i sprawdź, że restart zachowuje
+rozliczenie pojemności przy pełnym limicie oraz że awaria magazynu nie tworzy
+częściowego zapisu. Próby jednoczesne dodaj tylko wtedy, gdy deklarujesz
+obsługę współbieżności; implementacja jednoprocesowa może
+opisać i zademonstrować swoją granicę. Wybierz miejsce reguły i uzasadnij granicę transakcji
+oraz przyjęcia żądania.
 `;
 
 const protocol = `# Protokół
@@ -517,6 +557,7 @@ export const durableLogServicePackage: ProjectPackage = {
     "Zacznij od testów publicznego API i zanotuj wymagane granice oraz decyzje protokołu.",
     "Uruchamiaj cargo fmt --all -- --check, cargo check --workspace --locked oraz cargo test --workspace --locked.",
     "Przeczytaj ADR-y, zaproponuj własne niezmienniki i powiąż każdą decyzję z testem kontraktu.",
+    "Zmiana wymagania: dodaj konfigurowalny limit K na strumień; zachowaj idempotentną identyczną próbę, konflikt ID, odrzucenie nowego ID bez wiersza i potwierdzenia sukcesu, restart, awarię magazynu oraz opisaną granicę współbieżności dla K=1 i K=2.",
   ],
   workspaceMembers: [
     "crates/ingest-core",

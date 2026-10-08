@@ -1834,6 +1834,64 @@ liczenie strumieniowe, pomijanie za długiej linii i raport, zachowując podane
 API. Następnie sprawdź referencję oraz wykonaj ręczne próby: pusty plik, 4096 i
 4097 bajtów przed LF, CRLF, brak końcowego LF, uszkodzony UTF-8, nieznany level,
 przepełniony timestamp i niedostępny plik.
+
+## Twój program od zera
+
+Utwórz osobny lokalny projekt Cargo korzystający ze standardowej biblioteki.
+Możesz zaglądać do dokumentacji standardowej biblioteki; zapisz, z jakiej
+pomocy skorzystałeś. Program przyjmuje dokładnie jeden argument: ścieżkę do
+pliku w UTF-8. Każda niepusta linia ma postać \`name;minutes\`, zawiera dokładnie
+jeden średnik, a oba pola trzeba przyciąć; name nie może być puste. minutes to
+dziesiętne cyfry ASCII z zakresu 1..=1440. Puste linie pomijasz, nazwy są
+napisami Unicode rozróżniającymi wielkość liter.
+
+Zsumuj minuty dla każdej nazwy i wypisz \`name;total\`, po jednej linii, w porządku
+napisów Rust. Błędny rekord zgłoś na stderr z numerem linii od 1, kontynuuj dla
+poprawnych rekordów, wypisz poprawne podsumowanie i zakończ \`exit 2\`. Błędna
+liczba argumentów, błąd I/O albo błąd UTF-8 ma trafić na stderr, nie wypisać
+raportu i zakończyć się \`exit 1\`; poprawny plik kończy się \`exit 0\`. Przepełnienie
+sumy jest błędnym rekordem i zachowuje wcześniejsze sumy. Nie ma wymagań dla
+zależności, sieci, znaczników czasu, wdrożenia ani progu wydajności.
+
+Przykład 1 — wejście. Pierwsza linia zaczyna się jedną spacją.
+
+\` Basia;30\`
+\`Ada;5\`
+\`Basia; 15\`
+
+stdout:
+
+\`Ada;5\`
+\`Basia;45\`
+
+stderr jest puste, a kod wyjścia to 0.
+
+Przykład 2 — wejście:
+
+\`Ada;5\`
+\`to nie jest rekord\`
+\`Basia;7\`
+
+stdout:
+
+\`Ada;5\`
+\`Basia;7\`
+
+stderr zawiera numer linii 2, a kod wyjścia to 2; treść komunikatu wybierasz
+samodzielnie. Zapisz decyzje o własności nazw i strukturze danych, własne testy
+błędu oraz agregacji i kolejności, wyniki poleceń dla pliku poprawnego i
+mieszanego oraz krótkie omówienie jednej decyzji własności. Przegląd człowieka
+albo obserwacja pracy obejmuje powtórzenia oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF,
+granice minut, złe pola, I/O i przepełnienie. Pakiet referencyjny jest pomocą,
+nie artefaktem uczącego się ani automatycznym zaliczeniem.
+
+Po pierwszym artefakcie przejrzanym przez człowieka albo zaobserwowanym możesz
+dodać opcjonalne \`--min-total N\`, na przykład \`--min-total 10\`. Filtr dotyczy
+tylko końcowych sum, a stare wywołanie pozostaje zgodne; parsowanie, diagnostyka
+i kody wyjścia pozostają bez zmian, testy trzeba zaktualizować i wyjaśnić nową
+granicę. Sposób zapisu liczby \`N\` nie jest tu narzucony. Określ dozwolony
+zapis i obsługę błędów we własnym kontrakcie; pokaż tę granicę w testach i
+wyjaśnij swoją decyzję.
 `;
 
 const gitignore = `/target/\n`;
@@ -1850,6 +1908,8 @@ export const logAnalyzerPackage: ProjectPackage = {
     "Zachowaj niezależność filtra i poprawności: błędna linia zawsze zwiększa malformed, poprawne rekordy liczą się tylko dla wybranego poziomu.",
     "Uruchom cargo test --offline --locked, cargo doc --offline --no-deps i cargo clippy --offline --locked --all-targets -- -D warnings.",
     "Sprawdź cargo run --offline -- FILE oraz cargo run --offline -- FILE INFO. Błąd pliku lub odczytu nie może wypisać częściowego raportu.",
+    "Twój program od zera: w osobnym projekcie Cargo zbuduj CLI dla jednego pliku UTF-8 z rekordami name;minutes, sumowaniem i sortowaniem Rust; zachowaj opis błędów, kodów exit 0/1/2, przepełnienia, dwóch przykładów oraz własnych testów z briefu w README.",
+    "Po pierwszym przeglądzie lub obserwacji możesz dodać --min-total N tylko dla końcowych sum; stare wywołanie, parsowanie, diagnostyka i kody wyjścia pozostają zgodne, a nieokreślone zachowanie niepoprawnego N wymaga własnego jawnego opisu.",
   ],
   revealStepRefs: [
     { lessonId: "log-records", stepId: "records-debug" },
