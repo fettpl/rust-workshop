@@ -159,8 +159,6 @@ for (const moduleId of [
       await expect(page.locator(".task-pane")).toContainText(
         "samodzielne zadania kodowe 0/2",
       );
-      // The focused static policy fixture still anchors this historical draft marker:
-      // "Niezależny transfer async zapisany po reveal". The persisted text below is assisted practice.
       const asyncDraft = "// Assisted receiver practice saved after reveal.\n";
       await editor.fill(asyncDraft);
       await expect(
