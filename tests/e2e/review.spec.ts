@@ -123,6 +123,21 @@ async function readStoredState(page: Page): Promise<UserState> {
   );
 }
 
+async function waitForPersistedQueue(
+  page: Page,
+  expectedReview: UserState["review"],
+): Promise<void> {
+  await expect
+    .poll(async () => {
+      const current = await readStoredState(page);
+      return (
+        current.reviewSession === undefined &&
+        JSON.stringify(current.review) === JSON.stringify(expectedReview)
+      );
+    })
+    .toBe(true);
+}
+
 test("serves a due review as delayed recall and schedules the next attempt after success", async ({
   page,
 }) => {
@@ -373,6 +388,7 @@ test("defaults I/O practice to a short probe and preserves an unrated queue", as
       reason: "Pełny kontrakt wróci później.",
     },
   ];
+  const seededReview = state.review.map((item) => ({ ...item }));
   await seedState(page, state);
 
   await page
@@ -398,6 +414,8 @@ test("defaults I/O practice to a short probe and preserves an unrated queue", as
       .locator(".upcoming")
       .getByText("Wersjonowany format i pełny round trip"),
   ).toBeVisible();
+  await waitForPersistedQueue(page, seededReview);
+  expect((await readStoredState(page)).review).toEqual(seededReview);
   await page.reload();
   await expect(
     page
@@ -407,6 +425,7 @@ test("defaults I/O practice to a short probe and preserves an unrated queue", as
   await expect(
     page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
   ).toHaveCount(0);
+  expect((await readStoredState(page)).review).toEqual(seededReview);
 });
 
 test("keeps the extended I/O review reachable by explicit selection", async ({
@@ -463,19 +482,12 @@ test("keeps a failed short exposure queued after a later pass and unrated exit",
   await page.getByRole("button", { name: "Uruchom testy" }).click();
   await expect(page.getByText("Kod działa.")).toBeVisible();
   await page.getByRole("button", { name: "← Do kolejki" }).click();
-  const afterUnratedExit = await readStoredState(page);
-  expect(afterUnratedExit.review).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ conceptId: "io-format-roundtrip" }),
-    ]),
-  );
+  const failedQueue = afterFailure.review.map((item) => ({ ...item }));
+  await waitForPersistedQueue(page, failedQueue);
+  expect((await readStoredState(page)).review).toEqual(failedQueue);
   await page.reload();
   const afterReload = await readStoredState(page);
-  expect(afterReload.review).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ conceptId: "io-format-roundtrip" }),
-    ]),
-  );
+  expect(afterReload.review).toEqual(failedQueue);
 });
 
 test("requires an explicit rating before scheduling a short probe", async ({
@@ -502,8 +514,19 @@ test("requires an explicit rating before scheduling a short probe", async ({
   await expect(
     page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
   ).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const current = await readStoredState(page);
+      return (
+        current.reviewSession === undefined &&
+        current.review.some((item) => item.conceptId === "io-safe-persistence")
+      );
+    })
+    .toBe(true);
+  const scheduledReview = (await readStoredState(page)).review;
   await page.reload();
   await expect(
     page.locator(".upcoming").getByText("Błąd odczytu i etapowany zapis"),
   ).toBeVisible();
+  expect((await readStoredState(page)).review).toEqual(scheduledReview);
 });
