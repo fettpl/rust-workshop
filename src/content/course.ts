@@ -506,6 +506,10 @@ import {
   functionOwnershipCalibrationLesson,
   delayedReviewExercises as functionOwnershipDelayedReviewExercises,
 } from "./function-ownership-calibration";
+import {
+  sharedBorrowCalibrationLesson,
+  delayedReviewExercises as sharedBorrowDelayedReviewExercises,
+} from "./shared-borrow-calibration";
 
 const traitsModule = {
   ...baseTraitsModule,
@@ -675,6 +679,7 @@ export const lessons = [
   ...coreCheckedConversionsLessons,
   ...nestedPatternLessons,
   functionOwnershipCalibrationLesson,
+  sharedBorrowCalibrationLesson,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -938,7 +943,10 @@ export const reviewExercises = {
   ...coreCheckedConversionsReviewExercises,
   ...nestedPatternReviewExercises,
 };
-export const delayedReviewExercises = functionOwnershipDelayedReviewExercises;
+export const delayedReviewExercises = {
+  ...functionOwnershipDelayedReviewExercises,
+  ...sharedBorrowDelayedReviewExercises,
+};
 const allReviewSteps = [
   ...Object.values(reviewExercises),
   ...Object.values(delayedReviewExercises),

@@ -22,6 +22,7 @@ import {
   nestedPatternSources,
 } from "./nested-patterns";
 import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
+import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
 import { nextLessonForNavigation } from "../engine/course-route";
 import { gateRecovery, moduleGate } from "../engine/learning";
 import {
@@ -107,7 +108,11 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
         : original.id === "data-modeling"
           ? [...original.lessonIds, ...nestedLessonIds]
           : original.id === "ownership"
-            ? [...original.lessonIds, "function-ownership-calibration"]
+            ? [
+                ...original.lessonIds,
+                "function-ownership-calibration",
+                "shared-borrow-calibration",
+              ]
             : original.lessonIds,
     );
     expect(
@@ -135,6 +140,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ...coreCheckedConversionsLessons,
     ...nestedPatternLessons,
     functionOwnershipCalibrationLesson,
+    sharedBorrowCalibrationLesson,
   ]);
   expect(course.concepts.slice(legacy.conceptIds.length)).toEqual([
     ...coreConversionsConcepts,
@@ -146,7 +152,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ...coreCheckedConversionsSources,
     ...nestedPatternSources,
   ]);
-  expect(course.lessons.at(-1)).toEqual(functionOwnershipCalibrationLesson);
+  expect(course.lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
   expect(nestedPatternLessons[0].prerequisites).toEqual([
     "modeling-assessment",
   ]);
@@ -224,7 +230,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ).length,
     reviews: Object.keys(course.reviewExercises).length,
   }).toEqual({
-    lessons: frozenPreNestedInventory.lessons + nestedInventory.lessons + 1,
+    lessons: frozenPreNestedInventory.lessons + nestedInventory.lessons + 2,
     modules: frozenPreNestedInventory.modules,
     concepts: frozenPreNestedInventory.concepts + nestedInventory.concepts,
     blank: frozenPreNestedInventory.blank + nestedInventory.blank,
@@ -233,11 +239,11 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     traces: frozenPreNestedInventory.traces,
     competencies:
       frozenPreNestedInventory.competencies + nestedInventory.competencies,
-    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 5,
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 10,
     testEvaluators:
       frozenPreNestedInventory.testEvaluators +
       nestedInventory.testEvaluators +
-      2,
+      4,
     reviews: frozenPreNestedInventory.reviews + nestedInventory.reviews,
   });
   for (const registry of [
