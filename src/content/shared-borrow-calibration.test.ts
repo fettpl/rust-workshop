@@ -184,3 +184,15 @@ it.each([
     ),
   ).toBe(true);
 });
+
+it("accepts an explicit false delayed gate as non-primary metadata", () => {
+  const delayed = registeredDelayedReviews["shared-borrow"];
+  const validWithFalseGate = {
+    ...bundle,
+    delayedReviewExercises: {
+      ...registeredDelayedReviews,
+      "shared-borrow": { ...delayed, evidenceGate: false },
+    },
+  };
+  expect(validateContent(validWithFalseGate)).toEqual([]);
+});
