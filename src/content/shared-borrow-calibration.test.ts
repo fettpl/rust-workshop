@@ -160,7 +160,9 @@ it.each([
   ["starter", { code: "fn main() {}" }],
   ["solution", { solution: "fn main() {}" }],
   ["tests", { evaluator: { kind: "tests", tests: "#[test] fn drift() {}" } }],
+  ["evidence gate", { evidenceGate: true }],
   ["status", { expectedStatus: "success" }],
+  ["expected error", { expectedError: "E0308" }],
   ["diagnostic", { expectedDiagnostic: "E0382" }],
 ] as const)("rejects shared delayed contract %s drift", (_field, change) => {
   const delayed = registeredDelayedReviews["shared-borrow"];

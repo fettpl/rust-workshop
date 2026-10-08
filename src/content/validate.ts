@@ -364,6 +364,7 @@ export function validateContent(content: ContentBundle): string[] {
         review.expectedStatus !== "compile-error" ||
         review.expectedError !== "E0382" ||
         review.expectedDiagnostic !== undefined ||
+        review.evidenceGate !== undefined ||
         review.kind !== "recall" ||
         review.evidenceKind !== "recall"
       )
