@@ -388,7 +388,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-cancel-commit-blank",
         title: "Zaprojektuj protokół",
         prompt:
-          "Zaimplementuj odbiór, lokalny efekt i jawny commit bez obietnicy rollbacku. Blank zachowuje tę samą rodzinę dowodu co gate.",
+          "Zdefiniuj Cursor::new(items: Vec<String>) -> Cursor, Cursor::receive(&mut self) -> Option<Lease<'_>>, Lease::value(&self) -> &str i Lease::commit(self). Zachowaj EffectFuture::new(value: &str, effects: &mut Vec<u8>) -> EffectFuture oraz process(cursor: &mut Cursor, effects: &mut Vec<u8>, cancel: bool) -> Result<usize, &'static str>: anulowanie po pierwszym Pending może zapisać efekt, ale nie przesuwa next; po dwóch pollach udanego callbacku commit przesuwa dokładnie jeden rekord, a pusty cursor zwraca Err(\"empty\"). Blank zachowuje tę samą rodzinę dowodu co gate.",
         solution: commitSolution,
         tests: commitTests,
         hints: [
@@ -485,7 +485,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-send-boundary-blank",
         title: "Zbuduj owned producer",
         prompt:
-          "Zaimplementuj przyszły owned raport bez pożyczonego wejścia. To druga forma tej samej rodziny granicy spawn, bez świeżego wariantu.",
+          "Zdefiniuj struct OwnedReport { bytes: Vec<u8> }, fn owned_report(bytes: Vec<u8>) -> impl Future<Output = OwnedReport> + Send + 'static oraz fn assert_spawnable<T>(future: T) -> T where T: Future + Send + 'static. Future ma przejąć owned Vec<u8>, być gotowy bez pożyczonego wejścia i zachować wszystkie bajty w OwnedReport. To druga forma tej samej rodziny granicy spawn, bez świeżego wariantu.",
         solution: sendSolution,
         tests: sendTests,
         hints: [
@@ -579,7 +579,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-dyn-adapter-blank",
         title: "Zbuduj heterogeniczną granicę",
         prompt:
-          "Zaprojektuj jawny adapter dla providera z lokalnym lifetime; nie udawaj, że trait GAT jest bezpośrednio dyn-compatible. Zachowaj tę samą rodzinę dowodu co gate.",
+          "Zdefiniuj #[derive(Clone, Debug, PartialEq, Eq)] struct Report(Vec<u8>), trait Provider { fn next<'a>(&'a mut self) -> Pin<Box<dyn Future<Output = Option<Report>> + 'a>> }, struct Boxed<'a>, Boxed::new<P: Provider + 'a>(provider: P) -> Boxed<'a> oraz async fn Boxed::one(self) -> Option<Report>. Adapter ma awaitować future pożyczający providera do końca wywołania i zwracać owned Report; Local<'a> z bytes: &'a [u8] zwraca kopię przy pierwszym next, a potem None. Zachowaj lokalny lifetime i nie udawaj, że trait GAT jest bezpośrednio dyn-compatible. Ta forma dzieli rodzinę dowodu z gate.",
         solution: adapterSolution,
         tests: adapterTests,
         hints: [

@@ -18,9 +18,9 @@ export function MasteryBadge({
   scope?: "ownership" | "calibrated";
 }) {
   const label =
-    scope === "ownership" && level === "understood"
+    scope !== undefined && level === "understood"
       ? "Potwierdzone w zadaniach"
-      : scope === "ownership" && level === "retained"
+      : scope !== undefined && level === "retained"
         ? "Odtworzone po czasie"
         : masteryLabels[level];
   return (

@@ -313,7 +313,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         kind: "blank",
         title: "Zaprojektuj drugie odczytanie",
         prompt:
-          "Napisz receiver, który po kontrolowanym Pending oddaje rekord pożyczony na czas wywołania. Zachowaj pełny publiczny kontrakt Receiver::new, receive, Borrowed::bytes i Borrowed::finish; blank jest drugą formą tego samego zadania, bez nowej rodziny.",
+          "Zdefiniuj kontrakt Receiver: fn new(packets: Vec<Vec<u8>>) -> Self oraz fn receive(&mut self) -> Receive<'_>; Receive<'_> implementuje Future<Output = Option<Borrowed<'_>>>; Borrowed::bytes(&self) -> &[u8] odczytuje bieżący rekord, a Borrowed::finish(self) commituj dokładnie jeden rekord. W tym receiver protocol pierwsze receive może zwrócić kontrolowane Pending raz i obudzić bieżący waker, a potem Ready(Some(...)); Pending, drop future i drop gotowego Borrowed bez finish nie przesuwają kursora, wyczerpanie zwraca Ready(None), a kolejny borrowed receive zaczyna się dopiero po zakończeniu poprzedniej pożyczki. Puste bajty są poprawne. Gate i blank są dwiema formami tego samego kontraktu i dzielą jedną rodzinę dowodu; te reguły dotyczą tego receiver protocol, nie wszystkich futures.",
         solution: receiverSolution,
         tests: receiverTests,
         hints: [
@@ -413,7 +413,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         kind: "blank",
         title: "Zbuduj visitor",
         prompt:
-          "Zaimplementuj sekwencyjnego visitora z callbackiem działającym dla każdej lokalnej pożyczki. Zachowaj granicę await przed kolejnym receive; blank nie tworzy świeżej rodziny dowodu.",
+          "Zdefiniuj Source::new(values: Vec<Vec<u8>>) -> Source, Source::receive(&mut self) -> Option<Lease<'_>>, Lease::bytes(&self) -> &[u8] oraz Lease::commit(self). Zaimplementuj async fn run_sequential<F, E>(source: &mut Source, callback: F) -> Result<usize, E> where F: AsyncFnMut(&[u8]) -> Result<(), E>: odwiedzaj rekordy w kolejności, awaituj callback przed następnym receive, zwiększaj wynik po każdym receive, commituj lease dopiero po sukcesie callbacku, a pierwszy błąd zwracaj natychmiast z kursorem po ostatnim commit. Nie klonuj pożyczki, nie spawnuj jej i nie wymagaj 'static. Blank nie tworzy świeżej rodziny dowodu.",
         solution: callbackSolution,
         tests: callbackTests,
         hints: [
@@ -531,7 +531,7 @@ export const asyncLendingCoreReviewExercises: Record<string, LessonStep> = {
     kind: "blank",
     title: "Powtórka receivera",
     prompt:
-      "Zaimplementuj dokładnie `fn replay_uncommitted(receiver: &mut Receiver) -> Vec<u8>`: odczytaj rekord, porzuć lease bez commit i zwróć jego kopię przy ponownej próbie.",
+      "Zaimplementuj dokładnie fn replay_uncommitted(receiver: &mut Receiver) -> Vec<u8>. Użyj Receiver::receive(&mut self) -> Receive<'_>, odczekaj bounded poll do Option<Borrowed<'_>>, skopiuj Borrowed::bytes(&self) do Vec<u8> i porzuć Borrowed bez Borrowed::finish; funkcja ma zwrócić kopię pierwszego rekordu, pozostawić kursor bez commit i zachować ten sam rekord przy następnej próbie. Ten Pending/no-commit opis dotyczy tego receiver protocol; zachowaj też Receiver::new(Vec<Vec<u8>>), wyczerpanie Ready(None) i brak nakładających się pożyczek.",
     solution: receiverReviewSolution,
     evaluator: { kind: "tests", tests: receiverReviewTests },
     hints: ["Borrowed wynik powinien znać źródło.", "Testuj pustkę po commit."],

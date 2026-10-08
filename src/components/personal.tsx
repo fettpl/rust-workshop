@@ -22,6 +22,11 @@ import { courseMastery } from "@/content/learning-context";
 import { useOpenLesson } from "./overview";
 import { Eyebrow, MasteryBadge } from "./ui";
 import type { UserState } from "@/domain/types";
+const ownershipConceptIds = new Set(
+  lessons
+    .filter((lesson) => lesson.moduleId === "ownership")
+    .flatMap((lesson) => lesson.conceptIds),
+);
 export function Journal() {
   const { state, update } = useLearning();
   const open = useOpenLesson();
@@ -358,7 +363,13 @@ export function SettingsView() {
               <strong>{c.id}</strong>
               <MasteryBadge
                 level={courseMastery(state, c.id).level}
-                scope={c.evidenceCalibration ? "calibrated" : undefined}
+                scope={
+                  c.evidenceCalibration
+                    ? ownershipConceptIds.has(c.id)
+                      ? "ownership"
+                      : "calibrated"
+                    : undefined
+                }
               />
               <p>{courseMastery(state, c.id).reason}</p>
               <small>
