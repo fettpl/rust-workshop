@@ -31,6 +31,14 @@ function authored(lessonId: string, stepId: string) {
 }
 const append = authored("borrow-intro", "borrow-conflict");
 const replace = authored("borrow-intro", "borrow-mutable-run");
+const sharedCountWords = authored(
+  "shared-borrow-calibration",
+  "shared-count-words",
+);
+const sharedHasSuffix = authored(
+  "shared-borrow-calibration",
+  "shared-has-suffix",
+);
 function readyState(view: UserState["resume"]["view"] = "lesson") {
   const state = createInitialState();
   state.onboarding = { completed: true, name: "Ada", minutes: 15 };
@@ -47,6 +55,14 @@ function readyState(view: UserState["resume"]["view"] = "lesson") {
     lessonId: append.lesson.id,
     stepIndex: append.lesson.steps.indexOf(append.step),
   };
+  return state;
+}
+function sharedReadyState(view: UserState["resume"]["view"] = "lesson") {
+  const state = readyState(view);
+  state.resume.lessonId = sharedCountWords.lesson.id;
+  state.resume.stepIndex = sharedCountWords.lesson.steps.indexOf(
+    sharedCountWords.step,
+  );
   return state;
 }
 function primaryEvent(stepId: string, at: number): EvidenceEvent {
@@ -162,9 +178,12 @@ async function mockTests(page: Page) {
     const step = [
       append.step,
       replace.step,
+      sharedCountWords.step,
+      sharedHasSuffix.step,
       authored("scenario-assessment", "assessment-repair").step,
       reviewExercises["mutable-borrow"],
       delayedReviewExercises["function-ownership"],
+      delayedReviewExercises["shared-borrow"],
     ].find(
       (candidate) =>
         candidate.evaluator?.kind === "tests" &&
@@ -178,9 +197,12 @@ async function mockTests(page: Page) {
     > = {
       "borrow-conflict": "compile-error",
       "borrow-mutable-run": "test-failure",
+      "shared-count-words": "compile-error",
+      "shared-has-suffix": "compile-error",
       "assessment-repair": "compile-error",
       "review-mutable-borrow": "test-failure",
       "review-function-ownership-delayed-v1": "test-failure",
+      "review-shared-borrow-delayed-v1": "compile-error",
     };
     const starter = request.code === step!.code;
     const starterStatus = expectedStarterStatus[step!.id];
@@ -194,7 +216,12 @@ async function mockTests(page: Page) {
             stderr:
               step!.id === "borrow-conflict"
                 ? "error[E0502]: cannot borrow `message` as mutable because it is also borrowed as immutable"
-                : "starter diagnostic",
+                : step!.id === "shared-count-words"
+                  ? "error[E0308]: mismatched types"
+                  : step!.id === "shared-has-suffix" ||
+                      step!.id === "review-shared-borrow-delayed-v1"
+                    ? "error[E0382]: borrow of moved value"
+                    : "starter diagnostic",
             diagnostics:
               step!.id === "borrow-conflict"
                 ? [
@@ -205,7 +232,26 @@ async function mockTests(page: Page) {
                       level: "error" as const,
                     },
                   ]
-                : [],
+                : step!.id === "shared-count-words"
+                  ? [
+                      {
+                        code: "E0308",
+                        message: "mismatched types",
+                        line: 1,
+                        level: "error" as const,
+                      },
+                    ]
+                  : step!.id === "shared-has-suffix" ||
+                      step!.id === "review-shared-borrow-delayed-v1"
+                    ? [
+                        {
+                          code: "E0382",
+                          message: "borrow of moved value",
+                          line: 1,
+                          level: "error" as const,
+                        },
+                      ]
+                    : [],
             durationMs: 1,
           }
         : {
@@ -601,11 +647,14 @@ for (const scenario of [
   });
 }
 
-function pinnedDelayedState(exerciseId: string): UserState {
+function pinnedDelayedState(
+  exerciseId: string,
+  conceptId = "function-ownership",
+): UserState {
   const state = readyState("review");
   const sessionId = "delayed-ownership-session";
   state.reviewSession = {
-    conceptId: "function-ownership",
+    conceptId,
     mode: "challenge",
     sessionId,
     startedAt: NOW,
@@ -614,9 +663,63 @@ function pinnedDelayedState(exerciseId: string): UserState {
   };
   state.steps[reviewSessionKey(sessionId)] = {
     ...createStepProgress(),
-    code: delayedReviewExercises["function-ownership"].code!,
+    code: delayedReviewExercises[conceptId].code!,
     answer: "draft delayed answer",
   };
+  return state;
+}
+
+function sharedPrimaryEvent(stepId: string, at: number): EvidenceEvent {
+  const { lesson, step } = authored("shared-borrow-calibration", stepId);
+  if (!step.evidence || !step.evaluator || !step.evidenceKind)
+    throw new Error("missing shared-borrow authored evidence");
+  return {
+    id: `${lesson.id}/${step.id}/${at}`,
+    conceptIds: [...step.evidence.conceptIds],
+    lessonId: lesson.id,
+    stepId: step.id,
+    kind: step.evidenceKind,
+    evaluator: step.evaluator.kind,
+    evidenceVersion: step.evidence.version,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    gate: true,
+    at,
+  };
+}
+
+function sharedDelayedRecallState(): UserState {
+  const state = pinnedDelayedState(
+    delayedReviewExercises["shared-borrow"].id,
+    "shared-borrow",
+  );
+  state.events = [
+    sharedPrimaryEvent("shared-count-words", NOW - 2 * DAY),
+    sharedPrimaryEvent("shared-has-suffix", NOW - 2 * DAY + 1),
+    {
+      id: "shared-delayed-contact",
+      conceptIds: ["shared-borrow"],
+      lessonId: "review",
+      stepId: "shared-borrow:delayed-contact",
+      kind: "exposure",
+      passed: false,
+      hints: 0,
+      revealed: false,
+      at: NOW - DAY - 1,
+      evidenceVersion: 2,
+      evaluator: "answer",
+    },
+  ];
+  state.review = [
+    {
+      conceptId: "shared-borrow",
+      dueAt: NOW - DAY,
+      attempts: 1,
+      intervalDays: 1,
+      reason: "shared delayed test",
+    },
+  ];
   return state;
 }
 
@@ -904,6 +1007,277 @@ test("unknown pinned ID is unavailable and return to queue preserves its draft",
   expect(
     after.steps[reviewSessionKey("delayed-ownership-session")].answer,
   ).toBe("draft delayed answer");
+});
+
+test("shared-borrow calibration grades its two exact fresh families", async ({
+  page,
+}) => {
+  await mockTests(page);
+  await seedState(page, sharedReadyState());
+  await expect(page.locator(".task-pane h1")).toHaveText(
+    sharedCountWords.step.title,
+  );
+  await expect(editor(page)).toHaveValue(sharedCountWords.step.code!);
+
+  await runTests(page);
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("E0308");
+  expect(
+    courseEvidenceSummary(await savedState(page), "shared-borrow")
+      .qualifyingCodingTasks,
+  ).toBe(0);
+
+  await editor(page).fill(sharedCountWords.step.solution!);
+  await runTests(page);
+  await expect(page.locator(".task-pane")).toContainText(
+    "samodzielne zadania kodowe 1/2",
+  );
+
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(3).click();
+  await expect(page.locator(".task-pane h1")).toHaveText(
+    sharedHasSuffix.step.title,
+  );
+  await expect(editor(page)).toHaveValue(sharedHasSuffix.step.code!);
+  await runTests(page);
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("E0382");
+  await editor(page).fill(sharedHasSuffix.step.solution!);
+  await runTests(page);
+
+  const recorded = await savedState(page);
+  expect(
+    courseEvidenceSummary(recorded, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(2);
+  expect(
+    recorded.events.filter((event) => event.evaluator === "tests"),
+  ).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        lessonId: "shared-borrow-calibration",
+        stepId: "shared-count-words",
+        conceptIds: ["shared-borrow"],
+        evidenceVersion: 2,
+        passed: true,
+      }),
+      expect.objectContaining({
+        lessonId: "shared-borrow-calibration",
+        stepId: "shared-has-suffix",
+        conceptIds: ["shared-borrow"],
+        evidenceVersion: 2,
+        passed: true,
+      }),
+    ]),
+  );
+});
+
+test("shared-borrow assistance persists by family through reload and import", async ({
+  page,
+}) => {
+  const state = sharedReadyState();
+  state.resume.stepIndex = sharedHasSuffix.lesson.steps.indexOf(
+    sharedHasSuffix.step,
+  );
+  state.steps[stepKey(sharedCountWords.lesson.id, sharedCountWords.step.id)] = {
+    ...createStepProgress(sharedCountWords.step.code),
+    hints: 2,
+    completed: true,
+  };
+  await mockTests(page);
+  await seedState(page, state);
+  await expect(page.locator(".task-pane")).toContainText(
+    "wcześniejsze podpowiedzi pozostają przypisane do zadania",
+  );
+  await editor(page).fill(sharedHasSuffix.step.solution!);
+  await runTests(page);
+
+  const after = await savedState(page);
+  expect(
+    courseEvidenceSummary(after, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(1);
+  expect(
+    after.steps[stepKey(sharedCountWords.lesson.id, sharedCountWords.step.id)],
+  ).toMatchObject({ hints: 2, completed: true });
+  const exported = await exportedState(page);
+  expect(exported.steps).toEqual(after.steps);
+  await importThroughUi(page, exported);
+  await page.reload();
+  const reloaded = await savedState(page);
+  expect(reloaded.steps).toEqual(after.steps);
+  expect(reloaded.events).toEqual(after.events);
+  expect(
+    courseEvidenceSummary(reloaded, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(1);
+});
+
+test("shared-borrow delayed recall credits only a clean due attempt", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await mockTests(page);
+  await seedState(page, sharedDelayedRecallState());
+  await expect(page.locator(".review-session h2")).toBeVisible();
+  await editor(page).fill(delayedReviewExercises["shared-borrow"].solution!);
+  await runTests(page);
+  const recorded = await savedState(page);
+  expect(recorded.events.at(-1)).toMatchObject({
+    lessonId: "review",
+    stepId: "review-shared-borrow-delayed-v1:delayed-ownership-session",
+    conceptIds: ["shared-borrow"],
+    kind: "recall",
+    delayed: true,
+    passed: true,
+    revealed: false,
+  });
+  expect(courseEvidenceSummary(recorded, "shared-borrow").mastery.level).toBe(
+    "retained",
+  );
+
+  const laterAssistance = recordCourseEvidence(recorded, {
+    id: "shared-later-assistance",
+    conceptIds: ["shared-borrow"],
+    lessonId: "review",
+    stepId: "review-shared-borrow-delayed-v1:later",
+    kind: "recall",
+    passed: false,
+    hints: 1,
+    revealed: true,
+    delayed: true,
+    at: NOW + 1,
+    evidenceVersion: 2,
+    evaluator: "tests",
+  });
+  expect(
+    courseEvidenceSummary(laterAssistance, "shared-borrow").mastery.level,
+  ).toBe("retained");
+});
+
+test("shared-borrow delayed timeout preserves draft without assessment credit", async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date(NOW));
+  await seedState(page, sharedDelayedRecallState());
+  await runNoEventAttempt(page, "timeout");
+  const after = await savedState(page);
+  expect(after.events).toHaveLength(3);
+  expect(
+    after.steps[reviewSessionKey("delayed-ownership-session")].attempts.at(-1)
+      ?.result?.status,
+  ).toBe("timeout");
+  expect(
+    courseEvidenceSummary(after, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(2);
+});
+
+test("shared-borrow delayed exercise ID and draft survive queue return and reload", async ({
+  page,
+}) => {
+  const state = pinnedDelayedState(
+    delayedReviewExercises["shared-borrow"].id,
+    "shared-borrow",
+  );
+  const sessionKey = reviewSessionKey(state.reviewSession!.sessionId);
+  state.steps[sessionKey].code += "\n// shared delayed draft";
+  await seedState(page, state);
+  await expect(editor(page)).toHaveValue(state.steps[sessionKey].code!);
+  const before = await savedState(page);
+  await page.getByRole("button", { name: "← Do kolejki", exact: true }).click();
+  expect((await savedState(page)).reviewSession).toEqual(before.reviewSession);
+  expect((await savedState(page)).steps[sessionKey]).toEqual(
+    before.steps[sessionKey],
+  );
+  await page.reload();
+  const reloaded = await savedState(page);
+  expect(reloaded.reviewSession?.exerciseId).toBe(
+    delayedReviewExercises["shared-borrow"].id,
+  );
+  expect(reloaded.steps[sessionKey]).toEqual(before.steps[sessionKey]);
+});
+
+test("function calibration flows into shared borrowing and then modeling", async ({
+  page,
+}) => {
+  const functionLesson = lessons.find(
+    (lesson) => lesson.id === "function-ownership-calibration",
+  )!;
+  const modelingLesson = lessons.find(
+    (lesson) =>
+      lesson.id ===
+      modules.find((module) => module.id === "data-modeling")!.lessonIds[0],
+  )!;
+  const state = sharedReadyState();
+  state.resume.lessonId = functionLesson.id;
+  state.resume.stepIndex = functionLesson.steps.length - 1;
+  state.steps[stepKey(functionLesson.id, functionLesson.steps.at(-1)!.id)] = {
+    ...createStepProgress(),
+    completed: true,
+  };
+  state.steps[
+    stepKey(
+      sharedCountWords.lesson.id,
+      sharedCountWords.lesson.steps.at(-1)!.id,
+    )
+  ] = {
+    ...createStepProgress(),
+    completed: true,
+  };
+  await seedState(page, state);
+  await page
+    .getByRole("button", { name: "Następna lekcja", exact: true })
+    .click();
+  await expect(page.locator(".lesson-top")).toContainText(
+    sharedCountWords.lesson.title,
+  );
+  await page.getByLabel("Kroki lekcji").getByRole("button").nth(4).click();
+  await page
+    .getByRole("button", { name: "Kolejny moduł", exact: true })
+    .click();
+  await expect(page.locator(".lesson-top")).toContainText(modelingLesson.title);
+});
+
+test("shared-borrow mobile tabs preserve the new lesson draft and compiler result", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await mockTests(page);
+  await seedState(page, sharedReadyState());
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  const draft = sharedCountWords.step.code!;
+  await editor(page).fill(draft);
+  await editor(page).focus();
+  await expect(editor(page)).toBeFocused();
+  await runTests(page);
+  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("E0308");
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  const before = await savedState(page);
+  expect(
+    before.steps[stepKey(sharedCountWords.lesson.id, sharedCountWords.step.id)],
+  ).toMatchObject({
+    code: draft,
+  });
+  await page.reload();
+  await expect(editor(page)).toHaveValue(draft);
+  await expect(
+    page.getByRole("tab", { name: "Kod", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("E0308");
+  const after = await savedState(page);
+  expect(after.events.slice(0, before.events.length)).toEqual(before.events);
+  expect(
+    after.events
+      .slice(before.events.length)
+      .every((event) => event.kind === "exposure" && !event.gate),
+  ).toBe(true);
+  expect(
+    courseEvidenceSummary(after, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(0);
 });
 
 test("discards an in-flight old-generation ownership response after importing another raw state", async ({

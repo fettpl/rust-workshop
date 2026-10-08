@@ -6,11 +6,13 @@ export function CompilerCoach({
   progress,
   onHints,
   onReveal,
+  freshIndependentTaskAvailable,
 }: {
   step: LessonStep;
   progress: StepProgress;
   onHints: (n: number) => void;
   onReveal: () => void;
+  freshIndependentTaskAvailable: boolean;
 }) {
   if (!step.hints && !step.solution) return null;
   return (
@@ -65,8 +67,9 @@ export function CompilerCoach({
             <details className="solution-warning">
               <summary>Potrzebuję pełnego rozwiązania</summary>
               <p>
-                Po obejrzeniu poprawki wrócisz do niezależnego zadania. Ten krok
-                będzie słabszym dowodem samodzielności.
+                {freshIndependentTaskAvailable
+                  ? "Po obejrzeniu poprawki możesz przejść do dostępnego świeżego zadania. Ten krok będzie słabszym dowodem samodzielności."
+                  : "Po obejrzeniu poprawki możesz dalej ćwiczyć; potwierdzenie samodzielności poczeka na inne świeże zadanie. Ten krok będzie słabszym dowodem samodzielności."}
               </p>
               <button className="secondary" onClick={onReveal}>
                 <Eye size={15} />

@@ -31,6 +31,7 @@ import { CompilerOutput } from "./compiler-output";
 import { OwnershipVisualizer } from "./ownership-visualizer";
 import { Eyebrow, ProgressLine } from "./ui";
 import { nextLessonForNavigation } from "@/engine/course-route";
+import { gateRecovery } from "@/engine/learning";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 const kindLabels = {
   predict: "Przewidź",
@@ -60,6 +61,19 @@ export function LessonWorkspace() {
     lessons.find((l) => l.id === state.resume.lessonId) ?? lessons[0];
   const index = Math.min(state.resume.stepIndex, lesson.steps.length - 1);
   const step = lesson.steps[index];
+  const currentModule = modules.find(
+    (candidate) => candidate.id === lesson.moduleId,
+  );
+  const freshIndependentTaskAvailable = (currentModule?.gateCriteria ?? [])
+    .filter((criterion) =>
+      criterion.taskRefs.some(
+        (ref) => ref.lessonId === lesson.id && ref.stepId === step.id,
+      ),
+    )
+    .some(
+      (criterion) =>
+        gateRecovery(state, criterion, lessons).status === "available",
+    );
   const nextLesson = nextLessonForNavigation(lesson.id, lessons, modules);
   const nextLabel =
     index < lesson.steps.length - 1
@@ -630,6 +644,7 @@ export function LessonWorkspace() {
           <CompilerCoach
             step={step}
             progress={progress}
+            freshIndependentTaskAvailable={freshIndependentTaskAvailable}
             onHints={(hints) => patch({ hints })}
             onReveal={() => patch({ revealed: true })}
           />
