@@ -103,9 +103,10 @@ function eventFor(
   at: number,
   overrides: Partial<EvidenceEvent> = {},
 ): EvidenceEvent {
+  const evidence = evidenceForLessonStep(lesson, step);
   return {
     id,
-    conceptIds: step.evidence?.conceptIds ?? lesson.conceptIds,
+    ...evidence,
     lessonId: lesson.id,
     stepId: step.id,
     kind: step.evidenceKind,
@@ -113,7 +114,6 @@ function eventFor(
     hints: 0,
     revealed: false,
     at,
-    ...(step.evidence ? { evidenceVersion: step.evidence.version } : {}),
     ...(step.evidenceGate ? { gate: true } : {}),
     ...(step.evaluator ? { evaluator: step.evaluator.kind } : {}),
     ...overrides,

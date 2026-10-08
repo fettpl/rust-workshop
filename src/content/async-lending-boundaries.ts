@@ -388,7 +388,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-cancel-commit-blank",
         title: "Zaprojektuj protokół",
         prompt:
-          "Zdefiniuj Cursor::new(items: Vec<String>) -> Cursor, Cursor::receive(&mut self) -> Option<Lease<'_>>, Lease::value(&self) -> &str i Lease::commit(self). Zachowaj EffectFuture::new(value: &str, effects: &mut Vec<u8>) -> EffectFuture oraz process(cursor: &mut Cursor, effects: &mut Vec<u8>, cancel: bool) -> Result<usize, &'static str>: anulowanie po pierwszym Pending może zapisać efekt, ale nie przesuwa next; po dwóch pollach udanego callbacku commit przesuwa dokładnie jeden rekord, a pusty cursor zwraca Err(\"empty\"). Blank zachowuje tę samą rodzinę dowodu co gate.",
+          "Zdefiniuj Cursor::new(items: Vec<String>) -> Cursor, Cursor::receive(&mut self) -> Option<Lease<'_>>, Lease::value(&self) -> &str i Lease::commit(self). Zachowaj EffectFuture::new(value: &str, effects: &mut Vec<u8>) -> EffectFuture oraz process(cursor: &mut Cursor, effects: &mut Vec<u8>, cancel: bool) -> Result<usize, &'static str>: pierwszy poll EffectFuture musi dopisać pierwszy bajt value, obudzić bieżący waker i zwrócić Pending; anulowanie po tym pollu zachowuje efekt, dropuje callback i nie przesuwa next; bez anulowania drugi poll dopisuje ten sam bajt i zwraca Ready, po czym commit przesuwa dokładnie jeden rekord, a pusty cursor zwraca Err(\"empty\"). Blank zachowuje tę samą rodzinę dowodu co gate.",
         solution: commitSolution,
         tests: commitTests,
         hints: [

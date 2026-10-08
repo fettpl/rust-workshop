@@ -189,12 +189,6 @@ for (const assistance of assistanceCases) {
     });
     expect(imported.reviewSession?.sessionId).toBe("browser-review-identity");
     expect(imported.steps[gateKey].code).toBe("// draft-before-import");
-    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
-    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
-    await expect(page.locator(".solution-warning")).toContainText(
-      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
-    );
-
     let runnerCall = false;
     await page.route("**/api/run", async (route) => {
       const request = route.request().postDataJSON();
@@ -242,8 +236,8 @@ for (const assistance of assistanceCases) {
       kind: "transfer",
       evaluator: "tests",
       passed: true,
-      hints: 2,
-      revealed: true,
+      hints: assistance.hints,
+      revealed: assistance.revealed,
       gate: true,
     });
     expect(after.reviewSession?.sessionId).toBe("browser-review-identity");
@@ -252,6 +246,8 @@ for (const assistance of assistanceCases) {
       0,
     );
     expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     await expect(page.locator(".solution-warning")).toContainText(
       "potwierdzenie samodzielności poczeka na inne świeże zadanie",
     );
