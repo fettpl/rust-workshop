@@ -43,7 +43,7 @@ export const asyncLendingModule: CourseModule = {
   exitGate: [
     "Rozwiążesz pięć kontraktów; gate i blank pozostają alternatywnymi formami tej samej rodziny, a receiver ma dodatkowe zadanie bounded batch z odrębną rodziną primary.",
     "Powtórka jest osobnym ćwiczeniem recall; nie tworzy nowej rodziny primary ani drugiego niezależnego zadania.",
-    "Liczba rodzin primary wynika z opisu danego kontraktu. Pomoc i wyczerpanie rodziny nie otwierają nowej wersji kontraktu, a receiver może mieć dodatkową rodzinę bounded batch.",
+    "Pozostałe cztery kontrakty pozostają prowizoryczne przy jednej opisanej rodzinie. Receiver może osiągnąć potwierdzenie po dwóch czystych rodzinach: receiver lease oraz bounded batch; pomoc nie tworzy nowej wersji.",
   ],
   projectConnection:
     "Kontrakty są użyte w rozszerzeniu tokio-service-workshop: lokalny visitor pozostaje sekwencyjny, a owned producer może zostać wysłany do Tokio. Pakiet dokumentuje koszt boxed adaptera i ograniczenia rollbacku.",

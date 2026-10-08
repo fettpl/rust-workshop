@@ -290,9 +290,11 @@ fn selects_ordered_batches_and_commits_exact_length() {
 fn zero_limit_and_exhaustion_do_not_commit_or_skip() {
     let mut receiver = BatchReceiver::new(vec![b"a".to_vec()]);
     assert!(block_on(receiver.receive_up_to(0)).is_none());
+    assert!(block_on(receiver.receive_up_to(0)).is_none());
     let batch = block_on(receiver.receive_up_to(1)).unwrap();
     assert_eq!(batch.items(), &[b"a".to_vec()]);
     batch.finish();
+    assert!(block_on(receiver.receive_up_to(1)).is_none());
     assert!(block_on(receiver.receive_up_to(1)).is_none());
 }
 
@@ -325,6 +327,44 @@ fn cancelling_pending_wakes_and_replays_without_progress() {
     assert!(matches!(pending.as_mut().poll(&mut context), BatchPoll::Pending));
     assert_eq!(wakes.load(BatchOrdering::SeqCst), 1);
     drop(pending);
+    let batch = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(batch.items(), &[b"a".to_vec()]);
+    batch.finish();
+}
+
+#[test]
+fn every_new_nonempty_future_pends_once_and_wakes_before_ready() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec(), b"b".to_vec()]);
+    let wakes = BatchArc::new(BatchAtomicUsize::new(0));
+    let waker = BatchWaker::from(BatchArc::new(BatchWake(wakes.clone())));
+    let mut context = BatchContext::from_waker(&waker);
+
+    let mut first = Box::pin(receiver.receive_up_to(1));
+    assert!(matches!(first.as_mut().poll(&mut context), BatchPoll::Pending));
+    assert_eq!(wakes.load(BatchOrdering::SeqCst), 1);
+    let first = match first.as_mut().poll(&mut context) {
+        BatchPoll::Ready(Some(batch)) => batch,
+        _ => panic!("expected first batch after one Pending"),
+    };
+    assert_eq!(first.items(), &[b"a".to_vec()]);
+    first.finish();
+
+    let mut second = Box::pin(receiver.receive_up_to(1));
+    assert!(matches!(second.as_mut().poll(&mut context), BatchPoll::Pending));
+    assert_eq!(wakes.load(BatchOrdering::SeqCst), 2);
+    let second = match second.as_mut().poll(&mut context) {
+        BatchPoll::Ready(Some(batch)) => batch,
+        _ => panic!("expected second batch after one Pending"),
+    };
+    assert_eq!(second.items(), &[b"b".to_vec()]);
+    second.finish();
+}
+
+#[test]
+fn dropping_an_unpolled_future_replays_the_same_records() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec()]);
+    let future = receiver.receive_up_to(1);
+    drop(future);
     let batch = block_on(receiver.receive_up_to(1)).unwrap();
     assert_eq!(batch.items(), &[b"a".to_vec()]);
     batch.finish();

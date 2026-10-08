@@ -84,3 +84,17 @@ it("keeps the receiver batch as an explicit second primary family", () => {
       .gateCriteria![0].requiredIndependentCodingTasks,
   ).toBe(1);
 });
+
+it("states the bounded receiver exception beside the four singleton contracts", () => {
+  const exitGate = modules.find(
+    (module) => module.id === "async-lending-contracts",
+  )!.exitGate;
+  expect(exitGate).toEqual(
+    expect.arrayContaining([
+      expect.stringContaining(
+        "Pozostałe cztery kontrakty pozostają prowizoryczne",
+      ),
+      expect.stringContaining("receiver lease oraz bounded batch"),
+    ]),
+  );
+});

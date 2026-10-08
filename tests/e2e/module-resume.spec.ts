@@ -254,6 +254,76 @@ for (const moduleId of [
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
       await expect(editor).toHaveValue(asyncDraft);
+
+      const browser = page.context().browser();
+      expect(browser).toBeDefined();
+      const isolatedContext = await browser!.newContext();
+      const isolatedPage = await isolatedContext.newPage();
+      try {
+        await isolatedPage.goto("http://127.0.0.1:3021/");
+        await isolatedPage
+          .getByRole("button", { name: "Sprawdź punkt startowy" })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Przejdź do nauki" })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Mapa nauki", exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+          .fill(stage.title);
+        await isolatedPage
+          .locator(".module-picker > button")
+          .filter({ hasText: stage.title })
+          .click();
+
+        const isolatedCallbackRef = stage.gateCriteria![1].taskRefs[0];
+        const isolatedCallbackStep = lessons
+          .find((item) => item.id === isolatedCallbackRef.lessonId)!
+          .steps.find((item) => item.id === isolatedCallbackRef.stepId)!;
+        await isolatedPage.locator(".gate-action").first().click();
+        await isolatedPage
+          .getByRole("button", { name: "Pomóż mi to zrozumieć" })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż drugą wskazówkę" })
+          .click();
+        await isolatedPage
+          .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: stage.title, exact: true })
+          .click();
+        await isolatedPage.locator(".gate-action").first().click();
+        await isolatedPage
+          .getByRole("button", { name: "Pomóż mi to zrozumieć" })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż drugą wskazówkę" })
+          .click();
+        await isolatedPage
+          .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: stage.title, exact: true })
+          .click();
+        await expect(isolatedPage.locator(".module-connections")).toContainText(
+          "Brak świeżego samodzielnego wariantu",
+        );
+        await isolatedPage.locator(".gate-action").first().click();
+        await expect(isolatedPage.locator(".task-pane h1")).toHaveText(
+          isolatedCallbackStep.title,
+        );
+      } finally {
+        await isolatedContext.close();
+      }
     }
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole("tab", { name: "Kod", exact: true }).click();
