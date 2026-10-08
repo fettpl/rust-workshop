@@ -41,9 +41,9 @@ export const asyncLendingModule: CourseModule = {
   ],
   lessonIds: criteria.map(([id]) => id),
   exitGate: [
-    "Rozwiążesz pięć kontraktów w dwóch formach: gate i blank dzielą jedną rodzinę dowodu dla każdego pojęcia.",
+    "Rozwiążesz pięć kontraktów; gate i blank pozostają alternatywnymi formami tej samej rodziny, a receiver ma dodatkowe zadanie bounded batch z odrębną rodziną primary.",
     "Powtórka jest osobnym ćwiczeniem recall; nie tworzy nowej rodziny primary ani drugiego niezależnego zadania.",
-    "Potwierdzenie pozostaje prowizoryczne przy tej jednej rodzinie; pomoc nie otwiera nowej wersji kontraktu.",
+    "Liczba rodzin primary wynika z opisu danego kontraktu. Pomoc i wyczerpanie rodziny nie otwierają nowej wersji kontraktu, a receiver może mieć dodatkową rodzinę bounded batch.",
   ],
   projectConnection:
     "Kontrakty są użyte w rozszerzeniu tokio-service-workshop: lokalny visitor pozostaje sekwencyjny, a owned producer może zostać wysłany do Tokio. Pakiet dokumentuje koszt boxed adaptera i ograniczenia rollbacku.",
@@ -55,6 +55,14 @@ export const asyncLendingModule: CourseModule = {
     taskRefs: [
       { lessonId: id, stepId: `${id}-gate` },
       { lessonId: id, stepId: `${id}-blank` },
+      ...(id === "async-lending-receiver"
+        ? [
+            {
+              lessonId: id,
+              stepId: "async-lending-receiver-bounded-batch",
+            },
+          ]
+        : []),
     ],
   })),
 };

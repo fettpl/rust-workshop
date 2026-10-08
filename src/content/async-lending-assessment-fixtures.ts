@@ -11,6 +11,7 @@ export interface AsyncLendingAssessmentFixture {
   id: string;
   equivalent: string;
   mutant: string;
+  mutants?: string[];
 }
 
 const assessments = [
@@ -25,6 +26,11 @@ const assessments = [
 ];
 
 function mutate(id: string, solution: string): string {
+  if (id === "async-lending-receiver-bounded-batch")
+    return solution.replace(
+      "let len = this.limit.min(receiver.packets.len() - start);",
+      "let len = this.limit.min(receiver.packets.len() - start);\n        receiver.cursor += len;",
+    );
   if (id.includes("receiver"))
     return solution.replace("receiver.cursor += 1", "receiver.cursor += 0");
   if (id.includes("callbacks"))
@@ -47,6 +53,13 @@ function mutate(id: string, solution: string): string {
   return solution.replace(
     "Some(Report(self.bytes.to_vec()))",
     "Some(Report(Vec::new()))",
+  );
+}
+
+function batchFinishMutant(solution: string): string {
+  return solution.replace(
+    "receiver.cursor += self.len;",
+    "receiver.cursor += 1;",
   );
 }
 
@@ -74,6 +87,8 @@ function replaceFunctionBody(
 }
 
 function equivalent(id: string, solution: string): string {
+  if (id === "async-lending-receiver-bounded-batch")
+    return solution.replaceAll("cursor", "committed");
   if (id === "async-lending-receiver-review")
     return replaceFunctionBody(
       solution,
@@ -366,5 +381,8 @@ export const asyncLendingAssessmentFixtures: AsyncLendingAssessmentFixture[] =
       id: step.id,
       equivalent: equivalent(step.id, step.solution),
       mutant: mutate(step.id, step.solution),
+      ...(step.id === "async-lending-receiver-bounded-batch"
+        ? { mutants: [batchFinishMutant(step.solution)] }
+        : {}),
     };
   });

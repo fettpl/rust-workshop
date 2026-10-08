@@ -248,6 +248,158 @@ describe("duplicate contract evidence families", () => {
     ).toBe(true);
   });
 
+  it("attributes clean receiver batch evidence to its distinct second family", () => {
+    const { lesson, step: gate } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-gate",
+    );
+    const { step: batch } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-bounded-batch",
+    );
+    expect(batch.evidence).toEqual({
+      version: 2,
+      conceptIds: ["async-lending-borrowed-readiness"],
+      codingTaskId: "async-lending/receiver-bounded-batch-v1",
+    });
+    let state = recordCourseEvidence(
+      createInitialState(),
+      eventFor(lesson, gate, "receiver-original", 1_000),
+    );
+    state = recordCourseEvidence(
+      state,
+      eventFor(lesson, batch, "receiver-batch", 2_000),
+    );
+    expect(
+      independentCodingTaskIds(
+        state,
+        "async-lending-borrowed-readiness",
+        courseEvidencePolicy,
+      ),
+    ).toEqual([
+      "async-lending/receiver-lease-v1",
+      "async-lending/receiver-bounded-batch-v1",
+    ]);
+    expect(
+      courseEvidenceSummary(state, "async-lending-borrowed-readiness")
+        .qualifyingCodingTasks,
+    ).toBe(2);
+    expect(courseMastery(state, "async-lending-borrowed-readiness").level).toBe(
+      "understood",
+    );
+    expect(
+      moduleGate(
+        state,
+        lessons,
+        modules.find((module) => module.id === lesson.moduleId),
+      ).criteria.find(
+        (item) => item.label === primaryCriterion(lesson.id).label,
+      )?.passed,
+    ).toBe(true);
+  });
+
+  it("keeps a clean batch family after original help while preserving the old family boundary", () => {
+    const { lesson, step: gate } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-gate",
+    );
+    const { step: batch } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-bounded-batch",
+    );
+    const state = createInitialState();
+    state.steps[stepKey(lesson.id, gate.id)] = {
+      ...createStepProgress(),
+      revealed: true,
+    };
+    const helpedOriginal = recordCourseEvidence(state, {
+      ...eventFor(lesson, gate, "helped-original", 1_000),
+      ...assistanceForLessonStep(state, lesson, gate),
+    });
+    const cleanBatch = recordCourseEvidence(
+      helpedOriginal,
+      eventFor(lesson, batch, "clean-batch", 2_000),
+    );
+    expect(
+      independentCodingTaskIds(
+        cleanBatch,
+        "async-lending-borrowed-readiness",
+        courseEvidencePolicy,
+      ),
+    ).toEqual(["async-lending/receiver-bounded-batch-v1"]);
+    expect(
+      courseEvidenceSummary(cleanBatch, "async-lending-borrowed-readiness")
+        .qualifyingCodingTasks,
+    ).toBe(1);
+    expect(
+      gateRecovery(cleanBatch, primaryCriterion(lesson.id), lessons),
+    ).toEqual({ status: "complete" });
+  });
+
+  it("exhausts receiver recovery only after both primary families are helped", () => {
+    const { lesson, step: gate } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-gate",
+    );
+    const { step: blank } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-blank",
+    );
+    const { step: batch } = lessonStep(
+      "async-lending-receiver",
+      "async-lending-receiver-bounded-batch",
+    );
+    const state = createInitialState();
+    state.steps[stepKey(lesson.id, gate.id)] = {
+      ...createStepProgress(),
+      revealed: true,
+    };
+    state.steps[stepKey(lesson.id, batch.id)] = {
+      ...createStepProgress(),
+      hints: 1,
+    };
+    let helped = recordCourseEvidence(state, {
+      ...eventFor(lesson, gate, "helped-gate", 1_000),
+      ...assistanceForLessonStep(state, lesson, gate),
+    });
+    helped = recordCourseEvidence(helped, {
+      ...eventFor(lesson, blank, "helped-blank", 2_000),
+      ...assistanceForLessonStep(helped, lesson, blank),
+    });
+    helped = recordCourseEvidence(helped, {
+      ...eventFor(lesson, batch, "helped-batch", 3_000),
+      ...assistanceForLessonStep(helped, lesson, batch),
+    });
+    expect(
+      courseEvidenceSummary(helped, "async-lending-borrowed-readiness")
+        .qualifyingCodingTasks,
+    ).toBe(0);
+    expect(gateRecovery(helped, primaryCriterion(lesson.id), lessons)).toEqual({
+      status: "exhausted",
+    });
+  });
+
+  it("keeps receiver review recall outside both primary families", () => {
+    const review = reviewExercises["async-lending-borrowed-readiness"];
+    const state = recordCourseEvidence(createInitialState(), {
+      id: "receiver-review-recall",
+      conceptIds: ["async-lending-borrowed-readiness"],
+      lessonId: "review",
+      stepId: review.id + ":session",
+      kind: "recall",
+      evidenceVersion: 2,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      evaluator: "tests",
+      at: 1_000,
+    });
+    expect(
+      courseEvidenceSummary(state, "async-lending-borrowed-readiness")
+        .qualifyingCodingTasks,
+    ).toBe(0);
+  });
+
   it.each(primaryPairs)(
     "counts each authored gate and blank pair as one current family: %s",
     (conceptId, lessonId, gateId, blankId, family) => {
@@ -336,9 +488,19 @@ describe("duplicate contract evidence families", () => {
       };
       expect(assistanceForLessonStep(state, lesson, blank)).toEqual(flags);
       const criterion = primaryCriterion(lesson.id);
-      expect(gateRecovery(state, criterion, lessons)).toEqual({
-        status: "exhausted",
-      });
+      if (lessonId === "async-lending-receiver") {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "available",
+          task: {
+            lessonId,
+            stepId: "async-lending-receiver-bounded-batch",
+          },
+        });
+      } else {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "exhausted",
+        });
+      }
     }
   });
 

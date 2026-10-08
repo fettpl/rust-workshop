@@ -189,6 +189,159 @@ fn the_next_borrow_starts_only_after_the_first_is_finished() {
 }
 `;
 
+const batchSolution = `use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+
+pub struct BatchReceiver { packets: Vec<Vec<u8>>, cursor: usize }
+pub struct ReceiveBatch<'a> { receiver: Option<&'a mut BatchReceiver>, limit: usize, pending: bool }
+pub struct BorrowedBatch<'a> { receiver: Option<&'a mut BatchReceiver>, start: usize, len: usize }
+
+impl BatchReceiver {
+    pub fn new(packets: Vec<Vec<u8>>) -> Self { Self { packets, cursor: 0 } }
+    pub fn receive_up_to(&mut self, limit: usize) -> ReceiveBatch<'_> {
+        ReceiveBatch { receiver: Some(self), limit, pending: true }
+    }
+}
+impl<'a> Future for ReceiveBatch<'a> {
+    type Output = Option<BorrowedBatch<'a>>;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.get_mut();
+        let exhausted = this.receiver.as_ref().map_or(true, |receiver| {
+            this.limit == 0 || receiver.cursor >= receiver.packets.len()
+        });
+        if exhausted {
+            this.receiver.take();
+            return Poll::Ready(None);
+        }
+        if this.pending {
+            this.pending = false;
+            cx.waker().wake_by_ref();
+            return Poll::Pending;
+        }
+        let receiver = this.receiver.take().expect("batch future polled after completion");
+        let start = receiver.cursor;
+        let len = this.limit.min(receiver.packets.len() - start);
+        Poll::Ready(Some(BorrowedBatch { receiver: Some(receiver), start, len }))
+    }
+}
+impl BorrowedBatch<'_> {
+    pub fn items(&self) -> &[Vec<u8>] {
+        let receiver = self.receiver.as_ref().expect("batch already finished");
+        &receiver.packets[self.start..self.start + self.len]
+    }
+    pub fn finish(mut self) {
+        let receiver = self.receiver.take().expect("batch already finished");
+        receiver.cursor += self.len;
+    }
+}
+`;
+
+const batchStarter = `use std::future::Future;
+use std::marker::PhantomData;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+
+pub struct BatchReceiver { /* prywatna reprezentacja */ }
+pub struct ReceiveBatch<'a> { _marker: PhantomData<&'a mut BatchReceiver> }
+pub struct BorrowedBatch<'a> { _marker: PhantomData<&'a mut BatchReceiver> }
+
+impl BatchReceiver {
+    pub fn new(_packets: Vec<Vec<u8>>) -> Self { todo!("zaimplementuj BatchReceiver") }
+    pub fn receive_up_to(&mut self, _limit: usize) -> ReceiveBatch<'_> {
+        todo!("zwróć future z pożyczką")
+    }
+}
+impl<'a> Future for ReceiveBatch<'a> {
+    type Output = Option<BorrowedBatch<'a>>;
+    fn poll(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Self::Output> {
+        todo!("obsłuż Pending i Ready")
+    }
+}
+impl BorrowedBatch<'_> {
+    pub fn items(&self) -> &[Vec<u8>] { todo!("zwróć bieżący wycinek") }
+    pub fn finish(self) { todo!("zatwierdź dokładną długość") }
+}
+`;
+
+const batchTests = `${blockOn}
+use std::sync::{Arc as BatchArc, atomic::{AtomicUsize as BatchAtomicUsize, Ordering as BatchOrdering}};
+use std::task::{Context as BatchContext, Poll as BatchPoll, Wake as BatchWakeTrait, Waker as BatchWaker};
+
+struct BatchWake(BatchArc<BatchAtomicUsize>);
+impl BatchWakeTrait for BatchWake {
+    fn wake(self: BatchArc<Self>) { self.0.fetch_add(1, BatchOrdering::SeqCst); }
+    fn wake_by_ref(self: &BatchArc<Self>) { self.0.fetch_add(1, BatchOrdering::SeqCst); }
+}
+
+#[test]
+fn selects_ordered_batches_and_commits_exact_length() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec(), b"b".to_vec(), b"c".to_vec()]);
+    let first = block_on(receiver.receive_up_to(2)).unwrap();
+    assert_eq!(first.items(), &[b"a".to_vec(), b"b".to_vec()]);
+    first.finish();
+    let second = block_on(receiver.receive_up_to(2)).unwrap();
+    assert_eq!(second.items(), &[b"c".to_vec()]);
+    second.finish();
+    assert!(block_on(receiver.receive_up_to(2)).is_none());
+}
+
+#[test]
+fn zero_limit_and_exhaustion_do_not_commit_or_skip() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec()]);
+    assert!(block_on(receiver.receive_up_to(0)).is_none());
+    let batch = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(batch.items(), &[b"a".to_vec()]);
+    batch.finish();
+    assert!(block_on(receiver.receive_up_to(1)).is_none());
+}
+
+#[test]
+fn a_large_limit_returns_the_remaining_records() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec(), Vec::new()]);
+    let batch = block_on(receiver.receive_up_to(99)).unwrap();
+    assert_eq!(batch.items(), &[b"a".to_vec(), Vec::new()]);
+    batch.finish();
+}
+
+#[test]
+fn dropping_a_ready_batch_replays_the_same_records() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec(), b"b".to_vec()]);
+    let first = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(first.items(), &[b"a".to_vec()]);
+    drop(first);
+    let replay = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(replay.items(), &[b"a".to_vec()]);
+    replay.finish();
+}
+
+#[test]
+fn cancelling_pending_wakes_and_replays_without_progress() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec()]);
+    let wakes = BatchArc::new(BatchAtomicUsize::new(0));
+    let waker = BatchWaker::from(BatchArc::new(BatchWake(wakes.clone())));
+    let mut context = BatchContext::from_waker(&waker);
+    let mut pending = Box::pin(receiver.receive_up_to(1));
+    assert!(matches!(pending.as_mut().poll(&mut context), BatchPoll::Pending));
+    assert_eq!(wakes.load(BatchOrdering::SeqCst), 1);
+    drop(pending);
+    let batch = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(batch.items(), &[b"a".to_vec()]);
+    batch.finish();
+}
+
+#[test]
+fn finishing_releases_the_mutable_borrow_for_the_next_batch() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec(), b"b".to_vec()]);
+    let first = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(first.items(), &[b"a".to_vec()]);
+    first.finish();
+    let second = block_on(receiver.receive_up_to(1)).unwrap();
+    assert_eq!(second.items(), &[b"b".to_vec()]);
+    second.finish();
+}
+`;
+
 const callbackSolution = `struct Source { values: Vec<Vec<u8>>, cursor: usize }
 struct Lease<'a> { source: &'a mut Source, index: usize }
 
@@ -336,6 +489,28 @@ export const asyncLendingCoreLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      {
+        id: "async-lending-receiver-bounded-batch",
+        kind: "apply",
+        title: "Zaimplementuj bounded batch",
+        prompt:
+          "Zaimplementuj publiczne API: pub struct BatchReceiver; BatchReceiver::new(Vec<Vec<u8>>) -> Self; receive_up_to(&mut self, limit: usize) -> ReceiveBatch<'_>; ReceiveBatch<'a> implementuje Future<Output = Option<BorrowedBatch<'a>>>; BorrowedBatch<'a>::items(&self) -> &[Vec<u8>] oraz finish(self). Dla niepustego receivera pierwszy poll każdej nowej future ma raz zwrócić Pending i obudzić bieżący waker, a kolejny poll ma zwrócić Ready(Some(...)) z kolejnymi rekordami w oryginalnej kolejności, najwyżej limit. Kursor przesuwa się dopiero o dokładną liczbę rekordów po finish; utworzenie future, Pending, jej drop oraz drop gotowego batcha bez finish nie przesuwają go. Limit zero i wyczerpanie zwracają Ready(None) bez postępu. Po finish można ponownie pożyczyć receiver, a nakładające się wywołania mutujące mają zostać odrzucone przez kompilator. To osobna rodzina primary bounded-batch obok rodziny receiver lease; recall pozostaje osobnym ćwiczeniem.",
+        code: batchStarter,
+        solution: batchSolution,
+        hints: [
+          "Przechowaj &mut BatchReceiver w future i BorrowedBatch, ale nie przesuwaj kursora przed finish.",
+          "Wynik może pamiętać początek i długość wycinka; drop bez finish powinien zwolnić pożyczkę bez commit.",
+        ],
+        evaluator: { kind: "tests", tests: batchTests },
+        expectedStatus: "success",
+        evidenceKind: "transfer",
+        evidenceGate: true,
+        evidence: {
+          version: 2,
+          conceptIds: ["async-lending-borrowed-readiness"],
+          codingTaskId: "async-lending/receiver-bounded-batch-v1",
+        },
+      },
     ],
     misconceptions: [
       "Ready automatycznie zatwierdza kursor",
@@ -449,6 +624,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
 for (const lesson of asyncLendingCoreLessons) {
   const family = coreEvidenceFamilies[lesson.id];
   for (const step of lesson.steps) {
+    if (step.id === "async-lending-receiver-bounded-batch") continue;
     step.evidence = {
       version: 2,
       conceptIds: [...lesson.conceptIds],
