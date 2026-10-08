@@ -91,6 +91,11 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
           ...lesson,
           stepIds: [...lesson.stepIds, "async-lending-receiver-bounded-batch"],
         }
+      : lesson.id === "foundations-assessment"
+        ? {
+            ...lesson,
+            stepIds: [...lesson.stepIds, "foundations-local-parcel-program"],
+          }
       : lesson,
   );
   expect(
@@ -247,7 +252,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     traces: frozenPreNestedInventory.traces,
     competencies:
       frozenPreNestedInventory.competencies + nestedInventory.competencies,
-    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 11,
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 12,
     testEvaluators:
       frozenPreNestedInventory.testEvaluators +
       nestedInventory.testEvaluators +
@@ -323,6 +328,24 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   expect(fresh[1].steps[3].evidence?.conceptIds).toEqual([
     "checked-conversion-errors",
   ]);
+});
+
+it("allows only the appended parcel step in the foundations assessment tail", () => {
+  const assessment = course.lessons.find(
+    (lesson) => lesson.id === "foundations-assessment",
+  )!;
+  expect(assessment.steps.map((step) => step.id)).toEqual([
+    "assessment-rules",
+    "assessment-predict",
+    "assessment-blank",
+    "assessment-adversarial",
+    "assessment-tests",
+    "assessment-transfer-tests",
+    "assessment-reason",
+    "assessment-transfer",
+    "foundations-local-parcel-program",
+  ]);
+  expect(assessment.steps).toHaveLength(9);
 });
 
 it("follows module order from old trait dispatch through both practices to lifetimes without creating state", () => {

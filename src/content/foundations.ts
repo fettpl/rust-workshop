@@ -208,6 +208,7 @@ export const foundationsLessons: Lesson[] = [
     steps: [
       {
         id: "entry-discover",
+        evidence: { version: 1, conceptIds: ["program-entry"] },
         kind: "predict",
         title: "Znajdź punkt wejścia",
         prompt:
@@ -239,6 +240,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "entry-run",
+        evidence: { version: 1, conceptIds: ["program-entry"] },
         kind: "run",
         title: "Uruchom minimalny program",
         prompt:
@@ -251,6 +253,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "cargo-sequence",
+        evidence: { version: 1, conceptIds: ["cargo-workflow"] },
         kind: "apply",
         title: "Ułóż pracę Cargo",
         prompt:
@@ -284,6 +287,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "toolchain-check",
+        evidence: { version: 1, conceptIds: ["cargo-workflow"] },
         kind: "explain",
         title: "Sprawdź narzędzia uczciwie",
         prompt:
@@ -312,6 +316,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "entry-modify",
+        evidence: { version: 1, conceptIds: ["program-entry"] },
         kind: "modify",
         title: "Zmień komunikat",
         prompt:
@@ -329,6 +334,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "entry-recall",
+        evidence: { version: 1, conceptIds: ["program-entry"] },
         kind: "recall",
         title: "Nazwij trzy role",
         prompt:
@@ -347,7 +353,7 @@ export const foundationsLessons: Lesson[] = [
       "rustc --version tworzy strukturę projektu.",
     ],
     transferTask:
-      "Utwórz lokalnie pakiet Cargo, sprawdź rustc --version, cargo --version, rustfmt --version i cargo clippy --version, a następnie zmień komunikat w src/main.rs.",
+      "Utwórz lokalnie pakiet Cargo, sprawdź rustc --version, cargo --version, rustfmt --version i cargo clippy --version, a następnie zmień komunikat w src/main.rs. Później przejdź do małego lokalnego programu naliczającego opłatę za paczkę i sprawdź go własnymi testami.",
     evidenceGate:
       "Samodzielna zmiana komunikatu daje dokładnie oczekiwany wynik; procedura lokalnej instalacji pozostaje osobnym sprawdzeniem komend.",
     sourceIds: [
@@ -373,6 +379,7 @@ export const foundationsLessons: Lesson[] = [
     steps: [
       {
         id: "bindings-discover",
+        evidence: { version: 1, conceptIds: ["bindings-mutability"] },
         kind: "predict",
         title: "Odkryj domyślną regułę",
         prompt: "Które zdanie najlepiej opisuje `let` bez `mut`?",
@@ -403,6 +410,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "scalar-predict",
+        evidence: { version: 1, conceptIds: ["scalar-types"] },
         kind: "predict",
         title: "Odczytaj typy skalarne",
         prompt:
@@ -425,6 +433,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "mut-error",
+        evidence: { version: 1, conceptIds: ["bindings-mutability"] },
         kind: "debug",
         title: "Napraw E0384",
         prompt:
@@ -448,6 +457,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "mut-run",
+        evidence: { version: 1, conceptIds: ["bindings-mutability"] },
         kind: "run",
         title: "Sprawdź zmianę",
         prompt: "Uruchom poprawiony program i sprawdź wartość po przypisaniu.",
@@ -460,6 +470,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "shadow-types",
+        evidence: { version: 1, conceptIds: ["bindings-mutability"] },
         kind: "modify",
         title: "Rozróżnij mut i shadowing",
         prompt:
@@ -483,6 +494,7 @@ export const foundationsLessons: Lesson[] = [
       },
       {
         id: "bindings-recall",
+        evidence: { version: 1, conceptIds: ["bindings-mutability"] },
         kind: "recall",
         title: "Wybierz właściwą regułę",
         prompt:
@@ -993,6 +1005,33 @@ export const foundationsLessons: Lesson[] = [
           },
         },
         evidenceKind: "transfer",
+      },
+      {
+        id: "foundations-local-parcel-program",
+        kind: "apply",
+        title: "Mały lokalny program: opłata za paczkę",
+        prompt:
+          "Twój program od zera: utwórz świeży lokalny pakiet Cargo i napisz mały program obliczający opłatę za paczkę na podstawie całkowitej wagi. Dla wag od 1 do 5 opłata wynosi 8, a dla wag od 6 do 20 wynosi 12. Każda inna waga, w tym 0 i 21, ma zostać odrzucona w reprezentacji, którą wybierzesz. Pokaż działanie dla wag 0, 1, 5, 6, 20 i 21. Sam wybierz nazwę funkcji oraz typ zwracany; zachowaj `main` na tyle krótki, aby dało się go wyjaśnić. Nie potrzebujesz `stdin`, plików, `Result`, `struct` ani pętli: jawne wywołania, całkowity znacznik odrzucenia albo komunikat warunkowy są wystarczające. Nie podajemy sygnatury — opisz i uzasadnij własny kontrakt obserwowalnego wyniku.\n\nNeutralne wsparcie: `cargo new` tworzy pakiet, `Cargo.toml` i `src/main.rs` pokazują jego pliki, `cargo check` sprawdza kompilację, `cargo run` uruchamia program, a `cargo test` uruchamia testy. Niezależny przykład samej składni testu to `#[test] fn adds_two_numbers() { assert_eq!(2 + 2, 4); }`.\n\nNapisz co najmniej dwa własne sensowne testy: jeden musi sprawdzić granicę 5/6, a drugi przypadek nieprawidłowej wagi. Zmień na chwilę jedną oczekiwaną wartość, zobacz prawdziwe niepowodzenie testu, przywróć poprawną wartość i zapisz krótkie wyjaśnienie błędu oraz poprawki.\n\nZapisz dostępny output Cargo i własną samoocenę; jeśli lokalny Rust nie jest dostępny, oznacz stan jako jeszcze nieobserwowany i kontynuuj naukę w przeglądarce. Ta karta zapisuje samoocenę i gotowość do przeglądu, ale nie potwierdza automatycznie lokalnego uruchomienia ani przeglądu przez osobę.",
+        evaluator: {
+          kind: "rubric",
+          criteria: [
+            "Dostępny jest lokalny output cargo check, cargo run lub cargo test; brak narzędzi pozostaje oznaczony jako jeszcze nieobserwowany.",
+            "Zadeklarowane zachowanie poprawnie rozróżnia wagi 1–5 z opłatą 8, wagi 6–20 z opłatą 12 oraz odrzucenie pozostałych wag.",
+            "Pokazano wagi 0, 1, 5, 6, 20 i 21, a main pozostał krótki i wyjaśnialny.",
+            "Są co najmniej dwa własne sensowne testy, w tym granica 5/6 i przypadek nieprawidłowej wagi.",
+            "Jedna oczekiwana wartość została celowo zmieniona, zaobserwowano niepowodzenie testu, przywrócono ją i wyjaśniono błąd oraz poprawkę.",
+            "Wyjaśniono wybór reprezentacji odrzucenia oraz zapisano samoocenę lub gotowość do przeglądu bez twierdzenia, że lokalne wykonanie albo przegląd przez osobę zostały automatycznie potwierdzone.",
+          ],
+        },
+        rubric: [
+          "Dostępny jest lokalny output cargo check, cargo run lub cargo test; brak narzędzi pozostaje oznaczony jako jeszcze nieobserwowany.",
+          "Zadeklarowane zachowanie poprawnie rozróżnia wagi 1–5 z opłatą 8, wagi 6–20 z opłatą 12 oraz odrzucenie pozostałych wag.",
+          "Pokazano wagi 0, 1, 5, 6, 20 i 21, a main pozostał krótki i wyjaśnialny.",
+          "Są co najmniej dwa własne sensowne testy, w tym granica 5/6 i przypadek nieprawidłowej wagi.",
+          "Jedna oczekiwana wartość została celowo zmieniona, zaobserwowano niepowodzenie testu, przywrócono ją i wyjaśniono błąd oraz poprawkę.",
+          "Wyjaśniono wybór reprezentacji odrzucenia oraz zapisano samoocenę lub gotowość do przeglądu bez twierdzenia, że lokalne wykonanie albo przegląd przez osobę zostały automatycznie potwierdzone.",
+        ],
+        evidenceKind: "self-rating",
       },
     ],
     misconceptions: [

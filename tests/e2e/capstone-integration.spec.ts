@@ -160,6 +160,16 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
   await page.getByRole("button", { name: "Projekt", exact: true }).click();
   const picker = page.getByRole("navigation", { name: "Wybierz projekt" });
   await picker.getByRole("button", { name: project.title }).click();
+  const learnerInstruction = page.locator(".learner-instruction");
+  await expect(learnerInstruction).toBeVisible();
+  await expect(learnerInstruction).toContainText("K=1");
+  await expect(learnerInstruction).toContainText("K=2");
+  await expect(learnerInstruction).toContainText("restart");
+  await expect(
+    page.locator(".adversarial").getByRole("button", {
+      name: "Podejmij nowy wariant",
+    }),
+  ).toBeVisible();
   const panel = page.getByRole("region", { name: "Pakiet Cargo" });
   const starterDownload = page.waitForEvent("download");
   await panel.getByRole("link", { name: "Pobierz pakiet startowy" }).click();

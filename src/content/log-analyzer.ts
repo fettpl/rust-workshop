@@ -1327,4 +1327,31 @@ export const logAnalyzerProject: ProjectContract = {
     "Który znak kończy raport i jak dowiodły tego testy całego tekstu?",
     "Co było sprawdzoną bramką lekcji, a co jedynie lokalną checklistą pobranego pakietu?",
   ],
+  learnerInstruction: {
+    title: "Twój program od zera",
+    summary:
+      "Utwórz osobny lokalny projekt Cargo korzystający ze standardowej biblioteki. Możesz zaglądać do dokumentacji standardowej biblioteki; zapisz, z jakiej pomocy skorzystałeś.",
+    points: [
+      "Program przyjmuje dokładnie jeden argument: ścieżkę do pliku w UTF-8. Każda niepusta linia ma postać `name;minutes`, zawiera dokładnie jeden średnik, a oba pola trzeba przyciąć; name nie może być puste.",
+      "minutes to dziesiętne cyfry ASCII z zakresu 1..=1440. Puste linie pomijasz. Nazwy są napisami Unicode rozróżniającymi wielkość liter.",
+      "Zsumuj minuty dla każdej nazwy i wypisz `name;total`, po jednej linii, w porządku napisów Rust. Powtarzające się nazwy po przycięciu tworzą jeden wynik.",
+      "Dla błędnego rekordu wypisz na stderr jego numer linii od 1, przejdź dalej dla poprawnych rekordów, wypisz poprawne podsumowanie i zakończ `exit 2`. Błędna liczba argumentów, błąd I/O albo błąd UTF-8 trafia na stderr, nie wypisuje raportu i kończy się `exit 1`; całkowicie poprawny plik kończy się `exit 0`.",
+      "Sprawdzaj sumowanie z kontrolą przepełnienia. Rekord powodujący przepełnienie jest błędny, a wcześniejsze poprawne sumy pozostają zachowane.",
+      "Nie ma wymagania dotyczącego zależności, sieci, znaczników czasu, wdrożenia ani progu wydajności. Wybierz własne nazwy i strukturę danych.",
+      "Zapisz decyzję o nazwach pożyczonych lub posiadanych oraz o strukturze danych. Dodaj własne testy błędnego rekordu i agregacji z kolejnością; pokaż wynik polecenia dla pliku poprawnego i mieszanego oraz krótko omów jedną decyzję własności.",
+      "Przykład 1 — wejście. Pierwsza linia zaczyna się jedną spacją.\n` Basia;30`\n`Ada;5`\n`Basia; 15`\nstdout:\n`Ada;5`\n`Basia;45`\nstderr jest puste, a program kończy się kodem 0.",
+      "Przykład 2 — wejście:\n`Ada;5`\n`to nie jest rekord`\n`Basia;7`\nstdout:\n`Ada;5`\n`Basia;7`\nstderr zawiera numer linii 2 (treść komunikatu wybierasz samodzielnie), a program kończy się kodem 2.",
+      "Przegląd człowieka albo obserwacja pracy powinny obejmować powtarzające się nazwy oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF, granice minut, złe pola, błąd I/O i przepełnienie. Samodzielnie sprawdzone, gotowe do przeglądu i sprawdzone przez człowieka oznaczają różne stany; pobrany pakiet referencyjny jest pomocą, nie artefaktem uczącego się ani automatycznym zaliczeniem.",
+    ],
+    followUp: {
+      title: "Po pierwszym przeglądzie: `--min-total N`",
+      summary:
+        "Po tym, jak pierwszy artefakt zostanie przejrzany przez człowieka albo zaobserwowany, możesz podjąć zmienione wymaganie.",
+      points: [
+        "Dodaj opcjonalne `--min-total N`, na przykład `--min-total 10`. Filtruje ono wyłącznie końcowe wypisywane sumy; stare wywołanie bez filtra pozostaje zgodne.",
+        "Nie zmieniaj parsowania, diagnostyki ani kodów wyjścia. Zaktualizuj testy i wyjaśnij, która granica wymagania się zmieniła.",
+        "Sposób zapisu liczby `N` nie jest tu narzucony. Określ dozwolony zapis i obsługę błędów we własnym kontrakcie; pokaż tę granicę w testach i wyjaśnij swoją decyzję.",
+      ],
+    },
+  },
 };

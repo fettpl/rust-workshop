@@ -186,6 +186,12 @@ export interface CourseModule {
   assessmentId: string;
   gateCriteria?: ModuleGateCriterion[];
 }
+export interface ProjectInstructionCard {
+  title: string;
+  summary?: string;
+  points: string[];
+  followUp?: ProjectInstructionCard;
+}
 export interface ProjectContract {
   id: string;
   lessonIds?: string[];
@@ -199,6 +205,7 @@ export interface ProjectContract {
   adversarialLessonId: string;
   adversarialInject: string;
   retrospective: string[];
+  learnerInstruction?: ProjectInstructionCard;
   package?: ProjectPackage;
 }
 export interface ProjectPackage {
