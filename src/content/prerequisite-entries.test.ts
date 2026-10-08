@@ -6,6 +6,7 @@ import {
 } from "@/engine/course-route";
 import { modules, lessons, concepts } from "./course";
 import {
+  createStepProgress,
   exportState,
   importState,
   createInitialState,
@@ -68,7 +69,7 @@ function transitivePrerequisites(
 ): Set<string> {
   const result = new Set<string>();
   const visit = (current: string) => {
-    for (const prerequisite of graph.get(current) ?? []) {
+    for (const prerequisite of graph.get(current)!) {
       if (result.has(prerequisite)) continue;
       result.add(prerequisite);
       visit(prerequisite);
@@ -78,6 +79,20 @@ function transitivePrerequisites(
   return result;
 }
 
+function expectKnownGraphTargets(
+  graph: Map<string, readonly string[]>,
+  graphName: string,
+) {
+  for (const [id, prerequisites] of graph) {
+    for (const prerequisite of prerequisites) {
+      expect(
+        graph.has(prerequisite),
+        `${graphName} edge ${id} -> ${prerequisite} must target its namespace`,
+      ).toBe(true);
+    }
+  }
+}
+
 function expectAcyclic(graph: Map<string, readonly string[]>) {
   const visiting = new Set<string>();
   const visited = new Set<string>();
@@ -85,7 +100,7 @@ function expectAcyclic(graph: Map<string, readonly string[]>) {
     if (visiting.has(id)) throw new Error(`cycle at ${id}`);
     if (visited.has(id)) return;
     visiting.add(id);
-    for (const prerequisite of graph.get(id) ?? []) visit(prerequisite);
+    for (const prerequisite of graph.get(id)!) visit(prerequisite);
     visiting.delete(id);
     visited.add(id);
   };
@@ -111,17 +126,12 @@ describe("extension entry prerequisite graph", () => {
         spec.conceptPrerequisites,
       );
 
-      for (const prerequisite of [
-        ...spec.modulePrerequisites,
-        ...spec.lessonPrerequisites,
-        ...spec.conceptPrerequisites,
-      ]) {
-        expect(
-          moduleMap.has(prerequisite) ||
-            lessonMap.has(prerequisite) ||
-            conceptMap.has(prerequisite),
-        ).toBe(true);
-      }
+      for (const prerequisite of spec.modulePrerequisites)
+        expect(moduleMap.has(prerequisite)).toBe(true);
+      for (const prerequisite of spec.lessonPrerequisites)
+        expect(lessonMap.has(prerequisite)).toBe(true);
+      for (const prerequisite of spec.conceptPrerequisites)
+        expect(conceptMap.has(prerequisite)).toBe(true);
     }
   });
 
@@ -136,6 +146,9 @@ describe("extension entry prerequisite graph", () => {
       concepts.map((concept) => [concept.id, concept.prerequisites] as const),
     );
 
+    expectKnownGraphTargets(moduleGraph, "module");
+    expectKnownGraphTargets(lessonGraph, "lesson");
+    expectKnownGraphTargets(conceptGraph, "concept");
     expectAcyclic(moduleGraph);
     expectAcyclic(lessonGraph);
     expectAcyclic(conceptGraph);
@@ -154,7 +167,7 @@ describe("extension entry prerequisite graph", () => {
     }
   });
 
-  it("preserves the Core17/Extensions31 catalog and an existing advanced resume", () => {
+  it("preserves the Core17/Extensions31 catalog and a historical advanced resume", () => {
     expect(CORE_MODULE_IDS).toEqual([
       "rust-foundations",
       "loops-control",
@@ -181,7 +194,12 @@ describe("extension entry prerequisite graph", () => {
     ).toHaveLength(31);
 
     const state = createInitialState();
-    state.routePreference = "extensions";
+    const resumeLesson = lessons.find(
+      (lesson) => lesson.id === "future-laziness",
+    );
+    expect(resumeLesson).toBeDefined();
+    const resumeStep = resumeLesson!.steps[3];
+    expect(resumeStep.id).toBe("future-laziness-deferred-gate");
     state.resume = {
       view: "lesson",
       lessonId: "future-laziness",
@@ -189,9 +207,82 @@ describe("extension entry prerequisite graph", () => {
       panel: "code",
       focus: true,
     };
-    const restored = importState(exportState(state));
-    expect(restored.routePreference).toBe("extensions");
+    state.steps["future-laziness:future-laziness-deferred-gate"] = {
+      ...createStepProgress(resumeStep.code),
+      answer: "Przeniosę efekt do body future.",
+      hints: 1,
+      revealed: true,
+      attempts: [
+        {
+          at: 42,
+          code: "fn deferred_note() {}",
+          passed: false,
+          feedback: "Efekt nadal zachodzi za wcześnie.",
+        },
+      ],
+      rubricChecks: ["future-laziness"],
+      traceIndex: 1,
+    };
+    state.events = [
+      {
+        id: "future-laziness-historical-evidence",
+        conceptIds: ["future-laziness"],
+        lessonId: "future-laziness",
+        stepId: resumeStep.id,
+        kind: "fix",
+        passed: true,
+        hints: 1,
+        revealed: true,
+        at: 43,
+        evaluator: "tests",
+      },
+    ];
+    state.mastery = {
+      "future-laziness": {
+        level: "practiced",
+        reason: "fix",
+        updatedAt: 44,
+      },
+    };
+    state.review = [
+      {
+        conceptId: "future-laziness",
+        dueAt: 100,
+        intervalDays: 2,
+        attempts: 1,
+        reason: "fix",
+        lastReviewedAt: 45,
+      },
+    ];
+    state.notes.future = "Zachować kolejność obserwacji poll.";
+    state.bookmarks = ["future-laziness:future-laziness-deferred-gate"];
+    state.ratings = [{ conceptId: "future-laziness", rating: "good", at: 46 }];
+    state.reviewSession = {
+      conceptId: "future-laziness",
+      mode: "card",
+      sessionId: "historical-future-session",
+      startedAt: 47,
+      wasDue: true,
+    };
+
+    expect(resumeLesson!.steps[state.resume.stepIndex].id).toBe(resumeStep.id);
+    const exported = JSON.parse(exportState(state)) as {
+      state: Record<string, unknown>;
+    };
+    delete exported.state.routePreference;
+    const restored = importState(JSON.stringify(exported));
+    expect(restored.routePreference).toBe("core");
     expect(restored.resume).toEqual(state.resume);
+    expect(
+      restored.steps["future-laziness:future-laziness-deferred-gate"],
+    ).toEqual(state.steps["future-laziness:future-laziness-deferred-gate"]);
+    expect(restored.events).toEqual(state.events);
+    expect(restored.mastery).toEqual(state.mastery);
+    expect(restored.review).toEqual(state.review);
+    expect(restored.notes).toEqual(state.notes);
+    expect(restored.bookmarks).toEqual(state.bookmarks);
+    expect(restored.ratings).toEqual(state.ratings);
+    expect(restored.reviewSession).toEqual(state.reviewSession);
     expect(restored.schemaVersion).toBe(3);
   });
 });
