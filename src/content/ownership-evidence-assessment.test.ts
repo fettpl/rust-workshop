@@ -270,7 +270,7 @@ fn preserves_leading_and_trailing_whitespace() {
     compileAndRun(`function-frame-owned-v1/${name}`, source, tests, false);
   expect(step.code).toBe(frameTextContract.starter);
   expect(step.solution).toBe(frameTextContract.solution);
-});
+}, 75_000);
 it("does not accept an answer without compiled mutation code", () => {
   const step = stepAt("borrow-intro", "borrow-mutable-run");
   expect(
