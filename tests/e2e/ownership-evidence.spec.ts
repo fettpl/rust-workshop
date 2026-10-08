@@ -1561,8 +1561,32 @@ test("Move assessment schedules only its exact concept and keeps Copy provisiona
     courseEvidenceSummary(recorded, "copy-semantics").qualifyingCodingTasks,
   ).toBe(0);
   expect(courseEvidenceSummary(recorded, "copy-semantics").mastery.level).toBe(
-    "exposed",
-  ); // Normal opening remains lesson-wide neutral exposure.
+    "new",
+  );
+  const openings = recorded.events.filter(
+    (event) =>
+      event.lessonId === target.lesson.id &&
+      event.stepId === target.step.id &&
+      event.kind === "exposure",
+  );
+  expect(openings).toHaveLength(1);
+  const opening = openings[0];
+  expect(opening).toMatchObject({
+    conceptIds: ["move-semantics"],
+    kind: "exposure",
+    passed: true,
+    gate: false,
+  });
+  expect(opening?.evidenceVersion).toBeUndefined();
+  expect(
+    recorded.events.filter(
+      (event) =>
+        event.lessonId === target.lesson.id &&
+        event.stepId === target.step.id &&
+        event.kind === "exposure" &&
+        event.conceptIds.includes("copy-semantics"),
+    ),
+  ).toHaveLength(0);
 });
 
 test("ownership mobile tabs preserve keyboard focus, raw failure and exact draft/panel resume", async ({
