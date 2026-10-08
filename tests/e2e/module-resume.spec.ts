@@ -257,10 +257,16 @@ for (const moduleId of [
 
       const browser = page.context().browser();
       expect(browser).toBeDefined();
-      const isolatedContext = await browser!.newContext();
+      const baseURL = test.info().project.use.baseURL;
+      if (typeof baseURL !== "string" || baseURL.length === 0) {
+        throw new Error(
+          "production module-resume config must provide project.use.baseURL",
+        );
+      }
+      const isolatedContext = await browser!.newContext({ baseURL });
       const isolatedPage = await isolatedContext.newPage();
       try {
-        await isolatedPage.goto("http://127.0.0.1:3021/");
+        await isolatedPage.goto("/");
         await isolatedPage
           .getByRole("button", { name: "Sprawdź punkt startowy" })
           .click();
