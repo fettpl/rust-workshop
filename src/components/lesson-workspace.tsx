@@ -64,20 +64,53 @@ export function LessonWorkspace() {
   const currentModule = modules.find(
     (candidate) => candidate.id === lesson.moduleId,
   );
-  const matchingRecoveryStatuses = (currentModule?.gateCriteria ?? [])
-    .filter((criterion) =>
-      [...criterion.taskRefs, ...(criterion.supplementaryStepRefs ?? [])].some(
+  const matchingPrimaryCriteria = (currentModule?.gateCriteria ?? []).filter(
+    (criterion) =>
+      criterion.requiredIndependentCodingTasks !== undefined &&
+      criterion.taskRefs.some(
         (ref) => ref.lessonId === lesson.id && ref.stepId === step.id,
       ),
-    )
-    .map((criterion) => gateRecovery(state, criterion, lessons).status);
-  const recoveryStatus: CoachRecoveryStatus = matchingRecoveryStatuses.includes(
-    "available",
-  )
+  );
+  const matchingRecoveryStatuses = matchingPrimaryCriteria.map((criterion) =>
+    gateRecovery(state, criterion, lessons),
+  );
+  const freshIndependentTaskAvailable = matchingRecoveryStatuses.some(
+    (recovery, index) => {
+      if (
+        recovery.status !== "available" ||
+        step.evaluator?.kind !== "tests" ||
+        !step.evidence?.codingTaskId
+      )
+        return false;
+      const criterion = matchingPrimaryCriteria[index];
+      const targetRef = recovery.task;
+      if (
+        !criterion.taskRefs.some(
+          (ref) =>
+            ref.lessonId === targetRef.lessonId &&
+            ref.stepId === targetRef.stepId,
+        )
+      )
+        return false;
+      const targetStep = lessons
+        .find((candidate) => candidate.id === targetRef.lessonId)
+        ?.steps.find((candidate) => candidate.id === targetRef.stepId);
+      return (
+        targetStep?.evaluator?.kind === "tests" &&
+        targetStep.evidence?.codingTaskId !== undefined &&
+        targetStep.evidence.codingTaskId !== step.evidence.codingTaskId
+      );
+    },
+  );
+  const recoveryStatus: CoachRecoveryStatus = freshIndependentTaskAvailable
     ? "available"
-    : matchingRecoveryStatuses.includes("complete")
+    : matchingRecoveryStatuses.some(
+          (recovery) => recovery.status === "complete",
+        )
       ? "complete"
-      : matchingRecoveryStatuses.includes("exhausted")
+      : matchingRecoveryStatuses.some(
+            (recovery) => recovery.status === "exhausted",
+          )
         ? "exhausted"
         : "none";
   const nextLesson = nextLessonForNavigation(lesson.id, lessons, modules);

@@ -765,6 +765,27 @@ function unrelatedCoachState(): UserState {
   return state;
 }
 
+function legacyCoachState(): UserState {
+  const state = readyState();
+  const target = authored("adversarial-no-clone", "adversarial-code");
+  state.resume.lessonId = target.lesson.id;
+  state.resume.stepIndex = target.lesson.steps.indexOf(target.step);
+  const legacyCriteria = ownership.gateCriteria!.filter((criterion) =>
+    ["anti-clone-recognition", "unseen-task"].includes(criterion.id),
+  );
+  for (const ref of legacyCriteria.flatMap((criterion) => criterion.taskRefs)) {
+    const step = authored(ref.lessonId, ref.stepId).step;
+    state.steps[stepKey(ref.lessonId, ref.stepId)] = {
+      ...createStepProgress(step.code),
+      hints: 2,
+      revealed:
+        ref.lessonId !== target.lesson.id || ref.stepId !== target.step.id,
+      completed: true,
+    };
+  }
+  return state;
+}
+
 function functionOwnershipPrimaryEvent(
   stepId: string,
   at: number,
@@ -1159,6 +1180,18 @@ test("unrelated lesson coach uses neutral copy without a gate promise", async ({
   );
   await expect(page.locator(".solution-warning")).not.toContainText(
     "potwierdzenie samodzielności poczeka",
+  );
+  await expect(page.locator(".solution-warning")).not.toContainText(
+    "dostępnego świeżego zadania",
+  );
+});
+
+test("legacy uncounted practice keeps neutral coach copy after recovery fallback", async ({
+  page,
+}) => {
+  await seedState(page, legacyCoachState());
+  await expect(page.locator(".solution-warning")).toContainText(
+    "porównaj ją ze swoją próbą",
   );
   await expect(page.locator(".solution-warning")).not.toContainText(
     "dostępnego świeżego zadania",

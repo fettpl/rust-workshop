@@ -335,59 +335,93 @@ describe("registered shared-borrow learner flow", () => {
     ).toHaveLength(2);
   });
 
-  it("preserves ordinary and delayed pinned IDs, drafts, and unavailable explicit IDs", () => {
-    const ordinary = resolveReviewExercise(
-      "shared-borrow",
-      reviewExercises["shared-borrow"].id,
-    );
-    const delayed = resolveReviewExercise("shared-borrow", sharedDelayed.id);
-    expect(ordinary).toMatchObject({
-      status: "ready",
-      exerciseId: "review-shared-borrow",
-    });
-    expect(delayed).toMatchObject({
-      status: "ready",
+  it.each([
+    {
+      name: "ordinary",
+      exerciseId: reviewExercises["shared-borrow"].id,
+      exercise: reviewExercises["shared-borrow"],
+    },
+    {
+      name: "delayed",
       exerciseId: sharedDelayed.id,
-    });
-    expect(
-      resolveReviewExercise("shared-borrow", "removed-shared-review"),
-    ).toEqual({ status: "unavailable", reason: "unknown-id" });
-    expect(
-      resolveReviewExercise(
+      exercise: sharedDelayed,
+    },
+  ])(
+    "preserves $name shared pinned IDs, drafts, and unavailable explicit IDs",
+    ({ exerciseId, exercise }) => {
+      const ordinary = resolveReviewExercise(
         "shared-borrow",
-        reviewExercises["mutable-borrow"].id,
-      ),
-    ).toEqual({ status: "unavailable", reason: "wrong-concept" });
+        reviewExercises["shared-borrow"].id,
+      );
+      const delayed = resolveReviewExercise("shared-borrow", sharedDelayed.id);
+      expect(ordinary).toMatchObject({
+        status: "ready",
+        exerciseId: "review-shared-borrow",
+      });
+      expect(delayed).toMatchObject({
+        status: "ready",
+        exerciseId: sharedDelayed.id,
+      });
+      expect(
+        resolveReviewExercise("shared-borrow", "removed-shared-review"),
+      ).toEqual({ status: "unavailable", reason: "unknown-id" });
+      expect(
+        resolveReviewExercise(
+          "shared-borrow",
+          reviewExercises["mutable-borrow"].id,
+        ),
+      ).toEqual({ status: "unavailable", reason: "wrong-concept" });
 
-    const session = startReviewSession(
-      createInitialState(),
-      "shared-borrow",
-      NOW,
-      true,
-      "shared-pinned-session",
-      sharedDelayed.id,
-    );
-    const state = createInitialState();
-    state.reviewSession = session;
-    state.steps[reviewSessionKey(session.sessionId)] = {
-      ...createStepProgress(sharedDelayed.code),
-      code: `${sharedDelayed.code}\n// durable shared draft`,
-      answer: "shared draft",
-    };
-    const roundTripped = importState(exportState(state));
-    expect(roundTripped.reviewSession).toEqual(session);
-    expect(roundTripped.steps[reviewSessionKey(session.sessionId)]).toEqual(
-      state.steps[reviewSessionKey(session.sessionId)],
-    );
-    expect(
-      startReviewSession(
-        roundTripped,
+      const session = startReviewSession(
+        createInitialState(),
         "shared-borrow",
-        NOW + 1,
+        NOW,
         true,
-        "replacement-session",
-        sharedDelayed.id,
-      ),
-    ).toEqual(session);
-  });
+        "shared-pinned-session",
+        exerciseId,
+      );
+      const state = createInitialState();
+      state.reviewSession = session;
+      state.steps[reviewSessionKey(session.sessionId)] = {
+        ...createStepProgress(exercise.code),
+        code: `${exercise.code}\n// durable shared draft`,
+        answer: "shared draft",
+      };
+      const roundTripped = importState(exportState(state));
+      expect(roundTripped.reviewSession).toEqual(session);
+      expect(roundTripped.steps[reviewSessionKey(session.sessionId)]).toEqual(
+        state.steps[reviewSessionKey(session.sessionId)],
+      );
+      expect(
+        startReviewSession(
+          roundTripped,
+          "shared-borrow",
+          NOW + 1,
+          true,
+          "replacement-session",
+          exerciseId,
+        ),
+      ).toEqual(session);
+      const otherConcept = startReviewSession(
+        roundTripped,
+        "function-ownership",
+        NOW + 2,
+        false,
+        "other-concept-session",
+        delayedReviewExercises["function-ownership"].id,
+      );
+      expect(otherConcept.conceptId).toBe("function-ownership");
+      expect(roundTripped.reviewSession).toEqual(session);
+      expect(
+        startReviewSession(
+          roundTripped,
+          "shared-borrow",
+          NOW + 3,
+          true,
+          "replacement-session",
+          exerciseId,
+        ),
+      ).toEqual(session);
+    },
+  );
 });
