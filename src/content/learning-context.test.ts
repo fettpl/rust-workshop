@@ -5,6 +5,7 @@ import {
   lessons,
   projects,
   reviewExercises,
+  shortReviewExercises,
 } from "./course";
 import { ownershipModule } from "./catalog";
 import {
@@ -19,6 +20,8 @@ import {
   courseDelayedReviewEligibility,
   courseEvidencePolicy,
   resolveReviewExercise,
+  reviewExerciseIdForSelection,
+  reviewPurposeForExercise,
   reviewExerciseIdForOrigin,
 } from "./learning-context";
 import type { EvidenceEvent, ProjectPackage, UserState } from "@/domain/types";
@@ -639,6 +642,42 @@ describe("stable review exercise routing", () => {
     });
   });
 
+  it.each([
+    ["io-format-roundtrip", "review-io-format-flag-probe-v1"],
+    ["io-safe-persistence", "review-io-missing-file-probe-v1"],
+    ["io-terminal-boundary", "review-io-confirm-save-probe-v1"],
+  ])("resolves the authored short ID for %s", (conceptId, exerciseId) => {
+    expect(resolveReviewExercise(conceptId, exerciseId)).toMatchObject({
+      status: "ready",
+      exerciseId,
+      step: shortReviewExercises[conceptId],
+    });
+    expect(reviewExerciseIdForSelection(conceptId, "short")).toBe(exerciseId);
+    expect(reviewExerciseIdForSelection(conceptId, "extended")).toBe(
+      reviewExercises[conceptId].id,
+    );
+  });
+
+  it("keeps old I/O IDs and missing IDs on the extended contracts", () => {
+    for (const [conceptId, oldId] of [
+      ["io-format-roundtrip", "review-io-format"],
+      ["io-safe-persistence", "review-io-files"],
+      ["io-terminal-boundary", "review-io-command"],
+    ] as const) {
+      expect(resolveReviewExercise(conceptId, oldId)).toMatchObject({
+        status: "ready",
+        exerciseId: oldId,
+        step: reviewExercises[conceptId],
+      });
+      expect(resolveReviewExercise(conceptId)).toMatchObject({
+        status: "ready",
+        exerciseId: oldId,
+        step: reviewExercises[conceptId],
+      });
+      expect(reviewPurposeForExercise(conceptId, oldId)).toBe("extended");
+    }
+  });
+
   it("keeps unknown and wrong-concept pinned IDs unavailable", () => {
     expect(
       resolveReviewExercise("function-ownership", "removed-review-id"),
@@ -722,6 +761,23 @@ describe("stable review exercise routing", () => {
         now,
       ),
     ).toBeUndefined();
+    expect(
+      reviewExerciseIdForOrigin(
+        createInitialState(),
+        "io-format-roundtrip",
+        "practice",
+        now,
+      ),
+    ).toBe(shortReviewExercises["io-format-roundtrip"].id);
+    expect(
+      reviewExerciseIdForOrigin(
+        createInitialState(),
+        "io-format-roundtrip",
+        "practice",
+        now,
+        "extended",
+      ),
+    ).toBe(reviewExercises["io-format-roundtrip"].id);
   });
 
   it("keeps a legacy concept-key review event on the historical course definition", () => {
@@ -746,6 +802,44 @@ describe("stable review exercise routing", () => {
     expect(evidenceForReview("function-ownership", historical)).toEqual({
       conceptIds: ["function-ownership"],
       evidenceVersion: historical.evidence!.version,
+    });
+  });
+
+  it("attributes only a false-delay exposure to a marked short probe", () => {
+    const probe = shortReviewExercises["io-format-roundtrip"];
+    const event: EvidenceEvent = {
+      id: "short-probe-exposure",
+      conceptIds: ["io-format-roundtrip"],
+      lessonId: "review",
+      stepId: `${probe.id}:session`,
+      kind: "exposure",
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 20_000,
+      evidenceVersion: 1,
+      delayed: false,
+      evaluator: "tests",
+      gate: false,
+    };
+    expect(courseEvidencePolicy.definitionForEvent(event)).toEqual(
+      probe.evidence,
+    );
+    expect(
+      courseEvidencePolicy.definitionForEvent({
+        ...event,
+        kind: "recall",
+        delayed: true,
+      }),
+    ).toBeUndefined();
+    expect(
+      courseEvidencePolicy.definitionForEvent({ ...event, delayed: true }),
+    ).toBeUndefined();
+    const recorded = recordCourseEvidence(createInitialState(), event);
+    expect(recorded.review).toEqual([]);
+    expect(recorded.events.at(-1)).toMatchObject({
+      kind: "exposure",
+      delayed: false,
     });
   });
 });

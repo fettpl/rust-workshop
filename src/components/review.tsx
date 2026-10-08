@@ -15,7 +15,9 @@ import {
   courseEvidenceSummary,
   recordCourseLessonExposure,
   resolveReviewExercise,
+  reviewExerciseIdForSelection,
   reviewExerciseIdForOrigin,
+  reviewPurposeForExercise,
 } from "@/content/learning-context";
 import {
   reviewSessionFinished,
@@ -38,6 +40,23 @@ const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 
 function reviewEventStepId(session: ReviewSession): string {
   return (session.exerciseId ?? session.conceptId) + ":" + session.sessionId;
+}
+
+function successfulProbeSession(
+  state: Parameters<typeof reviewSessionFinished>[0],
+  session: ReviewSession,
+): boolean {
+  const step = resolveReviewExercise(session.conceptId, session.exerciseId);
+  if (step.status !== "ready" || step.step.reviewPurpose !== "practice-probe")
+    return false;
+  const progress = state.steps[reviewSessionKey(session.sessionId)];
+  const attempt = progress?.attempts.at(-1);
+  return Boolean(
+    progress?.completed &&
+    attempt?.passed &&
+    attempt.code !== undefined &&
+    attempt.result?.status === "success",
+  );
 }
 
 const ownershipConceptIds = new Set(
@@ -75,6 +94,13 @@ export function ReviewView() {
     ? resolveReviewExercise(session.conceptId, session.exerciseId)
     : undefined;
   const step = resolution?.status === "ready" ? resolution.step : undefined;
+  const reviewPurpose = session
+    ? reviewPurposeForExercise(session.conceptId, session.exerciseId)
+    : "neutral";
+  const isPracticeProbe = reviewPurpose === "practice-probe";
+  const awaitingProbeRating = Boolean(
+    session && successfulProbeSession(state, session),
+  );
   const unavailable = resolution?.status === "unavailable";
   const evaluator = step?.evaluator;
   const isManifest = evaluator?.kind === "manifest-contract";
@@ -98,10 +124,15 @@ export function ReviewView() {
   );
   const completed = Boolean(progress.completed);
 
-  function start(id: string, origin: "due" | "practice") {
+  function start(
+    id: string,
+    origin: "due" | "practice",
+    selection: "short" | "extended" = "short",
+  ) {
     if (
       state.reviewSession &&
-      !reviewSessionFinished(state, state.reviewSession)
+      (!reviewSessionFinished(state, state.reviewSession) ||
+        successfulProbeSession(state, state.reviewSession))
     ) {
       setSelected(state.reviewSession.conceptId);
       setMode(state.reviewSession.mode);
@@ -112,7 +143,13 @@ export function ReviewView() {
     const wasDue =
       origin === "due" &&
       state.review.some((item) => item.conceptId === id && item.dueAt <= now);
-    const exerciseId = reviewExerciseIdForOrigin(state, id, origin, now);
+    const exerciseId = reviewExerciseIdForOrigin(
+      state,
+      id,
+      origin,
+      now,
+      selection,
+    );
     const candidate = startReviewSession(
       state,
       id,
@@ -136,6 +173,15 @@ export function ReviewView() {
     }));
   }
   function returnToQueue() {
+    if (session && awaitingProbeRating) {
+      update((current) => {
+        if (current.reviewSession?.sessionId !== session.sessionId)
+          return current;
+        const next = { ...current };
+        delete next.reviewSession;
+        return next;
+      });
+    }
     setSelected(null);
     setExecutionMessage("");
   }
@@ -210,6 +256,7 @@ export function ReviewView() {
       return;
     const evaluator = step.evaluator;
     const outcome = evaluate(evaluator, { answer: progress.answer, code });
+    const probe = step.reviewPurpose === "practice-probe";
     // eslint-disable-next-line react-hooks/purity -- Event handler: record actual action time, not the render clock.
     const now = Date.now();
     update((s) => {
@@ -239,19 +286,19 @@ export function ReviewView() {
         ...evidenceForReview(concept.id, step),
         lessonId: "review",
         stepId: reviewEventStepId(session),
-        kind: "recall",
+        kind: probe ? "exposure" : "recall",
         passed: outcome.passed,
         hints: 0,
         revealed: current.revealed,
         at: now,
-        delayed: session.wasDue,
+        delayed: probe ? false : session.wasDue,
         gate: false,
         evaluator: evaluator.kind,
       });
-      if (outcome.passed) delete next.reviewSession;
+      if (outcome.passed && !probe) delete next.reviewSession;
       return next;
     });
-    if (outcome.passed) setSelected(null);
+    if (outcome.passed && !probe) setSelected(null);
   }
 
   async function run() {
@@ -322,6 +369,7 @@ export function ReviewView() {
     }
 
     const outcome = evaluate(evaluator, { result: output, code });
+    const probe = step.reviewPurpose === "practice-probe";
     update((s) => {
       const current = s.steps[key] ?? createStepProgress(step.code);
       const next = {
@@ -349,19 +397,21 @@ export function ReviewView() {
         ...evidenceForReview(concept.id, step),
         lessonId: "review",
         stepId: reviewEventStepId(session),
-        kind: "recall",
+        kind: probe ? "exposure" : "recall",
         passed: outcome.passed,
         hints: 0,
         revealed: current.revealed,
         at: Date.now(),
-        delayed: session.wasDue,
+        delayed: probe ? false : session.wasDue,
         gate: false,
         evaluator: evaluator.kind,
       });
     });
     setExecutionMessage(
       outcome.passed
-        ? "Kod działa. Zostaw wynik widoczny i zakończ powtórkę, gdy jesteś gotowy."
+        ? isPracticeProbe
+          ? "Kod działa. Oceń tę krótką powtórkę albo wróć do kolejki bez zmiany terminu."
+          : "Kod działa. Zostaw wynik widoczny i zakończ powtórkę, gdy jesteś gotowy."
         : "Kompilator odpowiedział, ale rozwiązanie nie spełnia jeszcze zadania.",
     );
   }
@@ -377,14 +427,43 @@ export function ReviewView() {
     setExecutionMessage("");
   }
   function rate(rating: "again" | "hard" | "good" | "easy") {
-    if (!concept || !step || unavailable || pending || completed) return;
+    const canRateProbe = isPracticeProbe && awaitingProbeRating;
+    const canRateCard = !isPracticeProbe && !completed;
+    if (
+      !concept ||
+      !step ||
+      unavailable ||
+      pending ||
+      (!canRateProbe && !canRateCard)
+    )
+      return;
+    let applied = canRateCard;
     update((s) => {
+      const currentSession = s.reviewSession;
+      if (isPracticeProbe) {
+        if (
+          !currentSession ||
+          currentSession.sessionId !== session?.sessionId ||
+          currentSession.conceptId !== concept.id ||
+          currentSession.exerciseId !== session?.exerciseId ||
+          !successfulProbeSession(s, currentSession)
+        )
+          return s;
+        applied = true;
+      }
       const next = rateReview(s, concept.id, rating, Date.now());
       delete next.reviewSession;
       return next;
     });
-    setSelected(null);
+    if (applied) setSelected(null);
   }
+
+  const durationLabel =
+    reviewPurpose === "practice-probe"
+      ? "Krótka decyzja — cel 1–3 min"
+      : reviewPurpose === "extended"
+        ? "Dłuższe odtworzenie kontraktu"
+        : "Czas zależy od zadania";
 
   return (
     <div className="review-page">
@@ -395,7 +474,7 @@ export function ReviewView() {
         </div>
         <span className="session-chip">
           <Clock size={15} />
-          1–3 min
+          {durationLabel}
         </span>
       </div>
       <p className="lede">
@@ -406,7 +485,7 @@ export function ReviewView() {
           {!unavailable && (
             <button
               className="text-button"
-              disabled={pending || completed}
+              disabled={pending || (completed && !isPracticeProbe)}
               onClick={returnToQueue}
             >
               ← Do kolejki
@@ -512,7 +591,7 @@ export function ReviewView() {
                                 : "Uruchom kod"}
                           <ArrowRight size={16} />
                         </button>
-                        {codePassed && (
+                        {codePassed && !isPracticeProbe && (
                           <button
                             className="secondary"
                             onClick={finishChallenge}
@@ -548,6 +627,41 @@ export function ReviewView() {
                           Output pochodzi z poprzedniej wersji kodu. Uruchom
                           ponownie po zmianach.
                         </p>
+                      )}
+                      {lastAttempt && step.explanation && (
+                        <p className="footnote" role="note">
+                          <LearningText>{step.explanation}</LearningText>
+                        </p>
+                      )}
+                      {awaitingProbeRating && (
+                        <div className="retrieval-reveal">
+                          <h4>Oceń tę powtórkę</h4>
+                          <div className="rating-buttons">
+                            {(["again", "hard", "good", "easy"] as const).map(
+                              (rating, index) => (
+                                <button
+                                  key={rating}
+                                  className="secondary"
+                                  disabled={pending}
+                                  onClick={() => rate(rating)}
+                                >
+                                  {
+                                    [
+                                      "Again · Jeszcze raz",
+                                      "Hard · Trudne",
+                                      "Good · Dobrze",
+                                      "Easy · Łatwe",
+                                    ][index]
+                                  }
+                                </button>
+                              ),
+                            )}
+                          </div>
+                          <p className="footnote">
+                            Bez oceny termin poprzedniej powtórki pozostaje bez
+                            zmian.
+                          </p>
+                        </div>
                       )}
                     </>
                   ) : step.choices ? (
@@ -595,6 +709,11 @@ export function ReviewView() {
                           {progress.attempts.at(-1)?.feedback}
                         </p>
                       )}
+                      {lastAttempt && step.explanation && (
+                        <p className="footnote" role="note">
+                          <LearningText>{step.explanation}</LearningText>
+                        </p>
+                      )}
                       <button
                         className="text-button"
                         disabled={pending || completed}
@@ -638,31 +757,40 @@ export function ReviewView() {
                       <p>
                         <LearningText>{concept.distinguish}</LearningText>
                       </p>
-                      <div className="rating-buttons">
-                        {(["again", "hard", "good", "easy"] as const).map(
-                          (rating, index) => (
-                            <button
-                              key={rating}
-                              className="secondary"
-                              disabled={pending || completed}
-                              onClick={() => rate(rating)}
-                            >
-                              {
-                                [
-                                  "Again · Jeszcze raz",
-                                  "Hard · Trudne",
-                                  "Good · Dobrze",
-                                  "Easy · Łatwe",
-                                ][index]
-                              }
-                            </button>
-                          ),
-                        )}
-                      </div>
-                      <p className="footnote">
-                        Samoocena ustala termin powtórki. Nie jest dowodem
-                        opanowania umiejętności.
-                      </p>
+                      {isPracticeProbe ? (
+                        <p className="footnote" role="status">
+                          Wróć do Małego eksperymentu, aby uruchomić kod i
+                          ocenić tę powtórkę.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="rating-buttons">
+                            {(["again", "hard", "good", "easy"] as const).map(
+                              (rating, index) => (
+                                <button
+                                  key={rating}
+                                  className="secondary"
+                                  disabled={pending || completed}
+                                  onClick={() => rate(rating)}
+                                >
+                                  {
+                                    [
+                                      "Again · Jeszcze raz",
+                                      "Hard · Trudne",
+                                      "Good · Dobrze",
+                                      "Easy · Łatwe",
+                                    ][index]
+                                  }
+                                </button>
+                              ),
+                            )}
+                          </div>
+                          <p className="footnote">
+                            Samoocena ustala termin powtórki. Nie jest dowodem
+                            opanowania umiejętności.
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
                 </>
@@ -729,16 +857,36 @@ export function ReviewView() {
           <section className="practice-now">
             <Eyebrow>MOŻESZ TEŻ POĆWICZYĆ TERAZ</Eyebrow>
             <div className="concept-grid">
-              {concepts.map((c) => (
-                <button
-                  className="review-concept"
-                  key={c.id}
-                  onClick={() => start(c.id, "practice")}
-                >
-                  {c.title}
-                  <ArrowUpRightIcon />
-                </button>
-              ))}
+              {concepts.map((c) => {
+                const hasShort =
+                  reviewExerciseIdForSelection(c.id, "short") !== undefined;
+                return hasShort ? (
+                  <div className="review-choice" key={c.id}>
+                    <button
+                      className="review-concept"
+                      onClick={() => start(c.id, "practice", "short")}
+                    >
+                      {c.title} · krótka decyzja
+                      <ArrowUpRightIcon />
+                    </button>
+                    <button
+                      className="text-button"
+                      onClick={() => start(c.id, "practice", "extended")}
+                    >
+                      Dłuższe odtworzenie kontraktu
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className="review-concept"
+                    key={c.id}
+                    onClick={() => start(c.id, "practice")}
+                  >
+                    {c.title}
+                    <ArrowUpRightIcon />
+                  </button>
+                );
+              })}
             </div>
             <p className="footnote">
               Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź

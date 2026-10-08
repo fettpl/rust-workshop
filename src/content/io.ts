@@ -1198,6 +1198,8 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       formatHints,
     ),
     evidenceGate: false,
+    evidence: { version: 1, conceptIds: ["io-format-roundtrip"] },
+    evidenceKind: "recall",
   },
   "io-safe-persistence": {
     ...tested(
@@ -1215,6 +1217,8 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       storageHints,
     ),
     evidenceGate: false,
+    evidence: { version: 1, conceptIds: ["io-safe-persistence"] },
+    evidenceKind: "recall",
   },
   "io-terminal-boundary": {
     ...tested(
@@ -1235,6 +1239,8 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       ],
     ),
     evidenceGate: false,
+    evidence: { version: 1, conceptIds: ["io-terminal-boundary"] },
+    evidenceKind: "recall",
   },
 };
 

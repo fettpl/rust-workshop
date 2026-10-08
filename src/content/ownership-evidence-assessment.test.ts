@@ -11,6 +11,7 @@ import {
   reviewExercises as courseReviewExercises,
   reviewExercisesById,
   reviewExerciseForId,
+  shortReviewExercises,
 } from "./course";
 import { gateRecovery, moduleGate } from "../engine/learning";
 import { createInitialState } from "../persistence/state";
@@ -234,8 +235,27 @@ it("combines ordinary and delayed reviews with distinct stable IDs", () => {
   expect(
     reviewExercisesById["review-function-ownership-delayed-v1"],
   ).toBeDefined();
-  expect(Object.keys(reviewExercisesById)).toHaveLength(
+  const legacyReviewIds = Object.keys(reviewExercisesById).filter(
+    (id) => !id.includes("-probe-v1"),
+  );
+  expect(legacyReviewIds).toHaveLength(
     Object.keys(courseReviewExercises).length + 2,
+  );
+  expect(Object.keys(shortReviewExercises)).toEqual([
+    "io-format-roundtrip",
+    "io-safe-persistence",
+    "io-terminal-boundary",
+  ]);
+  expect(Object.keys(reviewExercisesById).slice(-3)).toEqual([
+    "review-io-format-flag-probe-v1",
+    "review-io-missing-file-probe-v1",
+    "review-io-confirm-save-probe-v1",
+  ]);
+  expect(Object.values(shortReviewExercises).map((step) => step.id)).toEqual(
+    Object.keys(reviewExercisesById).slice(-3),
+  );
+  expect(Object.keys(reviewExercisesById)).toHaveLength(
+    Object.keys(courseReviewExercises).length + 2 + 3,
   );
 });
 it("proves the delayed frame contract with an equivalent implementation and compiling mutants", () => {
