@@ -1,18 +1,20 @@
 import { LearningText } from "./learning-text";
 import { Lightbulb, Eye, ArrowRight } from "lucide-react";
 import type { LessonStep, StepProgress } from "@/domain/types";
+export type CoachRecoveryStatus =
+  "available" | "complete" | "exhausted" | "none";
 export function CompilerCoach({
   step,
   progress,
   onHints,
   onReveal,
-  freshIndependentTaskAvailable,
+  recoveryStatus,
 }: {
   step: LessonStep;
   progress: StepProgress;
   onHints: (n: number) => void;
   onReveal: () => void;
-  freshIndependentTaskAvailable: boolean;
+  recoveryStatus: CoachRecoveryStatus;
 }) {
   if (!step.hints && !step.solution) return null;
   return (
@@ -67,9 +69,11 @@ export function CompilerCoach({
             <details className="solution-warning">
               <summary>Potrzebuję pełnego rozwiązania</summary>
               <p>
-                {freshIndependentTaskAvailable
+                {recoveryStatus === "available"
                   ? "Po obejrzeniu poprawki możesz przejść do dostępnego świeżego zadania. Ten krok będzie słabszym dowodem samodzielności."
-                  : "Po obejrzeniu poprawki możesz dalej ćwiczyć; potwierdzenie samodzielności poczeka na inne świeże zadanie. Ten krok będzie słabszym dowodem samodzielności."}
+                  : recoveryStatus === "exhausted"
+                    ? "Po obejrzeniu poprawki możesz dalej ćwiczyć; potwierdzenie samodzielności poczeka na inne świeże zadanie. Ten krok będzie słabszym dowodem samodzielności."
+                    : "Po obejrzeniu poprawki porównaj ją ze swoją próbą i przećwicz regułę. Ten krok będzie słabszym dowodem samodzielności."}
               </p>
               <button className="secondary" onClick={onReveal}>
                 <Eye size={15} />

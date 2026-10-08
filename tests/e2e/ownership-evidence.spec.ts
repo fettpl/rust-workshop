@@ -723,6 +723,48 @@ function sharedDelayedRecallState(): UserState {
   return state;
 }
 
+function sharedCoachState(
+  status: "available" | "exhausted" | "complete",
+): UserState {
+  const state = sharedReadyState();
+  state.resume.stepIndex = sharedCountWords.lesson.steps.indexOf(
+    sharedCountWords.step,
+  );
+  state.steps[stepKey(sharedCountWords.lesson.id, sharedCountWords.step.id)] = {
+    ...createStepProgress(sharedCountWords.step.code),
+    hints: 2,
+    completed: true,
+  };
+  if (status === "exhausted") {
+    state.steps[stepKey(sharedHasSuffix.lesson.id, sharedHasSuffix.step.id)] = {
+      ...createStepProgress(sharedHasSuffix.step.code),
+      hints: 2,
+      completed: true,
+    };
+  }
+  if (status === "complete") {
+    state.events = [
+      sharedPrimaryEvent("shared-count-words", NOW - 2 * DAY),
+      sharedPrimaryEvent("shared-has-suffix", NOW - 2 * DAY + 1),
+    ];
+  }
+  return state;
+}
+
+function unrelatedCoachState(): UserState {
+  const state = readyState();
+  const lesson = lessons.find((item) => item.id === "first-program")!;
+  const step = lesson.steps.find((item) => item.id === "entry-run")!;
+  state.resume.lessonId = lesson.id;
+  state.resume.stepIndex = lesson.steps.indexOf(step);
+  state.steps[stepKey(lesson.id, step.id)] = {
+    ...createStepProgress(step.code),
+    hints: 2,
+    completed: true,
+  };
+  return state;
+}
+
 function functionOwnershipPrimaryEvent(
   stepId: string,
   at: number,
@@ -1069,6 +1111,57 @@ test("shared-borrow calibration grades its two exact fresh families", async ({
         passed: true,
       }),
     ]),
+  );
+});
+
+test("shared-borrow coach names the available fresh member", async ({
+  page,
+}) => {
+  await seedState(page, sharedCoachState("available"));
+  await expect(page.locator(".solution-warning")).toContainText(
+    "dostępnego świeżego zadania",
+  );
+  await expect(page.locator(".solution-warning")).not.toContainText(
+    "możesz dalej ćwiczyć",
+  );
+});
+
+test("shared-borrow coach describes exhausted members without a reset", async ({
+  page,
+}) => {
+  await seedState(page, sharedCoachState("exhausted"));
+  await expect(page.locator(".solution-warning")).toContainText(
+    "możesz dalej ćwiczyć",
+  );
+  await expect(page.locator(".solution-warning")).not.toContainText(
+    "dostępnego świeżego zadania",
+  );
+});
+
+test("shared-borrow coach keeps completed pair truth after later hints", async ({
+  page,
+}) => {
+  await seedState(page, sharedCoachState("complete"));
+  await expect(page.locator(".solution-warning")).toContainText(
+    "porównaj ją ze swoją próbą",
+  );
+  await expect(page.locator(".solution-warning")).not.toContainText(
+    "potwierdzenie samodzielności poczeka",
+  );
+});
+
+test("unrelated lesson coach uses neutral copy without a gate promise", async ({
+  page,
+}) => {
+  await seedState(page, unrelatedCoachState());
+  await expect(page.locator(".solution-warning")).toContainText(
+    "porównaj ją ze swoją próbą",
+  );
+  await expect(page.locator(".solution-warning")).not.toContainText(
+    "potwierdzenie samodzielności poczeka",
+  );
+  await expect(page.locator(".solution-warning")).not.toContainText(
+    "dostępnego świeżego zadania",
   );
 });
 

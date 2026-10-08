@@ -26,7 +26,7 @@ import {
 } from "@/content/learning-context";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
 import { LearningText } from "./learning-text";
-import { CompilerCoach } from "./compiler-coach";
+import { CompilerCoach, type CoachRecoveryStatus } from "./compiler-coach";
 import { CompilerOutput } from "./compiler-output";
 import { OwnershipVisualizer } from "./ownership-visualizer";
 import { Eyebrow, ProgressLine } from "./ui";
@@ -64,16 +64,22 @@ export function LessonWorkspace() {
   const currentModule = modules.find(
     (candidate) => candidate.id === lesson.moduleId,
   );
-  const freshIndependentTaskAvailable = (currentModule?.gateCriteria ?? [])
+  const matchingRecoveryStatuses = (currentModule?.gateCriteria ?? [])
     .filter((criterion) =>
-      criterion.taskRefs.some(
+      [...criterion.taskRefs, ...(criterion.supplementaryStepRefs ?? [])].some(
         (ref) => ref.lessonId === lesson.id && ref.stepId === step.id,
       ),
     )
-    .some(
-      (criterion) =>
-        gateRecovery(state, criterion, lessons).status === "available",
-    );
+    .map((criterion) => gateRecovery(state, criterion, lessons).status);
+  const recoveryStatus: CoachRecoveryStatus = matchingRecoveryStatuses.includes(
+    "available",
+  )
+    ? "available"
+    : matchingRecoveryStatuses.includes("complete")
+      ? "complete"
+      : matchingRecoveryStatuses.includes("exhausted")
+        ? "exhausted"
+        : "none";
   const nextLesson = nextLessonForNavigation(lesson.id, lessons, modules);
   const nextLabel =
     index < lesson.steps.length - 1
@@ -644,7 +650,7 @@ export function LessonWorkspace() {
           <CompilerCoach
             step={step}
             progress={progress}
-            freshIndependentTaskAvailable={freshIndependentTaskAvailable}
+            recoveryStatus={recoveryStatus}
             onHints={(hints) => patch({ hints })}
             onReveal={() => patch({ revealed: true })}
           />
