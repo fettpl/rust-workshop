@@ -4,6 +4,7 @@ import {
   evidencePolicyForConcepts,
   deriveConceptMastery,
   independentCodingTaskIds,
+  delayedReviewEligibility,
 } from "@/engine/learning";
 import {
   revealProjectPackageVariant,
@@ -19,20 +20,39 @@ import type {
 } from "@/domain/types";
 import { stepKey } from "@/persistence/state";
 import { competencyProgress } from "@/engine/progress";
-import { concepts, lessons, reviewExercises } from "./course";
+import {
+  concepts,
+  delayedReviewExercises,
+  lessons,
+  reviewExerciseForId,
+  reviewExercises,
+} from "./course";
+
+export type ReviewExerciseResolution =
+  | { status: "ready"; exerciseId: string; step: LessonStep }
+  | { status: "unavailable"; reason: "unknown-id" | "wrong-concept" };
+
+export type ReviewOrigin = "due" | "practice";
 
 /** Exact current source lookup; review UUIDs identify sessions, never task families. */
 function currentStep(lessonId: string, stepId: string): LessonStep | undefined {
   if (lessonId === "review") {
     const separator = stepId.indexOf(":");
     if (separator <= 0 || separator === stepId.length - 1) return undefined;
-    return reviewExercises[stepId.slice(0, separator)];
+    const prefix = stepId.slice(0, separator);
+    const historical = Object.prototype.hasOwnProperty.call(
+      reviewExercises,
+      prefix,
+    )
+      ? reviewExercises[prefix]
+      : undefined;
+    return reviewExerciseForId(prefix) ?? historical;
   }
   return lessons
     .find((lesson) => lesson.id === lessonId)
     ?.steps.find((step) => step.id === stepId);
 }
-const courseEvidencePolicy = {
+export const courseEvidencePolicy = {
   ...evidencePolicyForConcepts(concepts),
   definitionForTask: (lessonId: string, stepId: string) =>
     currentStep(lessonId, stepId)?.evidence,
@@ -56,6 +76,52 @@ const courseEvidencePolicy = {
     return definition;
   },
 };
+
+export function resolveReviewExercise(
+  conceptId: string,
+  exerciseId?: string,
+): ReviewExerciseResolution {
+  const step =
+    exerciseId === undefined
+      ? Object.prototype.hasOwnProperty.call(reviewExercises, conceptId)
+        ? reviewExercises[conceptId]
+        : undefined
+      : reviewExerciseForId(exerciseId);
+  if (!step) return { status: "unavailable", reason: "unknown-id" };
+  if (
+    exerciseId !== undefined &&
+    (step.evidence?.conceptIds.length !== 1 ||
+      step.evidence.conceptIds[0] !== conceptId)
+  )
+    return { status: "unavailable", reason: "wrong-concept" };
+  return {
+    status: "ready",
+    exerciseId: step.id,
+    step,
+  };
+}
+
+export function courseDelayedReviewEligibility(
+  state: UserState,
+  conceptId: string,
+  now: number,
+): boolean {
+  return delayedReviewEligibility(state, conceptId, now, courseEvidencePolicy);
+}
+
+export function reviewExerciseIdForOrigin(
+  state: UserState,
+  conceptId: string,
+  origin: ReviewOrigin,
+  now: number,
+): string | undefined {
+  if (
+    origin !== "due" ||
+    !courseDelayedReviewEligibility(state, conceptId, now)
+  )
+    return undefined;
+  return delayedReviewExercises[conceptId]?.id;
+}
 
 /** Submission metadata only: never stamps or rewrites saved history. */
 export function evidenceForLessonStep(

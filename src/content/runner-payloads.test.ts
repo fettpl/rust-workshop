@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { lessons, reviewExercises } from "./course";
+import { delayedReviewExercises, lessons, reviewExercises } from "./course";
 import { appendHiddenTests, requestError, RUNNER_LIMITS } from "../runner";
 import type { RunRequest } from "../domain/types";
 
@@ -10,6 +10,10 @@ it("can submit every authored reference and its hidden tests through the actual 
     ),
     ...Object.entries(reviewExercises).map(([key, step]) => ({
       key: `review/${key}`,
+      step,
+    })),
+    ...Object.entries(delayedReviewExercises).map(([key, step]) => ({
+      key: `delayed-review/${key}`,
       step,
     })),
   ];

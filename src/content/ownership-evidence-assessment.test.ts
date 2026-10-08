@@ -5,13 +5,25 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import { lessons, concepts, reviewExercises, ownershipModule } from "./catalog";
+import {
+  lessons as courseLessons,
+  delayedReviewExercises,
+  reviewExercises as courseReviewExercises,
+  reviewExercisesById,
+  reviewExerciseForId,
+} from "./course";
+import { gateRecovery, moduleGate } from "../engine/learning";
+import { createInitialState } from "../persistence/state";
+import type { EvidenceEvent } from "../domain/types";
 import { appendHiddenTests } from "../runner";
 import { evaluate } from "../engine/evaluate";
 import type { LessonStep } from "../domain/types";
 import {
+  functionOwnershipFixtures,
   mutationFixtures,
   readLengthFixtures,
 } from "./ownership-evidence-assessment-fixtures";
+import { frameTextContract } from "./ownership-evidence-contracts";
 
 const ownershipIds = [
   "stack-heap",
@@ -98,6 +110,167 @@ it("requires two of three mutation families and retains reflection support", () 
     { lessonId: "borrow-intro", stepId: "borrow-explain" },
   ]);
 });
+it("registers the fresh function boundary criterion and gates on both authored tasks", () => {
+  const boundaryCriterion = ownershipModule.gateCriteria?.find(
+    (criterion) => criterion.id === "function-boundary-v1",
+  );
+  expect(boundaryCriterion).toEqual({
+    id: "function-boundary-v1",
+    label: "Dwie niezależne granice własności funkcji",
+    requiredIndependentCodingTasks: 2,
+    taskRefs: [
+      {
+        lessonId: "function-ownership-calibration",
+        stepId: "function-is-empty-text",
+      },
+      {
+        lessonId: "function-ownership-calibration",
+        stepId: "function-add-mark",
+      },
+    ],
+  });
+  const eventFor = (
+    stepId: string,
+    id: string,
+    overrides: Partial<EvidenceEvent> = {},
+  ): EvidenceEvent => {
+    const lesson = courseLessons.find(
+      (candidate) => candidate.id === "function-ownership-calibration",
+    )!;
+    const step = lesson.steps.find((candidate) => candidate.id === stepId)!;
+    return {
+      id,
+      lessonId: lesson.id,
+      stepId,
+      conceptIds: [...step.evidence!.conceptIds],
+      evidenceVersion: step.evidence!.version,
+      evaluator: step.evaluator!.kind,
+      kind: step.evidenceKind!,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 10_000,
+      gate: true,
+      ...overrides,
+    };
+  };
+  const oldEvent: EvidenceEvent = {
+    ...eventFor("function-is-empty-text", "old-only"),
+    lessonId: "scenario-assessment",
+    stepId: "assessment-repair",
+    conceptIds: [
+      "function-ownership",
+      "move-semantics",
+      "shared-borrow",
+      "ownership-repair",
+    ],
+    evidenceVersion: 2,
+    evaluator: "tests",
+    kind: "assessment",
+  };
+  const oneFresh = {
+    ...createInitialState(),
+    events: [eventFor("function-is-empty-text", "fresh-a")],
+  };
+  const bothFresh = {
+    ...oneFresh,
+    events: [...oneFresh.events, eventFor("function-add-mark", "fresh-b")],
+  };
+  const revealedFresh = {
+    ...bothFresh,
+    events: [{ ...bothFresh.events[0], revealed: true }, bothFresh.events[1]],
+  };
+  const oldOnly = { ...createInitialState(), events: [oldEvent] };
+  const passed = (state: typeof oneFresh) =>
+    moduleGate(state, courseLessons, {
+      ...ownershipModule,
+      gateCriteria: [boundaryCriterion!],
+    }).criteria[0]?.passed;
+  expect(passed(oneFresh)).toBe(false);
+  expect(passed(bothFresh)).toBe(true);
+  expect(passed(revealedFresh)).toBe(false);
+  expect(passed(oldOnly)).toBe(false);
+  expect(gateRecovery(oneFresh, boundaryCriterion!, courseLessons).status).toBe(
+    "available",
+  );
+  expect(
+    gateRecovery(bothFresh, boundaryCriterion!, courseLessons).status,
+  ).toBe("complete");
+  expect(
+    gateRecovery(revealedFresh, boundaryCriterion!, courseLessons).status,
+  ).toBe("exhausted");
+  expect(gateRecovery(oldOnly, boundaryCriterion!, courseLessons).status).toBe(
+    "available",
+  );
+});
+it.each(["constructor", "__proto__", "toString"])(
+  "returns undefined for unknown inherited review ID %s",
+  (id) => expect(reviewExerciseForId(id)).toBeUndefined(),
+);
+it("combines ordinary and delayed reviews with distinct stable IDs", () => {
+  const ordinaryFunctionOwnershipEntries = Object.entries(
+    courseReviewExercises,
+  ).filter(([key]) => key === "function-ownership");
+  const delayedFunctionOwnershipEntries = Object.entries(
+    delayedReviewExercises,
+  ).filter(([key]) => key === "function-ownership");
+  expect(ordinaryFunctionOwnershipEntries).toHaveLength(1);
+  expect(ordinaryFunctionOwnershipEntries[0][1]).toBe(
+    courseReviewExercises["function-ownership"],
+  );
+  expect(ordinaryFunctionOwnershipEntries[0][1].id).toBe(
+    "review-function-ownership",
+  );
+  expect(delayedFunctionOwnershipEntries).toHaveLength(1);
+  expect(delayedFunctionOwnershipEntries[0][1]).toBe(
+    delayedReviewExercises["function-ownership"],
+  );
+  expect(delayedFunctionOwnershipEntries[0][1].id).toBe(
+    "review-function-ownership-delayed-v1",
+  );
+  expect(reviewExercisesById["review-function-ownership"]).toBe(
+    courseReviewExercises["function-ownership"],
+  );
+  expect(
+    reviewExercisesById["review-function-ownership-delayed-v1"],
+  ).toBeDefined();
+  expect(Object.keys(reviewExercisesById)).toHaveLength(
+    Object.keys(courseReviewExercises).length + 1,
+  );
+});
+it("proves the delayed frame contract with an equivalent implementation and compiling mutants", () => {
+  const step = delayedReviewExercises["function-ownership"];
+  const fixture = functionOwnershipFixtures["function-frame-owned-v1"];
+  const tests = `${testsOf(step)}
+#[test]
+fn preserves_leading_and_trailing_whitespace() {
+    assert_eq!(frame_text(String::from("  ready!  ")), "<  ready!  >");
+}`;
+  const canonical = compileAndRun(
+    "function-frame-owned-v1/canonical",
+    step.solution!,
+    tests,
+    true,
+  );
+  expect(
+    evaluate(step.evaluator!, { code: step.solution!, result: canonical })
+      .passed,
+  ).toBe(true);
+  const equivalent = compileAndRun(
+    "function-frame-owned-v1/equivalent",
+    fixture.equivalent,
+    tests,
+    true,
+  );
+  expect(
+    evaluate(step.evaluator!, { code: fixture.equivalent, result: equivalent })
+      .passed,
+  ).toBe(true);
+  for (const [name, source] of Object.entries(fixture.mutants))
+    compileAndRun(`function-frame-owned-v1/${name}`, source, tests, false);
+  expect(step.code).toBe(frameTextContract.starter);
+  expect(step.solution).toBe(frameTextContract.solution);
+}, 75_000);
 it("does not accept an answer without compiled mutation code", () => {
   const step = stepAt("borrow-intro", "borrow-mutable-run");
   expect(

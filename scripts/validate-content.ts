@@ -1,6 +1,7 @@
 import {
   concepts,
   competencies,
+  delayedReviewExercises,
   lessons,
   modules,
   reviewExercises,
@@ -18,6 +19,7 @@ export const contentBundle: ContentBundle = {
   competencies,
   modules,
   reviewExercises,
+  delayedReviewExercises,
   sources,
   traces,
   project,

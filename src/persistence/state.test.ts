@@ -220,6 +220,28 @@ describe("state persistence", () => {
     expect(imported).toEqual(state);
   });
 
+  it("round trips a pinned review exercise while preserving legacy sessions", () => {
+    const pinned = {
+      ...createInitialState(),
+      reviewSession: {
+        conceptId: "function-ownership",
+        mode: "challenge" as const,
+        sessionId: "delayed-session",
+        startedAt: 10_000,
+        wasDue: true,
+        exerciseId: "review-function-ownership-delayed-v1",
+      },
+    };
+    expect(importState(exportState(pinned)).reviewSession).toEqual(
+      pinned.reviewSession,
+    );
+    const legacy = exportState({
+      ...pinned,
+      reviewSession: { ...pinned.reviewSession, exerciseId: undefined },
+    });
+    expect(importState(legacy).reviewSession?.exerciseId).toBeUndefined();
+  });
+
   it("round trips TOML drafts and manifest attempts without a RunResult", () => {
     const state = createInitialState();
     const key = stepKey(

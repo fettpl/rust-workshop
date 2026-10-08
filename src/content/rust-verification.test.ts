@@ -95,6 +95,7 @@ describe("authored Rust starter verification", () => {
     const results = verifyTrustedRust({
       lessons: [lesson],
       reviewExercises: {},
+      delayedReviewExercises: {},
       traces: {},
     });
     expect(

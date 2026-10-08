@@ -5,6 +5,7 @@ import {
   lessons,
   concepts,
   competencies,
+  delayedReviewExercises,
   ownershipModule,
   modules,
   reviewExercises,
@@ -15,6 +16,7 @@ import {
   roadmap,
 } from "./course";
 import { validateContent, type ContentBundle } from "./validate";
+import { frameTextContract } from "./ownership-evidence-contracts";
 
 const bundle: ContentBundle = {
   lessons,
@@ -22,6 +24,7 @@ const bundle: ContentBundle = {
   competencies,
   modules,
   reviewExercises,
+  delayedReviewExercises,
   sources,
   traces,
   project,
@@ -30,6 +33,49 @@ const bundle: ContentBundle = {
 };
 
 describe("curriculum content contract", () => {
+  it("includes and validates the delayed executable contract", () => {
+    const delayed = delayedReviewExercises["function-ownership"];
+    expect(delayed.code).toBeTruthy();
+    expect(delayed.solution).toBeTruthy();
+    expect(delayed.expectedStatus).toBe("success");
+    expect(delayed.code).toBe(frameTextContract.starter);
+    expect(delayed.solution).toBe(frameTextContract.solution);
+    expect(delayed.evaluator).toEqual({
+      kind: "tests",
+      tests: frameTextContract.tests,
+    });
+    const authored = [
+      ...lessons.flatMap((lesson) =>
+        lesson.steps.map((step) => ({ key: `${lesson.id}/${step.id}`, step })),
+      ),
+      ...Object.entries(reviewExercises).map(([key, step]) => ({
+        key: `review/${key}`,
+        step,
+      })),
+      ...Object.entries(delayedReviewExercises).map(([key, step]) => ({
+        key: `delayed-review/${key}`,
+        step,
+      })),
+    ];
+    expect(
+      authored.find(({ key }) => key === "delayed-review/function-ownership")
+        ?.step,
+    ).toBe(delayed);
+    const broken: ContentBundle = {
+      ...bundle,
+      delayedReviewExercises: {
+        "function-ownership": {
+          ...delayed,
+          code: undefined,
+          solution: undefined,
+          evaluator: { kind: "tests", tests: "" },
+        },
+      },
+    };
+    expect(
+      validateContent(broken).some((error) => error.includes("delayed")),
+    ).toBe(true);
+  });
   it("accepts the official Rust blog without accepting lookalike hosts", () => {
     const check = (url: string) =>
       validateContent({

@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { lessons, modules } from "../../src/content/course";
 
 type State = {
+  notes: Record<string, string>;
   mastery: Record<
     string,
     { level?: string; reason?: string; updatedAt?: number }
@@ -58,6 +59,7 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
             .get("current");
           get.onsuccess = () =>
             resolve({
+              notes: get.result?.notes ?? {},
               mastery: get.result?.mastery ?? {},
               events: get.result?.events ?? [],
             });
@@ -234,9 +236,11 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
   const afterBlank = await readState();
   expect(afterBlank.mastery[primary.conceptIds[0]]).toBeDefined();
   await page.getByText("Twój notatnik", { exact: true }).click();
-  await page
-    .getByLabel("Notatki do lekcji")
-    .fill("Owner lifetime and state remain independent evidence.");
+  const note = "Owner lifetime and state remain independent evidence.";
+  await page.getByLabel("Notatki do lekcji").fill(note);
+  await expect
+    .poll(async () => (await readState()).notes[primary.id])
+    .toBe(note);
   const heading = await page.locator(".task-pane h1").innerText();
   await blankEditor.focus();
   await page.keyboard.press("Tab");
@@ -247,9 +251,7 @@ test("borrowed memory keeps assisted evidence separate from an independent blank
   await expect(page.locator(".task-pane h1")).toHaveText(heading);
   await expect(blankEditor).toHaveValue(blankDraft);
   await page.getByText("Twój notatnik", { exact: true }).click();
-  await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(
-    "Owner lifetime and state remain independent evidence.",
-  );
+  await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(note);
   expect(errors).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });
@@ -279,6 +281,7 @@ test("auto-traits recall stays editable and records one independent event", asyn
             .get("current");
           get.onsuccess = () =>
             resolve({
+              notes: get.result?.notes ?? {},
               mastery: get.result?.mastery ?? {},
               events: get.result?.events ?? [],
             });

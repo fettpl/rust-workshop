@@ -4,7 +4,10 @@ export function reviewSessionKey(sessionId: string): string {
   return `review:${sessionId}`;
 }
 
-function sessionFinished(state: UserState, session: ReviewSession): boolean {
+export function reviewSessionFinished(
+  state: UserState,
+  session: ReviewSession,
+): boolean {
   const progress = state.steps[reviewSessionKey(session.sessionId)];
   return Boolean(
     progress?.completed ||
@@ -22,13 +25,21 @@ export function startReviewSession(
   now: number,
   wasDue: boolean,
   sessionId: string,
+  exerciseId?: string,
 ): ReviewSession {
   const current = state.reviewSession;
   if (
     current &&
     current.conceptId === conceptId &&
-    !sessionFinished(state, current)
+    !reviewSessionFinished(state, current)
   )
     return current;
-  return { conceptId, mode: "challenge", sessionId, startedAt: now, wasDue };
+  return {
+    conceptId,
+    mode: "challenge",
+    sessionId,
+    startedAt: now,
+    wasDue,
+    ...(exerciseId === undefined ? {} : { exerciseId }),
+  };
 }

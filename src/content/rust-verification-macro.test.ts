@@ -73,6 +73,7 @@ describe("authored Rust macro diagnostic classification", () => {
         ]),
       ],
       reviewExercises: {},
+      delayedReviewExercises: {},
       traces: {},
     });
 

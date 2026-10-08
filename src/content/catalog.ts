@@ -2152,6 +2152,7 @@ export const ownershipModule: CourseModule = {
     "blank-page-repair",
     "adversarial-no-clone",
     "scenario-assessment",
+    "function-ownership-calibration",
   ],
   exitGate: [
     "Przewidź niewidziany wynik move/Copy.",
@@ -2236,6 +2237,21 @@ export const ownershipModule: CourseModule = {
         { lessonId: "blank-page-repair", stepId: "blank-code" },
         { lessonId: "adversarial-no-clone", stepId: "adversarial-code" },
         { lessonId: "scenario-assessment", stepId: "assessment-repair" },
+      ],
+    },
+    {
+      id: "function-boundary-v1",
+      label: "Dwie niezależne granice własności funkcji",
+      requiredIndependentCodingTasks: 2,
+      taskRefs: [
+        {
+          lessonId: "function-ownership-calibration",
+          stepId: "function-is-empty-text",
+        },
+        {
+          lessonId: "function-ownership-calibration",
+          stepId: "function-add-mark",
+        },
       ],
     },
   ],

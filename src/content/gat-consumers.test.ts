@@ -75,6 +75,7 @@ describe("GAT consumer authoring contract", () => {
     const results = verifyTrustedRust({
       lessons: gatConsumerLessons,
       reviewExercises: gatConsumerReviewExercises,
+      delayedReviewExercises: {},
       traces: {},
     });
     expect(results.length).toBeGreaterThan(0);

@@ -139,3 +139,89 @@ fn removes_exactly_one_matching_terminal_character() {
     assert_eq!(value, "żółw");
 }`,
 };
+
+export const isEmptyTextContract = {
+  starter: `fn main() {
+    let text = String::from("Rust");
+    println!("{} {}", is_empty_text(&text), text);
+}
+
+fn is_empty_text(text: String) -> bool {
+    text.is_empty()
+}`,
+  solution: `fn main() {
+    let text = String::from("Rust");
+    println!("{} {}", is_empty_text(&text), text);
+}
+
+fn is_empty_text(text: &String) -> bool {
+    text.is_empty()
+}`,
+  tests: `#[test]
+fn checks_borrowed_input_without_consuming_it() {
+    let check: fn(&String) -> bool = is_empty_text;
+    for (input, expected) in [("", true), ("Rust", false), ("   ", false), ("żółw 🦀", false), ("!?", false)] {
+        let value = String::from(input);
+        assert_eq!(check(&value), expected);
+        assert_eq!(value, input);
+        assert_eq!(check(&value), expected);
+    }
+}`,
+};
+
+export const addMarkContract = {
+  starter: `fn main() {
+    let text = String::from("ready");
+    let marked = add_mark(text);
+    println!("{marked}");
+}
+
+fn add_mark(text: String) -> String {
+    text
+}`,
+  solution: `fn main() {
+    let text = String::from("ready");
+    let marked = add_mark(text);
+    println!("{marked}");
+}
+
+fn add_mark(mut text: String) -> String {
+    text.push('!');
+    text
+}`,
+  tests: `#[test]
+fn returns_exactly_one_new_mark_each_call() {
+    let add: fn(String) -> String = add_mark;
+    for (input, expected) in [("", "!"), ("ready!", "ready!!"), ("żółw 🦀", "żółw 🦀!"), ("?!", "?!!")] {
+        assert_eq!(add(String::from(input)), expected);
+    }
+}`,
+};
+
+export const frameTextContract = {
+  starter: `fn main() {
+    let text = String::from("ready!");
+    let framed = frame_text(text);
+    println!("{framed}");
+}
+
+fn frame_text(text: String) -> String {
+    text
+}`,
+  solution: `fn main() {
+    let text = String::from("ready!");
+    let framed = frame_text(text);
+    println!("{framed}");
+}
+
+fn frame_text(text: String) -> String {
+    format!("<{text}>")
+}`,
+  tests: `#[test]
+fn returns_exact_delimiters_and_preserves_text() {
+    let frame: fn(String) -> String = frame_text;
+    for (input, expected) in [("", "<>"), ("ready!", "<ready!>"), ("żółw 🦀", "<żółw 🦀>"), ("<x>", "<<x>>")] {
+        assert_eq!(frame(String::from(input)), expected);
+    }
+}`,
+};

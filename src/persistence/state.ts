@@ -131,12 +131,15 @@ const RatingSchema = z.strictObject({
   rating: z.enum(["again", "hard", "good", "easy"]),
   at: z.number().finite().nonnegative(),
 });
+// Older strict-v3 binaries do not read exerciseId and may reject this field;
+// this additive contract makes no rollback compatibility claim.
 const ReviewSessionSchema = z.strictObject({
   conceptId: z.string(),
   mode: z.enum(["card", "challenge"]),
   sessionId: z.string().min(1),
   startedAt: z.number().finite().nonnegative(),
   wasDue: z.boolean(),
+  exerciseId: z.string().min(1).optional(),
 });
 const UserStateFields = {
   appVersion: z.string(),

@@ -184,6 +184,7 @@ impl<T> LendingIterator for PresentValueLender<T> { type Item<'a> = &'a mut T wh
     const results = verifyTrustedRust({
       lessons: gatProducerLessons,
       reviewExercises: gatProducerReviewExercises,
+      delayedReviewExercises: {},
       traces: {},
     });
     expect(

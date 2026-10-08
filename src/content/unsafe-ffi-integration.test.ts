@@ -22,6 +22,7 @@ import {
   nestedPatternLessons,
   nestedPatternSources,
 } from "./nested-patterns";
+import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
 
 const lessonIds = [
   "unsafe-ffi-checked-view",
@@ -159,7 +160,8 @@ it("uses each gate and blank as an independent module criterion", () => {
 it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operations", () => {
   expect(modules).toHaveLength(48);
   // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
-  expect(lessons).toHaveLength(186 + nestedPatternLessons.length);
+  expect(lessons).toHaveLength(186 + nestedPatternLessons.length + 1);
+  expect(lessons.at(-1)).toEqual(functionOwnershipCalibrationLesson);
   expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
   expect(sources).toHaveLength(332 + nestedPatternSources.length);
   const nestedBlankSteps = nestedPatternLessons

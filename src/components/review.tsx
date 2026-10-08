@@ -6,7 +6,7 @@ import { useClock } from "./use-clock";
 import { useLearning } from "./learning-provider";
 import { CompilerOutput } from "./compiler-output";
 import { LearningText } from "./learning-text";
-import { concepts, reviewExercises } from "@/content/course";
+import { concepts } from "@/content/course";
 import { dueReviews, rateReview } from "@/engine/learning";
 import {
   recordCourseEvidence,
@@ -14,12 +14,19 @@ import {
   courseMastery,
   courseEvidenceSummary,
   recordCourseLessonExposure,
+  resolveReviewExercise,
+  reviewExerciseIdForOrigin,
 } from "@/content/learning-context";
-import { reviewSessionKey, startReviewSession } from "@/engine/review-session";
+import {
+  reviewSessionFinished,
+  reviewSessionKey,
+  startReviewSession,
+} from "@/engine/review-session";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
 import { createStepProgress } from "@/persistence/state";
 import type { RunResult, StepProgress } from "@/domain/types";
+import type { ReviewSession } from "@/domain/types";
 import {
   Eyebrow,
   MasteryBadge,
@@ -28,6 +35,10 @@ import {
 } from "./ui";
 
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
+
+function reviewEventStepId(session: ReviewSession): string {
+  return (session.exerciseId ?? session.conceptId) + ":" + session.sessionId;
+}
 
 export function ReviewView() {
   const clock = useClock();
@@ -49,11 +60,15 @@ export function ReviewView() {
     state.reviewSession?.conceptId === selected
       ? state.reviewSession
       : undefined;
-  const step = concept ? reviewExercises[concept.id] : undefined;
   const key = session ? reviewSessionKey(session.sessionId) : "";
   const progress: StepProgress = session
     ? (state.steps[key] ?? createStepProgress())
     : createStepProgress();
+  const resolution = session
+    ? resolveReviewExercise(session.conceptId, session.exerciseId)
+    : undefined;
+  const step = resolution?.status === "ready" ? resolution.step : undefined;
+  const unavailable = resolution?.status === "unavailable";
   const evaluator = step?.evaluator;
   const isManifest = evaluator?.kind === "manifest-contract";
   const executable =
@@ -76,18 +91,28 @@ export function ReviewView() {
   );
   const completed = Boolean(progress.completed);
 
-  function start(id: string) {
+  function start(id: string, origin: "due" | "practice") {
+    if (
+      state.reviewSession &&
+      !reviewSessionFinished(state, state.reviewSession)
+    ) {
+      setSelected(state.reviewSession.conceptId);
+      setMode(state.reviewSession.mode);
+      return;
+    }
     // eslint-disable-next-line react-hooks/purity -- Event handler: record actual action time, not the render clock.
     const now = Date.now();
-    const wasDue = state.review.some(
-      (item) => item.conceptId === id && item.dueAt <= now,
-    );
+    const wasDue =
+      origin === "due" &&
+      state.review.some((item) => item.conceptId === id && item.dueAt <= now);
+    const exerciseId = reviewExerciseIdForOrigin(state, id, origin, now);
     const candidate = startReviewSession(
       state,
       id,
       now,
       wasDue,
       crypto.randomUUID(),
+      exerciseId,
     );
     setSelected(id);
     setMode(candidate.mode);
@@ -99,8 +124,22 @@ export function ReviewView() {
         now,
         wasDue,
         candidate.sessionId,
+        exerciseId,
       ),
     }));
+  }
+  function returnToQueue() {
+    setSelected(null);
+    setExecutionMessage("");
+  }
+  function discardUnavailableSession() {
+    setSelected(null);
+    setExecutionMessage("");
+    update((current) => {
+      const next = { ...current };
+      delete next.reviewSession;
+      return next;
+    });
   }
   function patch(values: Partial<StepProgress>) {
     if (!session || pending || completed) return;
@@ -118,7 +157,7 @@ export function ReviewView() {
       return values.revealed
         ? recordCourseLessonExposure(next, {
             lessonId: "review",
-            stepId: key,
+            stepId: session.exerciseId ? reviewEventStepId(session) : key,
             conceptIds: [session.conceptId],
             at: Date.now(),
             revealed: true,
@@ -153,7 +192,14 @@ export function ReviewView() {
     }));
   }
   function check() {
-    if (!concept || !step?.evaluator || !session || pending || completed)
+    if (
+      !concept ||
+      !step?.evaluator ||
+      !session ||
+      unavailable ||
+      pending ||
+      completed
+    )
       return;
     const evaluator = step.evaluator;
     const outcome = evaluate(evaluator, { answer: progress.answer, code });
@@ -185,7 +231,7 @@ export function ReviewView() {
         id: crypto.randomUUID(),
         ...evidenceForReview(concept.id, step),
         lessonId: "review",
-        stepId: `${concept.id}:${session.sessionId}`,
+        stepId: reviewEventStepId(session),
         kind: "recall",
         passed: outcome.passed,
         hints: 0,
@@ -207,6 +253,7 @@ export function ReviewView() {
       !step ||
       !evaluator ||
       !session ||
+      unavailable ||
       !executable ||
       pending ||
       completed
@@ -294,7 +341,7 @@ export function ReviewView() {
         id: crypto.randomUUID(),
         ...evidenceForReview(concept.id, step),
         lessonId: "review",
-        stepId: `${concept.id}:${session.sessionId}`,
+        stepId: reviewEventStepId(session),
         kind: "recall",
         passed: outcome.passed,
         hints: 0,
@@ -323,7 +370,7 @@ export function ReviewView() {
     setExecutionMessage("");
   }
   function rate(rating: "again" | "hard" | "good" | "easy") {
-    if (!concept || pending || completed) return;
+    if (!concept || !step || unavailable || pending || completed) return;
     update((s) => {
       const next = rateReview(s, concept.id, rating, Date.now());
       delete next.reviewSession;
@@ -349,237 +396,262 @@ export function ReviewView() {
       </p>
       {concept && session ? (
         <section className="review-session">
-          <button
-            className="text-button"
-            disabled={pending || completed}
-            onClick={() => setSelected(null)}
-          >
-            ← Do kolejki
-          </button>
-          <div className="section-heading spread">
-            <h2>{concept.title}</h2>
-            <MasteryBadge
-              level={courseMastery(state, concept.id).level}
-              scope={concept.evidenceCalibration ? "ownership" : undefined}
-            />
-          </div>
-          {concept.evidenceCalibration && (
-            <>
-              <OwnershipPolicyNote />
-              <OwnershipEvidenceCount
-                count={
-                  courseEvidenceSummary(state, concept.id).qualifyingCodingTasks
-                }
-                required={concept.evidenceCalibration.minimumCodingTasks}
-                legacy={
-                  courseEvidenceSummary(state, concept.id).hasLegacyEvidence
-                }
-              />
-              <p className="footnote">
-                Odtworzenie po czasie wymaga dwóch wcześniejszych samodzielnych
-                zadań kodowych i ponad 24 godzin bez kontaktu z pojęciem. Ta
-                powtórka nie dodaje kolejnego zadania do tego licznika.
-              </p>
-            </>
+          {!unavailable && (
+            <button
+              className="text-button"
+              disabled={pending || completed}
+              onClick={returnToQueue}
+            >
+              ← Do kolejki
+            </button>
           )}
-          <div className="segmented">
-            <button
-              className={mode === "challenge" ? "selected" : ""}
-              disabled={pending || completed}
-              onClick={() => chooseMode("challenge")}
-            >
-              Mały eksperyment
-            </button>
-            <button
-              className={mode === "card" ? "selected" : ""}
-              disabled={pending || completed}
-              onClick={() => chooseMode("card")}
-            >
-              Karta przypomnienia
-            </button>
-          </div>
-          {mode === "challenge" && step ? (
-            <>
-              <h3>{step.title}</h3>
-              <LearningText>{step.prompt}</LearningText>
-              {step.code && !executable && !isManifest && (
-                <pre className="code-sample">{step.code}</pre>
-              )}
-              {executable || isManifest ? (
-                <>
-                  <div className="review-code-editor">
-                    <CodeEditor
-                      language={step.editorMode}
-                      code={code}
-                      onChange={(nextCode) => patch({ code: nextCode })}
-                      readOnly={pending || completed}
-                      fontSize={state.settings.editorFontSize}
-                      theme={state.settings.theme}
-                      accessible={state.settings.accessibleEditor}
-                    />
-                  </div>
-                  <div className="button-row">
-                    <button
-                      className="primary"
-                      disabled={pending || completed || !code.trim()}
-                      onClick={isManifest ? check : () => void run()}
-                    >
-                      {isManifest
-                        ? "Sprawdź manifest"
-                        : pending
-                          ? "Kompilowanie…"
-                          : evaluator.kind === "tests"
-                            ? "Uruchom testy"
-                            : "Uruchom kod"}
-                      <ArrowRight size={16} />
-                    </button>
-                    {codePassed && (
-                      <button className="secondary" onClick={finishChallenge}>
-                        Zakończ powtórkę
-                        <Check size={16} />
-                      </button>
-                    )}
-                  </div>
-                  {executionMessage && (
-                    <p className="feedback" role="status">
-                      {executionMessage}
-                    </p>
-                  )}
-                  {lastAttempt && (
-                    <p
-                      className={`feedback ${lastAttempt.passed ? "passed" : ""}`}
-                      role="status"
-                    >
-                      {lastAttempt.feedback}
-                    </p>
-                  )}
-                  {isManifest ? (
-                    <p className="footnote">
-                      {step.editorFile ?? "Cargo.toml"} · TOML 1.0 · sprawdzenie
-                      deklaracji
-                    </p>
-                  ) : (
-                    <CompilerOutput result={result} pending={pending} />
-                  )}
-                  {lastRun?.code !== undefined && lastRun.code !== code && (
-                    <p className="footnote" role="status">
-                      Output pochodzi z poprzedniej wersji kodu. Uruchom
-                      ponownie po zmianach.
-                    </p>
-                  )}
-                </>
-              ) : step.choices ? (
-                <fieldset>
-                  <legend>Twoja decyzja</legend>
-                  {choicesForStep(step, `review/${concept.id}`).map(
-                    (choice) => (
-                      <label className="choice" key={choice.id}>
-                        <input
-                          type="radio"
-                          name="review-answer"
-                          disabled={pending || completed}
-                          checked={progress.answer === choice.id}
-                          onChange={() => patch({ answer: choice.id })}
-                        />
-                        {choice.label}
-                      </label>
-                    ),
-                  )}
-                </fieldset>
-              ) : (
-                <label>
-                  Odpowiedz z pamięci
-                  <textarea
-                    value={progress.answer}
-                    disabled={pending || completed}
-                    onChange={(e) => patch({ answer: e.target.value })}
-                  />
-                </label>
-              )}
-              {!executable && !isManifest && (
-                <>
-                  <button
-                    className="primary"
-                    disabled={pending || completed || !progress.answer.trim()}
-                    onClick={check}
-                  >
-                    Sprawdź
-                    <Check size={17} />
-                  </button>
-                  {progress.attempts.at(-1) && (
-                    <p className="feedback" role="status">
-                      {progress.attempts.at(-1)?.feedback}
-                    </p>
-                  )}
-                  <button
-                    className="text-button"
-                    disabled={pending || completed}
-                    onClick={revealReminder}
-                  >
-                    Potrzebuję przypomnienia
-                    <Eye size={16} />
-                  </button>
-                </>
-              )}
-            </>
+          {unavailable ? (
+            <div className="empty-review" role="status">
+              <h2>Ta powtórka nie jest dostępna w tej wersji.</h2>
+              <p>
+                Zachowaliśmy Twój zapis, ale ta przypięta wersja zadania nie
+                jest już dostępna. Możesz wrócić do kolejki i wybrać bieżące
+                ćwiczenie.
+              </p>
+              <button className="primary" onClick={discardUnavailableSession}>
+                Do kolejki
+              </button>
+            </div>
           ) : (
             <>
-              <h3>
-                <LearningText>{concept.reviewPrompt}</LearningText>
-              </h3>
-              <label>
-                Przypomnij własnymi słowami
-                <textarea
-                  value={progress.answer}
-                  disabled={pending || completed}
-                  onChange={(e) => patch({ answer: e.target.value })}
-                  placeholder="Zanim odsłonisz odpowiedź…"
+              <div className="section-heading spread">
+                <h2>{concept.title}</h2>
+                <MasteryBadge
+                  level={courseMastery(state, concept.id).level}
+                  scope={concept.evidenceCalibration ? "ownership" : undefined}
                 />
-              </label>
-              {!progress.revealed ? (
-                <button
-                  className="primary"
-                  disabled={pending || completed || !progress.answer.trim()}
-                  onClick={() => patch({ revealed: true })}
-                >
-                  <Eye size={16} />
-                  Odsłoń odpowiedź
-                </button>
-              ) : (
-                <div className="retrieval-reveal">
-                  <p>
-                    <LearningText>{concept.reviewAnswer}</LearningText>
-                  </p>
-                  <h4>Odróżnij od…</h4>
-                  <p>
-                    <LearningText>{concept.distinguish}</LearningText>
-                  </p>
-                  <div className="rating-buttons">
-                    {(["again", "hard", "good", "easy"] as const).map(
-                      (rating, index) => (
-                        <button
-                          key={rating}
-                          className="secondary"
-                          disabled={pending || completed}
-                          onClick={() => rate(rating)}
-                        >
-                          {
-                            [
-                              "Again · Jeszcze raz",
-                              "Hard · Trudne",
-                              "Good · Dobrze",
-                              "Easy · Łatwe",
-                            ][index]
-                          }
-                        </button>
-                      ),
-                    )}
-                  </div>
+              </div>
+              {concept.evidenceCalibration && (
+                <>
+                  <OwnershipPolicyNote />
+                  <OwnershipEvidenceCount
+                    count={
+                      courseEvidenceSummary(state, concept.id)
+                        .qualifyingCodingTasks
+                    }
+                    required={concept.evidenceCalibration.minimumCodingTasks}
+                    legacy={
+                      courseEvidenceSummary(state, concept.id).hasLegacyEvidence
+                    }
+                  />
                   <p className="footnote">
-                    Samoocena ustala termin powtórki. Nie jest dowodem
-                    opanowania umiejętności.
+                    Odtworzenie po czasie wymaga dwóch wcześniejszych
+                    samodzielnych zadań kodowych i ponad 24 godzin bez kontaktu
+                    z pojęciem. Ta powtórka nie dodaje kolejnego zadania do tego
+                    licznika.
                   </p>
-                </div>
+                </>
+              )}
+              <div className="segmented">
+                <button
+                  className={mode === "challenge" ? "selected" : ""}
+                  disabled={pending || completed}
+                  onClick={() => chooseMode("challenge")}
+                >
+                  Mały eksperyment
+                </button>
+                <button
+                  className={mode === "card" ? "selected" : ""}
+                  disabled={pending || completed}
+                  onClick={() => chooseMode("card")}
+                >
+                  Karta przypomnienia
+                </button>
+              </div>
+              {mode === "challenge" && step ? (
+                <>
+                  <h3>{step.title}</h3>
+                  <LearningText>{step.prompt}</LearningText>
+                  {step.code && !executable && !isManifest && (
+                    <pre className="code-sample">{step.code}</pre>
+                  )}
+                  {executable || isManifest ? (
+                    <>
+                      <div className="review-code-editor">
+                        <CodeEditor
+                          language={step.editorMode}
+                          code={code}
+                          onChange={(nextCode) => patch({ code: nextCode })}
+                          readOnly={pending || completed}
+                          fontSize={state.settings.editorFontSize}
+                          theme={state.settings.theme}
+                          accessible={state.settings.accessibleEditor}
+                        />
+                      </div>
+                      <div className="button-row">
+                        <button
+                          className="primary"
+                          disabled={pending || completed || !code.trim()}
+                          onClick={isManifest ? check : () => void run()}
+                        >
+                          {isManifest
+                            ? "Sprawdź manifest"
+                            : pending
+                              ? "Kompilowanie…"
+                              : evaluator.kind === "tests"
+                                ? "Uruchom testy"
+                                : "Uruchom kod"}
+                          <ArrowRight size={16} />
+                        </button>
+                        {codePassed && (
+                          <button
+                            className="secondary"
+                            onClick={finishChallenge}
+                          >
+                            Zakończ powtórkę
+                            <Check size={16} />
+                          </button>
+                        )}
+                      </div>
+                      {executionMessage && (
+                        <p className="feedback" role="status">
+                          {executionMessage}
+                        </p>
+                      )}
+                      {lastAttempt && (
+                        <p
+                          className={`feedback ${lastAttempt.passed ? "passed" : ""}`}
+                          role="status"
+                        >
+                          {lastAttempt.feedback}
+                        </p>
+                      )}
+                      {isManifest ? (
+                        <p className="footnote">
+                          {step.editorFile ?? "Cargo.toml"} · TOML 1.0 ·
+                          sprawdzenie deklaracji
+                        </p>
+                      ) : (
+                        <CompilerOutput result={result} pending={pending} />
+                      )}
+                      {lastRun?.code !== undefined && lastRun.code !== code && (
+                        <p className="footnote" role="status">
+                          Output pochodzi z poprzedniej wersji kodu. Uruchom
+                          ponownie po zmianach.
+                        </p>
+                      )}
+                    </>
+                  ) : step.choices ? (
+                    <fieldset>
+                      <legend>Twoja decyzja</legend>
+                      {choicesForStep(step, `review/${concept.id}`).map(
+                        (choice) => (
+                          <label className="choice" key={choice.id}>
+                            <input
+                              type="radio"
+                              name="review-answer"
+                              disabled={pending || completed}
+                              checked={progress.answer === choice.id}
+                              onChange={() => patch({ answer: choice.id })}
+                            />
+                            {choice.label}
+                          </label>
+                        ),
+                      )}
+                    </fieldset>
+                  ) : (
+                    <label>
+                      Odpowiedz z pamięci
+                      <textarea
+                        value={progress.answer}
+                        disabled={pending || completed}
+                        onChange={(e) => patch({ answer: e.target.value })}
+                      />
+                    </label>
+                  )}
+                  {!executable && !isManifest && (
+                    <>
+                      <button
+                        className="primary"
+                        disabled={
+                          pending || completed || !progress.answer.trim()
+                        }
+                        onClick={check}
+                      >
+                        Sprawdź
+                        <Check size={17} />
+                      </button>
+                      {progress.attempts.at(-1) && (
+                        <p className="feedback" role="status">
+                          {progress.attempts.at(-1)?.feedback}
+                        </p>
+                      )}
+                      <button
+                        className="text-button"
+                        disabled={pending || completed}
+                        onClick={revealReminder}
+                      >
+                        Potrzebuję przypomnienia
+                        <Eye size={16} />
+                      </button>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h3>
+                    <LearningText>{concept.reviewPrompt}</LearningText>
+                  </h3>
+                  <label>
+                    Przypomnij własnymi słowami
+                    <textarea
+                      value={progress.answer}
+                      disabled={pending || completed}
+                      onChange={(e) => patch({ answer: e.target.value })}
+                      placeholder="Zanim odsłonisz odpowiedź…"
+                    />
+                  </label>
+                  {!progress.revealed ? (
+                    <button
+                      className="primary"
+                      disabled={pending || completed || !progress.answer.trim()}
+                      onClick={() => patch({ revealed: true })}
+                    >
+                      <Eye size={16} />
+                      Odsłoń odpowiedź
+                    </button>
+                  ) : (
+                    <div className="retrieval-reveal">
+                      <p>
+                        <LearningText>{concept.reviewAnswer}</LearningText>
+                      </p>
+                      <h4>Odróżnij od…</h4>
+                      <p>
+                        <LearningText>{concept.distinguish}</LearningText>
+                      </p>
+                      <div className="rating-buttons">
+                        {(["again", "hard", "good", "easy"] as const).map(
+                          (rating, index) => (
+                            <button
+                              key={rating}
+                              className="secondary"
+                              disabled={pending || completed}
+                              onClick={() => rate(rating)}
+                            >
+                              {
+                                [
+                                  "Again · Jeszcze raz",
+                                  "Hard · Trudne",
+                                  "Good · Dobrze",
+                                  "Easy · Łatwe",
+                                ][index]
+                              }
+                            </button>
+                          ),
+                        )}
+                      </div>
+                      <p className="footnote">
+                        Samoocena ustala termin powtórki. Nie jest dowodem
+                        opanowania umiejętności.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}
@@ -598,7 +670,7 @@ export function ReviewView() {
                   <button
                     key={item.conceptId}
                     className="review-row"
-                    onClick={() => start(c.id)}
+                    onClick={() => start(c.id, "due")}
                   >
                     <RotateCcw size={19} />
                     <span>
@@ -647,7 +719,7 @@ export function ReviewView() {
                 <button
                   className="review-concept"
                   key={c.id}
-                  onClick={() => start(c.id)}
+                  onClick={() => start(c.id, "practice")}
                 >
                   {c.title}
                   <ArrowUpRightIcon />
