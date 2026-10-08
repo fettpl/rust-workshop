@@ -118,8 +118,20 @@ for (const moduleId of [
       await expect(page.locator(".module-connections")).toContainText(
         "Brak świeżego samodzielnego wariantu",
       );
-      await expect(page.locator(".gate-action").first()).toContainText(
-        "Zatrzymaj po błędzie",
+      const callbackRef = stage.gateCriteria![1].taskRefs[0];
+      const callbackStep = lessons
+        .find((item) => item.id === callbackRef.lessonId)!
+        .steps.find((item) => item.id === callbackRef.stepId)!;
+      await page.locator(".gate-action").first().click();
+      await expect(page.locator(".task-pane h1")).toHaveText(
+        callbackStep.title,
+      );
+      await page
+        .getByRole("button", { name: stage.title, exact: true })
+        .click();
+      await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
+      await expect(page.locator(".module-connections")).toContainText(
+        "Brak świeżego samodzielnego wariantu",
       );
       await page
         .locator(".lesson-list-item")
