@@ -9,7 +9,7 @@ it("preserves independent Mini grep evidence after revealing the project referen
   const stage = modules.find((entry) => entry.id === "mini-grep");
   expect(project).toBeDefined();
   expect(stage).toBeDefined();
-  expect(stage!.prerequisites).toEqual(["public-api-workspaces"]);
+  expect(stage!.prerequisites).toEqual(["log-analyzer"]);
   expect(project!.lessonIds).toEqual([
     ...stage!.lessonIds,
     "fuzz-input-domain",

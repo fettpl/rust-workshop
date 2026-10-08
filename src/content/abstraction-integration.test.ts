@@ -20,19 +20,21 @@ for (const [moduleId, prerequisite] of [
   ["synchronized-state", "channels"],
   ["atomic-state", "synchronized-state"],
   ["memory-ordering", "atomic-state"],
-  ["async-foundations", "memory-ordering"],
+  ["async-foundations", ["shared-ownership", "closures"]],
   ["tokio-runtime-tasks", "async-foundations"],
   ["tokio-flow-control", "tokio-runtime-tasks"],
   ["tokio-io-streams", "tokio-flow-control"],
   ["tokio-blocking-work", "tokio-io-streams"],
   ["tokio-network-service", "tokio-blocking-work"],
-  ["public-api-workspaces", "tokio-network-service"],
+  ["public-api-workspaces", ["testing-quality", "traits", "modules-cargo"]],
 ] as const) {
   describe(`${moduleId}: independent evidence`, () => {
     it("offers fresh coding tasks after a reference is exposed and preserves independent alternatives", () => {
       const stage = course.modules.find((item) => item.id === moduleId);
       expect(stage).toBeDefined();
-      expect(stage!.prerequisites).toEqual([prerequisite]);
+      expect(stage!.prerequisites).toEqual(
+        Array.isArray(prerequisite) ? prerequisite : [prerequisite],
+      );
       let state = createInitialState();
       expect(moduleGate(state, course.lessons, stage!).passed).toBe(false);
       const submit = (lessonId: string, stepId: string, revealed: boolean) => {

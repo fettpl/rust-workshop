@@ -24,7 +24,7 @@ export const miniGrepModule: CourseModule = {
   title: "Mini grep: wyszukaj, ogranicz, wyjaśnij wynik",
   whyItMatters:
     "Program wyszukujący może pokazać trafienie i jednocześnie zgubić błąd innego pliku. Zbudujesz narzędzie, którego wynik ma jasny kontrakt także dla pustych danych, dużych linii i nieudanej operacji.",
-  prerequisites: ["public-api-workspaces"],
+  prerequisites: ["log-analyzer"],
   lessonIds: skills.map(([id]) => id),
   capabilities: [
     "Połączysz nakładające się okna kontekstu i zachowasz numery linii.",
@@ -38,7 +38,7 @@ export const miniGrepModule: CourseModule = {
     "W pakiecie projektu sprawdzisz także prawdziwe pliki i proces. Pobranie pakietu ani lista wykonanych poleceń nie są automatycznym dowodem samodzielności.",
   ],
   projectConnection:
-    "Cztery lekcje prowadzą do Mini grep: biblioteki i programu terminalowego obsługującego wiele plików, kontekst, limity i błędy. Ćwiczenia jednego pliku uczą kontraktów; system plików i proces są sprawdzane osobno w pakiecie Cargo.",
+    "Cztery lekcje prowadzą do Mini grep: biblioteki i programu terminalowego obsługującego wiele plików, kontekst, limity i błędy. Ćwiczenia jednego pliku uczą kontraktów; system plików i proces są sprawdzane osobno w pakiecie Cargo. Zakładasz pracę z istniejącym Log Analyzerem i jego deterministycznym raportem; możesz od razu rozwinąć ten projekt o wybór kontekstu i bezpieczny odczyt.",
   assessmentId: "grep-cli-contract/grep-cli-contract-blank",
   gateCriteria: skills.map(([lessonId, label]) => ({
     id: `${lessonId}-contract`,

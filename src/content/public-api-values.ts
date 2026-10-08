@@ -64,7 +64,11 @@ export const publicApiValueConcepts: Concept[] = [
   {
     id: "api-validated-construction",
     title: "Walidowana, nieprzezroczysta wartość publiczna",
-    prerequisites: ["tokio-admission-permit-lifetime"],
+    prerequisites: [
+      "testing-quality-workflow",
+      "checked-conversion-errors",
+      "visibility-boundaries",
+    ],
     competencyIds: ["public-api-validated-opaque-values"],
     reviewPrompt:
       "Dlaczego klient powinien otrzymać TryFrom i as_str zamiast publicznego pola String w wartości z ograniczeniami?",
@@ -845,7 +849,11 @@ export const publicApiValueLessons: Lesson[] = [
     moduleId: "public-api-workspaces",
     conceptIds: ["api-validated-construction"],
     competencyIds: ["public-api-validated-opaque-values"],
-    prerequisites: ["tokio-admission-lifecycle"],
+    prerequisites: [
+      "testing-quality-workflow",
+      "checked-conversions",
+      "cargo-package-integration",
+    ],
     title: "Wartość publiczna powstaje tylko po walidacji",
     subtitle:
       "Zamkniesz reprezentację, przyjmiesz dane przez TryFrom i oddasz klientowi stabilny dostęp bez kopiowania.",

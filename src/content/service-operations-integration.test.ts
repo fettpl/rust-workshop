@@ -13,7 +13,7 @@ const lessonIds = [
 it("connects Service Operations to eight gates, blank pages, and retrievals", () => {
   const stage = modules.find((entry) => entry.id === "service-operations");
   expect(stage).toBeDefined();
-  expect(stage!.prerequisites).toEqual(["unsafe-ffi-contracts"]);
+  expect(stage!.prerequisites).toEqual(["tokio-network-service"]);
   expect(stage!.lessonIds).toEqual(lessonIds);
   expect(stage!.gateCriteria).toHaveLength(8);
 

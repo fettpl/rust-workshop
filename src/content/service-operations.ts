@@ -76,7 +76,7 @@ export const serviceOperationsConcepts: Concept[] = [
   {
     id: "service-operations-bounded-admission",
     title: "Granica zaufania i bounded admission",
-    prerequisites: [],
+    prerequisites: ["tokio-admission-permit-lifetime"],
     competencyIds: ["service-operations-trust-boundary"],
     reviewPrompt:
       "Co musi sprawdzić `admit`, zanim uzna żądanie za przyjęte do bounded service?",
@@ -669,7 +669,7 @@ export const serviceOperationsLessons: Lesson[] = [
     moduleId,
     conceptIds: ["service-operations-bounded-admission"],
     competencyIds: ["service-operations-trust-boundary"],
-    prerequisites: ["unsafe-ffi-owned-handle"],
+    prerequisites: ["tokio-admission-lifecycle"],
     title: "Zamknij granicę zaufania przed admission",
     subtitle:
       "Rozdzielisz autoryzację źródła od bounded capacity i nazwiesz każdy powód odrzucenia.",
@@ -1084,14 +1084,14 @@ export const serviceOperationsModule: CourseModule = {
   capabilities: serviceOperationsCompetencies.map(
     (competency) => competency.title,
   ),
-  prerequisites: ["unsafe-ffi-contracts"],
+  prerequisites: ["tokio-network-service"],
   lessonIds: serviceOperationsLessons.map((lesson) => lesson.id),
   exitGate: [
     "Osiem niezależnych bramek sprawdza bounded trust/admission, allowlisted correlation, accounting/readiness/drain oraz diagnozę z przypadkami InsufficientEvidence.",
     "Cztery blank-page tasks i cztery retrievals używają deterministycznych, standardowych bibliotek Rust; rozwiązania są weryfikowane przez stałe testy i mutanty.",
   ],
   projectConnection:
-    "Moduł przygotowuje decyzje do przyszłego bounded service i incident drill. Nie uruchamia projektu Cargo, kodu ucznia ani zewnętrznego systemu telemetrycznego.",
+    "Moduł przygotowuje decyzje do przyszłego bounded service i incident drill. Nie uruchamia projektu Cargo, kodu ucznia ani zewnętrznego systemu telemetrycznego. Zakładasz lokalny serwis sieciowy Tokio i jego cykl admission; możesz od razu przejść do zaufania, telemetryki i kontrolowanego drenu.",
   assessmentId: "incident-diagnosis-blank",
   gateCriteria: [
     {
