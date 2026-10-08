@@ -12,7 +12,9 @@ import type { EvidenceEvent, UserState } from "../../src/domain/types";
 
 const lesson = lessons.find((item) => item.id === "unsafe-miri-byte-view")!;
 const gate = lesson.steps.find((step) => step.id === "byte-view-gate")!;
-const blank = lesson.steps.find((step) => step.id === "byte-view-blank")!;
+const supplementary = lesson.steps.find(
+  (step) => step.id === "byte-view-contract-gate",
+)!;
 const conceptId = lesson.conceptIds[0];
 const gateTests = gate.evaluator?.kind === "tests" ? gate.evaluator.tests : "";
 const criterion = modules
@@ -23,21 +25,28 @@ const criterion = modules
     ),
   )!;
 const gateKey = stepKey(lesson.id, gate.id);
-const blankKey = stepKey(lesson.id, blank.id);
+const supplementaryKey = stepKey(lesson.id, supplementary.id);
 const legacyEvent: EvidenceEvent = {
   id: "browser-preserved-legacy-event",
   conceptIds: [conceptId],
   lessonId: lesson.id,
-  stepId: "byte-view-contract-gate",
-  kind: "transfer",
+  stepId: "byte-view-run",
+  kind: "exposure",
   passed: true,
   hints: 0,
   revealed: false,
   at: 1_700_000_000_000,
-  evaluator: "tests",
+  evaluator: "exact-output",
 };
 
-function importedState(): UserState {
+const assistanceCases = [
+  { label: "saved hint only", hints: 1, revealed: false },
+  { label: "saved reveal only", hints: 0, revealed: true },
+] as const;
+
+function importedState(
+  assistance: (typeof assistanceCases)[number],
+): UserState {
   const state = createInitialState();
   state.onboarding = { completed: true, name: "Ada", minutes: 15 };
   state.diagnostic = {
@@ -58,10 +67,10 @@ function importedState(): UserState {
     ...createStepProgress(gate.code),
     code: "// draft-before-import",
   };
-  state.steps[blankKey] = {
-    ...createStepProgress(blank.code),
-    hints: 2,
-    revealed: true,
+  state.steps[supplementaryKey] = {
+    ...createStepProgress(supplementary.code),
+    hints: assistance.hints,
+    revealed: assistance.revealed,
   };
   state.events = [legacyEvent];
   state.reviewSession = {
@@ -144,99 +153,107 @@ async function importThroughUi(page: Page, state: UserState) {
   await page.getByRole("button", { name: "Zastąp postęp tym plikiem" }).click();
 }
 
-test("imports supplementary help and preserves evidence boundaries on client submit", async ({
-  page,
-}) => {
-  await page.goto("/");
-  const before = importedState();
-  const baseline = createInitialState();
-  baseline.onboarding = { completed: true, name: "Ada", minutes: 15 };
-  baseline.diagnostic = {
-    completed: true,
-    answers: {},
-    score: 0,
-    recommendation: "",
-  };
-  baseline.settings.accessibleEditor = true;
-  await seedState(page, baseline);
-  await importThroughUi(page, before);
-  await page.reload();
+for (const assistance of assistanceCases) {
+  test(`imports ${assistance.label} on the supplementary alias and preserves evidence boundaries`, async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const before = importedState(assistance);
+    const baseline = createInitialState();
+    baseline.onboarding = { completed: true, name: "Ada", minutes: 15 };
+    baseline.diagnostic = {
+      completed: true,
+      answers: {},
+      score: 0,
+      recommendation: "",
+    };
+    baseline.settings.accessibleEditor = true;
+    await seedState(page, baseline);
+    await importThroughUi(page, before);
+    await page.reload();
 
-  await expect(page.locator(".task-pane")).toContainText(
-    "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
-  );
-  await expect(page.locator(".task-pane")).toContainText(
-    "Bieżący kontrakt: wersja 2",
-  );
-  const imported = await savedState(page);
-  expect(imported.events[0]).toEqual(legacyEvent);
-  expect(
-    imported.events.filter((event) => event.stepId === blank.id),
-  ).toHaveLength(0);
-  expect(imported.reviewSession?.sessionId).toBe("browser-review-identity");
-  expect(imported.steps[gateKey].code).toBe("// draft-before-import");
-  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
-  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
-  await expect(page.locator(".solution-warning")).toContainText(
-    "potwierdzenie samodzielności poczeka na inne świeże zadanie",
-  );
-
-  let runnerCall = false;
-  await page.route("**/api/run", async (route) => {
-    const request = route.request().postDataJSON();
-    expect(request).toMatchObject({
-      mode: "test",
-      code: gate.solution,
-      tests: gateTests,
+    await expect(page.locator(".task-pane")).toContainText(
+      "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+    );
+    await expect(page.locator(".task-pane")).toContainText(
+      "Bieżący kontrakt: wersja 2",
+    );
+    const imported = await savedState(page);
+    expect(imported.events[0]).toEqual(legacyEvent);
+    expect(
+      imported.events.filter((event) => event.stepId === supplementary.id),
+    ).toHaveLength(0);
+    expect(imported.steps[supplementaryKey]).toMatchObject({
+      hints: assistance.hints,
+      revealed: assistance.revealed,
     });
-    runnerCall = true;
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        status: "success",
-        stdout: "mocked authored contract tests passed",
-        stderr: "",
-        diagnostics: [],
-        durationMs: 1,
-        tests: { passed: 4, failed: 0 },
-      }),
-    });
-  });
-  const beforeSubmit = await savedState(page);
-  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
-  await editor.fill(gate.solution!);
-  const runResponse = page.waitForResponse((response) =>
-    response.url().endsWith("/api/run"),
-  );
-  await page
-    .getByRole("button", { name: "Uruchom testy", exact: true })
-    .click();
-  await runResponse;
-  await expect
-    .poll(async () => (await savedState(page)).events.length)
-    .toBe(beforeSubmit.events.length + 1);
+    expect(imported.reviewSession?.sessionId).toBe("browser-review-identity");
+    expect(imported.steps[gateKey].code).toBe("// draft-before-import");
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await expect(page.locator(".solution-warning")).toContainText(
+      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+    );
 
-  const after = await savedState(page);
-  expect(runnerCall).toBe(true);
-  expect(after.events[0]).toEqual(legacyEvent);
-  expect(after.events.at(-1)).toMatchObject({
-    lessonId: lesson.id,
-    stepId: gate.id,
-    conceptIds: [conceptId],
-    evidenceVersion: 2,
-    kind: "transfer",
-    evaluator: "tests",
-    passed: true,
-    hints: 2,
-    revealed: true,
-    gate: true,
+    let runnerCall = false;
+    await page.route("**/api/run", async (route) => {
+      const request = route.request().postDataJSON();
+      expect(request).toMatchObject({
+        mode: "test",
+        code: gate.solution,
+        tests: gateTests,
+      });
+      runnerCall = true;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          status: "success",
+          stdout: "mocked authored contract tests passed",
+          stderr: "",
+          diagnostics: [],
+          durationMs: 1,
+          tests: { passed: 4, failed: 0 },
+        }),
+      });
+    });
+    const beforeSubmit = await savedState(page);
+    const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    await editor.fill(gate.solution!);
+    const runResponse = page.waitForResponse((response) =>
+      response.url().endsWith("/api/run"),
+    );
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await runResponse;
+    await expect
+      .poll(async () => (await savedState(page)).events.length)
+      .toBe(beforeSubmit.events.length + 1);
+
+    const after = await savedState(page);
+    expect(runnerCall).toBe(true);
+    expect(after.events[0]).toEqual(legacyEvent);
+    expect(after.events.at(-1)).toMatchObject({
+      lessonId: lesson.id,
+      stepId: gate.id,
+      conceptIds: [conceptId],
+      evidenceVersion: 2,
+      kind: "transfer",
+      evaluator: "tests",
+      passed: true,
+      hints: 2,
+      revealed: true,
+      gate: true,
+    });
+    expect(after.reviewSession?.sessionId).toBe("browser-review-identity");
+    expect(after.steps[gateKey].completed).toBe(true);
+    expect(courseEvidenceSummary(after, conceptId).qualifyingCodingTasks).toBe(
+      0,
+    );
+    expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
+    await expect(page.locator(".solution-warning")).toContainText(
+      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+    );
   });
-  expect(after.reviewSession?.sessionId).toBe("browser-review-identity");
-  expect(after.steps[gateKey].completed).toBe(true);
-  expect(courseEvidenceSummary(after, conceptId).qualifyingCodingTasks).toBe(0);
-  expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
-  await expect(page.locator(".solution-warning")).toContainText(
-    "potwierdzenie samodzielności poczeka na inne świeże zadanie",
-  );
-});
+}
