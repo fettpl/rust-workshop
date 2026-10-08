@@ -337,6 +337,63 @@ describe("foundation attribution and learner-owned parcel work", () => {
       },
     );
 
+    const authoredIdentityMismatches = [
+      { label: "wrong authored kind", overrides: { kind: "recall" as const } },
+      {
+        label: "explicit evaluator mismatch on the authored kind",
+        overrides: { evaluator: "answer" as const },
+      },
+    ] as const;
+
+    for (const gateCase of legacyFoundationGateCases) {
+      it.each(authoredIdentityMismatches)(
+        `rejects $label history for ${gateCase.criterionId}`,
+        ({ overrides }) => {
+          const criterion = foundationGateCriterion(gateCase.criterionId);
+          const state = createInitialState();
+          state.events = [foundationEvent(gateCase, overrides)];
+
+          expect(
+            moduleGate(state, foundationsLessons, foundationsModule).criteria.find(
+              (candidate) => candidate.label === criterion.label,
+            ),
+          ).toMatchObject({ passed: false });
+          expect(gateRecovery(state, criterion, foundationsLessons)).toEqual({
+            status: "available",
+            task: criterion.taskRefs[0],
+          });
+        },
+      );
+    }
+
+    it("keeps generic ordinary gate fallback task identity strict", () => {
+      const gateCase = legacyFoundationGateCases[0];
+      const lesson = foundationsLessons.find(
+        (candidate) => candidate.id === gateCase.lessonId,
+      )!;
+      const step = lesson.steps.find(
+        (candidate) => candidate.id === gateCase.stepId,
+      )!;
+      const label = `${lesson.title}: ${step.title}`;
+      const wrongKind = createInitialState();
+      wrongKind.events = [
+        foundationEvent(gateCase, { kind: "recall" }),
+      ];
+      expect(
+        moduleGate(wrongKind, foundationsLessons).criteria.find(
+          (candidate) => candidate.label === label,
+        ),
+      ).toMatchObject({ passed: false });
+
+      const legacy = createInitialState();
+      legacy.events = [foundationEvent(gateCase)];
+      expect(
+        moduleGate(legacy, foundationsLessons).criteria.find(
+          (candidate) => candidate.label === label,
+        ),
+      ).toMatchObject({ passed: true });
+    });
+
     const rejectedLegacyVariants = [
       { label: "failed", overrides: { passed: false } },
       { label: "hinted", overrides: { hints: 1 } },

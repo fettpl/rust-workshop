@@ -201,12 +201,17 @@ function codingTaskId(
     : undefined;
 }
 
+function authoredEvidenceKind(
+  step: Lesson["steps"][number] | undefined,
+): EvidenceEvent["kind"] | undefined {
+  return step?.evaluator?.kind === "rubric" ? "self-rating" : step?.evidenceKind;
+}
+
 function definitionForStep(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
 ): StepEvidenceDefinition | undefined {
-  const kind =
-    step?.evaluator?.kind === "rubric" ? "self-rating" : step?.evidenceKind;
+  const kind = authoredEvidenceKind(step);
   return step && event.kind === kind && event.evaluator === step.evaluator?.kind
     ? step.evidence
     : undefined;
@@ -223,6 +228,13 @@ function isIndependentTaskSuccess(
     step?.evidence?.version === 1 &&
     step.evidence.codingTaskId === undefined &&
     event.evidenceVersion === undefined;
+  if (
+    legacyOrdinaryV1 &&
+    (event.kind !== authoredEvidenceKind(step) ||
+      (event.evaluator !== undefined &&
+        event.evaluator !== step?.evaluator?.kind))
+  )
+    return false;
   if (
     step?.evidence &&
     !legacyOrdinaryV1 &&
