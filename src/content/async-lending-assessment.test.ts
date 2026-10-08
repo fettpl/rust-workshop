@@ -25,9 +25,9 @@ const assessments = [
   ...Object.values(asyncLendingBoundaryReviewExercises),
 ];
 
-it("covers ten gates and five independent reviews with distinct equivalents and compiling mutants", () => {
-  expect(assessments).toHaveLength(15);
-  expect(asyncLendingAssessmentFixtures).toHaveLength(15);
+it("covers eleven coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
+  expect(assessments).toHaveLength(16);
+  expect(asyncLendingAssessmentFixtures).toHaveLength(16);
   expect(
     asyncLendingAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());
@@ -37,6 +37,39 @@ it("covers ten gates and five independent reviews with distinct equivalents and 
       step.solution!.replace(/\s+/g, ""),
     );
     expect(fixture.mutant, fixture.id).not.toBe(fixture.equivalent);
+    for (const mutant of fixture.mutants ?? [])
+      expect(mutant, fixture.id).not.toBe(fixture.equivalent);
+  }
+});
+
+it("keeps overlapping mutable batch borrows as a separate compiler-negative case", () => {
+  const batch = assessments.find(
+    (step) => step.id === "async-lending-receiver-bounded-batch",
+  );
+  if (!batch?.solution) throw new Error("Missing receiver batch solution");
+  const directory = mkdtempSync(join(tmpdir(), "async-lending-batch-overlap-"));
+  try {
+    const file = join(directory, "overlap.rs");
+    writeFileSync(
+      file,
+      `${batch.solution}
+fn overlapping_mutable_borrows_are_rejected() {
+    let mut receiver = BatchReceiver::new(vec![b"a".to_vec(), b"b".to_vec()]);
+    let first = receiver.receive_up_to(1);
+    let _second = receiver.receive_up_to(1);
+    let _ = first;
+}
+`,
+    );
+    const compiled = spawnSync(
+      "rustc",
+      ["--edition=2024", "--test", file, "-o", join(directory, "overlap")],
+      { cwd: directory, encoding: "utf8", timeout: 60_000 },
+    );
+    expect(compiled.status).not.toBe(0);
+    expect(`${compiled.stdout}\n${compiled.stderr}`).toContain("cannot borrow");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
   }
 });
 
@@ -48,10 +81,13 @@ it.each(asyncLendingAssessmentFixtures)(
       throw new Error(`Missing test step ${fixture.id}`);
     const directory = mkdtempSync(join(tmpdir(), "async-lending-assessment-"));
     try {
+      const mutants = [fixture.mutant, ...(fixture.mutants ?? [])];
       for (const [name, source, expected] of [
         ["canonical", step.solution, 0],
         ["equivalent", fixture.equivalent, 0],
-        ["mutant", fixture.mutant, 101],
+        ...mutants.map(
+          (mutant, index) => [`mutant-${index + 1}`, mutant, 101] as const,
+        ),
       ] as const) {
         const file = join(directory, `${name}.rs`);
         const binary = join(directory, name);

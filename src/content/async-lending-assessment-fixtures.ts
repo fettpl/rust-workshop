@@ -7,10 +7,64 @@ import {
   asyncLendingBoundaryReviewExercises,
 } from "./async-lending-boundaries";
 
+const batchEquivalent = `use std::collections::VecDeque;
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
+
+pub struct BatchReceiver { packets: VecDeque<Vec<u8>>, committed: usize }
+pub struct ReceiveBatch<'a> { owner: Option<&'a mut BatchReceiver>, limit: usize, first_poll: bool }
+pub struct BorrowedBatch<'a> { owner: Option<&'a mut BatchReceiver>, start: usize, count: usize }
+
+impl BatchReceiver {
+    pub fn new(packets: Vec<Vec<u8>>) -> Self {
+        Self { packets: packets.into(), committed: 0 }
+    }
+    pub fn receive_up_to(&mut self, limit: usize) -> ReceiveBatch<'_> {
+        ReceiveBatch { owner: Some(self), limit, first_poll: true }
+    }
+}
+impl<'a> Future for ReceiveBatch<'a> {
+    type Output = Option<BorrowedBatch<'a>>;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let this = self.get_mut();
+        let done = this.owner.as_ref().map_or(true, |receiver| {
+            this.limit == 0 || receiver.committed >= receiver.packets.len()
+        });
+        if done {
+            this.owner.take();
+            return Poll::Ready(None);
+        }
+        if this.first_poll {
+            this.first_poll = false;
+            cx.waker().wake_by_ref();
+            return Poll::Pending;
+        }
+        let receiver = this.owner.take().expect("future already completed");
+        receiver.packets.make_contiguous();
+        let start = receiver.committed;
+        let count = this.limit.min(receiver.packets.len() - start);
+        Poll::Ready(Some(BorrowedBatch { owner: Some(receiver), start, count }))
+    }
+}
+impl BorrowedBatch<'_> {
+    pub fn items(&self) -> &[Vec<u8>] {
+        let receiver = self.owner.as_ref().expect("batch already finished");
+        let (front, _) = receiver.packets.as_slices();
+        &front[self.start..self.start + self.count]
+    }
+    pub fn finish(mut self) {
+        let receiver = self.owner.take().expect("batch already finished");
+        receiver.committed += self.count;
+    }
+}
+`;
+
 export interface AsyncLendingAssessmentFixture {
   id: string;
   equivalent: string;
   mutant: string;
+  mutants?: string[];
 }
 
 const assessments = [
@@ -25,6 +79,11 @@ const assessments = [
 ];
 
 function mutate(id: string, solution: string): string {
+  if (id === "async-lending-receiver-bounded-batch")
+    return solution.replace(
+      "let len = this.limit.min(receiver.packets.len() - start);",
+      "let len = this.limit.min(receiver.packets.len() - start);\n        receiver.cursor += len;",
+    );
   if (id.includes("receiver"))
     return solution.replace("receiver.cursor += 1", "receiver.cursor += 0");
   if (id.includes("callbacks"))
@@ -47,6 +106,13 @@ function mutate(id: string, solution: string): string {
   return solution.replace(
     "Some(Report(self.bytes.to_vec()))",
     "Some(Report(Vec::new()))",
+  );
+}
+
+function batchFinishMutant(solution: string): string {
+  return solution.replace(
+    "receiver.cursor += self.len;",
+    "receiver.cursor += 1;",
   );
 }
 
@@ -74,6 +140,7 @@ function replaceFunctionBody(
 }
 
 function equivalent(id: string, solution: string): string {
+  if (id === "async-lending-receiver-bounded-batch") return batchEquivalent;
   if (id === "async-lending-receiver-review")
     return replaceFunctionBody(
       solution,
@@ -366,5 +433,8 @@ export const asyncLendingAssessmentFixtures: AsyncLendingAssessmentFixture[] =
       id: step.id,
       equivalent: equivalent(step.id, step.solution),
       mutant: mutate(step.id, step.solution),
+      ...(step.id === "async-lending-receiver-bounded-batch"
+        ? { mutants: [batchFinishMutant(step.solution)] }
+        : {}),
     };
   });

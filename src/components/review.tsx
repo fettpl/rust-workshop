@@ -457,7 +457,7 @@ export function ReviewView() {
                   <p className="footnote">
                     {ownershipScope
                       ? "Odtworzenie po czasie wymaga dwóch wcześniejszych samodzielnych zadań kodowych i ponad 24 godzin bez kontaktu z pojęciem. Ta powtórka nie dodaje kolejnego zadania do tego licznika."
-                      : "Dla tego kontraktu dostępna jest jedna opisana rodzina primary. Potwierdzenie pozostaje prowizoryczne, a pomoc lub wyczerpanie tej rodziny nie tworzy nowego wariantu. Ta powtórka pozostaje osobnym recall i nie dodaje rodziny primary."}
+                      : "Dla tego kontraktu liczą się tylko opisane rodziny primary. Gate i blank mogą dzielić rodzinę; pomoc lub wyczerpanie rodziny nie tworzy nowego wariantu. Ta powtórka pozostaje osobnym recall i nie dodaje rodziny primary."}
                   </p>
                 </>
               )}
@@ -744,8 +744,8 @@ export function ReviewView() {
               Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź
               po czasie może potwierdzić odtworzenie. Dla ownership potrzebne są
               dwa wcześniejsze zadania kodowe i ponad 24 godziny bez kontaktu z
-              pojęciem. Nowe kontrakty mają obecnie jedną opisaną rodzinę
-              primary, więc ich potwierdzenie pozostaje prowizoryczne.
+              pojęciem. Liczba rodzin primary zależy od opisu danego kontraktu;
+              sama powtórka nie tworzy nowej rodziny.
             </p>
           </section>
         </>

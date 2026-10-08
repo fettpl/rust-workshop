@@ -85,13 +85,21 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
       .digest("hex"),
   ).toBe("dcade79f66c1142a5dfcd52b305c4d6d33ef574179d0184e69924e7d44fc025b");
   expect(course.modules.map((module) => module.id)).toEqual(legacy.moduleIds);
+  const expectedLegacyLessons = legacy.lessons.map((lesson) =>
+    lesson.id === "async-lending-receiver"
+      ? {
+          ...lesson,
+          stepIds: [...lesson.stepIds, "async-lending-receiver-bounded-batch"],
+        }
+      : lesson,
+  );
   expect(
     course.lessons.slice(0, legacy.lessons.length).map((lesson) => ({
       id: lesson.id,
       moduleId: lesson.moduleId,
       stepIds: lesson.steps.map((step) => step.id),
     })),
-  ).toEqual(legacy.lessons);
+  ).toEqual(expectedLegacyLessons);
   expect(
     course.concepts
       .slice(0, legacy.conceptIds.length)
@@ -239,11 +247,11 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     traces: frozenPreNestedInventory.traces,
     competencies:
       frozenPreNestedInventory.competencies + nestedInventory.competencies,
-    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 10,
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 11,
     testEvaluators:
       frozenPreNestedInventory.testEvaluators +
       nestedInventory.testEvaluators +
-      4,
+      5,
     reviews: frozenPreNestedInventory.reviews + nestedInventory.reviews,
   });
   for (const registry of [

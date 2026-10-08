@@ -63,7 +63,7 @@ export function OwnershipPolicyNote({
       Historia i ukończone kroki pozostają zapisane. Bieżące potwierdzenie zadań
       {scope === "ownership"
         ? " ownership wymaga dwóch różnych rozwiązań kodowych bez podpowiedzi."
-        : " jest prowizoryczne: gate i blank są dwiema formami jednej rodziny, a pomoc nie otwiera nowej wersji."}{" "}
+        : " jest oparte na opisanych rodzinach primary: gate i blank mogą być dwiema formami jednej rodziny, a pomoc nie otwiera nowego wariantu."}{" "}
       Starsze wyniki pozostają w historii.
     </p>
   );
