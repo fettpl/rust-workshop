@@ -145,6 +145,8 @@ it(
     );
     expect(result.compiled).toBe(false);
     expect(result.stderr).toContain("E0308");
+    expect(result.processError).toBeUndefined();
+    expect(result.signal).toBeNull();
   },
   testDeadline,
 );
@@ -159,6 +161,8 @@ it(
     );
     expect(result.compiled).toBe(false);
     expect(result.stderr).toContain("E0382");
+    expect(result.processError).toBeUndefined();
+    expect(result.signal).toBeNull();
   },
   testDeadline,
 );
@@ -173,6 +177,8 @@ it(
     );
     expect(result.compiled).toBe(false);
     expect(result.stderr).toContain("E0382");
+    expect(result.processError).toBeUndefined();
+    expect(result.signal).toBeNull();
   },
   testDeadline,
 );
@@ -216,8 +222,33 @@ function expectSemanticFailure(
   expect(
     (result.tests?.passed ?? 0) + (result.tests?.failed ?? 0),
   ).toBeGreaterThan(0);
-  expect(`${result.stdout}\n${result.stderr}`).toContain(witness);
+  const witnessLine = `${result.stdout}\n${result.stderr}`
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => {
+      if (!line.startsWith("test ") || !line.includes(" ... ")) return false;
+      const testName = line.slice("test ".length, line.indexOf(" ... "));
+      return testName === witness || testName.endsWith(`::${witness}`);
+    });
+  expect(witnessLine).toBeDefined();
+  expect(witnessLine?.endsWith(" ... FAILED")).toBe(true);
 }
+
+it(
+  "rejects a mutant when the nominated witness actually passes",
+  () => {
+    const fixture = sharedBorrowFixtures["shared-count-words-v1"];
+    const mutant = fixture.mutants["ascii-whitespace-only"];
+    expect(() =>
+      expectSemanticFailure(
+        mutant.source,
+        fixture.contract.tests,
+        "count_words_preserves_each_owned_input_after_repeated_calls",
+      ),
+    ).toThrow();
+  },
+  testDeadline,
+);
 
 for (const [family, fixture] of Object.entries(sharedBorrowFixtures)) {
   it(
