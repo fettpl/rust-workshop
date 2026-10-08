@@ -41,8 +41,9 @@ export const asyncLendingModule: CourseModule = {
   ],
   lessonIds: criteria.map(([id]) => id),
   exitGate: [
-    "Rozwiążesz pięć kryteriów przez dziesięć osobnych zadań kodowych: po jednym gate i blank dla każdego kontraktu.",
-    "Powtórki wymagają pięciu nowych implementacji; podgląd rozwiązania nie zalicza gate.",
+    "Rozwiążesz pięć kontraktów w dwóch formach: gate i blank dzielą jedną rodzinę dowodu dla każdego pojęcia.",
+    "Powtórka jest osobnym ćwiczeniem recall; nie tworzy nowej rodziny primary ani drugiego niezależnego zadania.",
+    "Potwierdzenie pozostaje prowizoryczne przy tej jednej rodzinie; pomoc nie otwiera nowej wersji kontraktu.",
   ],
   projectConnection:
     "Kontrakty są użyte w rozszerzeniu tokio-service-workshop: lokalny visitor pozostaje sekwencyjny, a owned producer może zostać wysłany do Tokio. Pakiet dokumentuje koszt boxed adaptera i ograniczenia rollbacku.",
@@ -50,6 +51,7 @@ export const asyncLendingModule: CourseModule = {
   gateCriteria: criteria.map(([id, label]) => ({
     id: `${id}-contract`,
     label,
+    requiredIndependentCodingTasks: 1,
     taskRefs: [
       { lessonId: id, stepId: `${id}-gate` },
       { lessonId: id, stepId: `${id}-blank` },

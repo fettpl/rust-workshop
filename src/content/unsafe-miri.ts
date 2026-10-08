@@ -128,6 +128,17 @@ export const unsafeMiriConcepts: Concept[] = [
   },
 ];
 
+const unsafeEvidenceFamilies: Record<string, string> = {
+  "unsafe-miri-byte-view": "unsafe-miri/byte-view-v1",
+  "unsafe-miri-disjoint-regions": "unsafe-miri/disjoint-regions-v1",
+  "unsafe-miri-slot-state": "unsafe-miri/slot-state-v1",
+  "unsafe-miri-mut-slot": "unsafe-miri/mut-slot-v1",
+};
+
+for (const concept of unsafeMiriConcepts) {
+  concept.evidenceCalibration = { version: 2, minimumCodingTasks: 2 };
+}
+
 function predict(
   id: string,
   title: string,
@@ -902,7 +913,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "apply",
         title: "Przenieś kontrakt na pusty widok",
         prompt:
-          "Zachowaj ten sam kontrakt `ByteView` dla ważnych bajtów, pustego null view i pożyczki kończącej się wraz ze storage.",
+          "Zachowaj ten sam kontrakt ByteView dla ważnych bajtów, pustego null view i pożyczki kończącej się wraz ze storage. To równoważna forma gate i należy do tej samej rodziny dowodu.",
         code: byteViewStarter,
         solution: byteViewEquivalent,
         tests: byteViewTests,
@@ -913,7 +924,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "blank",
         title: "Blank page: initialized bytes",
         prompt:
-          "Od pustej kartki zdefiniuj dokładnie `struct ByteView<'a> { bytes: &'a [u8] }` oraz `impl<'a> ByteView<'a> { unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self>; fn as_slice(&self) -> &[u8]; }`. Dodaj safety contract o inicjalizacji, wyrównaniu, ważności, niealiasowaniu i lifetime; `len == 0` ma zwrócić pusty widok bez dereferencji. Nie implementuj odczytu z `MaybeUninit` jako `u8`.",
+          "Od pustej kartki zdefiniuj dokładnie `struct ByteView<'a> { bytes: &'a [u8] }` oraz `impl<'a> ByteView<'a> { unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self>; fn as_slice(&self) -> &[u8]; }`. Dodaj safety contract o inicjalizacji, wyrównaniu, ważności, niealiasowaniu i lifetime; `len == 0` ma zwrócić pusty widok bez dereferencji. Nie implementuj odczytu z `MaybeUninit` jako `u8`. Blank jest drugą formą tej samej rodziny co gate.",
         solution: byteViewSolution,
         tests: byteViewTests,
         gate: true,
@@ -1005,7 +1016,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "apply",
         title: "Przenieś dowód rozłączności",
         prompt:
-          "Zaimplementuj ten sam podpis i zachowaj niezależne mutacje oraz oba puste przypadki bez ręcznego tworzenia nakładających się referencji.",
+          "Zaimplementuj ten sam podpis i zachowaj niezależne mutacje oraz oba puste przypadki bez ręcznego tworzenia nakładających się referencji. To ta sama rodzina dowodu co gate.",
         code: regionsStarter,
         solution: regionsEquivalent,
         tests: regionsTests,
@@ -1016,7 +1027,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "blank",
         title: "Blank page: disjoint mutable regions",
         prompt:
-          "Od pustej kartki zdefiniuj `enum SplitError { OutOfBounds }` oraz `fn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>`. Wymień w kodzie pełną deklarację typu i zachowaj rozłączność także przy `mid == 0` oraz `mid == len`; nie używaj unsafe jako zamiennika dowodu.",
+          "Od pustej kartki zdefiniuj `enum SplitError { OutOfBounds }` oraz `fn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>`. Wymień w kodzie pełną deklarację typu i zachowaj rozłączność także przy `mid == 0` oraz `mid == len`; nie używaj unsafe jako zamiennika dowodu. Blank dzieli rodzinę dowodu z gate.",
         solution: regionsSolution,
         tests: regionsTests,
         gate: true,
@@ -1108,7 +1119,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "apply",
         title: "Zachowaj licznik Drop",
         prompt:
-          "Zaimplementuj ten sam kontrakt Slot<T> dla pustego drop, pełnego drop, take i odrzuconego drugiego put. Nie rozwiązuj problemu przez `mem::forget`.",
+          "Zaimplementuj ten sam kontrakt Slot<T> dla pustego drop, pełnego drop, take i odrzuconego drugiego put. Nie rozwiązuj problemu przez mem::forget. To równoważna forma gate w tej samej rodzinie.",
         code: slotStarter,
         solution: slotEquivalent,
         tests: slotTests,
@@ -1119,7 +1130,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "blank",
         title: "Blank page: MaybeUninit state machine",
         prompt:
-          "Od pustej kartki zdefiniuj kompletne `enum SlotState { Empty, Full }` i `struct Slot<T> { value: MaybeUninit<T>, state: SlotState }`, a następnie `empty()`, `put(value: T) -> Result<(), T>`, `take() -> Option<T>`, `is_full()` i `Drop`. Opisz w kodzie niezmiennik, że tylko Full zawiera żywe T; nie czytaj ani nie dropuj Empty.",
+          "Od pustej kartki zdefiniuj kompletne `enum SlotState { Empty, Full }` i `struct Slot<T> { value: MaybeUninit<T>, state: SlotState }`, a następnie `empty()`, `put(value: T) -> Result<(), T>`, `take() -> Option<T>`, `is_full()` i `Drop`. Opisz w kodzie niezmiennik, że tylko Full zawiera żywe T; nie czytaj ani nie dropuj Empty. Blank jest drugą formą tej samej rodziny co gate.",
         solution: slotSolution,
         tests: slotTests,
         gate: true,
@@ -1211,7 +1222,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "apply",
         title: "Zachowaj niezmienniczość T",
         prompt:
-          "Zaimplementuj reborrow, który skraca lifetime dostępu, ale nie pozwala zapisać krótszej referencji w miejscu wymagającym dłuższej. Zachowaj test wartości po reborrow.",
+          "Zaimplementuj reborrow, który skraca lifetime dostępu, ale nie pozwala zapisać krótszej referencji w miejscu wymagającym dłuższej. Zachowaj test wartości po reborrow; ta forma dzieli rodzinę dowodu z gate.",
         code: mutSlotStarter,
         solution: mutSlotEquivalent,
         tests: mutSlotTests,
@@ -1229,7 +1240,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "blank",
         title: "Blank page: MutSlot lifetime and variance",
         prompt:
-          "Od pustej kartki zdefiniuj dokładnie `struct MutSlot<'a, T> { value: &'a mut T }` oraz `new(value: &'a mut T) -> Self`, `get(&self) -> &T`, `get_mut(&mut self) -> &mut T` i `reborrow<'short>(&'short mut self) -> MutSlot<'short, T>`. Dodaj test lokalnego, nie-`'static` tekstu i osobny przypadek, który kompilator ma odrzucić przy próbie skrócenia wewnętrznego T.",
+          "Od pustej kartki zdefiniuj dokładnie `struct MutSlot<'a, T> { value: &'a mut T }` oraz `new(value: &'a mut T) -> Self`, `get(&self) -> &T`, `get_mut(&mut self) -> &mut T` i `reborrow<'short>(&'short mut self) -> MutSlot<'short, T>`. Dodaj test lokalnego, nie-`'static` tekstu i osobny przypadek, który kompilator ma odrzucić przy próbie skrócenia wewnętrznego T. Blank pozostaje drugą formą tej samej rodziny co gate.",
         solution: mutSlotSolution,
         tests: mutSlotTests,
         gate: true,
@@ -1257,6 +1268,21 @@ export const unsafeMiriLessons: Lesson[] = [
     sourceIds: ["unsafe-miri-guide", "unsafe-miri-nomicon-subtyping"],
   },
 ];
+
+for (const lesson of unsafeMiriLessons) {
+  const family = unsafeEvidenceFamilies[lesson.id];
+  for (const step of lesson.steps) {
+    const isPrimaryFamilyStep =
+      step.id.endsWith("-gate") ||
+      step.id.endsWith("-blank") ||
+      step.id.endsWith("-contract-gate");
+    step.evidence = {
+      version: 2,
+      conceptIds: [...lesson.conceptIds],
+      ...(isPrimaryFamilyStep ? { codingTaskId: family } : {}),
+    };
+  }
+}
 
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   "unsafe-miri-byte-view-contract": coding({
@@ -1299,6 +1325,15 @@ export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   }),
 };
 
+for (const [conceptId, review] of Object.entries(unsafeMiriReviewExercises)) {
+  review.evidence = {
+    version: 2,
+    conceptIds: [conceptId],
+    codingTaskId: `review/${review.id}-v1`,
+  };
+  review.evidenceKind = "recall";
+}
+
 export const unsafeMiriModule: CourseModule = {
   id: moduleId,
   title: "Miri i pure-Rust unsafe: inicjalizacja, aliasowanie oraz wariancja",
@@ -1308,10 +1343,10 @@ export const unsafeMiriModule: CourseModule = {
   prerequisites: ["unsafe-ffi-contracts"],
   lessonIds: unsafeMiriLessons.map((lesson) => lesson.id),
   exitGate: [
-    "Zbudujesz ByteView tylko z zainicjalizowanych, żywych bajtów i nie wydłużysz lifetime storage.",
-    "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania.",
-    "Utrzymasz Slot<T> z poprawnym stanem MaybeUninit i dokładnym Drop.",
-    "Rozpoznasz bezpieczny reborrow MutSlot oraz odrzucisz niepoprawne skrócenie wewnętrznego lifetime.",
+    "Zbudujesz ByteView tylko z zainicjalizowanych, żywych bajtów i nie wydłużysz lifetime storage; gate i blank należą do jednej rodziny.",
+    "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania; druga forma nie tworzy nowej rodziny.",
+    "Utrzymasz Slot<T> z poprawnym stanem MaybeUninit i dokładnym Drop; powtórka recall pozostaje osobnym sprawdzeniem.",
+    "Rozpoznasz bezpieczny reborrow MutSlot oraz odrzucisz niepoprawne skrócenie wewnętrznego lifetime; przy jednej rodzinie potwierdzenie pozostaje prowizoryczne, a pomoc nie otwiera nowej wersji.",
   ],
   projectConnection:
     "Pure-Rust Miri fixtures są osobnym dowodem dla abstrakcji pamięci; nie przenoszą automatycznie zaufania na natywny C ABI ani na kod ucznia.",
@@ -1320,6 +1355,7 @@ export const unsafeMiriModule: CourseModule = {
     {
       id: "unsafe-miri-byte-view-gate",
       label: "ByteView zachowuje kontrakt inicjalizacji i lifetime.",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
         { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-gate" },
         { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-blank" },
@@ -1328,6 +1364,7 @@ export const unsafeMiriModule: CourseModule = {
     {
       id: "unsafe-miri-disjoint-regions-gate",
       label: "Regiony są rozłączne dla obu krawędzi i mutacji.",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
         {
           lessonId: "unsafe-miri-disjoint-regions",
@@ -1342,6 +1379,7 @@ export const unsafeMiriModule: CourseModule = {
     {
       id: "unsafe-miri-slot-state-gate",
       label: "Slot<T> nie czyta ani nie dropuje Empty i nie dubluje Drop.",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
         { lessonId: "unsafe-miri-slot-state", stepId: "slot-state-gate" },
         { lessonId: "unsafe-miri-slot-state", stepId: "slot-state-blank" },
@@ -1350,6 +1388,7 @@ export const unsafeMiriModule: CourseModule = {
     {
       id: "unsafe-miri-mut-slot-gate",
       label: "MutSlot skraca reborrow, ale odrzuca niepoprawną konwersję T.",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
         { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
         { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-blank" },

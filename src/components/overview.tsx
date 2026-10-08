@@ -280,7 +280,7 @@ export function Dashboard() {
               <span>
                 <MasteryBadge
                   level={courseMastery(state, concept.id).level}
-                  scope={concept.evidenceCalibration ? "ownership" : undefined}
+                  scope={concept.evidenceCalibration ? "calibrated" : undefined}
                 />
                 {concept.evidenceCalibration && (
                   <OwnershipEvidenceCount

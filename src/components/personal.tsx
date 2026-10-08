@@ -358,7 +358,7 @@ export function SettingsView() {
               <strong>{c.id}</strong>
               <MasteryBadge
                 level={courseMastery(state, c.id).level}
-                scope={c.evidenceCalibration ? "ownership" : undefined}
+                scope={c.evidenceCalibration ? "calibrated" : undefined}
               />
               <p>{courseMastery(state, c.id).reason}</p>
               <small>

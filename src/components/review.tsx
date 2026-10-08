@@ -423,12 +423,12 @@ export function ReviewView() {
                 <h2>{concept.title}</h2>
                 <MasteryBadge
                   level={courseMastery(state, concept.id).level}
-                  scope={concept.evidenceCalibration ? "ownership" : undefined}
+                  scope={concept.evidenceCalibration ? "calibrated" : undefined}
                 />
               </div>
               {concept.evidenceCalibration && (
                 <>
-                  <OwnershipPolicyNote />
+                  <OwnershipPolicyNote scope="calibrated" />
                   <OwnershipEvidenceCount
                     count={
                       courseEvidenceSummary(state, concept.id)
@@ -728,9 +728,9 @@ export function ReviewView() {
             </div>
             <p className="footnote">
               Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź
-              po czasie może potwierdzić odtworzenie. Dla ownership potrzebne są
-              dwa wcześniejsze zadania kodowe i ponad 24 godziny bez kontaktu z
-              pojęciem.
+              po czasie może potwierdzić odtworzenie. Dla skalibrowanych pojęć
+              potrzebne są dwie wcześniejsze rodzinne formy bez podpowiedzi i
+              ponad 24 godziny bez kontaktu z pojęciem.
             </p>
           </section>
         </>

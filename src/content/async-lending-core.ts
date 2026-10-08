@@ -82,6 +82,15 @@ export const asyncLendingCoreConcepts: Concept[] = [
   },
 ];
 
+const coreEvidenceFamilies: Record<string, string> = {
+  "async-lending-receiver": "async-lending/receiver-lease-v1",
+  "async-lending-callbacks": "async-lending/sequential-callback-v1",
+};
+
+for (const concept of asyncLendingCoreConcepts) {
+  concept.evidenceCalibration = { version: 2, minimumCodingTasks: 2 };
+}
+
 function coding(options: {
   id: string;
   kind: "debug" | "blank";
@@ -290,7 +299,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         kind: "debug",
         title: "Napraw borrowed receive",
         prompt:
-          "Zachowaj dane przy Pending, zwróć wynik związany z receiverem i przesuń kursor dopiero po finish.",
+          "Zachowaj dane przy Pending, zwróć wynik związany z receiverem i przesuń kursor dopiero po finish. Gate i blank są dwiema formami tego samego kontraktu i dzielą jedną rodzinę dowodu.",
         code: receiverStarter,
         solution: receiverSolution,
         tests: receiverTests,
@@ -304,7 +313,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         kind: "blank",
         title: "Zaprojektuj drugie odczytanie",
         prompt:
-          "Napisz receiver, który po kontrolowanym Pending oddaje rekord pożyczony na czas wywołania.",
+          "Napisz receiver, który po kontrolowanym Pending oddaje rekord pożyczony na czas wywołania. Zachowaj pełny publiczny kontrakt Receiver::new, receive, Borrowed::bytes i Borrowed::finish; blank jest drugą formą tego samego zadania, bez nowej rodziny.",
         solution: receiverSolution,
         tests: receiverTests,
         hints: [
@@ -390,7 +399,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         kind: "debug",
         title: "Zatrzymaj po błędzie",
         prompt:
-          "Napraw pętlę tak, aby callback otrzymywał lokalny widok, mutował akumulator i przerywał po pierwszym błędzie.",
+          "Napraw pętlę tak, aby callback otrzymywał lokalny widok, mutował akumulator i przerywał po pierwszym błędzie. Gate i blank sprawdzają jedną rodzinę kontraktu sekwencyjnego callbacku.",
         code: callbackStarter,
         solution: callbackSolution,
         tests: callbackTests,
@@ -404,7 +413,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         kind: "blank",
         title: "Zbuduj visitor",
         prompt:
-          "Zaimplementuj sekwencyjnego visitora z callbackiem działającym dla każdej lokalnej pożyczki.",
+          "Zaimplementuj sekwencyjnego visitora z callbackiem działającym dla każdej lokalnej pożyczki. Zachowaj granicę await przed kolejnym receive; blank nie tworzy świeżej rodziny dowodu.",
         solution: callbackSolution,
         tests: callbackTests,
         hints: [
@@ -436,6 +445,19 @@ export const asyncLendingCoreLessons: Lesson[] = [
     sourceIds: asyncLendingCoreSources.map((source) => source.id),
   },
 ];
+
+for (const lesson of asyncLendingCoreLessons) {
+  const family = coreEvidenceFamilies[lesson.id];
+  for (const step of lesson.steps) {
+    step.evidence = {
+      version: 2,
+      conceptIds: [...lesson.conceptIds],
+      ...(step.id.endsWith("-gate") || step.id.endsWith("-blank")
+        ? { codingTaskId: family }
+        : {}),
+    };
+  }
+}
 
 const receiverReviewSolution =
   receiverSolution.replace(
@@ -527,3 +549,13 @@ export const asyncLendingCoreReviewExercises: Record<string, LessonStep> = {
     evidenceKind: "recall",
   },
 };
+
+for (const [conceptId, review] of Object.entries(
+  asyncLendingCoreReviewExercises,
+)) {
+  review.evidence = {
+    version: 2,
+    conceptIds: [conceptId],
+    codingTaskId: `review/${review.id}-v1`,
+  };
+}

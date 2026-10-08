@@ -95,6 +95,16 @@ export const asyncLendingBoundaryConcepts: Concept[] = [
   },
 ];
 
+const boundaryEvidenceFamilies: Record<string, string> = {
+  "async-lending-cancel-commit": "async-lending/cancel-commit-v1",
+  "async-lending-send-boundary": "async-lending/send-boundary-v1",
+  "async-lending-dyn-adapter": "async-lending/dyn-adapter-v1",
+};
+
+for (const concept of asyncLendingBoundaryConcepts) {
+  concept.evidenceCalibration = { version: 2, minimumCodingTasks: 2 };
+}
+
 function coding(options: {
   id: string;
   title: string;
@@ -363,7 +373,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-cancel-commit-gate",
         title: "Napraw kolejność commit",
         prompt:
-          "Commituj dokładnie po ukończonym callbacku; anulowanie przed nim ma zostawić ten sam rekord.",
+          "Commituj dokładnie po ukończonym callbacku; anulowanie przed nim ma zostawić ten sam rekord. Gate i blank są dwiema formami jednej rodziny kontraktu.",
         code: commitStarter,
         solution: commitSolution,
         tests: commitTests,
@@ -378,7 +388,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-cancel-commit-blank",
         title: "Zaprojektuj protokół",
         prompt:
-          "Zaimplementuj odbiór, lokalny efekt i jawny commit bez obietnicy rollbacku.",
+          "Zaimplementuj odbiór, lokalny efekt i jawny commit bez obietnicy rollbacku. Blank zachowuje tę samą rodzinę dowodu co gate.",
         solution: commitSolution,
         tests: commitTests,
         hints: [
@@ -460,7 +470,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-send-boundary-gate",
         title: "Ustal kontrakt spawn",
         prompt:
-          "Napraw typ future tak, aby owned dane spełniały Send + 'static i nie wymagały lokalnej referencji.",
+          "Napraw typ future tak, aby owned dane spełniały Send + 'static i nie wymagały lokalnej referencji. Gate i blank opisują jedną rodzinę granicy spawn.",
         code: sendStarter,
         solution: sendSolution,
         tests: sendTests,
@@ -474,7 +484,8 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
       coding({
         id: "async-lending-send-boundary-blank",
         title: "Zbuduj owned producer",
-        prompt: "Zaimplementuj przyszły owned raport bez pożyczonego wejścia.",
+        prompt:
+          "Zaimplementuj przyszły owned raport bez pożyczonego wejścia. To druga forma tej samej rodziny granicy spawn, bez świeżego wariantu.",
         solution: sendSolution,
         tests: sendTests,
         hints: [
@@ -555,7 +566,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-dyn-adapter-gate",
         title: "Napraw adapter",
         prompt:
-          "Zwróć boxed future związany z lifetime wywołania i oddaj owned raport po jego ukończeniu.",
+          "Zwróć boxed future związany z lifetime wywołania i oddaj owned raport po jego ukończeniu. Gate i blank pozostają jedną rodziną adaptera.",
         code: adapterStarter,
         solution: adapterSolution,
         tests: adapterTests,
@@ -568,7 +579,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-dyn-adapter-blank",
         title: "Zbuduj heterogeniczną granicę",
         prompt:
-          "Zaprojektuj jawny adapter dla providera z lokalnym lifetime; nie udawaj, że trait GAT jest bezpośrednio dyn-compatible.",
+          "Zaprojektuj jawny adapter dla providera z lokalnym lifetime; nie udawaj, że trait GAT jest bezpośrednio dyn-compatible. Zachowaj tę samą rodzinę dowodu co gate.",
         solution: adapterSolution,
         tests: adapterTests,
         hints: [
@@ -603,6 +614,19 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
     sourceIds: asyncLendingBoundarySources.map((source) => source.id),
   },
 ];
+
+for (const lesson of asyncLendingBoundaryLessons) {
+  const family = boundaryEvidenceFamilies[lesson.id];
+  for (const step of lesson.steps) {
+    step.evidence = {
+      version: 2,
+      conceptIds: [...lesson.conceptIds],
+      ...(step.id.endsWith("-gate") || step.id.endsWith("-blank")
+        ? { codingTaskId: family }
+        : {}),
+    };
+  }
+}
 
 const commitReviewSolution =
   commitSolution.replace("if cancel {", "if matches!(cancel, true) {") +
@@ -714,3 +738,13 @@ export const asyncLendingBoundaryReviewExercises: Record<string, LessonStep> = {
     evidenceKind: "recall",
   },
 };
+
+for (const [conceptId, review] of Object.entries(
+  asyncLendingBoundaryReviewExercises,
+)) {
+  review.evidence = {
+    version: 2,
+    conceptIds: [conceptId],
+    codingTaskId: `review/${review.id}-v1`,
+  };
+}
