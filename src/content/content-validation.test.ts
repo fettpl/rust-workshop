@@ -329,7 +329,7 @@ describe("curriculum content contract", () => {
   it("ships a valid, connected learning graph", () => {
     expect(validateContent(bundle)).toEqual([]);
     expect(lessons.length).toBeGreaterThanOrEqual(6);
-    expect(ownershipModule.lessonIds.length).toBeLessThanOrEqual(9);
+    expect(ownershipModule.lessonIds.length).toBeLessThanOrEqual(10);
     expect(
       lessons.every(
         (lesson) => lesson.steps.length >= 5 && lesson.steps.length <= 9,

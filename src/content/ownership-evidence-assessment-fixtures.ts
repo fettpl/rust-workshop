@@ -1,3 +1,9 @@
+import {
+  delayedSharedCountLinesContract,
+  sharedCountWordsContract,
+  sharedHasSuffixContract,
+} from "./ownership-evidence-contracts";
+
 /** Trusted test-only implementations: do not expose this verifier to user supplied Rust. */
 export const mutationFixtures = {
   "borrow-conflict": {
@@ -142,3 +148,223 @@ export const functionOwnershipFixtures = {
     },
   },
 } as const;
+
+export type SharedBorrowContract = {
+  starter: string;
+  solution: string;
+  tests: string;
+};
+
+export type SharedBorrowMutant = {
+  source: string;
+  witness: string;
+};
+
+export type SharedBorrowFixture = {
+  contract: SharedBorrowContract;
+  equivalents: Record<string, string>;
+  mutants: Record<string, SharedBorrowMutant>;
+};
+
+/**
+ * Downstream registration consumes this map by family suffix. Every mutant
+ * names the shipped Rust test that should fail when its behavior is wrong.
+ */
+export const sharedBorrowFixtures: Record<
+  | "shared-count-words-v1"
+  | "shared-has-suffix-v1"
+  | "shared-count-lines-delayed-v1",
+  SharedBorrowFixture
+> = {
+  "shared-count-words-v1": {
+    contract: sharedCountWordsContract,
+    equivalents: {
+      loop: `fn count_words(text: &str) -> usize {
+    let mut count = 0;
+    for _ in text.split_whitespace() {
+        count += 1;
+    }
+    count
+}`,
+    },
+    mutants: {
+      "constant-zero": {
+        source: "fn count_words(_: &str) -> usize { 0 }",
+        witness: "count_words_handles_empty_and_whitespace_boundaries",
+      },
+      "constant-one": {
+        source: "fn count_words(_: &str) -> usize { 1 }",
+        witness: "count_words_handles_empty_and_whitespace_boundaries",
+      },
+      "character-count": {
+        source: "fn count_words(text: &str) -> usize { text.chars().count() }",
+        witness: "count_words_handles_multiple_pieces_and_unicode",
+      },
+      "first-piece-only": {
+        source:
+          "fn count_words(text: &str) -> usize { text.split_whitespace().next().map_or(0, |_| 1) }",
+        witness: "count_words_handles_multiple_pieces_and_unicode",
+      },
+      "ascii-whitespace-only": {
+        source:
+          "fn count_words(text: &str) -> usize { text.split_ascii_whitespace().count() }",
+        witness: "count_words_handles_empty_and_whitespace_boundaries",
+      },
+      "literal-space-only": {
+        source:
+          "fn count_words(text: &str) -> usize { text.split(' ').filter(|piece| !piece.is_empty()).count() }",
+        witness: "count_words_handles_empty_and_whitespace_boundaries",
+      },
+    },
+  },
+  "shared-has-suffix-v1": {
+    contract: sharedHasSuffixContract,
+    equivalents: {
+      lengthGuardedGet: `fn has_suffix(text: &str, suffix: &str) -> bool {
+    text.len() >= suffix.len() && text.get(text.len() - suffix.len().. ) == Some(suffix)
+}`,
+    },
+    mutants: {
+      "always-true": {
+        source: "fn has_suffix(_: &str, _: &str) -> bool { true }",
+        witness: "has_suffix_handles_empty_exact_and_negative_cases",
+      },
+      "always-false": {
+        source: "fn has_suffix(_: &str, _: &str) -> bool { false }",
+        witness: "has_suffix_handles_empty_exact_and_negative_cases",
+      },
+      "starts-with": {
+        source:
+          "fn has_suffix(text: &str, suffix: &str) -> bool { text.starts_with(suffix) }",
+        witness: "has_suffix_requires_the_exact_terminal_text",
+      },
+      "contains-anywhere": {
+        source:
+          "fn has_suffix(text: &str, suffix: &str) -> bool { text.contains(suffix) }",
+        witness: "has_suffix_requires_the_exact_terminal_text",
+      },
+      "ignored-suffix": {
+        source:
+          'fn has_suffix(text: &str, _: &str) -> bool { text.ends_with(".txt") }',
+        witness:
+          "has_suffix_preserves_both_owned_inputs_and_supports_same_owner_views",
+      },
+      "trimmed-match": {
+        source:
+          "fn has_suffix(text: &str, suffix: &str) -> bool { text.trim_end().ends_with(suffix) }",
+        witness: "has_suffix_requires_the_exact_terminal_text",
+      },
+      "ascii-only": {
+        source:
+          "fn has_suffix(text: &str, suffix: &str) -> bool { text.is_ascii() && suffix.is_ascii() && text.ends_with(suffix) }",
+        witness: "has_suffix_handles_multibyte_text_without_normalization",
+      },
+      "case-insensitive": {
+        source:
+          "fn has_suffix(text: &str, suffix: &str) -> bool { text.to_ascii_lowercase().ends_with(&suffix.to_ascii_lowercase()) }",
+        witness: "has_suffix_requires_the_exact_terminal_text",
+      },
+    },
+  },
+  "shared-count-lines-delayed-v1": {
+    contract: delayedSharedCountLinesContract,
+    equivalents: {
+      splitTerminator: `fn count_lines(text: &str) -> usize {
+    if text.is_empty() {
+        0
+    } else {
+        text.split_terminator('\\n').count()
+    }
+}`,
+    },
+    mutants: {
+      "constant-zero": {
+        source: "fn count_lines(_: &str) -> usize { 0 }",
+        witness: "count_lines_handles_empty_single_and_terminal_lines",
+      },
+      "constant-one": {
+        source: "fn count_lines(_: &str) -> usize { 1 }",
+        witness: "count_lines_handles_multiple_blank_unicode_and_crlf_lines",
+      },
+      "split-newline-final-empty": {
+        source:
+          "fn count_lines(text: &str) -> usize { text.split('\\n').count() }",
+        witness: "count_lines_handles_empty_single_and_terminal_lines",
+      },
+      "omit-blank-lines": {
+        source:
+          "fn count_lines(text: &str) -> usize { text.lines().filter(|line| !line.is_empty()).count() }",
+        witness: "count_lines_handles_multiple_blank_unicode_and_crlf_lines",
+      },
+      "count-words-instead": {
+        source:
+          "fn count_lines(text: &str) -> usize { text.split_whitespace().count() }",
+        witness: "count_lines_handles_multiple_blank_unicode_and_crlf_lines",
+      },
+    },
+  },
+};
+
+/** Named compiler controls; these are diagnostics, not semantic mutants. */
+export const sharedBorrowCompileControls: Record<string, string> = {
+  sharedCountWordsStarter: sharedCountWordsContract.starter,
+  sharedCountWordsOwnedSignature: `fn main() {
+    let count: fn(&str) -> usize = count_words;
+    let _ = count("literal");
+}
+fn count_words(text: String) -> usize { text.split_whitespace().count() }`,
+  sharedCountWordsStringReferenceSignature: `fn main() {
+    let count: fn(&str) -> usize = count_words;
+    let _ = count("literal");
+}
+fn count_words(text: &String) -> usize { text.split_whitespace().count() }`,
+  sharedCountWordsMutableSliceSignature: `fn main() {
+    let count: fn(&str) -> usize = count_words;
+    let _ = count("literal");
+}
+fn count_words(text: &mut str) -> usize { text.split_whitespace().count() }`,
+  sharedHasSuffixStarter: sharedHasSuffixContract.starter,
+  sharedHasSuffixTextOwnedStarter: `fn has_suffix(text: String, suffix: &str) -> bool {
+    text.ends_with(suffix)
+}
+fn main() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    let _ = check("report.txt", ".txt");
+}`,
+  sharedHasSuffixSuffixOwnedControl: `fn main() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    let _ = check("report.txt", ".txt");
+}
+fn has_suffix(text: &str, suffix: String) -> bool { text.ends_with(&suffix) }`,
+  sharedHasSuffixOwnedSignature: `fn main() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    let _ = check("report.txt", ".txt");
+}
+fn has_suffix(text: String, suffix: String) -> bool { text.ends_with(&suffix) }`,
+  sharedHasSuffixStringReferenceSignature: `fn main() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    let _ = check("report.txt", ".txt");
+}
+fn has_suffix(text: &String, suffix: &str) -> bool { text.ends_with(suffix) }`,
+  sharedHasSuffixMutableSliceSignature: `fn main() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    let _ = check("report.txt", ".txt");
+}
+fn has_suffix(text: &mut str, suffix: &str) -> bool { text.ends_with(suffix) }`,
+  delayedSharedCountLinesStarter: delayedSharedCountLinesContract.starter,
+  delayedSharedCountLinesOwnedSignature: `fn main() {
+    let count: fn(&str) -> usize = count_lines;
+    let _ = count("literal");
+}
+fn count_lines(text: String) -> usize { text.lines().count() }`,
+  delayedSharedCountLinesStringReferenceSignature: `fn main() {
+    let count: fn(&str) -> usize = count_lines;
+    let _ = count("literal");
+}
+fn count_lines(text: &String) -> usize { text.lines().count() }`,
+  delayedSharedCountLinesMutableSliceSignature: `fn main() {
+    let count: fn(&str) -> usize = count_lines;
+    let _ = count("literal");
+}
+fn count_lines(text: &mut str) -> usize { text.lines().count() }`,
+};

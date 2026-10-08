@@ -235,7 +235,7 @@ it("combines ordinary and delayed reviews with distinct stable IDs", () => {
     reviewExercisesById["review-function-ownership-delayed-v1"],
   ).toBeDefined();
   expect(Object.keys(reviewExercisesById)).toHaveLength(
-    Object.keys(courseReviewExercises).length + 1,
+    Object.keys(courseReviewExercises).length + 2,
   );
 });
 it("proves the delayed frame contract with an equivalent implementation and compiling mutants", () => {

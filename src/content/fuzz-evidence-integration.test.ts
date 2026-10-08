@@ -3,6 +3,7 @@ import { concepts, lessons, modules, reviewExercises } from "./course";
 import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
 import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
+import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
 
 it("registers the bounded fuzz evidence module and four independent alternatives", () => {
   const stage = modules.find((item) => item.id === "fuzz-evidence-lifecycle")!;
@@ -38,7 +39,8 @@ it("registers the bounded fuzz evidence module and four independent alternatives
     expect(lesson.conceptIds).toEqual([lesson.id]);
   }
   // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
-  expect(lessons).toHaveLength(186 + nestedPatternLessons.length + 1);
-  expect(lessons.at(-1)).toEqual(functionOwnershipCalibrationLesson);
+  expect(lessons).toHaveLength(186 + nestedPatternLessons.length + 2);
+  expect(lessons.at(-2)).toEqual(functionOwnershipCalibrationLesson);
+  expect(lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
   expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
 });

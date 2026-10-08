@@ -2153,6 +2153,7 @@ export const ownershipModule: CourseModule = {
     "adversarial-no-clone",
     "scenario-assessment",
     "function-ownership-calibration",
+    "shared-borrow-calibration",
   ],
   exitGate: [
     "Przewidź niewidziany wynik move/Copy.",
@@ -2251,6 +2252,21 @@ export const ownershipModule: CourseModule = {
         {
           lessonId: "function-ownership-calibration",
           stepId: "function-add-mark",
+        },
+      ],
+    },
+    {
+      id: "shared-borrow-pair-v1",
+      label: "Dwie różne naprawy pożyczonego odczytu bez podpowiedzi",
+      requiredIndependentCodingTasks: 2,
+      taskRefs: [
+        {
+          lessonId: "shared-borrow-calibration",
+          stepId: "shared-count-words",
+        },
+        {
+          lessonId: "shared-borrow-calibration",
+          stepId: "shared-has-suffix",
         },
       ],
     },

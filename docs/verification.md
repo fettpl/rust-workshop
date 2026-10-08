@@ -1,5 +1,7 @@
 # Verification records
 
+Current shared-borrow and curriculum review: [Curriculum review — 8 October 2026](curriculum-review-2026-10-08.md). The dated snapshots below retain their original source cuts, counts, and evidence boundaries.
+
 <a id="current-task5-local-snapshot-8-october-2026"></a>
 
 ## Current local Task 5 snapshot — 8 October 2026

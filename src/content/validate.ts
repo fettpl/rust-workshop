@@ -8,7 +8,10 @@ import {
   hasRustTestAttribute,
   trustedFixtureIssues,
 } from "../domain/trusted-fixtures";
-import { frameTextContract } from "./ownership-evidence-contracts";
+import {
+  delayedSharedCountLinesContract,
+  frameTextContract,
+} from "./ownership-evidence-contracts";
 import type {
   Competency,
   Concept,
@@ -344,6 +347,29 @@ export function validateContent(content: ContentBundle): string[] {
       )
         errors.push(
           `${label} does not match the authored delayed frame contract`,
+        );
+    }
+    if (conceptId === "shared-borrow") {
+      if (
+        review.id !== "review-shared-borrow-delayed-v1" ||
+        review.evidence?.version !== 2 ||
+        review.evidence.codingTaskId !==
+          "ownership/shared-count-lines-delayed-v1" ||
+        review.evidence.conceptIds.length !== 1 ||
+        review.evidence.conceptIds[0] !== "shared-borrow" ||
+        review.evaluator?.kind !== "tests" ||
+        review.code !== delayedSharedCountLinesContract.starter ||
+        review.solution !== delayedSharedCountLinesContract.solution ||
+        review.evaluator.tests !== delayedSharedCountLinesContract.tests ||
+        review.expectedStatus !== "compile-error" ||
+        review.expectedError !== "E0382" ||
+        review.expectedDiagnostic !== undefined ||
+        review.evidenceGate === true ||
+        review.kind !== "recall" ||
+        review.evidenceKind !== "recall"
+      )
+        errors.push(
+          `${label} does not match the authored delayed shared-borrow contract`,
         );
     }
   }

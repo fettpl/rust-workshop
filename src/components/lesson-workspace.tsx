@@ -26,11 +26,12 @@ import {
 } from "@/content/learning-context";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
 import { LearningText } from "./learning-text";
-import { CompilerCoach } from "./compiler-coach";
+import { CompilerCoach, type CoachRecoveryStatus } from "./compiler-coach";
 import { CompilerOutput } from "./compiler-output";
 import { OwnershipVisualizer } from "./ownership-visualizer";
 import { Eyebrow, ProgressLine } from "./ui";
 import { nextLessonForNavigation } from "@/engine/course-route";
+import { gateRecovery } from "@/engine/learning";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 const kindLabels = {
   predict: "Przewidź",
@@ -60,6 +61,58 @@ export function LessonWorkspace() {
     lessons.find((l) => l.id === state.resume.lessonId) ?? lessons[0];
   const index = Math.min(state.resume.stepIndex, lesson.steps.length - 1);
   const step = lesson.steps[index];
+  const currentModule = modules.find(
+    (candidate) => candidate.id === lesson.moduleId,
+  );
+  const matchingPrimaryCriteria = (currentModule?.gateCriteria ?? []).filter(
+    (criterion) =>
+      criterion.requiredIndependentCodingTasks !== undefined &&
+      criterion.taskRefs.some(
+        (ref) => ref.lessonId === lesson.id && ref.stepId === step.id,
+      ),
+  );
+  const matchingRecoveryStatuses = matchingPrimaryCriteria.map((criterion) =>
+    gateRecovery(state, criterion, lessons),
+  );
+  const freshIndependentTaskAvailable = matchingRecoveryStatuses.some(
+    (recovery, index) => {
+      if (
+        recovery.status !== "available" ||
+        step.evaluator?.kind !== "tests" ||
+        !step.evidence?.codingTaskId
+      )
+        return false;
+      const criterion = matchingPrimaryCriteria[index];
+      const targetRef = recovery.task;
+      if (
+        !criterion.taskRefs.some(
+          (ref) =>
+            ref.lessonId === targetRef.lessonId &&
+            ref.stepId === targetRef.stepId,
+        )
+      )
+        return false;
+      const targetStep = lessons
+        .find((candidate) => candidate.id === targetRef.lessonId)
+        ?.steps.find((candidate) => candidate.id === targetRef.stepId);
+      return (
+        targetStep?.evaluator?.kind === "tests" &&
+        targetStep.evidence?.codingTaskId !== undefined &&
+        targetStep.evidence.codingTaskId !== step.evidence.codingTaskId
+      );
+    },
+  );
+  const recoveryStatus: CoachRecoveryStatus = freshIndependentTaskAvailable
+    ? "available"
+    : matchingRecoveryStatuses.some(
+          (recovery) => recovery.status === "complete",
+        )
+      ? "complete"
+      : matchingRecoveryStatuses.some(
+            (recovery) => recovery.status === "exhausted",
+          )
+        ? "exhausted"
+        : "none";
   const nextLesson = nextLessonForNavigation(lesson.id, lessons, modules);
   const nextLabel =
     index < lesson.steps.length - 1
@@ -630,6 +683,7 @@ export function LessonWorkspace() {
           <CompilerCoach
             step={step}
             progress={progress}
+            recoveryStatus={recoveryStatus}
             onHints={(hints) => patch({ hints })}
             onReveal={() => patch({ revealed: true })}
           />

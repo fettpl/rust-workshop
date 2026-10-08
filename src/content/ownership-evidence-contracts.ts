@@ -225,3 +225,194 @@ fn returns_exact_delimiters_and_preserves_text() {
     }
 }`,
 };
+
+/** Shared-borrow contract family: callers retain String owners while APIs read &str views. */
+export const sharedCountWordsContract = {
+  starter: `fn count_words(text: String) -> usize {
+    text.split_whitespace().count()
+}
+
+fn main() {
+    let text = String::from("Rust ma sens");
+    let words = count_words(&text);
+    println!("{text}: {words}");
+}`,
+  solution: `fn count_words(text: &str) -> usize {
+    text.split_whitespace().count()
+}
+
+fn main() {
+    let text = String::from("Rust ma sens");
+    let words = count_words(&text);
+    println!("{text}: {words}");
+}`,
+  tests: `#[test]
+fn count_words_handles_empty_and_whitespace_boundaries() {
+    let count: fn(&str) -> usize = count_words;
+    for (input, expected) in [("", 0), (" \\t\\n\\r\\n\\u{2003}", 0), ("rust", 1), ("one\\r\\ntwo\\n", 2)] {
+        assert_eq!(count(input), expected);
+    }
+}
+
+#[test]
+fn count_words_handles_multiple_pieces_and_unicode() {
+    let count: fn(&str) -> usize = count_words;
+    assert_eq!(count("  Rust\\tma   sens  "), 3);
+    assert_eq!(count("jeden\\u{2003}dwa"), 2);
+    assert_eq!(count("żółw 🦀"), 2);
+}
+
+#[test]
+fn count_words_preserves_each_owned_input_after_repeated_calls() {
+    let count: fn(&str) -> usize = count_words;
+    for (input, expected) in [("Rust ma sens", 3), ("żółw 🦀", 2), ("", 0)] {
+        let value = String::from(input);
+        assert_eq!(count(&value), expected);
+        assert_eq!(value, input);
+        assert_eq!(count(&value), expected);
+        assert_eq!(value, input);
+    }
+    assert_eq!(count("literal words"), 2);
+}`,
+};
+
+export const sharedHasSuffixContract = {
+  starter: `fn has_suffix(text: String, suffix: &str) -> bool {
+    text.ends_with(suffix)
+}
+
+fn main() {
+    let text = String::from("raport.txt");
+    let suffix = String::from(".txt");
+    let matches = has_suffix(text, &suffix);
+    println!("{text} {suffix}: {matches}");
+}`,
+  solution: `fn has_suffix(text: &str, suffix: &str) -> bool {
+    text.ends_with(suffix)
+}
+
+fn main() {
+    let text = String::from("raport.txt");
+    let suffix = String::from(".txt");
+    let matches = has_suffix(&text, &suffix);
+    println!("{text} {suffix}: {matches}");
+}`,
+  tests: `#[test]
+fn has_suffix_handles_empty_exact_and_negative_cases() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    for (text, suffix, expected) in [
+        ("", "", true),
+        ("rust", "", true),
+        ("", "x", false),
+        ("rust", "rust", true),
+        ("x", "longer", false),
+    ] {
+        assert_eq!(check(text, suffix), expected);
+    }
+}
+
+#[test]
+fn has_suffix_requires_the_exact_terminal_text() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    for (text, suffix, expected) in [
+        ("raport.txt", ".txt", true),
+        ("raport.txt", "raport", false),
+        ("ababa", "bab", false),
+        ("raport.txt ", ".txt", false),
+        ("x", "x ", false),
+        ("RUST", "rust", false),
+    ] {
+        assert_eq!(check(text, suffix), expected);
+    }
+}
+
+#[test]
+fn has_suffix_handles_multibyte_text_without_normalization() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    assert!(check("żółw🦀", "🦀"));
+    assert!(!check("żółw🦀", "żółw"));
+    assert!(!check("café", "e\\u{301}"));
+}
+
+#[test]
+fn has_suffix_preserves_both_owned_inputs_and_supports_same_owner_views() {
+    let check: fn(&str, &str) -> bool = has_suffix;
+    let text = String::from("raport.txt");
+    let suffix = String::from(".txt");
+    assert!(check(&text, &suffix));
+    assert_eq!(text, "raport.txt");
+    assert_eq!(suffix, ".txt");
+    assert!(!check(&text, "raport"));
+    assert_eq!(text, "raport.txt");
+    assert_eq!(suffix, ".txt");
+    assert!(!check(&text, ".md"));
+    assert_eq!(text, "raport.txt");
+    assert_eq!(suffix, ".txt");
+
+    let owner = String::from("żółw🦀");
+    let view = &owner[..];
+    let suffix_view = &owner[owner.len() - "🦀".len()..];
+    assert!(check(view, suffix_view));
+    assert_eq!(view, "żółw🦀");
+    assert_eq!(suffix_view, "🦀");
+    assert_eq!(owner, "żółw🦀");
+    assert!(check("literal.txt", ".txt"));
+    assert!(!check("literal.txt", ".rs"));
+}`,
+};
+
+export const delayedSharedCountLinesContract = {
+  starter: `fn count_lines(text: String) -> usize {
+    text.lines().count()
+}
+
+fn main() {
+    let text = String::from("one\\ntwo");
+    let lines = count_lines(text);
+    println!("{text}: {lines}");
+}`,
+  solution: `fn count_lines(text: &str) -> usize {
+    text.lines().count()
+}
+
+fn main() {
+    let text = String::from("one\\ntwo");
+    let lines = count_lines(&text);
+    println!("{text}: {lines}");
+}`,
+  tests: `#[test]
+fn count_lines_handles_empty_single_and_terminal_lines() {
+    let count: fn(&str) -> usize = count_lines;
+    for (input, expected) in [("", 0), ("one", 1), ("one\\n", 1), ("\\n", 1)] {
+        assert_eq!(count(input), expected);
+    }
+}
+
+#[test]
+fn count_lines_handles_multiple_blank_unicode_and_crlf_lines() {
+    let count: fn(&str) -> usize = count_lines;
+    for (input, expected) in [
+        ("one\\ntwo", 2),
+        ("one\\r\\ntwo\\r\\n", 2),
+        ("one\\n\\ntwo", 3),
+        ("żółw\\n🦀\\n", 2),
+        ("one two", 1),
+        ("one\\rtwo", 1),
+    ] {
+        assert_eq!(count(input), expected);
+    }
+}
+
+#[test]
+fn count_lines_preserves_each_owned_input_after_repeated_calls() {
+    let count: fn(&str) -> usize = count_lines;
+    for (input, expected) in [("one\\ntwo", 2), ("", 0), ("one\\n\\ntwo", 3)] {
+        let value = String::from(input);
+        assert_eq!(count(&value), expected);
+        assert_eq!(value, input);
+        assert_eq!(count(&value), expected);
+        assert_eq!(value, input);
+    }
+    assert_eq!(count("literal"), 1);
+}`,
+};
