@@ -31,14 +31,14 @@ export const publicApiModule: CourseModule = {
     "Zachowasz dawny sposób wywołania API podczas rozbudowy biblioteki.",
     "Przećwiczysz osobnego klienta, features i MSRV w pobieranym workspace Cargo.",
   ],
-  prerequisites: ["tokio-network-service"],
+  prerequisites: ["testing-quality", "traits", "modules-cargo"],
   lessonIds: skills.map(([lessonId]) => lessonId),
   exitGate: [
     "Rozwiążesz cztery nowe kontrakty API bez podglądania referencji.",
     "Testy sprawdzą poprawność wartości, źródła błędów oraz wcześniejsze sposoby użycia API. Nie są pełnym dowodem zgodności każdej przyszłej zmiany.",
   ],
   projectConnection:
-    "W laboratorium protokołu ramek biblioteka i klient są osobnymi pakietami Cargo. Testy projektu sprawdzają publiczną granicę, konfiguracje features i minimalny kompilator; ćwiczenie jednego pliku w przeglądarce nie zastępuje tych kontroli.",
+    "W laboratorium protokołu ramek biblioteka i klient są osobnymi pakietami Cargo. Testy projektu sprawdzają publiczną granicę, konfiguracje features i minimalny kompilator; ćwiczenie jednego pliku w przeglądarce nie zastępuje tych kontroli. Zakładasz praktykę testowania, traitów i modułów Cargo; możesz od razu zacząć od małej biblioteki bez Tokio, z osobnym klientem.",
   assessmentId: "api-compatible-surface/api-compatible-surface-blank",
   gateCriteria: skills.map(([lessonId, label]) => ({
     id: `${lessonId}-contract`,

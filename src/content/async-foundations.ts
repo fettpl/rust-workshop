@@ -108,7 +108,7 @@ export const asyncFoundationsConcepts: Concept[] = [
   {
     id: "future-laziness",
     title: "Ciało async future jest leniwe aż do poll",
-    prerequisites: ["loom-evidence"],
+    prerequisites: ["weak-links", "callable-contracts"],
     competencyIds: ["model-future-laziness"],
     reviewPrompt:
       "Co dzieje się przy wywołaniu `async fn`, kiedy obliczane są argumenty i kiedy zaczyna się ciało? Dlaczego po `Ready` nie wolno ponownie pollować future?",
@@ -829,7 +829,7 @@ export const asyncFoundationsLessons: Lesson[] = [
     moduleId: "async-foundations",
     conceptIds: ["future-laziness"],
     competencyIds: ["model-future-laziness"],
-    prerequisites: ["loom-evidence"],
+    prerequisites: ["weak-links", "closure-contracts"],
     title: "Leniwy Future: od utworzenia do poll",
     subtitle:
       "Zobaczysz, że async tworzy wartość, a ciało zaczyna działać dopiero po poll, z bezpiecznym Pin<Box<_>> i Waker.",
@@ -1067,7 +1067,7 @@ export const asyncFoundationsModule: CourseModule = {
     "Składasz operacje przez await w określonej kolejności, propagujesz błędy i nie obiecujesz spawn ani automatycznej równoległości.",
     "Projektujesz przejęcie non-Copy danych przez async move, rozumiesz lifetime pożyczek i opisujesz anulowanie przez Drop bez rollbacku.",
   ],
-  prerequisites: ["memory-ordering"],
+  prerequisites: ["shared-ownership", "closures"],
   lessonIds: asyncFoundationsLessons.map((lesson) => lesson.id),
   exitGate: [
     "Ciało async fn lub async block nie wykonuje się przy utworzeniu, argumenty są obliczane przy wywołaniu, Pending wymaga późniejszego wake/poll, a po Ready nie ma kontraktu kolejnego poll.",
@@ -1076,7 +1076,7 @@ export const asyncFoundationsModule: CourseModule = {
     "Drop zatrzymuje dalszy postęp dropped future, zachowane efekty pozostają, a niezależne zadanie wymaga osobnego kontraktu anulowania.",
   ],
   projectConnection:
-    "Późniejszy serwis Tokio użyje tych samych kontraktów przy timeout, bounded pipeline i graceful shutdown: najpierw będzie wiadomo, co jest future, kto go posiada i gdzie może wrócić Pending, a dopiero potem runtime zorganizuje wiele zadań.",
+    "Późniejszy serwis Tokio użyje tych samych kontraktów przy timeout, bounded pipeline i graceful shutdown: najpierw będzie wiadomo, co jest future, kto go posiada i gdzie może wrócić Pending, a dopiero potem runtime zorganizuje wiele zadań. Zakładasz własność, współdzielenie i closures; zaczniesz od zwykłego zachowania Future — utworzenia, poll, wake i Drop — przed zadaniami runtime. Dostarczony probe z Arc/AtomicUsize służy tylko do obserwacji i nie wymaga projektowania orderingu.",
   assessmentId: "future-cancellation/future-cancellation-blank",
   gateCriteria: [
     {

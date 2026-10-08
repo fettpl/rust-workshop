@@ -6,7 +6,7 @@ import { useClock } from "./use-clock";
 import { useLearning } from "./learning-provider";
 import { CompilerOutput } from "./compiler-output";
 import { LearningText } from "./learning-text";
-import { concepts } from "@/content/course";
+import { concepts, lessons } from "@/content/course";
 import { dueReviews, rateReview } from "@/engine/learning";
 import {
   recordCourseEvidence,
@@ -40,6 +40,12 @@ function reviewEventStepId(session: ReviewSession): string {
   return (session.exerciseId ?? session.conceptId) + ":" + session.sessionId;
 }
 
+const ownershipConceptIds = new Set(
+  lessons
+    .filter((lesson) => lesson.moduleId === "ownership")
+    .flatMap((lesson) => lesson.conceptIds),
+);
+
 export function ReviewView() {
   const clock = useClock();
   const { state, update, generation } = useLearning();
@@ -53,6 +59,7 @@ export function ReviewView() {
   );
   const due = dueReviews(state, clock);
   const concept = concepts.find((c) => c.id === selected);
+  const ownershipScope = concept ? ownershipConceptIds.has(concept.id) : false;
   const upcoming = state.review
     .filter((item) => item.dueAt > clock)
     .sort((a, b) => a.dueAt - b.dueAt);
@@ -423,12 +430,20 @@ export function ReviewView() {
                 <h2>{concept.title}</h2>
                 <MasteryBadge
                   level={courseMastery(state, concept.id).level}
-                  scope={concept.evidenceCalibration ? "ownership" : undefined}
+                  scope={
+                    concept.evidenceCalibration
+                      ? ownershipScope
+                        ? "ownership"
+                        : "calibrated"
+                      : undefined
+                  }
                 />
               </div>
               {concept.evidenceCalibration && (
                 <>
-                  <OwnershipPolicyNote />
+                  <OwnershipPolicyNote
+                    scope={ownershipScope ? "ownership" : "calibrated"}
+                  />
                   <OwnershipEvidenceCount
                     count={
                       courseEvidenceSummary(state, concept.id)
@@ -440,10 +455,9 @@ export function ReviewView() {
                     }
                   />
                   <p className="footnote">
-                    Odtworzenie po czasie wymaga dwóch wcześniejszych
-                    samodzielnych zadań kodowych i ponad 24 godzin bez kontaktu
-                    z pojęciem. Ta powtórka nie dodaje kolejnego zadania do tego
-                    licznika.
+                    {ownershipScope
+                      ? "Odtworzenie po czasie wymaga dwóch wcześniejszych samodzielnych zadań kodowych i ponad 24 godzin bez kontaktu z pojęciem. Ta powtórka nie dodaje kolejnego zadania do tego licznika."
+                      : "Dla tego kontraktu dostępna jest jedna opisana rodzina primary. Potwierdzenie pozostaje prowizoryczne, a pomoc lub wyczerpanie tej rodziny nie tworzy nowego wariantu. Ta powtórka pozostaje osobnym recall i nie dodaje rodziny primary."}
                   </p>
                 </>
               )}
@@ -730,7 +744,8 @@ export function ReviewView() {
               Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź
               po czasie może potwierdzić odtworzenie. Dla ownership potrzebne są
               dwa wcześniejsze zadania kodowe i ponad 24 godziny bez kontaktu z
-              pojęciem.
+              pojęciem. Nowe kontrakty mają obecnie jedną opisaną rodzinę
+              primary, więc ich potwierdzenie pozostaje prowizoryczne.
             </p>
           </section>
         </>

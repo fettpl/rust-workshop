@@ -15,12 +15,12 @@ export function MasteryBadge({
   scope,
 }: {
   level?: MasteryLevel;
-  scope?: "ownership";
+  scope?: "ownership" | "calibrated";
 }) {
   const label =
-    scope === "ownership" && level === "understood"
+    scope !== undefined && level === "understood"
       ? "Potwierdzone w zadaniach"
-      : scope === "ownership" && level === "retained"
+      : scope !== undefined && level === "retained"
         ? "Odtworzone po czasie"
         : masteryLabels[level];
   return (
@@ -53,12 +53,18 @@ export function ProgressLine({
   );
 }
 
-export function OwnershipPolicyNote() {
+export function OwnershipPolicyNote({
+  scope = "ownership",
+}: {
+  scope?: "ownership" | "calibrated";
+}) {
   return (
     <p className="footnote">
       Historia i ukończone kroki pozostają zapisane. Bieżące potwierdzenie zadań
-      ownership wymaga dwóch różnych rozwiązań kodowych bez podpowiedzi. Starsze
-      wyniki pozostają w historii.
+      {scope === "ownership"
+        ? " ownership wymaga dwóch różnych rozwiązań kodowych bez podpowiedzi."
+        : " jest prowizoryczne: gate i blank są dwiema formami jednej rodziny, a pomoc nie otwiera nowej wersji."}{" "}
+      Starsze wyniki pozostają w historii.
     </p>
   );
 }

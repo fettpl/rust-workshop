@@ -55,7 +55,7 @@ export const miniGrepSearchConcepts: Concept[] = [
   {
     id: "grep-context-selection",
     title: "Unia okien kontekstu wokół trafień",
-    prerequisites: ["api-compatible-surface"],
+    prerequisites: ["log-deterministic-report"],
     competencyIds: ["mini-grep-select-context-union"],
     reviewPrompt:
       "Dlaczego dwa nakładające się trafienia trzeba połączyć przed renderowaniem, zamiast wypisać osobne okno dla każdego?",
@@ -928,7 +928,7 @@ export const miniGrepSearchLessons: Lesson[] = [
     moduleId: "mini-grep",
     conceptIds: ["grep-context-selection"],
     competencyIds: ["mini-grep-select-context-union"],
-    prerequisites: ["api-compatible-surface"],
+    prerequisites: ["log-analyzer-project"],
     title: "Kontekst bez powtórzonych linii",
     subtitle: "Najpierw wybierz numery linii, dopiero potem je pokaż.",
     minutes: 24,

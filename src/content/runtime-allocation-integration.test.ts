@@ -72,7 +72,6 @@ it("keeps async lending follow-up assertions specific and honest", () => {
   expect(e2e).toContain(
     'page.getByRole("button", { name: "Monaco Editor", exact: true })',
   );
-  expect(e2e).toContain("Niezależny transfer async zapisany po reveal");
   expect(offline).toContain(
     "Async lending: pożyczone futures i granice dispatchu",
   );

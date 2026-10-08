@@ -9,7 +9,11 @@ it("preserves independent API evidence after revealing the workspace reference",
   const stage = modules.find((entry) => entry.id === "public-api-workspaces");
   expect(project).toBeDefined();
   expect(stage).toBeDefined();
-  expect(stage!.prerequisites).toEqual(["tokio-network-service"]);
+  expect(stage!.prerequisites).toEqual([
+    "testing-quality",
+    "traits",
+    "modules-cargo",
+  ]);
   expect(project!.lessonIds).toEqual(expect.arrayContaining(stage!.lessonIds));
   expect(project!.reviewConceptIds).toEqual(
     expect.arrayContaining(stage!.lessonIds),
