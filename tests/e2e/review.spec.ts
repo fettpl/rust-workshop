@@ -428,6 +428,62 @@ test("defaults I/O practice to a short probe and preserves an unrated queue", as
   expect((await readStoredState(page)).review).toEqual(seededReview);
 });
 
+test("does not offer card ratings for an unfinished short probe", async ({
+  page,
+}) => {
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Wersjonowany format i pełny round trip" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Karta przypomnienia" }).click();
+  await expect(
+    page.getByRole("button", { name: "Karta przypomnienia" }),
+  ).toHaveClass(/selected/);
+  await page.getByRole("textbox").fill("0 i 1");
+  await page.getByRole("button", { name: "Odsłoń odpowiedź" }).click();
+
+  const ratingButtons = page.getByRole("button", {
+    name: /^(Again|Hard|Good|Easy) ·/,
+  });
+  for (let index = 0; index < (await ratingButtons.count()); index += 1) {
+    await expect(ratingButtons.nth(index)).toBeDisabled();
+  }
+  await expect(
+    page.getByText(/Wróć do Małego eksperymentu.*ocenić tę powtórkę/i),
+  ).toBeVisible();
+});
+
+test("keeps ordinary card ratings available", async ({ page }) => {
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Rola stosu i sterty" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: bufor i wiązanie" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Karta przypomnienia" }).click();
+  await page.getByRole("textbox").fill("metadane i właściciel bufora");
+  await page.getByRole("button", { name: "Odsłoń odpowiedź" }).click();
+
+  const goodRating = page.getByRole("button", { name: "Good · Dobrze" });
+  await expect(goodRating).toBeEnabled();
+  await goodRating.click();
+  await expect(
+    page.getByRole("heading", { name: "Co zostało w pamięci?" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".upcoming").getByText("Rola stosu i sterty"),
+  ).toBeVisible();
+});
+
 test("keeps the extended I/O review reachable by explicit selection", async ({
   page,
 }) => {
@@ -507,7 +563,9 @@ test("requires an explicit rating before scheduling a short probe", async ({
     .fill(shortReviewExercises["io-safe-persistence"].solution!);
   await page.getByRole("button", { name: "Uruchom testy" }).click();
   await expect(page.getByText("Kod działa.")).toBeVisible();
-  await page.getByRole("button", { name: "Good · Dobrze" }).click();
+  const goodRating = page.getByRole("button", { name: "Good · Dobrze" });
+  await expect(goodRating).toBeEnabled();
+  await goodRating.click();
   await expect(
     page.locator(".upcoming").getByText("Błąd odczytu i etapowany zapis"),
   ).toBeVisible();

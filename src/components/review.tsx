@@ -757,31 +757,40 @@ export function ReviewView() {
                       <p>
                         <LearningText>{concept.distinguish}</LearningText>
                       </p>
-                      <div className="rating-buttons">
-                        {(["again", "hard", "good", "easy"] as const).map(
-                          (rating, index) => (
-                            <button
-                              key={rating}
-                              className="secondary"
-                              disabled={pending || completed}
-                              onClick={() => rate(rating)}
-                            >
-                              {
-                                [
-                                  "Again · Jeszcze raz",
-                                  "Hard · Trudne",
-                                  "Good · Dobrze",
-                                  "Easy · Łatwe",
-                                ][index]
-                              }
-                            </button>
-                          ),
-                        )}
-                      </div>
-                      <p className="footnote">
-                        Samoocena ustala termin powtórki. Nie jest dowodem
-                        opanowania umiejętności.
-                      </p>
+                      {isPracticeProbe ? (
+                        <p className="footnote" role="status">
+                          Wróć do Małego eksperymentu, aby uruchomić kod i
+                          ocenić tę powtórkę.
+                        </p>
+                      ) : (
+                        <>
+                          <div className="rating-buttons">
+                            {(["again", "hard", "good", "easy"] as const).map(
+                              (rating, index) => (
+                                <button
+                                  key={rating}
+                                  className="secondary"
+                                  disabled={pending || completed}
+                                  onClick={() => rate(rating)}
+                                >
+                                  {
+                                    [
+                                      "Again · Jeszcze raz",
+                                      "Hard · Trudne",
+                                      "Good · Dobrze",
+                                      "Easy · Łatwe",
+                                    ][index]
+                                  }
+                                </button>
+                              ),
+                            )}
+                          </div>
+                          <p className="footnote">
+                            Samoocena ustala termin powtórki. Nie jest dowodem
+                            opanowania umiejętności.
+                          </p>
+                        </>
+                      )}
                     </div>
                   )}
                 </>
