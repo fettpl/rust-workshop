@@ -662,6 +662,49 @@ test("opening a delayed question records no neutral contact", async ({
   expect((await savedState(page)).events).toEqual(before.events);
 });
 
+test("ordinary queue return resumes the pinned unfinished review globally", async ({
+  page,
+}) => {
+  const state = pinnedDelayedState(
+    delayedReviewExercises["function-ownership"].id,
+  );
+  const sessionKey = reviewSessionKey(state.reviewSession!.sessionId);
+  const draft = `${state.steps[sessionKey].code!}\n// unfinished edited draft`;
+  state.steps[sessionKey].code = draft;
+  await seedState(page, state);
+
+  await expect(page.locator(".review-session h2")).toHaveText(
+    "Własność na granicy funkcji",
+  );
+  const before = await savedState(page);
+  await expect(editor(page)).toHaveValue(draft);
+  await page.getByRole("button", { name: "← Do kolejki", exact: true }).click();
+
+  const queued = await savedState(page);
+  expect(queued.reviewSession).toEqual(before.reviewSession);
+  expect(queued.steps[sessionKey]).toEqual(before.steps[sessionKey]);
+
+  await page
+    .getByRole("button", { name: "Pożyczka mutowalna", exact: true })
+    .click();
+  await expect(page.locator(".review-session h2")).toHaveText(
+    "Własność na granicy funkcji",
+  );
+  await expect(editor(page)).toHaveValue(draft);
+  const resumed = await savedState(page);
+  expect(resumed.reviewSession).toEqual(before.reviewSession);
+  expect(resumed.steps[sessionKey]).toEqual(before.steps[sessionKey]);
+
+  await page.reload();
+  await expect(page.locator(".review-session h2")).toHaveText(
+    "Własność na granicy funkcji",
+  );
+  await expect(editor(page)).toHaveValue(draft);
+  const reloaded = await savedState(page);
+  expect(reloaded.reviewSession).toEqual(before.reviewSession);
+  expect(reloaded.steps[sessionKey]).toEqual(before.steps[sessionKey]);
+});
+
 function delayedRecallState(): UserState {
   const state = pinnedDelayedState(
     delayedReviewExercises["function-ownership"].id,

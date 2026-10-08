@@ -131,6 +131,10 @@ export function ReviewView() {
   function returnToQueue() {
     setSelected(null);
     setExecutionMessage("");
+  }
+  function discardUnavailableSession() {
+    setSelected(null);
+    setExecutionMessage("");
     update((current) => {
       const next = { ...current };
       delete next.reviewSession;
@@ -409,7 +413,7 @@ export function ReviewView() {
                 jest już dostępna. Możesz wrócić do kolejki i wybrać bieżące
                 ćwiczenie.
               </p>
-              <button className="primary" onClick={returnToQueue}>
+              <button className="primary" onClick={discardUnavailableSession}>
                 Do kolejki
               </button>
             </div>
