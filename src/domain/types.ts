@@ -125,6 +125,7 @@ export interface LessonStep {
   evidence?: StepEvidenceDefinition;
   id: string;
   kind: StepKind;
+  reviewPurpose?: "practice-probe";
   title: string;
   prompt: string;
   code?: string;

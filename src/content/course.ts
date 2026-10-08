@@ -510,6 +510,7 @@ import {
   sharedBorrowCalibrationLesson,
   delayedReviewExercises as sharedBorrowDelayedReviewExercises,
 } from "./shared-borrow-calibration";
+import { shortReviewExercises } from "./io-review-probes";
 
 const traitsModule = {
   ...baseTraitsModule,
@@ -947,9 +948,11 @@ export const delayedReviewExercises = {
   ...functionOwnershipDelayedReviewExercises,
   ...sharedBorrowDelayedReviewExercises,
 };
+export { shortReviewExercises };
 const allReviewSteps = [
   ...Object.values(reviewExercises),
   ...Object.values(delayedReviewExercises),
+  ...Object.values(shortReviewExercises),
 ];
 const duplicateReviewIds = allReviewSteps
   .map((step) => step.id)

@@ -26,6 +26,7 @@ import {
   lessons,
   reviewExerciseForId,
   reviewExercises,
+  shortReviewExercises,
 } from "./course";
 
 export type ReviewExerciseResolution =
@@ -33,6 +34,7 @@ export type ReviewExerciseResolution =
   | { status: "unavailable"; reason: "unknown-id" | "wrong-concept" };
 
 export type ReviewOrigin = "due" | "practice";
+export type ReviewSelection = "short" | "extended";
 
 /** Exact current source lookup; review UUIDs identify sessions, never task families. */
 function currentStep(lessonId: string, stepId: string): LessonStep | undefined {
@@ -60,6 +62,11 @@ export const courseEvidencePolicy = {
     const step = currentStep(event.lessonId, event.stepId);
     const definition = step?.evidence;
     if (
+      step?.reviewPurpose === "practice-probe" &&
+      (event.kind !== "exposure" || event.delayed !== false)
+    )
+      return undefined;
+    if (
       !step ||
       !definition ||
       event.evaluator !== step.evaluator?.kind ||
@@ -76,6 +83,34 @@ export const courseEvidencePolicy = {
     return definition;
   },
 };
+
+export function reviewExerciseIdForSelection(
+  conceptId: string,
+  selection: ReviewSelection,
+): string | undefined {
+  const step =
+    selection === "short"
+      ? shortReviewExercises[conceptId]
+      : reviewExercises[conceptId];
+  return step?.id;
+}
+
+export function reviewPurposeForExercise(
+  conceptId: string,
+  exerciseId: string | undefined,
+): "practice-probe" | "extended" | "neutral" {
+  const step =
+    exerciseId === undefined
+      ? reviewExercises[conceptId]
+      : reviewExerciseForId(exerciseId);
+  if (step?.reviewPurpose === "practice-probe") return "practice-probe";
+  if (
+    shortReviewExercises[conceptId] !== undefined &&
+    step?.id === reviewExercises[conceptId]?.id
+  )
+    return "extended";
+  return "neutral";
+}
 
 export function resolveReviewExercise(
   conceptId: string,
@@ -114,13 +149,11 @@ export function reviewExerciseIdForOrigin(
   conceptId: string,
   origin: ReviewOrigin,
   now: number,
+  selection: ReviewSelection = "short",
 ): string | undefined {
-  if (
-    origin !== "due" ||
-    !courseDelayedReviewEligibility(state, conceptId, now)
-  )
-    return undefined;
-  return delayedReviewExercises[conceptId]?.id;
+  if (origin === "due" && courseDelayedReviewEligibility(state, conceptId, now))
+    return delayedReviewExercises[conceptId]?.id;
+  return reviewExerciseIdForSelection(conceptId, selection);
 }
 
 /** Submission metadata only: never stamps or rewrites saved history. */

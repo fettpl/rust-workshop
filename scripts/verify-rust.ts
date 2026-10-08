@@ -7,8 +7,10 @@ import {
   delayedReviewExercises,
   lessons,
   reviewExercises,
+  shortReviewExercises,
   traces,
 } from "../src/content/course";
+import { shortReviewProbeFixtures } from "../src/content/io-review-probe-fixtures";
 import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
@@ -92,8 +94,15 @@ export function verifyTrustedRust(
     lessons: Lesson[];
     reviewExercises: Record<string, LessonStep>;
     delayedReviewExercises: Record<string, LessonStep>;
+    shortReviewExercises?: Record<string, LessonStep>;
     traces: Record<string, Trace>;
-  } = { lessons, reviewExercises, delayedReviewExercises, traces },
+  } = {
+    lessons,
+    reviewExercises,
+    delayedReviewExercises,
+    shortReviewExercises,
+    traces,
+  },
   reporter?: VerificationReporter,
 ): Verification[] {
   const dir = mkdtempSync(join(tmpdir(), "rust-workshop-authored-"));
@@ -378,6 +387,30 @@ export function verifyTrustedRust(
       content.delayedReviewExercises,
     ))
       stepCases(`delayed-review/${concept}`, step);
+    for (const [concept, step] of Object.entries(
+      content.shortReviewExercises ?? {},
+    )) {
+      const prefix = `short-review/${concept}`;
+      stepCases(prefix, step);
+      const fixture =
+        shortReviewProbeFixtures[
+          step.id as keyof typeof shortReviewProbeFixtures
+        ];
+      if (!fixture || step.evaluator?.kind !== "tests") continue;
+      verify(`${prefix}/${step.id}/alternate`, fixture.alternate, {
+        tests: step.evaluator.tests,
+        solutionStep: step,
+      });
+      for (const [name, mutant] of Object.entries(fixture.mutants)) {
+        verify(`${prefix}/${step.id}/mutant-${name}/compile`, mutant, {
+          run: false,
+        });
+        verify(`${prefix}/${step.id}/mutant-${name}/behavior`, mutant, {
+          tests: step.evaluator.tests,
+          expectTestFailure: true,
+        });
+      }
+    }
     for (const [id, trace] of Object.entries(content.traces))
       verify(`trace/${id}`, `fn main() {\n${trace.code}\n}`);
     verify("diagnostic/double", "fn double(n: i32) -> i32 { n * 2 }", {
