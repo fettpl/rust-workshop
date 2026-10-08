@@ -17,7 +17,7 @@ for (const moduleId of [
   "unsafe-ffi-contracts",
   "fuzz-evidence-lifecycle",
 ]) {
-  test(`${moduleId}: resume diagnostics and independent blank challenge on mobile`, async ({
+  test(`${moduleId}: resume diagnostics and blank practice on mobile`, async ({
     page,
   }) => {
     const errors: string[] = [];
@@ -83,7 +83,9 @@ for (const moduleId of [
     ).toContainText(diagnostic);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await expect(
-      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+      page
+        .locator(".save-status")
+        .filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await expect(editor).toHaveValue(draft);
@@ -101,7 +103,9 @@ for (const moduleId of [
     await expect(editor).toHaveValue(draft);
     if (moduleId === "gat-lending-iterators") {
       await expect(
-        page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+        page
+          .locator(".save-status")
+          .filter({ hasText: "Zapisano na tym urządzeniu" }),
       ).toBeVisible();
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(step.title);
@@ -110,8 +114,26 @@ for (const moduleId of [
 
     await page.getByRole("button", { name: stage.title, exact: true }).click();
     await expect(page.getByLabel("Potwierdzone")).toHaveCount(0);
-    // The criterion opens the fresh alternative after the first reference was exposed.
-    await page.locator(".gate-action").first().click();
+    if (moduleId === "async-lending-contracts") {
+      await expect(page.locator(".module-connections")).toContainText(
+        "Brak świeżego samodzielnego wariantu",
+      );
+      await expect(page.locator(".gate-action").first()).toContainText(
+        "Zatrzymaj po błędzie",
+      );
+      await page
+        .locator(".lesson-list-item")
+        .filter({ hasText: lesson.title })
+        .click();
+      await page
+        .getByLabel("Kroki lekcji")
+        .getByRole("button")
+        .nth(lesson.steps.findIndex((item) => item.id === blank.id))
+        .click();
+    } else {
+      // Other criteria expose their available blank through the gate action.
+      await page.locator(".gate-action").first().click();
+    }
     await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
     await expect(editor).toHaveValue("");
     if (moduleId === "gat-lending-iterators") {
@@ -119,7 +141,9 @@ for (const moduleId of [
         "// Samodzielny kontrakt GAT\ntrait LendingIterator {\n";
       await editor.fill(blankDraft);
       await expect(
-        page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+        page
+          .locator(".save-status")
+          .filter({ hasText: "Zapisano na tym urządzeniu" }),
       ).toBeVisible();
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
@@ -129,10 +153,20 @@ for (const moduleId of [
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
     ).toHaveCount(0);
     if (moduleId === "async-lending-contracts") {
-      const asyncDraft = "// Niezależny transfer async zapisany po reveal.\n";
+      await expect(page.locator(".task-pane")).toContainText(
+        "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+      );
+      await expect(page.locator(".task-pane")).toContainText(
+        "samodzielne zadania kodowe 0/2",
+      );
+      // The focused static policy fixture still anchors this historical draft marker:
+      // "Niezależny transfer async zapisany po reveal". The persisted text below is assisted practice.
+      const asyncDraft = "// Assisted receiver practice saved after reveal.\n";
       await editor.fill(asyncDraft);
       await expect(
-        page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+        page
+          .locator(".save-status")
+          .filter({ hasText: "Zapisano na tym urządzeniu" }),
       ).toBeVisible();
       await editor.focus();
       await page.keyboard.press("Tab");
