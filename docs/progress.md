@@ -1,12 +1,14 @@
-Current M11 source candidate: [Async transfer contracts and evidence — 9 October 2026](async-transfer-evidence.md). Receiver, callback and dyn adapter now have two authored primary families each; cancellation/commit, Send and four unsafe concepts remain single-family (three of nine versus six). Source availability, learner confirmation and production/CI/local release acceptance are distinct; the dated records below retain their original meaning.
+Current M13 accepted product snapshot: [M13 verification — 9 October 2026](verification.md#m13-current-verification-snapshot-9-october-2026). The accepted PR54 product source is [main commit `70682709eabb1d8f95dd067d6429df3190eae72d`](https://github.com/fettpl/rustcrushcourse/commit/70682709eabb1d8f95dd067d6429df3190eae72d) with tree `ee303bdc5d451b162b45b7916e4fb901f5cff3a1`; source availability, natural CI, maintainer-local release evidence, learner outcomes, and readiness claims remain distinct scopes.
 
 # Rust Workshop — stan implementacji
 
 Latest accepted release before the session-scaffolding candidate: [M8 accepted release — 9 October 2026](verification.md#latest-accepted-release-before-session-scaffolding-candidate-9-october-2026). Packet 005 authored stops and pilot materials remain a separate candidate with no learner outcomes.
 
-Current verified product source: [PR40 source cut — 7 October 2026](verification.md#current-verified-source-cut-7-october-2026). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
+Current verified product source: [M13 PR54 source — 9 October 2026](verification.md#m13-current-verification-snapshot-9-october-2026). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
 
 ## Historical implementation records
+
+Historical M11 source candidate: [Async transfer contracts and evidence — 9 October 2026](async-transfer-evidence.md). Receiver, callback and dyn adapter now have two authored primary families each; cancellation/commit, Send and four unsafe concepts remain single-family (three of nine versus six). Source availability, learner confirmation and production/CI/local release acceptance are distinct; the dated records below retain their original meaning.
 
 The following records preserve earlier counts, module and project ordinals, interrupted runs, compiler/environment observations, and loopback/Chromium limitations. They remain historical evidence and open requirements; use the canonical source link above for current product status.
 

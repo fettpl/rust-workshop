@@ -1,6 +1,6 @@
 # Docelowa mapa kursu Rust: od zera do praktyki seniorskiej
 
-Current verified product source: [PR40 source cut — 7 October 2026](verification.md#current-verified-source-cut-7-october-2026). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
+Current verified product source: [M13 PR54 source — 9 October 2026](verification.md#m13-current-verification-snapshot-9-october-2026). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
 
 Data audytu: 2026-09-18
 Odbiorca: osoba znająca podstawy programowania, ale zaczynająca Rust od zera.
