@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import {
@@ -16,7 +16,7 @@ import { Eyebrow } from "./ui";
 import { diagnosticTasks } from "@/domain/diagnostic";
 import type { RunResult } from "@/domain/types";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
-export function Onboarding() {
+export function Onboarding({ onStart }: { onStart: () => void }) {
   const { state, update } = useLearning();
   return (
     <main id="main-content" className="onboarding">
@@ -100,12 +100,13 @@ export function Onboarding() {
           </fieldset>
           <button
             className="primary wide"
-            onClick={() =>
+            onClick={() => {
+              onStart();
               update((s) => ({
                 ...s,
                 onboarding: { ...s.onboarding, completed: true },
-              }))
-            }
+              }));
+            }}
           >
             Sprawdź punkt startowy <ArrowRight size={18} />
           </button>
@@ -126,7 +127,13 @@ export function Onboarding() {
     </main>
   );
 }
-export function Diagnostic() {
+export function Diagnostic({
+  takeStartFocus,
+  requestCompletionFocus,
+}: {
+  takeStartFocus: () => boolean;
+  requestCompletionFocus: () => void;
+}) {
   const { state, update } = useLearning();
   const [index, setIndex] = useState(() =>
     Math.min(
@@ -137,9 +144,17 @@ export function Diagnostic() {
   );
   const [feedback, setFeedback] = useState("");
   const [busy, setBusy] = useState(false);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const focusAfterNextRef = useRef(false);
   const task = diagnosticTasks[index];
   const answer =
     state.diagnostic.answers[task.id] ?? (task.tests ? task.code : "");
+  useLayoutEffect(() => {
+    const startFocus = takeStartFocus();
+    if (!startFocus && !focusAfterNextRef.current) return;
+    headingRef.current?.focus({ preventScroll: true });
+    focusAfterNextRef.current = false;
+  }, [index, takeStartFocus]);
   function setAnswer(value: string) {
     update((s) => ({
       ...s,
@@ -150,6 +165,7 @@ export function Diagnostic() {
     }));
   }
   function finish() {
+    requestCompletionFocus();
     const score = Object.entries(state.diagnostic.answers).filter(
       ([k, v]) => k.endsWith(":done") && v === "true",
     ).length;
@@ -226,7 +242,9 @@ export function Diagnostic() {
       <section className="diagnostic-layout">
         <div>
           <Eyebrow>PUNKT STARTOWY · {index + 1} / 4</Eyebrow>
-          <h1>{task.title}</h1>
+          <h1 ref={headingRef} tabIndex={-1}>
+            {task.title}
+          </h1>
           <p className="lede">
             <LearningText>{task.prompt}</LearningText>
           </p>
@@ -282,6 +300,7 @@ export function Diagnostic() {
                 onClick={() => {
                   if (index === 3) finish();
                   else {
+                    focusAfterNextRef.current = true;
                     setIndex(index + 1);
                     setFeedback("");
                   }
