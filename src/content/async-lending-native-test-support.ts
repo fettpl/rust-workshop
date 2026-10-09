@@ -16,7 +16,10 @@ import { expect } from "vitest";
 // Opt-in durable native evidence is used by milestone verification. Normal CI
 // keeps the existing disposable fixture behavior. Every path is resolved from
 // the subprocess cwd, and nonordinary termination always fails assertions.
-const evidenceRoot = process.env.M11_NATIVE_EVIDENCE_DIR;
+const configuredEvidenceRoot = process.env.M11_NATIVE_EVIDENCE_DIR;
+const evidenceRoot = configuredEvidenceRoot
+  ? resolve(configuredEvidenceRoot)
+  : undefined;
 if (evidenceRoot) mkdirSync(evidenceRoot, { recursive: true });
 const hash = (value: string | Buffer) =>
   createHash("sha256").update(value).digest("hex");
