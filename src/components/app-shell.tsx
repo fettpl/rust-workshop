@@ -67,8 +67,12 @@ function AppShell() {
   const sidebarRef = useRef<HTMLElement>(null);
   const resizeClosePendingRef = useRef(false);
   const focusDiagnosticOnMountRef = useRef(false);
+  const focusWorkspaceOnDiagnosticCompletionRef = useRef(false);
   const requestDiagnosticFocus = useCallback(() => {
     focusDiagnosticOnMountRef.current = true;
+  }, []);
+  const requestDiagnosticCompletionFocus = useCallback(() => {
+    focusWorkspaceOnDiagnosticCompletionRef.current = true;
   }, []);
   const takeStartFocus = useCallback(() => {
     const shouldFocus = focusDiagnosticOnMountRef.current;
@@ -164,6 +168,16 @@ function AppShell() {
     headingRef.current?.focus({ preventScroll: true });
   }, [navigationKey]);
   useLayoutEffect(() => {
+    if (
+      !state.diagnostic.completed ||
+      !focusWorkspaceOnDiagnosticCompletionRef.current
+    ) {
+      return;
+    }
+    focusWorkspaceOnDiagnosticCompletionRef.current = false;
+    headingRef.current?.focus({ preventScroll: true });
+  }, [state.diagnostic.completed]);
+  useLayoutEffect(() => {
     if (menu) firstNavRef.current?.focus({ preventScroll: true });
   }, [menu]);
   useLayoutEffect(() => {
@@ -230,7 +244,12 @@ function AppShell() {
     return <Onboarding onStart={requestDiagnosticFocus} />;
   }
   if (!state.diagnostic.completed) {
-    return <Diagnostic takeStartFocus={takeStartFocus} />;
+    return (
+      <Diagnostic
+        takeStartFocus={takeStartFocus}
+        requestCompletionFocus={requestDiagnosticCompletionFocus}
+      />
+    );
   }
   return (
     <div

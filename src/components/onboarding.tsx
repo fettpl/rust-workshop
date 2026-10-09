@@ -129,8 +129,10 @@ export function Onboarding({ onStart }: { onStart: () => void }) {
 }
 export function Diagnostic({
   takeStartFocus,
+  requestCompletionFocus,
 }: {
   takeStartFocus: () => boolean;
+  requestCompletionFocus: () => void;
 }) {
   const { state, update } = useLearning();
   const [index, setIndex] = useState(() =>
@@ -163,6 +165,7 @@ export function Diagnostic({
     }));
   }
   function finish() {
+    requestCompletionFocus();
     const score = Object.entries(state.diagnostic.answers).filter(
       ([k, v]) => k.endsWith(":done") && v === "true",
     ).length;

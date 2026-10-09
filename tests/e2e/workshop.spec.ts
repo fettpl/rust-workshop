@@ -52,7 +52,11 @@ async function completeBasicsDiagnosticAndRustCheck(page: Page): Promise<void> {
   );
   await page.getByRole("button", { name: "Uruchom testy" }).click();
   await expect(page.getByText("Testy przeszły.")).toBeVisible();
-  await page.getByRole("button", { name: "Otwórz warsztat" }).click();
+  const openWorkshop = page.getByRole("button", { name: "Otwórz warsztat" });
+  await openWorkshop.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#main-content")).toBeVisible();
+  await expect.soft(page.locator("#main-content")).toBeFocused();
 }
 
 async function mockRunner(page: Page): Promise<void> {

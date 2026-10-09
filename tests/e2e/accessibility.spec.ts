@@ -468,7 +468,10 @@ test("crossing 850px closes the drawer and avoids hidden focus-mode navigation",
   }
 });
 
-type StoredDiagnostic = { answers?: Record<string, string> } | null;
+type StoredDiagnostic = {
+  answers?: Record<string, string>;
+  completed?: boolean;
+} | null;
 
 async function readStoredDiagnostic(page: Page): Promise<StoredDiagnostic> {
   return page.evaluate(
@@ -626,6 +629,33 @@ for (const [viewportName, viewport] of [
       await expect.soft(secondHeading).not.toBeFocused();
       observations.push({
         stage: "after-reload",
+        active: await activeElementSnapshot(page),
+      });
+
+      const skipToLearning = page.getByRole("button", {
+        name: "Przejdź do nauki",
+        exact: true,
+      });
+      await skipToLearning.focus();
+      await page.keyboard.press("Enter");
+      const mainContent = page.locator("#main-content");
+      await expect(mainContent).toBeVisible();
+      await expect.soft(mainContent).toBeFocused();
+      observations.push({
+        stage: "after-diagnostic-finish",
+        active: await activeElementSnapshot(page),
+      });
+      await expect
+        .poll(
+          async () => (await readStoredDiagnostic(page))?.completed ?? false,
+          { timeout: 5_000 },
+        )
+        .toBe(true);
+      await page.reload();
+      await expect(mainContent).toBeVisible();
+      await expect.soft(mainContent).not.toBeFocused();
+      observations.push({
+        stage: "after-workspace-reload",
         active: await activeElementSnapshot(page),
       });
     } finally {
