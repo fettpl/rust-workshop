@@ -576,6 +576,326 @@ describe("curriculum content contract", () => {
   });
 });
 
+describe("session-stop authored metadata validation", () => {
+  type AuthoredSessionStop = {
+    afterStepId: string;
+    title: string;
+    nextGoal: string;
+  };
+  type MutableLessonWithSessionStops = Omit<Lesson, "sessionStops"> & {
+    sessionStops?: unknown;
+  };
+  type AuthoredLessonWithSessionStops = Omit<Lesson, "sessionStops"> & {
+    sessionStops?: AuthoredSessionStop[];
+  };
+
+  const validStops: Record<string, AuthoredSessionStop[]> = {
+    "todo-command-parser": [
+      {
+        afterStepId: "parser-explain",
+        title: "Zatrzymaj się po wyjaśnieniu parsera",
+        nextGoal: "Przenieś reguły parsera do kolejnego zadania.",
+      },
+      {
+        afterStepId: "parser-add-gate",
+        title: "Zatrzymaj się po bramce Add",
+        nextGoal: "Sprawdź transfer parsera na innych komendach.",
+      },
+    ],
+    "todo-state-invariants": [
+      {
+        afterStepId: "state-explain",
+        title: "Zatrzymaj się po wyjaśnieniu stanu",
+        nextGoal: "Przejdź do bramki poprawnej operacji Add i Done.",
+      },
+      {
+        afterStepId: "state-add-done-gate",
+        title: "Zatrzymaj się po bramce Add i Done",
+        nextGoal: "Sprawdź bramkę listowania i transfer.",
+      },
+    ],
+    "todo-session-project": [
+      {
+        afterStepId: "session-explain",
+        title: "Zatrzymaj się po wyjaśnieniu sesji",
+        nextGoal: "Uruchom bramkę sesji z błędem pośrodku.",
+      },
+      {
+        afterStepId: "session-run-gate",
+        title: "Zatrzymaj się po bramce sesji",
+        nextGoal: "Porównaj sesję zwykłą ze ścisłą.",
+      },
+    ],
+    "todo-storage-format": [
+      {
+        afterStepId: "format-explain",
+        title: "Zatrzymaj się po wyjaśnieniu formatu",
+        nextGoal: "Sprawdź bramkę kodowania i dekodowania.",
+      },
+      {
+        afterStepId: "format-gate",
+        title: "Zatrzymaj się po bramce formatu",
+        nextGoal: "Obserwuj zachowanie przy uszkodzonym wierszu.",
+      },
+    ],
+    "todo-file-persistence": [
+      {
+        afterStepId: "file-explain",
+        title: "Zatrzymaj się po wyjaśnieniu pliku",
+        nextGoal: "Sprawdź bramkę zapisu i odczytu.",
+      },
+      {
+        afterStepId: "file-gate",
+        title: "Zatrzymaj się po bramce pliku",
+        nextGoal: "Obserwuj bezpieczne zastępowanie pliku.",
+      },
+    ],
+    "todo-terminal-cli": [
+      {
+        afterStepId: "cli-explain",
+        title: "Zatrzymaj się po wyjaśnieniu CLI",
+        nextGoal: "Sprawdź bramkę wykonania komendy.",
+      },
+      {
+        afterStepId: "cli-gate",
+        title: "Zatrzymaj się po bramce CLI",
+        nextGoal: "Przejdź do odczytu wejścia i lokalnej praktyki.",
+      },
+    ],
+  };
+
+  const expectedStepIds: Record<string, string[]> = {
+    "todo-command-parser": [
+      "parser-predict",
+      "parser-run",
+      "parser-explain",
+      "parser-debug",
+      "parser-add-gate",
+      "parser-transfer",
+      "parser-recall",
+    ],
+    "todo-state-invariants": [
+      "state-predict",
+      "state-run",
+      "state-explain",
+      "state-debug",
+      "state-add-done-gate",
+      "state-list-gate",
+      "state-transfer",
+      "state-recall",
+    ],
+    "todo-session-project": [
+      "session-predict",
+      "session-run",
+      "session-explain",
+      "session-debug",
+      "session-run-gate",
+      "session-strict-gate",
+      "session-recall",
+      "session-blank",
+    ],
+    "todo-storage-format": [
+      "format-predict",
+      "format-run",
+      "format-explain",
+      "format-debug",
+      "format-gate",
+      "format-observe",
+      "format-recall",
+    ],
+    "todo-file-persistence": [
+      "file-predict",
+      "file-run",
+      "file-explain",
+      "file-debug",
+      "file-gate",
+      "file-observe",
+      "file-recall",
+    ],
+    "todo-terminal-cli": [
+      "cli-predict",
+      "cli-streams-run",
+      "cli-explain",
+      "cli-debug",
+      "cli-gate",
+      "cli-recall",
+      "cli-input-boundary",
+      "cli-local-practice",
+    ],
+  };
+
+  function withSessionStops(
+    lessonId: string,
+    sessionStops: unknown,
+  ): ContentBundle {
+    const copy = structuredClone(bundle);
+    const lesson = copy.lessons.find((item) => item.id === lessonId);
+    expect(lesson).toBeDefined();
+    (lesson as MutableLessonWithSessionStops).sessionStops = sessionStops;
+    return copy;
+  }
+
+  function expectActionableSessionStopError(
+    content: ContentBundle,
+    lessonId: string,
+  ) {
+    const errors = validateContent(content);
+    expect(
+      errors.some(
+        (error) =>
+          error.includes(lessonId) && /session[-\s]*stops?/i.test(error),
+      ),
+    ).toBe(true);
+  }
+
+  it("accepts the exact ordered pair for each of the six packet lessons", () => {
+    const copy = structuredClone(bundle);
+    for (const [lessonId, sessionStops] of Object.entries(validStops)) {
+      const lesson = copy.lessons.find((item) => item.id === lessonId);
+      expect(lesson).toBeDefined();
+      (lesson as MutableLessonWithSessionStops).sessionStops = structuredClone(
+        sessionStops,
+      );
+    }
+
+    expect(validateContent(copy)).toEqual([]);
+    for (const [lessonId, stepIds] of Object.entries(expectedStepIds)) {
+      expect(
+        copy.lessons.find((item) => item.id === lessonId)?.steps.map(
+          (step) => step.id,
+        ),
+      ).toEqual(stepIds);
+    }
+  });
+
+  it("authors the exact ordered stop pair on all six packet lessons", () => {
+    const actual = Object.fromEntries(
+      Object.keys(validStops).map((lessonId) => {
+        const lesson = lessons.find((item) => item.id === lessonId)!;
+        return [
+          lessonId,
+          (lesson as AuthoredLessonWithSessionStops).sessionStops,
+        ];
+      }),
+    );
+    expect(actual).toEqual(validStops);
+  });
+
+  it("rejects an unknown session-stop step ID", () => {
+    const stops = structuredClone(validStops["todo-command-parser"]);
+    stops[0].afterStepId = "parser-does-not-exist";
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", stops),
+      "todo-command-parser",
+    );
+  });
+
+  it("rejects a session-stop step ID from another lesson", () => {
+    const stops = structuredClone(validStops["todo-command-parser"]);
+    stops[0].afterStepId = "state-explain";
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", stops),
+      "todo-command-parser",
+    );
+  });
+
+  it("rejects duplicate session-stop step IDs", () => {
+    const stops = structuredClone(validStops["todo-command-parser"]);
+    stops[1].afterStepId = stops[0].afterStepId;
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", stops),
+      "todo-command-parser",
+    );
+  });
+
+  it("rejects unordered session stops", () => {
+    const stops = structuredClone(validStops["todo-command-parser"]);
+    [stops[0], stops[1]] = [stops[1], stops[0]];
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", stops),
+      "todo-command-parser",
+    );
+  });
+
+  it("rejects a malformed session-stop entry", () => {
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", [
+        { afterStepId: "parser-explain", title: "tylko tytuł" },
+      ]),
+      "todo-command-parser",
+    );
+  });
+
+  it.each([
+    ["null", null],
+    ["string", "not-an-entry"],
+    ["number", 42],
+  ])(
+    "rejects a malformed %s session-stop entry without throwing",
+    (_, entry) => {
+      const content = withSessionStops("todo-command-parser", [entry]);
+      expect(() => validateContent(content)).not.toThrow();
+      expectActionableSessionStopError(content, "todo-command-parser");
+    },
+  );
+
+  it("rejects non-array session-stop metadata", () => {
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", "not-an-array"),
+      "todo-command-parser",
+    );
+  });
+
+  it("rejects a whitespace-only session-stop title", () => {
+    const stops = structuredClone(validStops["todo-command-parser"]);
+    stops[0].title = " \t ";
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", stops),
+      "todo-command-parser",
+    );
+  });
+
+  it("rejects a whitespace-only session-stop next goal", () => {
+    const stops = structuredClone(validStops["todo-command-parser"]);
+    stops[0].nextGoal = " \n ";
+    expectActionableSessionStopError(
+      withSessionStops("todo-command-parser", stops),
+      "todo-command-parser",
+    );
+  });
+
+  it("keeps all six lesson step ID arrays unchanged when stops are authored", () => {
+    const copy = structuredClone(bundle);
+    const before = Object.fromEntries(
+      Object.keys(expectedStepIds).map((lessonId) => [
+        lessonId,
+        copy.lessons
+          .find((item) => item.id === lessonId)!
+          .steps.map((step) => step.id),
+      ]),
+    );
+    for (const [lessonId, sessionStops] of Object.entries(validStops)) {
+      const lesson = copy.lessons.find((item) => item.id === lessonId)!;
+      (lesson as MutableLessonWithSessionStops).sessionStops = structuredClone(
+        sessionStops,
+      );
+    }
+
+    expect(validateContent(copy)).toEqual([]);
+    expect(before).toEqual(expectedStepIds);
+    expect(
+      Object.fromEntries(
+        Object.keys(expectedStepIds).map((lessonId) => [
+          lessonId,
+          copy.lessons
+            .find((item) => item.id === lessonId)!
+            .steps.map((step) => step.id),
+        ]),
+      ),
+    ).toEqual(expectedStepIds);
+  });
+});
+
 describe("ownership evidence authoring validation", () => {
   function changedStep(
     change: (step: Lesson["steps"][number]) => void,

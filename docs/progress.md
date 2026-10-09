@@ -1,5 +1,7 @@
 # Rust Workshop — stan implementacji
 
+Latest accepted release before the session-scaffolding candidate: [M8 accepted release — 9 October 2026](verification.md#latest-accepted-release-before-session-scaffolding-candidate-9-october-2026). Packet 005 authored stops and pilot materials remain a separate candidate with no learner outcomes.
+
 Current verified product source: [PR40 source cut — 7 October 2026](verification.md#current-verified-source-cut-7-october-2026). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
 
 ## Historical implementation records

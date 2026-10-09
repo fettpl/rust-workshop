@@ -758,7 +758,8 @@ export const ioLessons: Lesson[] = [
     competencyIds: ["io-format-contract"],
     prerequisites: ["cargo-package-integration"],
     title: "Format Todo: zapisz dokładnie to, co odtworzysz",
-    subtitle: "Oddzielasz tekst dla człowieka od wersjonowanego zapisu stanu.",
+    subtitle:
+      "Dostajesz FormatError::{InvalidHeader, MissingFinalNewline, InvalidRow(usize), InvalidStatus(usize), InvalidTitle(usize)}, encode(&Todo) -> String i decode(&str) -> Result<Todo, FormatError>; FormatError i Todo mają Debug, PartialEq i Eq, a zmieniasz decyzję na zachowanie tytułu dokładnie i odrzucanie całego wejścia od pierwszego wadliwego wiersza.",
     minutes: 40,
     outcomes: [
       "Zapiszesz i odtworzysz flagi, kolejność, duplikaty i dokładne tytuły.",
@@ -881,6 +882,18 @@ export const ioLessons: Lesson[] = [
       "Zaprojektuj round trip notatnika z inną wersją, separatorem i słownymi statusami archiwizacji.",
     evidenceGate:
       "Obie funkcje przechodzą pełne testy poprawnych i niepoprawnych rekordów; dwa warianty zadania sprawdzają tę samą kompetencję.",
+    sessionStops: [
+      {
+        afterStepId: "format-explain",
+        title: "Zatrzymaj się po wyjaśnieniu formatu",
+        nextGoal: "Sprawdź bramkę kodowania i dekodowania.",
+      },
+      {
+        afterStepId: "format-gate",
+        title: "Zatrzymaj się po bramce formatu",
+        nextGoal: "Obserwuj zachowanie przy uszkodzonym wierszu.",
+      },
+    ],
     sourceIds: ["io-std-str"],
   },
   {
@@ -890,7 +903,8 @@ export const ioLessons: Lesson[] = [
     competencyIds: ["io-file-persistence"],
     prerequisites: ["todo-storage-format"],
     title: "Prawdziwe pliki: błędy i etapowany zapis",
-    subtitle: "Zapisujesz nowe dane przed zastąpieniem poprzedniego pliku.",
+    subtitle:
+      "Dostajesz StorageError::{Io(std::io::Error), Format(FormatError)}, load(&str) -> Result<Todo, StorageError>, save(&str, &Todo) -> Result<(), StorageError> oraz write_staged(&mut File, &str) -> Result<(), std::io::Error>; zmieniasz decyzję na pusty stan tylko dla NotFound i etapowy create_new/write_all/sync_all/drop/rename.",
     minutes: 45,
     outcomes: [
       "Rozróżnisz brak pliku, wadliwe UTF-8, zły format i błąd systemu plików.",
@@ -1018,6 +1032,18 @@ export const ioLessons: Lesson[] = [
       "Przenieś zapis do innego katalogu i odtwórz przypadek konfliktu z istniejącym plikiem tymczasowym.",
     evidenceGate:
       "Dwa pełne zestawy testów używają rzeczywistych plików i potwierdzają round trip oraz zachowanie danych na ścieżkach błędów.",
+    sessionStops: [
+      {
+        afterStepId: "file-explain",
+        title: "Zatrzymaj się po wyjaśnieniu pliku",
+        nextGoal: "Sprawdź bramkę zapisu i odczytu.",
+      },
+      {
+        afterStepId: "file-gate",
+        title: "Zatrzymaj się po bramce pliku",
+        nextGoal: "Obserwuj bezpieczne zastępowanie pliku.",
+      },
+    ],
     sourceIds: [
       "io-std-read",
       "io-std-file",
@@ -1035,7 +1061,7 @@ export const ioLessons: Lesson[] = [
     prerequisites: ["todo-file-persistence"],
     title: "Todo CLI: od polecenia do potwierdzonego zapisu",
     subtitle:
-      "Łączysz parser, plik i wynik, a następnie uruchamiasz pakiet w terminalu.",
+      "Dostajesz parse_command, load, Todo::apply, save, AppError::{Command(CommandError), Storage(StorageError)} oraz execute(&str, &str) -> Result<String, AppError>; zmieniasz decyzję na parse przed I/O, reload przy każdym wywołaniu, zapis tylko po zmianie stanu i sukces dopiero po save.",
     minutes: 45,
     outcomes: [
       "Odtworzysz stan przy każdym poleceniu i potwierdzisz sukces dopiero po zapisie.",
@@ -1179,6 +1205,18 @@ export const ioLessons: Lesson[] = [
       "Uruchom pobrany pakiet w terminalu, przerwij sesję i sprawdź stan po restarcie; oddziel ten dowód od testów granicy execute.",
     evidenceGate:
       "Dwie alternatywy sprawdzają pełny kontrakt execute z rzeczywistymi plikami; lokalna lista kontrolna nie zastępuje tych testów.",
+    sessionStops: [
+      {
+        afterStepId: "cli-explain",
+        title: "Zatrzymaj się po wyjaśnieniu CLI",
+        nextGoal: "Sprawdź bramkę wykonania komendy.",
+      },
+      {
+        afterStepId: "cli-gate",
+        title: "Zatrzymaj się po bramce CLI",
+        nextGoal: "Przejdź do odczytu wejścia i lokalnej praktyki.",
+      },
+    ],
     sourceIds: ["io-std-stdin", "io-rust-stderr", "io-playground-boundary"],
   },
 ];

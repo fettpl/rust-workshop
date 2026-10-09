@@ -575,7 +575,8 @@ export const todoLessons: Lesson[] = [
     competencyIds: ["command-parsing"],
     prerequisites: ["panic-and-contracts"],
     title: "Parser poleceń: tekst staje się kontraktem",
-    subtitle: "Rozdzielasz czasownik, argument i przewidywalny błąd.",
+    subtitle:
+      "Dostajesz Command::{Add(String), Done(usize), List}, CommandError::{Empty, Unknown, InvalidTitle, InvalidId, NotFound} oraz parse_command(&str) -> Result<Command, CommandError>; enumy mają Debug, PartialEq i Eq, a parse_command zmieniasz według reguły pierwszej zwykłej spacji.",
     minutes: 35,
     outcomes: [
       "Zbudujesz parse_command zwracający Command albo CommandError.",
@@ -698,6 +699,18 @@ export const todoLessons: Lesson[] = [
       "Zaprojektuj dwa kolejne czasowniki, ale najpierw zapisz ich błędy jako warianty kontraktu.",
     evidenceGate:
       "Parser poprawnie rozróżnia sukces i każdą kategorię błędu na przypadkach Unicode, tab i granicy usize.",
+    sessionStops: [
+      {
+        afterStepId: "parser-explain",
+        title: "Zatrzymaj się po wyjaśnieniu parsera",
+        nextGoal: "Przenieś reguły parsera do kolejnego zadania.",
+      },
+      {
+        afterStepId: "parser-add-gate",
+        title: "Zatrzymaj się po bramce Add",
+        nextGoal: "Sprawdź transfer parsera na innych komendach.",
+      },
+    ],
     sourceIds: ["todo-rust-book-result", "todo-std-string"],
   },
   {
@@ -707,7 +720,8 @@ export const todoLessons: Lesson[] = [
     competencyIds: ["todo-invariants"],
     prerequisites: ["todo-command-parser"],
     title: "Stan Todo: niezmienniki przed wygodą",
-    subtitle: "Modelujesz Task, indeks użytkownika i bezpieczne mutacje Vec.",
+    subtitle:
+      "Dostajesz Task { title: String, done: bool }, Todo { tasks: Vec<Task> }, Todo::new() -> Todo i Todo::apply(&mut self, Command) -> Result<String, CommandError>; zmieniasz apply, walidując przed mutacją i mapując id 1-based na indeks Vec 0-based.",
     minutes: 40,
     outcomes: [
       "Zaimplementujesz Task z owned String i flagą done.",
@@ -843,6 +857,18 @@ export const todoLessons: Lesson[] = [
       "Dodaj do modelu drugi stan zadania dopiero po opisaniu, jak zachowuje się List dla pustego Vec.",
     evidenceGate:
       "Operacje Add, Done i List zachowują identyfikatory, kolejność, Unicode, duplikaty i brak mutacji po błędzie.",
+    sessionStops: [
+      {
+        afterStepId: "state-explain",
+        title: "Zatrzymaj się po wyjaśnieniu stanu",
+        nextGoal: "Przejdź do bramki poprawnej operacji Add i Done.",
+      },
+      {
+        afterStepId: "state-add-done-gate",
+        title: "Zatrzymaj się po bramce Add i Done",
+        nextGoal: "Sprawdź bramkę listowania i transfer.",
+      },
+    ],
     sourceIds: ["todo-rust-book-strings", "todo-std-vec"],
   },
   {
@@ -853,7 +879,7 @@ export const todoLessons: Lesson[] = [
     prerequisites: ["todo-state-invariants"],
     title: "Sesja projektu: tolerancyjna albo ścisła",
     subtitle:
-      "Składasz parser i stan w przewidywalny Todo CLI działający w pamięci.",
+      "Łączysz dostarczone parse_command, Todo::new i Todo::apply z run_session(&[&str]) -> Vec<Result<String, CommandError>> oraz run_strict_session(&[&str]) -> Result<String, CommandError>; zmieniasz decyzję: zwykła sesja idzie dalej po błędzie, ścisła zatrzymuje się, a każde wywołanie ma świeży Todo.",
     minutes: 45,
     outcomes: [
       "Zaimplementujesz run_session z wynikiem dla każdej linii.",
@@ -993,6 +1019,18 @@ export const todoLessons: Lesson[] = [
       "Zapisz pamięciową sesję Todo przed podłączeniem wejścia terminalowego lub pliku; decyzja o kontynuacji ma być widoczna w typie wyniku.",
     evidenceGate:
       "Pełna sesja przechodzi niezależne testy tolerancyjnego i ścisłego przebiegu, w tym błędy po mutacji i świeże wywołania.",
+    sessionStops: [
+      {
+        afterStepId: "session-explain",
+        title: "Zatrzymaj się po wyjaśnieniu sesji",
+        nextGoal: "Uruchom bramkę sesji z błędem pośrodku.",
+      },
+      {
+        afterStepId: "session-run-gate",
+        title: "Zatrzymaj się po bramce sesji",
+        nextGoal: "Porównaj sesję zwykłą ze ścisłą.",
+      },
+    ],
     sourceIds: ["todo-rust-book-result", "todo-std-string", "todo-std-vec"],
   },
 ];

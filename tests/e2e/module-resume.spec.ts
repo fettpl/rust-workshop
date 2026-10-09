@@ -1,6 +1,44 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
+import { stepKey } from "../../src/persistence/state";
+
+async function readStoredPacketState(page: Page) {
+  return page.evaluate(
+    () =>
+      new Promise<{
+        steps: Record<string, { completed?: boolean }>;
+        events: Array<{
+          lessonId: string;
+          stepId: string;
+          kind: string;
+          gate?: boolean;
+        }>;
+      }>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          const read = db
+            .transaction("user-state", "readonly")
+            .objectStore("user-state")
+            .get("current");
+          read.onerror = () => {
+            db.close();
+            reject(read.error);
+          };
+          read.onsuccess = () => {
+            db.close();
+            const state = read.result;
+            resolve({
+              steps: state?.steps ?? {},
+              events: state?.events ?? [],
+            });
+          };
+        };
+      }),
+  );
+}
 
 for (const moduleId of [
   "tokio-io-streams",
@@ -345,3 +383,155 @@ for (const moduleId of [
     expect(consoleErrors).toEqual([]);
   });
 }
+
+test("packet 005 stop boundary preserves workspace state and gives a pause point", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  const stage = modules.find((item) => item.id === "todo-project")!;
+  const lesson = lessons.find((item) => item.id === "todo-command-parser")!;
+  const editableStep = lesson.steps.find((item) => item.id === "parser-debug")!;
+  const stop = lesson.sessionStops!.find(
+    (item) => item.afterStepId === "parser-explain",
+  )!;
+  const editableIndex = lesson.steps.findIndex(
+    (item) => item.id === editableStep.id,
+  );
+  const stopIndex = lesson.steps.findIndex(
+    (item) => item.id === stop.afterStepId,
+  );
+  const finalStop = lesson.sessionStops!.at(-1)!;
+  const finalStage =
+    lesson.steps[
+      lesson.steps.findIndex((item) => item.id === finalStop.afterStepId) + 1
+    ];
+  const draft = `${editableStep.code}\n// szkic zachowany po przerwie\n`;
+  const note = "Reguła pierwszej spacji wymaga osobnego sprawdzenia.";
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .locator(".module-picker")
+    .getByRole("button", { name: new RegExp(stage.title) })
+    .click();
+  await page
+    .locator(".lesson-list-item")
+    .filter({ hasText: lesson.title })
+    .click();
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(editableIndex)
+    .click();
+  await expect(
+    page.getByRole("heading", { name: editableStep.title, exact: true }),
+  ).toBeVisible();
+  const stagePlan = page.getByRole("region", { name: "Plan etapów lekcji" });
+  await expect(stagePlan).toBeVisible();
+  await expect(stagePlan.locator("li")).toHaveCount(3);
+  await expect(stagePlan).toContainText(stop.title);
+  await expect(stagePlan).toContainText(finalStage.title);
+
+  await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await editor.fill(draft);
+  await page.getByText("Twój notatnik", { exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Notatki do lekcji", exact: true })
+    .fill(note);
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+  await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
+  await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
+  await expect(
+    page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+  ).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  await expect(
+    page.getByRole("tab", { name: "Kod", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#workspace-panel-lesson")).toBeHidden();
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+
+  await page.reload();
+  await expect(
+    page.getByRole("heading", {
+      name: `${editableStep.title} · Kod`,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(editor).toHaveValue(draft);
+  await expect(
+    page.getByRole("tab", { name: "Kod", exact: true }),
+  ).toHaveAttribute("aria-selected", "true");
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await expect(
+    page.getByText("WSKAZÓWKA 2 · REGUŁA", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+  ).toBeVisible();
+  await page.getByText("Twój notatnik", { exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Notatki do lekcji", exact: true }),
+  ).toHaveValue(note);
+
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  await editor.focus();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Monaco Editor", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(editor).toBeFocused();
+
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(stopIndex)
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: lesson.steps[stopIndex].title,
+      exact: true,
+    }),
+  ).toBeVisible();
+  const pauseNote = page.getByRole("complementary", {
+    name: "Miejsce na przerwę",
+  });
+  await expect(pauseNote).toContainText(stop.title);
+  await expect(pauseNote).toContainText(stop.nextGoal);
+  await expect(pauseNote).toContainText("możesz zrobić przerwę");
+  await expect(
+    page.getByLabel("Kroki lekcji").getByRole("button").nth(stopIndex),
+  ).toContainText(String(stopIndex + 1).padStart(2, "0"));
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  const persisted = await readStoredPacketState(page);
+  const stopKey = stepKey(lesson.id, stop.afterStepId);
+  expect(persisted.steps[stopKey]?.completed ?? false).toBe(false);
+  expect(
+    persisted.events.filter(
+      (event) =>
+        event.lessonId === lesson.id &&
+        event.stepId === stop.afterStepId &&
+        event.kind !== "exposure",
+    ),
+  ).toEqual([]);
+  expect(
+    persisted.events.some(
+      (event) =>
+        event.lessonId === lesson.id &&
+        event.stepId === stop.afterStepId &&
+        event.gate === true,
+    ),
+  ).toBe(false);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});

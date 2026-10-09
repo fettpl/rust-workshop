@@ -426,6 +426,56 @@ export function validateContent(content: ContentBundle): string[] {
       if (!sourceIds.has(sourceId))
         errors.push(`lesson ${lesson.id} has unknown source id: ${sourceId}`);
     }
+    const sessionStops = (lesson as unknown as { sessionStops?: unknown })
+      .sessionStops;
+    if (sessionStops !== undefined) {
+      const sessionStopLabel = `lesson ${lesson.id} sessionStops`;
+      if (!Array.isArray(sessionStops)) {
+        errors.push(`${sessionStopLabel} must be an array`);
+      } else {
+        const seenStopIds = new Set<string>();
+        let previousStopIndex = -1;
+        sessionStops.forEach((stop, index) => {
+          const entryLabel = `${sessionStopLabel}[${index}]`;
+          if (!stop || typeof stop !== "object" || Array.isArray(stop)) {
+            errors.push(`${entryLabel} must be an object`);
+            return;
+          }
+          const entry = stop as Record<string, unknown>;
+          if (
+            typeof entry.afterStepId !== "string" ||
+            typeof entry.title !== "string" ||
+            typeof entry.nextGoal !== "string"
+          ) {
+            errors.push(
+              `${entryLabel} must include string afterStepId, title, and nextGoal`,
+            );
+            return;
+          }
+          if (!entry.title.trim())
+            errors.push(`${entryLabel} title must not be empty`);
+          if (!entry.nextGoal.trim())
+            errors.push(`${entryLabel} nextGoal must not be empty`);
+          if (seenStopIds.has(entry.afterStepId))
+            errors.push(
+              `${entryLabel} duplicates afterStepId ${entry.afterStepId}`,
+            );
+          seenStopIds.add(entry.afterStepId);
+          const stepIndex = lesson.steps.findIndex(
+            (step) => step.id === entry.afterStepId,
+          );
+          if (stepIndex < 0) {
+            errors.push(
+              `${entryLabel} references unknown afterStepId ${entry.afterStepId}`,
+            );
+            return;
+          }
+          if (stepIndex <= previousStopIndex)
+            errors.push(`${entryLabel} afterStepId values must be ordered`);
+          previousStopIndex = stepIndex;
+        });
+      }
+    }
     const localStepIds = new Set<string>();
     for (const step of lesson.steps) {
       const stepKey = `${lesson.id}/${step.id}`;
