@@ -432,6 +432,19 @@ test("packet 005 stop boundary preserves workspace state and gives a pause point
   await expect(stagePlan).toBeVisible();
   await expect(stagePlan.locator("li")).toHaveCount(3);
   await expect(stagePlan).toContainText(stop.title);
+  const firstBoundaryIndex = lesson.steps.findIndex(
+    (item) => item.id === stop.afterStepId,
+  );
+  await expect(stagePlan.locator("li").nth(0)).toContainText(
+    `kroku ${firstBoundaryIndex + 1} „${lesson.steps[firstBoundaryIndex].title}”`,
+  );
+  const secondStop = lesson.sessionStops![1];
+  const secondBoundaryIndex = lesson.steps.findIndex(
+    (item) => item.id === secondStop.afterStepId,
+  );
+  await expect(stagePlan.locator("li").nth(1)).toContainText(
+    `kroku ${secondBoundaryIndex + 1} „${lesson.steps[secondBoundaryIndex].title}”`,
+  );
   await expect(stagePlan).toContainText(finalStage.title);
 
   await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();

@@ -512,12 +512,27 @@ export function LessonWorkspace() {
             >
               <h2>Plan etapów</h2>
               <ol>
-                {lesson.sessionStops.map((stop) => (
-                  <li key={stop.afterStepId}>
-                    <strong>{stop.title}</strong> Po ukończeniu tego zadania
-                    możesz zrobić przerwę. Następny etap: {stop.nextGoal}
-                  </li>
-                ))}
+                {lesson.sessionStops.map((stop) => {
+                  const boundaryIndex = lesson.steps.findIndex(
+                    (candidate) => candidate.id === stop.afterStepId,
+                  );
+                  const boundaryStep =
+                    boundaryIndex >= 0 ? lesson.steps[boundaryIndex] : undefined;
+                  return (
+                    <li key={stop.afterStepId}>
+                      <strong>{stop.title}</strong>{" "}
+                      {boundaryStep ? (
+                        <>
+                          Po ukończeniu kroku {boundaryIndex + 1} „
+                          {boundaryStep.title}” możesz zrobić przerwę.
+                        </>
+                      ) : (
+                        <>Po ukończeniu tego zadania możesz zrobić przerwę.</>
+                      )}{" "}
+                      Następny etap: {stop.nextGoal}
+                    </li>
+                  );
+                })}
                 {finalStage && (
                   <li>
                     <strong>Końcowy etap:</strong> {finalStage.title}
