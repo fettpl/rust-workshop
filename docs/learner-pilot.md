@@ -127,7 +127,7 @@ cargo test
 
 #### Sesja 2
 
-Osoba prowadząca wyda osobne karty `S2-MC-v1` i `S2-XFER-v1`. Zapisz, czy wymagania były wcześniej pokazane. Wykonaj osobno przewidywanie, naprawę mechanicznego kontraktu, wyjaśnienie i transfer do nowej dziedziny.
+Osoba prowadząca wyda osobne karty `S2-MC-v1`, jedną z mechanicznych kart `S2-SB-WORDS-v1` lub `S2-SB-SUFFIX-v1`, oraz `S2-XFER-v1`. Zapisz, czy wymagania były wcześniej pokazane. Wykonaj osobno przewidywanie, naprawę mechanicznego kontraktu, wyjaśnienie i transfer do nowej dziedziny.
 
 #### Punkty przerwania w sześciu lekcjach (12 punktów) — dostępne po potwierdzeniu implementacji
 
@@ -135,12 +135,12 @@ Jeśli interfejs pokaże notatkę, możesz zapisać stan i wrócić. Tytuł jest
 
 | Lekcja | `afterStepId` stop 1 | Tytuł / następny cel | `afterStepId` stop 2 | Tytuł / następny cel | Pozostały etap |
 | --- | --- | --- | --- | --- | --- |
-| `todo-command-parser` | `parser-explain` | „Przerwa po wyjaśnieniu parsera”; pierwsza bramka | `parser-add-gate` | „Przerwa po pierwszej bramce parsera”; transfer | `parser-transfer`, `parser-recall` |
-| `todo-state-invariants` | `state-explain` | „Przerwa po wyjaśnieniu stanu”; bramka `done` | `state-add-done-gate` | „Przerwa po zadaniu z bramką `done`”; listowanie | `state-list-gate`, `state-transfer`, `state-recall` |
-| `todo-session-project` | `session-explain` | „Przerwa po wyjaśnieniu sesji”; uruchomienie | `session-run-gate` | „Przerwa po zadaniu uruchomienia”; rygor | `session-strict-gate`, `session-recall`, `session-blank` |
-| `todo-storage-format` | `format-explain` | „Przerwa po wyjaśnieniu formatu”; zadanie formatu | `format-gate` | „Przerwa po zadaniu formatu”; obserwacja zapisu | `format-observe`, `format-recall` |
-| `todo-file-persistence` | `file-explain` | „Przerwa po wyjaśnieniu plików”; zadanie pliku | `file-gate` | „Przerwa po zadaniu pliku”; obserwacja zachowania | `file-observe`, `file-recall` |
-| `todo-terminal-cli` | `cli-explain` | „Przerwa po wyjaśnieniu polecenia”; zadanie terminala | `cli-gate` | „Przerwa po zadaniu terminala”; granice wejścia | `cli-recall`, `cli-input-boundary`, `cli-local-practice` |
+| `todo-command-parser` | `parser-explain` | „Zatrzymaj się po wyjaśnieniu parsera”; „Przenieś reguły parsera do kolejnego zadania.” | `parser-add-gate` | „Zatrzymaj się po bramce Add”; „Sprawdź transfer parsera na innych komendach.” | `parser-transfer`, `parser-recall` |
+| `todo-state-invariants` | `state-explain` | „Zatrzymaj się po wyjaśnieniu stanu”; „Przejdź do bramki poprawnej operacji Add i Done.” | `state-add-done-gate` | „Zatrzymaj się po bramce Add i Done”; „Sprawdź bramkę listowania i transfer.” | `state-list-gate`, `state-transfer`, `state-recall` |
+| `todo-session-project` | `session-explain` | „Zatrzymaj się po wyjaśnieniu sesji”; „Uruchom bramkę sesji z błędem pośrodku.” | `session-run-gate` | „Zatrzymaj się po bramce sesji”; „Porównaj sesję zwykłą ze ścisłą.” | `session-strict-gate`, `session-recall`, `session-blank` |
+| `todo-storage-format` | `format-explain` | „Zatrzymaj się po wyjaśnieniu formatu”; „Sprawdź bramkę kodowania i dekodowania.” | `format-gate` | „Zatrzymaj się po bramce formatu”; „Obserwuj zachowanie przy uszkodzonym wierszu.” | `format-observe`, `format-recall` |
+| `todo-file-persistence` | `file-explain` | „Zatrzymaj się po wyjaśnieniu pliku”; „Sprawdź bramkę zapisu i odczytu.” | `file-gate` | „Zatrzymaj się po bramce pliku”; „Obserwuj bezpieczne zastępowanie pliku.” | `file-observe`, `file-recall` |
+| `todo-terminal-cli` | `cli-explain` | „Zatrzymaj się po wyjaśnieniu CLI”; „Sprawdź bramkę wykonania komendy.” | `cli-gate` | „Zatrzymaj się po bramce CLI”; „Przejdź do odczytu wejścia i lokalnej praktyki.” | `cli-recall`, `cli-input-boundary`, `cli-local-practice` |
 
 Szacowany czas lekcji jest szacunkiem autora, a nie zaobserwowanym czasem rozwiązania.
 
@@ -152,7 +152,7 @@ Błędne rekordy zgłoś na `stderr` z numerem linii, przetwarzaj poprawne dalej
 
 Pokaż plik poprawny i mieszany, przygotuj własne testy błędnego rekordu, agregowania i kolejności, oraz wyjaśnij decyzję o pożyczaniu lub posiadaniu nazw. Sprawdzenie obejmuje powtórzone i przycięte równoważne nazwy, Unicode, pusty plik, CRLF, granice minut, znaki inne niż ASCII `0–9`, błędne pola, błąd wejścia i przepełnienie.
 
-### `S2-MC-v1` i `S2-XFER-v1` — wydaje prowadzący
+### `S2-MC-v1`, `S2-SB-WORDS-v1`, `S2-SB-SUFFIX-v1` i `S2-XFER-v1` — wydaje prowadzący
 
 Przed rozpoczęciem zapisz: `pokazane wcześniej`, `nie pokazano` albo `nie wiadomo`.
 
@@ -175,6 +175,18 @@ fn main() {
 ```
 
 Najpierw zapisz przewidywanie. `text_next` jest nowym wiązaniem po przypisaniu; pytanie dotyczy późniejszego użycia oryginalnych `text` i `number`.
+
+#### `S2-SB-WORDS-v1` — naprawa widoku tekstu
+
+W aplikacji otwórz istniejącą lekcję `shared-borrow-calibration` („Pożyczony widok tekstu”) i zadanie `shared-count-words` („Napraw liczenie części tekstu”). Użyj dostarczonego ciała metody `text.split_whitespace().count()`, startera oraz kodu wywołującego funkcję pokazanego w kodzie początkowym jako materiału bazowego. Napraw wyłącznie granicę funkcji tak, aby kod wywołujący zachował własny `String` po wywołaniu.
+
+Zachowaj liczenie niepustych części przez białe znaki, w tym pusty tekst, tabulatory, końce linii i wielokrotne odstępy. Po naprawie użyj widocznego przycisku „Uruchom testy” w istniejącym zadaniu. Zapisz osobno wynik, powód naprawy, wyjaśnienie i każdą pomoc od prowadzącego.
+
+#### `S2-SB-SUFFIX-v1` — naprawa dwóch widoków tekstu
+
+W aplikacji otwórz istniejącą lekcję `shared-borrow-calibration` („Pożyczony widok tekstu”) i zadanie `shared-has-suffix` („Napraw sprawdzanie końcówki”). Użyj dostarczonego ciała metody `text.ends_with(suffix)`, startera oraz kodu wywołującego funkcję pokazanego w kodzie początkowym jako materiału bazowego. Napraw wyłącznie granicę funkcji tak, aby oba wejścia pozostały read-only widokami, a kod wywołujący mógł użyć `text` i `suffix` po wywołaniu.
+
+Zachowaj dokładne sprawdzanie końcówki z istniejącego kontraktu: bez przycinania, zmiany wielkości liter ani normalizacji; pusty suffix pasuje. Po naprawie użyj widocznego przycisku „Uruchom testy” w istniejącym zadaniu. Zapisz osobno wynik, powód naprawy, wyjaśnienie i każdą pomoc od prowadzącego.
 
 #### `S2-XFER-v1` — etykieta zgłoszenia
 
