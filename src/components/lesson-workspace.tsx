@@ -122,6 +122,19 @@ export function LessonWorkspace() {
         : nextLesson.moduleId !== lesson.moduleId
           ? "Kolejny moduł"
           : "Następna lekcja";
+  const sessionStop = lesson.sessionStops?.find(
+    (stop) => stop.afterStepId === step.id,
+  );
+  const finalSessionStop = lesson.sessionStops?.at(-1);
+  const finalSessionStopIndex = finalSessionStop
+    ? lesson.steps.findIndex(
+        (candidate) => candidate.id === finalSessionStop.afterStepId,
+      )
+    : -1;
+  const finalStage =
+    finalSessionStopIndex >= 0
+      ? lesson.steps[finalSessionStopIndex + 1]
+      : undefined;
   const key = stepKey(lesson.id, step.id);
   const progress = state.steps[key] ?? createStepProgress(step.code);
   const code = progress.code ?? step.code ?? "";
@@ -492,9 +505,63 @@ export function LessonWorkspace() {
             KROK {index + 1} Z {lesson.steps.length} · {kindLabels[step.kind]}
           </Eyebrow>
           <h1>{step.title}</h1>
+          {lesson.sessionStops?.length ? (
+            <section
+              className="lesson-context session-stop-plan"
+              aria-label="Plan etapów lekcji"
+            >
+              <h2>Plan etapów</h2>
+              <ol>
+                {lesson.sessionStops.map((stop) => {
+                  const boundaryIndex = lesson.steps.findIndex(
+                    (candidate) => candidate.id === stop.afterStepId,
+                  );
+                  const boundaryStep =
+                    boundaryIndex >= 0 ? lesson.steps[boundaryIndex] : undefined;
+                  return (
+                    <li key={stop.afterStepId}>
+                      <strong>{stop.title}</strong>{" "}
+                      {boundaryStep ? (
+                        <>
+                          Po ukończeniu kroku {boundaryIndex + 1} „
+                          {boundaryStep.title}” możesz zrobić przerwę.
+                        </>
+                      ) : (
+                        <>Po ukończeniu tego zadania możesz zrobić przerwę.</>
+                      )}{" "}
+                      Następny etap: {stop.nextGoal}
+                    </li>
+                  );
+                })}
+                {finalStage && (
+                  <li>
+                    <strong>Końcowy etap:</strong> {finalStage.title}
+                  </li>
+                )}
+              </ol>
+            </section>
+          ) : null}
           <p className="task-prompt">
             <LearningText>{step.prompt}</LearningText>
           </p>
+          {sessionStop && (
+            <aside
+              className="lesson-context session-stop-note"
+              aria-label="Miejsce na przerwę"
+            >
+              <p>
+                <strong>{sessionStop.title}</strong>
+              </p>
+              <p>
+                <strong>Następny etap:</strong> {sessionStop.nextGoal}
+              </p>
+              <p>
+                Po ukończeniu tego zadania możesz zrobić przerwę. Jeśli kończysz
+                teraz, wrócisz do tego kroku wraz z zapisanym szkicem, pomocą i
+                notatkami.
+              </p>
+            </aside>
+          )}
           {step.evidence?.codingTaskId && (
             <p className="footnote">
               Bieżący kontrakt: wersja {step.evidence.version}. Zapisany szkic i

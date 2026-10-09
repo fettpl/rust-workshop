@@ -162,6 +162,11 @@ export interface Lesson {
   transferTask: string;
   evidenceGate: string;
   sourceIds: string[];
+  sessionStops?: Array<{
+    afterStepId: string;
+    title: string;
+    nextGoal: string;
+  }>;
 }
 export interface ModuleGateTaskRef {
   lessonId: string;
