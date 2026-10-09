@@ -287,6 +287,7 @@ function asyncTransferContext(item: AsyncTransferCase) {
   // Both accepted M10 lessons saved their existing gate at index 2.
   const oldStep = lesson.steps[2];
   expect(oldStep.id).toBe(`${item.lessonId}-gate`);
+  expect(oldStep.evidenceKind).toBe("fix");
   const blank = lesson.steps.find(
     (candidate) => candidate.id === `${item.lessonId}-blank`,
   )!;
@@ -348,7 +349,7 @@ function oldAsyncState(item: AsyncTransferCase, helped: boolean): UserState {
       stepId: oldStep.id,
       conceptIds: [item.conceptId],
       evidenceVersion: 2,
-      kind: "transfer",
+      kind: oldStep.evidenceKind,
       evaluator: "tests",
       passed: true,
       hints: helped ? 1 : 0,
@@ -379,7 +380,19 @@ function oldAsyncState(item: AsyncTransferCase, helped: boolean): UserState {
   return state;
 }
 
-async function importOldAsyncState(page: Page, before: UserState) {
+async function importOldAsyncState(
+  page: Page,
+  before: UserState,
+  item: AsyncTransferCase,
+  helped: boolean,
+) {
+  const expectedFamilies = helped ? [] : [item.oldFamily];
+  expect(
+    courseEvidencePolicy.definitionForEvent(before.events[0])?.codingTaskId,
+  ).toBe(item.oldFamily);
+  expect(
+    independentCodingTaskIds(before, item.conceptId, courseEvidencePolicy),
+  ).toEqual(expectedFamilies);
   await page.goto("/");
   const baseline = createInitialState();
   baseline.onboarding = before.onboarding;
@@ -404,6 +417,15 @@ async function importOldAsyncState(page: Page, before: UserState) {
   expect(
     imported.events.find((event) => event.id === before.events[0].id),
   ).toEqual(before.events[0]);
+  const importedOldEvent = imported.events.find(
+    (event) => event.id === before.events[0].id,
+  )!;
+  expect(
+    courseEvidencePolicy.definitionForEvent(importedOldEvent)?.codingTaskId,
+  ).toBe(item.oldFamily);
+  expect(
+    independentCodingTaskIds(imported, item.conceptId, courseEvidencePolicy),
+  ).toEqual(expectedFamilies);
   await expect(
     page.getByRole("textbox", { name: "Kod Rust", exact: true }),
   ).toHaveValue(
@@ -460,7 +482,7 @@ for (const item of asyncTransferCases) {
       const { lesson, oldStep, blank, transfer, stage, criterion } =
         asyncTransferContext(item);
       const before = oldAsyncState(item, helped);
-      await importOldAsyncState(page, before);
+      await importOldAsyncState(page, before, item, helped);
       await expect(page.locator(".task-pane h1")).toHaveText(oldStep.title);
       if (helped) {
         await expect(page.locator(".task-pane")).toContainText(
@@ -601,7 +623,7 @@ for (const item of asyncTransferCases) {
     )!;
     const unrelatedKey = stepKey(unrelated.lessonId, unrelated.stepId);
     before.steps[unrelatedKey] = createStepProgress("// unrelated draft");
-    await importOldAsyncState(page, before);
+    await importOldAsyncState(page, before, item, false);
     await openAsyncTransfer(page, item);
     await revealAsyncSolution(page);
     const after = await savedState(page);
@@ -643,7 +665,7 @@ for (const item of asyncTransferCases) {
     const errors = observeBrowserErrors(page);
     const { lesson, blank, stage, criterion } = asyncTransferContext(item);
     const before = oldAsyncState(item, true);
-    await importOldAsyncState(page, before);
+    await importOldAsyncState(page, before, item, true);
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     await page
