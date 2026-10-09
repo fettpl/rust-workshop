@@ -904,7 +904,7 @@ export const ioLessons: Lesson[] = [
     prerequisites: ["todo-storage-format"],
     title: "Prawdziwe pliki: błędy i etapowany zapis",
     subtitle:
-      "Dostajesz StorageError::{Io(std::io::Error), Format(FormatError)}, load(&str) -> Result<Todo, StorageError>, save(&str, &Todo) -> Result<(), StorageError> oraz write_staged(&mut File, &str) -> Result<(), std::io::Error>; zmieniasz decyzję na pusty stan tylko dla NotFound i etapowy create_new/write_all/sync_all/drop/rename.",
+      "Dostajesz StorageError::{Io(std::io::Error), Format(FormatError)} oraz puste szkielety load(&str) -> Result<Todo, StorageError> i save(&str, &Todo) -> Result<(), StorageError>; poprawiasz load tak, aby tylko NotFound oznaczał pusty stan, a save tak, aby używał etapów create_new, write_all, sync_all, drop i rename.",
     minutes: 45,
     outcomes: [
       "Rozróżnisz brak pliku, wadliwe UTF-8, zły format i błąd systemu plików.",
