@@ -1,5 +1,6 @@
 import { chromium, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { strFromU8, unzipSync } from "fflate";
 (async () => {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -455,6 +456,28 @@ import { readFile } from "node:fs/promises";
       capstoneSolutionUrl,
     );
     expect(capstoneSolutionBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
+    for (const [variant, bytes] of [
+      ["starter", capstoneStarterBytes],
+      ["solution", capstoneSolutionBytes],
+    ]) {
+      const files = unzipSync(Uint8Array.from(bytes));
+      const root = "durable-log-service-workspace/";
+      expect(Object.keys(files)).toHaveLength(37);
+      const worksheet = strFromU8(files[root + "CHANGE-REVIEW.md"]);
+      const capacity = strFromU8(
+        files[root + "crates/ingest-store/tests/stream_capacity.rs"],
+      );
+      expect(worksheet).toContain("K=2 → K=1 → K=3");
+      expect(worksheet).toContain("Wcześniejsza ekspozycja");
+      if (variant === "starter") {
+        expect(worksheet).not.toContain("open_with_stream_limit");
+        expect(capacity).not.toContain("open_with_stream_limit");
+      } else {
+        expect(worksheet).toContain("Store::open_with_stream_limit");
+        expect(capacity).toContain("open_with_stream_limit");
+      }
+    }
+    const beforeOfflineCapstoneMaterials = await readLearningState();
     await context.setOffline(true);
     await page.reload();
     await page
@@ -487,8 +510,22 @@ import { readFile } from "node:fs/promises";
     expect(Array.from(await readFile(await offlineSolution.path()))).toEqual(
       capstoneSolutionBytes,
     );
+    const afterOfflineCapstoneMaterials = await readLearningState();
+    for (const key of [
+      "steps",
+      "events",
+      "mastery",
+      "review",
+      "reviewSession",
+      "notes",
+      "bookmarks",
+    ]) {
+      expect(afterOfflineCapstoneMaterials[key], key).toEqual(
+        beforeOfflineCapstoneMaterials[key],
+      );
+    }
     console.log(
-      "Capstone starter and solution ZIP bytes are unchanged offline",
+      "Capstone worksheet/test files and both ZIP bytes preserve parity offline without new credit",
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page

@@ -1,10 +1,35 @@
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-import { unzipSync } from "fflate";
+import { strFromU8, unzipSync } from "fflate";
+import { projectFiles } from "../../src/domain/project-package";
 import { lessons, modules, projects } from "../../src/content/course";
 import { reviewSessionKey } from "../../src/engine/review-session";
 import { createStepProgress } from "../../src/persistence/state";
 import type { ReviewSession, UserState } from "../../src/domain/types";
+
+async function readLearningState(
+  page: import("@playwright/test").Page,
+): Promise<UserState> {
+  return page.evaluate(
+    () =>
+      new Promise<UserState>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const database = request.result;
+          const read = database
+            .transaction("user-state", "readonly")
+            .objectStore("user-state")
+            .get("current");
+          read.onerror = () => reject(read.error);
+          read.onsuccess = () => {
+            database.close();
+            resolve(read.result);
+          };
+        };
+      }),
+  );
+}
 
 async function registerReviewSessions(
   page: import("@playwright/test").Page,
@@ -147,7 +172,9 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
     .getByLabel("Notatki do lekcji")
     .fill("Najpierw waliduję bajty i alfabet, potem zapisuję zdarzenie.");
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(page.locator(".task-pane h1")).toHaveText(gate.title);
@@ -157,9 +184,12 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
     "Najpierw waliduję bajty i alfabet, potem zapisuję zdarzenie.",
   );
 
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Otwórz nawigację" }).click();
   await page.getByRole("button", { name: "Projekt", exact: true }).click();
   const picker = page.getByRole("navigation", { name: "Wybierz projekt" });
   await picker.getByRole("button", { name: project.title }).click();
+  const beforeMaterials = await readLearningState(page);
   const learnerInstruction = page.locator(".learner-instruction");
   await expect(learnerInstruction).toBeVisible();
   await expect(learnerInstruction).toContainText("K=1");
@@ -170,14 +200,59 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
       name: "Podejmij nowy wariant",
     }),
   ).toBeVisible();
+  const followUp = learnerInstruction.locator("details");
+  const followUpSummary = followUp.locator("summary");
+  await followUpSummary.focus();
+  await expect(followUpSummary).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(followUp).toHaveAttribute("open", "");
+  await expect(followUp).toContainText("K=3");
+  await expect(followUp).toContainText("wcześniej");
+  await expect(followUp).toContainText("samoocenę");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.keyboard.press("Enter");
+  await expect(followUp).not.toHaveAttribute("open");
   const panel = page.getByRole("region", { name: "Pakiet Cargo" });
+  const filePicker = panel.getByRole("combobox", { name: "Plik w pakiecie" });
+  await filePicker.selectOption("CHANGE-REVIEW.md");
+  await expect(panel.getByLabel("Zawartość pliku")).toContainText(
+    "nie zaobserwowano",
+  );
+  await expect(panel.getByLabel("Zawartość pliku")).not.toContainText(
+    "open_with_stream_limit",
+  );
   const starterDownload = page.waitForEvent("download");
   await panel.getByRole("link", { name: "Pobierz pakiet startowy" }).click();
   const starter = await starterDownload;
   expect(await starter.failure()).toBeNull();
-  expect(
-    Object.keys(unzipSync(await readFile((await starter.path())!))).sort(),
-  ).toEqual(archive.files.map((file) => `${archive.id}/${file.path}`).sort());
+  const starterZip = unzipSync(await readFile((await starter.path())!));
+  expect(Object.keys(starterZip).sort()).toEqual(
+    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
+  );
+  for (const path of [
+    "CHANGE-REVIEW.md",
+    "crates/ingest-store/tests/stream_capacity.rs",
+  ]) {
+    expect(strFromU8(starterZip[`${archive.id}/${path}`])).toBe(
+      projectFiles(archive, "starter")[path],
+    );
+  }
+  const afterStarter = await readLearningState(page);
+  for (const key of [
+    "steps",
+    "events",
+    "mastery",
+    "review",
+    "reviewSession",
+    "notes",
+    "bookmarks",
+  ] as const) {
+    expect(afterStarter[key], key).toEqual(beforeMaterials[key]);
+  }
 
   await panel
     .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
@@ -189,13 +264,56 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
   await panel.getByRole("link", { name: "Pobierz rozwiązanie" }).click();
   const solution = await solutionDownload;
   expect(await solution.failure()).toBeNull();
-  expect(
-    Object.keys(unzipSync(await readFile((await solution.path())!))).sort(),
-  ).toEqual(archive.files.map((file) => `${archive.id}/${file.path}`).sort());
-  await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
-  ).toBeVisible();
+  const solutionZip = unzipSync(await readFile((await solution.path())!));
+  expect(Object.keys(solutionZip).sort()).toEqual(
+    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
+  );
+  for (const path of [
+    "CHANGE-REVIEW.md",
+    "crates/ingest-store/tests/stream_capacity.rs",
+  ]) {
+    expect(strFromU8(solutionZip[`${archive.id}/${path}`])).toBe(
+      projectFiles(archive, "solution")[path],
+    );
+  }
+  await expect(panel.getByLabel("Zawartość pliku")).toContainText(
+    "Store::open_with_stream_limit",
+  );
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
   await page.reload();
+  const afterSolution = await readLearningState(page);
+  expect(afterSolution.schemaVersion).toBe(3);
+  expect(afterSolution.events.slice(0, beforeMaterials.events.length)).toEqual(
+    beforeMaterials.events,
+  );
+  const newEvents = afterSolution.events.slice(beforeMaterials.events.length);
+  expect(newEvents).toHaveLength(archive.revealStepRefs.length);
+  expect(
+    newEvents.every(
+      (event) => event.kind === "exposure" && event.revealed && !event.gate,
+    ),
+  ).toBe(true);
+  for (const key of [
+    "review",
+    "reviewSession",
+    "notes",
+    "bookmarks",
+  ] as const) {
+    expect(afterSolution[key], key).toEqual(beforeMaterials[key]);
+  }
+  for (const [key, progress] of Object.entries(beforeMaterials.steps)) {
+    expect(
+      { ...afterSolution.steps[key], revealed: progress.revealed },
+      key,
+    ).toEqual(progress);
+  }
+  for (const conceptId of project.reviewConceptIds ?? []) {
+    expect(["understood", "retained"]).not.toContain(
+      afterSolution.mastery[conceptId]?.level,
+    );
+  }
   const primaryKeys = archive.revealStepRefs.map(
     (ref) => `${ref.lessonId}:${ref.stepId}`,
   );
@@ -264,6 +382,7 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
       sessionId: session.sessionId,
     })),
   );
+  await page.getByRole("button", { name: "Otwórz nawigację" }).click();
   await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
   await search.fill("trwaly serwis");
   await page

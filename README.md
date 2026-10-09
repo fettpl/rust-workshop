@@ -8,6 +8,8 @@ Core17 ends at the final authored Log Analyzer step; 31 extension modules appear
 
 The merged repository contains constrained executable practice and downloadable Cargo projects. These tasks provide fair executable contracts; they do not prove unrestricted decomposition or type selection. Learning progresses from prediction through experimentation and compiler interpretation to independent projects.
 
+The [Durable Log Service capacity change and review workflow](docs/capstone-change-review.md) connects the existing K prompt to a local source/test/review worksheet and a persisted lower/raise-K follow-up. Its optional Store reference preserves the default service and global API; author verification does not establish learner independence or client–service integration.
+
 ## Merged ownership milestone 7 October 2026
 
 The ownership work is integrated through PR39 and retained in the PR40 merged source, including engine/persistence, authored contract, integration and saved-assistance corrections. It added no lessons or modules. Scoped and final independent acceptance, exact natural PR/main CI and the recorded local compiler/browser/offline gates are complete for that milestone. The saved-assistance correction inherits prior help when constructing a new primary submission; it preserves raw history.

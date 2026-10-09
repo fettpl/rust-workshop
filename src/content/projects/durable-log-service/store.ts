@@ -1,4 +1,8 @@
 import type { ProjectPackage } from "../../../domain/types";
+import {
+  streamCapacityTests,
+  streamCapacityTestsStarter,
+} from "./stream-capacity";
 
 export const storeManifest = String.raw`[package]
 name = "ingest-store"
@@ -64,6 +68,7 @@ const storeSolution = String.raw`#![forbid(unsafe_code)]
 
 use std::error::Error;
 use std::fmt;
+use std::num::NonZeroUsize;
 use std::path::Path;
 use std::time::Duration;
 
@@ -114,6 +119,7 @@ impl Error for StoreError {
 pub struct Store {
     connection: Connection,
     max_events: usize,
+    per_stream_limit: Option<NonZeroUsize>,
 }
 
 fn map_sqlite_error(error: rusqlite::Error) -> StoreError {
@@ -235,7 +241,20 @@ impl Store {
         Ok(Self {
             connection,
             max_events,
+            per_stream_limit: None,
         })
+    }
+
+    /// Dodaje limit źródła do globalnego limitu; konfiguracja obowiązuje do zamknięcia.
+    /// Ponowne otwarcie zmienia regułę przyjęcia, bez usuwania istniejących zdarzeń.
+    pub fn open_with_stream_limit(
+        path: &Path,
+        max_events: usize,
+        per_stream_limit: NonZeroUsize,
+    ) -> Result<Self, StoreError> {
+        let mut store = Self::open(path, max_events)?;
+        store.per_stream_limit = Some(per_stream_limit);
+        Ok(store)
     }
 
     pub fn ingest(&mut self, event: &Event) -> Result<Receipt, StoreError> {
@@ -276,6 +295,18 @@ impl Store {
                 .map_err(map_sqlite_error)?;
             if count < 0 || count as usize >= self.max_events {
                 return Err(StoreError::Full);
+            }
+            if let Some(limit) = self.per_stream_limit {
+                let stream_count: i64 = transaction
+                    .query_row(
+                        "SELECT count(*) FROM events WHERE source = ?1",
+                        params![event.source()],
+                        |row| row.get(0),
+                    )
+                    .map_err(map_sqlite_error)?;
+                if stream_count < 0 || stream_count as usize >= limit.get() {
+                    return Err(StoreError::Full);
+                }
             }
             transaction
                 .execute(
@@ -330,23 +361,43 @@ mod tests {
 
     #[test]
     fn failed_commit_never_returns_a_success_receipt() {
-        let (directory, path) = temporary_path();
-        let mut store = Store::open(&path, 10).expect("store");
-        *FAIL_NEXT_COMMIT.lock().expect("commit seam mutex") = true;
-        assert!(matches!(
-            store.ingest(
-                &Event::new(
-                    "source".to_owned(),
-                    "key".to_owned(),
-                    Level::Info,
-                    "message".to_owned(),
-                )
-                .expect("event")
-            ),
-            Err(StoreError::Storage(_))
-        ));
-        assert_eq!(store.count().expect("count"), 0);
-        fs::remove_dir_all(directory).expect("cleanup");
+        for use_stream_limit in [false, true] {
+            let (directory, path) = temporary_path();
+            let mut store = if use_stream_limit {
+                Store::open_with_stream_limit(&path, 10, NonZeroUsize::new(1).unwrap())
+            } else {
+                Store::open(&path, 10)
+            }
+            .expect("store");
+            let event = Event::new(
+                "source".to_owned(),
+                "key".to_owned(),
+                Level::Info,
+                "message".to_owned(),
+            )
+            .expect("event");
+            *FAIL_NEXT_COMMIT.lock().expect("commit seam mutex") = true;
+            assert!(matches!(store.ingest(&event), Err(StoreError::Storage(_))));
+            assert_eq!(store.count().expect("count after failure"), 0);
+            drop(store);
+            let mut reopened = if use_stream_limit {
+                Store::open_with_stream_limit(&path, 10, NonZeroUsize::new(1).unwrap())
+            } else {
+                Store::open(&path, 10)
+            }
+            .expect("reopened store");
+            assert_eq!(reopened.count().expect("durable count after failure"), 0);
+            assert_eq!(
+                reopened.ingest(&event).expect("capacity was not consumed"),
+                Receipt {
+                    sequence: 1,
+                    disposition: Disposition::Inserted
+                }
+            );
+            assert_eq!(reopened.count().expect("count after success"), 1);
+            drop(reopened);
+            fs::remove_dir_all(directory).expect("cleanup");
+        }
     }
 }
 `;
@@ -695,6 +746,11 @@ fn migration_contract_is_implemented_in_task_two() {}
 `;
 
 export const ingestStoreFiles: ProjectPackage["files"] = [
+  {
+    path: "crates/ingest-store/tests/stream_capacity.rs",
+    starter: streamCapacityTestsStarter,
+    solution: streamCapacityTests,
+  },
   {
     path: "crates/ingest-store/Cargo.toml",
     starter: storeManifest,

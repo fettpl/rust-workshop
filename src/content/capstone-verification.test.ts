@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { capstoneMutants, capstoneMutantTestArgs } from "../../scripts/capstone-mutants";
 import {
   classifyCommandResult,
   isAllowedCapstoneArgs,
@@ -75,6 +76,153 @@ describe("capstone verifier boundaries", () => {
     const extraPassing = "running 2 tests\ntest named ... FAILED\ntest helper ... ok\ntest result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s";
     expect(isRejectedMutant({ status: 101, signal: null, stdout: extraPassing, stderr: "" }, { phase: "test", namedTest: "named" })).toBe(false);
     expect(isRejectedMutant({ status: 0, signal: null, stdout: unrelated, stderr: "" }, { phase: "test", namedTest: "named" })).toBe(false);
+  });
+
+  it("requires the designated restored test to run and pass", () => {
+    const result = (stdout: string) => ({
+      status: 0,
+      signal: null,
+      stdout,
+      stderr: "",
+    });
+    expect(
+      classifyCommandResult(
+        result(
+          "running 0 tests\ntest result: ok. 0 passed; 0 failed; 0 ignored;",
+        ),
+        "named",
+      ),
+    ).toBe("missing-test");
+    expect(
+      classifyCommandResult(
+        result(
+          "running 1 test\ntest other ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored;",
+        ),
+        "named",
+      ),
+    ).toBe("missing-test");
+    expect(
+      classifyCommandResult(
+        result(
+          "running 1 test\ntest named ... ignored\ntest result: ok. 0 passed; 0 failed; 1 ignored;",
+        ),
+        "named",
+      ),
+    ).toBe("infrastructure-error");
+    expect(
+      classifyCommandResult(
+        result(
+          "running 1 test\ntest named ... ok\ntest result: ok. 1 passed; 0 failed; 0 ignored;",
+        ),
+        "named",
+      ),
+    ).toBe("passed");
+  });
+
+  it("keeps subprocess errors and mixed compile output inconclusive", () => {
+    const stdout =
+      "running 1 test\ntest named ... FAILED\ntest result: FAILED. 0 passed; 1 failed; 0 ignored;";
+    expect(
+      classifyCommandResult(
+        { status: 101, signal: null, stdout, error: { code: "ENOENT" } },
+        "named",
+      ),
+    ).toBe("infrastructure-error");
+    expect(
+      classifyCommandResult(
+        {
+          status: 101,
+          signal: null,
+          stdout,
+          stderr: "error[E0308]: could not compile",
+        },
+        "named",
+      ),
+    ).toBe("compile-error");
+    expect(
+      isRejectedMutant(
+        {
+          status: 101,
+          signal: null,
+          stdout,
+          stderr: "error[E0308]: could not compile",
+        },
+        { phase: "test", namedTest: "named" },
+      ),
+    ).toBe(false);
+  });
+
+  it("declares the Rust target for each existing mutant explicitly", () => {
+    expect(
+      capstoneMutants
+        .slice(0, 8)
+        .map((mutant) => Reflect.get(mutant, "testTarget")),
+    ).toEqual([
+      { crate: "ingest-store", integration: "transactions" },
+      { crate: "ingest-store", integration: "transactions" },
+      { crate: "ingest-store", library: true },
+      { crate: "ingest-service", integration: "lifecycle" },
+      { crate: "ingest-service", integration: "lifecycle" },
+      { crate: "ingest-service", integration: "lifecycle" },
+      { crate: "ingest-core", integration: "public_api" },
+      { crate: "ingest-store", integration: "migrations" },
+    ]);
+  });
+
+  it("routes a stream mutant through metadata even when its name resembles another target", () => {
+    const mutant = {
+      ...capstoneMutants[0],
+      path: "crates/ingest-core/src/protocol.rs",
+      namedTest: "migration_failed_commit",
+      testTarget: {
+        crate: "ingest-store",
+        integration: "stream_capacity",
+      } as const,
+    };
+    expect(capstoneMutantTestArgs(mutant)).toEqual([
+      "test",
+      "-p",
+      "ingest-store",
+      "--test",
+      "stream_capacity",
+      "--offline",
+      "--locked",
+      "migration_failed_commit",
+    ]);
+  });
+
+  it("declares five independently caught capacity defects on the maintained target", () => {
+    const expected = [
+      [
+        "stream-count-is-global",
+        "stream_capacity_k_two_counts_each_source_independently",
+      ],
+      [
+        "stream-admission-before-identity",
+        "stream_capacity_k_one_preserves_retry_conflict_and_rejected_rows",
+      ],
+      [
+        "stream-count-ignores-committed-rows",
+        "stream_capacity_same_limit_reopen_uses_committed_occupancy",
+      ],
+      [
+        "lower-stream-limit-deletes-rows",
+        "stream_capacity_lower_then_raise_preserves_rows_and_original_receipts",
+      ],
+      [
+        "stream-full-returns-success",
+        "stream_capacity_k_one_preserves_retry_conflict_and_rejected_rows",
+      ],
+    ];
+    expect(
+      capstoneMutants.slice(8).map(({ id, namedTest }) => [id, namedTest]),
+    ).toEqual(expected);
+    for (const mutant of capstoneMutants.slice(8)) {
+      expect(mutant.testTarget).toEqual({
+        crate: "ingest-store",
+        integration: "stream_capacity",
+      });
+    }
   });
 
   it("does not serialize environment secrets into toolchain metadata", () => {

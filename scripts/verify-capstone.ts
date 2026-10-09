@@ -22,7 +22,7 @@ import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
 import { durableLogServicePackage } from "../src/content/projects/durable-log-service/archive";
 import { buildProjectArchive } from "./project-archive";
-import { capstoneMutants, type CapstoneMutant } from "./capstone-mutants";
+import { capstoneMutants, capstoneMutantTestArgs, type CapstoneMutant } from "./capstone-mutants";
 
 export interface CapstoneArgs {
   fetch: boolean;
@@ -116,6 +116,7 @@ interface NamedTestObservation {
   discovered: string[];
   designated: string[];
   failures: string[];
+  passes: string[];
   runCount: number | null;
   summary: { state: "ok" | "FAILED"; passed: number; failed: number } | null;
 }
@@ -140,6 +141,7 @@ function observeNamedTest(
   return {
     discovered: records.map(({ name }) => name),
     designated,
+    passes: records.filter(({ state }) => state === "ok").map(({ name }) => name),
     failures: records
       .filter(({ state }) => state === "FAILED")
       .map(({ name }) => name),
@@ -162,7 +164,8 @@ function hasExpectedNamedTestFailure(
   if (
     result.status !== expectedStatus ||
     result.signal ||
-    result.error
+    result.error ||
+    /error\[E|could not compile|aborting due to/.test(combinedOutput(result))
   )
     return false;
   const observation = observeNamedTest(result, namedTest);
@@ -192,15 +195,23 @@ export function classifyCommandResult(
     return "signal";
   if (result.error?.code === "ETIMEDOUT" || result.status === 124)
     return "timeout";
-  if (result.status === 0) return "passed";
-  if (!output.trim()) return "empty-output";
+  if (result.error) return "infrastructure-error";
+  if (!output.trim()) return result.status === 0 && !namedTest ? "passed" : "empty-output";
   if (namedTest) {
     const observation = observeNamedTest(result, namedTest);
-    if (hasExpectedNamedTestFailure(result, namedTest)) return "test-failure";
     if (/error\[E|could not compile|aborting due to/.test(output)) return "compile-error";
+    if (hasExpectedNamedTestFailure(result, namedTest)) return "test-failure";
     if (observation.designated.length !== 1) return "missing-test";
+    if (
+      result.status === 0 && observation.runCount === 1 &&
+      observation.discovered.length === 1 && observation.passes.length === 1 &&
+      observation.passes[0] === observation.designated[0] &&
+      observation.summary?.state === "ok" && observation.summary.passed === 1 &&
+      observation.summary.failed === 0
+    ) return "passed";
     return "infrastructure-error";
   }
+  if (result.status === 0) return "passed";
   if (/test result: FAILED/.test(output)) return "test-failure";
   return /error\[E|could not compile|aborting due to/.test(output)
     ? "compile-error"
@@ -236,6 +247,8 @@ interface RecordedCommand {
 
 interface MutantRecord {
   id: string;
+  testTarget: CapstoneMutant["testTarget"];
+  namedTest: string;
   compile?: RecordedCommand;
   test?: RecordedCommand;
   restored?: RecordedCommand;
@@ -300,6 +313,7 @@ function runCommand(
   cwd: string,
   args: string[],
   timeoutMs = 120_000,
+  namedTest?: string,
 ): RecordedCommand {
   const started = Date.now();
   const result = spawnSync(toolchain.cargo, args, {
@@ -319,7 +333,7 @@ function runCommand(
     error: result.error
       ? { code: (result.error as NodeJS.ErrnoException).code, message: result.error.message }
       : undefined,
-  });
+  }, namedTest);
   return {
     command: toolchain.cargo,
     args,
@@ -437,7 +451,7 @@ function runMutant(
   commands: RecordedCommand[],
   mutantRecords: MutantRecord[],
 ): MutantRecord {
-  const record: MutantRecord = { id: mutant.id, accepted: false };
+  const record: MutantRecord = { id: mutant.id, testTarget: mutant.testTarget, namedTest: mutant.namedTest, accepted: false };
   mutantRecords.push(record);
   const packageRoot = extractExactArchive(
     solutionArchive,
@@ -448,28 +462,21 @@ function runMutant(
   const reference = readFileSync(sourcePath, "utf8");
   const mutated = mutant.mutate(reference);
   assert.notEqual(mutated, reference, `${mutant.id} did not mutate source`);
-  const testTarget = mutant.path.includes("ingest-core")
-    ? ["-p", "ingest-core", "--test", "public_api"]
-    : mutant.path.includes("ingest-store")
-      ? mutant.namedTest.startsWith("failed_commit")
-        ? ["-p", "ingest-store", "--lib"]
-        : ["-p", "ingest-store", "--test", /migration|schema/.test(mutant.namedTest) ? "migrations" : "transactions"]
-      : ["-p", "ingest-service", "--test", "lifecycle"];
+  const testArgs = capstoneMutantTestArgs(mutant);
   let failure: unknown;
   writeFileSync(sourcePath, mutated);
   try {
     record.compile = recordCommand(commands, runCommand(toolchain, packageRoot, ["test", "--workspace", "--offline", "--locked", "--no-run"]));
     expectSuccess(record.compile, `${mutant.id} must compile`);
-    record.test = recordCommand(commands, runCommand(toolchain, packageRoot, ["test", ...testTarget, "--offline", "--locked", mutant.namedTest], 60_000));
+    record.test = recordCommand(commands, runCommand(toolchain, packageRoot, testArgs, 60_000, mutant.namedTest));
     assert(isRejectedMutant(record.test, { phase: "test", namedTest: mutant.namedTest }), `${mutant.id} was not rejected: ${record.test.classification}\n${record.test.stdout}\n${record.test.stderr}`);
-    record.accepted = true;
   } catch (error) {
     failure = error;
     record.error = error instanceof Error ? error.message : String(error);
   } finally {
     writeFileSync(sourcePath, reference);
     try {
-      record.restored = recordCommand(commands, runCommand(toolchain, packageRoot, ["test", ...testTarget, "--offline", "--locked", mutant.namedTest], 60_000));
+      record.restored = recordCommand(commands, runCommand(toolchain, packageRoot, testArgs, 60_000, mutant.namedTest));
       expectTestOutput(record.restored, `${mutant.id} restored reference`);
     } catch (error) {
       record.error ??= error instanceof Error ? error.message : String(error);
@@ -477,6 +484,7 @@ function runMutant(
     }
   }
   if (failure) throw failure;
+  record.accepted = true;
   return record;
 }
 
