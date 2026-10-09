@@ -1,3 +1,4 @@
+import { dynTransferStep } from "./async-lending-dyn-transfer";
 import type {
   Competency,
   Concept,
@@ -602,6 +603,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      dynTransferStep,
     ],
     misconceptions: [
       "dyn robi każdy trait automatycznie obiektowym",
@@ -618,6 +620,7 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
 for (const lesson of asyncLendingBoundaryLessons) {
   const family = boundaryEvidenceFamilies[lesson.id];
   for (const step of lesson.steps) {
+    if (step.id === "async-lending-dyn-adapter-borrowed-sources") continue;
     step.evidence = {
       version: 2,
       conceptIds: [...lesson.conceptIds],

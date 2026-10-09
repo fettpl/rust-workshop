@@ -92,7 +92,27 @@ for (const moduleId of [
       .locator(".module-picker > button")
       .filter({ hasText: stage.title })
       .click();
+    if (moduleId === "async-lending-contracts") {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect(
+        page.getByText(stage.exitGate.join(" "), { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(stage.exitGate.join(" "), { exact: true }),
+      ).toContainText(
+        "Receiver, callback i adapter dyn mają po dwie opisane rodziny primary",
+      );
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      ).toBe(true);
+    }
     await page.locator(".gate-action").first().click();
+    if (moduleId === "async-lending-contracts") {
+      // Keep the established editor flow desktop-sized after mobile map navigation.
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
     await expect(page.locator(".task-pane h1")).toHaveText(step.title);
     await page
       .getByRole("button", { name: "Prosty edytor", exact: true })
@@ -343,6 +363,9 @@ for (const moduleId of [
           .getByRole("button", { name: stage.title, exact: true })
           .click();
         await isolatedPage.locator(".gate-action").first().click();
+        await expect(isolatedPage.locator(".task-pane h1")).toHaveText(
+          batchStep!.title,
+        );
         await isolatedPage
           .getByRole("button", { name: "Pomóż mi to zrozumieć" })
           .click();
@@ -358,12 +381,79 @@ for (const moduleId of [
         await isolatedPage
           .getByRole("button", { name: stage.title, exact: true })
           .click();
-        await expect(isolatedPage.locator(".module-connections")).toContainText(
-          "Brak świeżego samodzielnego wariantu",
-        );
         await isolatedPage.locator(".gate-action").first().click();
         await expect(isolatedPage.locator(".task-pane h1")).toHaveText(
           isolatedCallbackStep.title,
+        );
+        await isolatedPage
+          .getByRole("button", { name: "Pomóż mi to zrozumieć" })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż drugą wskazówkę" })
+          .click();
+        await isolatedPage
+          .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: stage.title, exact: true })
+          .click();
+        const callbackCriterion = stage.gateCriteria![1];
+        const newCallbackRef = callbackCriterion.taskRefs[2];
+        expect(newCallbackRef.stepId).toBe(
+          "async-lending-callbacks-bounded-transform",
+        );
+        const newCallbackStep = lessons
+          .find((item) => item.id === newCallbackRef.lessonId)!
+          .steps.find((item) => item.id === newCallbackRef.stepId)!;
+        const callbackRow = isolatedPage
+          .locator(".gate-panel li")
+          .filter({ hasText: callbackCriterion.label });
+        await expect(callbackRow).not.toContainText(
+          "Brak świeżego samodzielnego wariantu",
+        );
+        await callbackRow
+          .getByRole("button", { name: "Sprawdź w zadaniu" })
+          .click();
+        await expect(isolatedPage.locator(".task-pane h1")).toHaveText(
+          newCallbackStep.title,
+        );
+        await isolatedPage
+          .getByRole("button", { name: "Pomóż mi to zrozumieć" })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż drugą wskazówkę" })
+          .click();
+        await isolatedPage
+          .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+          .click();
+        await expect(isolatedPage.locator(".solution-warning")).toContainText(
+          "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+        );
+        await isolatedPage
+          .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+          .click();
+        await isolatedPage
+          .getByRole("button", { name: stage.title, exact: true })
+          .click();
+        await expect(isolatedPage.locator(".module-connections")).toContainText(
+          "Brak świeżego samodzielnego wariantu",
+        );
+        await expect(callbackRow).toContainText(
+          "Brak świeżego samodzielnego wariantu",
+        );
+        await expect(
+          callbackRow.getByRole("button", { name: "Sprawdź w zadaniu" }),
+        ).toHaveCount(0);
+        const nextCriterionRef = stage.gateCriteria![2].taskRefs[0];
+        const nextCriterionStep = lessons
+          .find((item) => item.id === nextCriterionRef.lessonId)!
+          .steps.find((item) => item.id === nextCriterionRef.stepId)!;
+        await isolatedPage.locator(".gate-action").first().click();
+        await expect(isolatedPage.locator(".task-pane h1")).toHaveText(
+          nextCriterionStep.title,
         );
       } finally {
         await isolatedContext.close();
@@ -447,7 +537,9 @@ test("packet 005 stop boundary preserves workspace state and gives a pause point
   );
   await expect(stagePlan).toContainText(finalStage.title);
 
-  await page.getByRole("button", { name: "Prosty edytor", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Prosty edytor", exact: true })
+    .click();
   const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
   await editor.fill(draft);
   await page.getByText("Twój notatnik", { exact: true }).click();
@@ -456,8 +548,12 @@ test("packet 005 stop boundary preserves workspace state and gives a pause point
     .fill(note);
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
-  await page.getByText("Potrzebuję pełnego rozwiązania", { exact: true }).click();
-  await page.getByRole("button", { name: "Pokaż rozwiązanie", exact: true }).click();
+  await page
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+    .click();
   await expect(
     page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
   ).toBeVisible();
