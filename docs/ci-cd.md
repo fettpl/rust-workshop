@@ -103,8 +103,8 @@ std-only, a Proptest jest używany wyłącznie w testach deweloperskich.
 `content:capstone -- --fetch` and `content:capstone -- --fetch --msrv` accept only
 the `--fetch` and `--msrv` flags. Each run invalidates its prior report, compares
 the generated archive with both served ZIP variants, extracts only the authored
-35-file workspace, and records bounded command output, toolchain versions, archive
-digest, recovery checks and eight controlled-mutant outcomes. A compile error,
+37-file workspace (10 Markdown files), and records bounded command output, toolchain versions, archive
+digest, recovery checks and 13 controlled-mutant outcomes. A compile error,
 timeout, signal, empty test run or infrastructure failure is never treated as
 mutant evidence. The release procedure stays on Hold until both stable and MSRV
 JSON reports are fresh and independently reviewed; live advisory/license review

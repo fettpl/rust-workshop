@@ -61,9 +61,9 @@ type AuthoredInstructionCard = {
   followUp?: AuthoredInstructionCard;
 };
 
-function learnerInstructionOf(project: unknown):
-  | AuthoredInstructionCard
-  | undefined {
+function learnerInstructionOf(
+  project: unknown,
+): AuthoredInstructionCard | undefined {
   return (project as { learnerInstruction?: AuthoredInstructionCard })
     .learnerInstruction;
 }
@@ -109,6 +109,36 @@ describe("Capstone: trwały serwis logów", () => {
         lesson.steps.filter((step) => step.evidenceGate),
       ),
     ).toHaveLength(12);
+  });
+
+  it("stages local source review and a disclosed lower/raise-K follow-up", () => {
+    const project = projects.find(
+      (candidate) => candidate.id === "durable-log-service",
+    )!;
+    const instruction = learnerInstructionOf(project)!;
+    expect(authoredInstructionText(instruction)).toContain("CHANGE-REVIEW.md");
+    expect(authoredInstructionText(instruction)).toContain("przeglądu");
+    expect(instruction.followUp).toBeDefined();
+    const followUp = authoredInstructionText(instruction.followUp!);
+    for (const requirement of [
+      "K=2",
+      "K=1",
+      "K=3",
+      "rekordy",
+      "receipt",
+      "wcześniej",
+      "samoocen",
+      "przegląd",
+      "klient–serwis",
+    ]) {
+      expect(followUp).toContain(requirement);
+    }
+    expect(followUp).toContain("znana zmiana wymagania");
+    expect(followUp).toContain("nie przyznaje");
+    expect(project.package?.starterRevealStepRefs).toEqual([]);
+    expect(project.package?.revealStepRefs.map((ref) => ref.stepId)).toEqual(
+      gateIds,
+    );
   });
 
   it("publikuje dokładnie sześć lekcji, pojęć, kompetencji i źródeł", () => {

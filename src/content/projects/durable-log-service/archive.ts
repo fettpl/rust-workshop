@@ -289,6 +289,25 @@ Przygotuj własne testy i dowody dla sekwencji \`K=1\`, dwóch strumieni przy \`
 restartu, awarii magazynu i zadeklarowanej granicy współbieżności. Pobrany pakiet
 oraz znane studium przypadku są pomocą, nie
 automatycznym wykonaniem kodu uczącego się ani zaliczeniem.
+
+Pracuj z CHANGE-REVIEW.md: zidentyfikuj własne źródła, porównaj dwa projekty,
+zachowaj rzeczywisty błąd i wynik poprawki, potem oddaj etap A do przeglądu.
+Etap B obniża i podnosi K po ponownym otwarciu. Zapisz wcześniejszą ekspozycję;
+znana zmiana wymagania jest ćwiczeniem, nie dowodem niewidzianego transferu.
+
+## Granica ujawnionej referencji autora kursu
+
+Opcjonalna ścieżka referencyjna to Store::open_with_stream_limit(path,
+max_events, per_stream_limit), gdzie per_stream_limit ma typ NonZeroUsize,
+a strumieniem jest Event.source. Store::open(path, max_events) zachowuje
+wyłącznie dotychczasowy limit globalny. Config, protokół i domyślny serwis
+pozostają bez zmian; domyślny serwis nie włącza limitu K na strumień.
+
+crates/ingest-store/tests/stream_capacity.rs sprawdza referencyjny Store,
+w tym zamknięcie i ponowne otwarcie z innym K. Nie jest to test twojego kodu
+ani dowód integracji klient–serwis dla nowej reguły. Samodzielnie wybierasz
+API własnego rozwiązania i sprawdzasz całą zadeklarowaną ścieżkę działania.
+
 `;
 
 const starterReadme = `# Trwały dziennik zdarzeń
@@ -325,6 +344,129 @@ częściowego zapisu. Próby jednoczesne dodaj tylko wtedy, gdy deklarujesz
 obsługę współbieżności; implementacja jednoprocesowa może
 opisać i zademonstrować swoją granicę. Wybierz miejsce reguły i uzasadnij granicę transakcji
 oraz przyjęcia żądania.
+
+Pracuj z CHANGE-REVIEW.md: zidentyfikuj własne źródła, porównaj dwa projekty,
+zachowaj rzeczywisty błąd i wynik poprawki, potem oddaj etap A do przeglądu.
+Etap B obniża i podnosi K po ponownym otwarciu. Zapisz wcześniejszą ekspozycję;
+znana zmiana wymagania jest ćwiczeniem, nie dowodem niewidzianego transferu.
+
+`;
+
+const changeReviewWorksheet = `# Zmiana i przegląd własnego projektu
+
+Ten arkusz prowadzi pracę lokalną. Wpisuj ścieżki lub odnośniki do własnych
+źródeł, testów i zapisanych wyników, zamiast samych zapewnień o poprawności.
+Puste pole oznacza „nie zaobserwowano”. Nie ma punktacji ani poświadczenia
+mastery. Pobranie arkusza i uruchomienie Cargo poza aplikacją nie przyznaje
+zaliczenia, niezależnej bramki ani miejsca w kolejce powtórek.
+
+## 1. Identyfikacja własnego źródła
+
+- Autor i data pracy: ___
+- Wersja bazowa: własny commit Git albo datowana kopia źródeł ze ścieżką: ___
+- Wersja po zmianie: własny commit Git albo datowana kopia ze ścieżką: ___
+- Dokładna wersja narzędzi (zapis wyniku rustc --version i cargo --version): ___
+- Wcześniej przeczytane materiały, rozwiązania i otrzymana pomoc: ___
+
+Źródła z archiwum kursu są materiałem autora kursu. Twoim artefaktem jest
+własna zidentyfikowana wersja programu, testów i uzasadnienia. Użycie referencji
+przed samodzielną pracą jest pomocą; nie zeruje wcześniejszej ekspozycji.
+
+## 2. Dwa projekty rozwiązania
+
+- Własne sformułowanie wymagania i definicja strumienia: ___
+- Kandydat A, koszty i ryzyko: ___
+- Kandydat B, koszty i ryzyko: ___
+- Wybrany projekt, granica transakcji oraz właściciel zapisu: ___
+- Powód odrzucenia drugiego projektu: ___
+- Jak zachowujesz niezależny limit globalny i zgodność dotychczasowych klientów: ___
+- Zadeklarowana granica współbieżności i czego nie sprawdzono: ___
+
+Sam wybierasz typy, nazwy funkcji, API i układ testów. Nie trzeba odtwarzać
+architektury referencji. Osobno sprawdź własne połączenie klient–serwis–magazyn;
+test samego magazynu autora kursu nie dowodzi działania twojej integracji.
+
+## 3. Rzeczywista próba przed poprawką i po niej
+
+- Własny test regresji (ścieżka i nazwa): ___
+- Polecenie przed poprawką, wersja źródła, data i kod wyjścia: ___
+- Zapis rzeczywiście zaobserwowanego błędu semantycznego (ścieżka do wyniku): ___
+- Poprawka i uzasadnienie (odnośnik do zmiany): ___
+- Polecenie po poprawce, wersja źródła, data i kod wyjścia: ___
+- Zapis rzeczywiście zaobserwowanego wyniku po poprawce: ___
+- Osobno błędy kompilacji, timeouty lub awarie infrastruktury: ___
+
+Nie wpisuj oczekiwanego wyniku jako wykonanego polecenia. Awaria infrastruktury
+nie jest poprawnym odrzuceniem domenowym ani wykryciem błędu zachowania.
+
+## 4. Etap A: macierz obserwacji
+
+W każdej pozycji wybierz: spełniono / nie spełniono / nie zaobserwowano.
+Wpisz odnośnik do testu lub obserwacji, wersję źródła i wynik polecenia.
+
+| Wymaganie | Stan | Test lub obserwacja |
+| --- | --- | --- |
+| K=1: pierwszy zatwierdzony zapis i jego receipt | nie zaobserwowano | ___ |
+| Pełny limit: identyczna próba zwraca pierwotny receipt | nie zaobserwowano | ___ |
+| Ten sam ID: konflikt treści i konflikt korelacji | nie zaobserwowano | ___ |
+| Nowy ID przy pełnym limicie: brak wiersza i sukcesu | nie zaobserwowano | ___ |
+| K=2: niezależne zapełnianie co najmniej dwóch strumieni | nie zaobserwowano | ___ |
+| Limit globalny nadal ogranicza całość | nie zaobserwowano | ___ |
+| Zamknięcie i ponowne otwarcie: pełność, retry, konflikt i receipt | nie zaobserwowano | ___ |
+| Awaria magazynu: brak sukcesu i częściowego zapisu | nie zaobserwowano | ___ |
+| Własna integracja klient–serwis–magazyn | nie zaobserwowano | ___ |
+
+## 5. Etap B: K=2 → K=1 → K=3, po pierwszym przeglądzie
+
+Wcześniejsza ekspozycja: czy znano tę zmianę, publiczne źródło, rozwiniętą kartę
+lub rozwiązanie przed etapem A? Zapisz co i kiedy: ___
+Zwinięta karta nie ukrywa wymagania. Znany wariant to praktyka zmiany wymagania,
+a nie niewidziany transfer. Samoocena nie zastępuje przeglądu źródeł przez osobę.
+
+Wdrożenie obniża K poniżej zajętości po zamknięciu i ponownym otwarciu magazynu.
+Istniejące rekordy muszą przetrwać. Identyczna próba nadal zwraca pierwotny
+receipt, konflikt nadal jest konfliktem, a nowe ID jest odrzucane przy pełności.
+Kolejny restart podnosi K i pozwala przyjmować nowe ID do nowej granicy.
+Nie dodawaj usuwania danych ani przeładowania ustawień działającego procesu.
+
+- Osoba, data i odnośnik do pierwszego przeglądu etapu A: ___
+- Nowe wymaganie opisane własnymi słowami: ___
+- Dwa rekordy jednego strumienia przy K=2: źródło, test i oba receipt: ___
+- Ponowne otwarcie z K=1: oba rekordy zachowane, retry i konflikt: ___
+- Nowy ID odrzucony bez zmiany liczby wierszy: ___
+- Ponowne otwarcie z K=3: dokładnie jeden nowy zapis, następny odrzucony: ___
+- Oddzielny strumień i zachowany limit globalny: ___
+- Zmiany implementacji i testów, rzeczywiste polecenia i kody wyjścia: ___
+- Różnica własnej integracji klient–serwis i pozostałe ograniczenia: ___
+
+## 6. Przegląd i poprawki
+
+- Samoocena autora, z odnośnikami do źródeł i obserwacji: ___
+- Przegląd innej osoby: kto, kiedy, zakres źródeł i wyników rzeczywiście obejrzanych: ___
+- Obserwacja pracy przez inną osobę, jeśli była: ___
+- Uwagi recenzenta i otwarte pytania: ___
+- Poprawki po uwagach, identyfikacja wersji i wyniki ponownych poleceń: ___
+- Co pozostaje nie spełnione lub nie zaobserwowano: ___
+
+Nie nazywaj samoopisu przeglądem człowieka. Wypełniony arkusz nie dowodzi
+samodzielności ani gotowości zawodowej i nie aktualizuje stanu nauki w aplikacji.
+`;
+
+const solutionChangeReviewWorksheet =
+  changeReviewWorksheet +
+  `
+## Granica ujawnionej referencji autora kursu
+
+Opcjonalna ścieżka referencyjna to Store::open_with_stream_limit(path,
+max_events, per_stream_limit), gdzie per_stream_limit ma typ NonZeroUsize,
+a strumieniem jest Event.source. Store::open(path, max_events) zachowuje
+wyłącznie dotychczasowy limit globalny. Config, protokół i domyślny serwis
+pozostają bez zmian; domyślny serwis nie włącza limitu K na strumień.
+
+crates/ingest-store/tests/stream_capacity.rs sprawdza referencyjny Store,
+w tym zamknięcie i ponowne otwarcie z innym K. Nie jest to test twojego kodu
+ani dowód integracji klient–serwis dla nowej reguły. Samodzielnie wybierasz
+API własnego rozwiązania i sprawdzasz całą zadeklarowaną ścieżkę działania.
 `;
 
 const protocol = `# Protokół
@@ -500,6 +642,7 @@ export const durableLogServiceWorkspacePaths = [
   "Cargo.toml",
   "Cargo.lock",
   "README.md",
+  "CHANGE-REVIEW.md",
   "PROTOCOL.md",
   "THREAT_MODEL.md",
   "RUNBOOK.md",
@@ -521,6 +664,11 @@ const documentationFiles: ProjectPackage["files"] = [
   },
   { path: "Cargo.lock", starter: lockfile, solution: lockfile },
   { path: "README.md", starter: starterReadme, solution: readme },
+  {
+    path: "CHANGE-REVIEW.md",
+    starter: changeReviewWorksheet,
+    solution: solutionChangeReviewWorksheet,
+  },
   { path: "PROTOCOL.md", starter: starterProtocol, solution: protocol },
   {
     path: "THREAT_MODEL.md",
@@ -557,6 +705,7 @@ export const durableLogServicePackage: ProjectPackage = {
     "Zacznij od testów publicznego API i zanotuj wymagane granice oraz decyzje protokołu.",
     "Uruchamiaj cargo fmt --all -- --check, cargo check --workspace --locked oraz cargo test --workspace --locked.",
     "Przeczytaj ADR-y, zaproponuj własne niezmienniki i powiąż każdą decyzję z testem kontraktu.",
+    "Wypełnij CHANGE-REVIEW.md dla własnych źródeł i rzeczywistych poleceń; po przeglądzie etapu A wykonaj zmianę K=2 → K=1 → K=3 i zanotuj wcześniejszą ekspozycję.",
     "Zmiana wymagania: dodaj konfigurowalny limit K na strumień; zachowaj idempotentną identyczną próbę, konflikt ID, odrzucenie nowego ID bez wiersza i potwierdzenia sukcesu, restart, awarię magazynu oraz opisaną granicę współbieżności dla K=1 i K=2.",
   ],
   workspaceMembers: [

@@ -19,10 +19,10 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
     expect(
       Object.keys(projectFiles(durableLogServicePackage, "solution")).sort(),
     ).toEqual([...durableLogServiceWorkspacePaths].sort());
-    expect(durableLogServiceWorkspacePaths).toHaveLength(35);
+    expect(durableLogServiceWorkspacePaths).toHaveLength(37);
   });
 
-  it("documents bounded K as a problem-only change card without adding artifacts", () => {
+  it("preserves the bounded K problem while adding a local change-review worksheet", () => {
     const readmes = {
       starter: projectFiles(durableLogServicePackage, "starter")["README.md"],
       solution: projectFiles(durableLogServicePackage, "solution")["README.md"],
@@ -56,26 +56,70 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
         /jednoprocesowa\s+może\s+opisać\s+i\s+zademonstrować\s+swoją\s+granicę/i,
       );
       expect(documentation, variant + " README").toMatch(/magazyn|storage/i);
-      expect(documentation, variant + " README").toMatch(/transakcj|granica.*przyję|admission/i);
-      expect(documentation, variant + " README").toMatch(/awari|błąd.*zapisu|storage failure/i);
-      expect(documentation, variant + " README").toMatch(/współbież|concurr|jednoproces/i);
+      expect(documentation, variant + " README").toMatch(
+        /transakcj|granica.*przyję|admission/i,
+      );
+      expect(documentation, variant + " README").toMatch(
+        /awari|błąd.*zapisu|storage failure/i,
+      );
+      expect(documentation, variant + " README").toMatch(
+        /współbież|concurr|jednoproces/i,
+      );
     }
     expect(durableLogServicePackage.workspaceMembers).toEqual([
       "crates/ingest-core",
       "crates/ingest-store",
       "crates/ingest-service",
     ]);
-    expect(durableLogServiceWorkspacePaths).toHaveLength(35);
+    expect(durableLogServiceWorkspacePaths).toHaveLength(37);
     expect(durableLogServicePackage.revealStepRefs).toHaveLength(12);
     expect(durableLogServicePackage.starterRevealStepRefs).toEqual([]);
   });
 
+  it("packages an unfilled learner worksheet and discloses the solution boundary", () => {
+    const starter = projectFiles(durableLogServicePackage, "starter");
+    const solution = projectFiles(durableLogServicePackage, "solution");
+    for (const files of [starter, solution]) {
+      const worksheet = files["CHANGE-REVIEW.md"];
+      expect(worksheet).toBeDefined();
+      for (const requirement of [
+        "Identyfikacja własnego źródła",
+        "Dwa projekty rozwiązania",
+        "Rzeczywista próba przed poprawką",
+        "nie zaobserwowano",
+        "K=2 → K=1 → K=3",
+        "Wcześniejsza ekspozycja",
+        "Samoocena",
+        "Przegląd innej osoby",
+        "kod wyjścia",
+        "globalny",
+        "klient–serwis",
+      ])
+        expect(worksheet).toContain(requirement);
+      expect(files["README.md"]).toContain("CHANGE-REVIEW.md");
+    }
+    const starterMaterial = [
+      starter["README.md"],
+      starter["CHANGE-REVIEW.md"],
+      starter["crates/ingest-store/tests/stream_capacity.rs"],
+    ].join("\n");
+    expect(starterMaterial).not.toContain("open_with_stream_limit");
+    expect(starterMaterial).not.toContain("SELECT COUNT");
+    expect(solution["README.md"]).toContain("Store::open_with_stream_limit");
+    expect(solution["CHANGE-REVIEW.md"]).toContain(
+      "Store::open(path, max_events)",
+    );
+    expect(solution["CHANGE-REVIEW.md"]).toContain("NonZeroUsize");
+    expect(solution["README.md"]).toContain("Event.source");
+    expect(solution["README.md"]).toContain("domyślny serwis");
+  });
+
   it("wiąże ekspozycję z ujawnionymi bramkami i zostawia blank/review niezależne", () => {
     const starterFiles = projectFiles(durableLogServicePackage, "starter");
-    expect(Object.keys(starterFiles)).toHaveLength(35);
+    expect(Object.keys(starterFiles)).toHaveLength(37);
     expect(
       Object.keys(starterFiles).filter((path) => path.endsWith(".md")),
-    ).toHaveLength(9);
+    ).toHaveLength(10);
     for (const [path, content] of Object.entries(starterFiles)) {
       expect(content.length, `starter file is empty: ${path}`).toBeGreaterThan(
         0,

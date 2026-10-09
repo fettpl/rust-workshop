@@ -40,8 +40,21 @@ export const durableLogServiceProject = {
       "Zbadaj awarię magazynu i brak częściowego zapisu. Próby jednoczesne dodaj tylko wtedy, gdy deklarujesz obsługę współbieżności; implementacja jednoprocesowa może jasno opisać i zademonstrować swoją granicę.",
       "Wybierz miejsce reguły i uzasadnij granicę transakcji oraz przyjęcia żądania. Nie kopiuj wewnętrznych nazw, sygnatur ani układu rozwiązania referencyjnego.",
       "Przygotuj własne testy i dowody dla sekwencji `K=1`, dwóch strumieni przy `K=2`, restartu, awarii magazynu oraz zadeklarowanej granicy współbieżności.",
+      "Użyj `CHANGE-REVIEW.md` z pakietu: wskaż własną wersję źródeł i narzędzi, porównaj dwa projekty rozwiązania, zachowaj rzeczywiście nieudane polecenie oraz wynik poprawki. Oddaj etap A do przeglądu przed etapem B.",
+      "Zachowaj niezależny limit globalny. Własna integracja klient–serwis–magazyn wymaga własnych testów; test magazynu autora kursu jej nie dowodzi.",
       "Rozdziel samoocenę od przeglądu człowieka lub obserwacji pracy. Pobrany pakiet i znane studium przypadku są pomocą; nie są automatycznym wykonaniem kodu uczącego się ani zaliczeniem tego zadania.",
     ],
+    followUp: {
+      title: "Po przeglądzie: obniżenie i podniesienie K",
+      summary:
+        "Etap B wykonaj po przeglądzie pierwszej wersji. Ta karta i źródła są publiczne: zapisz, czy wymaganie było wcześniej znane. To znana zmiana wymagania, jeśli już ją widziano; zwinięcie karty nie zapewnia niewidzianego transferu.",
+      points: [
+        "Zatwierdź dwa rekordy jednego strumienia przy `K=2`. Zamknij magazyn i otwórz go z `K=1`: oba rekordy muszą przetrwać, identyczna próba zwraca pierwotny receipt, zmieniona treść lub korelacja nadal daje konflikt. Nowy ID jest odrzucany bez zapisu i sukcesu.",
+        "Po kolejnym zamknięciu otwórz magazyn z `K=3`: przyjmij dokładnie jeden nowy rekord i odrzuć następny. Sprawdź receipt oraz liczbę wierszy, osobny strumień i zachowany limit globalny. Zmiana dotyczy ponownego otwarcia, bez usuwania rekordów i bez przeładowania działającego procesu.",
+        "W `CHANGE-REVIEW.md` powiąż zmianę własnych źródeł i testów z rzeczywistymi poleceniami, wynikami oraz uwagami recenzenta. Rozdziel samoocenę, przegląd źródeł przez inną osobę i obserwację pracy; zapisz wcześniejszą pomoc i ekspozycję.",
+        "Sprawdź własną integrację klient–serwis–magazyn. Referencja autora dowodzi opcjonalnej reguły Store; domyślny serwis jej nie włącza. Odczyt, pobranie i samoopis nie przyznaje zaliczenia, mastery ani dowodu samodzielności.",
+      ],
+    },
   },
   lessonIds: [
     "capstone-domain-boundary",
