@@ -41,9 +41,9 @@ export const asyncLendingModule: CourseModule = {
   ],
   lessonIds: criteria.map(([id]) => id),
   exitGate: [
-    "Rozwiążesz pięć kontraktów; gate i blank pozostają alternatywnymi formami tej samej rodziny, a receiver ma dodatkowe zadanie bounded batch z odrębną rodziną primary.",
-    "Powtórka jest osobnym ćwiczeniem recall; nie tworzy nowej rodziny primary ani drugiego niezależnego zadania.",
-    "Pozostałe cztery kontrakty pozostają prowizoryczne przy jednej opisanej rodzinie. Receiver może osiągnąć potwierdzenie po dwóch czystych rodzinach: receiver lease oraz bounded batch; pomoc nie tworzy nowej wersji.",
+    "Receiver, callback i adapter dyn mają po dwie opisane rodziny primary. Cancellation/commit i Send mają po jednej; potwierdzenie pojęcia wymaga dwóch kwalifikujących się czystych rodzin.",
+    "Gate i blank są alternatywami tej samej rodziny, a recall nie dodaje rodziny primary. Stara rodzina z pomocą i nowa czysta rodzina dają tylko jedną kwalifikującą się rodzinę; pomoc w obu może wyczerpać dostępne warianty.",
+    "Ukończenie modułu wymaga jednego samodzielnego kontraktu na kryterium i jest odrębne od potwierdzenia pojęcia. Dostępność dwóch opisanych rodzin nie oznacza, że uczeń już je potwierdził.",
   ],
   projectConnection:
     "Kontrakty są użyte w rozszerzeniu tokio-service-workshop: lokalny visitor pozostaje sekwencyjny, a owned producer może zostać wysłany do Tokio. Pakiet dokumentuje koszt boxed adaptera i ograniczenia rollbacku.",
@@ -62,7 +62,21 @@ export const asyncLendingModule: CourseModule = {
               stepId: "async-lending-receiver-bounded-batch",
             },
           ]
-        : []),
+        : id === "async-lending-callbacks"
+          ? [
+              {
+                lessonId: id,
+                stepId: "async-lending-callbacks-bounded-transform",
+              },
+            ]
+          : id === "async-lending-dyn-adapter"
+            ? [
+                {
+                  lessonId: id,
+                  stepId: "async-lending-dyn-adapter-borrowed-sources",
+                },
+              ]
+            : []),
     ],
   })),
 };

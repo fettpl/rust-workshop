@@ -1,10 +1,20 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { expect, it } from "vitest";
+import {
+  nativeDirectory,
+  nativeRun,
+  exactResult,
+  discardDirectory,
+} from "./async-lending-native-test-support";
+
 import { appendHiddenTests } from "../runner";
-import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtures";
+import {
+  asyncLendingAssessmentFixtures,
+  asyncLendingTransferMutants,
+} from "./async-lending-assessment-fixtures";
 import {
   asyncLendingCoreLessons,
   asyncLendingCoreReviewExercises,
@@ -25,9 +35,9 @@ const assessments = [
   ...Object.values(asyncLendingBoundaryReviewExercises),
 ];
 
-it("covers eleven coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
-  expect(assessments).toHaveLength(16);
-  expect(asyncLendingAssessmentFixtures).toHaveLength(16);
+it("covers thirteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
+  expect(assessments).toHaveLength(18);
+  expect(asyncLendingAssessmentFixtures).toHaveLength(18);
   expect(
     asyncLendingAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());
@@ -37,9 +47,98 @@ it("covers eleven coding assessments and five independent reviews with distinct 
       step.solution!.replace(/\s+/g, ""),
     );
     expect(fixture.mutant, fixture.id).not.toBe(fixture.equivalent);
-    for (const mutant of fixture.mutants ?? [])
+    expect(fixture.mutant, fixture.id).not.toBe(step.solution);
+    for (const mutant of fixture.mutants ?? []) {
       expect(mutant, fixture.id).not.toBe(fixture.equivalent);
+      expect(mutant, fixture.id).not.toBe(step.solution);
+    }
+    const descriptors = asyncLendingTransferMutants[fixture.id];
+    if (descriptors) {
+      expect(descriptors).toHaveLength(
+        fixture.id.includes("callbacks") ? 5 : 6,
+      );
+      expect(new Set(descriptors.map((item) => item.id)).size).toBe(
+        descriptors.length,
+      );
+      expect(
+        descriptors.every((item) =>
+          item.testName.startsWith("__rust_workshop_hidden_tests::"),
+        ),
+      ).toBe(true);
+      expect([fixture.mutant, ...(fixture.mutants ?? [])]).toEqual(
+        descriptors.map((item) => item.source),
+      );
+    }
   }
+});
+
+it("keeps the exact stable mutant ID to named assertion mapping", () => {
+  const qualified = (name: string) => `__rust_workshop_hidden_tests::${name}`;
+  expect(
+    Object.fromEntries(
+      Object.entries(asyncLendingTransferMutants).map(([id, descriptors]) => [
+        id,
+        descriptors.map((item) => [item.id, item.testName]),
+      ]),
+    ),
+  ).toEqual({
+    "async-lending-callbacks-bounded-transform": [
+      [
+        "emitted-output-budget",
+        qualified(
+          "input_budget_counts_filtered_records_and_repeated_calls_resume",
+        ),
+      ],
+      [
+        "commit-before-await",
+        qualified("first_error_keeps_prior_commits_and_replays_failing_record"),
+      ],
+      [
+        "skip-without-consumed-count",
+        qualified("all_filtered_records_still_use_input_budget"),
+      ],
+      [
+        "ignore-error-and-continue",
+        qualified("first_error_keeps_prior_commits_and_replays_failing_record"),
+      ],
+      [
+        "remove-pending-input",
+        qualified(
+          "dropping_pending_second_callback_keeps_current_input_and_prior_commits",
+        ),
+      ],
+    ],
+    "async-lending-dyn-adapter-borrowed-sources": [
+      [
+        "wrong-provider",
+        qualified("heterogeneous_local_routing_pointer_and_real_pending"),
+      ],
+      [
+        "pending-as-none",
+        qualified("heterogeneous_local_routing_pointer_and_real_pending"),
+      ],
+      [
+        "eager-provider-call",
+        qualified("eager_provider_is_not_invoked_by_unpolled_adapter"),
+      ],
+      [
+        "collect-one",
+        qualified(
+          "bounded_collection_retains_empty_records_remainder_and_exhaustion",
+        ),
+      ],
+      [
+        "skip-empty",
+        qualified(
+          "bounded_collection_retains_empty_records_remainder_and_exhaustion",
+        ),
+      ],
+      [
+        "wrong-borrowed-bytes",
+        qualified("borrowed_bytes_are_forwarded_without_substitution"),
+      ],
+    ],
+  });
 });
 
 it("keeps overlapping mutable batch borrows as a separate compiler-negative case", () => {
@@ -69,7 +168,7 @@ fn overlapping_mutable_borrows_are_rejected() {
     expect(compiled.status).not.toBe(0);
     expect(`${compiled.stdout}\n${compiled.stderr}`).toContain("cannot borrow");
   } finally {
-    rmSync(directory, { recursive: true, force: true });
+    discardDirectory(directory);
   }
 });
 
@@ -79,8 +178,68 @@ it.each(asyncLendingAssessmentFixtures)(
     const step = assessments.find((candidate) => candidate.id === fixture.id)!;
     if (!step.solution || step.evaluator?.kind !== "tests")
       throw new Error(`Missing test step ${fixture.id}`);
-    const directory = mkdtempSync(join(tmpdir(), "async-lending-assessment-"));
+    const directory = nativeDirectory(
+      `async-lending-assessment-${fixture.id}-`,
+    );
     try {
+      const descriptors = asyncLendingTransferMutants[fixture.id];
+      if (descriptors) {
+        const binaries: Record<string, string> = {};
+        for (const [name, source] of [
+          ["canonical", step.solution],
+          ["equivalent", fixture.equivalent],
+          ...descriptors.map((item) => [item.id, item.source]),
+        ] as const) {
+          const file = join(directory, `${name}.rs`);
+          const binary = join(directory, name);
+          writeFileSync(file, appendHiddenTests(source, step.evaluator.tests));
+          const compiled = nativeRun(
+            "rustc",
+            ["--edition=2024", "--test", file, "-o", binary],
+            directory,
+            60_000,
+          );
+          expect(compiled.error).toBeUndefined();
+          expect(compiled.signal).toBeNull();
+          expect(compiled.status, compiled.stderr).toBe(0);
+          binaries[name] = binary;
+        }
+        for (const name of ["canonical", "equivalent"]) {
+          const run = nativeRun(
+            binaries[name],
+            ["--test-threads=1"],
+            directory,
+            8_000,
+          );
+          expect(run.error).toBeUndefined();
+          expect(run.signal).toBeNull();
+          expect(run.status, run.stdout + run.stderr).toBe(0);
+          expect(run.stdout).toContain(
+            fixture.id.includes("callbacks")
+              ? "8 passed; 0 failed"
+              : "7 passed; 0 failed",
+          );
+        }
+        for (const descriptor of descriptors) {
+          const args = [
+            "--exact",
+            descriptor.testName,
+            "--test-threads=1",
+            "--nocapture",
+          ];
+          exactResult(
+            nativeRun(binaries[descriptor.id], args, directory, 8_000),
+            descriptor.testName,
+            false,
+          );
+          exactResult(
+            nativeRun(binaries.canonical, args, directory, 8_000),
+            descriptor.testName,
+            true,
+          );
+        }
+        return;
+      }
       const mutants = [fixture.mutant, ...(fixture.mutants ?? [])];
       for (const [name, source, expected] of [
         ["canonical", step.solution, 0],
@@ -112,7 +271,7 @@ it.each(asyncLendingAssessmentFixtures)(
         ).toBe(expected);
       }
     } finally {
-      rmSync(directory, { recursive: true, force: true });
+      discardDirectory(directory);
     }
   },
   240_000,
@@ -145,7 +304,7 @@ it.each(reviewSteps)(
       );
       expect(compiled.status, `${review.id}: ${compiled.stderr}`).not.toBe(0);
     } finally {
-      rmSync(directory, { recursive: true, force: true });
+      discardDirectory(directory);
     }
   },
   120_000,
@@ -173,6 +332,6 @@ it("rejects the Send gate starter because it borrows Rc across await", () => {
       "future cannot be sent between threads safely",
     );
   } finally {
-    rmSync(directory, { recursive: true, force: true });
+    discardDirectory(directory);
   }
 });

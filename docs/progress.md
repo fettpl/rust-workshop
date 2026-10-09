@@ -1,3 +1,5 @@
+Current M11 source candidate: [Async transfer contracts and evidence — 9 October 2026](async-transfer-evidence.md). Receiver, callback and dyn adapter now have two authored primary families each; cancellation/commit, Send and four unsafe concepts remain single-family (three of nine versus six). Source availability, learner confirmation and production/CI/local release acceptance are distinct; the dated records below retain their original meaning.
+
 # Rust Workshop — stan implementacji
 
 Latest accepted release before the session-scaffolding candidate: [M8 accepted release — 9 October 2026](verification.md#latest-accepted-release-before-session-scaffolding-candidate-9-october-2026). Packet 005 authored stops and pilot materials remain a separate candidate with no learner outcomes.

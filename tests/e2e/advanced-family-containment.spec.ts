@@ -1,13 +1,19 @@
 import { expect, test, type Page } from "@playwright/test";
 import { lessons, modules } from "../../src/content/course";
-import { courseEvidenceSummary } from "../../src/content/learning-context";
+import {
+  courseEvidencePolicy,
+  courseEvidenceSummary,
+} from "../../src/content/learning-context";
 import {
   createInitialState,
   createStepProgress,
   exportState,
   stepKey,
 } from "../../src/persistence/state";
-import { gateRecovery } from "../../src/engine/learning";
+import {
+  gateRecovery,
+  independentCodingTaskIds,
+} from "../../src/engine/learning";
 import type { EvidenceEvent, UserState } from "../../src/domain/types";
 
 const lesson = lessons.find((item) => item.id === "unsafe-miri-byte-view")!;
@@ -251,5 +257,437 @@ for (const assistance of assistanceCases) {
     await expect(page.locator(".solution-warning")).toContainText(
       "potwierdzenie samodzielności poczeka na inne świeże zadanie",
     );
+  });
+}
+
+// Intercepted successes below verify production UI/state flow only; no Rust runs.
+const asyncTransferCases = [
+  {
+    lessonId: "async-lending-callbacks",
+    conceptId: "async-lending-callback-borrow",
+    stepId: "async-lending-callbacks-bounded-transform",
+    family: "async-lending/callback-bounded-transform-v1",
+    oldFamily: "async-lending/sequential-callback-v1",
+    reviewExerciseId: "async-lending-callbacks-review",
+  },
+  {
+    lessonId: "async-lending-dyn-adapter",
+    conceptId: "async-lending-dyn-adapter",
+    stepId: "async-lending-dyn-adapter-borrowed-sources",
+    family: "async-lending/dyn-borrowed-sources-v1",
+    oldFamily: "async-lending/dyn-adapter-v1",
+    reviewExerciseId: "async-lending-dyn-adapter-review",
+  },
+] as const;
+
+type AsyncTransferCase = (typeof asyncTransferCases)[number];
+
+function asyncTransferContext(item: AsyncTransferCase) {
+  const lesson = lessons.find((candidate) => candidate.id === item.lessonId)!;
+  // Both accepted M10 lessons saved their existing gate at index 2.
+  const oldStep = lesson.steps[2];
+  expect(oldStep.id).toBe(`${item.lessonId}-gate`);
+  const blank = lesson.steps.find(
+    (candidate) => candidate.id === `${item.lessonId}-blank`,
+  )!;
+  const transfer = lesson.steps.find(
+    (candidate) => candidate.id === item.stepId,
+  )!;
+  expect(lesson.steps.at(-1)).toBe(transfer);
+  expect(transfer.evidence).toEqual({
+    version: 2,
+    conceptIds: [item.conceptId],
+    codingTaskId: item.family,
+  });
+  const stage = modules.find((candidate) => candidate.id === lesson.moduleId)!;
+  const criterion = stage.gateCriteria!.find((candidate) =>
+    candidate.taskRefs.some((ref) => ref.stepId === item.stepId),
+  )!;
+  return { lesson, oldStep, blank, transfer, stage, criterion };
+}
+
+function oldAsyncState(item: AsyncTransferCase, helped: boolean): UserState {
+  const { lesson, oldStep, blank } = asyncTransferContext(item);
+  const state = createInitialState();
+  state.onboarding = { completed: true, name: "Ada", minutes: 15 };
+  state.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 0,
+    recommendation: "",
+  };
+  state.settings.accessibleEditor = true;
+  state.resume = {
+    ...state.resume,
+    view: "lesson",
+    lessonId: lesson.id,
+    stepIndex: 2,
+    panel: "lesson",
+  };
+  state.steps[stepKey(lesson.id, oldStep.id)] = {
+    ...createStepProgress(oldStep.code),
+    code: `// exact old ${item.lessonId} draft\n`,
+    completed: true,
+    attempts: [
+      {
+        at: 1_700_000_000_003,
+        code: "// preserved old attempt",
+        passed: true,
+        feedback: "preserved old feedback",
+      },
+    ],
+  };
+  state.steps[stepKey(lesson.id, blank.id)] = {
+    ...createStepProgress(blank.code),
+    hints: helped ? 1 : 0,
+  };
+  state.events = [
+    {
+      id: `preserved-${item.lessonId}-old-event`,
+      lessonId: lesson.id,
+      stepId: oldStep.id,
+      conceptIds: [item.conceptId],
+      evidenceVersion: 2,
+      kind: "transfer",
+      evaluator: "tests",
+      passed: true,
+      hints: helped ? 1 : 0,
+      revealed: false,
+      gate: true,
+      at: 1_700_000_000_003,
+    },
+  ];
+  state.notes[lesson.id] = "Notatka sprzed dodania drugiej rodziny.";
+  state.bookmarks = [lesson.id];
+  state.reviewSession = {
+    conceptId: item.conceptId,
+    mode: "challenge",
+    sessionId: `preserved-${item.lessonId}-review-session`,
+    exerciseId: item.reviewExerciseId,
+    startedAt: 1_700_000_000_002,
+    wasDue: false,
+  };
+  state.review = [
+    {
+      conceptId: item.conceptId,
+      dueAt: 1_700_000_000_004,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "preserved old review",
+    },
+  ];
+  return state;
+}
+
+async function importOldAsyncState(page: Page, before: UserState) {
+  await page.goto("/");
+  const baseline = createInitialState();
+  baseline.onboarding = before.onboarding;
+  baseline.diagnostic = before.diagnostic;
+  baseline.settings.accessibleEditor = true;
+  await seedState(page, baseline);
+  await importThroughUi(page, before);
+  await expect
+    .poll(async () => (await savedState(page)).reviewSession)
+    .toEqual(before.reviewSession);
+  await page.reload();
+  const imported = await savedState(page);
+  expect(imported.schemaVersion).toBe(3);
+  expect(imported.resume).toEqual(before.resume);
+  expect(imported.reviewSession).toEqual(before.reviewSession);
+  expect(imported.review).toEqual(before.review);
+  expect(imported.notes).toEqual(before.notes);
+  expect(imported.bookmarks).toEqual(before.bookmarks);
+  for (const [key, progress] of Object.entries(before.steps)) {
+    expect(imported.steps[key]).toEqual(progress);
+  }
+  expect(
+    imported.events.find((event) => event.id === before.events[0].id),
+  ).toEqual(before.events[0]);
+  await expect(
+    page.getByRole("textbox", { name: "Kod Rust", exact: true }),
+  ).toHaveValue(
+    before.steps[
+      stepKey(
+        before.resume.lessonId,
+        lessons.find((lesson) => lesson.id === before.resume.lessonId)!.steps[
+          before.resume.stepIndex
+        ].id,
+      )
+    ].code!,
+  );
+}
+
+async function openAsyncTransfer(page: Page, item: AsyncTransferCase) {
+  const { lesson, transfer } = asyncTransferContext(item);
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(lesson.steps.indexOf(transfer))
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
+}
+
+function observeBrowserErrors(page: Page) {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  return errors;
+}
+
+async function revealAsyncSolution(page: Page) {
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+  await page
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+    .click();
+  await expect(
+    page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+  ).toBeVisible();
+}
+
+for (const item of asyncTransferCases) {
+  for (const helped of [false, true]) {
+    test(`${item.stepId}: old ${helped ? "helped" : "clean"} schema3 resume and mocked success retain exact identities (UI/state only)`, async ({
+      page,
+    }) => {
+      const errors = observeBrowserErrors(page);
+      const { lesson, oldStep, blank, transfer, stage, criterion } =
+        asyncTransferContext(item);
+      const before = oldAsyncState(item, helped);
+      await importOldAsyncState(page, before);
+      await expect(page.locator(".task-pane h1")).toHaveText(oldStep.title);
+      if (helped) {
+        await expect(page.locator(".task-pane")).toContainText(
+          "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+        );
+        await page
+          .getByRole("button", { name: stage.title, exact: true })
+          .click();
+        const criterionRow = page
+          .locator(".gate-panel li")
+          .filter({ hasText: criterion.label });
+        await criterionRow
+          .getByRole("button", { name: "Sprawdź w zadaniu" })
+          .click();
+        await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
+      } else {
+        await openAsyncTransfer(page, item);
+      }
+      const editor = page.getByRole("textbox", {
+        name: "Kod Rust",
+        exact: true,
+      });
+      const draft = `${transfer.solution}\n// retained ${item.stepId} draft\n`;
+      await editor.fill(draft);
+      await expect
+        .poll(
+          async () =>
+            (await savedState(page)).steps[stepKey(lesson.id, item.stepId)]
+              ?.code,
+        )
+        .toBe(draft);
+      await page.reload();
+      await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
+      await expect(editor).toHaveValue(draft);
+      const reloaded = await savedState(page);
+      expect(reloaded.resume.lessonId).toBe(lesson.id);
+      expect(reloaded.resume.stepIndex).toBe(lesson.steps.indexOf(transfer));
+      expect(reloaded.reviewSession).toEqual(before.reviewSession);
+      let requests = 0;
+      await page.route("**/api/run", async (route) => {
+        requests += 1;
+        expect(route.request().postDataJSON()).toEqual({
+          code: draft,
+          mode: "test",
+          tests:
+            transfer.evaluator?.kind === "tests"
+              ? transfer.evaluator.tests
+              : undefined,
+        });
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            status: "success",
+            stdout: "mocked transfer success: UI/state only; Rust not executed",
+            stderr: "",
+            diagnostics: [],
+            durationMs: 1,
+            tests: {
+              passed: item.lessonId === "async-lending-callbacks" ? 8 : 7,
+              failed: 0,
+            },
+          }),
+        });
+      });
+      const response = page.waitForResponse((response) =>
+        response.url().endsWith("/api/run"),
+      );
+      await page
+        .getByRole("button", { name: "Uruchom testy", exact: true })
+        .click();
+      await response;
+      await expect
+        .poll(
+          async () =>
+            (await savedState(page)).events.filter(
+              (event) =>
+                event.stepId === item.stepId && event.kind === "transfer",
+            ).length,
+        )
+        .toBe(1);
+      const after = await savedState(page);
+      const event = after.events.find(
+        (event) => event.stepId === item.stepId && event.kind === "transfer",
+      )!;
+      expect(requests).toBe(1);
+      expect(event).toMatchObject({
+        lessonId: lesson.id,
+        stepId: item.stepId,
+        conceptIds: [item.conceptId],
+        evidenceVersion: 2,
+        kind: "transfer",
+        evaluator: "tests",
+        gate: true,
+        passed: true,
+        hints: 0,
+        revealed: false,
+      });
+      expect(event).not.toHaveProperty("codingTaskId");
+      expect(courseEvidencePolicy.definitionForEvent(event)?.codingTaskId).toBe(
+        item.family,
+      );
+      expect(
+        independentCodingTaskIds(after, item.conceptId, courseEvidencePolicy),
+      ).toEqual(helped ? [item.family] : [item.oldFamily, item.family]);
+      expect(
+        courseEvidenceSummary(after, item.conceptId).qualifyingCodingTasks,
+      ).toBe(helped ? 1 : 2);
+      expect(
+        courseEvidenceSummary(after, item.conceptId).requiredCodingTasks,
+      ).toBe(2);
+      expect(gateRecovery(after, criterion, lessons).status).toBe("complete");
+      expect(
+        after.events.find((event) => event.id === before.events[0].id),
+      ).toEqual(before.events[0]);
+      expect(after.steps[stepKey(lesson.id, oldStep.id)]).toEqual(
+        before.steps[stepKey(lesson.id, oldStep.id)],
+      );
+      expect(after.steps[stepKey(lesson.id, blank.id)]).toEqual(
+        before.steps[stepKey(lesson.id, blank.id)],
+      );
+      expect(after.reviewSession).toEqual(before.reviewSession);
+      await expect(page.locator(".task-pane")).toContainText(
+        `samodzielne zadania kodowe ${helped ? 1 : 2}/2`,
+      );
+      expect(errors).toEqual([]);
+    });
+  }
+
+  test(`${item.stepId}: reveal stays in its family and preserves prior raw clean evidence`, async ({
+    page,
+  }) => {
+    const errors = observeBrowserErrors(page);
+    const { lesson, oldStep, blank } = asyncTransferContext(item);
+    const before = oldAsyncState(item, false);
+    const unrelated = asyncTransferCases.find(
+      (candidate) => candidate !== item,
+    )!;
+    const unrelatedKey = stepKey(unrelated.lessonId, unrelated.stepId);
+    before.steps[unrelatedKey] = createStepProgress("// unrelated draft");
+    await importOldAsyncState(page, before);
+    await openAsyncTransfer(page, item);
+    await revealAsyncSolution(page);
+    const after = await savedState(page);
+    expect(after.steps[stepKey(lesson.id, item.stepId)]).toMatchObject({
+      hints: 2,
+      revealed: true,
+    });
+    expect(after.steps[stepKey(lesson.id, oldStep.id)]).toEqual(
+      before.steps[stepKey(lesson.id, oldStep.id)],
+    );
+    expect(after.steps[stepKey(lesson.id, blank.id)]).toEqual(
+      before.steps[stepKey(lesson.id, blank.id)],
+    );
+    expect(after.steps[unrelatedKey]).toEqual(before.steps[unrelatedKey]);
+    expect(
+      after.events.find((event) => event.id === before.events[0].id),
+    ).toEqual(before.events[0]);
+    expect(
+      independentCodingTaskIds(after, item.conceptId, courseEvidencePolicy),
+    ).toEqual([item.oldFamily]);
+    await page
+      .getByLabel("Kroki lekcji")
+      .getByRole("button")
+      .nth(lesson.steps.indexOf(blank))
+      .click();
+    await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
+    await expect(page.locator(".task-pane")).not.toContainText(
+      "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+    );
+    await expect(
+      page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+    ).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  test(`${item.stepId}: both helped families show exhaustion without clearing old assistance`, async ({
+    page,
+  }) => {
+    const errors = observeBrowserErrors(page);
+    const { lesson, blank, stage, criterion } = asyncTransferContext(item);
+    const before = oldAsyncState(item, true);
+    await importOldAsyncState(page, before);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await page
+      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+      .click();
+    await expect(page.locator(".solution-warning")).toContainText(
+      "możesz przejść do dostępnego świeżego zadania",
+    );
+    await openAsyncTransfer(page, item);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+    await page
+      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+      .click();
+    await expect(page.locator(".solution-warning")).toContainText(
+      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+    );
+    await page
+      .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+      .click();
+    const after = await savedState(page);
+    expect(after.steps[stepKey(lesson.id, blank.id)]).toEqual(
+      before.steps[stepKey(lesson.id, blank.id)],
+    );
+    expect(
+      after.events.find((event) => event.id === before.events[0].id),
+    ).toEqual(before.events[0]);
+    expect(
+      courseEvidenceSummary(after, item.conceptId).qualifyingCodingTasks,
+    ).toBe(0);
+    expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
+    await page.getByRole("button", { name: stage.title, exact: true }).click();
+    await expect(page.locator(".module-connections")).toContainText(
+      "Brak świeżego samodzielnego wariantu",
+    );
+    const criterionRow = page
+      .locator(".gate-panel li")
+      .filter({ hasText: criterion.label });
+    await expect(criterionRow).toContainText(
+      "Brak świeżego samodzielnego wariantu",
+    );
+    await expect(
+      criterionRow.getByRole("button", { name: "Sprawdź w zadaniu" }),
+    ).toHaveCount(0);
+    expect(errors).toEqual([]);
   });
 }

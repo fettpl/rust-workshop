@@ -595,6 +595,20 @@ describe("duplicate contract evidence families", () => {
             stepId: "async-lending-receiver-bounded-batch",
           },
         });
+      } else if (
+        lessonId === "async-lending-callbacks" ||
+        lessonId === "async-lending-dyn-adapter"
+      ) {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "available",
+          task: {
+            lessonId,
+            stepId:
+              lessonId === "async-lending-callbacks"
+                ? "async-lending-callbacks-bounded-transform"
+                : "async-lending-dyn-adapter-borrowed-sources",
+          },
+        });
       } else {
         expect(gateRecovery(state, criterion, lessons)).toEqual({
           status: "exhausted",
@@ -1034,3 +1048,317 @@ describe("duplicate contract evidence families", () => {
     });
   });
 });
+
+const transferFamilies = [
+  {
+    conceptId: "async-lending-callback-borrow",
+    lessonId: "async-lending-callbacks",
+    stepId: "async-lending-callbacks-bounded-transform",
+    oldFamily: "async-lending/sequential-callback-v1",
+    newFamily: "async-lending/callback-bounded-transform-v1",
+  },
+  {
+    conceptId: "async-lending-dyn-adapter",
+    lessonId: "async-lending-dyn-adapter",
+    stepId: "async-lending-dyn-adapter-borrowed-sources",
+    oldFamily: "async-lending/dyn-adapter-v1",
+    newFamily: "async-lending/dyn-borrowed-sources-v1",
+  },
+];
+
+describe.each(transferFamilies)(
+  "appended transfer evidence: $conceptId",
+  ({ conceptId, lessonId, stepId, oldFamily, newFamily }) => {
+    const { lesson, step: fresh } = lessonStep(lessonId, stepId);
+    const gate = lessonStep(lessonId, `${lessonId}-gate`).step;
+    const blank = lessonStep(lessonId, `${lessonId}-blank`).step;
+    const familyIds = (state: ReturnType<typeof createInitialState>) =>
+      independentCodingTaskIds(state, conceptId, courseEvidencePolicy);
+    const record = (
+      state: ReturnType<typeof createInitialState>,
+      step: LessonStep,
+      id: string,
+      at: number,
+    ) =>
+      recordCourseEvidence(state, {
+        ...eventFor(lesson, step, id, at),
+        ...assistanceForLessonStep(state, lesson, step),
+      });
+
+    it("resolves exact singleton registered metadata and preserves the minimum-two concept policy", () => {
+      expect(fresh).toMatchObject({
+        evidenceKind: "transfer",
+        evidenceGate: true,
+        evaluator: { kind: "tests" },
+        evidence: {
+          version: 2,
+          conceptIds: [conceptId],
+          codingTaskId: newFamily,
+        },
+      });
+      expect(
+        courseEvidencePolicy.definitionForEvent(
+          eventFor(lesson, fresh, "definition", 1000),
+        ),
+      ).toEqual(fresh.evidence);
+      expect(
+        concepts.find((item) => item.id === conceptId)?.evidenceCalibration,
+      ).toEqual({ version: 2, minimumCodingTasks: 2 });
+      expect(primaryCriterion(lessonId).taskRefs).toEqual([
+        { lessonId, stepId: gate.id },
+        { lessonId, stepId: blank.id },
+        { lessonId, stepId: fresh.id },
+      ]);
+      expect(primaryCriterion(lessonId).requiredIndependentCodingTasks).toBe(1);
+    });
+
+    it("counts old aliases once, new alone once, and clean old plus new twice", () => {
+      const old = record(
+        record(createInitialState(), gate, "old-gate", 1000),
+        blank,
+        "old-blank",
+        2000,
+      );
+      expect(familyIds(old)).toEqual([oldFamily]);
+      expect(
+        familyIds(record(createInitialState(), fresh, "new-only", 1000)),
+      ).toEqual([newFamily]);
+      const both = record(old, fresh, "new-clean", 3000);
+      expect(familyIds(both)).toEqual([oldFamily, newFamily]);
+      expect(courseEvidenceSummary(both, conceptId).qualifyingCodingTasks).toBe(
+        2,
+      );
+      expect(courseMastery(both, conceptId).level).toBe("understood");
+      expect(courseMastery(old, conceptId).level).toBe("practiced");
+      expect(
+        moduleGate(
+          both,
+          lessons,
+          modules.find((item) => item.id === lesson.moduleId),
+        ).criteria.find(
+          (item) => item.label === primaryCriterion(lessonId).label,
+        )?.passed,
+      ).toBe(true);
+    });
+
+    it.each([
+      { hints: 1, revealed: false },
+      { hints: 0, revealed: true },
+    ])(
+      "keeps saved old help %j inside its family and offers the new family",
+      (flags) => {
+        const saved = createInitialState();
+        saved.steps[stepKey(lessonId, gate.id)] = {
+          ...createStepProgress(),
+          ...flags,
+        };
+        const imported = importState(exportState(saved));
+        expect(assistanceForLessonStep(imported, lesson, blank)).toEqual(flags);
+        expect(assistanceForLessonStep(imported, lesson, fresh)).toEqual({
+          hints: 0,
+          revealed: false,
+        });
+        expect(
+          gateRecovery(imported, primaryCriterion(lessonId), lessons),
+        ).toEqual({ status: "available", task: { lessonId, stepId } });
+        const helped = record(imported, gate, "helped-old", 1000);
+        const cleanNew = record(helped, fresh, "clean-new", 2000);
+        expect(familyIds(cleanNew)).toEqual([newFamily]);
+        expect(
+          courseEvidenceSummary(cleanNew, conceptId).qualifyingCodingTasks,
+        ).toBe(1);
+        expect(courseMastery(cleanNew, conceptId).level).not.toBe("understood");
+        expect(cleanNew.events[0]).toEqual({
+          ...eventFor(lesson, gate, "helped-old", 1000),
+          ...flags,
+        });
+      },
+    );
+
+    it("keeps new help contained, retains prior raw clean credit, and exhausts only when both families are helped without clean credit", () => {
+      const cleanOldEvent = eventFor(
+        lesson,
+        gate,
+        "old-clean-before-help",
+        1000,
+      );
+      let cleanOld = recordCourseEvidence(createInitialState(), cleanOldEvent);
+      cleanOld.steps[stepKey(lessonId, fresh.id)] = {
+        ...createStepProgress(),
+        revealed: true,
+      };
+      expect(assistanceForLessonStep(cleanOld, lesson, gate)).toEqual({
+        hints: 0,
+        revealed: false,
+      });
+      expect(assistanceForLessonStep(cleanOld, lesson, blank)).toEqual({
+        hints: 0,
+        revealed: false,
+      });
+      cleanOld = record(cleanOld, fresh, "new-helped", 2000);
+      expect(cleanOld.events[0]).toEqual(cleanOldEvent);
+      expect(familyIds(cleanOld)).toEqual([oldFamily]);
+      const unrelated = lessonStep(
+        "async-lending-receiver",
+        "async-lending-receiver-bounded-batch",
+      );
+      expect(
+        assistanceForLessonStep(cleanOld, unrelated.lesson, unrelated.step),
+      ).toEqual({ hints: 0, revealed: false });
+      const bothHelped = createInitialState();
+      bothHelped.steps[stepKey(lessonId, gate.id)] = {
+        ...createStepProgress(),
+        hints: 1,
+      };
+      bothHelped.steps[stepKey(lessonId, fresh.id)] = {
+        ...createStepProgress(),
+        revealed: true,
+      };
+      const final = record(
+        record(
+          record(bothHelped, gate, "both-old", 1000),
+          blank,
+          "both-blank",
+          2000,
+        ),
+        fresh,
+        "both-new",
+        3000,
+      );
+      expect(familyIds(final)).toEqual([]);
+      expect(gateRecovery(final, primaryCriterion(lessonId), lessons)).toEqual({
+        status: "exhausted",
+      });
+    });
+
+    it("rejects current attribution mismatches and unsupported imported family fields, while optional gate never overrides source authority", () => {
+      const legal = eventFor(lesson, fresh, "legal", 1000);
+      for (const overrides of [
+        { evidenceVersion: undefined },
+        { evidenceVersion: 1 },
+        { conceptIds: ["wrong"] },
+        { conceptIds: [conceptId, conceptId] },
+        { conceptIds: [conceptId, "extra"] },
+        { evaluator: "compilation" as const },
+        { kind: "recall" as const },
+        { lessonId: "unknown" },
+        { stepId: "unknown" },
+        { kind: "exposure" as const, gate: true },
+        { kind: "prediction" as const, gate: true },
+        { evaluator: "answer" as const, gate: true },
+      ])
+        expect(
+          familyIds(
+            recordCourseEvidence(createInitialState(), {
+              ...legal,
+              ...overrides,
+            }),
+          ),
+        ).toEqual([]);
+      for (const gateFlag of [false, undefined]) {
+        const preserved = recordCourseEvidence(createInitialState(), {
+          ...legal,
+          gate: gateFlag,
+        });
+        expect(familyIds(preserved)).toEqual([newFamily]);
+      }
+      const envelope = JSON.parse(
+        exportState(recordCourseEvidence(createInitialState(), legal)),
+      );
+      envelope.state.events[0].codingTaskId = oldFamily;
+      expect(() => importState(JSON.stringify(envelope))).toThrow();
+      const recall = lesson.steps.find((item) => item.kind === "recall")!;
+      expect(
+        familyIds(
+          recordCourseEvidence(
+            createInitialState(),
+            eventFor(lesson, recall, "gated-recall", 1000, { gate: true }),
+          ),
+        ),
+      ).toEqual([]);
+      const review = reviewExercises[conceptId];
+      expect(
+        familyIds(
+          recordCourseEvidence(createInitialState(), {
+            id: "ordinary-review",
+            conceptIds: [conceptId],
+            lessonId: "review",
+            stepId: review.id + ":session",
+            kind: "recall",
+            evidenceVersion: 2,
+            passed: true,
+            hints: 0,
+            revealed: false,
+            evaluator: "tests",
+            gate: true,
+            at: 1000,
+          }),
+        ),
+      ).toEqual([]);
+    });
+
+    it("round-trips exact schema3 raw events, assistance, attempts, drafts and old resume/review identity", () => {
+      const raw = eventFor(lesson, gate, "old-raw-assisted", 1700000000000, {
+        hints: 1,
+      });
+      const original = recordCourseEvidence(createInitialState(), raw);
+      original.updatedAt = 1700000000001;
+      original.resume = {
+        ...original.resume,
+        view: "lesson",
+        lessonId,
+        stepIndex: lesson.steps.indexOf(gate),
+      };
+      original.steps[stepKey(lessonId, gate.id)] = {
+        ...createStepProgress(),
+        code: "// stary szkic\n",
+        hints: 1,
+        attempts: [
+          {
+            at: 1700000000000,
+            code: "// próba",
+            passed: false,
+            feedback: "zachowane",
+            result: {
+              status: "test-failure",
+              stdout: "original output",
+              stderr: "",
+              diagnostics: [],
+              durationMs: 3,
+            },
+          },
+        ],
+      };
+      original.notes[lessonId] = "Zachowana notatka";
+      original.bookmarks = [lessonId];
+      original.review = [
+        {
+          conceptId,
+          dueAt: 1700000000010,
+          intervalDays: 1,
+          attempts: 1,
+          reason: "old review",
+        },
+      ];
+      original.reviewSession = {
+        conceptId,
+        mode: "challenge",
+        sessionId: "old-session-identity",
+        startedAt: 1700000000000,
+        wasDue: true,
+        exerciseId: reviewExercises[conceptId].id,
+      };
+      const imported = importState(exportState(original));
+      expect(imported).toEqual(original);
+      const next = record(imported, fresh, "new-after-import", 1700000000020);
+      expect(next.events[0]).toEqual(raw);
+      expect(next.steps).toEqual(original.steps);
+      expect(next.resume).toEqual(original.resume);
+      expect(next.notes).toEqual(original.notes);
+      expect(next.bookmarks).toEqual(original.bookmarks);
+      expect(next.reviewSession).toEqual(original.reviewSession);
+      expect(familyIds(next)).toEqual([newFamily]);
+      expect(importState(exportState(next))).toEqual(next);
+    });
+  },
+);

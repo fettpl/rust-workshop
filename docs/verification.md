@@ -1,3 +1,5 @@
+Current M11 source candidate: [Async transfer contracts and evidence — 9 October 2026](async-transfer-evidence.md). Receiver, callback and dyn adapter now have two authored primary families each; cancellation/commit, Send and four unsafe concepts remain single-family (three of nine versus six). Source availability, learner confirmation and production/CI/local release acceptance are distinct; the dated records below retain their original meaning.
+
 > Historical notice: sections retained below preserve their original dated source cuts, counts, evidence boundaries, anchors, pending decisions, and uses of “current.” They are historical records. The snapshot immediately below is the latest accepted release before the committed packet-005 candidate in the current checkout; source provenance, current CI/main and local-release confirmation, and learner outcomes remain separate records.
 
 <a id="latest-accepted-release-before-session-scaffolding-candidate-9-october-2026"></a>

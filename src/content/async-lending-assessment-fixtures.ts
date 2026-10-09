@@ -1,4 +1,24 @@
 import {
+  callbackTransferStep,
+  callbackTransferEquivalent,
+  callbackTransferMutants,
+} from "./async-lending-callback-transfer";
+import {
+  dynTransferStep,
+  dynTransferEquivalent,
+  dynTransferMutants,
+} from "./async-lending-dyn-transfer";
+
+/** Exact descriptor names are already qualified for Rust's --exact filter.
+ * Several independent mutant binaries intentionally target the same assertion. */
+export const asyncLendingTransferMutants: Readonly<
+  Record<string, readonly { id: string; source: string; testName: string }[]>
+> = {
+  [callbackTransferStep.id]: callbackTransferMutants,
+  [dynTransferStep.id]: dynTransferMutants,
+};
+
+import {
   asyncLendingCoreLessons,
   asyncLendingCoreReviewExercises,
 } from "./async-lending-core";
@@ -79,6 +99,8 @@ const assessments = [
 ];
 
 function mutate(id: string, solution: string): string {
+  if (id === callbackTransferStep.id) return callbackTransferMutants[0].source;
+  if (id === dynTransferStep.id) return dynTransferMutants[0].source;
   if (id === "async-lending-receiver-bounded-batch")
     return solution.replace(
       "let len = this.limit.min(receiver.packets.len() - start);",
@@ -140,6 +162,8 @@ function replaceFunctionBody(
 }
 
 function equivalent(id: string, solution: string): string {
+  if (id === callbackTransferStep.id) return callbackTransferEquivalent;
+  if (id === dynTransferStep.id) return dynTransferEquivalent;
   if (id === "async-lending-receiver-bounded-batch") return batchEquivalent;
   if (id === "async-lending-receiver-review")
     return replaceFunctionBody(
@@ -429,6 +453,17 @@ export const asyncLendingAssessmentFixtures: AsyncLendingAssessmentFixture[] =
   assessments.map((step) => {
     if (!step.solution || step.evaluator?.kind !== "tests")
       throw new Error(`Missing async lending solution: ${step.id}`);
+    const descriptors = asyncLendingTransferMutants[step.id];
+    if (descriptors) {
+      if (descriptors.length === 0)
+        throw new Error(`Missing mutants for ${step.id}`);
+      return {
+        id: step.id,
+        equivalent: equivalent(step.id, step.solution),
+        mutant: descriptors[0].source,
+        mutants: descriptors.slice(1).map((item) => item.source),
+      };
+    }
     return {
       id: step.id,
       equivalent: equivalent(step.id, step.solution),

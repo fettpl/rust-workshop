@@ -291,7 +291,8 @@ where F: std::ops::AsyncFnMut(&[u8]) -> Result<Option<String>, E> {
 export const callbackTransferMutants: readonly TransferMutant[] = [
   {
     id: "emitted-output-budget",
-    testName: "input_budget_counts_filtered_records_and_repeated_calls_resume",
+    testName:
+      "__rust_workshop_hidden_tests::input_budget_counts_filtered_records_and_repeated_calls_resume",
     source: `pub struct ChunkSource { records: Vec<Vec<u8>>, next: usize }
 impl ChunkSource {
     pub fn new(records: Vec<Vec<u8>>) -> Self { Self { records, next: 0 } }
@@ -318,7 +319,8 @@ where F: std::ops::AsyncFnMut(&[u8]) -> Result<Option<String>, E> {
   },
   {
     id: "commit-before-await",
-    testName: "first_error_keeps_prior_commits_and_replays_failing_record",
+    testName:
+      "__rust_workshop_hidden_tests::first_error_keeps_prior_commits_and_replays_failing_record",
     source: `pub struct ChunkSource { records: Vec<Vec<u8>>, next: usize }
 impl ChunkSource {
     pub fn new(records: Vec<Vec<u8>>) -> Self { Self { records, next: 0 } }
@@ -344,7 +346,8 @@ where F: std::ops::AsyncFnMut(&[u8]) -> Result<Option<String>, E> {
   },
   {
     id: "skip-without-consumed-count",
-    testName: "all_filtered_records_still_use_input_budget",
+    testName:
+      "__rust_workshop_hidden_tests::all_filtered_records_still_use_input_budget",
     source: `pub struct ChunkSource { records: Vec<Vec<u8>>, next: usize }
 impl ChunkSource {
     pub fn new(records: Vec<Vec<u8>>) -> Self { Self { records, next: 0 } }
@@ -373,7 +376,8 @@ where F: std::ops::AsyncFnMut(&[u8]) -> Result<Option<String>, E> {
   },
   {
     id: "ignore-error-and-continue",
-    testName: "first_error_keeps_prior_commits_and_replays_failing_record",
+    testName:
+      "__rust_workshop_hidden_tests::first_error_keeps_prior_commits_and_replays_failing_record",
     source: `pub struct ChunkSource { records: Vec<Vec<u8>>, next: usize }
 impl ChunkSource {
     pub fn new(records: Vec<Vec<u8>>) -> Self { Self { records, next: 0 } }
@@ -404,7 +408,7 @@ where F: std::ops::AsyncFnMut(&[u8]) -> Result<Option<String>, E> {
   {
     id: "remove-pending-input",
     testName:
-      "dropping_pending_second_callback_keeps_current_input_and_prior_commits",
+      "__rust_workshop_hidden_tests::dropping_pending_second_callback_keeps_current_input_and_prior_commits",
     source: `use std::collections::VecDeque;
 
 pub struct ChunkSource { pending: VecDeque<Vec<u8>> }

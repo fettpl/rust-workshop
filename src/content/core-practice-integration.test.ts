@@ -96,7 +96,23 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
             ...lesson,
             stepIds: [...lesson.stepIds, "foundations-local-parcel-program"],
           }
-      : lesson,
+        : lesson.id === "async-lending-callbacks"
+          ? {
+              ...lesson,
+              stepIds: [
+                ...lesson.stepIds,
+                "async-lending-callbacks-bounded-transform",
+              ],
+            }
+          : lesson.id === "async-lending-dyn-adapter"
+            ? {
+                ...lesson,
+                stepIds: [
+                  ...lesson.stepIds,
+                  "async-lending-dyn-adapter-borrowed-sources",
+                ],
+              }
+            : lesson,
   );
   expect(
     course.lessons.slice(0, legacy.lessons.length).map((lesson) => ({
@@ -252,11 +268,14 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     traces: frozenPreNestedInventory.traces,
     competencies:
       frozenPreNestedInventory.competencies + nestedInventory.competencies,
-    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 12,
+    // M11 appends one tested step to callbacks and one to dyn; the old
+    // frozen inventory and every previous delta remain unchanged.
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 12 + 2,
     testEvaluators:
       frozenPreNestedInventory.testEvaluators +
       nestedInventory.testEvaluators +
-      5,
+      5 +
+      2,
     reviews: frozenPreNestedInventory.reviews + nestedInventory.reviews,
   });
   for (const registry of [

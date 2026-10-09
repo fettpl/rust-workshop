@@ -19,10 +19,10 @@ it("registers five async lending lessons, concepts, gates and reviews", () => {
   const taskRefs = stage!.gateCriteria!.flatMap(
     (criterion) => criterion.taskRefs,
   );
-  expect(taskRefs).toHaveLength(11);
+  expect(taskRefs).toHaveLength(13);
   expect(
     new Set(taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`)).size,
-  ).toBe(11);
+  ).toBe(13);
   for (const [index, id] of ids.entries()) {
     const lesson = lessons.find((candidate) => candidate.id === id)!;
     expect(lesson.conceptIds).toEqual([
@@ -52,7 +52,21 @@ it("registers five async lending lessons, concepts, gates and reviews", () => {
               stepId: "async-lending-receiver-bounded-batch",
             },
           ]
-        : []),
+        : id === "async-lending-callbacks"
+          ? [
+              {
+                lessonId: id,
+                stepId: "async-lending-callbacks-bounded-transform",
+              },
+            ]
+          : id === "async-lending-dyn-adapter"
+            ? [
+                {
+                  lessonId: id,
+                  stepId: "async-lending-dyn-adapter-borrowed-sources",
+                },
+              ]
+            : []),
     ];
     expect(stage!.gateCriteria![index].taskRefs).toEqual(expectedRefs);
   }
@@ -85,16 +99,20 @@ it("keeps the receiver batch as an explicit second primary family", () => {
   ).toBe(1);
 });
 
-it("states the bounded receiver exception beside the four singleton contracts", () => {
-  const exitGate = modules.find(
+it("states authored family availability separately from module completion and concept confirmation", () => {
+  const stage = modules.find(
     (module) => module.id === "async-lending-contracts",
-  )!.exitGate;
-  expect(exitGate).toEqual(
-    expect.arrayContaining([
-      expect.stringContaining(
-        "Pozostałe cztery kontrakty pozostają prowizoryczne",
-      ),
-      expect.stringContaining("receiver lease oraz bounded batch"),
-    ]),
+  )!;
+  expect(stage.exitGate.join(" ")).toContain(
+    "Receiver, callback i adapter dyn mają po dwie opisane rodziny primary",
   );
+  expect(stage.exitGate.join(" ")).toContain(
+    "Cancellation/commit i Send mają po jednej",
+  );
+  expect(stage.exitGate.join(" ")).toContain("Ukończenie modułu");
+  expect(
+    stage.gateCriteria!.every(
+      (item) => item.requiredIndependentCodingTasks === 1,
+    ),
+  ).toBe(true);
 });
