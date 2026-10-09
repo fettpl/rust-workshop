@@ -6,6 +6,8 @@ import type {
   Source,
 } from "../domain/types";
 
+import { callbackTransferStep } from "./async-lending-callback-transfer";
+
 const reviewedAt = "2026-09-19";
 
 export const asyncLendingCoreSources: Source[] = [
@@ -648,6 +650,7 @@ export const asyncLendingCoreLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      callbackTransferStep,
     ],
     misconceptions: [
       "sekwencyjny callback musi klonować bytes",
@@ -664,7 +667,11 @@ export const asyncLendingCoreLessons: Lesson[] = [
 for (const lesson of asyncLendingCoreLessons) {
   const family = coreEvidenceFamilies[lesson.id];
   for (const step of lesson.steps) {
-    if (step.id === "async-lending-receiver-bounded-batch") continue;
+    if (
+      step.id === "async-lending-receiver-bounded-batch" ||
+      step.id === "async-lending-callbacks-bounded-transform"
+    )
+      continue;
     step.evidence = {
       version: 2,
       conceptIds: [...lesson.conceptIds],
