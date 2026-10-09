@@ -467,3 +467,180 @@ test("crossing 850px closes the drawer and avoids hidden focus-mode navigation",
     await close();
   }
 });
+
+type StoredDiagnostic = { answers?: Record<string, string> } | null;
+
+async function readStoredDiagnostic(page: Page): Promise<StoredDiagnostic> {
+  return page.evaluate(
+    () =>
+      new Promise<StoredDiagnostic>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        let database: IDBDatabase | undefined;
+        const fail = (error: unknown) => {
+          database?.close();
+          reject(error);
+        };
+        request.onerror = () => fail(request.error);
+        request.onsuccess = () => {
+          database = request.result;
+          const transaction = database.transaction("user-state", "readonly");
+          const read = transaction.objectStore("user-state").get("current");
+          read.onerror = () => fail(read.error);
+          transaction.onerror = () => fail(transaction.error);
+          read.onsuccess = () => {
+            const state = read.result as
+              | { diagnostic?: StoredDiagnostic }
+              | undefined;
+            database?.close();
+            resolve(state?.diagnostic ?? null);
+          };
+        };
+      }),
+  );
+}
+
+async function activeElementSnapshot(page: Page) {
+  return page.evaluate(() => {
+    const active = document.activeElement;
+    return {
+      tag: active?.tagName ?? null,
+      role: active?.getAttribute("role") ?? null,
+      ariaLabel: active?.getAttribute("aria-label") ?? null,
+      text: active?.textContent?.trim().slice(0, 160) ?? null,
+    };
+  });
+}
+
+for (const [viewportName, viewport] of [
+  ["desktop", { width: 1440, height: 1000 }],
+  ["narrow", { width: 390, height: 844 }],
+] as const) {
+  test(`onboarding keyboard focus after user transitions preserves passive focus [${viewportName}]`, async ({
+    browser,
+  }, testInfo) => {
+    test.setTimeout(45_000);
+    const baseURL = testInfo.project.use.baseURL;
+    if (typeof baseURL !== "string" || baseURL.length === 0) {
+      throw new Error(
+        "onboarding accessibility config must provide project.use.baseURL",
+      );
+    }
+    const context = await browser.newContext({
+      baseURL,
+      viewport,
+      serviceWorkers: "block",
+    });
+    const page = await context.newPage();
+    const runRequests: Array<{ method: string; url: string }> = [];
+    const observations: Array<{
+      stage: string;
+      active: Awaited<ReturnType<typeof activeElementSnapshot>>;
+    }> = [];
+    try {
+      await context.route("**/api/run", async (route) => {
+        runRequests.push({
+          method: route.request().method(),
+          url: route.request().url(),
+        });
+        await route.abort("blockedbyclient");
+      });
+      await page.goto("/");
+      const start = page.getByRole("button", {
+        name: "Sprawdź punkt startowy",
+        exact: false,
+      });
+      await expect(start).toBeVisible();
+      await expect
+        .soft(page.getByRole("heading", { level: 1 }).first())
+        .not.toBeFocused();
+      observations.push({
+        stage: "initial",
+        active: await activeElementSnapshot(page),
+      });
+
+      await start.focus();
+      await page.keyboard.press("Enter");
+      const firstHeading = page.getByRole("heading", {
+        name: "Przeczytaj i przewidź",
+        exact: true,
+      });
+      await expect(firstHeading).toBeVisible();
+      await expect.soft(firstHeading).toBeFocused();
+      observations.push({
+        stage: "after-start",
+        active: await activeElementSnapshot(page),
+      });
+
+      const answer = page.getByRole("textbox", {
+        name: "Twoja odpowiedź",
+        exact: true,
+      });
+      await answer.fill("12");
+      await expect
+        .poll(
+          async () => (await readStoredDiagnostic(page))?.answers?.read ?? null,
+          {
+            timeout: 5_000,
+          },
+        )
+        .toBe("12");
+      await expect(answer).toBeFocused();
+      observations.push({
+        stage: "after-answer-persisted",
+        active: await activeElementSnapshot(page),
+      });
+
+      await answer.press("Enter");
+      await expect(page.locator(".feedback")).toContainText("Zgadza się.", {
+        timeout: 5_000,
+      });
+      await expect
+        .poll(
+          async () =>
+            (await readStoredDiagnostic(page))?.answers?.["read:done"] ?? null,
+          { timeout: 5_000 },
+        )
+        .toBe("true");
+      await expect(answer).toBeFocused();
+      observations.push({
+        stage: "after-local-check-persisted",
+        active: await activeElementSnapshot(page),
+      });
+
+      const next = page.getByRole("button", { name: "Dalej", exact: true });
+      await next.focus();
+      await page.keyboard.press("Enter");
+      const secondHeading = page.getByRole("heading", {
+        name: "Napraw granicę",
+        exact: true,
+      });
+      await expect(secondHeading).toBeVisible();
+      await expect.soft(secondHeading).toBeFocused();
+      observations.push({
+        stage: "after-next",
+        active: await activeElementSnapshot(page),
+      });
+
+      await page.reload();
+      await expect(secondHeading).toBeVisible();
+      await expect.soft(secondHeading).not.toBeFocused();
+      observations.push({
+        stage: "after-reload",
+        active: await activeElementSnapshot(page),
+      });
+    } finally {
+      await testInfo.attach("focus-observations.json", {
+        body: JSON.stringify({ viewportName, viewport, observations }, null, 2),
+        contentType: "application/json",
+      });
+      await testInfo.attach("api-run-requests.json", {
+        body: JSON.stringify({ viewportName, viewport, runRequests }, null, 2),
+        contentType: "application/json",
+      });
+      expect
+        .soft(runRequests, `${viewportName} unexpected /api/run requests`)
+        .toEqual([]);
+      await context.close();
+    }
+  });
+}

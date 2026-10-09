@@ -66,6 +66,15 @@ function AppShell() {
   const firstNavRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const resizeClosePendingRef = useRef(false);
+  const focusDiagnosticOnMountRef = useRef(false);
+  const requestDiagnosticFocus = useCallback(() => {
+    focusDiagnosticOnMountRef.current = true;
+  }, []);
+  const takeStartFocus = useCallback(() => {
+    const shouldFocus = focusDiagnosticOnMountRef.current;
+    focusDiagnosticOnMountRef.current = false;
+    return shouldFocus;
+  }, []);
   const view = state.resume.view;
   const navigationKey =
     view === "lesson"
@@ -217,8 +226,12 @@ function AppShell() {
       });
     }
   }
-  if (!state.onboarding.completed) return <Onboarding />;
-  if (!state.diagnostic.completed) return <Diagnostic />;
+  if (!state.onboarding.completed) {
+    return <Onboarding onStart={requestDiagnosticFocus} />;
+  }
+  if (!state.diagnostic.completed) {
+    return <Diagnostic takeStartFocus={takeStartFocus} />;
+  }
   return (
     <div
       className={`app-shell ${focus ? "focus-mode" : ""}`}
