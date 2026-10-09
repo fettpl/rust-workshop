@@ -52,10 +52,12 @@ Appended hidden-test source identities are identical across the selected compile
 | --------------------------------------------------------- | ------------------------------------------------------------------ |
 | `async-lending-callbacks-bounded-transform` / canonical   | `06ff0eb82222fd42a193a5975659d8a8292ec0e6f60c1d0879e8f8e805f356f5` |
 | `async-lending-callbacks-bounded-transform` / equivalent  | `447da1bf7fd7385417c4e5eedb0434a631c5649c46a9c43338ffa043eeccbd7f` |
-| `async-lending-dyn-adapter-borrowed-sources` / canonical  | `24ab9507714655b7fcfd7498512599be4dedebd0d28c30ca86c533ca798d0dc9` |
-| `async-lending-dyn-adapter-borrowed-sources` / equivalent | `57fbabe28416187cd6b6428219d2013efb292e253b23cc18516d48552cffc583` |
+| `async-lending-dyn-adapter-borrowed-sources` / canonical  | `9a11c6473eea97f1d90eec520f0aec307b31ee9d183d212768c06aa7c3cd19d8` |
+| `async-lending-dyn-adapter-borrowed-sources` / equivalent | `58b0e0690a35c88f2b6393ab664c48c1a8a4d876a15fb7c0f798e10ff89e068c` |
 
-Canonical/equivalent full behavior tests observe controlled Pending, the supplied waker, local captures/providers, byte forwarding, bounded/repeated progress and cancellation within the stated contracts. The integrated stable targeted run passed 136 tests in five files; the separate exact-1.85 native run passed 36 tests in two files. The full `content:rust` verification is a separate command scope. `content:async-lending` alone verifies the authored package and does not execute these two lesson steps.
+Canonical/equivalent full behavior tests observe controlled Pending, the supplied waker, local captures/providers, byte forwarding, bounded/repeated progress and cancellation within the stated contracts. The dyn VecDeque equivalent now uses fully qualified `std::pin::Pin` with no root Pin import; shared hidden support and the standalone future-escape suffix qualify Pin independently. The existing real-assembly assessment and boundary tests therefore also check this valid public-API implementation without depending on a learner's private import.
+
+The earlier integrated stable 136-test run and exact-1.85 36-test run are pre-correction observations. The Pin correction is covered by the two complete existing native files (36 tests) on each compiler. A scoped call to the existing authored-Rust verifier checks four dyn step cases plus its two standard controls. Of those step cases, reject-empty, starter-rejected and solution consume the changed hidden tests; plain starter compiles the unchanged starter source. That verifier does not consume equivalents, semantic mutants or boundary suffixes, which are exercised by the native assessment/boundary suite. Prior full-catalog 2,414-case results on stable/exact and the build at checkpoint `6a8a1c0` remain historical; the corrected full catalog belongs to separate final natural-CI verification. `content:async-lending` alone verifies the authored package and does not execute these two lesson steps.
 
 ## Browser, release and human evidence boundaries
 

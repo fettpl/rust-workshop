@@ -73,7 +73,7 @@ impl<'s> ReadyLocal<'s> {
     pub fn new(rows: &'s [Vec<u8>], seen: Rc<Observed>) -> Self { Self { rows, position: 0, seen } }
 }
 impl BorrowedProvider for ReadyLocal<'_> {
-    fn next<'a>(&'a mut self) -> Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
+    fn next<'a>(&'a mut self) -> std::pin::Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
         self.seen.calls.set(self.seen.calls.get() + 1);
         Box::pin(async move {
             self.seen.polls.set(self.seen.polls.get() + 1);
@@ -91,7 +91,7 @@ impl<'s> PendingLocal<'s> {
 struct PendingItem<'a, 's> { owner: &'a mut PendingLocal<'s>, first: bool, done: bool }
 impl<'a, 's: 'a> Future for PendingItem<'a, 's> {
     type Output = Option<&'a [u8]>;
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+    fn poll(self: std::pin::Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let this = self.get_mut();
         assert!(!this.done, "provider polled after Ready");
         this.owner.seen.polls.set(this.owner.seen.polls.get() + 1);
@@ -108,7 +108,7 @@ impl<'a, 's: 'a> Future for PendingItem<'a, 's> {
     }
 }
 impl BorrowedProvider for PendingLocal<'_> {
-    fn next<'a>(&'a mut self) -> Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
+    fn next<'a>(&'a mut self) -> std::pin::Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
         self.seen.calls.set(self.seen.calls.get() + 1);
         Box::pin(PendingItem { owner: self, first: true, done: false })
     }
@@ -146,7 +146,7 @@ impl<'s> EagerLocal<'s> {
     pub fn new(rows: &'s [Vec<u8>], seen: Rc<Observed>) -> Self { Self { rows, position: 0, seen } }
 }
 impl BorrowedProvider for EagerLocal<'_> {
-    fn next<'a>(&'a mut self) -> Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
+    fn next<'a>(&'a mut self) -> std::pin::Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
         self.seen.calls.set(self.seen.calls.get() + 1);
         let row = self.rows.get(self.position).map(Vec::as_slice);
         if row.is_some() { self.position += 1; }
@@ -283,14 +283,13 @@ export const dynTransferStep: LessonStep = {
 
 export const dynTransferEquivalent: string = `#![allow(dead_code)]
 use std::future::Future;
-use std::pin::Pin;
 pub trait BorrowedProvider {
-    fn next<'a>(&'a mut self) -> Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>>;
+    fn next<'a>(&'a mut self) -> std::pin::Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>>;
 }
 pub struct BoxedSources<'s> { providers: std::collections::VecDeque<Box<dyn BorrowedProvider + 's>> }
 impl<'s> BoxedSources<'s> {
     pub fn new(providers: Vec<Box<dyn BorrowedProvider + 's>>) -> Self { Self { providers: providers.into() } }
-    pub fn next_at<'a>(&'a mut self, index: usize) -> Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
+    pub fn next_at<'a>(&'a mut self, index: usize) -> std::pin::Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
         Box::pin(async move {
             match self.providers.get_mut(index) {
                 Some(provider) => provider.next().await,
@@ -474,7 +473,7 @@ fn owned_output_survives_owners() {
   {
     id: "future-escape",
     failSuffix: `${dynTransferSupport}
-fn forbidden_future_escape<'a>() -> Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
+fn forbidden_future_escape<'a>() -> std::pin::Pin<Box<dyn Future<Output = Option<&'a [u8]>> + 'a>> {
     let rows = vec![b"local".to_vec()];
     let mut sources = local_sources(&rows);
     sources.next_at(0)
