@@ -1,4 +1,4 @@
-> Historical notice: sections retained below preserve their original dated source cuts, counts, evidence boundaries, anchors, pending decisions, and uses of “current.” They are historical records. The snapshot immediately below is the latest accepted release before the uncommitted session-scaffolding candidate.
+> Historical notice: sections retained below preserve their original dated source cuts, counts, evidence boundaries, anchors, pending decisions, and uses of “current.” They are historical records. The snapshot immediately below is the latest accepted release before the committed packet-005 candidate in the current checkout; source provenance, current CI/main and local-release confirmation, and learner outcomes remain separate records.
 
 <a id="latest-accepted-release-before-session-scaffolding-candidate-9-october-2026"></a>
 
@@ -8,7 +8,7 @@ Date: 2026-10-09 (Europe/Warsaw). This dated snapshot records the accepted M8 or
 
 Both natural records contain 103 unit files with 1106 passing unit tests, 2406 authored Rust cases on stable and 2406 on exact MSRV, 137 browser cases with zero retries and flaky cases, and offline page errors `[]`. The final reviewed source `480cc55f54e90f2dd9083ded107b389d3dc3a412` had no new Code or Security findings, and all three prior findings were resolved. The accepted local M8 release used production preview build `dVi8cjh2XS9DdA998jOQT` with HTTP 200. Its bounded audit records 2 moderate, 0 high, and 0 critical production findings; the full audit records 5 high and 2 moderate findings, so these results do not establish a security-clean claim.
 
-The `480cc...` identity is the prior PR49 final reviewed source, not a packet-005 source identity. Packet 003 and packet 004 authored materials are available in M8, while learner artifacts and results remain not observed. Packet 005 session stops and maintainer materials are an authored candidate on a fresh M8-based feature branch with no committed packet-005 source self-commit, natural CI/main result, local release identity, or learner outcome. No participant, timing, transfer, retention, efficacy, mastery, accessibility, deployment, or production-readiness claim follows from this snapshot.
+The `480cc...` identity is the prior PR49 final reviewed source, not a packet-005 source identity. Packet 003 and packet 004 authored materials are available in M8, while learner artifacts and results remain not observed. Packet 005 session stops and maintainer materials are an authored candidate in the current checkout. When material is used, record the actual checkout commit or authored-material hash; source existence remains separate from natural CI/main results, local release identity, and learner outcomes. No participant, timing, transfer, retention, efficacy, mastery, accessibility, deployment, or production-readiness claim follows from this snapshot.
 
 # Verification records
 
