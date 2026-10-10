@@ -43,12 +43,30 @@ function stepAt(lessonId: string, stepId: string): LessonStep {
   expect(step, `${lessonId}/${stepId}`).toBeDefined();
   return step!;
 }
-it("preserves all 48 ownership step IDs/order while narrowing each assessed concept claim", () => {
-  expect(
-    lessons.flatMap((lesson) =>
-      lesson.steps.map((step) => [lesson.id, step.id]),
-    ),
-  ).toEqual(expectedAttribution.map(([lesson, step]) => [lesson, step]));
+it("preserves all 48 old ownership indices and their attribution before explicit appended steps", () => {
+  const appended: Record<string, string[]> = {
+    "memory-intro": ["memory-owner-out-of-block"],
+    "move-copy-discovery": [
+      "move-owned-transform",
+      "move-copy-return-predict",
+      "move-copy-own-words",
+    ],
+    "number-guessing-transfer": ["project-own-boundary-test"],
+    "blank-page-repair": ["blank-own-boundary-test"],
+  };
+  for (const lesson of lessons) {
+    const original = expectedAttribution
+      .filter(([id]) => id === lesson.id)
+      .map(([, step]) => step);
+    expect(
+      lesson.steps.slice(0, original.length).map((step) => step.id),
+      lesson.id,
+    ).toEqual(original);
+    expect(
+      lesson.steps.slice(original.length).map((step) => step.id),
+      lesson.id,
+    ).toEqual(appended[lesson.id] ?? []);
+  }
   for (const [lessonId, stepId, conceptIds] of expectedAttribution) {
     expect(stepAt(lessonId, stepId).evidence, stepId).toEqual(
       expect.objectContaining({ version: 2, conceptIds }),
@@ -666,6 +684,7 @@ it("uses a distinct executable recall family and only audits the named primary f
       .filter((step) => step.evidence?.codingTaskId)
       .map((step) => step.id),
   ).toEqual([
+    "move-owned-transform",
     "borrow-conflict",
     "borrow-mutable-run",
     "adversarial-code",

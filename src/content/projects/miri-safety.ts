@@ -284,7 +284,7 @@ const aliasingFixture = String.raw`fn main() {
 }
 `;
 
-const readme = String.raw`# Miri Safety Workshop
+const readme = String.raw`# Warsztat bezpieczeństwa z Miri
 
 This authored package is a small, dependency-free Rust 2024 fixture for the
 unsafe curriculum. The library keeps its public API safe and tests the
@@ -357,14 +357,14 @@ const commonFiles = [
 
 export const miriSafetyPackage: ProjectPackage = {
   id: "miri-safety-workshop",
-  title: "Miri Safety Workshop",
+  title: "Warsztat bezpieczeństwa z Miri",
   description:
-    "A std-only Rust package with safe memory contracts and isolated undefined-behavior fixtures interpreted by Miri.",
+    "Pakiet Rust oparty na std z bezpiecznymi kontraktami pamięci i odizolowanymi przykładami niezdefiniowanego zachowania interpretowanymi przez Miri.",
   instructions: [
-    "Use Rust 2024 with a stable compiler for the safe package and the repository-pinned nightly only for Miri.",
-    "Run cargo fmt --check, cargo check --all-targets --offline, cargo test --offline and cargo clippy --all-targets --offline -- -D warnings.",
-    "Read SAFETY.md before examining the negative fixtures; they are intentionally invalid programs.",
-    "Run npm run content:miri -- --fetch from the repository to repeat the maintainer verifier.",
+    "Użyj Rust 2024 i stabilnego kompilatora dla bezpiecznego pakietu; przypięty w repozytorium nightly służy tylko Miri.",
+    "Uruchom cargo fmt --check, cargo check --all-targets --offline, cargo test --offline i cargo clippy --all-targets --offline -- -D warnings.",
+    "Przed analizą negatywnych przykładów przeczytaj SAFETY.md; te programy są celowo niepoprawne.",
+    "Uruchom npm run content:miri -- --fetch w repozytorium, aby powtórzyć weryfikator autora.",
   ],
   revealStepRefs: [
     { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-gate" },
@@ -392,33 +392,33 @@ export const miriSafetyProject: ProjectContract = {
     "unsafe-miri-slot-state-contract",
     "unsafe-miri-mut-slot-variance-contract",
   ],
-  title: "Miri Safety Workshop",
+  title: "Warsztat bezpieczeństwa z Miri",
   objective:
-    "Review ByteView, disjoint regions, Slot state and MutSlot reborrowing, then use an interpreter to expose undefined behavior in small, reviewable Rust fixtures.",
+    "Przejrzyj ByteView, rozłączne regiony, stan Slot i reborrow MutSlot; następnie użyj interpretera, aby ujawnić niezdefiniowane zachowanie w małych przykładach Rust.",
   requiredBehaviors: [
-    "Define ByteView over initialized bytes, allowing a null pointer only for an empty view and never extending the storage lifetime.",
-    "Return disjoint mutable regions for every split from zero through the buffer length, and reject only an out-of-bounds split.",
-    "Track Slot<T> with an Empty/Full invariant so put, take and Drop transfer or release each value exactly once.",
-    "Use MutSlot reborrow to shorten access while preserving the invariant inner T and rejecting an invalid lifetime substitution at compile time.",
+    "Zdefiniuj ByteView nad zainicjalizowanymi bajtami; null jest dopuszczalny tylko dla pustego widoku, bez wydłużania czasu życia pamięci.",
+    "Zwracaj rozłączne regiony mutable dla podziału od zera do długości bufora włącznie; odrzucaj podział poza zakresem.",
+    "Zachowaj niezmiennik Empty/Full w Slot<T>, aby put, take i Drop przenosiły lub zwalniały każdą wartość dokładnie raz.",
+    "Skróć dostęp przez reborrow MutSlot, zachowując invariant wewnętrznego T; niepoprawne podstawienie lifetime ma zostać odrzucone przy kompilacji.",
   ],
   requiredEvidence: [
-    "The four primary gates, four blank-page tasks and four retrievals exercise ByteView, split boundaries, Slot state/Drop and MutSlot reborrow contracts.",
-    "Stable and exact Rust 1.85.0 cargo checks, tests, formatting and Clippy pass for the authored package.",
-    "Each negative fixture compiles for diagnostics but is rejected by the pinned Miri interpreter, and a controlled contract mutant is rejected by an authored test.",
+    "Cztery główne bramki, cztery zadania od pustej kartki i cztery powtórki ćwiczą ByteView, granice podziału, stan/Drop Slot i reborrow MutSlot.",
+    "Dla autorskiego pakietu sprawdź Cargo, testy, formatowanie i Clippy na stable oraz dokładnym Rust 1.85.0.",
+    "Każdy negatywny fixture kompiluje się do diagnostyki, lecz przypięty interpreter Miri go odrzuca; autorski test odrzuca też kontrolowanego mutanta kontraktu.",
   ],
   constraints: [
-    "The main library is std-only and forbids unsafe code.",
-    "The verifier accepts only repository-authored files and the pinned Miri toolchain.",
-    "Negative fixtures may be compiled for diagnostics but must never be native-executed.",
+    "Główna biblioteka korzysta wyłącznie ze std i zabrania unsafe.",
+    "Weryfikator przyjmuje wyłącznie pliki autora z repozytorium i przypięty toolchain Miri.",
+    "Negatywne przykłady można kompilować do diagnostyki, ale nigdy uruchamiać natywnie.",
   ],
   lessonId: "unsafe-miri-byte-view",
   adversarialLessonId: "unsafe-miri-mut-slot",
   adversarialInject:
-    "A fixture was compiled successfully. Decide whether that proves its unsafe execution is defined, then inspect the Miri result.",
+    "Fixture skompilował się poprawnie. Oceń, czy dowodzi to zdefiniowanego wykonania unsafe, a następnie sprawdź wynik Miri.",
   retrospective: [
-    "Which precondition made the safe API reviewable?",
-    "What did Miri observe that native compilation alone could not establish?",
-    "Which unsafe claim remains outside this bounded fixture set?",
+    "Który warunek wstępny umożliwił przegląd bezpiecznego API?",
+    "Co zaobserwowało Miri, czego nie mogła ustalić sama natywna kompilacja?",
+    "Które twierdzenie o unsafe pozostaje poza tym ograniczonym zestawem przykładów?",
   ],
   package: miriSafetyPackage,
 };

@@ -332,7 +332,11 @@ describe("curriculum content contract", () => {
     expect(ownershipModule.lessonIds.length).toBeLessThanOrEqual(10);
     expect(
       lessons.every(
-        (lesson) => lesson.steps.length >= 5 && lesson.steps.length <= 9,
+        (lesson) =>
+          (lesson.steps.length >= 5 && lesson.steps.length <= 9) ||
+          (lesson.id === "nested-patterns-and-destructuring" &&
+            lesson.steps.length === 11 &&
+            lesson.sessionStops?.length === 2),
       ),
     ).toBe(true);
     expect(
@@ -753,17 +757,16 @@ describe("session-stop authored metadata validation", () => {
     for (const [lessonId, sessionStops] of Object.entries(validStops)) {
       const lesson = copy.lessons.find((item) => item.id === lessonId);
       expect(lesson).toBeDefined();
-      (lesson as MutableLessonWithSessionStops).sessionStops = structuredClone(
-        sessionStops,
-      );
+      (lesson as MutableLessonWithSessionStops).sessionStops =
+        structuredClone(sessionStops);
     }
 
     expect(validateContent(copy)).toEqual([]);
     for (const [lessonId, stepIds] of Object.entries(expectedStepIds)) {
       expect(
-        copy.lessons.find((item) => item.id === lessonId)?.steps.map(
-          (step) => step.id,
-        ),
+        copy.lessons
+          .find((item) => item.id === lessonId)
+          ?.steps.map((step) => step.id),
       ).toEqual(stepIds);
     }
   });
@@ -876,9 +879,8 @@ describe("session-stop authored metadata validation", () => {
     );
     for (const [lessonId, sessionStops] of Object.entries(validStops)) {
       const lesson = copy.lessons.find((item) => item.id === lessonId)!;
-      (lesson as MutableLessonWithSessionStops).sessionStops = structuredClone(
-        sessionStops,
-      );
+      (lesson as MutableLessonWithSessionStops).sessionStops =
+        structuredClone(sessionStops);
     }
 
     expect(validateContent(copy)).toEqual([]);

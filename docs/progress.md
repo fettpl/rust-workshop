@@ -1,3 +1,5 @@
+Current authored correction candidate (10 October 2026): [source-bound curriculum audit](curriculum-audit-2026-10-10.md) and [objective/Definition of Done/ordered delivery](superpowers/plans/2026-10-10-curriculum-baseline-and-synthesis.md). Counts are 48 modules, 189 lessons, 191 concepts, 1,242 steps and 341 sources. Integrated verification, final review and release acceptance are pending; the dated accepted records below remain historical. No human pilot blocks this development.
+
 Current M13 accepted product snapshot: [M13 verification — 9 October 2026](verification.md#m13-current-verification-snapshot-9-october-2026). The accepted PR54 product source is [main commit `70682709eabb1d8f95dd067d6429df3190eae72d`](https://github.com/fettpl/rustcrushcourse/commit/70682709eabb1d8f95dd067d6429df3190eae72d) with tree `ee303bdc5d451b162b45b7916e4fb901f5cff3a1`; source availability, natural CI, maintainer-local release evidence, learner outcomes, and readiness claims remain distinct scopes.
 
 # Rust Workshop — stan implementacji

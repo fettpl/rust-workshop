@@ -742,7 +742,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
       "Sync oznacza, że samo T jest Sync.",
     ],
     transferTask: "Zastosuj marker w lokalnym wrapperze pożyczonego bufora.",
-    evidenceGate: "Auto-trait policy ma positive i negative clients.",
+    evidenceGate:
+      "Bramki przeglądarkowe sprawdzają pozytywne bounds i reborrow; pokazany compile-fail odrzuca lifetime escape. Negatywne klienty Rc/Cell należą do autorskiego pakietu weryfikowanego natywnie, a zaliczenie w przeglądarce nie dowodzi ich uruchomienia.",
     sourceIds: unsafeBorrowedMemorySources.slice(2).map((source) => source.id),
   },
 ];

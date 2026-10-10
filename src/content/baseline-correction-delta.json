@@ -1,0 +1,64 @@
+{
+  "baseCommit": "fc3491a74e30557ebea1196986d136ca66a43973",
+  "baseTree": "cfba502e64f648483174ec7e2028eb6640b0105a",
+  "appendedSteps": {
+    "bindings-types": [
+      "numeric-discover",
+      "numeric-halves-transfer"
+    ],
+    "functions-expressions": [
+      "function-return-unit-discover",
+      "function-tuple-repair"
+    ],
+    "control-flow": [
+      "flow-range-transfer"
+    ],
+    "memory-intro": [
+      "memory-owner-out-of-block"
+    ],
+    "move-copy-discovery": [
+      "move-owned-transform",
+      "move-copy-return-predict",
+      "move-copy-own-words"
+    ],
+    "number-guessing-transfer": [
+      "project-own-boundary-test"
+    ],
+    "blank-page-repair": [
+      "blank-own-boundary-test"
+    ],
+    "slices-and-views": [
+      "slice-array-predict",
+      "slice-prefix-practice"
+    ],
+    "option-and-absence": [
+      "option-overflow-policy",
+      "option-checked-bonus"
+    ],
+    "modeling-assessment": [
+      "modeling-open-checkpoint"
+    ],
+    "trait-contracts": [
+      "contracts-derive-repair"
+    ],
+    "iterator-contracts": [
+      "contracts-open-checkpoint"
+    ],
+    "nested-patterns-and-destructuring": [
+      "patterns-if-let-predict",
+      "patterns-borrow-repair",
+      "patterns-let-else-repair",
+      "patterns-while-let-predict",
+      "patterns-delivery-transfer"
+    ]
+  },
+  "addedSourceIds": [
+    "baseline-str-uppercase",
+    "records-book-arrays-tuples",
+    "variants-std-checked-add",
+    "traits-book-derive",
+    "traits-reference-coherence",
+    "core-patterns-if-let",
+    "core-patterns-loops"
+  ]
+}

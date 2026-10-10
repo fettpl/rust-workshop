@@ -36,6 +36,15 @@ export const variantsSources: Source[] = [
     recheckPolicy:
       "Sprawdzaj przy zmianie stabilnego API Option lub wspieranego toolchaina.",
   },
+  {
+    id: "variants-std-checked-add",
+    title: "Rust Standard Library: i32::checked_add",
+    url: "https://doc.rust-lang.org/std/primitive.i32.html#method.checked_add",
+    classification: "stable",
+    reviewedAt: "2026-10-10",
+    recheckPolicy:
+      "Sprawdzaj po zmianie opisanego kontraktu lub wspieranego toolchaina.",
+  },
 ];
 
 export const variantsCompetencies: Competency[] = [
@@ -292,6 +301,14 @@ export const variantsLessons: Lesson[] = [
       "Rozpoznasz, że Some(0) nadal niesie wartość.",
       "Naprawisz niezgodność typu Option<i32> i sprawdzisz obie gałęzie testami.",
     ],
+    sessionStops: [
+      {
+        afterStepId: "option-transfer",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Sprawdź jawną politykę przepełnienia przez checked_add. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     steps: [
       {
         id: "option-discover",
@@ -429,6 +446,75 @@ export const variantsLessons: Lesson[] = [
         },
         evidenceKind: "transfer",
       },
+      {
+        id: "option-overflow-policy",
+        kind: "predict",
+        title: "Brak wejścia a brak wyniku",
+        prompt:
+          "`i32::checked_add` zwraca Some(sum), jeśli suma mieści się w i32, albo None przy przepełnieniu. Nowa funkcja checked_bonus ma też wejście Option<i32>. Celowo zwracamy None zarówno przy nieobecnym wejściu, jak i przy sumie poza zakresem. Czy jej wynik None pozwala rozpoznać przyczynę?",
+        choices: [
+          {
+            id: "0",
+            label:
+              "Nie; to jawnie uproszczona polityka, która łączy dwie przyczyny",
+          },
+          {
+            id: "1",
+            label: "Tak; None zawsze oznacza przepełnienie",
+          },
+          {
+            id: "2",
+            label: "Tak; Some(0) oznacza brak wejścia",
+          },
+        ],
+        evaluator: {
+          kind: "choice",
+          correct: "0",
+          explanations: {
+            "0": "Przyczynę rozróżniamy w rozumowaniu, ale ten typ wyniku jej nie zapisuje. Oddzielny model przyczyn można dodać później.",
+            "1": "Brak wejścia także daje None.",
+            "2": "Some(0) jest obecną sumą zero.",
+          },
+        },
+        evidenceKind: "prediction",
+      },
+      {
+        id: "option-checked-bonus",
+        kind: "modify",
+        title: "Ustal politykę dla całego i32",
+        prompt:
+          "Napisz `fn checked_bonus(value: Option<i32>, bonus: i32) -> Option<i32>`. Dla None zwróć None; dla Some(amount) wywołaj `amount.checked_add(bonus)`. Testy obejmują całe i32, w tym overflow w obu kierunkach i sumę zero. Nie zastępuj przepełnienia zawijaniem ani nasyceniem. checked_add daje tę politykę niezależnie od trybu kompilacji. Wcześniejszy add_bonus nadal ma swój opublikowany zakres od -1000 do i32::MAX - 1; to osobne zadanie.",
+        code: `fn checked_bonus(value: Option<i32>, bonus: i32) -> Option<i32> {
+    match value {
+        Some(amount) => Some(amount.saturating_add(bonus)),
+        None => None,
+    }
+}`,
+        solution: `fn checked_bonus(value: Option<i32>, bonus: i32) -> Option<i32> {
+    match value {
+        Some(amount) => amount.checked_add(bonus),
+        None => None,
+    }
+}`,
+        evaluator: {
+          kind: "tests",
+          tests: `#[test]
+fn missing_zero_and_both_overflow_directions() {
+    for (input, bonus, expected) in [
+        (None, 0, None), (None, i32::MAX, None),
+        (Some(0), 0, Some(0)), (Some(-1), 1, Some(0)),
+        (Some(i32::MIN), 0, Some(i32::MIN)),
+        (Some(i32::MAX), 0, Some(i32::MAX)),
+        (Some(i32::MAX - 1), 1, Some(i32::MAX)),
+        (Some(i32::MIN + 1), -1, Some(i32::MIN)),
+        (Some(i32::MAX), 1, None), (Some(i32::MIN), -1, None),
+        (Some(i32::MIN), i32::MAX, Some(-1)),
+    ] { assert_eq!(checked_bonus(input, bonus), expected); }
+}`,
+        },
+        evidenceKind: "transfer",
+        expectedStatus: "test-failure",
+      },
     ],
     misconceptions: [
       "Some(0) jest tym samym co None.",
@@ -439,7 +525,11 @@ export const variantsLessons: Lesson[] = [
       "Zaprojektuj małą funkcję zwracającą Option<i32>, która zachowuje różnicę między brakiem a estymatą zero.",
     evidenceGate:
       "Naprawa Option<i32> przechodzi test obecnego zera, a add_bonus przechodzi niezależne przypadki None, Some(0) i Some(5).",
-    sourceIds: ["variants-rust-book-match", "variants-option-std"],
+    sourceIds: [
+      "variants-rust-book-match",
+      "variants-option-std",
+      "variants-std-checked-add",
+    ],
   },
   {
     id: "modeling-assessment",
@@ -460,6 +550,14 @@ export const variantsLessons: Lesson[] = [
       "Połączysz owned String, enum stanu i Option<i32> w jednym rekordzie.",
       "Napiszesz metody czytające przez &self i zwracające widok &str.",
       "Sprawdzisz UTF-8, pusty tytuł, None i Some(0) testami.",
+    ],
+    sessionStops: [
+      {
+        afterStepId: "modeling-alt",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Podejmij otwarty problem rezerwacji z własnymi decyzjami projektowymi. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
     ],
     steps: [
       {
@@ -629,6 +727,31 @@ fn reading_finishes_only_with_a_page_and_preserves_data() {
         },
         evidenceKind: "transfer",
         evidenceGate: true,
+      },
+      {
+        id: "modeling-open-checkpoint",
+        kind: "assessment",
+        title: "Otwarty problem: rezerwacja czytania",
+        prompt:
+          "Zaprojektuj w pamięci małą rezerwację książki: przechowuje własny tytuł, może nie mieć ustalonego numeru miejsca, a miejsce 0 jest prawidłowe. Rezerwację można potwierdzić tylko z obecnym miejscem; powtórne potwierdzenie zachowuje dane. Pokaż odczyt tytułu bez odbierania właściciela. Sam wybierz nazwy, typy, podpisy i podział odpowiedzialności. Dołącz krótkie uzasadnienie i własny test zwykły oraz graniczny (brak miejsca, zero, pusty lub Unicode tytuł). Następnie zmień wymaganie: potwierdzoną rezerwację można anulować bez utraty tytułu i miejsca. Zaktualizuj model i test. Możesz korzystać z dokumentacji, ujawniając pomoc; lokalny Cargo jest opcjonalny. Zapisz, co faktycznie uruchomiono. Lista poniżej służy samoocenie: aplikacja nie analizuje semantycznie tej odpowiedzi, nie potwierdza architektury, samodzielności ani opanowania tematu.",
+        evaluator: {
+          kind: "rubric",
+          criteria: [
+            "Uzasadniam własny model i granice własności; nazwy, typy i podział funkcji są moją decyzją.",
+            "Rozróżniam brak od obecnego zera, pokazuję zmianę stanu i powtórzenie operacji bez utraty tekstu.",
+            "Dołączam własny test zwykłego przebiegu i test graniczny z pustką lub Unicode; zapisuję wynik rzeczywistego uruchomienia albo jawnie brak uruchomienia.",
+            "Wprowadzam jedną zmienioną regułę i wyjaśniam jej wpływ na model oraz testy.",
+            "Ujawniam dokumentację i otrzymaną pomoc; samoocena nie jest automatycznym sprawdzeniem poprawności ani dowodem samodzielności.",
+          ],
+        },
+        rubric: [
+          "Uzasadniam własny model i granice własności; nazwy, typy i podział funkcji są moją decyzją.",
+          "Rozróżniam brak od obecnego zera, pokazuję zmianę stanu i powtórzenie operacji bez utraty tekstu.",
+          "Dołączam własny test zwykłego przebiegu i test graniczny z pustką lub Unicode; zapisuję wynik rzeczywistego uruchomienia albo jawnie brak uruchomienia.",
+          "Wprowadzam jedną zmienioną regułę i wyjaśniam jej wpływ na model oraz testy.",
+          "Ujawniam dokumentację i otrzymaną pomoc; samoocena nie jest automatycznym sprawdzeniem poprawności ani dowodem samodzielności.",
+        ],
+        evidenceKind: "self-rating",
       },
     ],
     misconceptions: [

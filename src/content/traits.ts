@@ -64,6 +64,24 @@ export const traitsSources: Source[] = [
     recheckPolicy:
       "Sprawdzaj rzeczywisty diagnostyk lokalnym rustc w edycji 2024 przy zmianie przykładu lub kompilatora.",
   })),
+  {
+    id: "traits-book-derive",
+    title: "The Rust Programming Language: Derivable Traits",
+    url: "https://doc.rust-lang.org/book/appendix-03-derivable-traits.html",
+    classification: "stable",
+    reviewedAt: "2026-10-10",
+    recheckPolicy:
+      "Sprawdzaj po zmianie opisanego kontraktu lub wspieranego toolchaina.",
+  },
+  {
+    id: "traits-reference-coherence",
+    title: "The Rust Reference: Trait Implementation Coherence",
+    url: "https://doc.rust-lang.org/reference/items/implementations.html#trait-implementation-coherence",
+    classification: "stable",
+    reviewedAt: "2026-10-10",
+    recheckPolicy:
+      "Sprawdzaj po zmianie opisanego kontraktu lub wspieranego toolchaina.",
+  },
 ];
 
 export const traitsCompetencies: Competency[] = [
@@ -720,6 +738,20 @@ export const traitsLessons: Lesson[] = [
       "Implementujesz jeden trait dla różnych struktur.",
       "Rozróżniasz wymagane metody, metody domyślne i nadpisania.",
     ],
+    sessionStops: [
+      {
+        afterStepId: "contracts-error",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Uzupełnij Taggable i rozróżnij metodę domyślną od nadpisania. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "contracts-tags",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Przenieś kontrakt do Status, potem porównaj derive z ręcznym impl. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     steps: [
       choose(
         "contracts-predict",
@@ -830,6 +862,66 @@ export const traitsLessons: Lesson[] = [
           "Implementacje są przypisane do konkretnych typów.",
         ],
       ),
+      {
+        id: "contracts-derive-repair",
+        kind: "debug",
+        title: "derive i ręczna implementacja",
+        prompt:
+          "`#[derive(Debug, PartialEq, Eq)]` prosi kompilator o implementacje standardowych traitów: Debug pozwala na {:?}, PartialEq na ==, a Eq deklaruje pełną relację równoważności (w tym zwrotność). Dla struct wyprowadzone PartialEq porównuje wszystkie pola, które też muszą wspierać potrzebny trait. Ręczne impl PartialEq może wyrażać inną politykę; tu ManualNote porównuje tylko tekst, ignorując attempts. Eq wymaga PartialEq; nie dopisujesz jego metod, ale odpowiadasz za spełnienie jego praw. Starterowi brakuje PartialEq dla DerivedNote: odczytaj błąd i napraw derive, zachowując ręczną politykę ManualNote. Zachowaj fabryki `derived(text: String, attempts: u32) -> DerivedNote` i `manual(text: String, attempts: u32) -> ManualNote`. Testy używają ich wyników, Eq, Debug i == bez zakładania układu pól. Nie implementuj drugi raz traita już wyprowadzonego przez derive. Zasada spójności (coherence) zabrania nakładających się implementacji. W zwykłym impl możesz implementować własny trait dla obcego typu albo obcy trait dla własnego typu; obcy trait dla obcego typu nie wystarczy opisać w swoim pliku. To skrót dla prostych typów — impl generyczne mają dodatkowe reguły pokrycia parametrów. Późniejszą możliwością jest własny typ opakowujący (newtype).",
+        code: `#[derive(Debug, Eq)]
+struct DerivedNote { text: String, attempts: u32 }
+
+#[derive(Debug)]
+struct ManualNote { text: String, attempts: u32 }
+
+impl PartialEq for ManualNote {
+    fn eq(&self, other: &Self) -> bool { self.text == other.text }
+}
+impl Eq for ManualNote {}
+
+fn derived(text: String, attempts: u32) -> DerivedNote { DerivedNote { text, attempts } }
+fn manual(text: String, attempts: u32) -> ManualNote { ManualNote { text, attempts } }`,
+        solution: `#[derive(Debug, PartialEq, Eq)]
+struct DerivedNote { text: String, attempts: u32 }
+
+#[derive(Debug)]
+struct ManualNote { text: String, attempts: u32 }
+
+impl PartialEq for ManualNote {
+    fn eq(&self, other: &Self) -> bool { self.text == other.text }
+}
+impl Eq for ManualNote {}
+
+fn derived(text: String, attempts: u32) -> DerivedNote { DerivedNote { text, attempts } }
+fn manual(text: String, attempts: u32) -> ManualNote { ManualNote { text, attempts } }`,
+        evaluator: {
+          kind: "tests",
+          tests: `#[test]
+fn derived_fields_and_manual_identity_are_different_policies() {
+    fn inspect<T: Eq + std::fmt::Debug>(value: &T) { let _ = format!("{:?}", value); }
+    for text in ["", "Rust", "żółć"] {
+        let first = derived(String::from(text), 0);
+        let same = derived(String::from(text), 0);
+        let retry = derived(String::from(text), u32::MAX);
+        inspect(&first);
+        assert_eq!(first, same);
+        assert_ne!(first, retry);
+        assert_eq!(first, same);
+        let first = manual(String::from(text), 0);
+        let retry = manual(String::from(text), u32::MAX);
+        inspect(&first);
+        assert_eq!(first, retry);
+        assert_eq!(retry, first);
+        assert_eq!(first, first);
+    }
+    assert_ne!(derived(String::from("A"), 0), derived(String::from("B"), 0));
+    assert_ne!(manual(String::from("A"), 0), manual(String::from("B"), 0));
+}`,
+        },
+        evidenceKind: "fix",
+        expectedStatus: "compile-error",
+        expectedError: "E0277",
+      },
     ],
     misconceptions: [
       "Trait definiuje pola wspólnej klasy.",
@@ -840,7 +932,12 @@ export const traitsLessons: Lesson[] = [
       "Zbuduj trait stanu z domyślną interpretacją bool oraz implementację, która opisuje powód blokady.",
     evidenceGate:
       "Samodzielna implementacja Taggable albo Status spełnia wymagane i domyślne metody oraz nadpisania, także dla dodatkowego typu z testu.",
-    sourceIds: ["traits-book-contracts", "traits-error-e0046"],
+    sourceIds: [
+      "traits-book-contracts",
+      "traits-error-e0046",
+      "traits-book-derive",
+      "traits-reference-coherence",
+    ],
   },
   {
     id: "trait-consumers",
@@ -855,6 +952,20 @@ export const traitsLessons: Lesson[] = [
       "Wywołujesz API własnego traita w funkcji generycznej.",
       "Dobierasz T i U do niezależnych typów argumentów.",
       "Pożyczasz zbiory elementów bez dodawania Copy lub Clone.",
+    ],
+    sessionStops: [
+      {
+        afterStepId: "consumers-two-types",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Napisz konsumenta pary typów przez wspólny bound. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "consumers-pair",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Sprawdź transfer konsumenta w nowym kontrakcie kontroli. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
     ],
     steps: [
       run(
@@ -992,6 +1103,20 @@ export const traitsLessons: Lesson[] = [
       "Deklarujesz i definiujesz typ skojarzony.",
       "Przenosisz własny wynik bez dodatkowego Copy lub Clone.",
       "Stosujesz Output = String lub Output = usize w konsumencie.",
+    ],
+    sessionStops: [
+      {
+        afterStepId: "associated-owned",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Przećwicz pobieranie wartości typu skojarzonego. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "associated-take",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Przenieś typ skojarzony do pomiaru danych. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
     ],
     steps: [
       run(
@@ -1134,6 +1259,20 @@ export const traitsLessons: Lesson[] = [
       "Wyjaśniasz statyczny i dynamiczny wybór implementacji.",
       "Przetwarzasz heterogeniczny wycinek &[&dyn Trait] bez przenoszenia obiektów.",
       "Rozpoznajesz E0038 i dostosowujesz interfejs do dyn.",
+    ],
+    sessionStops: [
+      {
+        afterStepId: "dispatch-boundary",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Zbuduj kolekcję odczytów z dynamicznym wyborem metody. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "dispatch-readings",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Zaprojektuj nowy konsument od pustej kartki. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
     ],
     steps: [
       run(

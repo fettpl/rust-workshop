@@ -187,9 +187,9 @@ import { strFromU8, unzipSync } from "fflate";
       /Laboratorium: publiczne API i workspace/,
       /Projekt: ograniczony Mini grep/,
       /Projekt: kontrakty własności/,
-      /Project: safe FFI buffer owner/,
+      /Projekt: bezpieczny właściciel bufora FFI/,
       /Projekt: operacje serwisu Tokio/,
-      /Miri Safety Workshop/,
+      /Warsztat bezpieczeństwa z Miri/,
     ]) {
       await context.setOffline(false);
       await page

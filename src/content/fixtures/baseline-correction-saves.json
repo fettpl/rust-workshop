@@ -1,0 +1,397 @@
+{
+  "provenance": "Synthetic representative historical saves; not learner artifacts or execution observations. V1 omits later ratings/panel/font/evidence flags.",
+  "baseCommit": "fc3491a74e30557ebea1196986d136ca66a43973",
+  "fixtures": [
+    {
+      "name": "authored-representative-v1",
+      "state": {
+        "appVersion": "0.1.0",
+        "updatedAt": 1100,
+        "onboarding": {
+          "completed": true,
+          "name": "Ada",
+          "background": "python",
+          "minutes": 20
+        },
+        "diagnostic": {
+          "completed": true,
+          "answers": {
+            "q1": "a"
+          },
+          "score": 1,
+          "recommendation": "memory-intro"
+        },
+        "resume": {
+          "view": "lesson",
+          "lessonId": "memory-intro",
+          "stepIndex": 1
+        },
+        "steps": {
+          "memory-intro:memory-run": {
+            "code": "fn main() { println!(\"draft\"); }",
+            "answer": "3",
+            "hints": 2,
+            "revealed": true,
+            "completed": true,
+            "attempts": [
+              {
+                "at": 1010,
+                "code": "fn main() { let text = String::from(\"draft\"); }",
+                "answer": "zapisana odpowiedź",
+                "passed": false,
+                "feedback": "historyczny wynik próby"
+              }
+            ],
+            "rubricChecks": [
+              "własność"
+            ],
+            "traceIndex": 1
+          },
+          "move-copy-discovery:move-error": {
+            "code": "// unfinished saved draft",
+            "answer": "",
+            "hints": 1,
+            "revealed": false,
+            "completed": false,
+            "attempts": [],
+            "rubricChecks": [],
+            "traceIndex": 0
+          }
+        },
+        "events": [
+          {
+            "id": "old-output-pass",
+            "conceptIds": [
+              "stack-heap"
+            ],
+            "lessonId": "memory-intro",
+            "stepId": "memory-run",
+            "kind": "prediction",
+            "passed": true,
+            "hints": 2,
+            "revealed": true,
+            "at": 1020
+          },
+          {
+            "id": "old-assisted-fix",
+            "conceptIds": [
+              "move-semantics"
+            ],
+            "lessonId": "move-copy-discovery",
+            "stepId": "move-error",
+            "kind": "fix",
+            "passed": false,
+            "hints": 1,
+            "revealed": false,
+            "at": 1030
+          }
+        ],
+        "mastery": {
+          "stack-heap": {
+            "level": "practiced",
+            "reason": "historyczna etykieta",
+            "updatedAt": 1040
+          }
+        },
+        "review": [
+          {
+            "conceptId": "stack-heap",
+            "dueAt": 5000,
+            "intervalDays": 2,
+            "attempts": 1,
+            "reason": "historyczna kolejka"
+          }
+        ],
+        "notes": {
+          "memory-intro": "zachowaj notatkę"
+        },
+        "bookmarks": [
+          "memory-intro:memory-run",
+          "move-copy-discovery:move-error"
+        ],
+        "settings": {
+          "theme": "dark",
+          "accessibleEditor": true
+        },
+        "schemaVersion": 1
+      }
+    },
+    {
+      "name": "authored-representative-v2",
+      "state": {
+        "appVersion": "0.1.0",
+        "updatedAt": 1100,
+        "onboarding": {
+          "completed": true,
+          "name": "Ada",
+          "background": "python",
+          "minutes": 20
+        },
+        "diagnostic": {
+          "completed": true,
+          "answers": {
+            "q1": "a"
+          },
+          "score": 1,
+          "recommendation": "memory-intro"
+        },
+        "resume": {
+          "view": "lesson",
+          "lessonId": "memory-intro",
+          "stepIndex": 1,
+          "panel": "output",
+          "focus": true
+        },
+        "steps": {
+          "memory-intro:memory-run": {
+            "code": "fn main() { println!(\"draft\"); }",
+            "answer": "3",
+            "hints": 2,
+            "revealed": true,
+            "completed": true,
+            "attempts": [
+              {
+                "at": 1010,
+                "code": "fn main() { let text = String::from(\"draft\"); }",
+                "answer": "zapisana odpowiedź",
+                "passed": false,
+                "feedback": "historyczny wynik próby"
+              }
+            ],
+            "rubricChecks": [
+              "własność"
+            ],
+            "traceIndex": 1
+          },
+          "move-copy-discovery:move-error": {
+            "code": "// unfinished saved draft",
+            "answer": "",
+            "hints": 1,
+            "revealed": false,
+            "completed": false,
+            "attempts": [],
+            "rubricChecks": [],
+            "traceIndex": 0
+          }
+        },
+        "events": [
+          {
+            "id": "old-output-pass",
+            "conceptIds": [
+              "stack-heap"
+            ],
+            "lessonId": "memory-intro",
+            "stepId": "memory-run",
+            "kind": "prediction",
+            "passed": true,
+            "hints": 2,
+            "revealed": true,
+            "at": 1020,
+            "evidenceVersion": 2,
+            "evaluator": "answer",
+            "delayed": false,
+            "gate": false
+          },
+          {
+            "id": "old-assisted-fix",
+            "conceptIds": [
+              "move-semantics"
+            ],
+            "lessonId": "move-copy-discovery",
+            "stepId": "move-error",
+            "kind": "fix",
+            "passed": false,
+            "hints": 1,
+            "revealed": false,
+            "at": 1030,
+            "evaluator": "expected-error",
+            "gate": false
+          }
+        ],
+        "mastery": {
+          "stack-heap": {
+            "level": "practiced",
+            "reason": "historyczna etykieta",
+            "updatedAt": 1040
+          }
+        },
+        "review": [
+          {
+            "conceptId": "stack-heap",
+            "dueAt": 5000,
+            "intervalDays": 2,
+            "attempts": 1,
+            "reason": "historyczna kolejka",
+            "lastReviewedAt": 1050
+          }
+        ],
+        "notes": {
+          "memory-intro": "zachowaj notatkę"
+        },
+        "bookmarks": [
+          "memory-intro:memory-run",
+          "move-copy-discovery:move-error"
+        ],
+        "settings": {
+          "theme": "dark",
+          "accessibleEditor": true,
+          "editorFontSize": 18
+        },
+        "schemaVersion": 2,
+        "ratings": [
+          {
+            "conceptId": "stack-heap",
+            "rating": "hard",
+            "at": 1050
+          }
+        ],
+        "reviewSession": {
+          "conceptId": "stack-heap",
+          "mode": "challenge",
+          "sessionId": "saved-review",
+          "startedAt": 1060,
+          "wasDue": true
+        }
+      }
+    },
+    {
+      "name": "authored-representative-v3",
+      "state": {
+        "appVersion": "0.1.0",
+        "updatedAt": 1100,
+        "onboarding": {
+          "completed": true,
+          "name": "Ada",
+          "minutes": 20
+        },
+        "diagnostic": {
+          "completed": true,
+          "answers": {
+            "q1": "a"
+          },
+          "score": 1,
+          "recommendation": "memory-intro"
+        },
+        "resume": {
+          "view": "lesson",
+          "lessonId": "memory-intro",
+          "stepIndex": 1,
+          "panel": "output",
+          "focus": true
+        },
+        "steps": {
+          "memory-intro:memory-run": {
+            "code": "fn main() { println!(\"draft\"); }",
+            "answer": "3",
+            "hints": 2,
+            "revealed": true,
+            "completed": true,
+            "attempts": [
+              {
+                "at": 1010,
+                "code": "fn main() { let text = String::from(\"draft\"); }",
+                "answer": "zapisana odpowiedź",
+                "passed": false,
+                "feedback": "historyczny wynik próby"
+              }
+            ],
+            "rubricChecks": [
+              "własność"
+            ],
+            "traceIndex": 1
+          },
+          "move-copy-discovery:move-error": {
+            "code": "// unfinished saved draft",
+            "answer": "",
+            "hints": 1,
+            "revealed": false,
+            "completed": false,
+            "attempts": [],
+            "rubricChecks": [],
+            "traceIndex": 0
+          }
+        },
+        "events": [
+          {
+            "id": "old-output-pass",
+            "conceptIds": [
+              "stack-heap"
+            ],
+            "lessonId": "memory-intro",
+            "stepId": "memory-run",
+            "kind": "prediction",
+            "passed": true,
+            "hints": 2,
+            "revealed": true,
+            "at": 1020,
+            "evidenceVersion": 2,
+            "evaluator": "answer",
+            "delayed": false,
+            "gate": false
+          },
+          {
+            "id": "old-assisted-fix",
+            "conceptIds": [
+              "move-semantics"
+            ],
+            "lessonId": "move-copy-discovery",
+            "stepId": "move-error",
+            "kind": "fix",
+            "passed": false,
+            "hints": 1,
+            "revealed": false,
+            "at": 1030,
+            "evaluator": "expected-error",
+            "gate": false
+          }
+        ],
+        "mastery": {
+          "stack-heap": {
+            "level": "practiced",
+            "reason": "historyczna etykieta",
+            "updatedAt": 1040
+          }
+        },
+        "review": [
+          {
+            "conceptId": "stack-heap",
+            "dueAt": 5000,
+            "intervalDays": 2,
+            "attempts": 1,
+            "reason": "historyczna kolejka",
+            "lastReviewedAt": 1050
+          }
+        ],
+        "notes": {
+          "memory-intro": "zachowaj notatkę"
+        },
+        "bookmarks": [
+          "memory-intro:memory-run",
+          "move-copy-discovery:move-error"
+        ],
+        "settings": {
+          "theme": "dark",
+          "accessibleEditor": true,
+          "editorFontSize": 18
+        },
+        "schemaVersion": 3,
+        "ratings": [
+          {
+            "conceptId": "stack-heap",
+            "rating": "hard",
+            "at": 1050
+          }
+        ],
+        "reviewSession": {
+          "conceptId": "stack-heap",
+          "mode": "challenge",
+          "sessionId": "saved-review",
+          "startedAt": 1060,
+          "wasDue": true,
+          "exerciseId": "review-stack-heap"
+        },
+        "routePreference": "extensions"
+      }
+    }
+  ]
+}

@@ -165,7 +165,9 @@ it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operat
   expect(lessons.at(-2)).toEqual(functionOwnershipCalibrationLesson);
   expect(lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
   expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
-  expect(sources).toHaveLength(332 + nestedPatternSources.length);
+  // Preserve the historical 332-source base. The nested export now includes
+  // two approved pattern references; baseline correction adds five elsewhere.
+  expect(sources).toHaveLength(332 + nestedPatternSources.length + 5);
   const nestedBlankSteps = nestedPatternLessons
     .flatMap((lesson) => lesson.steps)
     .filter((step) => step.kind === "blank").length;
@@ -173,7 +175,8 @@ it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operat
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  ).toHaveLength(141 + nestedBlankSteps);
+  // Three baseline blanks are outside the newly extended nested lesson.
+  ).toHaveLength(141 + nestedBlankSteps + 3);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
   expect(index).toBe(modules.length - 5);
   expect(unsafeFfiModule.prerequisites).toEqual(["performance-evidence"]);

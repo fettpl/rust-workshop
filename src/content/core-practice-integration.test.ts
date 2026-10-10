@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import * as course from "./course";
 import legacy from "./core-practice-legacy-baseline.json";
+import correctionDelta from "./baseline-correction-delta.json";
 import { traitsModule as originalTraitsModule } from "./traits";
 import {
   coreConversionsConcepts,
@@ -120,14 +121,27 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
       moduleId: lesson.moduleId,
       stepIds: lesson.steps.map((step) => step.id),
     })),
-  ).toEqual(expectedLegacyLessons);
+  ).toEqual(
+    expectedLegacyLessons.map((lesson) => ({
+      ...lesson,
+      stepIds: [
+        ...lesson.stepIds,
+        ...(correctionDelta.appendedSteps[
+          lesson.id as keyof typeof correctionDelta.appendedSteps
+        ] ?? []),
+      ],
+    })),
+  );
   expect(
     course.concepts
       .slice(0, legacy.conceptIds.length)
       .map((concept) => concept.id),
   ).toEqual(legacy.conceptIds);
   expect(
-    course.sources.slice(0, legacy.sourceIds.length).map((source) => source.id),
+    course.sources
+      .filter((source) => !correctionDelta.addedSourceIds.includes(source.id))
+      .slice(0, legacy.sourceIds.length)
+      .map((source) => source.id),
   ).toEqual(legacy.sourceIds);
   for (const original of legacy.modules) {
     const current = course.modules.find((module) => module.id === original.id)!;
@@ -176,16 +190,24 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ...coreCheckedConversionsConcepts,
     ...nestedPatternConcepts,
   ]);
-  expect(course.sources.slice(legacy.sourceIds.length)).toEqual([
+  expect(
+    course.sources
+      .filter((source) => !correctionDelta.addedSourceIds.includes(source.id))
+      .slice(legacy.sourceIds.length),
+  ).toEqual([
     ...coreConversionsSources,
     ...coreCheckedConversionsSources,
-    ...nestedPatternSources,
+    ...nestedPatternSources.filter(
+      (source) => !correctionDelta.addedSourceIds.includes(source.id),
+    ),
   ]);
   expect(course.lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
   expect(nestedPatternLessons[0].prerequisites).toEqual([
     "modeling-assessment",
   ]);
-  expect(nestedPatternLessons[0].steps.map((step) => step.id)).toEqual([
+  expect(
+    nestedPatternLessons[0].steps.slice(0, 6).map((step) => step.id),
+  ).toEqual([
     "nested-predict",
     "nested-run",
     "nested-repair",
@@ -195,18 +217,18 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   ]);
   expect(
     nestedPatternLessons[0].steps.filter((step) => step.kind === "blank"),
-  ).toHaveLength(1);
+  ).toHaveLength(2);
   expect(
     nestedPatternLessons[0].steps.filter(
       (step) => step.evaluator?.kind === "tests",
     ),
-  ).toHaveLength(2);
+  ).toHaveLength(5);
   expect(
     nestedPatternReviewExercises["nested-pattern-matching"]?.evaluator,
   ).toMatchObject({
     kind: "tests",
   });
-  expect(nestedPatternSources).toMatchObject([
+  expect(nestedPatternSources.slice(0, 2)).toMatchObject([
     {
       id: "core-patterns-book",
       url: "https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html",
@@ -227,7 +249,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   ]);
   expect(nestedPatternConcepts[0].evidenceCalibration).toBeUndefined();
   expect(nestedPatternCompetencies).toHaveLength(1);
-  for (const step of nestedPatternLessons[0].steps) {
+  for (const step of nestedPatternLessons[0].steps.slice(0, 6)) {
     expect(step.evidence, step.id).toMatchObject({
       version: 2,
       conceptIds: ["nested-pattern-matching"],
@@ -262,20 +284,23 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     lessons: frozenPreNestedInventory.lessons + nestedInventory.lessons + 2,
     modules: frozenPreNestedInventory.modules,
     concepts: frozenPreNestedInventory.concepts + nestedInventory.concepts,
-    blank: frozenPreNestedInventory.blank + nestedInventory.blank,
-    sources: frozenPreNestedInventory.sources + nestedInventory.sources,
+    blank: frozenPreNestedInventory.blank + nestedInventory.blank + 3,
+    sources: frozenPreNestedInventory.sources + nestedInventory.sources + 5,
     projects: frozenPreNestedInventory.projects,
     traces: frozenPreNestedInventory.traces,
     competencies:
       frozenPreNestedInventory.competencies + nestedInventory.competencies,
     // M11 appends one tested step to callbacks and one to dyn; the old
-    // frozen inventory and every previous delta remain unchanged.
-    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 12 + 2,
+    // frozen inventory and every previous delta remain unchanged. Baseline
+    // correction adds 18 steps outside the five new nested-pattern steps,
+    // plus seven tested tasks and three blank tasks outside that bridge.
+    steps: frozenPreNestedInventory.steps + nestedInventory.steps + 12 + 2 + 18,
     testEvaluators:
       frozenPreNestedInventory.testEvaluators +
       nestedInventory.testEvaluators +
       5 +
-      2,
+      2 +
+      7,
     reviews: frozenPreNestedInventory.reviews + nestedInventory.reviews,
   });
   for (const registry of [
@@ -328,12 +353,12 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   const fresh = course.lessons.filter((lesson) =>
     [...newLessonIds, ...nestedLessonIds].includes(lesson.id),
   );
-  expect(fresh.flatMap((lesson) => lesson.steps)).toHaveLength(20);
+  expect(fresh.flatMap((lesson) => lesson.steps)).toHaveLength(25);
   expect(
     fresh.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evaluator?.kind === "tests"),
     ),
-  ).toHaveLength(8);
+  ).toHaveLength(11);
   for (const lesson of fresh)
     for (const step of lesson.steps) {
       expect(step.evidence?.version).toBe(2);

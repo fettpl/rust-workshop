@@ -1215,6 +1215,21 @@ fn over_limit_is_invalid_data() {
       "Zaprojektuj odbiór pojedynczego komunikatu urządzenia z innym limitem oraz wyraźnym EOF, bez kopiowania sesji gry.",
     evidenceGate:
       "Testy obserwują flush przed odczytem, terminalny EOF, CRLF i finalną linię, granicę 128/129 oraz oryginalne rodzaje błędów I/O.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "guess-session-io-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw sesję korzystającą z BufRead i Write. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "guess-session-io-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Odtwórz sesję od pustej kartki i sprawdź błędy I/O. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: guessingIoSources.slice(0, 3).map((source) => source.id),
   },
   {
@@ -1308,6 +1323,21 @@ fn over_limit_is_invalid_data() {
       "Przenieś granicę jednorazowego źródła wartości do przydziału innego zasobu z odmiennym zakresem i walidacją.",
     evidenceGate:
       "Testy liczą wywołania: 0 dla złej konfiguracji, 1 dla poprawnej, również gdy sekret jest błędny.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "guess-random-boundary-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw granicę wstrzykiwanego sekretu. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "guess-random-boundary-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Odtwórz granicę sekretu od pustej kartki w odrębnym kontrakcie. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: guessingIoSources.slice(3).map((source) => source.id),
   },
 ];

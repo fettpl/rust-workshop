@@ -400,8 +400,21 @@ export function validateContent(content: ContentBundle): string[] {
       errors.push(
         `lesson ${lesson.id} belongs to unknown module: ${lesson.moduleId}`,
       );
-    if (lesson.steps.length < 5 || lesson.steps.length > 9)
-      errors.push(`lesson ${lesson.id} must have 5-9 steps`);
+    // Preserve the original six saved indices while appending the approved
+    // ordinary-pattern bridge. Two optional boundaries keep this one eleven-step
+    // lesson navigable; other lessons retain the global 5–9 guard.
+    const appendedPatternBridge =
+      lesson.id === "nested-patterns-and-destructuring" &&
+      lesson.steps.length === 11 &&
+      Array.isArray(lesson.sessionStops) &&
+      lesson.sessionStops.length >= 2;
+    if (
+      (lesson.steps.length < 5 || lesson.steps.length > 9) &&
+      !appendedPatternBridge
+    )
+      errors.push(
+        `lesson ${lesson.id} must have 5-9 steps (the appended pattern bridge permits 11 with optional stops)`,
+      );
     if (!lesson.transferTask.trim())
       errors.push(`lesson ${lesson.id} is missing transferTask`);
     if (!lesson.evidenceGate.trim())

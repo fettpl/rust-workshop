@@ -71,7 +71,7 @@ export const performanceEvidenceCompetencies: Competency[] = [
   {
     id: "reuse-bounded-buffer",
     title:
-      "Budujesz pętlę z ograniczonym buforem, który jest czyszczony i ponownie używany dla kolejnych rekordów.",
+      "Budujesz pętlę z jednym buforem roboczym, czyszczonym i ponownie używanym; read_line może zwiększyć jego pojemność dla długiego rekordu.",
   },
   {
     id: "interpret-performance-evidence",
@@ -109,13 +109,13 @@ export const performanceEvidenceConcepts: Concept[] = [
   },
   {
     id: "bounded-buffer-reuse",
-    title: "Ograniczony bufor i ponowne użycie pamięci",
+    title: "Bufor roboczy i ponowne użycie pamięci",
     prerequisites: ["borrowed-stream-no-materialization"],
     competencyIds: ["reuse-bounded-buffer"],
     reviewPrompt:
       "Co daje `String::clear()` w pętli `BufRead::read_line` i czego ta operacja nie obiecuje?",
     reviewAnswer:
-      "`clear` usuwa długość napisu, zachowując jego pojemność, więc następny wiersz może użyć tego samego bufora. To ogranicza narastanie pamięci roboczej dla zadeklarowanej granicy, ale nie dowodzi braku alokacji dla wiersza większego od pojemności ani nie zastępuje limitu długości.",
+      "`clear` usuwa długość napisu, zachowując jego pojemność, więc następny wiersz może użyć tego samego bufora. read_line może zwiększyć pojemność dla długiego wiersza. Osobny limit długości lub ograniczony czytnik pakietu zapewnia inną granicę.",
     distinguish:
       "Ponowne użycie bufora jest własnością implementacji, którą można obserwować przez pojemność lub licznik kontrolowanego alokatora. Nie należy wyciągać z niego wniosku o czasie wykonania na każdej maszynie.",
     evidenceArtifact: "rust-code",
@@ -576,7 +576,7 @@ fn main() { println!("{:?}", inspect(&[b'a', b'Z', b'b', b'0'])); }`,
     transferTask:
       "Zapisz workload dla parsera rekordów: określ wejście, limit, proxy odwiedzin i osobno wynik poprawności.",
     evidenceGate:
-      "Dwie bramki wymagają kontraktu dla pustki, granicy równości i kontrolowanego mutanta. Blank page sprawdza, czy potrafisz przenieść tę regułę do innej domeny.",
+      "Dwie bramki wymagają kontraktu dla pustki, granicy równości i kontrolowanego mutanta. workload-blank odtwarza ten sam zadany kontrakt inspect_workload od pustej kartki; nie jest transferem do nowej domeny.",
     sourceIds: ["performance-benchmarking-book"],
   },
   {
@@ -674,7 +674,7 @@ fn main() { println!("{}", views(&["Rust", "inne", "Rust 🙂"]).len()); }`,
     conceptIds: ["bounded-buffer-reuse"],
     competencyIds: ["reuse-bounded-buffer"],
     prerequisites: ["performance-borrowed-stream"],
-    title: "Użyj jednego ograniczonego bufora",
+    title: "Użyj ponownie jednego bufora roboczego",
     subtitle:
       "Przeczytasz rekordy przez BufRead, wyczyścisz scratch i sprawdzisz pojemność deterministycznym proxy.",
     minutes: 28,
@@ -724,7 +724,7 @@ fn main() { let mut reader = Cursor::new("a\nb\n"); let mut line = String::new()
         kind: "apply",
         title: "Odczytaj proxy pojemności",
         prompt:
-          "Uzupełnij `within_capacity`. Decyzja ma zależeć od pojemności scratch, a nie od jego bieżącej długości; równość limitu jest akceptowana.",
+          "Uzupełnij `within_capacity`. Decyzja ma zależeć od pojemności scratch, a nie od jego bieżącej długości; równość limitu jest akceptowana. To odczyt bieżącej pojemności, nie mechanizm blokujący wcześniejszą alokację ani twardy limit długości rekordu.",
         code: bufferLimitStarter,
         solution: bufferLimitSolution,
         tests: bufferLimitTests,
@@ -733,7 +733,7 @@ fn main() { let mut reader = Cursor::new("a\nb\n"); let mut line = String::new()
       coding({
         id: "buffer-blank",
         kind: "blank",
-        title: "Blank page: bounded reader",
+        title: "Od pustej kartki: ponownie użyty bufor",
         prompt:
           "Zaimplementuj od zera `fn count_lines<R: BufRead>(reader: R, scratch: &mut String) -> io::Result<usize>`. Przed każdym `read_line` wywołaj `clear` na przekazanym scratch, zwiększ licznik dla odczytu większego od zera i zakończ przy EOF (0 bajtów), pozostawiając scratch pusty. Fixture obejmuje EOF i ostatni wiersz bez LF.",
         solution: bufferSolution,
@@ -832,7 +832,7 @@ fn main() { println!("{} {}", keep(10, 10, 10), keep(10, 11, 10)); }`,
         kind: "blank",
         title: "Blank page: decyzja dla nowej metryki",
         prompt:
-          "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] enum Decision { Keep, Investigate(&'static str) }` oraz `fn decide(baseline: usize, candidate: usize, budget: usize) -> Decision`. Zwróć `Keep` tylko przy spełnieniu obu warunków `candidate <= budget` i `candidate <= baseline`; w przeciwnym razie użyj `Investigate(\"budget\")` dla przekroczenia budżetu, a `Investigate(\"regression\")` dla regresji. Budget ma priorytet, gdy oba warunki zawodzą; równość jest sukcesem.",
+          'Zaimplementuj `#[derive(Debug, PartialEq, Eq)] enum Decision { Keep, Investigate(&\'static str) }` oraz `fn decide(baseline: usize, candidate: usize, budget: usize) -> Decision`. Zwróć `Keep` tylko przy spełnieniu obu warunków `candidate <= budget` i `candidate <= baseline`; w przeciwnym razie użyj `Investigate("budget")` dla przekroczenia budżetu, a `Investigate("regression")` dla regresji. Budget ma priorytet, gdy oba warunki zawodzą; równość jest sukcesem.',
         solution: decisionSolution,
         tests: decisionTests,
       }),
@@ -907,7 +907,7 @@ export const performanceEvidenceModule: CourseModule = {
   id: "performance-evidence",
   title: "Performance Evidence: workload, pamięć i decyzje",
   whyItMatters:
-    "Wydajność jest użyteczna dopiero wtedy, gdy wiesz, jaki workload mierzysz, jaki koszt obserwujesz i jak daleko sięga dowód. Zbudujesz deterministyczne proxy dla pożyczanego strumienia i ograniczonego bufora, a następnie podejmiesz decyzję warunkową.",
+    "Wydajność jest użyteczna dopiero wtedy, gdy wiesz, jaki workload mierzysz, jaki koszt obserwujesz i jak daleko sięga dowód. Zbudujesz deterministyczne proxy dla pożyczanego strumienia i ponownie używanego bufora roboczego, a następnie podejmiesz decyzję warunkową.",
   capabilities: performanceEvidenceCompetencies.map((item) => item.title),
   prerequisites: ["property-contracts"],
   lessonIds: performanceEvidenceLessons.map((lesson) => lesson.id),

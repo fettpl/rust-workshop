@@ -914,6 +914,21 @@ export const logAnalyzerLessons: Lesson[] = [
       "Opisz i zaimplementuj parser innego rekordu, w którym prawa część może zawierać separatory oraz Unicode.",
     evidenceGate:
       "records-debug i records-transfer sprawdzają pożyczkę, pełny remainder, Unicode, granicę u64 i jawne odrzucenie błędu.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "records-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw parser rekordu z pożyczonym komunikatem. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "records-transfer",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw granice parsera, potem odtwórz go od pustej kartki. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: ["log-std-str-split", "log-std-result"],
   },
   {
@@ -1048,6 +1063,21 @@ export const logAnalyzerLessons: Lesson[] = [
       "Zaprojektuj agregator innego strumienia, w którym stan ma stały rozmiar, a błędy źródła przerywają raport.",
     evidenceGate:
       "stream-debug i stream-transfer sprawdzają filtr kontra poprawność, duplikaty, Unicode, małe bufory, ostatnią linię i propagację IO.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "stream-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw przyrostowe liczenie rekordów. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "stream-transfer",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw politykę błędnych rekordów, potem odtwórz strumień od pustej kartki. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: ["log-std-bufread", "log-std-result"],
   },
   {
@@ -1183,6 +1213,21 @@ export const logAnalyzerLessons: Lesson[] = [
       "Napisz format raportu dla nowej domeny przed kodowaniem i sprawdź go testem całego tekstu, łącznie z ostatnim LF.",
     evidenceGate:
       "report-blank i report-transfer oferują dwa warianty raportu. Kryterium wymaga samodzielnego zaliczenia jednego z nich; pakiet ujawnia tylko report-blank, a lokalna checklista pozostaje samooceną.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "report-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Przenieś formatowanie raportu do nowej domeny. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "report-assembly",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Przypomnij kontrakt, potem zbuduj raport od pustej kartki. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: ["log-std-format", "log-std-result"],
   },
 ];
@@ -1328,25 +1373,25 @@ export const logAnalyzerProject: ProjectContract = {
     "Co było sprawdzoną bramką lekcji, a co jedynie lokalną checklistą pobranego pakietu?",
   ],
   learnerInstruction: {
-    title: "Twój program od zera",
+    title: "Projekt końcowy: Study Session CLI od zera",
     summary:
-      "Utwórz osobny lokalny projekt Cargo korzystający ze standardowej biblioteki. Możesz zaglądać do dokumentacji standardowej biblioteki; zapisz, z jakiej pomocy skorzystałeś.",
+      "Cel: zbuduj własny lokalny Study Session CLI w osobnym projekcie Cargo, wyłącznie ze std. Core17 wystarcza technicznie; zalecamy oddanie po Mini grep (4 lekcje) oraz Box → Rc/Weak → wątki → kanały → Arc/Mutex (15 lekcji). Dowody to własny kod, testy, wyniki CLI i uzasadnienie; retrospektywa opisuje decyzję własności, politykę błędów i zmianę --min-total. Korzystaj z dokumentacji i zapisuj pomoc.",
     points: [
       "Program przyjmuje dokładnie jeden argument: ścieżkę do pliku w UTF-8. Każda niepusta linia ma postać `name;minutes`, zawiera dokładnie jeden średnik, a oba pola trzeba przyciąć; name nie może być puste.",
       "minutes to dziesiętne cyfry ASCII z zakresu 1..=1440. Puste linie pomijasz. Nazwy są napisami Unicode rozróżniającymi wielkość liter.",
       "Zsumuj minuty dla każdej nazwy i wypisz `name;total`, po jednej linii, w porządku napisów Rust. Powtarzające się nazwy po przycięciu tworzą jeden wynik.",
       "Dla błędnego rekordu wypisz na stderr jego numer linii od 1, przejdź dalej dla poprawnych rekordów, wypisz poprawne podsumowanie i zakończ `exit 2`. Błędna liczba argumentów, błąd I/O albo błąd UTF-8 trafia na stderr, nie wypisuje raportu i kończy się `exit 1`; całkowicie poprawny plik kończy się `exit 0`.",
       "Sprawdzaj sumowanie z kontrolą przepełnienia. Rekord powodujący przepełnienie jest błędny, a wcześniejsze poprawne sumy pozostają zachowane.",
-      "Nie ma wymagania dotyczącego zależności, sieci, znaczników czasu, wdrożenia ani progu wydajności. Wybierz własne nazwy i strukturę danych.",
+      "Użyj wyłącznie biblioteki standardowej, bez zewnętrznych zależności. Sieć, znaczniki czasu, wdrożenie i próg wydajności są poza wymaganiami. Wybierz własne typy, nazwy, podział funkcji i strukturę danych.",
       "Zapisz decyzję o nazwach pożyczonych lub posiadanych oraz o strukturze danych. Dodaj własne testy błędnego rekordu i agregacji z kolejnością; pokaż wynik polecenia dla pliku poprawnego i mieszanego oraz krótko omów jedną decyzję własności.",
       "Przykład 1 — wejście. Pierwsza linia zaczyna się jedną spacją.\n` Basia;30`\n`Ada;5`\n`Basia; 15`\nstdout:\n`Ada;5`\n`Basia;45`\nstderr jest puste, a program kończy się kodem 0.",
       "Przykład 2 — wejście:\n`Ada;5`\n`to nie jest rekord`\n`Basia;7`\nstdout:\n`Ada;5`\n`Basia;7`\nstderr zawiera numer linii 2 (treść komunikatu wybierasz samodzielnie), a program kończy się kodem 2.",
-      "Przegląd człowieka albo obserwacja pracy powinny obejmować powtarzające się nazwy oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF, granice minut, złe pola, błąd I/O i przepełnienie. Samodzielnie sprawdzone, gotowe do przeglądu i sprawdzone przez człowieka oznaczają różne stany; pobrany pakiet referencyjny jest pomocą, nie artefaktem uczącego się ani automatycznym zaliczeniem.",
+      "Udokumentowana samoocena lub przegląd zewnętrzny powinny obejmować powtarzające się nazwy oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF, granice minut, złe pola, błąd I/O i przepełnienie. Samoocena, przegląd zewnętrzny i bezpośrednio zaobserwowana praca to odrębne kategorie dowodu; pobrany pakiet referencyjny jest pomocą, nie artefaktem uczącego się ani automatycznym zaliczeniem. W retrospektywie odpowiedz: który wcześniejszy koncept zdecydował o projekcie, który nieudany test zmienił decyzję i jaka granica pozostaje niesprawdzona?",
     ],
     followUp: {
       title: "Po pierwszym przeglądzie: `--min-total N`",
       summary:
-        "Po tym, jak pierwszy artefakt zostanie przejrzany przez człowieka albo zaobserwowany, możesz podjąć zmienione wymaganie.",
+        "Po zapisanej samoocenie lub przeglądzie zewnętrznym pierwszego artefaktu podejmij zmienione wymaganie. Jest publiczne; zapisz wcześniejszy kontakt z nim zamiast zakładać, że jest nieznane.",
       points: [
         "Dodaj opcjonalne `--min-total N`, na przykład `--min-total 10`. Filtruje ono wyłącznie końcowe wypisywane sumy; stare wywołanie bez filtra pozostaje zgodne.",
         "Nie zmieniaj parsowania, diagnostyki ani kodów wyjścia. Zaktualizuj testy i wyjaśnij, która granica wymagania się zmieniła.",

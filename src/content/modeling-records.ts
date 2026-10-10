@@ -45,6 +45,15 @@ export const recordsSources: Source[] = [
     recheckPolicy:
       "Sprawdzaj po zmianie składni impl, receiverów self lub aliasu Self.",
   },
+  {
+    id: "records-book-arrays-tuples",
+    title: "The Rust Programming Language: Data Types",
+    url: "https://doc.rust-lang.org/book/ch03-02-data-types.html",
+    classification: "stable",
+    reviewedAt: "2026-10-10",
+    recheckPolicy:
+      "Sprawdzaj po zmianie opisanego kontraktu lub wspieranego toolchaina.",
+  },
 ];
 
 export const recordsCompetencies: Competency[] = [
@@ -205,6 +214,14 @@ export const recordsLessons: Lesson[] = [
       "Użyjesz indeksu tablicy i zakresu `start..end` w funkcji z jawnym kontraktem.",
       "Rozpoznasz, że granice wycinka tekstu są liczone w bajtach i muszą być granicami UTF-8.",
     ],
+    sessionStops: [
+      {
+        afterStepId: "slice-recall",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Rozróżnij tablicę, krotkę i widok, potem sprawdź prefiks. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     steps: [
       {
         id: "slice-predict",
@@ -239,7 +256,7 @@ export const recordsLessons: Lesson[] = [
         kind: "run",
         title: "Zobacz dwa rodzaje widoku",
         prompt:
-          "Uruchom kod. Zwróć uwagę, że `&[i32]` pokazuje elementy tablicy, a literał tekstowy ma typ `&str`. Funkcja `sum_first_two` zakłada co najmniej dwa elementy, a `prefix_five` działa tu tylko dla tekstu ASCII mającego co najmniej pięć bajtów. Tekst udostępnia zakresy, lecz pojedynczy zapis `text[0]` nie jest obsługiwany.",
+          "Tablica `[T; N]` ma N elementów jednego typu; długość należy do typu, więc `[i32; 3]` i `[i32; 2]` to różne typy. Krotka `(i32, bool)` ma ustalone pozycje, które mogą mieć różne typy; czytasz je jako `.0`, `.1`. `&[i32]` jest pożyczonym widokiem o długości ustalonej podczas wykonania, więc jedna funkcja może czytać różne tablice i ich fragmenty. `[0; 3]` to krótki zapis trzech zer. Tablica nie oznacza automatycznie konkretnego miejsca alokacji. `.len()` daje długość, a indeks musi być mniejszy od niej; złe indeksowanie panikuje. Bezpieczne `get` zwraca Option i poznasz je po lekcji o braku wartości. Po obecnych krokach czeka dodatkowa praktyka tablic i krotek. Uruchom kod. Zwróć uwagę, że `&[i32]` pokazuje elementy tablicy, a literał tekstowy ma typ `&str`. Funkcja `sum_first_two` zakłada co najmniej dwa elementy, a `prefix_five` działa tu tylko dla tekstu ASCII mającego co najmniej pięć bajtów. Tekst udostępnia zakresy, lecz pojedynczy zapis `text[0]` nie jest obsługiwany.",
         code: `fn sum_first_two(values: &[i32]) -> i32 {
     values[0] + values[1]
 }
@@ -402,6 +419,73 @@ fn main() {
         },
         evidenceKind: "recall",
       },
+      {
+        id: "slice-array-predict",
+        kind: "predict",
+        title: "Tablica, krotka czy widok?",
+        prompt:
+          "Masz `let data: [i32; 3] = [4, 0, -2]; let meta: (usize, bool) = (data.len(), true); let view: &[i32] = &data[1..];`. Który opis rozróżnia te trzy wartości?",
+        choices: [
+          {
+            id: "0",
+            label:
+              "data posiada trzy i32; meta łączy usize i bool; view pożycza dwa i32",
+          },
+          {
+            id: "1",
+            label: "Wszystkie trzy mają typ [i32; 3]",
+          },
+          {
+            id: "2",
+            label: "view posiada nową tablicę, a meta ma zmienną liczbę pól",
+          },
+        ],
+        evaluator: {
+          kind: "choice",
+          correct: "0",
+          explanations: {
+            "0": "Długość tablicy należy do typu, krotka ma typ każdej pozycji, a wycinek pożycza dane.",
+            "1": "Typy i kształty są różne.",
+            "2": "Widok nie tworzy tablicy; krotka ma stałą liczbę pozycji.",
+          },
+        },
+        evidenceKind: "prediction",
+      },
+      {
+        id: "slice-prefix-practice",
+        kind: "modify",
+        title: "Sprawdź pusty i pełny prefiks",
+        prompt:
+          "Napisz `fn sum_prefix(values: &[i32], end: usize) -> i32`: zsumuj elementy o indeksach od 0 do end wyłącznie. Wywołujący zapewnia `end <= values.len()` i każdą sumę częściową mieszczącą się w i32. Zachowaj pożyczony parametr i ten zakres; nie dodawaj ograniczenia na długość tablicy. `end == 0` daje pustą sumę 0, także dla pustej tablicy. Testy wywołają tę samą funkcję na różnych długościach oraz sprawdzą zero i skrajne i32 bez przepełnienia.",
+        code: `fn sum_prefix(values: &[i32], end: usize) -> i32 {
+    let _ = end;
+    values[0]
+}`,
+        solution: `fn sum_prefix(values: &[i32], end: usize) -> i32 {
+    let mut sum = 0;
+    for index in 0..end {
+        sum += values[index];
+    }
+    sum
+}`,
+        evaluator: {
+          kind: "tests",
+          tests: `#[test]
+fn prefixes_keep_range_and_owner() {
+    assert_eq!(sum_prefix(&[], 0), 0);
+    let values = [4, 0, -2, 8];
+    assert_eq!(sum_prefix(&values, 0), 0);
+    assert_eq!(sum_prefix(&values, 1), 4);
+    assert_eq!(sum_prefix(&values, 3), 2);
+    assert_eq!(sum_prefix(&values, 4), 10);
+    assert_eq!(values, [4, 0, -2, 8]);
+    assert_eq!(sum_prefix(&[i32::MIN], 1), i32::MIN);
+    assert_eq!(sum_prefix(&[i32::MAX, -1], 2), i32::MAX - 1);
+}`,
+        },
+        evidenceKind: "transfer",
+        expectedStatus: "test-failure",
+      },
     ],
     misconceptions: [
       "Wycinek kopiuje elementy do nowej tablicy.",
@@ -412,7 +496,11 @@ fn main() {
       "Zaprojektuj pomocnik przyjmujący `&[i32]`, który zwraca wynik dla pustego i niepustego zakresu, a potem sprawdź nową tablicę.",
     evidenceGate:
       "Bez kopiowania danych zaimplementuj sumę po jawnym kontrakcie zakresu; przejdą dwa niezależne przypadki tablicy oraz przypadek pusty.",
-    sourceIds: ["records-book-slices", "records-std-str"],
+    sourceIds: [
+      "records-book-slices",
+      "records-std-str",
+      "records-book-arrays-tuples",
+    ],
   },
   {
     id: "structs-and-fields",

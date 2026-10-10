@@ -1107,6 +1107,21 @@ export const guessingCoreLessons: Lesson[] = [
       "Zaprojektuj komendy innego urządzenia z własnym prefiksem i zakresem; testy mają rozdzielić gramatykę od wartości.",
     evidenceGate:
       "Bramka sprawdza Unicode trim, q, zera wiodące, cyfry ASCII, błędy składni, granice 1 i 100 oraz przepełnienie.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "guess-input-contract-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw kontrakt parsowania wejścia. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "guess-input-contract-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Odtwórz parser od pustej kartki dla odrębnego kontraktu. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: guessingCoreSources.map((source) => source.id),
   },
   {
@@ -1228,6 +1243,21 @@ fn main() {
       "Przenieś zasadę nieodwracalnego zakończenia na stan rezerwacji, w którym anulowanie przywraca zasób, a potwierdzenie go zużywa.",
     evidenceGate:
       "Bramka sprawdza kolejność walidacji, wszystkie przejścia terminalne, brak utraty próby przy błędzie oraz zachowanie stanu po powtórnym wywołaniu.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "guess-round-state-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw przejścia stanu rundy. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "guess-round-state-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Odtwórz automat od pustej kartki dla odrębnego kontraktu. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: guessingCoreSources.map((source) => source.id),
   },
 ];

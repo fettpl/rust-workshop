@@ -3,6 +3,7 @@ import { expect, it } from "vitest";
 import type { LessonStep } from "@/domain/types";
 import * as course from "./course";
 import baseline from "./fixtures/m11-m10-identity.json";
+import correctionDelta from "./baseline-correction-delta.json";
 import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtures";
 
 const appended = {
@@ -23,7 +24,7 @@ function stepIdentity(step: LessonStep, index: number) {
 }
 const sha = (value: string) => createHash("sha256").update(value).digest("hex");
 
-it("preserves every accepted M10 qualified occurrence and appends only the two M11 tasks", () => {
+it("preserves M10 occurrences with the two M11 tasks and explicit baseline correction deltas", () => {
   expect(baseline.provenance.sourceHead).toBe(
     "eb7ae8be22cef252f6a74c09023b4d56a0c179cc",
   );
@@ -48,12 +49,29 @@ it("preserves every accepted M10 qualified occurrence and appends only the two M
       prerequisites: old.prerequisites,
     });
     expect(current.steps.slice(0, old.stepCount).map(stepIdentity)).toEqual(
-      old.steps,
+      old.steps.map((step) =>
+        [
+          "memory-run",
+          "memory-modify",
+          "function-expression-run",
+          "project-result-run",
+        ].includes(step.id)
+          ? {
+              ...step,
+              evaluatorKind: "exact-output",
+              evidenceKind:
+                step.id === "memory-modify" ? "transfer" : "exposure",
+            }
+          : step,
+      ),
     );
     const addition = appended[old.id as keyof typeof appended];
-    expect(current.steps.slice(old.stepCount).map((step) => step.id)).toEqual(
-      addition ? [addition] : [],
-    );
+    expect(current.steps.slice(old.stepCount).map((step) => step.id)).toEqual([
+      ...(addition ? [addition] : []),
+      ...(correctionDelta.appendedSteps[
+        old.id as keyof typeof correctionDelta.appendedSteps
+      ] ?? []),
+    ]);
     for (const step of old.steps) {
       (oldLocations[step.id] ??= []).push({
         stepId: current.steps[step.index].id,
@@ -68,9 +86,9 @@ it("preserves every accepted M10 qualified occurrence and appends only the two M
     Object.values(oldLocations).filter((locations) => locations.length > 1),
   ).toHaveLength(24);
   expect(course.lessons.flatMap((item) => item.steps)).toHaveLength(
-    baseline.counts.lessonSteps + 2,
+    baseline.counts.lessonSteps + 2 + 23,
   );
-  expect(course.lessons.flatMap((item) => item.steps)).toHaveLength(1219);
+  expect(course.lessons.flatMap((item) => item.steps)).toHaveLength(1242);
 });
 
 it("preserves ordered inventories, review identities, calibration and old module references", () => {
@@ -79,7 +97,12 @@ it("preserves ordered inventories, review identities, calibration and old module
     [course.concepts.map((item) => item.id), baseline.orderedConceptIds],
     [course.competencies.map((item) => item.id), baseline.orderedCompetencyIds],
     [course.projects.map((item) => item.id), baseline.orderedProjectIds],
-    [course.sources.map((item) => item.id), baseline.orderedSourceIds],
+    [
+      course.sources
+        .filter((source) => !correctionDelta.addedSourceIds.includes(source.id))
+        .map((item) => item.id),
+      baseline.orderedSourceIds,
+    ],
     [Object.keys(course.traces), baseline.orderedTraceIds],
   ])
     expect(actual).toEqual(expected);
@@ -120,7 +143,11 @@ it("preserves ordered inventories, review identities, calibration and old module
           ? appended[lessonId as keyof typeof appended]
           : undefined;
       expect(criterion.taskRefs.slice(previous.taskRefs.length)).toEqual(
-        addition ? [{ lessonId, stepId: addition }] : [],
+        old.id === "rust-foundations" && previous.id === "control-flow-gate"
+          ? [{ lessonId: "control-flow", stepId: "flow-range-transfer" }]
+          : addition
+            ? [{ lessonId, stepId: addition }]
+            : [],
       );
     }
   }

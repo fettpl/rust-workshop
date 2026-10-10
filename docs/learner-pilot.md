@@ -45,7 +45,7 @@ Before naming a task as available, check its material and dependency status:
 | Packet 003 short I/O probe | available in accepted M8 source | Use only with the accepted packet-003 material. A full I/O review is not a short probe. |
 | Six packet-005 staged lessons | `P005-authored candidate` | Use only after exact lesson IDs, stop metadata, and the current implementation are reconciled and verified; they are not released packet-005 material. |
 | Packet 004 Study Session CLI | available in accepted M8 source | Do not present learner work as observed. |
-| Packet 004 `--min-total N` change | available in accepted M8 source | Release the change only after the first learner-owned artifact is reviewed by a person. |
+| Packet 004 `--min-total N` change | available in accepted M8 source | The change is available after documented self-review or external review of the first learner-owned artifact; record the evidence category. |
 | Packet 004 Durable Log Service K | optional later material available in accepted M8 source | Separate from the beginner pilot; do not imply learner availability or results. |
 
 Prepare the exact task/version before showing a task. Record a distinct source/material version as the supplied commit or authored-material hash; if no identity is available, record `not observed`. Keep this field separate from task/version and source/material status. Use task kinds `fixed-fixture`, `prediction`, `repair`, `open-local-artifact`, or `delayed-transfer`. Keep requirement exposure as `not shown before release`, `shown previously`, `unknown`, or `not applicable`; a new version does not make a previously read requirement unseen.
@@ -90,7 +90,7 @@ The new notification-prefix domain uses an owned message `String::from("Przerwa:
 
 After the packet-005 source implementation and focused verification make the candidate stops available, choose one of the six staged hotspots and record the exact boundary reached. A stop note permits a pause and return to the current task through existing autosave; it does not mean the boundary is completed, and it must not skip, auto-complete, award evidence, or create a save path. The authored lesson workload remains an estimate.
 
-The packet-004 authored material is available in accepted M8. A later observation may cover the learner-owned Study Session CLI. Keep `--min-total N` hidden during the first instruction and release it only after a human reviews the first learner-owned artifact. Durable Log Service K is optional later evidence and outside the beginner time box. Do not describe any of these later observations as covered by Sessions 1–2.
+The packet-004 authored material is available in accepted M8. A later observation may cover the learner-owned Study Session CLI. For an optional observation, record prior exposure to the public `--min-total N` requirement. Its availability follows documented self-review or external review; an external participant is not a development prerequisite. Durable Log Service K is optional later evidence and outside the beginner time box. Do not describe any of these later observations as covered by Sessions 1–2.
 
 ## Learner cards (Polish; runnable when the maintainer confirms availability)
 
@@ -148,7 +148,7 @@ Szacowany czas lekcji jest szacunkiem autora, a nie zaobserwowanym czasem rozwi�
 
 Po potwierdzeniu dostępności utwórz osobny lokalny projekt Cargo; nie kopiuj projektu referencyjnego. Program przyjmuje jedną ścieżkę UTF-8. Niepusta linia ma postać `name;minutes` z dokładnie jednym średnikiem; przytnij białe znaki nazwy i pola liczbowego; nazwa nie może być pusta; `minutes` to co najmniej jedna cyfra ASCII `0–9`, a wartość należy do 1–1440. Odrzuć `+5`, `-5`, spacje wewnątrz liczby i cyfry spoza ASCII. Puste linie pomiń. Nazwy Unicode są rozróżniane z wielkością liter. Sortuj według porządku napisów Rust i wypisz `name;total`.
 
-Błędne rekordy zgłoś na `stderr` z numerem linii, przetwarzaj poprawne dalej i zakończ kodem 2. Złe argumenty, błąd odczytu lub UTF-8 zgłoś na `stderr`, nie wypisuj raportu i zakończ kodem 1. Poprawny plik kończy się kodem 0. Suma nie może cicho zawijać; przepełniony rekord jest błędny, a wcześniejsze sumy pozostają zachowane. Nie ma wymagania dotyczącego zależności, sieci, znaczników czasu, wdrożenia ani progu wydajności.
+Błędne rekordy zgłoś na `stderr` z numerem linii, przetwarzaj poprawne dalej i zakończ kodem 2. Złe argumenty, błąd odczytu lub UTF-8 zgłoś na `stderr`, nie wypisuj raportu i zakończ kodem 1. Poprawny plik kończy się kodem 0. Suma nie może cicho zawijać; przepełniony rekord jest błędny, a wcześniejsze sumy pozostają zachowane. Użyj wyłącznie std, bez zewnętrznych zależności. Sieć, znaczniki czasu, wdrożenie i próg wydajności są poza wymaganiami.
 
 Pokaż plik poprawny i mieszany, przygotuj własne testy błędnego rekordu, agregowania i kolejności, oraz wyjaśnij decyzję o pożyczaniu lub posiadaniu nazw. Sprawdzenie obejmuje powtórzone i przycięte równoważne nazwy, Unicode, pusty plik, CRLF, granice minut, znaki inne niż ASCII `0–9`, błędne pola, błąd wejścia i przepełnienie.
 
@@ -210,9 +210,9 @@ Napisz mały read-only helper, który zwraca `true` wtedy i tylko wtedy, gdy tek
 - wywołujący używa własnego `String` i literału oraz zachowuje możliwość użycia własnego komunikatu;
 - nie otwieraj poprzedniego rozwiązania.
 
-### Karta późniejszej zmiany `--min-total N` — wydaje prowadzący
+### Karta późniejszej zmiany `--min-total N` — po zapisanym przeglądzie
 
-Ta karta pozostaje ukryta podczas pierwszej instrukcji programu podsumowującego. Można ją wydać dopiero po oddaniu pierwszego artefaktu i przeglądzie przez człowieka. Zapisz, czy wymaganie było wcześniej pokazane: `nie pokazano przed wydaniem`, `pokazano wcześniej` albo `nie wiadomo`.
+Podejmij tę zmianę po zapisanej samoocenie lub przeglądzie zewnętrznym pierwszego artefaktu. Wymaganie jest publiczne; nie zakładaj, że jest nieznane. Zapisz, czy wymaganie było wcześniej pokazane: `nie pokazano przed wydaniem`, `pokazano wcześniej` albo `nie wiadomo`.
 
 Dodaj opcjonalny argument `--min-total N`. Ma filtrować wyłącznie końcowe wypisywane sumy: pozostaw nazwy, których suma jest co najmniej `N`. Dotychczasowe wywołanie bez opcji nadal działa. Nie zmieniaj parsowania, diagnostyki ani kodów wyjścia. Dodaj własne testy i wyjaśnij zmienioną granicę programu.
 
@@ -254,7 +254,7 @@ For `D-XFER-v1`, mark separately: actual interval and delayed-qualification stat
 
 For a packet-005 hotspot, record the exact lesson ID, exact `afterStepId`, whether the note was observed, resume to the current task through existing autosave, and that no auto-complete/skip/evidence award occurred. If stops are unavailable, use `not available`.
 
-For the Study Session CLI, mark separately: local Cargo project rather than reference copy; valid summary/sort/exit 0; malformed record with line number and continued valid records/exit 2; wrong args/I/O/UTF-8 on stderr with no report/exit 1; trim/Unicode/ASCII `0–9` including rejection of `+5`, `-5`, non-ASCII digits, CRLF and overflow; one ownership/data-structure explanation; and human review status.
+For the Study Session CLI, mark separately: local Cargo project rather than reference copy; valid summary/sort/exit 0; malformed record with line number and continued valid records/exit 2; wrong args/I/O/UTF-8 on stderr with no report/exit 1; trim/Unicode/ASCII `0–9` including rejection of `+5`, `-5`, non-ASCII digits, CRLF and overflow; one ownership/data-structure explanation; and review category (documented self-review, external review, or not observed).
 
 For `--min-total N`, mark separately: first submission before exposure; only final totals filtered; parsing/diagnostics/exit status/old invocation compatible; learner tests and boundary explanation; and prior exposure (`yes`, `no`, `unknown`).
 

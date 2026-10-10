@@ -88,12 +88,14 @@ export const COURSE_MAP_MODES: readonly {
   {
     id: "core",
     label: "Podstawy",
-    description: "Przejrzysta trasa od pierwszego programu do Log Analyzera.",
+    description:
+      "Core17: początkujący rdzeń do Log Analyzera. Oryginalny zakres obejmuje też Mini grep, wątki z Arc/Mutex i własny projekt końcowy.",
   },
   {
     id: "extensions",
     label: "Rozszerzenia",
-    description: "Dodatkowe moduły pogrupowane według problemów i narzędzi.",
+    description:
+      "Dalsze moduły według problemów. Oryginalna kontynuacja: Mini grep oraz Box → Rc/Weak → wątki → kanały → Arc/Mutex; pozostałe specjalizacje wybierasz.",
   },
   {
     id: "all",
