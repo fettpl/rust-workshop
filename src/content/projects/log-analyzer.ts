@@ -1835,7 +1835,17 @@ API. Następnie sprawdź referencję oraz wykonaj ręczne próby: pusty plik, 40
 4097 bajtów przed LF, CRLF, brak końcowego LF, uszkodzony UTF-8, nieznany level,
 przepełniony timestamp i niedostępny plik.
 
-## Twój program od zera
+## Projekt końcowy: Study Session CLI od zera
+
+Core17 dostarcza technicznych podstaw. Zalecane oddanie następuje po Mini grep
+(4 lekcje) i Box → Rc/Weak → wątki → kanały → Arc/Mutex (15 lekcji).
+Własny program korzysta wyłącznie ze std; Criterion pobranego warsztatu nie jest
+jego zależnością. Wybierasz typy, nazwy, podział funkcji i własne testy.
+Samoocena i przegląd zewnętrzny są odrębnymi kategoriami dowodu; projekt nie ma
+automatycznego zaliczenia. W retrospektywie opisz własność, politykę błędów
+i zmianę wymagania: który koncept zdecydował o projekcie, który nieudany test
+zmienił decyzję i jaka granica pozostaje niesprawdzona? Publiczny follow-up
+nie jest gwarantowanie nieznany.
 
 Utwórz osobny lokalny projekt Cargo korzystający ze standardowej biblioteki.
 Możesz zaglądać do dokumentacji standardowej biblioteki; zapisz, z jakiej
@@ -1850,8 +1860,8 @@ napisów Rust. Błędny rekord zgłoś na stderr z numerem linii od 1, kontynuuj
 poprawnych rekordów, wypisz poprawne podsumowanie i zakończ \`exit 2\`. Błędna
 liczba argumentów, błąd I/O albo błąd UTF-8 ma trafić na stderr, nie wypisać
 raportu i zakończyć się \`exit 1\`; poprawny plik kończy się \`exit 0\`. Przepełnienie
-sumy jest błędnym rekordem i zachowuje wcześniejsze sumy. Nie ma wymagań dla
-zależności, sieci, znaczników czasu, wdrożenia ani progu wydajności.
+sumy jest błędnym rekordem i zachowuje wcześniejsze sumy. Użyj wyłącznie std, bez zewnętrznych zależności. Sieć, znaczniki czasu,
+wdrożenie i próg wydajności są poza wymaganiami.
 
 Przykład 1 — wejście. Pierwsza linia zaczyna się jedną spacją.
 
@@ -1880,12 +1890,12 @@ stdout:
 stderr zawiera numer linii 2, a kod wyjścia to 2; treść komunikatu wybierasz
 samodzielnie. Zapisz decyzje o własności nazw i strukturze danych, własne testy
 błędu oraz agregacji i kolejności, wyniki poleceń dla pliku poprawnego i
-mieszanego oraz krótkie omówienie jednej decyzji własności. Przegląd człowieka
-albo obserwacja pracy obejmuje powtórzenia oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF,
+mieszanego oraz krótkie omówienie jednej decyzji własności. Udokumentowana samoocena
+lub przegląd zewnętrzny obejmuje powtórzenia oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF,
 granice minut, złe pola, I/O i przepełnienie. Pakiet referencyjny jest pomocą,
 nie artefaktem uczącego się ani automatycznym zaliczeniem.
 
-Po pierwszym artefakcie przejrzanym przez człowieka albo zaobserwowanym możesz
+Po udokumentowanej samoocenie lub przeglądzie zewnętrznym pierwszego artefaktu możesz
 dodać opcjonalne \`--min-total N\`, na przykład \`--min-total 10\`. Filtr dotyczy
 tylko końcowych sum, a stare wywołanie pozostaje zgodne; parsowanie, diagnostyka
 i kody wyjścia pozostają bez zmian, testy trzeba zaktualizować i wyjaśnić nową
@@ -1900,7 +1910,7 @@ export const logAnalyzerPackage: ProjectPackage = {
   id: "log-analyzer-workshop",
   title: "Log Analyzer: parser i stała pamięć",
   description:
-    "Projekt Cargo korzystający wyłącznie z biblioteki standardowej. Zbuduj parser pożyczający dane, licz rekordy na bieżąco i przetestuj CLI bez przechowywania całego pliku.",
+    "Kod produkcyjny korzysta ze std; benchmark ma deweloperską zależność Criterion. Zbuduj parser pożyczający dane, licz rekordy na bieżąco i przetestuj CLI bez przechowywania całego pliku.",
   instructions: [
     "Rozpakuj projekt i użyj Rust 2024. Zacznij od cargo fmt --check, cargo check --offline --locked i cargo test --offline --locked.",
     "Uzupełnij parser w src/analyzer.rs: timestamp, dokładny level, niepusty UTF-8 message, CRLF i zachowanie remainder.",
@@ -1909,7 +1919,7 @@ export const logAnalyzerPackage: ProjectPackage = {
     "Uruchom cargo test --offline --locked, cargo doc --offline --no-deps i cargo clippy --offline --locked --all-targets -- -D warnings.",
     "Sprawdź cargo run --offline -- FILE oraz cargo run --offline -- FILE INFO. Błąd pliku lub odczytu nie może wypisać częściowego raportu.",
     "Twój program od zera: w osobnym projekcie Cargo zbuduj CLI dla jednego pliku UTF-8 z rekordami name;minutes, sumowaniem i sortowaniem Rust; zachowaj opis błędów, kodów exit 0/1/2, przepełnienia, dwóch przykładów oraz własnych testów z briefu w README.",
-    "Po pierwszym przeglądzie lub obserwacji możesz dodać --min-total N tylko dla końcowych sum; stare wywołanie, parsowanie, diagnostyka i kody wyjścia pozostają zgodne, a nieokreślone zachowanie niepoprawnego N wymaga własnego jawnego opisu.",
+    "Po udokumentowanej samoocenie lub przeglądzie zewnętrznym możesz dodać --min-total N tylko dla końcowych sum; stare wywołanie, parsowanie, diagnostyka i kody wyjścia pozostają zgodne, a nieokreślone zachowanie niepoprawnego N wymaga własnego jawnego opisu.",
   ],
   revealStepRefs: [
     { lessonId: "log-records", stepId: "records-debug" },
@@ -1953,11 +1963,31 @@ export const logAnalyzerPackage: ProjectPackage = {
       starter: performanceGuide,
       solution: performanceGuide,
     },
-    { path: "examples/allocation_probe.rs", starter: allocationProbe, solution: allocationProbe },
-    { path: "examples/support/allocation_counter.rs", starter: allocationCounter, solution: allocationCounter },
-    { path: "tests/allocation_counter_contract.rs", starter: allocationCounterContract, solution: allocationCounterContract },
-    { path: "ALLOCATION-MANIFEST.json", starter: allocationManifest, solution: allocationManifest },
-    { path: "ALLOCATION-EVIDENCE.md", starter: allocationEvidence, solution: allocationEvidence },
+    {
+      path: "examples/allocation_probe.rs",
+      starter: allocationProbe,
+      solution: allocationProbe,
+    },
+    {
+      path: "examples/support/allocation_counter.rs",
+      starter: allocationCounter,
+      solution: allocationCounter,
+    },
+    {
+      path: "tests/allocation_counter_contract.rs",
+      starter: allocationCounterContract,
+      solution: allocationCounterContract,
+    },
+    {
+      path: "ALLOCATION-MANIFEST.json",
+      starter: allocationManifest,
+      solution: allocationManifest,
+    },
+    {
+      path: "ALLOCATION-EVIDENCE.md",
+      starter: allocationEvidence,
+      solution: allocationEvidence,
+    },
     { path: "fixtures/mixed.log", starter: fixture },
     { path: "README.md", starter: readme },
     { path: ".gitignore", starter: gitignore },

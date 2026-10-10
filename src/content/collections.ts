@@ -488,6 +488,21 @@ fn pushes_after_the_old_reference_ends() {
       "Zaimplementuj pomocnik odczytujący nowy Vec, który zwraca Option i pozostawia listę dostępną po wywołaniu; sprawdź pustą oraz wieloelementową listę.",
     evidenceGate:
       "Dwie niezależne implementacje oparte na pożyczce przechodzą testy pustego, jednoelementowego i mieszanego Vec oraz nie wymagają clone.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "vec-iteration-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw pożyczkę przed zmianą Vec i zwróć ostatni element. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "vec-last-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Policz parzyste elementy przez pożyczkę, potem połącz oba kontrakty. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: ["collections-book-vectors", "collections-std-vec"],
   },
   {
@@ -741,6 +756,21 @@ fn pushes_after_the_old_reference_ends() {
       "Napisz pomocnik, który dopisuje suffix do String i osobno raportuje liczbę bajtów oraz scalar values dla pustego, ASCII i Unicode.",
     evidenceGate:
       "Dwa niezależne zadania testują rzeczywisty tekst: char_count rozróżnia bytes od chars, a append_text zachowuje cały UTF-8 suffix bez indeksowania.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "string-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Usuń indeksowanie String i policz wartości skalarne Unicode. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "string-char-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Dołącz cały wycinek tekstu i sprawdź wynik w zadaniu łączącym operacje. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: ["collections-book-strings"],
   },
   {
@@ -1030,6 +1060,21 @@ fn frequency(text: &str) -> HashMap<char, i32> {
       "Zaprojektuj funkcję zliczającą nowy rodzaj danych i sprawdź ją przez get na pustym wejściu, powtórzonym kluczu oraz kilku niezależnych kluczach.",
     evidenceGate:
       "Dwie niezależne implementacje Entry przechodzą testy nowych i istniejących kluczy, zera, powtórzeń oraz Unicode bez sprawdzania kolejności iteracji.",
+    // Szacowany czas lekcji jest orientacyjny; przerwy nie są pomiarem czasu.
+    sessionStops: [
+      {
+        afterStepId: "map-explain",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Napraw zmianę wartości przez Entry i zsumuj punkty. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "map-points-gate",
+        title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        nextGoal:
+          "Policz częstotliwości char, potem wybierz operację dla nowej domeny. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     sourceIds: ["collections-book-hash-maps", "collections-std-hashmap"],
   },
 ];

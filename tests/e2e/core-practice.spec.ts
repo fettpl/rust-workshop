@@ -371,7 +371,8 @@ test("nested patterns: mocked repair persists UI state and recovers a fresh tran
   await openThroughDataModeling(page, lesson.id);
   await page
     .getByLabel("Kroki lekcji")
-    .getByRole("button", { name: /Napraw/ })
+    .getByRole("button")
+    .nth(lesson.steps.indexOf(repair))
     .focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".task-pane h1")).toHaveText(repair.title);

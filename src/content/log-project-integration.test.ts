@@ -35,7 +35,7 @@ it("publishes the learner-owned Study Session contract with an honest staged fol
   expect(project).toBeDefined();
   const instruction = learnerInstructionOf(project);
   expect(instruction).toBeDefined();
-  expect(instruction!.title).toBe("Twój program od zera");
+  expect(instruction!.title).toBe("Projekt końcowy: Study Session CLI od zera");
 
   const body = authoredInstructionText(instruction!);
   expectEveryMarker(body, [

@@ -16,7 +16,7 @@ import { nestedPatternFixtures } from "./nested-patterns-fixtures";
 
 const lesson = nestedPatternLessons[0];
 
-it("exports stable six-step nested-pattern content", () => {
+it("preserves the original six-step nested-pattern prefix before its approved bridge", () => {
   expect(nestedPatternLessons).toHaveLength(1);
   expect(lesson).toMatchObject({
     id: "nested-patterns-and-destructuring",
@@ -25,7 +25,7 @@ it("exports stable six-step nested-pattern content", () => {
     conceptIds: ["nested-pattern-matching"],
     competencyIds: ["destructure-borrowed-state"],
   });
-  expect(lesson.steps.map((step) => step.id)).toEqual([
+  expect(lesson.steps.slice(0, 6).map((step) => step.id)).toEqual([
     "nested-predict",
     "nested-run",
     "nested-repair",
@@ -33,7 +33,9 @@ it("exports stable six-step nested-pattern content", () => {
     "nested-explain",
     "nested-recall",
   ]);
-  expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(1);
+  expect(
+    lesson.steps.slice(0, 6).filter((step) => step.kind === "blank"),
+  ).toHaveLength(1);
   expect(lesson.steps.find((step) => step.id === "nested-transfer")?.code).toBe(
     undefined,
   );
@@ -61,11 +63,11 @@ it("exports stable six-step nested-pattern content", () => {
   expect(nestedPatternCompetencies.map((item) => item.id)).toEqual([
     "destructure-borrowed-state",
   ]);
-  expect(nestedPatternSources.map((item) => item.id)).toEqual([
+  expect(nestedPatternSources.slice(0, 2).map((item) => item.id)).toEqual([
     "core-patterns-book",
     "core-patterns-reference",
   ]);
-  expect(nestedPatternSources).toMatchObject([
+  expect(nestedPatternSources.slice(0, 2)).toMatchObject([
     {
       id: "core-patterns-book",
       url: "https://doc.rust-lang.org/book/ch19-03-pattern-syntax.html",
@@ -110,7 +112,7 @@ it("keeps repair, transfer, and review contracts distinct", () => {
 
 it("keeps evidence versioned and evaluator-owned tests nonempty", () => {
   const review = nestedPatternReviewExercises["nested-pattern-matching"];
-  for (const step of [...lesson.steps, review]) {
+  for (const step of [...lesson.steps.slice(0, 6), review]) {
     expect(step.evidence, step.id).toMatchObject({
       version: 2,
       conceptIds: ["nested-pattern-matching"],
@@ -124,7 +126,7 @@ it("keeps evidence versioned and evaluator-owned tests nonempty", () => {
     lesson.steps.find((step) => step.id === "nested-repair")?.evidence
       ?.codingTaskId,
   ).toBe("nested-repair");
-  for (const step of [...lesson.steps, review]) {
+  for (const step of [...lesson.steps.slice(0, 6), review]) {
     if (step.evaluator?.kind === "tests")
       expect(step.evaluator.tests.trim().length, step.id).toBeGreaterThan(0);
   }
@@ -157,9 +159,9 @@ it("uses the distinct predictive and recall evaluators", () => {
 });
 
 it("keeps semantic fixture coverage independent from learner prose", () => {
-  for (const step of lesson.steps.filter(
-    (item) => item.evaluator?.kind === "tests",
-  )) {
+  for (const step of lesson.steps
+    .slice(0, 6)
+    .filter((item) => item.evaluator?.kind === "tests")) {
     const cases = nestedPatternFixtures[step.id];
     expect(cases, step.id).toBeDefined();
     expect(
@@ -180,7 +182,9 @@ it("keeps semantic fixture coverage independent from learner prose", () => {
     reviewFixtures.filter((item) => item.outcome === "assertion-failure"),
   ).toHaveLength(3);
   expect(
-    reviewFixtures.find((item) => item.name === "starter-rejected-missing-some"),
+    reviewFixtures.find(
+      (item) => item.name === "starter-rejected-missing-some",
+    ),
   ).toMatchObject({
     source: review.code,
     outcome: "assertion-failure",
@@ -191,6 +195,7 @@ const rustc = process.env.RUSTC_BIN ?? "rustc";
 const review = nestedPatternReviewExercises["nested-pattern-matching"];
 const testCases = [
   ...lesson.steps
+    .slice(0, 6)
     .filter((step) => step.evaluator?.kind === "tests")
     .flatMap((step) =>
       nestedPatternFixtures[step.id].map((fixture) => ({
@@ -295,3 +300,15 @@ it.each(testCases)(
   },
   75_000,
 );
+
+it("keeps flat-pattern practice outside nested-pattern family credit", () => {
+  expect(lesson.steps.slice(6).map((step) => step.id)).toEqual([
+    "patterns-if-let-predict",
+    "patterns-borrow-repair",
+    "patterns-let-else-repair",
+    "patterns-while-let-predict",
+    "patterns-delivery-transfer",
+  ]);
+  for (const step of lesson.steps.slice(6))
+    expect(step.evidence, step.id).toEqual({ version: 2, conceptIds: [] });
+});

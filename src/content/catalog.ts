@@ -1,3 +1,4 @@
+import { ownedUppercaseContract } from "./baseline-primitives-contracts";
 import {
   appendSuffixContract,
   replaceTextContract,
@@ -78,6 +79,15 @@ export const sources: Source[] = [
     reviewedAt: "2026-09-12",
     recheckPolicy:
       "Sprawdzaj przy zmianie stabilnego toolchaina lub treści ćwiczeń.",
+  },
+  {
+    id: "baseline-str-uppercase",
+    title: "Rust std: str::to_uppercase",
+    url: "https://doc.rust-lang.org/std/primitive.str.html#method.to_uppercase",
+    classification: "stable",
+    reviewedAt: "2026-10-10",
+    recheckPolicy:
+      "Sprawdzaj przy zmianie kontraktu wielkich liter Unicode lub wspieranego toolchaina.",
   },
 ];
 
@@ -701,7 +711,7 @@ export const lessons: Lesson[] = [
         kind: "predict",
         title: "Przewidź liczbę",
         prompt:
-          "Co zostanie wypisane? Wyjaśnij, gdzie znajdują się obie wartości całkowite.",
+          "Co zostanie wypisane? Wiązanie to nazwa lokalnej wartości. Dla String rozróżniamy lokalną wartość opisującą bufor i należące do niej dane w buforze na stercie. Na końcu zakresu aktualnego właściciela drop sprząta wartość oraz jej własny bufor. Move zmienia właściciela: poprzednia nazwa przestaje udostępniać przeniesioną wartość, a sprzątanie należy do nowego właściciela. Diagram stosu i sterty jest modelem nauki własności, nie gwarancją fizycznego rozmieszczenia wartości przez optymalizujący kompilator. Wydruk liczby nie dowodzi jej fizycznego położenia w pamięci.",
         code: 'fn main() {\n    let count = 2;\n    let next = count + 1;\n    println!("{next}");\n}',
         solution:
           'fn main() {\n    let count = 2;\n    let next = count + 1;\n    println!("{next}");\n}',
@@ -745,12 +755,8 @@ export const lessons: Lesson[] = [
         code: 'fn main() {\n    let count = 2;\n    let next = count + 1;\n    println!("{next}");\n}',
         solution:
           'fn main() {\n    let count = 2;\n    let next = count + 1;\n    println!("{next}");\n}',
-        evaluator: {
-          kind: "answer",
-          accepted: ["3"],
-          feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
-        },
-        evidenceKind: "prediction",
+        evaluator: { kind: "exact-output", expected: "3\n" },
+        evidenceKind: "exposure",
         expectedStatus: "success",
       },
       {
@@ -802,7 +808,10 @@ export const lessons: Lesson[] = [
           feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
         },
         evidenceKind: "recall",
-        rubric: ["Names drop.", "Connects drop to the owner leaving scope."],
+        rubric: [
+          "Nazywa drop.",
+          "Łączy drop z końcem zakresu aktualnego właściciela.",
+        ],
       },
       {
         id: "memory-modify",
@@ -814,11 +823,7 @@ export const lessons: Lesson[] = [
         code: 'fn main() {\n    let label = String::from("cool");\n    println!("{label}");\n}',
         solution:
           'fn main() {\n    let label = String::from("warm");\n    println!("{label}");\n}',
-        evaluator: {
-          kind: "answer",
-          accepted: ["warm"],
-          feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
-        },
+        evaluator: { kind: "exact-output", expected: "warm\n" },
         evidenceKind: "transfer",
         expectedStatus: "success",
         hints: [
@@ -845,6 +850,28 @@ export const lessons: Lesson[] = [
         traceId: "trace-scope-drop",
         evidenceGate: true,
       },
+      {
+        id: "memory-owner-out-of-block",
+        kind: "predict",
+        title: "Właściciel wychodzi z bloku",
+        prompt:
+          "Wewnętrzny String local zostaje przeniesiony jako wynik bloku do saved. Drugi String temporary pozostaje w środku i jest sprzątany przy zamykającej klamrze. Bufor przeniesionego String nadal należy do saved; nie jest sprzątany tylko dlatego, że nazwa local wyszła z zakresu. Jaki tekst pojawi się po zamknięciu bloku? Wynik potwierdza dostępność właściciela, nie fizyczne położenie bufora ani moment zwolnienia wszystkich bajtów przez system.",
+        code: 'fn main() {\n    let saved = {\n        let local = String::from("zostaje");\n        let temporary = String::from("chwila");\n        println!("{temporary}");\n        local\n    };\n    println!("{saved}");\n}',
+        solution:
+          'fn main() {\n    let saved = {\n        let local = String::from("zostaje");\n        let temporary = String::from("chwila");\n        println!("{temporary}");\n        local\n    };\n    println!("{saved}");\n}',
+        evaluator: {
+          kind: "answer",
+          accepted: ["chwila\nzostaje"],
+          feedback:
+            "temporary jest odczytane wewnątrz, a local przenosi własność do saved, które pozostaje dostępne po bloku.",
+        },
+        evidence: {
+          version: 2,
+          conceptIds: ["scope-drop"],
+        },
+        evidenceKind: "prediction",
+        expectedStatus: "success",
+      },
     ],
     misconceptions: [
       "Wiązanie na stosie jest samą alokacją na stercie.",
@@ -854,6 +881,14 @@ export const lessons: Lesson[] = [
       "Przewidź moment usunięcia String utworzonego w zagnieżdżonym bloku.",
     evidenceGate:
       "Ukończ jeden ślad i wyjaśnij sprzątanie wynikające z zakresu.",
+    sessionStops: [
+      {
+        afterStepId: "memory-transfer",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Sprawdź właściciela przeniesionego z wewnętrznego bloku. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
     sourceIds: ["rust-book-scope", "rust-book-ownership"],
   },
   {
@@ -1037,6 +1072,74 @@ export const lessons: Lesson[] = [
         },
         evidenceKind: "trace",
       },
+      {
+        id: "move-owned-transform",
+        kind: "blank",
+        title: "Przejmij i zwróć zmienioną wartość",
+        prompt:
+          "Napisz uppercase_owned(text: String) -> String, która przejmuje argument i zwraca nowy własny String zapisany wielkimi literami. Zachowaj sygnaturę; użyj poznanego zwracania wyrażenia. Fragment API z dokumentacji: to_uppercase(&self) -> String. `text.to_uppercase()` odczytuje tekst i tworzy nowy String; nie zmienia bufora w miejscu. &self oznacza odczyt odbiorcy metody; granice pożyczek przećwiczysz w następnej lekcji. Unicode może powiększyć wynik, np. straße → STRASSE; nie zakładaj zgodności bajt za bajt. To parametr String w uppercase_owned przenosi właściciela przy wywołaniu, a nie sama metoda to_uppercase. main może użyć upper, ale nie dawnego label. Dla kontrastu liczba i32 jest Copy: przekazanie jej do fn double(n: i32) -> i32 pozostawia oryginał. Copy liczby nie tworzy głębokiej kopii dowolnych danych na stercie; String nie jest Copy. Testy sprawdzają sygnaturę konsumującą String, pusty tekst, Unicode i ponowne przekazanie zwróconego właściciela.",
+        code: ownedUppercaseContract.starter,
+        solution: ownedUppercaseContract.solution,
+        evaluator: {
+          kind: "tests",
+          tests: ownedUppercaseContract.tests,
+        },
+        evidence: {
+          version: 2,
+          conceptIds: ["move-semantics"],
+          codingTaskId: "ownership/owned-uppercase",
+        },
+        evidenceKind: "transfer",
+        evidenceGate: true,
+        expectedStatus: "success",
+        hints: [
+          "Wywołanie metody ma postać text.to_uppercase().",
+          "Zwróć jej String, zamiast samego text.",
+        ],
+      },
+      {
+        id: "move-copy-return-predict",
+        kind: "predict",
+        title: "Wynik funkcji a stare wiązanie",
+        prompt:
+          'Przewidź wynik bez uruchamiania. Przekazanie number kopiuje i32, więc number pozostaje dostępne. Przekazanie label przenosi String: można odczytać upper, ale dopisanie println!("{label}") po wywołaniu byłoby E0382. Metoda to_uppercase tworzy nowy String z wielkimi literami; stary argument zostaje posprzątany po zakończeniu uppercase_owned.',
+        code: 'fn double(n: i32) -> i32 { n * 2 }\nfn uppercase_owned(text: String) -> String { text.to_uppercase() }\nfn main() {\n    let number = 7;\n    let doubled = double(number);\n    let label = String::from("rust");\n    let upper = uppercase_owned(label);\n    println!("{number} {doubled} {upper}");\n}',
+        solution:
+          'fn double(n: i32) -> i32 { n * 2 }\nfn uppercase_owned(text: String) -> String { text.to_uppercase() }\nfn main() {\n    let number = 7;\n    let doubled = double(number);\n    let label = String::from("rust");\n    let upper = uppercase_owned(label);\n    println!("{number} {doubled} {upper}");\n}',
+        evaluator: {
+          kind: "answer",
+          accepted: ["7 14 RUST"],
+          feedback:
+            "i32 zachowuje oba użyteczne wiązania dzięki Copy. String przechodzi do funkcji; upper posiada zwrócony wynik.",
+        },
+        evidence: {
+          version: 2,
+          conceptIds: ["move-semantics", "copy-semantics"],
+        },
+        evidenceKind: "prediction",
+        expectedStatus: "success",
+      },
+      {
+        id: "move-copy-own-words",
+        kind: "explain",
+        title: "Move i Copy własnymi słowami",
+        prompt:
+          "Własnymi słowami wyjaśnij różnicę między przekazaniem label: String i number: i32 w poprzednim przykładzie. Wskaż, która nazwa pozostaje dostępna, kto posiada zwrócony String i dlaczego Copy liczby nie oznacza głębokiej kopii bufora String. Porównaj wypowiedź z rubryką. Aplikacja zapisuje samoocenę; nie sprawdza automatycznie sensu Twojego wyjaśnienia.",
+        evaluator: {
+          kind: "rubric",
+          criteria: [
+            "Wyjaśniam, że label traci dostęp do przeniesionego String, a upper posiada zwrócony wynik.",
+            "Wyjaśniam, że number pozostaje dostępne dzięki Copy dla i32.",
+            "Odróżniam prostą kopię liczby od jawnego tworzenia niezależnego bufora String, np. przez clone.",
+          ],
+        },
+        evidence: {
+          version: 2,
+          conceptIds: ["move-semantics", "copy-semantics"],
+        },
+        evidenceKind: "self-rating",
+        evidenceGate: false,
+      },
     ],
     misconceptions: [
       "Każde przypisanie kopiuje dane głęboko.",
@@ -1045,7 +1148,19 @@ export const lessons: Lesson[] = [
     transferTask:
       "Bez uruchamiania sklasyfikuj przypisanie bool, String i Vec.",
     evidenceGate: "Napraw E0382 bez ujawniania rozwiązania opartego na clone.",
-    sourceIds: ["rust-book-ownership", "rust-copy-trait"],
+    sessionStops: [
+      {
+        afterStepId: "copy-clone-trace",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Przejmij i przekształć String, a potem wyjaśnij kontrast z Copy. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
+    sourceIds: [
+      "rust-book-ownership",
+      "rust-copy-trait",
+      "baseline-str-uppercase",
+    ],
   },
   {
     id: "functions-and-ownership",
@@ -1135,12 +1250,8 @@ export const lessons: Lesson[] = [
         code: 'fn main() {\n    let answer = {\n        let base = 40;\n        base + 2\n    };\n    println!("{answer}");\n}',
         solution:
           'fn main() {\n    let answer = {\n        let base = 40;\n        base + 2\n    };\n    println!("{answer}");\n}',
-        evaluator: {
-          kind: "answer",
-          accepted: ["42"],
-          feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
-        },
-        evidenceKind: "prediction",
+        evaluator: { kind: "exact-output", expected: "42\n" },
+        evidenceKind: "exposure",
         expectedStatus: "success",
       },
       {
@@ -1148,7 +1259,8 @@ export const lessons: Lesson[] = [
         evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "explain",
         title: "Przeczytaj sygnaturę",
-        prompt: "Jednym zdaniem wyjaśnij, co sygnatura obiecuje o własności.",
+        prompt:
+          "Własnymi słowami wyjaśnij, co sygnatura obiecuje o własności. Porównaj wypowiedź z rubryką: aplikacja wymaga wyjaśnienia i zapisuje samoocenę, lecz nie ocenia automatycznie jego sensu.",
         evaluator: {
           kind: "rubric",
           criteria: [
@@ -1426,12 +1538,8 @@ export const lessons: Lesson[] = [
         code: 'fn result_message(guess: u32, secret: u32) -> String {\n    if guess == secret { String::from("correct") } else { String::from("try again") }\n}\n\nfn main() {\n    println!("{}", result_message(7, 7));\n}',
         solution:
           'fn result_message(guess: u32, secret: u32) -> String {\n    if guess == secret { String::from("correct") } else { String::from("try again") }\n}\n\nfn main() {\n    println!("{}", result_message(7, 7));\n}',
-        evaluator: {
-          kind: "answer",
-          accepted: ["correct"],
-          feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
-        },
-        evidenceKind: "prediction",
+        evaluator: { kind: "exact-output", expected: "correct\n" },
+        evidenceKind: "exposure",
         expectedStatus: "success",
       },
       {
@@ -1440,7 +1548,7 @@ export const lessons: Lesson[] = [
         kind: "blank",
         title: "Pusta kartka: napisz zachowanie",
         prompt:
-          "Zbuduj od pustej kartki część gry zgadywania. Zaprojektuj funkcję, która porównuje zgadywaną liczbę z sekretem i zwraca posiadaną String: correct dla trafienia albo try again dla innego wyniku. W main pokaż oba przypadki, w tej kolejności, każdy w osobnej linii. Sam wybierz nazwę funkcji i typy. Nie używaj gotowych tekstów zamiast porównania liczb.",
+          "Zbuduj od pustej kartki część gry zgadywania. Zaprojektuj funkcję, która porównuje zgadywaną liczbę z sekretem i zwraca posiadaną String: correct dla trafienia albo try again dla innego wyniku. W main pokaż oba przypadki, w tej kolejności, każdy w osobnej linii. Sam wybierz nazwę funkcji i typy. Nie używaj gotowych tekstów zamiast porównania liczb. Automatyczna ocena porównuje pokazany wynik i szuka fragmentów -> String oraz if; nie sprawdza działania dla dowolnych wejść ani architektury funkcji. Dopisz własny test dla innej liczby, np. zera, i uzasadnij, dlaczego sprawdza granicę. To dodatkowe sprawdzenie oceniasz samodzielnie w dopisanym kroku na końcu lekcji.",
         solution:
           'fn verdict(guess: i32, secret: i32) -> String {\n    if guess == secret { String::from("correct") } else { String::from("try again") }\n}\n\nfn main() {\n    println!("{}", verdict(4, 4));\n    println!("{}", verdict(3, 4));\n}',
         evaluator: {
@@ -1541,6 +1649,27 @@ export const lessons: Lesson[] = [
         },
         evidenceKind: "project",
       },
+      {
+        id: "project-own-boundary-test",
+        kind: "explain",
+        title: "Własny test i jego uzasadnienie",
+        prompt:
+          "Zapisz własny dodatkowy test programu z pustej kartki: wejście, oczekiwany wynik i powód wyboru granicy. Uruchom go, zapisz obserwację oraz jedną zmianę, którą test powinien wykryć. Jeśli nie masz automatycznego testu, opisz ręczne wywołanie i jego ograniczenie. Samodzielnie porównaj opis z rubryką; aplikacja nie uruchamia ani nie ocenia semantycznie tego dodatkowego testu.",
+        evaluator: {
+          kind: "rubric",
+          criteria: [
+            "Podaję nowe wejście i konkretny oczekiwany wynik.",
+            "Wyjaśniam granicę lub ryzyko sprawdzane przez ten przypadek.",
+            "Zapisuję rzeczywistą obserwację i zmianę zachowania, którą test powinien odrzucić.",
+          ],
+        },
+        evidence: {
+          version: 2,
+          conceptIds: [],
+        },
+        evidenceKind: "self-rating",
+        evidenceGate: false,
+      },
     ],
     misconceptions: [
       "Zwrócenie String oznacza jego pożyczenie.",
@@ -1550,6 +1679,14 @@ export const lessons: Lesson[] = [
       "Zastosuj te same decyzje własności w pomocniku komunikatu wyniku z nowym przypadkiem.",
     evidenceGate:
       "Implementacja od pustej kartki przechodzi obie gałęzie i zawiera naprawę.",
+    sessionStops: [
+      {
+        afterStepId: "project-check",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Zapisz własny test graniczny i uzasadnienie. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
     sourceIds: [
       "rust-book-functions",
       "rust-book-ownership",
@@ -1606,7 +1743,7 @@ export const lessons: Lesson[] = [
         kind: "blank",
         title: "Napisz najmniejszą implementację",
         prompt:
-          "Napisz od zera program budujący komunikaty statusu. Samodzielnie zaprojektuj funkcję, która przyjmuje nazwę statusu i zwraca własną String. Dla dwóch nazw: ready i waiting, program ma wypisać osobne linie: status: ready oraz status: waiting. To samo zachowanie ma działać dla innych nazw. Nie podajemy nazw ani sygnatur funkcji.",
+          "Napisz od zera program budujący komunikaty statusu. Samodzielnie zaprojektuj funkcję, która przyjmuje nazwę statusu i zwraca własną String. Dla dwóch nazw: ready i waiting, program ma wypisać osobne linie: status: ready oraz status: waiting. To samo zachowanie ma działać dla innych nazw. Nie podajemy nazw ani sygnatur funkcji. Automat sprawdza pokazane dwie linie oraz obecność fragmentu -> String; nie potwierdza poprawności dla innych nazw ani struktury programu. Dopisz własny test z pustą nazwą albo nazwą Unicode i uzasadnij wybór. Ten test i uzasadnienie oceniasz samodzielnie w dopisanym kroku na końcu lekcji.",
         solution:
           'fn describe(status: &str) -> String {\n    format!("status: {status}")\n}\n\nfn main() {\n    println!("{}", describe("ready"));\n    println!("{}", describe("waiting"));\n}',
         evaluator: {
@@ -1721,6 +1858,27 @@ export const lessons: Lesson[] = [
         evidenceKind: "self-rating",
         evidenceGate: false,
       },
+      {
+        id: "blank-own-boundary-test",
+        kind: "explain",
+        title: "Własny test i jego uzasadnienie",
+        prompt:
+          "Zapisz własny dodatkowy test programu z pustej kartki: wejście, oczekiwany wynik i powód wyboru granicy. Uruchom go, zapisz obserwację oraz jedną zmianę, którą test powinien wykryć. Jeśli nie masz automatycznego testu, opisz ręczne wywołanie i jego ograniczenie. Samodzielnie porównaj opis z rubryką; aplikacja nie uruchamia ani nie ocenia semantycznie tego dodatkowego testu.",
+        evaluator: {
+          kind: "rubric",
+          criteria: [
+            "Podaję nowe wejście i konkretny oczekiwany wynik.",
+            "Wyjaśniam granicę lub ryzyko sprawdzane przez ten przypadek.",
+            "Zapisuję rzeczywistą obserwację i zmianę zachowania, którą test powinien odrzucić.",
+          ],
+        },
+        evidence: {
+          version: 2,
+          conceptIds: [],
+        },
+        evidenceKind: "self-rating",
+        evidenceGate: false,
+      },
     ],
     misconceptions: [
       "Sugestia kompilatora zawsze jest najlepszym projektem.",
@@ -1729,6 +1887,14 @@ export const lessons: Lesson[] = [
     transferTask:
       "Napraw niewidzianego wcześniej pomocnika tylko do odczytu i uzasadnij sygnaturę.",
     evidenceGate: "Samodzielna naprawa i test świeżego wyniku przechodzą.",
+    sessionStops: [
+      {
+        afterStepId: "blank-transfer",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Zapisz własny test i wyjaśnij, jaką zmianę wykrywa. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
     sourceIds: ["rust-book-ownership", "rust-book-borrowing"],
   },
   {
@@ -2038,9 +2204,9 @@ export const lessons: Lesson[] = [
           ],
         },
         kind: "explain",
-        title: "Rozumuj, nie oceniaj się sam",
+        title: "Uzasadnij i porównaj z rubryką",
         prompt:
-          "Wyjaśnij, dlaczego naprawa działa i jakie dowody mogłyby zmienić decyzję. Samoocena nie tworzy mastery.",
+          "Wyjaśnij własnymi słowami, dlaczego naprawa działa i jakie dowody mogłyby zmienić decyzję. Aplikacja sprawdza wybór decyzji w osobnym kroku i wymaga tego dodatkowego wyjaśnienia. Rubryka służy Twojej samoocenie; nie jest automatyczną oceną semantyczną wypowiedzi ani dowodem opanowania tematu.",
         evaluator: {
           kind: "rubric",
           criteria: [
@@ -2159,7 +2325,7 @@ export const ownershipModule: CourseModule = {
     "Przewidź niewidziany wynik move/Copy.",
     "Napraw E0382 bez ujawnionego rozwiązania.",
     "Użyj pożyczki do pracy tylko do odczytu.",
-    "Wyjaśnij wybór bez clone w ocenie projektu.",
+    "Wybierz decyzję bez clone i dodaj własne wyjaśnienie porównane z rubryką samooceny; aplikacja nie ocenia automatycznie sensu wypowiedzi.",
   ],
   projectConnection:
     "Projekt komunikatu Number Guessing pokazuje decyzje własności na każdej granicy funkcji.",
@@ -2183,7 +2349,7 @@ export const ownershipModule: CourseModule = {
     },
     {
       id: "ownership-explanation",
-      label: "Własne wyjaśnienie decyzji własności",
+      label: "Decyzja własności i własne wyjaśnienie z rubryką samooceny",
       taskRefs: [
         { lessonId: "functions-and-ownership", stepId: "function-transfer" },
         { lessonId: "scenario-assessment", stepId: "assessment-transfer" },

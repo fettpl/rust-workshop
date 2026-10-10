@@ -860,7 +860,7 @@ export const asyncFoundationsLessons: Lesson[] = [
       run(
         "future-laziness-run",
         "Uruchom pierwszy poll",
-        "Najpierw przewidź kolejność `argument`, `utworzono`, `ciało`, `wynik`: argument funkcji jest obliczony przy wywołaniu, a body async dopiero po poll. Uruchom skończony probe; `Wake` jest pusty, bo future jest natychmiast gotowy.",
+        "Najpierw przewidź kolejność `argument`, `utworzono`, `ciało`, `wynik`: argument funkcji jest obliczony przy wywołaniu, a body async dopiero po poll. Uruchom skończony probe; `Wake` jest pusty, bo future jest natychmiast gotowy. Słownik scaffoldu: Arc współdzieli posiadany obserwator; Mutex::lock pożycza dostęp przez guard, a Drop guarda zwalnia dostęp. Wake i Context obsługują tę skończoną obserwację poll. unwrap polega tu na dostarczonym obserwatorze bez paniki, nie jest zaleceniem obsługi błędów. Polityka synchronizacji jest poza celem zadania.",
         lazinessRun,
         "argument\nutworzono\nciało\nwynik=Ready(7)\n",
       ),
@@ -886,7 +886,7 @@ export const asyncFoundationsLessons: Lesson[] = [
         kind: "debug",
         title: "Napraw efekt wykonujący się za wcześnie",
         prompt:
-          "Napraw `deferred_note`: log ma pozostać pusty po utworzeniu future, a przy pierwszym poll ma dostać dokładnie jeden wpis i zwrócić nową długość. Zachowaj `Future<Output = usize>`, obsłuż Unicode i pusty String.",
+          "Napraw `deferred_note`: log ma pozostać pusty po utworzeniu future, a przy pierwszym poll ma dostać dokładnie jeden wpis i zwrócić nową długość. Zachowaj `Future<Output = usize>`, obsłuż Unicode i pusty String. Słownik scaffoldu: Arc współdzieli posiadany obserwator; Mutex::lock pożycza dostęp przez guard, a Drop guarda zwalnia dostęp. Wake i Context obsługują tę skończoną obserwację poll. unwrap polega tu na dostarczonym obserwatorze bez paniki, nie jest zaleceniem obsługi błędów. Polityka synchronizacji jest poza celem zadania.",
         code: lazinessStarter,
         solution: lazinessSolution,
         tests: lazinessTests,

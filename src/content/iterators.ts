@@ -561,6 +561,20 @@ export const iteratorsLessons: Lesson[] = [
       "Dobierzesz iter_mut do zmiany rekordów bez klonowania.",
       "Rozpoznasz E0382 po użyciu into_iter i naprawisz kolejność operacji.",
     ],
+    sessionStops: [
+      {
+        afterStepId: "ownership-explain",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Zmień elementy przez iter_mut i zachowaj właściciela. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "ownership-modify",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Przenieś wybór własności iteratora do zadania od pustej kartki. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     steps: [
       choose(
         "ownership-predict",
@@ -889,6 +903,26 @@ export const iteratorsLessons: Lesson[] = [
       "Zaimplementujesz IntoIterator dla własnego pojemnika bez Clone.",
       "Napiszesz generycznego konsumenta dla Vec, tablicy i własnego źródła.",
     ],
+    sessionStops: [
+      {
+        afterStepId: "contracts-explain",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Napraw IntoIterator i generycznego konsumenta. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "contracts-modify",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Zbuduj własny skończony iterator od pustej kartki. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "contracts-recall",
+        title: "Opcjonalna przerwa — wróć do tego miejsca",
+        nextGoal:
+          "Podejmij otwarty problem raportu, wybierając własne API i politykę błędu. Szacunek czasu lekcji jest wstępny; dobierz długość sesji do siebie.",
+      },
+    ],
     steps: [
       choose(
         "contracts-predict",
@@ -983,6 +1017,31 @@ fn main() {
           "Kontrakt konkretnego typu może zapewnić powtarzalne None, co sprawdzają testy.",
         ],
       ),
+      {
+        id: "contracts-open-checkpoint",
+        kind: "assessment",
+        title: "Otwarty problem: raport z odczytów",
+        prompt:
+          "Zaprojektuj analizę małej kolekcji odczytów trzymanej w pamięci. Każdy wpis ma własną etykietę, informację o aktywności i tekstowy zapis liczby. Raport wybiera aktywne wpisy o wartości co najmniej ustalonego progu i porządkuje je od największej wartości; sam określ i uzasadnij kolejność remisów. Wybierz jawną politykę dla aktywnego wpisu z niepoprawną liczbą: odrzucenie całego raportu albo pominięcie z informacją o odrzuceniu. Nie zastępuj błędu zerem. Nazwy, podpisy, typy, podział i sposób użycia iteratorów wybierasz sam. Uzasadnij też, czy kolekcja pozostaje dostępna po analizie. Napisz własny test zwykły i graniczny obejmujący pustkę, zero, remis lub błędną liczbę. Następnie zmień wymaganie: raport pokazuje tylko pierwsze k pozycji, także k = 0; zaktualizuj rozwiązanie i test. Dokumentacja jest dozwolona, lokalny Cargo opcjonalny, pomoc ujawnij. Zapisz, co faktycznie uruchomiono. Kryteria służą samoocenie; aplikacja nie potwierdza automatycznie poprawności semantycznej, niezależnej architektury ani opanowania materiału.",
+        evaluator: {
+          kind: "rubric",
+          criteria: [
+            "Uzasadniam własne typy, API, podział odpowiedzialności i wybór pożyczania lub przejmowania danych.",
+            "Pokazuję selekcję, kolejność i jednoznaczne zachowanie przy niepoprawnych danych oraz remisie.",
+            "Dołączam własny test zwykły i graniczny (pusta kolekcja, zero, remis lub niepoprawny zapis); zapisuję rzeczywisty wynik albo brak uruchomienia.",
+            "Realizuję zmienione wymaganie i aktualizuję testy, wyjaśniając wpływ na potok.",
+            "Samoocena i ujawniona pomoc nie zastępują sprawdzenia semantyki, architektury ani samodzielności.",
+          ],
+        },
+        rubric: [
+          "Uzasadniam własne typy, API, podział odpowiedzialności i wybór pożyczania lub przejmowania danych.",
+          "Pokazuję selekcję, kolejność i jednoznaczne zachowanie przy niepoprawnych danych oraz remisie.",
+          "Dołączam własny test zwykły i graniczny (pusta kolekcja, zero, remis lub niepoprawny zapis); zapisuję rzeczywisty wynik albo brak uruchomienia.",
+          "Realizuję zmienione wymaganie i aktualizuję testy, wyjaśniając wpływ na potok.",
+          "Samoocena i ujawniona pomoc nie zastępują sprawdzenia semantyki, architektury ani samodzielności.",
+        ],
+        evidenceKind: "self-rating",
+      },
     ],
     misconceptions: [
       "Iterator::next zwraca zawsze Item, więc None jest tylko sygnałem błędu.",

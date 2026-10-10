@@ -40,7 +40,10 @@ describe("Number Guessing+ extends the existing portfolio project", () => {
     const positions = previous.map(([id, stepIds]) => {
       const index = lessons.findIndex((lesson) => lesson.id === id);
       expect(index).toBeGreaterThanOrEqual(0);
-      expect(lessons[index].steps.map((step) => step.id)).toEqual(stepIds);
+      expect(lessons[index].steps.slice(0, stepIds.length).map((step) => step.id)).toEqual(stepIds);
+      expect(lessons[index].steps.slice(stepIds.length).map((step) => step.id)).toEqual(
+        id === "number-guessing-transfer" ? ["project-own-boundary-test"] : [],
+      );
       return project.lessonIds!.indexOf(id);
     });
     expect(positions).toEqual([0, 1]);

@@ -463,15 +463,15 @@ const packageFiles = [
 
 export const ffiBufferPackage: ProjectPackage = {
   id: "ffi-buffer-workshop",
-  title: "Workshop: safe Rust wrapper for a C buffer",
+  title: "Warsztat: bezpieczny wrapper Rust dla bufora C",
   description:
-    "Build a checked Rust 2024 RAII wrapper around a small checked-in C buffer ABI.",
+    "Zbuduj wrapper RAII w Rust 2024 z kontrolą warunków małego ABI bufora C dołączonego do pakietu.",
   instructions: [
-    "Unpack the solution or starter and run cargo fmt --all -- --check and cargo check --locked. The starter compiles but its wrapper tests fail on explicit TODOs.",
-    "Read ffi_buffer.h, ffi_buffer.c, and SAFETY.md before writing Rust. Record the create, view, and destroy ownership contract at the ABI boundary.",
-    "Implement the opaque extern declarations, input bound, null-result handling, checked native view, and exactly-once Drop without exposing raw pointers.",
-    "Run cargo test --locked --test native_integration to exercise round trips, empty views, deterministic native failure, and the documented size bound.",
-    "Finish with cargo fmt --all -- --check, cargo check --locked, cargo test --locked, and cargo clippy --all-targets --locked -- -D warnings.",
+    "Rozpakuj starter lub rozwiązanie i uruchom cargo fmt --all -- --check oraz cargo check --locked. Starter kompiluje się, ale testy wrappera wykrywają jawne TODO.",
+    "Przed pisaniem Rust przeczytaj ffi_buffer.h, ffi_buffer.c i SAFETY.md. Zapisz kontrakt własności operacji create, view i destroy na granicy ABI.",
+    "Zaimplementuj nieprzezroczyste deklaracje extern, limit wejścia, obsługę null, sprawdzany widok natywny i dokładnie jednokrotny Drop bez ujawniania surowych wskaźników.",
+    "Uruchom cargo test --locked --test native_integration, aby sprawdzić round trip, pusty widok, deterministyczną awarię natywną i udokumentowany limit rozmiaru.",
+    "Na koniec uruchom cargo fmt --all -- --check, cargo check --locked, cargo test --locked i cargo clippy --all-targets --locked -- -D warnings.",
   ],
   revealStepRefs: [
     {
@@ -490,9 +490,9 @@ export const ffiBufferPackage: ProjectPackage = {
 
 export const ffiBufferProject: ProjectContract = {
   id: "ffi-buffer",
-  title: "Project: safe FFI buffer owner",
+  title: "Projekt: bezpieczny właściciel bufora FFI",
   objective:
-    "Turn a small C buffer ABI into a checked Rust API whose ownership, view lifetime, and deterministic failure behavior are visible in code and tests.",
+    "Zbuduj sprawdzane API Rust nad małym ABI bufora C; pokaż w kodzie i testach własność, czas życia widoku i deterministyczny błąd.",
   lessonIds: [
     "unsafe-ffi-checked-view",
     "unsafe-ffi-split-regions",
@@ -506,29 +506,29 @@ export const ffiBufferProject: ProjectContract = {
     "unsafe-ffi-owned-handle-contract",
   ],
   requiredBehaviors: [
-    "The Rust wrapper rejects oversized input and maps a deterministic native null result to an explicit error.",
-    "The ABI declarations preserve the C create/view/destroy signatures, and raw pointers remain private to the wrapper boundary.",
-    "The view checks null and length before constructing a Rust slice and borrows for no longer than the owning handle.",
-    "Drop releases each successful native owner exactly once; callers never call the C destroy function manually.",
+    "Wrapper Rust odrzuca zbyt duże wejście i zamienia deterministyczny natywny wynik null na jawny błąd.",
+    "Deklaracje ABI zachowują sygnatury C create/view/destroy; surowe wskaźniki pozostają prywatne na granicy wrappera.",
+    "Widok sprawdza null i długość przed utworzeniem slice Rust; pożyczka nie żyje dłużej niż uchwyt właściciela.",
+    "Drop zwalnia każdą poprawnie utworzoną własność natywną dokładnie raz; wywołujący nie uruchamia ręcznie C destroy.",
   ],
   requiredEvidence: [
-    "Checked-in ffi_buffer.h and ffi_buffer.c define the documented ABI and deterministic sentinel failure.",
-    "Native integration tests cover round trip, empty view, deterministic failure, and the input bound.",
-    "README.md and SAFETY.md identify ownership, pointer validity, layout, and the limits of the safe wrapper.",
+    "Dołączone ffi_buffer.h i ffi_buffer.c definiują udokumentowane ABI i deterministyczny błąd dla wartości sentinel.",
+    "Natywne testy integracyjne obejmują round trip, pusty widok, deterministyczną awarię i limit wejścia.",
+    "README.md i SAFETY.md opisują własność, ważność wskaźników, układ danych i ograniczenia bezpiecznego wrappera.",
   ],
   constraints: [
-    "The package uses Rust 2024, MSRV 1.85.0, and no runtime crates; build.rs invokes the platform C compiler and archiver directly.",
-    "The fixture is an authored teaching artifact. The application serves archives but never executes learner code in the browser.",
-    "The safe wrapper can check the declared ABI preconditions; it cannot make arbitrary foreign code trustworthy or provide allocator independence.",
+    "Pakiet używa Rust 2024 i MSRV 1.85.0 bez runtime crates; build.rs wywołuje bezpośrednio kompilator C i archiwizer platformy.",
+    "Fixture jest autorskim materiałem dydaktycznym. Aplikacja udostępnia archiwa; ich pobranie nie uruchamia kodu uczącego się w przeglądarce.",
+    "Bezpieczny wrapper sprawdza zadeklarowane warunki ABI; nie zapewnia wiarygodności dowolnego obcego kodu ani niezależności od alokatora.",
   ],
   lessonId: "unsafe-ffi-checked-view",
   adversarialLessonId: "unsafe-ffi-owned-handle",
   adversarialInject:
-    "Remove the native length check, turn the sentinel null into an unwrap, construct a slice before validating the pointer, or call destroy twice. Use the native integration test and safety ledger to identify the broken contract.",
+    "Usuń kontrolę natywnej długości, zamień obsługę sentinel null na unwrap, utwórz slice przed sprawdzeniem wskaźnika albo wywołaj destroy dwa razy. Użyj natywnego testu integracyjnego i rejestru bezpieczeństwa do wskazania naruszonego kontraktu.",
   retrospective: [
-    "Which pointer and length facts are checked in Rust, and which remain an assumption about the C implementation?",
-    "Why does borrowing the view through &self prevent the caller from observing a released allocation?",
-    "What evidence proves exactly-once release, and which allocator or thread guarantees remain outside this fixture?",
+    "Które własności wskaźnika i długości sprawdza Rust, a które pozostają założeniem o implementacji C?",
+    "Dlaczego pożyczanie widoku przez &self uniemożliwia wywołującemu obserwowanie zwolnionej alokacji?",
+    "Jakie dowody sprawdzają jednokrotne zwolnienie i które gwarancje alokatora lub wątków pozostają poza tym fixture?",
   ],
   package: ffiBufferPackage,
 };

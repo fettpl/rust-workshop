@@ -1,3 +1,8 @@
+import {
+  completePairsContract,
+  splitMinutesContract,
+  rangeSelectionContract,
+} from "./baseline-primitives-contracts";
 import type {
   Competency,
   Concept,
@@ -375,6 +380,7 @@ export const foundationsLessons: Lesson[] = [
       "Wyjaśnisz, dlaczego let jest niemutowalne domyślnie.",
       "Naprawisz E0384 przez świadome dodanie mut.",
       "Rozpoznasz i32, f64, bool oraz char w prostym kodzie.",
+      "Rozróżnisz const, inferencję, usize i dwa rodzaje dzielenia.",
     ],
     steps: [
       {
@@ -506,6 +512,53 @@ export const foundationsLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      {
+        id: "numeric-discover",
+        kind: "predict",
+        title: "Dobierz liczby do znaczenia",
+        prompt:
+          "Liczby całkowite ze znakiem, np. i8 i i32, obejmują też wartości ujemne; u8 i u32 zaczynają od zera. Liczba w nazwie to szerokość w bitach: i8 mieści -128..=127, a u8 0..=255. usize służy m.in. do długości i indeksów, a jego szerokość zależy od platformy; nie zakładaj 64 bitów. Kompilator wnioskuje typ z wartości i użycia; bez innych wskazówek liczba całkowita otrzymuje i32, a zmiennoprzecinkowa f64. `: u8` wybiera typ jawnie. const wymaga typu i wyrażenia obliczalnego jako stała; nie może mieć mut. let tworzy lokalne wiązanie, a ponowne let może je przesłonić. Sprawdź przykład: / dla liczb całkowitych ucina część ułamkową w stronę zera, a % daje resztę. Jaki jest wynik?",
+        code: 'const PAIR_SIZE: u32 = 2;\nfn main() {\n    let signed: i8 = -2;\n    let byte: u8 = 255;\n    let inferred = 7;\n    let fraction: f64 = 7.0 / 2.0;\n    let length: usize = "Rust".len(); // tutaj 4 bajty ASCII\n    let items = 8u32; // sufiks też wskazuje typ\n    let items = items / PAIR_SIZE; // nowe wiązanie przez shadowing\n    println!("{signed} {byte} {} {fraction} {length} {items}", inferred / 2);\n}',
+        solution:
+          'const PAIR_SIZE: u32 = 2;\nfn main() {\n    let signed: i8 = -2;\n    let byte: u8 = 255;\n    let inferred = 7;\n    let fraction: f64 = 7.0 / 2.0;\n    let length: usize = "Rust".len(); // tutaj 4 bajty ASCII\n    let items = 8u32; // sufiks też wskazuje typ\n    let items = items / PAIR_SIZE; // nowe wiązanie przez shadowing\n    println!("{signed} {byte} {} {fraction} {length} {items}", inferred / 2);\n}',
+        evaluator: {
+          kind: "answer",
+          accepted: ["-2 255 3 3.5 4 4"],
+          feedback:
+            "Oblicz osobno 7 / 2 i 7.0 / 2.0. const PAIR_SIZE pozostaje 2; nowe items ma 4.",
+        },
+        evidenceKind: "prediction",
+        expectedStatus: "success",
+        hints: [
+          "Inferencja nie oznacza zmiany typu podczas działania programu.",
+          "Zwróć uwagę na kropkę w 7.0.",
+        ],
+      },
+      {
+        id: "numeric-halves-transfer",
+        kind: "blank",
+        title: "Policz pełne pary",
+        prompt:
+          "Napisz ciało complete_pairs(items: u32) -> u32: dla liczby elementów z 0..=1000 zwróć liczbę pełnych par, pomijając samotny element. Podana otoczka funkcji ma parametr items, a -> u32 opisuje wynik. Wpisz obliczenie jako ostatnie wyrażenie bez średnika; pełniej poznasz funkcje w następnej lekcji. Nie zmieniaj sygnatury. Samo poprawne dopasowanie typów nie wyklucza przepełnienia arytmetycznego: wynik działania musi mieścić się w typie. Nie opieraj reguły na tym, czy dana konfiguracja kompilacji panikuje albo zawija wynik. Tutaj dzielenie przez stałe 2 nie przepełnia u32 i nie dzieli przez zero. Po Option poznasz checked_add jako jawną politykę dla dodawania. Testy sprawdzają także inne wartości niż pokazane 7.",
+        code: completePairsContract.starter,
+        solution: completePairsContract.solution,
+        evaluator: {
+          kind: "tests",
+          tests: completePairsContract.tests,
+        },
+        evidence: {
+          version: 1,
+          conceptIds: ["scalar-types"],
+          codingTaskId: "foundations/complete-pairs",
+        },
+        evidenceKind: "transfer",
+        evidenceGate: true,
+        expectedStatus: "success",
+        hints: [
+          "Dla 1 wynikiem jest 0, a dla 8 wynikiem jest 4.",
+          "Wybierz dzielenie całkowite przez 2.",
+        ],
+      },
     ],
     misconceptions: [
       "E0384 oznacza błąd typu liczby.",
@@ -516,6 +569,14 @@ export const foundationsLessons: Lesson[] = [
       "Dla nowej wartości licznikowej wybierz let albo let mut, dodaj adnotację typu tylko gdy pomaga, i przewidź wynik.",
     evidenceGate:
       "Naprawa E0384 daje oczekiwaną wartość, a osobny przypadek pokazuje typy skalarne i shadowing.",
+    sessionStops: [
+      {
+        afterStepId: "bindings-recall",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Rozróżnij typy liczb i policz pełne pary. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
     sourceIds: ["foundations-variables", "foundations-data-types"],
   },
   {
@@ -532,6 +593,7 @@ export const foundationsLessons: Lesson[] = [
       "Napiszesz funkcję z parametrami i wynikiem i32.",
       "Rozpoznasz ostatnie wyrażenie bez średnika jako wynik funkcji.",
       "Naprawisz błąd E0308 wywołany przez średnik w miejscu wyniku.",
+      "Odczytasz return, jednostkę () i wynik krotkowy.",
     ],
     steps: [
       {
@@ -651,6 +713,50 @@ export const foundationsLessons: Lesson[] = [
         },
         evidenceKind: "transfer",
       },
+      {
+        id: "function-return-unit-discover",
+        kind: "predict",
+        title: "Return, jednostka i krotka",
+        prompt:
+          "return kończy bieżącą funkcję od razu i może podać jej wynik. W tym przykładzie if n < 0 oznacza: wykonaj blok tylko dla liczby ujemnej; szczegółowe warunki poznasz w następnej lekcji. Funkcja bez -> zwraca (), czyli jednostkę: jedną pustą wartość, a nie brak poprawnego typu. return; pasuje do takiej funkcji. Typ (i32, bool) opisuje krotkę: stałą liczbę pozycji o potencjalnie różnych typach. Nawiasy nie tworzą kolekcji, która rośnie. let (value, ready) rozpakowuje obie pozycje. Przewidź cały wynik; {:?} pokazuje tutaj pustą wartość ().",
+        code: 'fn nonnegative(n: i32) -> i32 {\n    if n < 0 { return 0; }\n    n\n}\nfn announce() {\n    println!("start");\n    return;\n}\nfn main() {\n    let unit: () = announce();\n    let result: (i32, bool) = (nonnegative(-3), true);\n    let (value, ready) = result;\n    println!("{value} {ready} {unit:?}");\n}',
+        solution:
+          'fn nonnegative(n: i32) -> i32 {\n    if n < 0 { return 0; }\n    n\n}\nfn announce() {\n    println!("start");\n    return;\n}\nfn main() {\n    let unit: () = announce();\n    let result: (i32, bool) = (nonnegative(-3), true);\n    let (value, ready) = result;\n    println!("{value} {ready} {unit:?}");\n}',
+        evaluator: {
+          kind: "answer",
+          accepted: ["start\n0 true ()"],
+          feedback:
+            "announce wypisuje start i zwraca (). W nonnegative(-3) return kończy funkcję przed końcowym n.",
+        },
+        evidenceKind: "prediction",
+        expectedStatus: "success",
+      },
+      {
+        id: "function-tuple-repair",
+        kind: "debug",
+        title: "Zwróć dwie części czasu",
+        prompt:
+          "Napraw split_minutes: przyjmij liczbę minut z 0..=1440 i zwróć krotkę (pełne godziny, pozostałe minuty). / liczy pełne godziny, % resztę z dzielenia przez 60. Zachowaj sygnaturę i kolejność pozycji. main rozpakowuje wynik przez let (hours, rest). Możesz użyć jawnego return albo końcowego wyrażenia; testy sprawdzają zachowanie także dla 0, 59, 60 i świeżych wartości.",
+        code: splitMinutesContract.starter,
+        solution: splitMinutesContract.solution,
+        evaluator: {
+          kind: "tests",
+          tests: splitMinutesContract.tests,
+        },
+        evidence: {
+          version: 1,
+          conceptIds: ["functions-expressions"],
+          codingTaskId: "foundations/split-minutes",
+        },
+        evidenceKind: "fix",
+        evidenceGate: true,
+        expectedStatus: "compile-error",
+        expectedError: "E0308",
+        hints: [
+          "Obecny średnik pozostawia wynik ().",
+          "Wynik (hours, rest) jest jedną krotką, a nie dwoma return.",
+        ],
+      },
     ],
     misconceptions: [
       "Średnik jest tylko formatowaniem i nie zmienia wartości.",
@@ -661,6 +767,14 @@ export const foundationsLessons: Lesson[] = [
       "Zaprojektuj małą funkcję i32 z dwoma argumentami, sprawdź jeden przypadek skrajnymi liczbami i zdecyduj, gdzie potrzebny jest średnik.",
     evidenceGate:
       "Naprawa średnika daje oczekiwany wynik, a zmieniony kontrakt przechodzi osobny przypadek difference.",
+    sessionStops: [
+      {
+        afterStepId: "function-transfer",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Porównaj return, jednostkę i wynik krotkowy. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
     sourceIds: ["foundations-functions"],
   },
   {
@@ -677,6 +791,7 @@ export const foundationsLessons: Lesson[] = [
       "Użyjesz bool jako warunku if.",
       "Zapiszesz if jako wyrażenie przypisywane do wiązania.",
       "Przewidzisz i zmienisz iteracje pętli for po zakresie.",
+      "Samodzielnie połączysz warunek i zakres, sprawdzając pusty przypadek.",
     ],
     steps: [
       {
@@ -744,7 +859,7 @@ export const foundationsLessons: Lesson[] = [
         kind: "modify",
         title: "Zmień liczbę iteracji",
         prompt:
-          "Zmień końcową granicę tak, aby program wypisał 1, 2, 3 i 4 — po jednej liczbie w wierszu.",
+          "Zmień końcową granicę tak, aby program wypisał 1, 2, 3 i 4 — po jednej liczbie w wierszu. Na końcu lekcji samodzielnie połączysz zakres i warunek w zadaniu z pustym przypadkiem.",
         code: 'fn main() {\n    for number in 1..=3 {\n        println!("{number}");\n    }\n}',
         solution:
           'fn main() {\n    for number in 1..=4 {\n        println!("{number}");\n    }\n}',
@@ -818,6 +933,31 @@ export const foundationsLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      {
+        id: "flow-range-transfer",
+        kind: "blank",
+        title: "Samodzielnie wybierz i policz",
+        prompt:
+          "Napisz ciało count_even_above(start, end, minimum). Dla argumentów u32 z 0..=1000 policz parzyste liczby w zakresie start..end, które są co najmniej minimum. end jest wykluczone. Gdy start >= end, wynik to 0. Zero jest parzyste. Operator % daje resztę, więc number % 2 == 0 sprawdza parzystość; && wymaga spełnienia obu warunków. Sam wybierz zakres i warunek, nie zmieniaj sygnatury. Testy obejmują pusty zakres i obie granice. Wynik testów sprawdza zachowanie; sam nie dowodzi użycia konkretnej składni pętli.",
+        code: rangeSelectionContract.starter,
+        solution: rangeSelectionContract.solution,
+        evaluator: {
+          kind: "tests",
+          tests: rangeSelectionContract.tests,
+        },
+        evidence: {
+          version: 1,
+          conceptIds: ["control-flow"],
+          codingTaskId: "foundations/range-selection",
+        },
+        evidenceKind: "transfer",
+        evidenceGate: true,
+        expectedStatus: "success",
+        hints: [
+          "Licznik zaczyna od zera. Zwiększaj go tylko dla liczby spełniającej oba warunki.",
+          "Sprawdź osobno start = end oraz przypadek, gdy jedyna parzysta liczba jest równa end.",
+        ],
+      },
     ],
     misconceptions: [
       "Liczba całkowita jest automatycznie prawdą lub fałszem.",
@@ -828,6 +968,14 @@ export const foundationsLessons: Lesson[] = [
       "Dla nowego progu wybierz warunek bool, przewidź etykietę i zmień zakres tak, aby liczba iteracji była widoczna w wyniku.",
     evidenceGate:
       "Zmiana zakresu i osobny transfer if + for dają oczekiwany wynik, a granica zakresu jest sprawdzona niezależnym wyborem.",
+    sessionStops: [
+      {
+        afterStepId: "flow-recall",
+        title: "Opcjonalna przerwa przed dodatkową praktyką",
+        nextGoal:
+          "Napisz samodzielnie wybór liczb w zakresie. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      },
+    ],
     sourceIds: ["foundations-control-flow"],
   },
   {
@@ -1104,6 +1252,7 @@ export const foundationsModule: CourseModule = {
       taskRefs: [
         { lessonId: "control-flow", stepId: "flow-modify" },
         { lessonId: "control-flow", stepId: "flow-transfer" },
+        { lessonId: "control-flow", stepId: "flow-range-transfer" },
       ],
     },
     {

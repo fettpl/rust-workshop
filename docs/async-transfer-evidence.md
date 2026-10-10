@@ -1,3 +1,5 @@
+For the 10 October baseline correction inventory and current provisional counts, see the [source-bound curriculum audit](curriculum-audit-2026-10-10.md). The 9 October source/command observations below retain their dated scope.
+
 # Async transfer evidence — 9 October 2026
 
 This M11 source candidate appends two primary coding families inside the existing async lending lessons. It retains the accepted M10 identities, concept minimums, schema 3 and assistance semantics. Source integration and observed maintainer fixtures are distinct from whole-branch review, production browser/offline execution, natural PR/main checks and local release acceptance; those coordinator gates remain pending for this candidate.

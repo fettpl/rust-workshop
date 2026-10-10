@@ -96,7 +96,7 @@ test("switches Cargo projects without leaking solution view, notes or help", asy
   const learnerInstruction = page.locator(".learner-instruction");
   await expect(
     learnerInstruction.getByRole("heading", {
-      name: "Twój program od zera",
+      name: "Projekt końcowy: Study Session CLI od zera",
       exact: true,
     }),
   ).toBeVisible();

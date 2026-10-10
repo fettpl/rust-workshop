@@ -1072,8 +1072,9 @@ export const roadmap = [
     status: "available",
   },
   {
-    title: "Zaawansowane Cargo, zależności i publikacja bibliotek",
-    status: "planned",
+    title:
+      "Cargo: cykl zależności i ograniczony przegląd wydania (publikacja w rejestrze: później)",
+    status: "available",
   },
   {
     title: "Tokio: I/O, ramki, streamy i operacje blokujące",
@@ -1103,15 +1104,26 @@ export const roadmap = [
     title: "Property testing: kontrakty, generatory i kontrprzykłady",
     status: "available",
   },
-  { title: "Profilowanie, benchmarki i koszty alokacji", status: "planned" },
+  {
+    title:
+      "Benchmarki i profilowanie: ograniczone workloady i pomiary alokacji",
+    status: "available",
+  },
   {
     title: "Unsafe i FFI: kontrakty raw pointerów oraz RAII",
     status: "available",
   },
   {
-    title: "Architektura, bezpieczeństwo, obserwowalność i przegląd incydentów",
-    status: "planned",
+    title:
+      "Service Operations: ograniczony model zagrożeń, telemetria i przegląd incydentu (produkcja: później)",
+    status: "available",
   },
-  { title: "Większy projekt końcowy", status: "planned" },
-  { title: "Capstone: trwały serwis logów", status: "available" },
+  {
+    title: "Własny projekt końcowy: Study Session CLI (lokalnie, std-only)",
+    status: "available",
+  },
+  {
+    title: "Opcjonalny zaawansowany capstone: trwały serwis logów",
+    status: "available",
+  },
 ];

@@ -1,0 +1,3386 @@
+{
+  "metadata": {
+    "generatedAt": "2026-10-10T07:22:15.797Z",
+    "sourceCommit": "fc3491a74e30557ebea1196986d136ca66a43973",
+    "sourceTree": "cfba502e64f648483174ec7e2028eb6640b0105a",
+    "method": "Trusted read-only registry import; complete evaluated data; no learner or compiler execution",
+    "counts": {
+      "modules": 48,
+      "lessons": 189,
+      "concepts": 191,
+      "competencies": 195,
+      "sources": 334,
+      "projects": 13,
+      "traces": 7,
+      "ordinaryReviews": 191,
+      "delayedReviews": 2,
+      "shortReviews": 3,
+      "steps": 1219
+    }
+  },
+  "moduleIds": [
+    "rust-foundations",
+    "loops-control",
+    "ownership",
+    "data-modeling",
+    "collections",
+    "error-handling",
+    "todo-project",
+    "modules-cargo",
+    "todo-io",
+    "generics",
+    "traits",
+    "lifetimes",
+    "closures",
+    "borrowed-callbacks",
+    "iterators",
+    "gat-lending-iterators",
+    "testing-quality",
+    "number-guessing-plus",
+    "log-analyzer",
+    "boxed-values",
+    "shared-ownership",
+    "threads",
+    "channels",
+    "synchronized-state",
+    "atomic-state",
+    "memory-ordering",
+    "async-foundations",
+    "tokio-runtime-tasks",
+    "tokio-flow-control",
+    "tokio-io-streams",
+    "tokio-blocking-work",
+    "tokio-network-service",
+    "async-lending-contracts",
+    "public-api-workspaces",
+    "api-release-matrix",
+    "macros-as-api",
+    "cargo-dependency-lifecycle",
+    "dependency-assurance",
+    "mini-grep",
+    "property-contracts",
+    "fuzz-evidence-lifecycle",
+    "performance-evidence",
+    "profile-evidence",
+    "unsafe-ffi-contracts",
+    "unsafe-miri-contracts",
+    "unsafe-borrowed-memory-soundness",
+    "service-operations",
+    "capstone-integration"
+  ],
+  "modules": [
+    {
+      "id": "rust-foundations",
+      "lessonIds": [
+        "first-program",
+        "bindings-types",
+        "functions-expressions",
+        "control-flow",
+        "foundations-assessment"
+      ]
+    },
+    {
+      "id": "loops-control",
+      "lessonIds": [
+        "while-progress",
+        "loop-values",
+        "loop-control"
+      ]
+    },
+    {
+      "id": "ownership",
+      "lessonIds": [
+        "memory-intro",
+        "move-copy-discovery",
+        "functions-and-ownership",
+        "borrow-intro",
+        "number-guessing-transfer",
+        "blank-page-repair",
+        "adversarial-no-clone",
+        "scenario-assessment",
+        "function-ownership-calibration",
+        "shared-borrow-calibration"
+      ]
+    },
+    {
+      "id": "data-modeling",
+      "lessonIds": [
+        "slices-and-views",
+        "structs-and-fields",
+        "methods-and-state",
+        "enums-and-match",
+        "option-and-absence",
+        "modeling-assessment",
+        "nested-patterns-and-destructuring"
+      ]
+    },
+    {
+      "id": "collections",
+      "lessonIds": [
+        "vec-and-borrowing",
+        "string-and-utf8",
+        "hashmap-and-entry"
+      ]
+    },
+    {
+      "id": "error-handling",
+      "lessonIds": [
+        "result-and-recovery",
+        "propagation-and-errors",
+        "panic-and-contracts"
+      ]
+    },
+    {
+      "id": "todo-project",
+      "lessonIds": [
+        "todo-command-parser",
+        "todo-state-invariants",
+        "todo-session-project"
+      ]
+    },
+    {
+      "id": "modules-cargo",
+      "lessonIds": [
+        "module-tree-paths",
+        "module-visibility",
+        "imports-and-reexports",
+        "cargo-package-integration"
+      ]
+    },
+    {
+      "id": "todo-io",
+      "lessonIds": [
+        "todo-storage-format",
+        "todo-file-persistence",
+        "todo-terminal-cli"
+      ]
+    },
+    {
+      "id": "generics",
+      "lessonIds": [
+        "generic-values",
+        "generic-impl",
+        "generic-bounds"
+      ]
+    },
+    {
+      "id": "traits",
+      "lessonIds": [
+        "trait-contracts",
+        "trait-consumers",
+        "associated-types",
+        "trait-dispatch",
+        "conversion-ownership-views",
+        "checked-conversions"
+      ]
+    },
+    {
+      "id": "lifetimes",
+      "lessonIds": [
+        "lifetime-relations",
+        "lifetime-structs",
+        "lifetime-api"
+      ]
+    },
+    {
+      "id": "closures",
+      "lessonIds": [
+        "closure-captures",
+        "closure-ownership",
+        "closure-contracts"
+      ]
+    },
+    {
+      "id": "borrowed-callbacks",
+      "lessonIds": [
+        "variance-shared-views",
+        "variance-mutable-slots",
+        "hrtb-local-visitors",
+        "hrtb-borrowed-projections"
+      ]
+    },
+    {
+      "id": "iterators",
+      "lessonIds": [
+        "iterator-ownership",
+        "iterator-pipelines",
+        "iterator-laziness",
+        "iterator-contracts"
+      ]
+    },
+    {
+      "id": "gat-lending-iterators",
+      "lessonIds": [
+        "gat-receiver-borrows",
+        "gat-overlapping-mutable-windows",
+        "gat-item-capabilities",
+        "gat-owned-iterator-adapters"
+      ]
+    },
+    {
+      "id": "testing-quality",
+      "lessonIds": [
+        "testing-contracts",
+        "testing-regressions",
+        "testing-quality-workflow"
+      ]
+    },
+    {
+      "id": "number-guessing-plus",
+      "lessonIds": [
+        "guess-input-contract",
+        "guess-round-state",
+        "guess-session-io",
+        "guess-random-boundary"
+      ]
+    },
+    {
+      "id": "log-analyzer",
+      "lessonIds": [
+        "log-records",
+        "log-streaming",
+        "log-analyzer-project"
+      ]
+    },
+    {
+      "id": "boxed-values",
+      "lessonIds": [
+        "box-recursive",
+        "deref-contracts",
+        "drop-resources"
+      ]
+    },
+    {
+      "id": "shared-ownership",
+      "lessonIds": [
+        "rc-sharing",
+        "refcell-borrows",
+        "weak-links"
+      ]
+    },
+    {
+      "id": "threads",
+      "lessonIds": [
+        "thread-join",
+        "thread-move",
+        "scoped-threads"
+      ]
+    },
+    {
+      "id": "channels",
+      "lessonIds": [
+        "channel-ownership",
+        "channel-lifecycle",
+        "channel-backpressure"
+      ]
+    },
+    {
+      "id": "synchronized-state",
+      "lessonIds": [
+        "send-sync",
+        "mutex-state",
+        "mutex-recovery"
+      ]
+    },
+    {
+      "id": "atomic-state",
+      "lessonIds": [
+        "atomic-rmw",
+        "atomic-cas",
+        "atomic-limits"
+      ]
+    },
+    {
+      "id": "memory-ordering",
+      "lessonIds": [
+        "release-acquire",
+        "ordering-contracts",
+        "loom-evidence"
+      ]
+    },
+    {
+      "id": "async-foundations",
+      "lessonIds": [
+        "future-laziness",
+        "await-progress",
+        "future-ownership",
+        "future-cancellation"
+      ]
+    },
+    {
+      "id": "tokio-runtime-tasks",
+      "lessonIds": [
+        "tokio-runtime-entry",
+        "tokio-spawn-join",
+        "tokio-task-boundaries",
+        "tokio-join-outcomes"
+      ]
+    },
+    {
+      "id": "tokio-flow-control",
+      "lessonIds": [
+        "tokio-bounded-channels",
+        "tokio-reservation-cancellation",
+        "tokio-timeouts",
+        "tokio-select-cancellation",
+        "tokio-graceful-shutdown"
+      ]
+    },
+    {
+      "id": "tokio-io-streams",
+      "lessonIds": [
+        "tokio-async-read-write",
+        "tokio-framing-eof",
+        "tokio-retained-frame-progress",
+        "tokio-stream-next",
+        "tokio-receiver-stream-drain"
+      ]
+    },
+    {
+      "id": "tokio-blocking-work",
+      "lessonIds": [
+        "tokio-spawn-blocking-boundary",
+        "tokio-blocking-cooperative-stop"
+      ]
+    },
+    {
+      "id": "tokio-network-service",
+      "lessonIds": [
+        "tokio-tcp-connect",
+        "tokio-tcp-half-close",
+        "tokio-frame-deadlines",
+        "tokio-admission-lifecycle"
+      ]
+    },
+    {
+      "id": "async-lending-contracts",
+      "lessonIds": [
+        "async-lending-receiver",
+        "async-lending-callbacks",
+        "async-lending-cancel-commit",
+        "async-lending-send-boundary",
+        "async-lending-dyn-adapter"
+      ]
+    },
+    {
+      "id": "public-api-workspaces",
+      "lessonIds": [
+        "api-validated-construction",
+        "api-error-source-chain",
+        "api-trait-compatibility",
+        "api-compatible-surface"
+      ]
+    },
+    {
+      "id": "api-release-matrix",
+      "lessonIds": [
+        "api-release-old-contracts",
+        "api-release-matrix-decision"
+      ]
+    },
+    {
+      "id": "macros-as-api",
+      "lessonIds": [
+        "macros-exactly-once",
+        "macros-repetition-grammar",
+        "macros-exported-paths-2024"
+      ]
+    },
+    {
+      "id": "cargo-dependency-lifecycle",
+      "lessonIds": [
+        "cargo-dependency-contract",
+        "cargo-resolver-feature-unification",
+        "cargo-lock-msrv-policy",
+        "cargo-package-rehearsal"
+      ]
+    },
+    {
+      "id": "dependency-assurance",
+      "lessonIds": [
+        "dependency-graph-diagnosis",
+        "dependency-source-license-policy",
+        "dependency-advisory-exceptions",
+        "dependency-release-dossier"
+      ]
+    },
+    {
+      "id": "mini-grep",
+      "lessonIds": [
+        "grep-context-selection",
+        "grep-bounded-input",
+        "grep-path-policy",
+        "grep-cli-contract"
+      ]
+    },
+    {
+      "id": "property-contracts",
+      "lessonIds": [
+        "property-invariants",
+        "property-generated-inputs",
+        "property-shrinking-replay",
+        "property-metamorphic-transfer"
+      ]
+    },
+    {
+      "id": "fuzz-evidence-lifecycle",
+      "lessonIds": [
+        "fuzz-input-domain",
+        "fuzz-oracle-sensitivity",
+        "fuzz-counterexample-regression",
+        "fuzz-campaign-evidence"
+      ]
+    },
+    {
+      "id": "performance-evidence",
+      "lessonIds": [
+        "performance-measured-workload",
+        "performance-borrowed-stream",
+        "performance-bounded-buffer",
+        "performance-evidence-decisions"
+      ]
+    },
+    {
+      "id": "profile-evidence",
+      "lessonIds": [
+        "profile-instruction-cost",
+        "profile-allocation-events",
+        "profile-optimization-transfer",
+        "profile-regression-decision",
+        "runtime-allocation-scope",
+        "runtime-allocation-comparison"
+      ]
+    },
+    {
+      "id": "unsafe-ffi-contracts",
+      "lessonIds": [
+        "unsafe-ffi-checked-view",
+        "unsafe-ffi-split-regions",
+        "unsafe-ffi-raw-record",
+        "unsafe-ffi-owned-handle"
+      ]
+    },
+    {
+      "id": "unsafe-miri-contracts",
+      "lessonIds": [
+        "unsafe-miri-byte-view",
+        "unsafe-miri-disjoint-regions",
+        "unsafe-miri-slot-state",
+        "unsafe-miri-mut-slot"
+      ]
+    },
+    {
+      "id": "unsafe-borrowed-memory-soundness",
+      "lessonIds": [
+        "unsafe-borrowed-provenance",
+        "unsafe-borrowed-reborrow",
+        "unsafe-borrowed-slot",
+        "unsafe-borrowed-auto-traits"
+      ]
+    },
+    {
+      "id": "service-operations",
+      "lessonIds": [
+        "service-trust-admission",
+        "service-correlated-telemetry",
+        "service-readiness-drain",
+        "service-incident-diagnosis"
+      ]
+    },
+    {
+      "id": "capstone-integration",
+      "lessonIds": [
+        "capstone-domain-boundary",
+        "capstone-idempotent-commit",
+        "capstone-bounded-lifecycle",
+        "capstone-protocol-evolution",
+        "capstone-incident-recovery",
+        "capstone-release-evidence"
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "first-program",
+      "moduleId": "rust-foundations",
+      "stepIds": [
+        "entry-discover",
+        "entry-run",
+        "cargo-sequence",
+        "toolchain-check",
+        "entry-modify",
+        "entry-recall"
+      ]
+    },
+    {
+      "id": "bindings-types",
+      "moduleId": "rust-foundations",
+      "stepIds": [
+        "bindings-discover",
+        "scalar-predict",
+        "mut-error",
+        "mut-run",
+        "shadow-types",
+        "bindings-recall"
+      ]
+    },
+    {
+      "id": "functions-expressions",
+      "moduleId": "rust-foundations",
+      "stepIds": [
+        "function-discover",
+        "function-run",
+        "function-error",
+        "function-modify",
+        "function-recall",
+        "function-transfer"
+      ]
+    },
+    {
+      "id": "control-flow",
+      "moduleId": "rust-foundations",
+      "stepIds": [
+        "flow-discover",
+        "flow-predict",
+        "flow-run",
+        "flow-modify",
+        "flow-boundary",
+        "flow-transfer",
+        "flow-recall"
+      ]
+    },
+    {
+      "id": "foundations-assessment",
+      "moduleId": "rust-foundations",
+      "stepIds": [
+        "assessment-rules",
+        "assessment-predict",
+        "assessment-blank",
+        "assessment-adversarial",
+        "assessment-tests",
+        "assessment-transfer-tests",
+        "assessment-reason",
+        "assessment-transfer",
+        "foundations-local-parcel-program"
+      ]
+    },
+    {
+      "id": "while-progress",
+      "moduleId": "loops-control",
+      "stepIds": [
+        "while-predict",
+        "while-run",
+        "while-error",
+        "while-explain",
+        "while-modify",
+        "while-blank"
+      ]
+    },
+    {
+      "id": "loop-values",
+      "moduleId": "loops-control",
+      "stepIds": [
+        "values-predict",
+        "values-run",
+        "values-error",
+        "values-modify",
+        "values-explain",
+        "values-blank"
+      ]
+    },
+    {
+      "id": "loop-control",
+      "moduleId": "loops-control",
+      "stepIds": [
+        "control-predict",
+        "control-run",
+        "control-explain",
+        "control-modify",
+        "control-recall",
+        "control-blank"
+      ]
+    },
+    {
+      "id": "memory-intro",
+      "moduleId": "ownership",
+      "stepIds": [
+        "memory-predict",
+        "memory-run",
+        "memory-trace",
+        "memory-explain",
+        "memory-modify",
+        "memory-transfer"
+      ]
+    },
+    {
+      "id": "move-copy-discovery",
+      "moduleId": "ownership",
+      "stepIds": [
+        "move-predict",
+        "move-error",
+        "move-string-run",
+        "copy-int-run",
+        "copy-trace",
+        "copy-clone-trace"
+      ]
+    },
+    {
+      "id": "functions-and-ownership",
+      "moduleId": "ownership",
+      "stepIds": [
+        "function-call-run",
+        "function-error",
+        "return-ownership",
+        "function-expression-run",
+        "function-explain",
+        "function-transfer"
+      ]
+    },
+    {
+      "id": "borrow-intro",
+      "moduleId": "ownership",
+      "stepIds": [
+        "borrow-read-run",
+        "borrow-trace",
+        "borrow-conflict",
+        "borrow-mutable-run",
+        "borrow-explain",
+        "borrow-transfer"
+      ]
+    },
+    {
+      "id": "number-guessing-transfer",
+      "moduleId": "ownership",
+      "stepIds": [
+        "project-contract",
+        "project-result-run",
+        "project-blank",
+        "project-error",
+        "project-reasoning",
+        "project-check"
+      ]
+    },
+    {
+      "id": "blank-page-repair",
+      "moduleId": "ownership",
+      "stepIds": [
+        "blank-plan",
+        "blank-code",
+        "blank-error",
+        "blank-test",
+        "blank-reason",
+        "blank-transfer"
+      ]
+    },
+    {
+      "id": "adversarial-no-clone",
+      "moduleId": "ownership",
+      "stepIds": [
+        "adversarial-diagnose",
+        "adversarial-code",
+        "adversarial-conflict",
+        "adversarial-reason",
+        "adversarial-trace",
+        "adversarial-transfer"
+      ]
+    },
+    {
+      "id": "scenario-assessment",
+      "moduleId": "ownership",
+      "stepIds": [
+        "assessment-unseen-copy",
+        "assessment-unseen-move",
+        "assessment-repair",
+        "assessment-reasoning",
+        "assessment-retrieval",
+        "assessment-transfer"
+      ]
+    },
+    {
+      "id": "slices-and-views",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "slice-predict",
+        "slice-run",
+        "slice-boundary-explain",
+        "slice-repair",
+        "slice-gate",
+        "slice-edge-gate",
+        "slice-recall"
+      ]
+    },
+    {
+      "id": "structs-and-fields",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "record-predict",
+        "record-run",
+        "record-explain",
+        "record-repair",
+        "record-gate",
+        "record-state-gate",
+        "record-recall"
+      ]
+    },
+    {
+      "id": "methods-and-state",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "method-predict",
+        "method-run",
+        "method-explain",
+        "method-repair",
+        "method-gate",
+        "method-reset-gate",
+        "method-recall"
+      ]
+    },
+    {
+      "id": "enums-and-match",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "enum-discover",
+        "enum-run",
+        "enum-error",
+        "enum-payload",
+        "enum-recall",
+        "enum-transfer"
+      ]
+    },
+    {
+      "id": "option-and-absence",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "option-discover",
+        "option-run",
+        "option-error",
+        "option-match",
+        "option-recall",
+        "option-transfer"
+      ]
+    },
+    {
+      "id": "modeling-assessment",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "assessment-plan",
+        "assessment-recall",
+        "modeling-blank",
+        "modeling-contract",
+        "modeling-fresh-retrieval",
+        "modeling-alt"
+      ]
+    },
+    {
+      "id": "vec-and-borrowing",
+      "moduleId": "collections",
+      "stepIds": [
+        "vec-predict",
+        "vec-run",
+        "vec-iteration-explain",
+        "vec-repair",
+        "vec-last-gate",
+        "vec-even-gate",
+        "vec-transfer",
+        "vec-recall"
+      ]
+    },
+    {
+      "id": "string-and-utf8",
+      "moduleId": "collections",
+      "stepIds": [
+        "string-predict",
+        "string-run",
+        "string-explain",
+        "string-repair",
+        "string-char-gate",
+        "string-push-gate",
+        "string-transfer",
+        "string-recall"
+      ]
+    },
+    {
+      "id": "hashmap-and-entry",
+      "moduleId": "collections",
+      "stepIds": [
+        "map-predict",
+        "map-run",
+        "map-explain",
+        "map-repair",
+        "map-points-gate",
+        "map-frequency-gate",
+        "map-transfer",
+        "map-recall"
+      ]
+    },
+    {
+      "id": "result-and-recovery",
+      "moduleId": "error-handling",
+      "stepIds": [
+        "result-predict",
+        "result-run",
+        "result-observe",
+        "result-explain",
+        "result-debug",
+        "result-modify",
+        "result-transfer",
+        "result-recall"
+      ]
+    },
+    {
+      "id": "propagation-and-errors",
+      "moduleId": "error-handling",
+      "stepIds": [
+        "propagate-predict",
+        "propagate-run",
+        "propagate-observe",
+        "propagate-explain",
+        "propagate-debug",
+        "propagate-modify",
+        "propagate-transfer",
+        "propagate-recall"
+      ]
+    },
+    {
+      "id": "panic-and-contracts",
+      "moduleId": "error-handling",
+      "stepIds": [
+        "panic-predict",
+        "panic-run",
+        "panic-observe",
+        "panic-explain",
+        "panic-debug",
+        "panic-modify",
+        "panic-transfer",
+        "panic-recall"
+      ]
+    },
+    {
+      "id": "todo-command-parser",
+      "moduleId": "todo-project",
+      "stepIds": [
+        "parser-predict",
+        "parser-run",
+        "parser-explain",
+        "parser-debug",
+        "parser-add-gate",
+        "parser-transfer",
+        "parser-recall"
+      ]
+    },
+    {
+      "id": "todo-state-invariants",
+      "moduleId": "todo-project",
+      "stepIds": [
+        "state-predict",
+        "state-run",
+        "state-explain",
+        "state-debug",
+        "state-add-done-gate",
+        "state-list-gate",
+        "state-transfer",
+        "state-recall"
+      ]
+    },
+    {
+      "id": "todo-session-project",
+      "moduleId": "todo-project",
+      "stepIds": [
+        "session-predict",
+        "session-run",
+        "session-explain",
+        "session-debug",
+        "session-run-gate",
+        "session-strict-gate",
+        "session-recall",
+        "session-blank"
+      ]
+    },
+    {
+      "id": "module-tree-paths",
+      "moduleId": "modules-cargo",
+      "stepIds": [
+        "paths-run",
+        "paths-predict",
+        "paths-error",
+        "paths-debug",
+        "paths-modify",
+        "paths-transfer",
+        "paths-explain",
+        "paths-recall"
+      ]
+    },
+    {
+      "id": "module-visibility",
+      "moduleId": "modules-cargo",
+      "stepIds": [
+        "visibility-run",
+        "visibility-predict",
+        "visibility-error",
+        "visibility-debug",
+        "visibility-modify",
+        "visibility-transfer",
+        "visibility-explain",
+        "visibility-recall"
+      ]
+    },
+    {
+      "id": "imports-and-reexports",
+      "moduleId": "modules-cargo",
+      "stepIds": [
+        "imports-run",
+        "imports-predict",
+        "imports-error",
+        "imports-debug",
+        "imports-modify",
+        "imports-transfer",
+        "imports-explain",
+        "imports-recall"
+      ]
+    },
+    {
+      "id": "cargo-package-integration",
+      "moduleId": "modules-cargo",
+      "stepIds": [
+        "cargo-run",
+        "cargo-predict",
+        "cargo-export-error",
+        "cargo-debug",
+        "cargo-modify",
+        "cargo-blank",
+        "cargo-local-workflow",
+        "cargo-recall"
+      ]
+    },
+    {
+      "id": "todo-storage-format",
+      "moduleId": "todo-io",
+      "stepIds": [
+        "format-predict",
+        "format-run",
+        "format-explain",
+        "format-debug",
+        "format-gate",
+        "format-observe",
+        "format-recall"
+      ]
+    },
+    {
+      "id": "todo-file-persistence",
+      "moduleId": "todo-io",
+      "stepIds": [
+        "file-predict",
+        "file-run",
+        "file-explain",
+        "file-debug",
+        "file-gate",
+        "file-observe",
+        "file-recall"
+      ]
+    },
+    {
+      "id": "todo-terminal-cli",
+      "moduleId": "todo-io",
+      "stepIds": [
+        "cli-predict",
+        "cli-streams-run",
+        "cli-explain",
+        "cli-debug",
+        "cli-gate",
+        "cli-recall",
+        "cli-input-boundary",
+        "cli-local-practice"
+      ]
+    },
+    {
+      "id": "generic-values",
+      "moduleId": "generics",
+      "stepIds": [
+        "values-predict",
+        "values-run",
+        "values-discover",
+        "values-explain",
+        "values-debug",
+        "values-modify",
+        "values-transfer",
+        "values-recall"
+      ]
+    },
+    {
+      "id": "generic-impl",
+      "moduleId": "generics",
+      "stepIds": [
+        "impl-predict",
+        "impl-run",
+        "impl-discover",
+        "impl-explain",
+        "impl-debug",
+        "impl-modify",
+        "impl-transfer",
+        "impl-recall"
+      ]
+    },
+    {
+      "id": "generic-bounds",
+      "moduleId": "generics",
+      "stepIds": [
+        "bounds-predict",
+        "bounds-run",
+        "bounds-discover",
+        "bounds-explain",
+        "bounds-debug",
+        "bounds-modify",
+        "bounds-blank",
+        "bounds-recall"
+      ]
+    },
+    {
+      "id": "trait-contracts",
+      "moduleId": "traits",
+      "stepIds": [
+        "contracts-predict",
+        "contracts-run",
+        "contracts-explain",
+        "contracts-error",
+        "contracts-tags",
+        "contracts-scope",
+        "contracts-status",
+        "contracts-recall"
+      ]
+    },
+    {
+      "id": "trait-consumers",
+      "moduleId": "traits",
+      "stepIds": [
+        "consumers-run",
+        "consumers-predict",
+        "consumers-error",
+        "consumers-two-types",
+        "consumers-pair",
+        "consumers-slice",
+        "consumers-checks",
+        "consumers-recall"
+      ]
+    },
+    {
+      "id": "associated-types",
+      "moduleId": "traits",
+      "stepIds": [
+        "associated-run",
+        "associated-predict",
+        "associated-error",
+        "associated-owned",
+        "associated-take",
+        "associated-versus-generic",
+        "associated-measure",
+        "associated-recall"
+      ]
+    },
+    {
+      "id": "trait-dispatch",
+      "moduleId": "traits",
+      "stepIds": [
+        "dispatch-run",
+        "dispatch-explain",
+        "dispatch-error",
+        "dispatch-boundary",
+        "dispatch-readings",
+        "dispatch-tradeoff",
+        "dispatch-blank",
+        "dispatch-recall"
+      ]
+    },
+    {
+      "id": "lifetime-relations",
+      "moduleId": "lifetimes",
+      "stepIds": [
+        "relations-predict",
+        "relations-discover",
+        "relations-explain",
+        "relations-run",
+        "relations-trim-gate",
+        "relations-pair-gate",
+        "relations-recall"
+      ]
+    },
+    {
+      "id": "lifetime-structs",
+      "moduleId": "lifetimes",
+      "stepIds": [
+        "structs-predict",
+        "structs-missing-lifetime",
+        "structs-elision-run",
+        "structs-dropped-record",
+        "structs-explain",
+        "structs-record-gate",
+        "structs-excerpt-gate",
+        "structs-recall"
+      ]
+    },
+    {
+      "id": "lifetime-api",
+      "moduleId": "lifetimes",
+      "stepIds": [
+        "api-predict",
+        "api-local-static",
+        "api-owned-run",
+        "api-explain",
+        "api-owned-gate",
+        "api-borrowed-gate",
+        "api-blank"
+      ]
+    },
+    {
+      "id": "closure-captures",
+      "moduleId": "closures",
+      "stepIds": [
+        "capture-predict",
+        "capture-run",
+        "capture-conflict",
+        "capture-mut-call",
+        "capture-gate",
+        "capture-shared-gate",
+        "capture-recall"
+      ]
+    },
+    {
+      "id": "closure-ownership",
+      "moduleId": "closures",
+      "stepIds": [
+        "ownership-predict",
+        "ownership-repeat-run",
+        "ownership-once-run",
+        "ownership-once-error",
+        "ownership-gate",
+        "ownership-once-gate",
+        "ownership-recall"
+      ]
+    },
+    {
+      "id": "closure-contracts",
+      "moduleId": "closures",
+      "stepIds": [
+        "contracts-predict",
+        "contracts-run",
+        "contracts-impl-explain",
+        "contracts-pipeline-gate",
+        "contracts-returned-gate",
+        "contracts-recall"
+      ]
+    },
+    {
+      "id": "variance-shared-views",
+      "moduleId": "borrowed-callbacks",
+      "stepIds": [
+        "variance-shared-predict",
+        "variance-shared-run",
+        "variance-shared-explain",
+        "variance-shared-views-gate",
+        "variance-shared-views-blank",
+        "variance-shared-recall"
+      ]
+    },
+    {
+      "id": "variance-mutable-slots",
+      "moduleId": "borrowed-callbacks",
+      "stepIds": [
+        "variance-mutable-predict",
+        "variance-mutable-discover",
+        "variance-mutable-run",
+        "variance-mutable-explain",
+        "variance-mutable-slots-gate",
+        "variance-mutable-slots-blank"
+      ]
+    },
+    {
+      "id": "hrtb-local-visitors",
+      "moduleId": "borrowed-callbacks",
+      "stepIds": [
+        "visitors-predict",
+        "visitors-run",
+        "visitors-discover",
+        "hrtb-local-visitors-gate",
+        "hrtb-local-visitors-blank",
+        "visitors-transfer-preview",
+        "visitors-recall"
+      ]
+    },
+    {
+      "id": "hrtb-borrowed-projections",
+      "moduleId": "borrowed-callbacks",
+      "stepIds": [
+        "projections-predict",
+        "projections-run",
+        "projections-explain",
+        "projections-discover",
+        "hrtb-borrowed-projections-gate",
+        "hrtb-borrowed-projections-blank",
+        "projections-transfer-preview",
+        "projections-recall"
+      ]
+    },
+    {
+      "id": "iterator-ownership",
+      "moduleId": "iterators",
+      "stepIds": [
+        "ownership-predict",
+        "ownership-run",
+        "ownership-error",
+        "ownership-explain",
+        "ownership-modify",
+        "ownership-blank"
+      ]
+    },
+    {
+      "id": "iterator-pipelines",
+      "moduleId": "iterators",
+      "stepIds": [
+        "pipelines-predict",
+        "pipelines-run",
+        "pipelines-fold-run",
+        "pipelines-explain",
+        "pipelines-modify",
+        "pipelines-apply"
+      ]
+    },
+    {
+      "id": "iterator-laziness",
+      "moduleId": "iterators",
+      "stepIds": [
+        "laziness-predict",
+        "laziness-cell-explain",
+        "pipelines-lazy-counter",
+        "pipelines-deferred-gate",
+        "laziness-recall"
+      ]
+    },
+    {
+      "id": "iterator-contracts",
+      "moduleId": "iterators",
+      "stepIds": [
+        "contracts-predict",
+        "contracts-run",
+        "contracts-explain",
+        "contracts-modify",
+        "contracts-blank",
+        "contracts-recall"
+      ]
+    },
+    {
+      "id": "gat-receiver-borrows",
+      "moduleId": "gat-lending-iterators",
+      "stepIds": [
+        "receiver-predict",
+        "receiver-run",
+        "receiver-discover",
+        "receiver-explain",
+        "gat-receiver-borrows-gate",
+        "gat-receiver-borrows-blank",
+        "receiver-recall"
+      ]
+    },
+    {
+      "id": "gat-overlapping-mutable-windows",
+      "moduleId": "gat-lending-iterators",
+      "stepIds": [
+        "windows-predict",
+        "windows-run",
+        "windows-discover",
+        "windows-explain",
+        "gat-overlapping-mutable-windows-gate",
+        "gat-overlapping-mutable-windows-blank",
+        "windows-recall"
+      ]
+    },
+    {
+      "id": "gat-item-capabilities",
+      "moduleId": "gat-lending-iterators",
+      "stepIds": [
+        "gat-item-capabilities-predict",
+        "gat-item-capabilities-hrtb",
+        "gat-item-capabilities-observation",
+        "gat-item-capabilities-explain",
+        "gat-item-capabilities-gate",
+        "gat-item-capabilities-blank",
+        "gat-item-capabilities-recall"
+      ]
+    },
+    {
+      "id": "gat-owned-iterator-adapters",
+      "moduleId": "gat-lending-iterators",
+      "stepIds": [
+        "gat-owned-iterator-adapters-predict",
+        "gat-owned-iterator-adapters-observation",
+        "gat-owned-iterator-adapters-dyn",
+        "gat-owned-iterator-adapters-explain",
+        "gat-owned-iterator-adapters-gate",
+        "gat-owned-iterator-adapters-blank",
+        "gat-owned-iterator-adapters-recall"
+      ]
+    },
+    {
+      "id": "testing-contracts",
+      "moduleId": "testing-quality",
+      "stepIds": [
+        "contracts-discover",
+        "contracts-run",
+        "contracts-explain",
+        "contracts-modify-gate",
+        "contracts-apply-gate",
+        "contracts-recall"
+      ]
+    },
+    {
+      "id": "testing-regressions",
+      "moduleId": "testing-quality",
+      "stepIds": [
+        "regressions-discover",
+        "regressions-run",
+        "regressions-explain",
+        "regressions-debug-gate",
+        "regressions-apply-gate",
+        "regressions-recall"
+      ]
+    },
+    {
+      "id": "testing-quality-workflow",
+      "moduleId": "testing-quality",
+      "stepIds": [
+        "quality-discover",
+        "quality-run",
+        "quality-explain",
+        "quality-modify-gate",
+        "quality-blank-gate",
+        "quality-terminal-experiment",
+        "quality-recall"
+      ]
+    },
+    {
+      "id": "guess-input-contract",
+      "moduleId": "number-guessing-plus",
+      "stepIds": [
+        "guess-input-contract-predict",
+        "guess-input-contract-run",
+        "guess-input-contract-explain",
+        "guess-input-contract-gate",
+        "guess-input-contract-blank",
+        "guess-input-contract-recall"
+      ]
+    },
+    {
+      "id": "guess-round-state",
+      "moduleId": "number-guessing-plus",
+      "stepIds": [
+        "guess-round-state-predict",
+        "guess-round-state-run",
+        "guess-round-state-explain",
+        "guess-round-state-gate",
+        "guess-round-state-blank",
+        "guess-round-state-recall"
+      ]
+    },
+    {
+      "id": "guess-session-io",
+      "moduleId": "number-guessing-plus",
+      "stepIds": [
+        "guess-session-io-predict",
+        "guess-session-io-run",
+        "guess-session-io-explain",
+        "guess-session-io-gate",
+        "guess-session-io-blank"
+      ]
+    },
+    {
+      "id": "guess-random-boundary",
+      "moduleId": "number-guessing-plus",
+      "stepIds": [
+        "guess-random-boundary-predict",
+        "guess-random-boundary-run",
+        "guess-random-boundary-explain",
+        "guess-random-boundary-gate",
+        "guess-random-boundary-blank"
+      ]
+    },
+    {
+      "id": "log-records",
+      "moduleId": "log-analyzer",
+      "stepIds": [
+        "records-predict",
+        "records-run",
+        "records-observe",
+        "records-explain",
+        "records-transfer",
+        "records-debug",
+        "records-recall",
+        "records-apply"
+      ]
+    },
+    {
+      "id": "log-streaming",
+      "moduleId": "log-analyzer",
+      "stepIds": [
+        "stream-predict",
+        "stream-run",
+        "stream-observe",
+        "stream-explain",
+        "stream-transfer",
+        "stream-debug",
+        "stream-recall",
+        "stream-apply"
+      ]
+    },
+    {
+      "id": "log-analyzer-project",
+      "moduleId": "log-analyzer",
+      "stepIds": [
+        "report-predict",
+        "report-run",
+        "report-observe",
+        "report-explain",
+        "report-transfer",
+        "report-assembly",
+        "report-recall",
+        "report-blank"
+      ]
+    },
+    {
+      "id": "box-recursive",
+      "moduleId": "boxed-values",
+      "stepIds": [
+        "box-predict",
+        "box-e0072",
+        "box-run",
+        "box-ownership-run",
+        "box-move-gate",
+        "box-list-gate",
+        "box-recall"
+      ]
+    },
+    {
+      "id": "deref-contracts",
+      "moduleId": "boxed-values",
+      "stepIds": [
+        "deref-predict",
+        "deref-run",
+        "deref-explain",
+        "deref-text-gate",
+        "deref-slice-gate",
+        "deref-recall"
+      ]
+    },
+    {
+      "id": "drop-resources",
+      "moduleId": "boxed-values",
+      "stepIds": [
+        "drop-predict",
+        "drop-e0040",
+        "drop-run",
+        "drop-explain",
+        "drop-release-gate",
+        "drop-blank",
+        "drop-recall"
+      ]
+    },
+    {
+      "id": "rc-sharing",
+      "moduleId": "shared-ownership",
+      "stepIds": [
+        "rc-predict",
+        "rc-run",
+        "rc-explain",
+        "rc-observe-move",
+        "rc-alias-gate",
+        "rc-lifetime-gate",
+        "rc-recall"
+      ]
+    },
+    {
+      "id": "refcell-borrows",
+      "moduleId": "shared-ownership",
+      "stepIds": [
+        "refcell-predict",
+        "refcell-run",
+        "refcell-explain",
+        "refcell-add-gate",
+        "refcell-add-blank",
+        "refcell-recall"
+      ]
+    },
+    {
+      "id": "weak-links",
+      "moduleId": "shared-ownership",
+      "stepIds": [
+        "weak-predict",
+        "weak-run",
+        "weak-trace",
+        "weak-explain",
+        "weak-link-gate",
+        "weak-inspect-blank",
+        "weak-recall"
+      ]
+    },
+    {
+      "id": "thread-join",
+      "moduleId": "threads",
+      "stepIds": [
+        "join-predict",
+        "join-run",
+        "join-panic-run",
+        "join-thread-id",
+        "join-all-gate",
+        "join-report-blank"
+      ]
+    },
+    {
+      "id": "thread-move",
+      "moduleId": "threads",
+      "stepIds": [
+        "move-e0373",
+        "move-predict",
+        "move-e0382",
+        "move-run",
+        "move-owned-gate",
+        "move-collection-blank"
+      ]
+    },
+    {
+      "id": "scoped-threads",
+      "moduleId": "threads",
+      "stepIds": [
+        "scoped-predict",
+        "scoped-run",
+        "scoped-spawn-error",
+        "scoped-recall",
+        "scoped-borrowed-gate",
+        "scoped-max-blank"
+      ]
+    },
+    {
+      "id": "channel-ownership",
+      "moduleId": "channels",
+      "stepIds": [
+        "ownership-predict",
+        "ownership-run",
+        "ownership-error",
+        "ownership-explain",
+        "ownership-modify",
+        "ownership-blank"
+      ]
+    },
+    {
+      "id": "channel-lifecycle",
+      "moduleId": "channels",
+      "stepIds": [
+        "lifecycle-predict",
+        "lifecycle-run",
+        "lifecycle-explain",
+        "lifecycle-recall",
+        "lifecycle-modify",
+        "lifecycle-blank"
+      ]
+    },
+    {
+      "id": "channel-backpressure",
+      "moduleId": "channels",
+      "stepIds": [
+        "backpressure-predict",
+        "backpressure-run",
+        "backpressure-explain",
+        "backpressure-recall",
+        "backpressure-modify",
+        "backpressure-blank"
+      ]
+    },
+    {
+      "id": "send-sync",
+      "moduleId": "synchronized-state",
+      "stepIds": [
+        "send-sync-predict",
+        "send-sync-rc-e0277",
+        "send-sync-arc-run",
+        "send-sync-arc-refcell-e0277",
+        "send-sync-distinguish",
+        "send-sync-transfer-gate",
+        "send-sync-thread-id-blank"
+      ]
+    },
+    {
+      "id": "mutex-state",
+      "moduleId": "synchronized-state",
+      "stepIds": [
+        "mutex-state-predict",
+        "mutex-state-run",
+        "mutex-state-explain",
+        "mutex-state-update-rule",
+        "mutex-state-callback-gate",
+        "mutex-state-aggregate-blank"
+      ]
+    },
+    {
+      "id": "mutex-recovery",
+      "moduleId": "synchronized-state",
+      "stepIds": [
+        "mutex-recovery-predict",
+        "mutex-recovery-run",
+        "mutex-recovery-explain",
+        "mutex-recovery-distinguish",
+        "mutex-recovery-propagate-gate",
+        "mutex-recovery-repair-blank"
+      ]
+    },
+    {
+      "id": "atomic-rmw",
+      "moduleId": "atomic-state",
+      "stepIds": [
+        "atomic-rmw-predict",
+        "atomic-rmw-run",
+        "atomic-rmw-explain",
+        "atomic-rmw-overflow",
+        "atomic-rmw-fetch-gate",
+        "atomic-rmw-counter-blank"
+      ]
+    },
+    {
+      "id": "atomic-cas",
+      "moduleId": "atomic-state",
+      "stepIds": [
+        "atomic-cas-predict",
+        "atomic-cas-run",
+        "atomic-cas-failure-value",
+        "atomic-cas-weak-strong",
+        "atomic-cas-retry-gate",
+        "atomic-cas-conditional-blank"
+      ]
+    },
+    {
+      "id": "atomic-limits",
+      "moduleId": "atomic-state",
+      "stepIds": [
+        "atomic-limits-predict",
+        "atomic-limits-run",
+        "atomic-limits-aba",
+        "atomic-limits-progress",
+        "atomic-limits-counter-gate",
+        "atomic-limits-snapshot-blank"
+      ]
+    },
+    {
+      "id": "release-acquire",
+      "moduleId": "memory-ordering",
+      "stepIds": [
+        "release-acquire-predict",
+        "release-acquire-run",
+        "release-acquire-read-source",
+        "release-acquire-ordering",
+        "release-acquire-publication-gate",
+        "release-acquire-publication-blank"
+      ]
+    },
+    {
+      "id": "ordering-contracts",
+      "moduleId": "memory-ordering",
+      "stepIds": [
+        "ordering-contracts-run",
+        "ordering-contracts-predict",
+        "ordering-contracts-cas",
+        "ordering-contracts-rmw-halves",
+        "ordering-contracts-validation-gate",
+        "ordering-contracts-cas-blank"
+      ]
+    },
+    {
+      "id": "loom-evidence",
+      "moduleId": "memory-ordering",
+      "stepIds": [
+        "loom-evidence-predict",
+        "loom-evidence-replace",
+        "loom-evidence-limits",
+        "loom-evidence-schedule-run",
+        "loom-evidence-assertions-gate",
+        "loom-evidence-small-model-blank"
+      ]
+    },
+    {
+      "id": "future-laziness",
+      "moduleId": "async-foundations",
+      "stepIds": [
+        "future-laziness-predict",
+        "future-laziness-run",
+        "future-laziness-arguments",
+        "future-laziness-deferred-gate",
+        "future-laziness-blank"
+      ]
+    },
+    {
+      "id": "await-progress",
+      "moduleId": "async-foundations",
+      "stepIds": [
+        "await-progress-predict",
+        "await-progress-run",
+        "await-progress-spawn",
+        "await-progress-sequence-gate",
+        "await-progress-blank"
+      ]
+    },
+    {
+      "id": "future-ownership",
+      "moduleId": "async-foundations",
+      "stepIds": [
+        "future-ownership-predict",
+        "future-ownership-run",
+        "future-ownership-moved-string",
+        "future-ownership-escaping-borrow",
+        "future-ownership-move-gate",
+        "future-ownership-blank"
+      ]
+    },
+    {
+      "id": "future-cancellation",
+      "moduleId": "async-foundations",
+      "stepIds": [
+        "future-cancellation-predict",
+        "future-cancellation-run",
+        "future-cancellation-independent",
+        "future-cancellation-drop-gate",
+        "future-cancellation-blank"
+      ]
+    },
+    {
+      "id": "tokio-runtime-entry",
+      "moduleId": "tokio-runtime-tasks",
+      "stepIds": [
+        "tokio-runtime-entry-predict",
+        "tokio-runtime-entry-run",
+        "tokio-runtime-entry-enter",
+        "tokio-runtime-entry-local-gate",
+        "tokio-runtime-entry-blank"
+      ]
+    },
+    {
+      "id": "tokio-spawn-join",
+      "moduleId": "tokio-runtime-tasks",
+      "stepIds": [
+        "tokio-spawn-join-predict",
+        "tokio-spawn-join-run",
+        "tokio-spawn-join-factory",
+        "tokio-spawn-join-pair-gate",
+        "tokio-spawn-join-blank"
+      ]
+    },
+    {
+      "id": "tokio-task-boundaries",
+      "moduleId": "tokio-runtime-tasks",
+      "stepIds": [
+        "tokio-task-boundaries-borrow-error",
+        "tokio-task-boundaries-send-error",
+        "tokio-task-boundaries-explain",
+        "tokio-task-boundaries-owned-gate",
+        "tokio-task-boundaries-blank"
+      ]
+    },
+    {
+      "id": "tokio-join-outcomes",
+      "moduleId": "tokio-runtime-tasks",
+      "stepIds": [
+        "tokio-join-outcomes-predict",
+        "tokio-join-outcomes-run",
+        "tokio-join-outcomes-detach",
+        "tokio-join-outcomes-pair-gate",
+        "tokio-join-outcomes-blank"
+      ]
+    },
+    {
+      "id": "tokio-bounded-channels",
+      "moduleId": "tokio-flow-control",
+      "stepIds": [
+        "tokio-bounded-channels-predict",
+        "tokio-bounded-channels-run",
+        "tokio-bounded-channels-observe",
+        "tokio-bounded-channels-explain",
+        "tokio-bounded-channels-send-gate",
+        "tokio-bounded-channels-blank"
+      ]
+    },
+    {
+      "id": "tokio-reservation-cancellation",
+      "moduleId": "tokio-flow-control",
+      "stepIds": [
+        "tokio-reservation-cancellation-predict",
+        "tokio-reservation-cancellation-run",
+        "tokio-reservation-cancellation-observe",
+        "tokio-reservation-cancellation-explain",
+        "tokio-reservation-cancellation-retain-gate",
+        "tokio-reservation-cancellation-blank"
+      ]
+    },
+    {
+      "id": "tokio-timeouts",
+      "moduleId": "tokio-flow-control",
+      "stepIds": [
+        "tokio-timeouts-predict-owner",
+        "tokio-timeouts-owned-drop-run",
+        "tokio-timeouts-owned-gate",
+        "tokio-timeouts-owned-handle-run",
+        "tokio-timeouts-borrow-handle",
+        "tokio-timeouts-blank",
+        "tokio-timeouts-cleanup-policy"
+      ]
+    },
+    {
+      "id": "tokio-select-cancellation",
+      "moduleId": "tokio-flow-control",
+      "stepIds": [
+        "tokio-select-cancellation-fairness",
+        "tokio-select-cancellation-drop-run",
+        "tokio-select-cancellation-safety",
+        "tokio-select-cancellation-recv-gate",
+        "tokio-select-cancellation-blank",
+        "tokio-select-cancellation-priority-contract",
+        "tokio-select-cancellation-transfer"
+      ]
+    },
+    {
+      "id": "tokio-graceful-shutdown",
+      "moduleId": "tokio-flow-control",
+      "stepIds": [
+        "tokio-graceful-shutdown-predict",
+        "tokio-graceful-shutdown-run",
+        "tokio-graceful-shutdown-watch-policy",
+        "tokio-graceful-shutdown-drain-gate",
+        "tokio-graceful-shutdown-forced",
+        "tokio-graceful-shutdown-join-blank"
+      ]
+    },
+    {
+      "id": "tokio-async-read-write",
+      "moduleId": "tokio-io-streams",
+      "stepIds": [
+        "tokio-async-read-write-predict",
+        "tokio-async-read-write-run",
+        "tokio-async-read-write-explain",
+        "tokio-async-read-write-reply-gate",
+        "tokio-async-read-write-transfer-blank"
+      ]
+    },
+    {
+      "id": "tokio-framing-eof",
+      "moduleId": "tokio-io-streams",
+      "stepIds": [
+        "tokio-framing-eof-predict",
+        "tokio-framing-eof-run",
+        "tokio-framing-eof-explain",
+        "tokio-framing-eof-read-gate",
+        "tokio-framing-eof-write-blank"
+      ]
+    },
+    {
+      "id": "tokio-retained-frame-progress",
+      "moduleId": "tokio-io-streams",
+      "stepIds": [
+        "tokio-retained-frame-progress-predict",
+        "tokio-retained-frame-progress-explain",
+        "tokio-retained-frame-progress-run",
+        "tokio-retained-frame-progress-read-gate",
+        "tokio-retained-frame-progress-write-blank"
+      ]
+    },
+    {
+      "id": "tokio-stream-next",
+      "moduleId": "tokio-io-streams",
+      "stepIds": [
+        "tokio-stream-next-predict-pending",
+        "tokio-stream-next-pending-run",
+        "tokio-stream-next-pinning",
+        "tokio-stream-next-take-at-most-gate",
+        "tokio-stream-next-limit-contract",
+        "tokio-stream-next-first-matching-blank"
+      ]
+    },
+    {
+      "id": "tokio-receiver-stream-drain",
+      "moduleId": "tokio-io-streams",
+      "stepIds": [
+        "tokio-receiver-stream-drain-predict-close",
+        "tokio-receiver-stream-drain-run",
+        "tokio-receiver-stream-drain-permit",
+        "tokio-receiver-stream-drain-close-and-drain-gate",
+        "tokio-receiver-stream-drain-stop-contract",
+        "tokio-receiver-stream-drain-next-or-stop-blank"
+      ]
+    },
+    {
+      "id": "tokio-spawn-blocking-boundary",
+      "moduleId": "tokio-blocking-work",
+      "stepIds": [
+        "tokio-spawn-blocking-boundary-predict",
+        "tokio-spawn-blocking-boundary-run",
+        "tokio-spawn-blocking-boundary-borrow-error",
+        "tokio-spawn-blocking-boundary-owned-gate",
+        "tokio-spawn-blocking-boundary-blank",
+        "tokio-spawn-blocking-boundary-result-review"
+      ]
+    },
+    {
+      "id": "tokio-blocking-cooperative-stop",
+      "moduleId": "tokio-blocking-work",
+      "stepIds": [
+        "tokio-blocking-cooperative-stop-predict",
+        "tokio-blocking-cooperative-stop-run",
+        "tokio-blocking-cooperative-stop-permit",
+        "tokio-blocking-cooperative-stop-stop-gate",
+        "tokio-blocking-cooperative-stop-blank",
+        "tokio-blocking-cooperative-stop-abort-review"
+      ]
+    },
+    {
+      "id": "tokio-tcp-connect",
+      "moduleId": "tokio-network-service",
+      "stepIds": [
+        "tokio-tcp-connect-predict",
+        "tokio-tcp-connect-run",
+        "tokio-tcp-connect-explain",
+        "tokio-tcp-connect-gate",
+        "tokio-tcp-connect-blank"
+      ]
+    },
+    {
+      "id": "tokio-tcp-half-close",
+      "moduleId": "tokio-network-service",
+      "stepIds": [
+        "tokio-tcp-half-close-predict",
+        "tokio-tcp-half-close-run",
+        "tokio-tcp-half-close-explain",
+        "tokio-tcp-half-close-gate",
+        "tokio-tcp-half-close-blank"
+      ]
+    },
+    {
+      "id": "tokio-frame-deadlines",
+      "moduleId": "tokio-network-service",
+      "stepIds": [
+        "tokio-frame-deadlines-predict",
+        "tokio-frame-deadlines-run",
+        "tokio-frame-deadlines-errors",
+        "tokio-frame-deadlines-gate",
+        "tokio-frame-deadlines-blank",
+        "tokio-frame-deadlines-discard"
+      ]
+    },
+    {
+      "id": "tokio-admission-lifecycle",
+      "moduleId": "tokio-network-service",
+      "stepIds": [
+        "tokio-admission-lifecycle-predict",
+        "tokio-admission-lifecycle-run",
+        "tokio-admission-lifecycle-stop",
+        "tokio-admission-lifecycle-gate",
+        "tokio-admission-lifecycle-blank",
+        "tokio-admission-lifecycle-drain"
+      ]
+    },
+    {
+      "id": "async-lending-receiver",
+      "moduleId": "async-lending-contracts",
+      "stepIds": [
+        "async-lending-receiver-predict",
+        "async-lending-receiver-explain",
+        "async-lending-receiver-gate",
+        "async-lending-receiver-blank",
+        "async-lending-receiver-recall",
+        "async-lending-receiver-bounded-batch"
+      ]
+    },
+    {
+      "id": "async-lending-callbacks",
+      "moduleId": "async-lending-contracts",
+      "stepIds": [
+        "async-lending-callbacks-predict",
+        "async-lending-callbacks-explain",
+        "async-lending-callbacks-gate",
+        "async-lending-callbacks-blank",
+        "async-lending-callbacks-recall",
+        "async-lending-callbacks-bounded-transform"
+      ]
+    },
+    {
+      "id": "async-lending-cancel-commit",
+      "moduleId": "async-lending-contracts",
+      "stepIds": [
+        "async-lending-cancel-commit-predict",
+        "async-lending-cancel-commit-explain",
+        "async-lending-cancel-commit-gate",
+        "async-lending-cancel-commit-blank",
+        "async-lending-cancel-commit-recall"
+      ]
+    },
+    {
+      "id": "async-lending-send-boundary",
+      "moduleId": "async-lending-contracts",
+      "stepIds": [
+        "async-lending-send-boundary-predict",
+        "async-lending-send-boundary-explain",
+        "async-lending-send-boundary-gate",
+        "async-lending-send-boundary-blank",
+        "async-lending-send-boundary-recall"
+      ]
+    },
+    {
+      "id": "async-lending-dyn-adapter",
+      "moduleId": "async-lending-contracts",
+      "stepIds": [
+        "async-lending-dyn-adapter-predict",
+        "async-lending-dyn-adapter-explain",
+        "async-lending-dyn-adapter-gate",
+        "async-lending-dyn-adapter-blank",
+        "async-lending-dyn-adapter-recall",
+        "async-lending-dyn-adapter-borrowed-sources"
+      ]
+    },
+    {
+      "id": "api-validated-construction",
+      "moduleId": "public-api-workspaces",
+      "stepIds": [
+        "api-validated-construction-predict",
+        "api-validated-construction-run",
+        "api-validated-construction-accessor",
+        "api-validated-construction-gate",
+        "api-validated-construction-blank",
+        "api-validated-construction-recall"
+      ]
+    },
+    {
+      "id": "api-error-source-chain",
+      "moduleId": "public-api-workspaces",
+      "stepIds": [
+        "api-error-source-chain-predict",
+        "api-error-source-chain-run",
+        "api-error-source-chain-contract",
+        "api-error-source-chain-gate",
+        "api-error-source-chain-blank",
+        "api-error-source-chain-recall"
+      ]
+    },
+    {
+      "id": "api-trait-compatibility",
+      "moduleId": "public-api-workspaces",
+      "stepIds": [
+        "api-trait-compatibility-predict",
+        "api-trait-compatibility-old-client",
+        "api-trait-compatibility-dyn-break",
+        "api-trait-compatibility-gate",
+        "api-trait-compatibility-blank",
+        "api-trait-compatibility-recall"
+      ]
+    },
+    {
+      "id": "api-compatible-surface",
+      "moduleId": "public-api-workspaces",
+      "stepIds": [
+        "api-compatible-surface-predict",
+        "api-compatible-surface-old-client",
+        "api-compatible-surface-gate",
+        "api-compatible-surface-limit",
+        "api-compatible-surface-blank",
+        "api-compatible-surface-recall"
+      ]
+    },
+    {
+      "id": "api-release-old-contracts",
+      "moduleId": "api-release-matrix",
+      "stepIds": [
+        "api-release-old-contracts-predict",
+        "api-release-old-contracts-run",
+        "api-release-old-contracts-explain",
+        "api-release-old-contracts-gate",
+        "api-release-old-contracts-debug",
+        "api-release-old-contracts-blank"
+      ]
+    },
+    {
+      "id": "api-release-matrix-decision",
+      "moduleId": "api-release-matrix",
+      "stepIds": [
+        "api-release-matrix-decision-predict",
+        "api-release-matrix-decision-run",
+        "api-release-matrix-decision-explain",
+        "api-release-matrix-decision-gate",
+        "api-release-matrix-decision-debug",
+        "api-release-matrix-decision-blank"
+      ]
+    },
+    {
+      "id": "macros-exactly-once",
+      "moduleId": "macros-as-api",
+      "stepIds": [
+        "macros-exactly-once-predict",
+        "macros-exactly-once-run",
+        "macros-exactly-once-explain",
+        "macros-exactly-once-gate",
+        "macros-exactly-once-debug",
+        "macros-exactly-once-blank",
+        "macros-exactly-once-recall"
+      ]
+    },
+    {
+      "id": "macros-repetition-grammar",
+      "moduleId": "macros-as-api",
+      "stepIds": [
+        "macros-repetition-grammar-predict",
+        "macros-repetition-grammar-run",
+        "macros-repetition-grammar-explain",
+        "macros-repetition-grammar-gate",
+        "macros-repetition-grammar-debug",
+        "macros-repetition-grammar-blank",
+        "macros-repetition-grammar-recall"
+      ]
+    },
+    {
+      "id": "macros-exported-paths-2024",
+      "moduleId": "macros-as-api",
+      "stepIds": [
+        "macros-exported-paths-2024-predict",
+        "macros-exported-paths-2024-run",
+        "macros-exported-paths-2024-explain",
+        "macros-exported-paths-2024-gate",
+        "macros-exported-paths-2024-debug",
+        "macros-exported-paths-2024-blank",
+        "macros-exported-paths-2024-recall"
+      ]
+    },
+    {
+      "id": "cargo-dependency-contract",
+      "moduleId": "cargo-dependency-lifecycle",
+      "stepIds": [
+        "cargo-dependency-contract-predict",
+        "cargo-dependency-contract-observe",
+        "cargo-dependency-contract-explain",
+        "cargo-dependency-contract-gate",
+        "cargo-dependency-contract-blank",
+        "cargo-dependency-contract-recall"
+      ]
+    },
+    {
+      "id": "cargo-resolver-feature-unification",
+      "moduleId": "cargo-dependency-lifecycle",
+      "stepIds": [
+        "cargo-resolver-feature-unification-predict",
+        "cargo-resolver-feature-unification-observe",
+        "cargo-resolver-feature-unification-explain",
+        "cargo-resolver-feature-unification-gate",
+        "cargo-resolver-feature-unification-blank",
+        "cargo-resolver-feature-unification-recall"
+      ]
+    },
+    {
+      "id": "cargo-lock-msrv-policy",
+      "moduleId": "cargo-dependency-lifecycle",
+      "stepIds": [
+        "cargo-lock-msrv-policy-predict",
+        "cargo-lock-msrv-policy-observe",
+        "cargo-lock-msrv-policy-explain",
+        "cargo-lock-msrv-policy-gate",
+        "cargo-lock-msrv-policy-blank",
+        "cargo-lock-msrv-policy-recall"
+      ]
+    },
+    {
+      "id": "cargo-package-rehearsal",
+      "moduleId": "cargo-dependency-lifecycle",
+      "stepIds": [
+        "cargo-package-rehearsal-predict",
+        "cargo-package-rehearsal-observe",
+        "cargo-package-rehearsal-explain",
+        "cargo-package-rehearsal-gate",
+        "cargo-package-rehearsal-blank",
+        "cargo-package-rehearsal-recall"
+      ]
+    },
+    {
+      "id": "dependency-graph-diagnosis",
+      "moduleId": "dependency-assurance",
+      "stepIds": [
+        "dependency-graph-diagnosis-predict",
+        "dependency-graph-diagnosis-explain",
+        "dependency-graph-diagnosis-gate",
+        "dependency-graph-diagnosis-blank",
+        "dependency-graph-diagnosis-recall"
+      ]
+    },
+    {
+      "id": "dependency-source-license-policy",
+      "moduleId": "dependency-assurance",
+      "stepIds": [
+        "dependency-source-license-policy-predict",
+        "dependency-source-license-policy-explain",
+        "dependency-source-license-policy-gate",
+        "dependency-source-license-policy-blank",
+        "dependency-source-license-policy-recall"
+      ]
+    },
+    {
+      "id": "dependency-advisory-exceptions",
+      "moduleId": "dependency-assurance",
+      "stepIds": [
+        "dependency-advisory-exceptions-predict",
+        "dependency-advisory-exceptions-explain",
+        "dependency-advisory-exceptions-gate",
+        "dependency-advisory-exceptions-blank",
+        "dependency-advisory-exceptions-recall"
+      ]
+    },
+    {
+      "id": "dependency-release-dossier",
+      "moduleId": "dependency-assurance",
+      "stepIds": [
+        "dependency-release-dossier-predict",
+        "dependency-release-dossier-explain",
+        "dependency-release-dossier-gate",
+        "dependency-release-dossier-blank",
+        "dependency-release-dossier-recall"
+      ]
+    },
+    {
+      "id": "grep-context-selection",
+      "moduleId": "mini-grep",
+      "stepIds": [
+        "grep-context-selection-predict",
+        "grep-context-selection-contrast",
+        "grep-context-selection-explain",
+        "grep-context-selection-gate",
+        "grep-context-selection-blank"
+      ]
+    },
+    {
+      "id": "grep-bounded-input",
+      "moduleId": "mini-grep",
+      "stepIds": [
+        "grep-bounded-input-predict",
+        "grep-bounded-input-contrast",
+        "grep-bounded-input-explain",
+        "grep-bounded-input-gate",
+        "grep-bounded-input-blank"
+      ]
+    },
+    {
+      "id": "grep-path-policy",
+      "moduleId": "mini-grep",
+      "stepIds": [
+        "grep-path-policy-predict",
+        "grep-path-policy-run",
+        "grep-path-policy-boundary",
+        "grep-path-policy-gate",
+        "grep-path-policy-blank",
+        "grep-path-policy-recall"
+      ]
+    },
+    {
+      "id": "grep-cli-contract",
+      "moduleId": "mini-grep",
+      "stepIds": [
+        "grep-cli-contract-predict",
+        "grep-cli-contract-run",
+        "grep-cli-contract-os-boundary",
+        "grep-cli-contract-gate",
+        "grep-cli-contract-blank",
+        "grep-cli-contract-recall"
+      ]
+    },
+    {
+      "id": "property-invariants",
+      "moduleId": "property-contracts",
+      "stepIds": [
+        "property-invariants-predict",
+        "property-invariants-run",
+        "property-invariants-observe",
+        "property-invariants-explain",
+        "property-invariants-gate",
+        "property-invariants-blank",
+        "property-invariants-recall"
+      ]
+    },
+    {
+      "id": "property-generated-inputs",
+      "moduleId": "property-contracts",
+      "stepIds": [
+        "property-generated-inputs-predict",
+        "property-generated-inputs-run",
+        "property-generated-inputs-observe",
+        "property-generated-inputs-explain",
+        "property-generated-inputs-gate",
+        "property-generated-inputs-blank",
+        "property-generated-inputs-recall"
+      ]
+    },
+    {
+      "id": "property-shrinking-replay",
+      "moduleId": "property-contracts",
+      "stepIds": [
+        "property-shrinking-replay-predict",
+        "property-shrinking-replay-run",
+        "property-shrinking-replay-observe",
+        "property-shrinking-replay-explain",
+        "property-shrinking-replay-gate",
+        "property-shrinking-replay-blank",
+        "property-shrinking-replay-recall"
+      ]
+    },
+    {
+      "id": "property-metamorphic-transfer",
+      "moduleId": "property-contracts",
+      "stepIds": [
+        "property-metamorphic-transfer-predict",
+        "property-metamorphic-transfer-run",
+        "property-metamorphic-transfer-observe",
+        "property-metamorphic-transfer-explain",
+        "property-metamorphic-transfer-gate",
+        "property-metamorphic-transfer-blank",
+        "property-metamorphic-transfer-recall"
+      ]
+    },
+    {
+      "id": "fuzz-input-domain",
+      "moduleId": "fuzz-evidence-lifecycle",
+      "stepIds": [
+        "fuzz-input-domain-predict",
+        "fuzz-input-domain-observe",
+        "fuzz-input-domain-explain",
+        "fuzz-input-domain-gate",
+        "fuzz-input-domain-blank",
+        "fuzz-input-domain-recall"
+      ]
+    },
+    {
+      "id": "fuzz-oracle-sensitivity",
+      "moduleId": "fuzz-evidence-lifecycle",
+      "stepIds": [
+        "fuzz-oracle-sensitivity-predict",
+        "fuzz-oracle-sensitivity-observe",
+        "fuzz-oracle-sensitivity-explain",
+        "fuzz-oracle-sensitivity-gate",
+        "fuzz-oracle-sensitivity-blank",
+        "fuzz-oracle-sensitivity-recall"
+      ]
+    },
+    {
+      "id": "fuzz-counterexample-regression",
+      "moduleId": "fuzz-evidence-lifecycle",
+      "stepIds": [
+        "fuzz-counterexample-regression-predict",
+        "fuzz-counterexample-regression-observe",
+        "fuzz-counterexample-regression-explain",
+        "fuzz-counterexample-regression-gate",
+        "fuzz-counterexample-regression-blank",
+        "fuzz-counterexample-regression-recall"
+      ]
+    },
+    {
+      "id": "fuzz-campaign-evidence",
+      "moduleId": "fuzz-evidence-lifecycle",
+      "stepIds": [
+        "fuzz-campaign-evidence-predict",
+        "fuzz-campaign-evidence-observe",
+        "fuzz-campaign-evidence-explain",
+        "fuzz-campaign-evidence-gate",
+        "fuzz-campaign-evidence-blank",
+        "fuzz-campaign-evidence-recall"
+      ]
+    },
+    {
+      "id": "performance-measured-workload",
+      "moduleId": "performance-evidence",
+      "stepIds": [
+        "workload-predict",
+        "workload-run",
+        "workload-gate",
+        "workload-budget-gate",
+        "workload-blank",
+        "workload-recall"
+      ]
+    },
+    {
+      "id": "performance-borrowed-stream",
+      "moduleId": "performance-evidence",
+      "stepIds": [
+        "borrow-predict",
+        "borrow-run",
+        "borrow-gate",
+        "borrow-stream-gate",
+        "borrow-blank",
+        "borrow-recall"
+      ]
+    },
+    {
+      "id": "performance-bounded-buffer",
+      "moduleId": "performance-evidence",
+      "stepIds": [
+        "buffer-predict",
+        "buffer-run",
+        "buffer-gate",
+        "buffer-capacity-gate",
+        "buffer-blank",
+        "buffer-recall"
+      ]
+    },
+    {
+      "id": "performance-evidence-decisions",
+      "moduleId": "performance-evidence",
+      "stepIds": [
+        "decision-predict",
+        "decision-run",
+        "decision-gate",
+        "decision-evidence-gate",
+        "decision-blank",
+        "decision-recall"
+      ]
+    },
+    {
+      "id": "profile-instruction-cost",
+      "moduleId": "profile-evidence",
+      "stepIds": [
+        "instruction-predict",
+        "instruction-run",
+        "instruction-gate",
+        "instruction-budget-gate",
+        "instruction-blank",
+        "instruction-recall"
+      ]
+    },
+    {
+      "id": "profile-allocation-events",
+      "moduleId": "profile-evidence",
+      "stepIds": [
+        "allocation-predict",
+        "allocation-run",
+        "allocation-gate",
+        "allocation-count-gate",
+        "allocation-blank",
+        "allocation-recall"
+      ]
+    },
+    {
+      "id": "profile-optimization-transfer",
+      "moduleId": "profile-evidence",
+      "stepIds": [
+        "transfer-predict",
+        "transfer-run",
+        "transfer-gate",
+        "transfer-budget-gate",
+        "transfer-blank",
+        "transfer-recall"
+      ]
+    },
+    {
+      "id": "profile-regression-decision",
+      "moduleId": "profile-evidence",
+      "stepIds": [
+        "decision-predict",
+        "decision-run",
+        "decision-gate",
+        "decision-evidence-gate",
+        "decision-blank",
+        "decision-recall"
+      ]
+    },
+    {
+      "id": "runtime-allocation-scope",
+      "moduleId": "profile-evidence",
+      "stepIds": [
+        "allocation-scope-predict",
+        "allocation-scope-run",
+        "allocation-scope-gate",
+        "allocation-scope-error-gate",
+        "allocation-scope-blank",
+        "allocation-scope-recall"
+      ]
+    },
+    {
+      "id": "runtime-allocation-comparison",
+      "moduleId": "profile-evidence",
+      "stepIds": [
+        "allocation-comparison-predict",
+        "allocation-comparison-run",
+        "allocation-comparison-gate",
+        "allocation-comparison-complete-gate",
+        "allocation-comparison-blank",
+        "allocation-comparison-recall"
+      ]
+    },
+    {
+      "id": "unsafe-ffi-checked-view",
+      "moduleId": "unsafe-ffi-contracts",
+      "stepIds": [
+        "checked-view-predict",
+        "checked-view-run",
+        "checked-view-explain",
+        "checked-view-gate",
+        "checked-view-contract-gate",
+        "checked-view-blank",
+        "checked-view-recall"
+      ]
+    },
+    {
+      "id": "unsafe-ffi-split-regions",
+      "moduleId": "unsafe-ffi-contracts",
+      "stepIds": [
+        "split-regions-predict",
+        "split-regions-run",
+        "split-regions-explain",
+        "split-regions-gate",
+        "split-regions-alias-gate",
+        "split-regions-blank",
+        "split-regions-recall"
+      ]
+    },
+    {
+      "id": "unsafe-ffi-raw-record",
+      "moduleId": "unsafe-ffi-contracts",
+      "stepIds": [
+        "raw-record-predict",
+        "raw-record-run",
+        "raw-record-explain",
+        "raw-record-gate",
+        "raw-record-flags-gate",
+        "raw-record-blank",
+        "raw-record-recall"
+      ]
+    },
+    {
+      "id": "unsafe-ffi-owned-handle",
+      "moduleId": "unsafe-ffi-contracts",
+      "stepIds": [
+        "owned-handle-predict",
+        "owned-handle-run",
+        "owned-handle-explain",
+        "owned-handle-gate",
+        "owned-handle-borrow-gate",
+        "owned-handle-blank",
+        "owned-handle-recall"
+      ]
+    },
+    {
+      "id": "unsafe-miri-byte-view",
+      "moduleId": "unsafe-miri-contracts",
+      "stepIds": [
+        "byte-view-predict",
+        "byte-view-run",
+        "byte-view-explain",
+        "byte-view-gate",
+        "byte-view-contract-gate",
+        "byte-view-blank",
+        "byte-view-recall"
+      ]
+    },
+    {
+      "id": "unsafe-miri-disjoint-regions",
+      "moduleId": "unsafe-miri-contracts",
+      "stepIds": [
+        "disjoint-regions-predict",
+        "disjoint-regions-run",
+        "disjoint-regions-explain",
+        "disjoint-regions-gate",
+        "disjoint-regions-contract-gate",
+        "disjoint-regions-blank",
+        "disjoint-regions-recall"
+      ]
+    },
+    {
+      "id": "unsafe-miri-slot-state",
+      "moduleId": "unsafe-miri-contracts",
+      "stepIds": [
+        "slot-state-predict",
+        "slot-state-run",
+        "slot-state-explain",
+        "slot-state-gate",
+        "slot-state-contract-gate",
+        "slot-state-blank",
+        "slot-state-recall"
+      ]
+    },
+    {
+      "id": "unsafe-miri-mut-slot",
+      "moduleId": "unsafe-miri-contracts",
+      "stepIds": [
+        "mut-slot-predict",
+        "mut-slot-run",
+        "mut-slot-explain",
+        "mut-slot-gate",
+        "mut-slot-contract-gate",
+        "mut-slot-variance-compile-fail",
+        "mut-slot-blank",
+        "mut-slot-recall"
+      ]
+    },
+    {
+      "id": "unsafe-borrowed-provenance",
+      "moduleId": "unsafe-borrowed-memory-soundness",
+      "stepIds": [
+        "unsafe-borrowed-provenance-predict",
+        "unsafe-borrowed-provenance-run",
+        "unsafe-borrowed-provenance-explain",
+        "unsafe-borrowed-provenance-boundary-gate",
+        "unsafe-borrowed-provenance-soundness-gate",
+        "unsafe-borrowed-provenance-blank",
+        "unsafe-borrowed-provenance-recall",
+        "unsafe-borrowed-provenance-soundness-transfer"
+      ]
+    },
+    {
+      "id": "unsafe-borrowed-reborrow",
+      "moduleId": "unsafe-borrowed-memory-soundness",
+      "stepIds": [
+        "unsafe-borrowed-reborrow-predict",
+        "unsafe-borrowed-reborrow-run",
+        "unsafe-borrowed-reborrow-explain",
+        "unsafe-borrowed-reborrow-boundary-gate",
+        "unsafe-borrowed-reborrow-soundness-gate",
+        "unsafe-borrowed-reborrow-blank",
+        "unsafe-borrowed-reborrow-recall",
+        "unsafe-borrowed-reborrow-soundness-transfer"
+      ]
+    },
+    {
+      "id": "unsafe-borrowed-slot",
+      "moduleId": "unsafe-borrowed-memory-soundness",
+      "stepIds": [
+        "unsafe-borrowed-slot-predict",
+        "unsafe-borrowed-slot-run",
+        "unsafe-borrowed-slot-explain",
+        "unsafe-borrowed-slot-boundary-gate",
+        "unsafe-borrowed-slot-soundness-gate",
+        "unsafe-borrowed-slot-blank",
+        "unsafe-borrowed-slot-recall",
+        "unsafe-borrowed-slot-soundness-transfer"
+      ]
+    },
+    {
+      "id": "unsafe-borrowed-auto-traits",
+      "moduleId": "unsafe-borrowed-memory-soundness",
+      "stepIds": [
+        "unsafe-borrowed-auto-traits-predict",
+        "unsafe-borrowed-auto-traits-run",
+        "unsafe-borrowed-auto-traits-explain",
+        "unsafe-borrowed-auto-traits-boundary-gate",
+        "unsafe-borrowed-auto-traits-soundness-gate",
+        "unsafe-borrowed-auto-traits-blank",
+        "unsafe-borrowed-auto-traits-recall",
+        "unsafe-borrowed-auto-traits-compile-fail",
+        "unsafe-borrowed-auto-traits-soundness-transfer"
+      ]
+    },
+    {
+      "id": "service-trust-admission",
+      "moduleId": "service-operations",
+      "stepIds": [
+        "trust-admission-predict",
+        "trust-admission-run",
+        "trust-admission-gate",
+        "trust-admission-budget-gate",
+        "trust-admission-blank",
+        "trust-admission-recall"
+      ]
+    },
+    {
+      "id": "service-correlated-telemetry",
+      "moduleId": "service-operations",
+      "stepIds": [
+        "telemetry-correlation-predict",
+        "telemetry-correlation-run",
+        "telemetry-correlation-gate",
+        "telemetry-correlation-allowlist-gate",
+        "telemetry-correlation-blank",
+        "telemetry-correlation-recall"
+      ]
+    },
+    {
+      "id": "service-readiness-drain",
+      "moduleId": "service-operations",
+      "stepIds": [
+        "readiness-drain-predict",
+        "readiness-drain-run",
+        "readiness-drain-gate",
+        "readiness-drain-accounting-gate",
+        "readiness-drain-blank",
+        "readiness-drain-recall"
+      ]
+    },
+    {
+      "id": "service-incident-diagnosis",
+      "moduleId": "service-operations",
+      "stepIds": [
+        "incident-diagnosis-predict",
+        "incident-diagnosis-run",
+        "incident-diagnosis-gate",
+        "incident-diagnosis-evidence-gate",
+        "incident-diagnosis-blank",
+        "incident-diagnosis-recall"
+      ]
+    },
+    {
+      "id": "capstone-domain-boundary",
+      "moduleId": "capstone-integration",
+      "stepIds": [
+        "capstone-domain-predict",
+        "capstone-domain-contrast",
+        "capstone-domain-validate",
+        "capstone-domain-explain",
+        "capstone-domain-errors",
+        "capstone-domain-recall",
+        "capstone-domain-blank"
+      ]
+    },
+    {
+      "id": "capstone-idempotent-commit",
+      "moduleId": "capstone-integration",
+      "stepIds": [
+        "capstone-commit-predict",
+        "capstone-commit-contrast",
+        "capstone-commit-replay",
+        "capstone-commit-explain",
+        "capstone-commit-atomicity",
+        "capstone-commit-recall",
+        "capstone-commit-blank"
+      ]
+    },
+    {
+      "id": "capstone-bounded-lifecycle",
+      "moduleId": "capstone-integration",
+      "stepIds": [
+        "capstone-lifecycle-predict",
+        "capstone-lifecycle-contrast",
+        "capstone-lifecycle-admit",
+        "capstone-lifecycle-explain",
+        "capstone-lifecycle-settle",
+        "capstone-lifecycle-recall",
+        "capstone-lifecycle-blank"
+      ]
+    },
+    {
+      "id": "capstone-protocol-evolution",
+      "moduleId": "capstone-integration",
+      "stepIds": [
+        "capstone-protocol-predict",
+        "capstone-protocol-contrast",
+        "capstone-protocol-decode",
+        "capstone-protocol-explain",
+        "capstone-protocol-migrate",
+        "capstone-protocol-recall",
+        "capstone-protocol-blank"
+      ]
+    },
+    {
+      "id": "capstone-incident-recovery",
+      "moduleId": "capstone-integration",
+      "stepIds": [
+        "capstone-incident-predict",
+        "capstone-incident-contrast",
+        "capstone-incident-correlate",
+        "capstone-incident-explain",
+        "capstone-incident-decide",
+        "capstone-incident-recall",
+        "capstone-incident-blank"
+      ]
+    },
+    {
+      "id": "capstone-release-evidence",
+      "moduleId": "capstone-integration",
+      "stepIds": [
+        "capstone-release-predict",
+        "capstone-release-contrast",
+        "capstone-release-bind",
+        "capstone-release-explain",
+        "capstone-release-decide",
+        "capstone-release-recall",
+        "capstone-release-blank"
+      ]
+    },
+    {
+      "id": "conversion-ownership-views",
+      "moduleId": "traits",
+      "stepIds": [
+        "conversions-predict",
+        "conversions-run",
+        "conversions-read-api",
+        "conversions-label-repair",
+        "conversions-samples-transfer",
+        "conversions-explain",
+        "conversions-recall"
+      ]
+    },
+    {
+      "id": "checked-conversions",
+      "moduleId": "traits",
+      "stepIds": [
+        "checked-predict",
+        "checked-run",
+        "checked-read-api",
+        "checked-level-repair",
+        "checked-percent-transfer",
+        "checked-explain",
+        "checked-recall"
+      ]
+    },
+    {
+      "id": "nested-patterns-and-destructuring",
+      "moduleId": "data-modeling",
+      "stepIds": [
+        "nested-predict",
+        "nested-run",
+        "nested-repair",
+        "nested-transfer",
+        "nested-explain",
+        "nested-recall"
+      ]
+    },
+    {
+      "id": "function-ownership-calibration",
+      "moduleId": "ownership",
+      "stepIds": [
+        "function-boundary-preview",
+        "function-return-predict",
+        "function-is-empty-text",
+        "function-add-mark",
+        "function-boundary-explain"
+      ]
+    },
+    {
+      "id": "shared-borrow-calibration",
+      "moduleId": "ownership",
+      "stepIds": [
+        "shared-borrow-preview",
+        "shared-view-predict",
+        "shared-count-words",
+        "shared-has-suffix",
+        "shared-borrow-explain"
+      ]
+    }
+  ],
+  "conceptIds": [
+    "program-entry",
+    "cargo-workflow",
+    "bindings-mutability",
+    "scalar-types",
+    "functions-expressions",
+    "control-flow",
+    "rules-based-testing",
+    "while-progress",
+    "loop-values",
+    "loop-control",
+    "stack-heap",
+    "scope-drop",
+    "move-semantics",
+    "copy-semantics",
+    "function-ownership",
+    "shared-borrow",
+    "mutable-borrow",
+    "ownership-repair",
+    "slice-views",
+    "struct-records",
+    "method-receivers",
+    "enum-variants",
+    "exhaustive-match",
+    "optional-values",
+    "modeling-transfer",
+    "vec-borrowing",
+    "string-utf8",
+    "hashmap-entry",
+    "result-recoverable",
+    "explicit-error-conversion",
+    "question-mark-propagation",
+    "panic-boundaries",
+    "command-contracts",
+    "todo-state-invariants",
+    "session-boundaries",
+    "module-paths",
+    "visibility-boundaries",
+    "scoped-imports",
+    "cargo-targets",
+    "io-format-roundtrip",
+    "io-safe-persistence",
+    "io-terminal-boundary",
+    "generic-type-parameters",
+    "generic-ownership",
+    "minimal-trait-bounds",
+    "trait-contract",
+    "trait-consumers",
+    "associated-output",
+    "dyn-dispatch",
+    "borrowed-return-relations",
+    "borrowed-record-lifetimes",
+    "lifetime-contracts",
+    "closure-capture-modes",
+    "closure-call-modes",
+    "callable-contracts",
+    "variance-shared-views",
+    "variance-mutable-slots",
+    "hrtb-local-visitors",
+    "hrtb-borrowed-projections",
+    "iterator-item-ownership",
+    "lazy-iterator-pipelines",
+    "iterator-contracts",
+    "gat-receiver-borrows",
+    "gat-overlapping-mutable-windows",
+    "gat-item-capabilities",
+    "gat-owned-iterator-adapters",
+    "testing-contracts",
+    "testing-regressions",
+    "testing-quality-workflow",
+    "guess-input-contract",
+    "guess-round-state",
+    "guess-session-io",
+    "guess-random-boundary",
+    "log-borrowed-records",
+    "log-stream-summary",
+    "log-deterministic-report",
+    "box-recursive",
+    "deref-contracts",
+    "drop-resources",
+    "rc-sharing",
+    "refcell-borrows",
+    "weak-links",
+    "thread-join",
+    "thread-move",
+    "scoped-threads",
+    "channel-ownership",
+    "channel-lifecycle",
+    "channel-backpressure",
+    "send-sync",
+    "mutex-state",
+    "mutex-recovery",
+    "atomic-rmw",
+    "atomic-cas",
+    "atomic-limits",
+    "release-acquire",
+    "ordering-contracts",
+    "loom-evidence",
+    "future-laziness",
+    "await-progress",
+    "future-ownership",
+    "future-cancellation",
+    "tokio-runtime-entry",
+    "tokio-spawn-join",
+    "tokio-task-boundaries",
+    "tokio-join-outcomes",
+    "tokio-bounded-channels",
+    "tokio-reservation-cancellation",
+    "tokio-timeouts",
+    "tokio-select-cancellation",
+    "tokio-graceful-shutdown",
+    "tokio-duplex-read-write",
+    "tokio-bounded-frame-eof",
+    "tokio-cancellation-safe-frame-progress",
+    "tokio-stream-next-pinning",
+    "tokio-receiver-stream-shutdown",
+    "tokio-spawn-blocking-owned-work",
+    "tokio-blocking-cooperative-stop",
+    "tokio-tcp-ownership",
+    "tokio-tcp-directional-shutdown",
+    "tokio-frame-absolute-deadline",
+    "tokio-admission-permit-lifetime",
+    "async-lending-borrowed-readiness",
+    "async-lending-callback-borrow",
+    "async-lending-cancel-commit",
+    "async-lending-send-boundary",
+    "async-lending-dyn-adapter",
+    "api-validated-construction",
+    "api-error-source-chain",
+    "api-trait-compatibility",
+    "api-compatible-surface",
+    "api-release-old-contracts",
+    "api-release-feature-msrv-matrix",
+    "macros-exactly-once",
+    "macros-repetition-grammar",
+    "macros-exported-paths-2024",
+    "cargo-dependency-contract",
+    "cargo-resolver-feature-unification",
+    "cargo-lock-msrv-policy",
+    "cargo-package-rehearsal",
+    "dependency-graph-diagnosis",
+    "dependency-source-license-policy",
+    "dependency-advisory-exceptions",
+    "dependency-release-dossier",
+    "grep-context-selection",
+    "grep-bounded-input",
+    "grep-path-policy",
+    "grep-cli-contract",
+    "property-invariant-contracts",
+    "property-generated-inputs",
+    "property-shrinking-replay",
+    "property-metamorphic-transfer",
+    "fuzz-input-domain",
+    "fuzz-oracle-sensitivity",
+    "fuzz-counterexample-regression",
+    "fuzz-campaign-evidence",
+    "measured-workload-contract",
+    "borrowed-stream-no-materialization",
+    "bounded-buffer-reuse",
+    "conditional-performance-decision",
+    "instruction-cost-record",
+    "allocation-event-model",
+    "optimization-transfer",
+    "allocation-regression-decision",
+    "runtime-allocation-window",
+    "runtime-allocation-comparison",
+    "unsafe-ffi-checked-view-contract",
+    "unsafe-ffi-split-regions-contract",
+    "unsafe-ffi-repr-c-record-contract",
+    "unsafe-ffi-owned-handle-contract",
+    "unsafe-miri-byte-view-contract",
+    "unsafe-miri-disjoint-regions-contract",
+    "unsafe-miri-slot-state-contract",
+    "unsafe-miri-mut-slot-variance-contract",
+    "unsafe-borrowed-provenance-contract",
+    "unsafe-borrowed-reborrow-contract",
+    "unsafe-borrowed-slot-contract",
+    "unsafe-borrowed-auto-traits-contract",
+    "service-operations-bounded-admission",
+    "service-operations-allowlisted-telemetry",
+    "service-operations-readiness-drain",
+    "service-operations-incident-evidence",
+    "capstone-domain-boundary-contract",
+    "capstone-idempotent-commit-contract",
+    "capstone-bounded-lifecycle-contract",
+    "capstone-protocol-evolution-contract",
+    "capstone-incident-recovery-contract",
+    "capstone-release-evidence-contract",
+    "from-owned-conversions",
+    "asref-borrowed-views",
+    "checked-conversion-errors",
+    "nested-pattern-matching"
+  ],
+  "sourceIds": [
+    "foundations-rust-installation",
+    "foundations-cargo-first-steps",
+    "foundations-variables",
+    "foundations-data-types",
+    "foundations-functions",
+    "foundations-control-flow",
+    "foundations-tests",
+    "loops-book-control-flow",
+    "loops-reference-expressions",
+    "loops-error-e0571",
+    "loops-book-tests",
+    "rust-book-ownership",
+    "rust-book-borrowing",
+    "rust-book-functions",
+    "rust-copy-trait",
+    "rust-book-scope",
+    "rust-playground",
+    "rust-edition-guide",
+    "records-book-slices",
+    "records-std-str",
+    "records-book-structs",
+    "records-book-methods",
+    "variants-rust-book-enums",
+    "variants-rust-book-match",
+    "variants-option-std",
+    "collections-book-vectors",
+    "collections-book-strings",
+    "collections-book-hash-maps",
+    "collections-std-vec",
+    "collections-std-hashmap",
+    "errors-rust-book-overview",
+    "errors-rust-book-result",
+    "errors-rust-book-panic",
+    "errors-std-result",
+    "todo-rust-book-strings",
+    "todo-rust-book-result",
+    "todo-std-string",
+    "todo-std-vec",
+    "cargo-book-module-tree",
+    "cargo-book-paths",
+    "cargo-reference-visibility",
+    "cargo-book-use",
+    "cargo-book-packages",
+    "cargo-book-separate-files",
+    "cargo-guide-layout",
+    "cargo-reference-targets",
+    "cargo-command-new",
+    "cargo-command-check",
+    "cargo-command-build",
+    "cargo-command-test",
+    "cargo-command-run",
+    "io-std-str",
+    "io-std-read",
+    "io-std-file",
+    "io-std-write",
+    "io-std-rename",
+    "io-std-path",
+    "io-std-stdin",
+    "io-rust-stderr",
+    "io-playground-boundary",
+    "generics-book-syntax",
+    "generics-reference-parameters",
+    "generics-reference-impl",
+    "generics-book-borrowing",
+    "generics-error-move",
+    "generics-book-bounds",
+    "generics-error-operator",
+    "generics-std-partial-eq",
+    "generics-reference-comparison",
+    "traits-book-contracts",
+    "traits-book-associated",
+    "traits-reference-associated",
+    "traits-book-dispatch",
+    "traits-reference-dyn",
+    "traits-error-e0046",
+    "traits-error-e0599",
+    "traits-error-e0271",
+    "traits-error-e0038",
+    "lifetimes-book-syntax",
+    "lifetimes-reference-elision",
+    "lifetimes-error-e0106",
+    "lifetimes-error-e0597",
+    "lifetimes-error-e0515",
+    "closures-book-closures",
+    "closures-book-capture-precision",
+    "closures-edition-2024-capture",
+    "closures-book-call-traits",
+    "closures-reference-traits",
+    "closures-book-impl-trait",
+    "closures-error-e0502",
+    "closures-error-e0382",
+    "closures-error-e0596",
+    "closures-error-e0501",
+    "closures-error-e0373",
+    "borrowed-variance-reference-subtyping",
+    "borrowed-variance-reference-trait-bounds",
+    "borrowed-variance-book-lifetime-syntax",
+    "borrowed-variance-reference-elision",
+    "borrowed-hrtb-reference-subtyping",
+    "borrowed-hrtb-reference-trait-bounds",
+    "borrowed-hrtb-nomicon",
+    "borrowed-hrtb-reference-elision",
+    "borrowed-hrtb-book-closures",
+    "borrowed-hrtb-book-lifetimes",
+    "borrowed-hrtb-error-e0597",
+    "borrowed-hrtb-error-e0308",
+    "iterators-std-cell",
+    "iterators-book",
+    "iterators-std-iterator",
+    "iterators-std-into-iterator",
+    "iterators-error-move",
+    "gat-reference-associated-items",
+    "gat-slice-windows",
+    "gat-gats-stabilization",
+    "gat-error-e0499",
+    "gat-reference-trait-bounds",
+    "gat-reference-dyn-compatibility",
+    "gat-iterator",
+    "gat-error-e0038",
+    "testing-book-automated",
+    "testing-book-organization",
+    "testing-std-assert",
+    "testing-std-catch-unwind",
+    "testing-cargo-test",
+    "testing-cargo-fmt",
+    "testing-cargo-clippy",
+    "guessing-std-str",
+    "guessing-std-result",
+    "guessing-book-enums",
+    "guessing-io-bufread",
+    "guessing-io-write",
+    "guessing-io-utf8",
+    "guessing-random-book",
+    "guessing-rand-range",
+    "guessing-rand-thread",
+    "guessing-rand-repro",
+    "guessing-rand-manifest",
+    "log-std-str-split",
+    "log-std-result",
+    "log-std-bufread",
+    "log-std-format",
+    "boxed-values-book-box",
+    "boxed-values-std-box",
+    "boxed-values-error-e0072",
+    "boxed-values-book-deref",
+    "boxed-values-std-deref",
+    "boxed-values-std-drop",
+    "boxed-values-error-e0040",
+    "shared-ownership-book-rc",
+    "shared-ownership-std-rc",
+    "shared-ownership-book-refcell",
+    "shared-ownership-std-refcell",
+    "shared-ownership-book-weak",
+    "shared-ownership-std-weak",
+    "threads-book-spawn-join",
+    "threads-std-module",
+    "threads-std-join-handle",
+    "threads-error-e0373",
+    "threads-error-e0382",
+    "threads-std-scope",
+    "threads-std-scope-type",
+    "channels-book-message-passing",
+    "channels-std-channel",
+    "channels-std-receiver",
+    "channels-std-sync-channel",
+    "channels-std-try-send-error",
+    "synchronized-state-book-send-sync",
+    "synchronized-state-std-send",
+    "synchronized-state-std-sync",
+    "synchronized-state-std-arc",
+    "synchronized-state-error-e0277",
+    "synchronized-state-book-shared-state",
+    "synchronized-state-std-mutex",
+    "synchronized-state-std-poison-error",
+    "atomic-state-std-module",
+    "atomic-state-std-atomic-usize",
+    "atomic-state-std-atomic-methods",
+    "atomic-state-std-mutex",
+    "atomic-state-std-ordering",
+    "atomic-state-nomicon-atomics",
+    "memory-ordering-std-ordering",
+    "memory-ordering-std-atomic-usize",
+    "memory-ordering-std-atomic-compare-exchange",
+    "memory-ordering-loom-guide",
+    "memory-ordering-loom-atomic-usize",
+    "async-foundations-std-future",
+    "async-foundations-std-waker",
+    "async-foundations-std-pin",
+    "async-foundations-book-17",
+    "async-foundations-book-17-futures",
+    "async-foundations-reference-async",
+    "async-foundations-reference-await",
+    "tokio-runtime-builder",
+    "tokio-spawn",
+    "tokio-join-handle",
+    "tokio-task-id",
+    "tokio-oneshot",
+    "rust-book-async-tasks",
+    "tokio-mpsc-sender",
+    "tokio-mpsc-receiver",
+    "tokio-mpsc-permit",
+    "tokio-mpsc-send-error",
+    "tokio-timeout",
+    "tokio-select",
+    "tokio-join-handle-time",
+    "tokio-mpsc-recv-cancellation",
+    "tokio-oneshot-receiver-cancellation",
+    "tokio-shutdown-mpsc-receiver-close",
+    "tokio-shutdown-watch-receiver",
+    "tokio-shutdown-join-set",
+    "tokio-shutdown-select",
+    "tokio-async-read",
+    "tokio-async-write",
+    "tokio-async-read-ext",
+    "tokio-async-write-ext",
+    "tokio-duplex",
+    "tokio-stream-stream-ext-next",
+    "tokio-stream-receiver-stream",
+    "tokio-stream-mpsc-close",
+    "tokio-stream-select-cancellation",
+    "tokio-blocking-spawn",
+    "tokio-blocking-runtime-shutdown",
+    "tokio-blocking-semaphore",
+    "tokio-blocking-join-handle",
+    "tokio-tcp-listener",
+    "tokio-tcp-stream",
+    "tokio-tcp-owned-write-half",
+    "tokio-async-write-shutdown",
+    "tokio-timeout-at",
+    "tokio-time-instant",
+    "tokio-network-lifecycle-tcp-listener",
+    "tokio-network-lifecycle-tcp-stream",
+    "tokio-semaphore",
+    "tokio-owned-semaphore-permit",
+    "tokio-watch-receiver",
+    "tokio-join-handle-network",
+    "async-lending-core-future",
+    "async-lending-core-async-fn",
+    "async-lending-core-gat",
+    "async-lending-boundary-send",
+    "async-lending-boundary-dyn",
+    "async-lending-boundary-cancel",
+    "public-api-try-from",
+    "public-api-string-from-utf8",
+    "public-api-error-source",
+    "public-api-io-error-inner",
+    "api-evolution-cargo-semver-compatibility",
+    "api-evolution-reference-dyn-compatibility",
+    "api-evolution-reference-visibility",
+    "api-evolution-book-trait-defaults",
+    "api-evolution-cargo-workspaces",
+    "api-evolution-cargo-features",
+    "api-evolution-cargo-rust-version",
+    "api-evolution-cargo-resolver",
+    "api-evolution-edition-guide-rust-2024",
+    "api-release-semver-reference",
+    "api-release-features-reference",
+    "api-release-rust-version-reference",
+    "api-release-workspaces-reference",
+    "macros-book-by-example",
+    "macros-reference-by-example",
+    "macros-edition-2024-fragments",
+    "cargo-dependencies-reference",
+    "cargo-features-reference",
+    "cargo-resolver-reference",
+    "cargo-workspaces-reference",
+    "cargo-tree-command-reference",
+    "cargo-manifest-release-reference",
+    "cargo-package-release-reference",
+    "cargo-update-release-reference",
+    "cargo-rust-version-release-reference",
+    "cargo-tree-diagnostics-reference",
+    "cargo-manifest-license-reference",
+    "rustsec-advisory-database",
+    "cargo-deny-reference",
+    "cargo-package-dossier-reference",
+    "mini-grep-bufread",
+    "mini-grep-error-source",
+    "mini-grep-str-from-utf8",
+    "mini-grep-std-fs-symlink-metadata",
+    "mini-grep-std-path",
+    "mini-grep-book-command-line-arguments",
+    "mini-grep-std-env-args-os",
+    "mini-grep-std-process-exit",
+    "property-proptest-introduction",
+    "property-proptest-strategies",
+    "property-proptest-runner",
+    "property-log-analyzer",
+    "property-shrinking-basics",
+    "property-failure-persistence",
+    "property-strategy-basics",
+    "fuzz-rust-book",
+    "fuzz-libfuzzer",
+    "fuzz-mini-grep-fixture",
+    "fuzz-evidence-boundary",
+    "performance-benchmarking-book",
+    "performance-rust-iterator",
+    "performance-bufread",
+    "performance-string-clear",
+    "performance-vec-capacity",
+    "profile-rust-performance-book",
+    "profile-global-allocator",
+    "profile-criterion",
+    "profile-valgrind-callgrind",
+    "profile-valgrind-dhat",
+    "unsafe-ffi-nomicon",
+    "unsafe-ffi-pointer",
+    "unsafe-ffi-slice",
+    "unsafe-ffi-repr-c",
+    "unsafe-miri-guide",
+    "unsafe-miri-maybe-uninit",
+    "unsafe-miri-from-raw-parts",
+    "unsafe-miri-nomicon-subtyping",
+    "unsafe-borrowed-memory-slice",
+    "unsafe-borrowed-memory-maybe-uninit",
+    "unsafe-borrowed-memory-variance",
+    "unsafe-borrowed-memory-send-sync",
+    "service-operations-collections",
+    "service-operations-enums",
+    "service-operations-std-slice",
+    "service-operations-testing",
+    "capstone-sqlite-transactions",
+    "capstone-sqlite-wal",
+    "capstone-sqlite-pragmas",
+    "capstone-rusqlite-transactions",
+    "capstone-tokio-mpsc",
+    "capstone-tokio-blocking",
+    "capstone-cargo-semver",
+    "capstone-rust-errors",
+    "core-conversions-std-from",
+    "core-conversions-std-asref",
+    "core-conversions-std-tryfrom",
+    "core-patterns-book",
+    "core-patterns-reference"
+  ]
+}
