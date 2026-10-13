@@ -61,6 +61,14 @@ export const documentationRepairFixtures = [
   {
     id: "docs-prefix-repair",
     starterError: "E0308",
+    // Parser credit does not certify learner-authored assertion presence or quality.
+    positiveCharacterizations: {
+      emptyLearnerRegression: replace(
+        prefix.starter,
+        "-> &str",
+        "-> Option<&str>",
+      ),
+    },
     alternate: replace(
       prefix.solution,
       'text.strip_prefix("tag:")',

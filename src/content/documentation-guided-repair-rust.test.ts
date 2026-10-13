@@ -128,6 +128,11 @@ for (const toolchain of process.env.DOCUMENTATION_RUST_TOOLCHAINS?.split(
         for (const [variant, code] of [
           ["canonical", step.solution!],
           ["alternate", fixture.alternate],
+          ...Object.entries(
+            "positiveCharacterizations" in fixture
+              ? (fixture.positiveCharacterizations ?? {})
+              : {},
+          ),
         ]) {
           const run = execute(
             toolchain,

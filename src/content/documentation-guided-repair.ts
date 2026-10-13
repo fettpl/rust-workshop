@@ -167,7 +167,7 @@ const splitSnapshot = `Migawka std 13.10.2026: str::split_once<P>(&self, delimit
 const rationaleCriteria = [
   "Podaję metodę i źródło (tytuł lub adres) oraz typy odbiorcy, argumentu i wyniku.",
   "Opisuję własną hipotezę, najmniejszą poprawkę i powód zachowania pożyczki.",
-  "Wskazuję zwykłą i graniczną asercję w rzeczywiście wykonywanym #[test]; oceniam ich sens samodzielnie.",
+  "Sam sprawdzam obecność i wykonanie własnej zwykłej oraz granicznej asercji w #[test] i oceniam ich jakość; automatyczne zaliczenie parsera tego nie potwierdza.",
   "Odróżniam diagnostykę kompilatora, panikę i błędną asercję oraz wynik programu od dowodu przeczytania dokumentacji.",
 ];
 export const documentationRepairLessons: Lesson[] = (
@@ -259,7 +259,7 @@ export const documentationRepairLessons: Lesson[] = (
           "docs-prefix-repair",
           "debug",
           "Napraw prefiks i dopisz wykonywany test",
-          'Zadanie z ustalonym API: fn remove_tag(text: &str) -> Option<&str> z dokładnym tagiem tag:. Napraw deklarację wyniku, zachowaj pożyczkę oraz String do kolejnego wywołania. Usuń tag dokładnie raz; dokładne tag: daje Some(""), inny prefiks lub pusty tekst None. Zachowaj resztę dosłownie, także Unicode i białe znaki. Możesz zastosować strip_prefix albo poprawny równoważny zapis. Następnie w #[test] fn learner_regression() dopisz własną normalną i graniczną asercję oraz uruchom testy. Tryb testowy nie wykonuje main. Ukryte testy sprawdzają parser; sens twoich dodatkowych przypadków ocenisz jawnie w ostatnim kroku, nie automatycznie.',
+          'Zadanie z ustalonym API: fn remove_tag(text: &str) -> Option<&str> z dokładnym tagiem tag:. Napraw deklarację wyniku, zachowaj pożyczkę oraz String do kolejnego wywołania. Usuń tag dokładnie raz; dokładne tag: daje Some(""), inny prefiks lub pusty tekst None. Zachowaj resztę dosłownie, także Unicode i białe znaki. Możesz zastosować strip_prefix albo poprawny równoważny zapis. Następnie w #[test] fn learner_regression() dopisz własną normalną i graniczną asercję oraz uruchom testy. Musisz sam sprawdzić, że obie asercje są obecne i wykonały się w tym teście; tryb testowy nie wykonuje main. Automatyczne zaliczenie tej pierwotnej rodziny kodu potwierdza wyłącznie kontrakt parsera. Nie sprawdza obecności ani jakości twoich dodatkowych asercji: nawet pusty learner_regression może przejść. Obecność, wykonanie i sens własnych przypadków oceniasz jawnie w ostatnim kroku.',
           documentationPrefixContract,
           "docs/prefix-repair",
         ),
@@ -317,7 +317,7 @@ export const documentationRepairLessons: Lesson[] = (
           kind: "explain",
           title: "Źródło, hipoteza, poprawka i regresja — samoocena",
           prompt:
-            "Wpisz własnymi słowami metodę i źródło (tytuł lub URL), hipotezę wyprowadzoną z sygnatury/diagnostyki, minimalną poprawkę oraz normalny i graniczny przypadek z własnego #[test]. Wyjaśnij, dlaczego naprawa zachowuje właściciela i rozróżnia pustkę od braku. Porównaj hipotezę z uruchomionym wynikiem. To jawna samoocena sensu wypowiedzi i twoich testów; aplikacja wymaga niepustego tekstu i zaznaczenia kryteriów, ale nie ocenia automatycznie ich prawdziwości ani samodzielnego odkrycia źródła.",
+            "Wpisz własnymi słowami metodę i źródło (tytuł lub URL), hipotezę wyprowadzoną z sygnatury/diagnostyki, minimalną poprawkę oraz normalny i graniczny przypadek z własnego #[test]. Wyjaśnij, dlaczego naprawa zachowuje właściciela i rozróżnia pustkę od braku. Porównaj hipotezę z uruchomionym wynikiem. Musisz sam sprawdzić obecność i wykonanie obu własnych asercji oraz ocenić ich jakość. To jawna samoocena wypowiedzi i twoich testów; aplikacja wymaga niepustego tekstu i zaznaczenia kryteriów, ale nie sprawdza automatycznie obecności ani jakości własnych asercji, prawdziwości wypowiedzi ani samodzielnego odkrycia źródła. Automatyczny wynik pierwotnej rodziny prefiksu potwierdza wyłącznie kontrakt parsera.",
           evaluator: { kind: "rubric", criteria: rationaleCriteria },
           rubric: rationaleCriteria,
           evidenceKind: "self-rating",

@@ -254,7 +254,30 @@ test("preserves an old resume and history while a new draft, help, rationale and
   const restored = await readState(page);
   expect(restored.resume).toEqual(oldState.resume);
   expect(restored.steps[oldKey]).toEqual(oldState.steps[oldKey]);
-  expect(restored.events).toEqual([oldEvent]);
+  expect(restored.events[0]).toEqual(oldEvent);
+  const neutralContacts = restored.events.slice(1);
+  expect(neutralContacts.length).toBeGreaterThanOrEqual(1);
+  expect(neutralContacts.length).toBeLessThanOrEqual(2);
+  expect(new Set(neutralContacts.map((event) => event.id)).size).toBe(
+    neutralContacts.length,
+  );
+  for (const contact of neutralContacts) {
+    expect(contact).toMatchObject({
+      lessonId: oldLesson.id,
+      stepId: oldStep.id,
+      conceptIds: oldLesson.conceptIds,
+      kind: "exposure",
+      passed: true,
+      hints: 0,
+      revealed: false,
+      gate: false,
+    });
+    expect(contact.id).not.toBe(oldEvent.id);
+    expect(contact).not.toHaveProperty("evaluator");
+  }
+  expect(
+    courseEvidenceSummary(restored, lesson.conceptIds[0]).qualifyingCodingTasks,
+  ).toBe(0);
   expect(restored.steps[stepKey(lesson.id, prefix.id)]).toBeUndefined();
 
   await openLesson(page);
@@ -284,7 +307,9 @@ test("preserves an old resume and history while a new draft, help, rationale and
   await explanation.fill(
     "Źródło: strip_prefix. Hipoteza: Option rozróżnia brak prefiksu od pustej reszty. Minimalna zmiana: pożycz funkcję. Test: tag: i Unicode.",
   );
-  await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+  const rubric = page.locator("details.rubric");
+  await expect(rubric).toBeVisible();
+  await rubric.locator("summary").click();
   await page.getByRole("checkbox").first().check();
   await page.reload();
   await openStep(page, rationale);
@@ -689,7 +714,40 @@ test("keeps the authored snapshot readable offline and exposes mobile keyboard p
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  const beforeOffline = await readState(page);
+  await openStep(page, typeObserve);
+  await expect(page.locator(".task-prompt")).toBeVisible();
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  const warmDiagnosticEditor = page.getByRole("textbox", {
+    name: "Kod Rust",
+    exact: true,
+  });
+  await expect(warmDiagnosticEditor).toBeVisible();
+  await expect(warmDiagnosticEditor).toHaveAttribute("readonly", "");
+  await expect(warmDiagnosticEditor).toHaveValue(typeObserve.code!);
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await page.evaluate(async () => {
+    if (!("serviceWorker" in navigator)) {
+      throw new Error(
+        "Expected service-worker support for offline verification",
+      );
+    }
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) {
+      await new Promise<void>((resolve) => {
+        navigator.serviceWorker.addEventListener(
+          "controllerchange",
+          () => resolve(),
+          {
+            once: true,
+          },
+        );
+      });
+    }
+    if (!navigator.serviceWorker.controller)
+      throw new Error(
+        "Expected the page to be controlled by the service worker",
+      );
+  });
   await page.context().setOffline(true);
   await expect(page.locator(".offline-banner")).toBeVisible();
   const taskTab = page.getByRole("tab", { name: "Zadanie", exact: true });
@@ -719,20 +777,88 @@ test("keeps the authored snapshot readable offline and exposes mobile keyboard p
   await taskTab.focus();
   await page.keyboard.press("Enter");
   await expect(taskTab).toHaveAttribute("aria-selected", "true");
+  const finalNavigationStartedAt = Date.now();
   await openStep(page, typeObserve);
   await expect(page.locator(".task-prompt")).toBeVisible();
   await expect(page.locator(".task-prompt")).toContainText(
     typeObserve.prompt.slice(0, 32),
   );
+  await expect
+    .poll(async () => {
+      const current = await readState(page);
+      const last = current.events.at(-1);
+      const expectedConceptIds =
+        typeObserve.evidence?.conceptIds ?? lesson.conceptIds;
+      return Boolean(
+        last &&
+        last.lessonId === lesson.id &&
+        last.stepId === typeObserve.id &&
+        last.conceptIds.join("\u0000") === expectedConceptIds.join("\u0000") &&
+        last.kind === "exposure" &&
+        last.passed === true &&
+        last.hints === 0 &&
+        last.revealed === false &&
+        last.gate === false &&
+        last.at >= finalNavigationStartedAt,
+      );
+    })
+    .toBe(true);
+  const beforeAttempt = await readState(page);
+  expect(beforeAttempt.resume.lessonId).toBe(lesson.id);
+  expect(beforeAttempt.resume.stepIndex).toBe(
+    lesson.steps.indexOf(typeObserve),
+  );
+  const finalExposure = beforeAttempt.events.at(-1)!;
+  expect(finalExposure).toEqual({
+    id: `exposure:${lesson.id}:${typeObserve.id}:${finalExposure.at}:opened`,
+    conceptIds: typeObserve.evidence?.conceptIds ?? lesson.conceptIds,
+    lessonId: lesson.id,
+    stepId: typeObserve.id,
+    kind: "exposure",
+    passed: true,
+    hints: 0,
+    revealed: false,
+    at: finalExposure.at,
+    gate: false,
+  });
+  expect(finalExposure.at).toBeGreaterThanOrEqual(finalNavigationStartedAt);
   await page.getByRole("tab", { name: "Kod", exact: true }).focus();
   await page.keyboard.press("Enter");
   await page.getByRole("tab", { name: "Kod", exact: true }).click();
-  await page
-    .getByRole("textbox", { name: "Kod Rust", exact: true })
-    .fill(typeObserve.code!);
+  const diagnosticEditor = page.getByRole("textbox", {
+    name: "Kod Rust",
+    exact: true,
+  });
+  await expect(diagnosticEditor).toHaveAttribute("readonly", "");
+  await expect(diagnosticEditor).toHaveValue(typeObserve.code!);
   await page.getByRole("button", { name: "Uruchom", exact: true }).click();
+  const outputTab = page.getByRole("tab", { name: /Output/ });
+  await outputTab.focus();
+  await page.keyboard.press("Enter");
+  await expect(outputTab).toHaveAttribute("aria-selected", "true");
   await expect(
-    page.getByText("Próba nie wpływa na mastery.", { exact: false }),
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("Kompilator niedostępny");
+  await taskTab.focus();
+  await page.keyboard.press("Enter");
+  await expect(taskTab).toHaveAttribute("aria-selected", "true");
+  const lessonPanel = page.locator("#workspace-panel-lesson");
+  await expect(lessonPanel).toBeVisible();
+  await expect(
+    lessonPanel
+      .getByRole("status")
+      .filter({ hasText: "Próba nie wpływa na mastery." }),
   ).toBeVisible();
-  expect((await readState(page)).events).toEqual(beforeOffline.events);
+  const afterAttempt = await readState(page);
+  expect(afterAttempt.events.slice(0, beforeAttempt.events.length)).toEqual(
+    beforeAttempt.events,
+  );
+  expect(afterAttempt.events).toHaveLength(beforeAttempt.events.length);
+  expect(
+    courseEvidenceSummary(afterAttempt, lesson.conceptIds[0])
+      .qualifyingCodingTasks,
+  ).toBe(
+    courseEvidenceSummary(beforeAttempt, lesson.conceptIds[0])
+      .qualifyingCodingTasks,
+  );
 });
