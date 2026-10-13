@@ -1,3 +1,4 @@
+import { documentationRepairLessons } from "./documentation-guided-repair";
 import type {
   Competency,
   Concept,
@@ -1001,7 +1002,9 @@ export const testingModule: CourseModule = {
     "Rozróżniasz unit, integration i doc tests oraz cargo test, cargo fmt i cargo clippy.",
   ],
   prerequisites: ["iterators"],
-  lessonIds: testingLessons.map((lesson) => lesson.id),
+  lessonIds: [...testingLessons, ...documentationRepairLessons].map(
+    (lesson) => lesson.id,
+  ),
   exitGate: [
     "Helper przyjmuje dowolną funkcję o ustalonej sygnaturze, asercje przechodzą poprawną implementację i odrzucają sensowne mutanty.",
     "Tabela obejmuje przypadki brzegowe, Unicode lub duplikaty i opisuje obserwowalny kontrakt.",
@@ -1036,6 +1039,29 @@ export const testingModule: CourseModule = {
       taskRefs: [
         { lessonId: "testing-quality-workflow", stepId: "quality-modify-gate" },
         { lessonId: "testing-quality-workflow", stepId: "quality-blank-gate" },
+      ],
+    },
+    {
+      id: "testing-documentation-repair-gate",
+      label:
+        "Dwie różne naprawy pożyczonego tekstu oraz jawna samoocena źródła, hipotezy i testu regresyjnego.",
+      requiredIndependentCodingTasks: 2,
+      taskRefs: [
+        {
+          lessonId: "documentation-guided-repair",
+          stepId: "docs-prefix-repair",
+        },
+        {
+          lessonId: "documentation-guided-repair",
+          stepId: "docs-split-transfer",
+        },
+        { lessonId: "documentation-guided-repair", stepId: "docs-split-blank" },
+      ],
+      supplementaryStepRefs: [
+        {
+          lessonId: "documentation-guided-repair",
+          stepId: "docs-hypothesis-rationale",
+        },
       ],
     },
   ],

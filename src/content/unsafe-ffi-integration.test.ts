@@ -1,3 +1,4 @@
+import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import { moduleGate, recordEvidence } from "../engine/learning";
@@ -12,7 +13,9 @@ import {
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const { concepts, lessons, modules, projects, roadmap, sources } =
-  historicalBeforeFallibleComposition(currentCourse);
+  historicalBeforeFallibleComposition(
+    historicalBeforeDocumentationRepair(currentCourse),
+  );
 import {
   nestedPatternConcepts,
   nestedPatternLessons,

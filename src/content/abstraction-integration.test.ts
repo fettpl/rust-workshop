@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import * as course from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
+const course = historicalBeforeDocumentationRepair(currentCourse);
 import { createInitialState } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
 import { evidenceForLessonStep } from "./learning-context";

@@ -1,4 +1,10 @@
 import {
+  documentationRepairLessons,
+  documentationRepairConcepts,
+  documentationRepairSources,
+  documentationRepairReviewExercises,
+} from "./documentation-guided-repair";
+import {
   fallibleCompositionLessons,
   fallibleCompositionConcepts,
   fallibleCompositionSources,
@@ -688,6 +694,7 @@ export const lessons = [
   functionOwnershipCalibrationLesson,
   sharedBorrowCalibrationLesson,
   ...fallibleCompositionLessons,
+  ...documentationRepairLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -755,6 +762,7 @@ export const concepts = [
   ...coreCheckedConversionsConcepts,
   ...nestedPatternConcepts,
   ...fallibleCompositionConcepts,
+  ...documentationRepairConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -886,6 +894,7 @@ export const sources = [
   ...coreCheckedConversionsSources,
   ...nestedPatternSources,
   ...fallibleCompositionSources,
+  ...documentationRepairSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -953,6 +962,7 @@ export const reviewExercises = {
   ...coreCheckedConversionsReviewExercises,
   ...nestedPatternReviewExercises,
   ...fallibleCompositionReviewExercises,
+  ...documentationRepairReviewExercises,
 };
 export const delayedReviewExercises = {
   ...functionOwnershipDelayedReviewExercises,

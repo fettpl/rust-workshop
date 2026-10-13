@@ -1,5 +1,7 @@
 import { expect, it } from "vitest";
-import * as course from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
+const course = historicalBeforeDocumentationRepair(currentCourse);
 import { evaluate } from "../engine/evaluate";
 import {
   createInitialState,
