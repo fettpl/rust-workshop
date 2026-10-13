@@ -249,6 +249,13 @@ test("preserves an old resume and history while a new draft, help, rationale and
   oldState.events = [oldEvent];
   await seedState(page, preparedState());
   await importStateThroughUi(page, oldState);
+  await expect(page.locator(".task-pane h1")).toHaveText(oldStep.title);
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  await expect
+    .poll(async () => (await readState(page)).resume)
+    .toEqual(oldState.resume);
   await page.reload();
   await expect(page.locator(".task-pane h1")).toHaveText(oldStep.title);
   const restored = await readState(page);
@@ -310,7 +317,24 @@ test("preserves an old resume and history while a new draft, help, rationale and
   const rubric = page.locator("details.rubric");
   await expect(rubric).toBeVisible();
   await rubric.locator("summary").click();
-  await page.getByRole("checkbox").first().check();
+  if (rationale.evaluator?.kind !== "rubric")
+    throw new Error("Expected authored rationale rubric");
+  await rubric.getByRole("checkbox").first().check();
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  await expect
+    .poll(async () => {
+      const progress = (await readState(page)).steps[
+        stepKey(lesson.id, rationale.id)
+      ];
+      return { answer: progress?.answer, rubricChecks: progress?.rubricChecks };
+    })
+    .toEqual({
+      answer:
+        "Źródło: strip_prefix. Hipoteza: Option rozróżnia brak prefiksu od pustej reszty. Minimalna zmiana: pożycz funkcję. Test: tag: i Unicode.",
+      rubricChecks: rationale.evaluator.criteria.slice(0, 1),
+    });
   await page.reload();
   await openStep(page, rationale);
   await expect(
