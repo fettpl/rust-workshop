@@ -200,7 +200,7 @@ jobs:
         run: |
           gat_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
           "$gat_rust_bin/rustc" --version
-          PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/fallible-composition-rust.test.ts src/content/baseline-primitives-rust.test.ts src/content/baseline-patterns-contracts.test.ts src/content/baseline-execution-assessment.test.ts src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts src/content/performance-evidence-assessment.test.ts src/content/capstone-integration-assessment.test.ts src/content/capstone-verification.test.ts
+          PATH="$gat_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/documentation-guided-repair-rust.test.ts src/content/fallible-composition-rust.test.ts src/content/baseline-primitives-rust.test.ts src/content/baseline-patterns-contracts.test.ts src/content/baseline-execution-assessment.test.ts src/content/gat-producers.test.ts src/content/gat-consumers.test.ts src/content/gat-assessment.test.ts src/content/performance-evidence-assessment.test.ts src/content/capstone-integration-assessment.test.ts src/content/capstone-verification.test.ts
       - name: Verify fuzz evidence assessments on Rust 1.85.0
         run: |
           fuzz_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"

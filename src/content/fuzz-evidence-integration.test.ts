@@ -1,8 +1,11 @@
+import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const { concepts, lessons, modules, reviewExercises } =
-  historicalBeforeFallibleComposition(currentCourse);
+  historicalBeforeFallibleComposition(
+    historicalBeforeDocumentationRepair(currentCourse),
+  );
 import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
 import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";

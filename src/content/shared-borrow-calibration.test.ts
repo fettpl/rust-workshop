@@ -1,7 +1,9 @@
+import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
-const historicalLessons =
-  historicalBeforeFallibleComposition(currentCourse).lessons;
+const historicalLessons = historicalBeforeFallibleComposition(
+  historicalBeforeDocumentationRepair(currentCourse),
+).lessons;
 import { expect, it } from "vitest";
 import type { LessonStep } from "@/domain/types";
 import {
