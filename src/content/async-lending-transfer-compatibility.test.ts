@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import type { LessonStep } from "@/domain/types";
-import * as course from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const course = historicalBeforeFallibleComposition(currentCourse);
 import baseline from "./fixtures/m11-m10-identity.json";
 import correctionDelta from "./baseline-correction-delta.json";
 import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtures";

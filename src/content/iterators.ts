@@ -1,3 +1,4 @@
+import { fallibleCompositionLessons } from "./fallible-composition";
 import type {
   Competency,
   Concept,
@@ -97,7 +98,7 @@ export const iteratorsConcepts: Concept[] = [
     reviewPrompt:
       "Kiedy wykona się map i filter oraz czym różni się collect od find w potoku z efektami ubocznymi?",
     reviewAnswer:
-      "map i filter tylko opisują następne operacje; ich ciała wykonują się dopiero, gdy konsument poprosi o element. collect pobiera cały potok, a find pobiera do pierwszego dopasowania i kończy wcześniej, więc licznik efektów może być mniejszy.",
+      "map i filter tylko opisują następne operacje; ich ciała wykonują się dopiero, gdy konsument poprosi o element. collect do Vec pobiera cały potok, a find pobiera do pierwszego dopasowania i kończy wcześniej, więc licznik efektów może być mniejszy.",
     distinguish:
       "Iterator nie jest kolekcją wyników. Utworzenie adaptera nie uruchamia callbacków; dopiero konsument taki jak collect, fold albo find przesuwa źródło.",
   },
@@ -1206,7 +1207,9 @@ export const iteratorsModule: CourseModule = {
     "Implementujesz Iterator i IntoIterator oraz piszesz generycznego konsumenta.",
   ],
   prerequisites: ["closures"],
-  lessonIds: iteratorsLessons.map((lesson) => lesson.id),
+  lessonIds: [...iteratorsLessons, ...fallibleCompositionLessons].map(
+    (lesson) => lesson.id,
+  ),
   exitGate: [
     "Kod rozróżnia pożyczane, mutable i posiadane elementy bez Clone i zachowuje Unicode oraz kolejność.",
     "Potok wykonuje callbacki dopiero przy konsumpcji, a find kończy dokładnie po pierwszym dopasowaniu.",
@@ -1250,6 +1253,42 @@ export const iteratorsModule: CourseModule = {
       taskRefs: [
         { lessonId: "iterator-contracts", stepId: "contracts-modify" },
         { lessonId: "iterator-contracts", stepId: "contracts-blank" },
+      ],
+    },
+    {
+      id: "iterators-fallible-values-gate",
+      label:
+        "Rozróżniasz brak, składnię i zakres oraz zachowujesz właściciela i politykę opcjonalnego wyniku.",
+      requiredIndependentCodingTasks: 1,
+      taskRefs: [
+        {
+          lessonId: "fallible-value-composition",
+          stepId: "fallible-config-contract",
+        },
+        {
+          lessonId: "fallible-value-composition",
+          stepId: "fallible-optional-transfer",
+        },
+      ],
+    },
+    {
+      id: "iterators-fallible-rows-gate",
+      label:
+        "Zachowujesz pozycje i pierwszy błąd z tożsamością bez żądań po błędzie.",
+      requiredIndependentCodingTasks: 1,
+      taskRefs: [
+        {
+          lessonId: "fallible-iterator-contracts",
+          stepId: "fallible-rows-contract",
+        },
+        {
+          lessonId: "fallible-iterator-contracts",
+          stepId: "fallible-readings-transfer",
+        },
+        {
+          lessonId: "fallible-iterator-contracts",
+          stepId: "fallible-readings-blank",
+        },
       ],
     },
   ],

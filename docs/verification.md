@@ -1,4 +1,14 @@
-Current authored correction candidate (10 October 2026): [source-bound curriculum audit](curriculum-audit-2026-10-10.md) and [objective/Definition of Done/ordered delivery](superpowers/plans/2026-10-10-curriculum-baseline-and-synthesis.md). Counts are 48 modules, 189 lessons, 191 concepts, 1,242 steps and 341 sources. Integrated verification, final review and release acceptance are pending; the dated accepted records below remain historical. No human pilot blocks this development.
+Current authored Feature 1 candidate (10 October 2026): [source-bound curriculum audit](curriculum-audit-2026-10-10.md), [objective/Definition of Done/ordered delivery](superpowers/plans/2026-10-10-curriculum-baseline-and-synthesis.md), and two appended fallible-composition lessons. The current source inventory is 48 modules, 191 lessons, 193 concepts, 1,260 steps and 343 sources. Baseline PR56 is accepted and merged; Feature 1 integrated verification, final review and release acceptance are pending. The dated accepted records below remain historical. No human pilot blocks this development.
+
+<a id="feature-1-fallible-composition-candidate-10-october-2026"></a>
+
+## Feature 1 fallible-composition candidate — 10 October 2026
+
+This working-tree candidate appends `fallible-value-composition` and `fallible-iterator-contracts` to the `iterators` module after `iterator-contracts`. Source and compiler fixtures are authored by Sol high; this browser and documentation support packet is authored by Luna high; the fresh integrated Astra xHigh review remains pending. The observed source inventory is 48 modules, 191 lessons, 193 concepts, 1,260 steps and 343 sources. These are implemented-content counts, not learner outcomes.
+
+Baseline PR56 is the accepted source boundary: its natural PR run is [38037215559](https://github.com/fettpl/rustcrushcourse/actions/runs/38037215559), its ordinary main run is [38041659027](https://github.com/fettpl/rustcrushcourse/actions/runs/38041659027), and its ordinary merge commit is [`9fe28209fb5a1536e4cc7ad4eb197afe4b110a17`](https://github.com/fettpl/rustcrushcourse/commit/9fe28209fb5a1536e4cc7ad4eb197afe4b110a17). No Feature 1 PR, CI run, review or merge identity is asserted here.
+
+The browser support packet covers exact old iterator resume and raw history preservation, absence of new-step credit after import, a mocked runner failure followed by an assisted pass and a clean blank-editor pass establishing its one pipeline family, changed-domain retrieval evidence, and draft/note save plus reload. The two same-API readings tasks are not presented as distinct independent families; assistance/reveal remains non-independent. Intercepted `/api/run` responses establish UI and persisted-state behavior only; the authored Rust fixtures and toolchain checks establish compiler behavior separately. Full integrated checks, production browser/offline verification, fresh Astra review and release acceptance remain root-owned and pending. No learner mastery, retention, efficacy, professional readiness or seniority claim follows.
 
 <a id="m13-current-verification-snapshot-9-october-2026"></a>
 

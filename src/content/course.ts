@@ -1,3 +1,9 @@
+import {
+  fallibleCompositionLessons,
+  fallibleCompositionConcepts,
+  fallibleCompositionSources,
+  fallibleCompositionReviewExercises,
+} from "./fallible-composition";
 import { borrowedCallbacksModule } from "./borrowed-callbacks-module";
 import type { LessonStep } from "@/domain/types";
 import { gatLendingModule } from "./gat-lending-module";
@@ -681,6 +687,7 @@ export const lessons = [
   ...nestedPatternLessons,
   functionOwnershipCalibrationLesson,
   sharedBorrowCalibrationLesson,
+  ...fallibleCompositionLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -747,6 +754,7 @@ export const concepts = [
   ...coreConversionsConcepts,
   ...coreCheckedConversionsConcepts,
   ...nestedPatternConcepts,
+  ...fallibleCompositionConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -877,6 +885,7 @@ export const sources = [
   ...coreConversionsSources,
   ...coreCheckedConversionsSources,
   ...nestedPatternSources,
+  ...fallibleCompositionSources,
 ];
 export const reviewExercises = {
   ...foundationsReviewExercises,
@@ -943,6 +952,7 @@ export const reviewExercises = {
   ...coreConversionsReviewExercises,
   ...coreCheckedConversionsReviewExercises,
   ...nestedPatternReviewExercises,
+  ...fallibleCompositionReviewExercises,
 };
 export const delayedReviewExercises = {
   ...functionOwnershipDelayedReviewExercises,
