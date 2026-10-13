@@ -1,4 +1,4 @@
-const CACHE = 'rust-workshop-v27';
+const CACHE = 'rust-workshop-v28';
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest'])));
   self.skipWaiting();
