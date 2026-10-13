@@ -259,3 +259,163 @@ it("offers executable empty editors for both changed-domain recall reviews witho
     ).toBe(true);
   }
 });
+
+for (const criterionId of [
+  "iterators-fallible-values-gate",
+  "iterators-fallible-rows-gate",
+]) {
+  it(`${criterionId} exhausts all assisted families without offering a stale task`, async () => {
+    const { gateRecovery, moduleGate } = await import("../engine/learning");
+    const { evidenceForLessonStep, recordCourseEvidence } =
+      await import("./learning-context");
+    const stage = course.modules.find((m) => m.id === "iterators")!;
+    const criterion = stage.gateCriteria!.find((g) => g.id === criterionId)!;
+    const boundedStage = { ...stage, gateCriteria: [criterion] };
+    const saved = createInitialState();
+    for (const ref of criterion.taskRefs) {
+      saved.steps[`${ref.lessonId}:${ref.stepId}`] = {
+        ...createStepProgress(),
+        hints: 1,
+        revealed: true,
+      };
+    }
+    expect(gateRecovery(saved, criterion, course.lessons)).toEqual({
+      status: "exhausted",
+    });
+    expect(moduleGate(saved, course.lessons, boundedStage).passed).toBe(false);
+    let history = createInitialState();
+    for (const ref of criterion.taskRefs) {
+      const lesson = course.lessons.find((l) => l.id === ref.lessonId)!;
+      const step = lesson.steps.find((s) => s.id === ref.stepId)!;
+      history = recordCourseEvidence(history, {
+        id: `${criterionId}/${ref.stepId}`,
+        ...ref,
+        ...evidenceForLessonStep(lesson, step),
+        kind: step.evidenceKind,
+        evaluator: "tests",
+        passed: true,
+        hints: 1,
+        revealed: true,
+        at: history.events.length + 1,
+      });
+    }
+    expect(gateRecovery(history, criterion, course.lessons)).toEqual({
+      status: "exhausted",
+    });
+    expect(moduleGate(history, course.lessons, boundedStage).passed).toBe(
+      false,
+    );
+  });
+
+  it(`${criterionId} offers a genuinely fresh alternate and completes after one clean success`, async () => {
+    const { gateRecovery, moduleGate } = await import("../engine/learning");
+    const { evidenceForLessonStep, recordCourseEvidence } =
+      await import("./learning-context");
+    const stage = course.modules.find((m) => m.id === "iterators")!;
+    const criterion = stage.gateCriteria!.find((g) => g.id === criterionId)!;
+    const boundedStage = { ...stage, gateCriteria: [criterion] };
+    let state = createInitialState();
+    const [helped, fresh] = criterion.taskRefs;
+    state.steps[`${helped.lessonId}:${helped.stepId}`] = {
+      ...createStepProgress(),
+      revealed: true,
+    };
+    expect(gateRecovery(state, criterion, course.lessons)).toEqual({
+      status: "available",
+      task: fresh,
+    });
+    expect(moduleGate(state, course.lessons, boundedStage).passed).toBe(false);
+    const lesson = course.lessons.find((l) => l.id === fresh.lessonId)!;
+    const step = lesson.steps.find((s) => s.id === fresh.stepId)!;
+    state = recordCourseEvidence(state, {
+      id: `${criterionId}/clean`,
+      ...fresh,
+      ...evidenceForLessonStep(lesson, step),
+      kind: step.evidenceKind,
+      evaluator: "tests",
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 1,
+    });
+    expect(gateRecovery(state, criterion, course.lessons)).toEqual({
+      status: "complete",
+    });
+    expect(moduleGate(state, course.lessons, boundedStage).passed).toBe(true);
+  });
+}
+
+it("fallible rows recovery excludes the blank alias after guided family assistance in saves or events", async () => {
+  const { gateRecovery, moduleGate } = await import("../engine/learning");
+  const {
+    assistanceForLessonStep,
+    evidenceForLessonStep,
+    recordCourseEvidence,
+  } = await import("./learning-context");
+  const stage = course.modules.find((m) => m.id === "iterators")!;
+  const criterion = stage.gateCriteria!.find(
+    (g) => g.id === "iterators-fallible-rows-gate",
+  )!;
+  const boundedStage = { ...stage, gateCriteria: [criterion] };
+  const lesson = course.lessons.find(
+    (l) => l.id === "fallible-iterator-contracts",
+  )!;
+  const guided = lesson.steps.find(
+    (s) => s.id === "fallible-readings-transfer",
+  )!;
+  const blank = lesson.steps.find((s) => s.id === "fallible-readings-blank")!;
+  for (const mode of ["saved", "event"] as const) {
+    let state = createInitialState();
+    if (mode === "saved") {
+      state.steps[`${lesson.id}:${guided.id}`] = {
+        ...createStepProgress(),
+        hints: 1,
+      };
+    } else {
+      state = recordCourseEvidence(state, {
+        id: "guided-help",
+        lessonId: lesson.id,
+        stepId: guided.id,
+        ...evidenceForLessonStep(lesson, guided),
+        kind: guided.evidenceKind,
+        evaluator: "tests",
+        passed: true,
+        hints: 1,
+        revealed: false,
+        at: 1,
+      });
+    }
+    // The distinct required-row family remains fresh; the guided/blank family does not.
+    expect(gateRecovery(state, criterion, course.lessons), mode).toEqual({
+      status: "available",
+      task: criterion.taskRefs[0],
+    });
+    state.steps[`${lesson.id}:fallible-rows-contract`] = {
+      ...createStepProgress(),
+      revealed: true,
+    };
+    expect(gateRecovery(state, criterion, course.lessons), mode).toEqual({
+      status: "exhausted",
+    });
+    expect(moduleGate(state, course.lessons, boundedStage).passed, mode).toBe(
+      false,
+    );
+    state = recordCourseEvidence(state, {
+      id: "blank-after-guided-help",
+      lessonId: lesson.id,
+      stepId: blank.id,
+      ...evidenceForLessonStep(lesson, blank),
+      kind: blank.evidenceKind,
+      evaluator: "tests",
+      passed: true,
+      ...assistanceForLessonStep(state, lesson, blank),
+      at: 2,
+    });
+    expect(moduleGate(state, course.lessons, boundedStage).passed, mode).toBe(
+      false,
+    );
+    expect(gateRecovery(state, criterion, course.lessons), mode).toEqual({
+      status: "exhausted",
+    });
+  }
+});

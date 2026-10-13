@@ -12,6 +12,7 @@ import {
   exportState,
   stepKey,
 } from "../../src/persistence/state";
+import { gateRecovery } from "../../src/engine/learning";
 import type { EvidenceEvent, UserState } from "../../src/domain/types";
 
 const valueLesson = lessons.find(
@@ -35,6 +36,38 @@ const retrievalCases = [
   {
     conceptId: "fallible-iterator-contracts",
     reviewId: "review-fallible-flags",
+  },
+] as const;
+const fallibleGateCases = [
+  {
+    criterionId: "iterators-fallible-values-gate",
+    assistedRefs: [
+      {
+        lessonId: "fallible-value-composition",
+        stepId: "fallible-config-contract",
+        mode: "saved-hint",
+      },
+      {
+        lessonId: "fallible-value-composition",
+        stepId: "fallible-optional-transfer",
+        mode: "event-reveal",
+      },
+    ],
+  },
+  {
+    criterionId: "iterators-fallible-rows-gate",
+    assistedRefs: [
+      {
+        lessonId: "fallible-iterator-contracts",
+        stepId: "fallible-rows-contract",
+        mode: "saved-hint",
+      },
+      {
+        lessonId: "fallible-iterator-contracts",
+        stepId: "fallible-readings-transfer",
+        mode: "event-reveal",
+      },
+    ],
   },
 ] as const;
 const day = 24 * 60 * 60 * 1000;
@@ -134,6 +167,44 @@ async function openLesson(page: Page, lessonId: string): Promise<void> {
     .filter({ hasText: lesson.title })
     .click();
   await expect(page.locator(".task-pane h1")).toHaveText(lesson.steps[0].title);
+}
+
+function fallibleGateState(
+  gateCase: (typeof fallibleGateCases)[number],
+): UserState {
+  const state = preparedState();
+  for (const [index, assistedRef] of gateCase.assistedRefs.entries()) {
+    const lesson = lessons.find(
+      (candidate) => candidate.id === assistedRef.lessonId,
+    )!;
+    const step = lesson.steps.find(
+      (candidate) => candidate.id === assistedRef.stepId,
+    )!;
+    const key = stepKey(lesson.id, step.id);
+    if (assistedRef.mode === "saved-hint") {
+      state.steps[key] = {
+        ...createStepProgress(step.code),
+        completed: true,
+        hints: 1,
+      };
+      continue;
+    }
+    state.events.push({
+      id: `fallible-browser-gate-assistance-${gateCase.criterionId}-${index}`,
+      lessonId: lesson.id,
+      stepId: step.id,
+      conceptIds: [...lesson.conceptIds],
+      evidenceVersion: step.evidence?.version,
+      kind: step.evidenceKind,
+      evaluator: step.evaluator?.kind,
+      passed: true,
+      hints: 0,
+      revealed: true,
+      gate: true,
+      at: 1_700_000_000_000 + index,
+    });
+  }
+  return state;
 }
 
 test("imports an old iterator resume exactly and gives no credit to appended lessons", async ({
@@ -499,5 +570,82 @@ for (const retrievalCase of retrievalCases) {
     expect(courseEvidenceSummary(after, concept.id).qualifyingCodingTasks).toBe(
       0,
     );
+  });
+}
+
+for (const gateCase of fallibleGateCases) {
+  test(`${gateCase.criterionId}: assisted families stay exhausted without a false recovery task`, async ({
+    page,
+  }) => {
+    const criterion = iteratorModule.gateCriteria?.find(
+      (candidate) => candidate.id === gateCase.criterionId,
+    );
+    if (!criterion) throw new Error("Expected authored fallible gate");
+    expect(criterion.requiredIndependentCodingTasks).toBe(1);
+
+    const seededState = fallibleGateState(gateCase);
+    await seedState(page, seededState);
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(iteratorModule.title);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: iteratorModule.title })
+      .click();
+
+    const after = await readState(page);
+    for (const assistedRef of gateCase.assistedRefs) {
+      const key = stepKey(assistedRef.lessonId, assistedRef.stepId);
+      expect(after.steps[key]).toEqual(seededState.steps[key]);
+      expect(
+        after.events.filter(
+          (event) =>
+            event.lessonId === assistedRef.lessonId &&
+            event.stepId === assistedRef.stepId,
+        ),
+      ).toEqual(
+        seededState.events.filter(
+          (event) =>
+            event.lessonId === assistedRef.lessonId &&
+            event.stepId === assistedRef.stepId,
+        ),
+      );
+    }
+    expect(gateRecovery(after, criterion, lessons)).toEqual({
+      status: "exhausted",
+    });
+    const criterionRow = page
+      .locator(".gate-panel li")
+      .filter({ hasText: criterion.label });
+    await expect(criterionRow).toContainText(
+      "Brak świeżego samodzielnego wariantu",
+    );
+    await expect(
+      criterionRow.getByRole("button", { name: "Sprawdź w zadaniu" }),
+    ).toHaveCount(0);
+    await expect(page.locator(".module-connections")).toContainText(
+      "Brak świeżego samodzielnego wariantu",
+    );
+    await expect(
+      page
+        .locator(".module-connections")
+        .getByRole("button", { name: criterion.label, exact: true }),
+    ).toHaveCount(0);
+
+    if (gateCase.criterionId === "iterators-fallible-rows-gate") {
+      const blankKey = stepKey(
+        "fallible-iterator-contracts",
+        "fallible-readings-blank",
+      );
+      expect(after.steps[blankKey]).toBeUndefined();
+      expect(
+        after.events.some(
+          (event) =>
+            event.lessonId === "fallible-iterator-contracts" &&
+            event.stepId === "fallible-readings-blank",
+        ),
+      ).toBe(false);
+    }
   });
 }

@@ -1259,6 +1259,7 @@ export const iteratorsModule: CourseModule = {
       id: "iterators-fallible-values-gate",
       label:
         "Rozróżniasz brak, składnię i zakres oraz zachowujesz właściciela i politykę opcjonalnego wyniku.",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
         {
           lessonId: "fallible-value-composition",
@@ -1274,6 +1275,7 @@ export const iteratorsModule: CourseModule = {
       id: "iterators-fallible-rows-gate",
       label:
         "Zachowujesz pozycje i pierwszy błąd z tożsamością bez żądań po błędzie.",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
         {
           lessonId: "fallible-iterator-contracts",
