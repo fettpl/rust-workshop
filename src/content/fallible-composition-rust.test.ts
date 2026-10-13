@@ -45,11 +45,14 @@ function execute(toolchain: string, code: string, tests?: string) {
             stdout: compiler.stdout,
             stderr: compiler.stderr,
             error: compiler.error?.message,
+            signal: compiler.signal,
           },
           execution: result && {
             status: result.status,
             stdout: result.stdout,
             stderr: result.stderr,
+            error: result.error?.message,
+            signal: result.signal,
           },
         }) + "\n",
       );
@@ -81,7 +84,15 @@ for (const toolchain of process.env.FALLIBLE_RUST_TOOLCHAINS?.split(",") ?? [
           expect(run.compiler.status, `${name}: ${run.compiler.stderr}`).toBe(
             0,
           );
-          expect(run.result?.status, `${name} escaped`).not.toBe(0);
+          expect(run.result?.error, `${name}: process error`).toBeUndefined();
+          expect(
+            run.result?.signal,
+            `${name}: terminated by signal`,
+          ).toBeNull();
+          expect(
+            run.result?.status,
+            `${name} escaped or did not fail Rust tests`,
+          ).toBe(101);
           expect(run.result?.stdout, name).toContain(
             `${mutant.assertion} ... FAILED`,
           );

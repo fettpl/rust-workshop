@@ -9,7 +9,7 @@ fn main() {}`,
   tests: `#[test]
 fn borrowed_number_preserves_owner_and_option_policy() {
     let parse: fn(&Option<String>) -> Option<u16> = borrowed_number;
-    for (input, expected) in [("0", Some(0)), ("\u{2003}42\u{2003}", Some(42)), ("", None), ("żółć", None), ("65536", None)] {
+    for (input, expected) in [("0", Some(0)), ("\u{2003}42\u{2003}", Some(42)), ("256", Some(256)), ("65535", Some(65535)), ("", None), ("żółć", None), ("65536", None)] {
         let owner = Some(input.to_string());
         assert_eq!(parse(&owner), expected);
         assert_eq!(owner.as_ref().unwrap(), input);
@@ -107,7 +107,7 @@ fn rows_preserve_order_duplicates_zero_and_owners() {
 #[test]
 fn rows_report_first_error_identity_without_requesting_a_later_item() {
     for failure in 0..3 {
-        for (text, kind) in [("", ConfigError::Syntax), ("1001", ConfigError::Range)] {
+        for (text, kind) in [("", ConfigError::Syntax), ("-1", ConfigError::Syntax), ("1001", ConfigError::Range), ("4294967296", ConfigError::Range)] {
             let mut rows = [("pierwszy", "7"), ("Łódź", "0"), ("ostatni", "1")];
             rows[failure].1 = text;
             let mut requested = 0;
@@ -156,7 +156,7 @@ fn readings_preserve_absence_zero_order_and_duplicate_ids() {
 #[test]
 fn readings_reject_present_errors_at_first_middle_last_and_stop_requests() {
     for failure in 0..3 {
-        for (text, kind) in [("żółć", ReadingError::Syntax), ("", ReadingError::Syntax), ("51", ReadingError::Range), ("-21", ReadingError::Range)] {
+        for (text, kind) in [("żółć", ReadingError::Syntax), ("", ReadingError::Syntax), ("51", ReadingError::Range), ("-21", ReadingError::Range), ("32768", ReadingError::Range), ("-32769", ReadingError::Range)] {
             let mut rows = [("a", None), ("Łódź", Some("0")), ("c", Some("50"))];
             rows[failure].1 = Some(text);
             let mut requested = 0;
@@ -164,7 +164,7 @@ fn readings_reject_present_errors_at_first_middle_last_and_stop_requests() {
             let result = parse_readings(rows.into_iter().inspect(|_| requested += 1), |id| observed.push(id.to_string()));
             assert_eq!(result, Err(ReadingRowError { index: failure, id: rows[failure].0.to_string(), kind }));
             assert_eq!(requested, failure + 1);
-            assert_eq!(observed.len(), failure + 1);
+            assert_eq!(observed, rows[..=failure].iter().map(|r| r.0.to_string()).collect::<Vec<_>>());
         }
     }
 }`,
@@ -207,8 +207,10 @@ fn flags_preserve_absence_false_order_and_first_error_id() {
     assert_eq!(parse_flags(&[("a", None), ("a", Some("no")), ("b", Some("\u{2003}yes\u{2003}")), ("a", Some("no"))]), Ok(vec![None, Some(false), Some(true), Some(false)]));
     for failure in 0..3 {
         let mut rows = [("a", Some("yes")), ("Łódź", None), ("c", Some("no"))];
-        rows[failure].1 = Some("");
-        assert_eq!(parse_flags(&rows), Err(format!("flag: {}", rows[failure].0)));
+        for invalid in ["", "YES", "NO"] {
+            rows[failure].1 = Some(invalid);
+            assert_eq!(parse_flags(&rows), Err(format!("flag: {}", rows[failure].0)));
+        }
     }
     assert_eq!(parse_flags(&[("żółć", Some("maybe")), ("b", Some("bad"))]), Err(String::from("flag: żółć")));
 }`,

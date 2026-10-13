@@ -77,6 +77,24 @@ const readingsAlternate = replace(
     Ok(output)`,
 );
 const readingMutants = {
+  wrongErrorObservation: {
+    code: replace(
+      readings.solution,
+      "observed(id);\n        optional_reading(text).map_err",
+      'let reading = optional_reading(text);\n        observed(if reading.is_err() { "wrong" } else { id });\n        reading.map_err',
+    ),
+    assertion:
+      "readings_reject_present_errors_at_first_middle_last_and_stop_requests",
+  },
+  overflowAsSyntax: {
+    code: replace(
+      readings.solution,
+      "std::num::IntErrorKind::NegOverflow => ReadingError::Range",
+      "std::num::IntErrorKind::NegOverflow => ReadingError::Syntax",
+    ),
+    assertion:
+      "readings_reject_present_errors_at_first_middle_last_and_stop_requests",
+  },
   missingToZero: {
     code: replace(
       readings.solution,
@@ -116,6 +134,14 @@ export const fallibleCompositionFixtures = [
 }
 fn main() {}`,
     mutants: {
+      narrowParser: {
+        code: replace(
+          borrowed.solution,
+          ".parse::<u16>().ok()",
+          ".parse::<u8>().ok().map(u16::from)",
+        ),
+        assertion: "borrowed_number_preserves_owner_and_option_policy",
+      },
       missingToZero: {
         code: replace(
           borrowed.solution,
@@ -180,6 +206,20 @@ fn main() {}`,
     id: "fallible-rows-contract",
     alternate: rowsAlternate,
     mutants: {
+      signedParser: {
+        code: replace(rows.solution, ".parse::<u32>()", ".parse::<i64>()"),
+        assertion:
+          "rows_report_first_error_identity_without_requesting_a_later_item",
+      },
+      overflowAsSyntax: {
+        code: replace(
+          rows.solution,
+          "std::num::IntErrorKind::NegOverflow => ConfigError::Range",
+          "std::num::IntErrorKind::NegOverflow => ConfigError::Syntax",
+        ),
+        assertion:
+          "rows_report_first_error_identity_without_requesting_a_later_item",
+      },
       droppingErrors: {
         code: replace(
           rows.solution,
@@ -280,6 +320,14 @@ fn main() {}`,
 }
 fn main() {}`,
     mutants: {
+      caseInsensitiveFlags: {
+        code: replace(
+          flags.solution,
+          "match text.trim()",
+          "match text.trim().to_ascii_lowercase().as_str()",
+        ),
+        assertion: "flags_preserve_absence_false_order_and_first_error_id",
+      },
       absenceBecomesFalse: {
         code: replace(
           flags.solution,
