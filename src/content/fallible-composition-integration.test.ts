@@ -419,3 +419,256 @@ it("fallible rows recovery excludes the blank alias after guided family assistan
     });
   }
 });
+
+for (const requiredRowsAssisted of [false, true]) {
+  it(`credits guided readings and stops duplicate recovery with required rows assisted=${requiredRowsAssisted}`, async () => {
+    const { gateRecovery, moduleGate } = await import("../engine/learning");
+    const { evidenceForLessonStep, recordCourseEvidence } =
+      await import("./learning-context");
+    const stage = course.modules.find((m) => m.id === "iterators")!;
+    const criterion = stage.gateCriteria!.find(
+      (g) => g.id === "iterators-fallible-rows-gate",
+    )!;
+    const lesson = course.lessons.find(
+      (l) => l.id === "fallible-iterator-contracts",
+    )!;
+    const guided = lesson.steps.find(
+      (s) => s.id === "fallible-readings-transfer",
+    )!;
+    let state = createInitialState();
+    if (requiredRowsAssisted)
+      state.steps[`${lesson.id}:fallible-rows-contract`] = {
+        ...createStepProgress(),
+        revealed: true,
+      };
+    state = recordCourseEvidence(state, {
+      id: "clean-guided",
+      lessonId: lesson.id,
+      stepId: guided.id,
+      ...evidenceForLessonStep(lesson, guided),
+      kind: guided.evidenceKind,
+      evaluator: "tests",
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 1,
+    });
+    expect({
+      passed: moduleGate(state, course.lessons, {
+        ...stage,
+        gateCriteria: [criterion],
+      }).passed,
+      recovery: gateRecovery(state, criterion, course.lessons),
+    }).toEqual({ passed: true, recovery: { status: "complete" } });
+  });
+}
+
+it("credits either readings alias once while keeping concept mastery at two distinct families", async () => {
+  const { gateRecovery, moduleGate, independentCodingTaskIds } =
+    await import("../engine/learning");
+  const {
+    courseEvidencePolicy,
+    courseMastery,
+    evidenceForLessonStep,
+    recordCourseEvidence,
+  } = await import("./learning-context");
+  const stage = course.modules.find((m) => m.id === "iterators")!;
+  const criterion = stage.gateCriteria!.find(
+    (g) => g.id === "iterators-fallible-rows-gate",
+  )!;
+  const lesson = course.lessons.find(
+    (l) => l.id === "fallible-iterator-contracts",
+  )!;
+  const submit = (
+    state: ReturnType<typeof createInitialState>,
+    stepId: string,
+  ) => {
+    const step = lesson.steps.find((s) => s.id === stepId)!;
+    return recordCourseEvidence(state, {
+      id: `${stepId}/${state.events.length}`,
+      lessonId: lesson.id,
+      stepId,
+      ...evidenceForLessonStep(lesson, step),
+      kind: step.evidenceKind,
+      evaluator: "tests",
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: state.events.length + 1,
+    });
+  };
+  for (const alias of [
+    "fallible-readings-transfer",
+    "fallible-readings-blank",
+  ]) {
+    const state = submit(createInitialState(), alias);
+    expect(
+      moduleGate(state, course.lessons, { ...stage, gateCriteria: [criterion] })
+        .passed,
+      alias,
+    ).toBe(true);
+    expect(gateRecovery(state, criterion, course.lessons), alias).toEqual({
+      status: "complete",
+    });
+  }
+  const aliases = submit(
+    submit(createInitialState(), "fallible-readings-transfer"),
+    "fallible-readings-blank",
+  );
+  expect(
+    independentCodingTaskIds(aliases, lesson.id, courseEvidencePolicy),
+  ).toEqual(["fallible/optional-rows"]);
+  expect(courseMastery(aliases, lesson.id).level).toBe("practiced");
+  // A diagnostic two-family view checks the gate's own deduplication; the
+  // authored criterion above still requires just one independent family.
+  const twoFamilyCriterion = {
+    ...criterion,
+    requiredIndependentCodingTasks: 2,
+  };
+  expect(
+    moduleGate(aliases, course.lessons, {
+      ...stage,
+      gateCriteria: [twoFamilyCriterion],
+    }).passed,
+  ).toBe(false);
+  expect(gateRecovery(aliases, twoFamilyCriterion, course.lessons)).toEqual({
+    status: "available",
+    task: criterion.taskRefs[0],
+  });
+  expect(
+    course.concepts.find((c) => c.id === lesson.id)!.evidenceCalibration
+      ?.minimumCodingTasks,
+  ).toBe(2);
+  const distinct = submit(aliases, "fallible-rows-contract");
+  expect(
+    independentCodingTaskIds(distinct, lesson.id, courseEvidencePolicy),
+  ).toEqual(["fallible/optional-rows", "fallible/required-rows"]);
+  expect(courseMastery(distinct, lesson.id).level).toBe("understood");
+  expect(
+    moduleGate(distinct, course.lessons, {
+      ...stage,
+      gateCriteria: [twoFamilyCriterion],
+    }).passed,
+  ).toBe(true);
+  expect(gateRecovery(distinct, twoFamilyCriterion, course.lessons)).toEqual({
+    status: "complete",
+  });
+});
+
+it("keeps both directions of readings sibling assistance exhausted in saved and event history", async () => {
+  const { gateRecovery, moduleGate } = await import("../engine/learning");
+  const {
+    assistanceForLessonStep,
+    evidenceForLessonStep,
+    recordCourseEvidence,
+  } = await import("./learning-context");
+  const stage = course.modules.find((m) => m.id === "iterators")!;
+  const criterion = stage.gateCriteria!.find(
+    (g) => g.id === "iterators-fallible-rows-gate",
+  )!;
+  const lesson = course.lessons.find(
+    (l) => l.id === "fallible-iterator-contracts",
+  )!;
+  for (const [helpedId, attemptedId] of [
+    ["fallible-readings-transfer", "fallible-readings-blank"],
+    ["fallible-readings-blank", "fallible-readings-transfer"],
+  ]) {
+    const helped = lesson.steps.find((s) => s.id === helpedId)!;
+    const attempted = lesson.steps.find((s) => s.id === attemptedId)!;
+    for (const mode of ["saved", "event"] as const) {
+      let state = createInitialState();
+      state.steps[`${lesson.id}:fallible-rows-contract`] = {
+        ...createStepProgress(),
+        revealed: true,
+      };
+      if (mode === "saved")
+        state.steps[`${lesson.id}:${helpedId}`] = {
+          ...createStepProgress(),
+          hints: 1,
+        };
+      else
+        state = recordCourseEvidence(state, {
+          id: "sibling-help",
+          lessonId: lesson.id,
+          stepId: helped.id,
+          ...evidenceForLessonStep(lesson, helped),
+          kind: helped.evidenceKind,
+          evaluator: "tests",
+          passed: true,
+          hints: 1,
+          revealed: false,
+          at: 1,
+        });
+      expect(
+        gateRecovery(state, criterion, course.lessons),
+        `${helpedId}/${mode}`,
+      ).toEqual({ status: "exhausted" });
+      state = recordCourseEvidence(state, {
+        id: "attempted-alias",
+        lessonId: lesson.id,
+        stepId: attempted.id,
+        ...evidenceForLessonStep(lesson, attempted),
+        kind: attempted.evidenceKind,
+        evaluator: "tests",
+        passed: true,
+        ...assistanceForLessonStep(state, lesson, attempted),
+        at: 2,
+      });
+      expect(
+        moduleGate(state, course.lessons, {
+          ...stage,
+          gateCriteria: [criterion],
+        }).passed,
+        `${attemptedId}/${mode}`,
+      ).toBe(false);
+      expect(
+        gateRecovery(state, criterion, course.lessons),
+        `${attemptedId}/${mode}`,
+      ).toEqual({ status: "exhausted" });
+    }
+  }
+});
+
+it("covers all eligible fallible gate aliases without broadening the values error-policy gate", () => {
+  const stage = course.modules.find((m) => m.id === "iterators")!;
+  const values = stage.gateCriteria!.find(
+    (g) => g.id === "iterators-fallible-values-gate",
+  )!;
+  const rows = stage.gateCriteria!.find(
+    (g) => g.id === "iterators-fallible-rows-gate",
+  )!;
+  // borrowed-number deliberately collapses absence/parse errors, so it does not
+  // satisfy the values gate's distinct Missing/Syntax/Range policy.
+  expect(values.taskRefs.map((r) => r.stepId)).toEqual([
+    "fallible-config-contract",
+    "fallible-optional-transfer",
+  ]);
+  expect(values.requiredIndependentCodingTasks).toBe(1);
+  expect(rows.taskRefs.map((r) => r.stepId)).toEqual([
+    "fallible-rows-contract",
+    "fallible-readings-transfer",
+    "fallible-readings-blank",
+  ]);
+  expect(rows.requiredIndependentCodingTasks).toBe(1);
+  const lesson = course.lessons.find(
+    (l) => l.id === "fallible-iterator-contracts",
+  )!;
+  expect(rows.taskRefs.map((r) => r.stepId)).toEqual(
+    lesson.steps
+      .filter(
+        (s) =>
+          s.evaluator?.kind === "tests" &&
+          s.evidenceGate &&
+          s.evidence?.codingTaskId,
+      )
+      .map((s) => s.id),
+  );
+  expect(
+    new Set(
+      rows.taskRefs.map(
+        (ref) =>
+          lesson.steps.find((s) => s.id === ref.stepId)!.evidence!.codingTaskId,
+      ),
+    ).size,
+  ).toBe(2);
+});

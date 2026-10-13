@@ -1283,6 +1283,10 @@ export const iteratorsModule: CourseModule = {
         },
         {
           lessonId: "fallible-iterator-contracts",
+          stepId: "fallible-readings-transfer",
+        },
+        {
+          lessonId: "fallible-iterator-contracts",
           stepId: "fallible-readings-blank",
         },
       ],

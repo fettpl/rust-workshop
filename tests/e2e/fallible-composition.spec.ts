@@ -28,6 +28,9 @@ const ownerRepair = valueLesson.steps.find(
 const readingsBlank = pipelineLesson.steps.find(
   (step) => step.id === "fallible-readings-blank",
 )!;
+const readingsTransfer = pipelineLesson.steps.find(
+  (step) => step.id === "fallible-readings-transfer",
+)!;
 const retrievalCases = [
   {
     conceptId: "fallible-value-composition",
@@ -649,3 +652,155 @@ for (const gateCase of fallibleGateCases) {
     }
   });
 }
+
+test("fallible rows gate: clean guided transfer passes after required family assistance without duplicate blank recovery", async ({
+  page,
+}) => {
+  const criterion = iteratorModule.gateCriteria?.find(
+    (candidate) => candidate.id === "iterators-fallible-rows-gate",
+  );
+  if (!criterion) throw new Error("Expected authored fallible rows gate");
+  expect(criterion.requiredIndependentCodingTasks).toBe(1);
+  expect(readingsTransfer.evaluator?.kind).toBe("tests");
+
+  const rowsContract = pipelineLesson.steps.find(
+    (step) => step.id === "fallible-rows-contract",
+  )!;
+  const seededState = preparedState();
+  const assistedKey = stepKey(pipelineLesson.id, rowsContract.id);
+  seededState.steps[assistedKey] = {
+    ...createStepProgress(rowsContract.code),
+    completed: true,
+    hints: 1,
+  };
+  const blankKey = stepKey(pipelineLesson.id, readingsBlank.id);
+  expect(seededState.steps[blankKey]).toBeUndefined();
+  expect(
+    seededState.events.some(
+      (event) =>
+        event.lessonId === pipelineLesson.id &&
+        event.stepId === readingsBlank.id,
+    ),
+  ).toBe(false);
+
+  const expectedTests =
+    readingsTransfer.evaluator?.kind === "tests"
+      ? readingsTransfer.evaluator.tests
+      : undefined;
+  const requests: Array<{ code?: string; mode?: string; tests?: string }> = [];
+  await page.route("**/api/run", async (route) => {
+    const request = route.request().postDataJSON() as {
+      code?: string;
+      mode?: string;
+      tests?: string;
+    };
+    requests.push(request);
+    expect(request.mode).toBe("test");
+    expect(request.code).toBe(readingsTransfer.solution);
+    expect(request.tests).toBe(expectedTests);
+    const accepted =
+      request.code === readingsTransfer.solution &&
+      request.tests === expectedTests;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: accepted ? "success" : "test-failure",
+        stdout: accepted
+          ? "mocked guided readings tests passed"
+          : "test result: FAILED",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: accepted ? { passed: 4, failed: 0 } : { passed: 0, failed: 1 },
+      }),
+    });
+  });
+
+  await seedState(page, seededState);
+  await openLesson(page, pipelineLesson.id);
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(pipelineLesson.steps.indexOf(readingsTransfer))
+    .click();
+  const editor = page.getByRole("textbox", {
+    name: "Kod Rust",
+    exact: true,
+  });
+  await expect(editor).toBeVisible();
+  await editor.fill(readingsTransfer.solution!);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Wynik kompilatora" }),
+  ).toContainText("Wykonano poprawnie");
+  expect(requests).toHaveLength(1);
+
+  const after = await readState(page);
+  const guidedPass = after.events.find(
+    (event) =>
+      event.lessonId === pipelineLesson.id &&
+      event.stepId === readingsTransfer.id &&
+      event.kind !== "exposure",
+  );
+  expect(guidedPass).toMatchObject({
+    lessonId: pipelineLesson.id,
+    stepId: readingsTransfer.id,
+    conceptIds: readingsTransfer.evidence?.conceptIds,
+    evidenceVersion: readingsTransfer.evidence?.version,
+    kind: readingsTransfer.evidenceKind,
+    evaluator: "tests",
+    passed: true,
+    hints: 0,
+    revealed: false,
+  });
+  expect(after.steps[assistedKey]).toEqual(seededState.steps[assistedKey]);
+  expect(after.steps[assistedKey]).toMatchObject({
+    completed: true,
+    hints: 1,
+  });
+  expect(after.steps[blankKey]).toBeUndefined();
+  expect(
+    after.events.some(
+      (event) =>
+        event.lessonId === pipelineLesson.id &&
+        event.stepId === readingsBlank.id,
+    ),
+  ).toBe(false);
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+    .fill(iteratorModule.title);
+  await page
+    .locator(".module-picker > button")
+    .filter({ hasText: iteratorModule.title })
+    .click();
+
+  const criterionRow = page
+    .locator(".gate-panel li")
+    .filter({ hasText: criterion.label });
+  await expect(criterionRow).toContainText(criterion.label);
+  await expect(criterionRow.locator('[aria-label="Potwierdzone"]')).toHaveCount(
+    1,
+  );
+  await expect(criterionRow).not.toContainText(
+    "Brak świeżego samodzielnego wariantu",
+  );
+  await expect(
+    criterionRow.getByRole("button", { name: "Sprawdź w zadaniu" }),
+  ).toHaveCount(0);
+  await expect(
+    page
+      .locator(".module-connections")
+      .getByRole("button", { name: criterion.label, exact: true }),
+  ).toHaveCount(0);
+});
