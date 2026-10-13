@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import * as course from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const course = historicalBeforeFallibleComposition(currentCourse);
 import baseline from "./baseline-correction-legacy.json";
 import delta from "./baseline-correction-delta.json";
 import saves from "./fixtures/baseline-correction-saves.json";

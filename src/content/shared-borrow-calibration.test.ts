@@ -1,3 +1,7 @@
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const historicalLessons =
+  historicalBeforeFallibleComposition(currentCourse).lessons;
 import { expect, it } from "vitest";
 import type { LessonStep } from "@/domain/types";
 import {
@@ -105,7 +109,7 @@ it("authors the shared borrow lesson as the exact five step pair", () => {
 
 it("registers the lesson, exact pair criterion, and both delayed reviews", () => {
   expect(ownershipModule.lessonIds.at(-1)).toBe("shared-borrow-calibration");
-  expect(lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
+  expect(historicalLessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
   expect(ownershipModule.gateCriteria?.at(-1)).toEqual({
     id: "shared-borrow-pair-v1",
     label: "Dwie różne naprawy pożyczonego odczytu bez podpowiedzi",

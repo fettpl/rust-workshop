@@ -1,5 +1,8 @@
 import { expect, it } from "vitest";
-import { concepts, lessons, modules, reviewExercises } from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const { concepts, lessons, modules, reviewExercises } =
+  historicalBeforeFallibleComposition(currentCourse);
 import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
 import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";

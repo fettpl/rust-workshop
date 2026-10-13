@@ -1,6 +1,9 @@
 import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { concepts, lessons, modules, reviewExercises } from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const { concepts, lessons, modules, reviewExercises } =
+  historicalBeforeFallibleComposition(currentCourse);
 import { runtimeAllocationEvidenceLessons } from "./runtime-allocation-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
 import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";

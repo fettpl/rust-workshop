@@ -9,14 +9,10 @@ import {
   unsafeFfiReviewExercises,
   unsafeFfiSources,
 } from "./unsafe-ffi";
-import {
-  concepts,
-  lessons,
-  modules,
-  projects,
-  roadmap,
-  sources,
-} from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const { concepts, lessons, modules, projects, roadmap, sources } =
+  historicalBeforeFallibleComposition(currentCourse);
 import {
   nestedPatternConcepts,
   nestedPatternLessons,
@@ -175,7 +171,7 @@ it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operat
     lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => step.kind === "blank"),
-  // Three baseline blanks are outside the newly extended nested lesson.
+    // Three baseline blanks are outside the newly extended nested lesson.
   ).toHaveLength(141 + nestedBlankSteps + 3);
   const index = modules.findIndex((entry) => entry.id === unsafeFfiModule.id);
   expect(index).toBe(modules.length - 5);

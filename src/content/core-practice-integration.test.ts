@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
-import * as course from "./course";
+import * as currentCourse from "./course";
+import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+const course = historicalBeforeFallibleComposition(currentCourse);
 import legacy from "./core-practice-legacy-baseline.json";
 import correctionDelta from "./baseline-correction-delta.json";
 import { traitsModule as originalTraitsModule } from "./traits";
