@@ -1194,6 +1194,7 @@ button svg {
 }
 .learning-text {
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 .dashboard-secondary {
   display: grid;

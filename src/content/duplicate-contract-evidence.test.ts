@@ -598,6 +598,7 @@ describe("duplicate contract evidence families", () => {
         });
       } else if (
         lessonId === "async-lending-callbacks" ||
+        lessonId === "async-lending-cancel-commit" ||
         lessonId === "async-lending-send-boundary" ||
         lessonId === "async-lending-dyn-adapter"
       ) {
@@ -608,9 +609,11 @@ describe("duplicate contract evidence families", () => {
             stepId:
               lessonId === "async-lending-callbacks"
                 ? "async-lending-callbacks-bounded-transform"
-                : lessonId === "async-lending-send-boundary"
-                  ? "async-lending-send-boundary-prepared-handoff"
-                  : "async-lending-dyn-adapter-borrowed-sources",
+                : lessonId === "async-lending-cancel-commit"
+                  ? "async-lending-cancel-commit-lost-reply"
+                  : lessonId === "async-lending-send-boundary"
+                    ? "async-lending-send-boundary-prepared-handoff"
+                    : "async-lending-dyn-adapter-borrowed-sources",
           },
         });
       } else {
@@ -1055,6 +1058,13 @@ describe("duplicate contract evidence families", () => {
 
 const transferFamilies = [
   {
+    conceptId: "async-lending-cancel-commit",
+    lessonId: "async-lending-cancel-commit",
+    stepId: "async-lending-cancel-commit-lost-reply",
+    oldFamily: "async-lending/cancel-commit-v1",
+    newFamily: "async-lending/cancel-lost-reply-v1",
+  },
+  {
     conceptId: "async-lending-send-boundary",
     lessonId: "async-lending-send-boundary",
     stepId: "async-lending-send-boundary-prepared-handoff",
@@ -1413,6 +1423,63 @@ it("keeps the new Send model supplementary and requires two families plus strict
     eventFor(lesson, model, "later-model-contact", 4000),
   );
   expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day + 1)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 4000 + day + 1)).toBe(
+    true,
+  );
+});
+
+it("keeps the new cancellation model supplementary and invalidates delayed review on later model contact", () => {
+  const conceptId = "async-lending-cancel-commit";
+  const { lesson, step: model } = lessonStep(
+    conceptId,
+    "async-lending-cancel-commit-reply-model",
+  );
+  const gate = lessonStep(conceptId, `${conceptId}-gate`).step;
+  const transfer = lessonStep(conceptId, `${conceptId}-lost-reply`).step;
+  const day = 24 * 60 * 60 * 1000;
+  let state = recordCourseEvidence(
+    createInitialState(),
+    eventFor(lesson, model, "cancel-model-only", 1000),
+  );
+  expect(state.events[0]).not.toHaveProperty("codingTaskId");
+  expect(courseEvidenceSummary(state, conceptId).qualifyingCodingTasks).toBe(0);
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, gate, "cancel-old-clean", 2000),
+  );
+  state.review = [
+    { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "cancel due" },
+  ];
+  expect(courseDelayedReviewEligibility(state, conceptId, 2000 + day + 1)).toBe(
+    false,
+  );
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, transfer, "cancel-new-clean", 3000),
+  );
+  state.review = [
+    { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "cancel due" },
+  ];
+  expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day + 1)).toBe(
+    true,
+  );
+  state.ratings = [{ conceptId, rating: "hard", at: 3500 }];
+  expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day + 1)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3500 + day + 1)).toBe(
+    true,
+  );
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, model, "cancel-later-model-contact", 4000),
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3500 + day + 1)).toBe(
     false,
   );
   expect(courseDelayedReviewEligibility(state, conceptId, 4000 + day + 1)).toBe(

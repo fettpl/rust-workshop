@@ -1,4 +1,5 @@
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
@@ -16,7 +17,9 @@ import { historicalBeforeFallibleComposition } from "./fallible-composition-comp
 const { concepts, lessons, modules, projects, roadmap, sources } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(
-      historicalBeforeSendHandoff(currentCourse),
+      historicalBeforeSendHandoff(
+        historicalBeforeCancellationTransfer(currentCourse),
+      ),
     ),
   );
 import {

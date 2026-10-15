@@ -41,7 +41,7 @@ export const asyncLendingModule: CourseModule = {
   ],
   lessonIds: criteria.map(([id]) => id),
   exitGate: [
-    "Receiver, callback, adapter dyn i Send mają po dwie opisane rodziny primary. Cancellation/commit ma jedną; potwierdzenie pojęcia wymaga dwóch kwalifikujących się czystych rodzin.",
+    "Receiver, callback, adapter dyn, Send i cancellation/commit mają po dwie opisane rodziny primary; potwierdzenie pojęcia wymaga dwóch kwalifikujących się czystych rodzin.",
     "Gate i blank są alternatywami tej samej rodziny, a recall nie dodaje rodziny primary. Stara rodzina z pomocą i nowa czysta rodzina dają tylko jedną kwalifikującą się rodzinę; pomoc w obu może wyczerpać dostępne warianty.",
     "Ukończenie modułu wymaga jednego samodzielnego kontraktu na kryterium i jest odrębne od potwierdzenia pojęcia. Dostępność dwóch opisanych rodzin nie oznacza, że uczeń już je potwierdził.",
   ],
@@ -55,6 +55,14 @@ export const asyncLendingModule: CourseModule = {
     taskRefs: [
       { lessonId: id, stepId: `${id}-gate` },
       { lessonId: id, stepId: `${id}-blank` },
+      ...(id === "async-lending-cancel-commit"
+        ? [
+            {
+              lessonId: id,
+              stepId: "async-lending-cancel-commit-lost-reply",
+            },
+          ]
+        : []),
       ...(id === "async-lending-receiver"
         ? [
             {

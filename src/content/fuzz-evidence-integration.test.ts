@@ -1,4 +1,5 @@
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { expect, it } from "vitest";
 import * as currentCourse from "./course";
@@ -6,7 +7,9 @@ import { historicalBeforeFallibleComposition } from "./fallible-composition-comp
 const { concepts, lessons, modules, reviewExercises } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(
-      historicalBeforeSendHandoff(currentCourse),
+      historicalBeforeSendHandoff(
+        historicalBeforeCancellationTransfer(currentCourse),
+      ),
     ),
   );
 import { fuzzEvidenceConcepts, fuzzEvidenceLessons } from "./fuzz-evidence";

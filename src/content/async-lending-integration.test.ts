@@ -19,10 +19,10 @@ it("registers five async lending lessons, concepts, gates and reviews", () => {
   const taskRefs = stage!.gateCriteria!.flatMap(
     (criterion) => criterion.taskRefs,
   );
-  expect(taskRefs).toHaveLength(14);
+  expect(taskRefs).toHaveLength(15);
   expect(
     new Set(taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`)).size,
-  ).toBe(14);
+  ).toBe(15);
   for (const [index, id] of ids.entries()) {
     const lesson = lessons.find((candidate) => candidate.id === id)!;
     expect(lesson.conceptIds).toEqual([
@@ -66,14 +66,21 @@ it("registers five async lending lessons, concepts, gates and reviews", () => {
                   stepId: "async-lending-send-boundary-prepared-handoff",
                 },
               ]
-            : id === "async-lending-dyn-adapter"
+            : id === "async-lending-cancel-commit"
               ? [
                   {
                     lessonId: id,
-                    stepId: "async-lending-dyn-adapter-borrowed-sources",
+                    stepId: "async-lending-cancel-commit-lost-reply",
                   },
                 ]
-              : []),
+              : id === "async-lending-dyn-adapter"
+                ? [
+                    {
+                      lessonId: id,
+                      stepId: "async-lending-dyn-adapter-borrowed-sources",
+                    },
+                  ]
+                : []),
     ];
     expect(stage!.gateCriteria![index].taskRefs).toEqual(expectedRefs);
   }
@@ -111,9 +118,11 @@ it("states authored family availability separately from module completion and co
     (module) => module.id === "async-lending-contracts",
   )!;
   expect(stage.exitGate.join(" ")).toContain(
-    "Receiver, callback, adapter dyn i Send mają po dwie opisane rodziny primary",
+    "Receiver, callback, adapter dyn, Send i cancellation/commit mają po dwie opisane rodziny primary",
   );
-  expect(stage.exitGate.join(" ")).toContain("Cancellation/commit ma jedną");
+  expect(stage.exitGate.join(" ")).toContain(
+    "potwierdzenie pojęcia wymaga dwóch kwalifikujących się czystych rodzin",
+  );
   expect(stage.exitGate.join(" ")).toContain("Ukończenie modułu");
   expect(
     stage.gateCriteria!.every(
