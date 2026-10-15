@@ -35,3 +35,8 @@ The current Feature 2 source cut retains 48 modules and contains 192 lessons, 19
 ## Current evidence boundary
 
 The 13 October 2026 pre-integration checkpoint records a Feature 2 source cut with 48 modules, 192 lessons, 194 concepts, 1,269 steps, 349 sources and 194 ordinary reviews. Baseline PR56 remains the accepted correction boundary; Feature 1 PR65 is accepted and merged as main commit `c42c9253715ccd36d688677b0ef8e081f6771204`, with PR run 38409844340 and resulting-main run 38415264591 both green. The dated [verification record](../../verification.md#feature-2-documentation-guided-repair-source-cut-13-october-2026) separates authored source and support observations from integrated checks, independent review, merge and resulting-main evidence. No future Feature 2 PR/head/merge identity is asserted. No observed learner success, retention, efficacy, mastery or professional/senior readiness is a completion condition or delivered result.
+
+
+## 15 October continuation
+
+The [advanced continuation requirements and frozen A1 plan](2026-10-15-advanced-continuation.md) resume the broader goal after maintenance PR67, ordinary main `3c1ee89c3d46b0b1b9e3798a317587464a236e5c` with all eleven coordinator-confirmed resulting-main checks. Current A1 source appends two Send steps, giving 1,271 steps with the same 48 modules/192 lessons/194 concepts/349 sources. Its release acceptance is pending; the preceding Feature 2 counts and evidence retain their dated meaning. Later milestones require fresh source-bound design and acceptance.

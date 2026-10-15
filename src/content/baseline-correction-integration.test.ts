@@ -1,3 +1,5 @@
+import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -5,7 +7,11 @@ import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
-  historicalBeforeDocumentationRepair(currentCourse),
+  historicalBeforeDocumentationRepair(
+    historicalBeforeSendHandoff(
+      historicalBeforeCancellationTransfer(currentCourse),
+    ),
+  ),
 );
 import baseline from "./baseline-correction-legacy.json";
 import delta from "./baseline-correction-delta.json";

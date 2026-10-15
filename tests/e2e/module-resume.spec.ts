@@ -100,7 +100,7 @@ for (const moduleId of [
       await expect(
         page.getByText(stage.exitGate.join(" "), { exact: true }),
       ).toContainText(
-        "Receiver, callback i adapter dyn mają po dwie opisane rodziny primary",
+        "Receiver, callback, adapter dyn, Send i cancellation/commit mają po dwie opisane rodziny primary",
       );
       expect(
         await page.evaluate(

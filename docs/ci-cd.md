@@ -5,6 +5,16 @@ Wdrożenie aplikacji nie jest jeszcze skonfigurowane: docelowy hosting pozostaje
 do wyboru. Konfiguracja nie wymaga sekretów wdrożeniowych i niczego nie publikuje
 poza raportami testów w prywatnym repozytorium.
 
+The `verify` and `workspace-msrv` jobs explicitly run
+`cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml`
+after `npm ci`, before tests and verifiers that consume the fixed Tokio profile.
+This is network preparation; subsequent native checks remain offline/locked.
+For a fresh local checkout, run the same preparation before `npm test`.
+Standalone `content:async-lending -- --fetch` prepares both the extracted service
+solution and the fixed runtime profile with the selected stable or exact MSRV
+Cargo, checking that the fixed profile lockfile remains unchanged. Dependency
+preparation itself is not a behavioral proof.
+
 The `mini-grep-fuzz` job installs both the reviewed nightly `nightly-2026-08-08`
 and exact Rust `1.85.0`. It uploads the report, raw logs, corpus and artifacts
 with `if: always()`. Local verification records `cargo-fuzz` absence, loopback

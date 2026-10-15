@@ -35,9 +35,12 @@ const assessments = [
   ...Object.values(asyncLendingBoundaryReviewExercises),
 ];
 
-it("covers thirteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
-  expect(assessments).toHaveLength(18);
-  expect(asyncLendingAssessmentFixtures).toHaveLength(18);
+it("covers fifteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
+  expect(assessments).toHaveLength(20);
+  expect(asyncLendingAssessmentFixtures).toHaveLength(20);
+  expect(assessments.map((step) => step.id)).toContain(
+    "async-lending-cancel-commit-lost-reply",
+  );
   expect(
     asyncLendingAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());
@@ -55,7 +58,14 @@ it("covers thirteen coding assessments and five independent reviews with distinc
     const descriptors = asyncLendingTransferMutants[fixture.id];
     if (descriptors) {
       expect(descriptors).toHaveLength(
-        fixture.id.includes("callbacks") ? 5 : 6,
+        (
+          {
+            "async-lending-callbacks-bounded-transform": 5,
+            "async-lending-dyn-adapter-borrowed-sources": 6,
+            "async-lending-send-boundary-prepared-handoff": 7,
+            "async-lending-cancel-commit-lost-reply": 8,
+          } as Record<string, number>
+        )[fixture.id],
       );
       expect(new Set(descriptors.map((item) => item.id)).size).toBe(
         descriptors.length,
@@ -82,6 +92,33 @@ it("keeps the exact stable mutant ID to named assertion mapping", () => {
       ]),
     ),
   ).toEqual({
+    "async-lending-send-boundary-prepared-handoff": [
+      [
+        "duplicate-format",
+        qualified("preparation_is_synchronous_and_exactly_once"),
+      ],
+      [
+        "first-record-only",
+        qualified("preparation_is_synchronous_and_exactly_once"),
+      ],
+      [
+        "reversed-output",
+        qualified("prepared_outputs_preserve_order_and_values"),
+      ],
+      [
+        "ignore-pause",
+        qualified("pause_retains_owned_state_and_current_waker"),
+      ],
+      [
+        "empty-input-pause-bypass",
+        qualified("empty_records_still_wait_for_pause"),
+      ],
+      ["empty-output", qualified("prepared_outputs_preserve_order_and_values")],
+      [
+        "raw-input-output",
+        qualified("prepared_outputs_preserve_order_and_values"),
+      ],
+    ],
     "async-lending-callbacks-bounded-transform": [
       [
         "emitted-output-budget",
@@ -137,6 +174,16 @@ it("keeps the exact stable mutant ID to named assertion mapping", () => {
         "wrong-borrowed-bytes",
         qualified("borrowed_bytes_are_forwarded_without_substitution"),
       ],
+    ],
+    "async-lending-cancel-commit-lost-reply": [
+      ["early-commit", qualified("precommit_pending_drop")],
+      ["late-commit", qualified("postcommit_pending_drop")],
+      ["bypass-reply", qualified("postcommit_pending_drop")],
+      ["replay-new-receipt", qualified("replay_bypasses_gates")],
+      ["overwrite-conflict", qualified("conflict_bypasses_gates")],
+      ["normalize-key", qualified("opaque_strings")],
+      ["one-based-receipt", qualified("ordinal_sequence")],
+      ["wait-on-replay", qualified("replay_bypasses_gates")],
     ],
   });
 });
@@ -215,9 +262,11 @@ it.each(asyncLendingAssessmentFixtures)(
           expect(run.signal).toBeNull();
           expect(run.status, run.stdout + run.stderr).toBe(0);
           expect(run.stdout).toContain(
-            fixture.id.includes("callbacks")
-              ? "8 passed; 0 failed"
-              : "7 passed; 0 failed",
+              fixture.id.includes("callbacks")
+                ? "8 passed; 0 failed"
+                : fixture.id === "async-lending-cancel-commit-lost-reply"
+                  ? "9 passed; 0 failed"
+                  : "7 passed; 0 failed",
           );
         }
         for (const descriptor of descriptors) {
