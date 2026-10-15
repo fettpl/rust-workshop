@@ -18,6 +18,7 @@ import {
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
 import { asyncLendingBoundaryFixtures } from "../src/content/async-lending-fixtures";
@@ -344,6 +345,23 @@ try {
     const fetched = run(solution, cargo, ["fetch", "--locked"]);
     assertCompleted(fetched, "solution/fetch");
     assert.equal(fetched.status, 0, "fixed dependency fetch failed");
+    const fixedProfile = fileURLToPath(
+      new URL("./fixtures/tokio-runtime-1.53.1/", import.meta.url),
+    );
+    const fixedLockPath = join(fixedProfile, "Cargo.lock");
+    const fixedLock = readFileSync(fixedLockPath);
+    const fixedFetched = run(root, cargo, [
+      "fetch",
+      "--locked",
+      "--manifest-path",
+      join(fixedProfile, "Cargo.toml"),
+    ]);
+    assertCompleted(fixedFetched, "fixed-profile/fetch");
+    assert(
+      fixedLock.equals(readFileSync(fixedLockPath)),
+      "fixed Tokio profile Cargo.lock changed during fetch",
+    );
+    assert.equal(fixedFetched.status, 0, "fixed Tokio profile fetch failed");
   }
   const sourceEvidenceBase = process.env.M11_NATIVE_EVIDENCE_DIR
     ? resolve(process.env.M11_NATIVE_EVIDENCE_DIR)

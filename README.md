@@ -153,15 +153,17 @@ Additional tests are hidden in the learner experience, but their source is part 
 
 ## Verification
 
-The suite requires local stable Rust. `npm test` also compiles small, trusted fixtures that check the curriculum verifier.
+The suite requires local stable Rust. `npm test` also compiles small, trusted fixtures that check the curriculum verifier, including the pinned Tokio runtime. On a fresh checkout, fetch that fixed profile before running the tests. This explicit preparation uses the network; the native tests then run offline with the lockfile enforced.
 
 ```sh
 npm run lint
 npm run typecheck
+cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
 npm test
 npm run content:check
 npm run content:rust
 npm run content:tokio -- --fetch
+npm run content:async-lending -- --fetch
 npm run content:operations -- --fetch
 npm run content:models -- --fetch
 npm run content:workspace -- --fetch
@@ -177,6 +179,8 @@ npm run build
 npx playwright install chromium
 npm run test:e2e
 ```
+
+`content:async-lending -- --fetch` explicitly prepares both authored dependency graphs: the extracted Tokio service solution and the fixed Tokio runtime profile. Its subsequent native checks stay offline/locked. Fetching dependencies alone is preparation, not behavioral verification.
 
 `content:rust` compiles and runs only trusted, authored examples in the repository. It checks correct starters, expected error classes, solutions—including solutions containing only generic functions—with tests declared in the evaluator, traces, and reviews. For test tasks, it also checks whether the unchanged starter requires correction according to the evaluator: behavior or an explicit source restriction. Missing tests, a timeout, and an infrastructure error are not evidence that a starter was correctly rejected; a required API error must have a source-code diagnostic. Code and contract review supplements these checks. Do not pass imported user drafts to this script.
 
