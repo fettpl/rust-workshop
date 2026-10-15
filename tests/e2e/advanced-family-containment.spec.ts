@@ -557,6 +557,8 @@ for (const item of asyncTransferCases) {
       await expect(editor).toHaveValue(draft);
       if (item.lessonId === "async-lending-send-boundary") {
         await page.setViewportSize({ width: 390, height: 844 });
+        await page.getByRole("tab", { name: "Kod", exact: true }).click();
+        await expect(editor).toBeVisible();
         expect(
           await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth,
@@ -804,21 +806,31 @@ test("prepared handoff reveal persists across retry without laundering assistanc
       }),
     });
   });
+  const beforeRetry = await savedState(page);
+  const isSubmittedTransfer = (event: EvidenceEvent) =>
+    event.lessonId === lesson.id &&
+    event.stepId === item.stepId &&
+    event.kind === "transfer" &&
+    event.evaluator === "tests" &&
+    event.passed;
   await page
     .getByRole("button", { name: "Uruchom testy", exact: true })
     .click();
   await expect
     .poll(
       async () =>
-        (await savedState(page)).events.filter(
-          (event) => event.stepId === item.stepId && event.passed,
-        ).length,
+        (await savedState(page)).events.filter(isSubmittedTransfer).length,
     )
     .toBe(1);
   const after = await savedState(page);
-  expect(
-    after.events.find((event) => event.stepId === item.stepId && event.passed),
-  ).toMatchObject({
+  expect(after.events.slice(0, beforeRetry.events.length)).toEqual(
+    beforeRetry.events,
+  );
+  const submitted = after.events.find(isSubmittedTransfer)!;
+  expect(courseEvidencePolicy.definitionForEvent(submitted)?.codingTaskId).toBe(
+    item.family,
+  );
+  expect(submitted).toMatchObject({
     hints: 2,
     revealed: true,
     kind: "transfer",

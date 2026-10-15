@@ -879,6 +879,8 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     expect(handoffState.steps["async-lending-send-boundary:async-lending-send-boundary-prepared-handoff"]).toMatchObject({ code: handoffDraft, hints: 1, completed: false });
     expect(handoffState.events.some((event) => event.lessonId === "async-lending-send-boundary" && event.stepId === "async-lending-send-boundary-prepared-handoff" && event.passed && event.evaluator === "tests")).toBe(false);
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(handoffEditor).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await handoffEditor.focus();
     await page.keyboard.press("Tab");
