@@ -3,6 +3,7 @@ import type { EvidenceEvent, Lesson, LessonStep } from "@/domain/types";
 import { concepts, lessons, modules, reviewExercises } from "./course";
 import {
   assistanceForLessonStep,
+  courseDelayedReviewEligibility,
   courseEvidencePolicy,
   courseEvidenceSummary,
   courseMastery,
@@ -597,6 +598,7 @@ describe("duplicate contract evidence families", () => {
         });
       } else if (
         lessonId === "async-lending-callbacks" ||
+        lessonId === "async-lending-send-boundary" ||
         lessonId === "async-lending-dyn-adapter"
       ) {
         expect(gateRecovery(state, criterion, lessons)).toEqual({
@@ -606,7 +608,9 @@ describe("duplicate contract evidence families", () => {
             stepId:
               lessonId === "async-lending-callbacks"
                 ? "async-lending-callbacks-bounded-transform"
-                : "async-lending-dyn-adapter-borrowed-sources",
+                : lessonId === "async-lending-send-boundary"
+                  ? "async-lending-send-boundary-prepared-handoff"
+                  : "async-lending-dyn-adapter-borrowed-sources",
           },
         });
       } else {
@@ -1051,6 +1055,13 @@ describe("duplicate contract evidence families", () => {
 
 const transferFamilies = [
   {
+    conceptId: "async-lending-send-boundary",
+    lessonId: "async-lending-send-boundary",
+    stepId: "async-lending-send-boundary-prepared-handoff",
+    oldFamily: "async-lending/send-boundary-v1",
+    newFamily: "async-lending/send-prepared-handoff-v1",
+  },
+  {
     conceptId: "async-lending-callback-borrow",
     lessonId: "async-lending-callbacks",
     stepId: "async-lending-callbacks-bounded-transform",
@@ -1362,3 +1373,49 @@ describe.each(transferFamilies)(
     });
   },
 );
+
+it("keeps the new Send model supplementary and requires two families plus strictly more than 24 quiet hours", () => {
+  const conceptId = "async-lending-send-boundary";
+  const { lesson, step: model } = lessonStep(
+    conceptId,
+    "async-lending-send-boundary-handoff-model",
+  );
+  const gate = lessonStep(conceptId, `${conceptId}-gate`).step;
+  const handoff = lessonStep(conceptId, `${conceptId}-prepared-handoff`).step;
+  const day = 24 * 60 * 60 * 1000;
+  let state = recordCourseEvidence(
+    createInitialState(),
+    eventFor(lesson, model, "model-only", 1000),
+  );
+  expect(courseEvidenceSummary(state, conceptId).qualifyingCodingTasks).toBe(0);
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, gate, "old-clean", 2000),
+  );
+  state.review = [
+    { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "test due" },
+  ];
+  expect(courseDelayedReviewEligibility(state, conceptId, 2000 + day + 1)).toBe(
+    false,
+  );
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, handoff, "new-clean", 3000),
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day + 1)).toBe(
+    true,
+  );
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, model, "later-model-contact", 4000),
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3000 + day + 1)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 4000 + day + 1)).toBe(
+    true,
+  );
+});

@@ -851,6 +851,44 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     ).toHaveCount(0);
     console.log("Async lending gate, keyboard focus and draft resume offline");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    // Explicit new Send path; the established receiver/offline coverage above stays intact.
+    await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(asyncLendingTitle);
+    await page.locator(".module-picker > button").filter({ hasText: asyncLendingTitle }).click();
+    await page.locator(".lesson-list-item").filter({ hasText: "Granica Send i spawn" }).click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(6).click();
+    await expect(page.locator(".task-pane")).toContainText("prepare_handoff");
+    const handoffHeading = await page.locator(".task-pane h1").innerText();
+    const handoffEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    const handoffDraft = "// Lokalne przygotowanie przed Pending; szkic zachowany offline.\n";
+    await handoffEditor.fill(handoffDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await page.getByLabel("Notatki do lekcji").fill("Formatowanie jest synchroniczne; pause zachowuje owned wynik.");
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect.poll(async () => {
+      const state = await readLearningState();
+      const progress = state.steps["async-lending-send-boundary:async-lending-send-boundary-prepared-handoff"];
+      return { code: progress?.code, hints: progress?.hints, note: state.notes["async-lending-send-boundary"], lessonId: state.resume.lessonId, stepIndex: state.resume.stepIndex };
+    }).toEqual({ code: handoffDraft, hints: 1, note: "Formatowanie jest synchroniczne; pause zachowuje owned wynik.", lessonId: "async-lending-send-boundary", stepIndex: 6 });
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(handoffHeading);
+    await expect(handoffEditor).toHaveValue(handoffDraft);
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue("Formatowanie jest synchroniczne; pause zachowuje owned wynik.");
+    const handoffState = await readLearningState();
+    expect(handoffState.resume).toMatchObject({ lessonId: "async-lending-send-boundary", stepIndex: 6 });
+    expect(handoffState.steps["async-lending-send-boundary:async-lending-send-boundary-prepared-handoff"]).toMatchObject({ code: handoffDraft, hints: 1, completed: false });
+    expect(handoffState.events.some((event) => event.lessonId === "async-lending-send-boundary" && event.stepId === "async-lending-send-boundary-prepared-handoff" && event.passed && event.evaluator === "tests")).toBe(false);
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await handoffEditor.focus();
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Monaco Editor", exact: true })).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(handoffEditor).toBeFocused();
+    await expect(page.getByText("Tryb offline.", { exact: false })).toBeVisible();
+    await page.setViewportSize({ width: 1280, height: 900 });
+    console.log("Prepared Send handoff draft, note, help, exact resume and keyboard work offline; no compiler credit");
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
       "Property testing: kontrakty, generatory i kontrprzykłady";
     await page

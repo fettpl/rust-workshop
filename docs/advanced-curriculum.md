@@ -292,3 +292,8 @@ Przegląd poniższej mapy źródeł pochodzi z 2026-09-12. Źródła etapu publi
 - [Miri](https://github.com/rust-lang/miri) i [Loom](https://docs.rs/loom/0.7.2/loom/) — odpowiednio interpreter do wykrywania części problemów UB oraz modelowanie interleavings; stosować tam, gdzie ryzyko uzasadnia koszt.
 
 Dokumentacja źródłowa nie zastępuje testu w aktualnym stable toolchainie. Przykłady kursowe mają być kompilowane w edition 2024, a przy zmianie wersji należy ponowić `content:rust`, testy evaluatorów i ręczny przegląd komunikatów rustc.
+
+
+## 15 October 2026 A1 source addendum
+
+The current source appends two steps to the existing Send lesson: a supplementary synchronous-preparation model and the primary `prepare_handoff` contract (`async-lending/send-prepared-handoff-v1`). Send joins receiver, callback and dyn adapter with two authored primary families; cancellation/commit and four Miri concepts remain single-family. The four provisional ownership concepts remain unchanged. The current inventory is 48 modules, 192 lessons, 194 concepts, 1,271 steps and 349 sources. Counts describe availability, not learning or seniority. The accepted maintenance base is ordinary main `3c1ee89c3d46b0b1b9e3798a317587464a236e5c`; the coordinator confirmed all eleven resulting-main jobs before edits. A1 source verification/review/release acceptance remains pending. The [advanced continuation and frozen A1 requirements](superpowers/plans/2026-10-15-advanced-continuation.md) preserve the broader active goal and historical evidence boundaries.

@@ -1,7 +1,10 @@
+import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
-const course = historicalBeforeDocumentationRepair(currentCourse);
+const course = historicalBeforeDocumentationRepair(
+  historicalBeforeSendHandoff(currentCourse),
+);
 import { evaluate } from "../engine/evaluate";
 import {
   createInitialState,
