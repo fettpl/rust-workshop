@@ -3,6 +3,10 @@ import {
   sendTransferStep,
 } from "./async-lending-send-transfer";
 import { dynTransferStep } from "./async-lending-dyn-transfer";
+import {
+  cancelTransferModelStep,
+  cancelTransferStep,
+} from "./async-lending-cancel-transfer";
 import type {
   Competency,
   Concept,
@@ -413,6 +417,8 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      cancelTransferModelStep,
+      cancelTransferStep,
     ],
     misconceptions: [
       "Drop cofa efekt callbacku",
@@ -628,7 +634,8 @@ for (const lesson of asyncLendingBoundaryLessons) {
   for (const step of lesson.steps) {
     if (
       step.id === "async-lending-dyn-adapter-borrowed-sources" ||
-      step.id === sendTransferStep.id
+      step.id === sendTransferStep.id ||
+      step.id === cancelTransferStep.id
     )
       continue;
     step.evidence = {

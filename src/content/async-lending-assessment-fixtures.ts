@@ -13,6 +13,11 @@ import {
   dynTransferEquivalent,
   dynTransferMutants,
 } from "./async-lending-dyn-transfer";
+import {
+  cancelTransferStep,
+  cancelTransferEquivalent,
+  cancelTransferMutants,
+} from "./async-lending-cancel-transfer";
 
 /** Exact descriptor names are already qualified for Rust's --exact filter.
  * Several independent mutant binaries intentionally target the same assertion. */
@@ -22,6 +27,7 @@ export const asyncLendingTransferMutants: Readonly<
   [callbackTransferStep.id]: callbackTransferMutants,
   [dynTransferStep.id]: dynTransferMutants,
   [sendTransferStep.id]: sendTransferMutants,
+  [cancelTransferStep.id]: cancelTransferMutants,
 };
 
 import {
@@ -105,6 +111,7 @@ const assessments = [
 ];
 
 function mutate(id: string, solution: string): string {
+  if (id === cancelTransferStep.id) return cancelTransferMutants[0].source;
   if (id === callbackTransferStep.id) return callbackTransferMutants[0].source;
   if (id === dynTransferStep.id) return dynTransferMutants[0].source;
   if (id === "async-lending-receiver-bounded-batch")
@@ -168,6 +175,7 @@ function replaceFunctionBody(
 }
 
 function equivalent(id: string, solution: string): string {
+  if (id === cancelTransferStep.id) return cancelTransferEquivalent;
   if (id === sendTransferStep.id) return sendTransferEquivalent;
   if (id === callbackTransferStep.id) return callbackTransferEquivalent;
   if (id === dynTransferStep.id) return dynTransferEquivalent;

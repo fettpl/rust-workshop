@@ -1,3 +1,9 @@
+# A2 cancellation transfer — 15 October 2026 current source checkpoint
+
+A1 is accepted at PR68 head `7e03e2d56d29a10f68dfbeba2c4bf530109ab830`, ordinary merge `f975409feb0f1972089c2b368dc994417ca958d0`, tree `fad6f04d491b8e83a125327c7ba17a3818ca8a6c`. The [natural PR run](https://github.com/fettpl/rustcrushcourse/actions/runs/38747309342) and [resulting-main run](https://github.com/fettpl/rustcrushcourse/actions/runs/38752602241) passed all eleven jobs; current-head Code and Security reviews completed without findings.
+
+A2 source authoring adds the cancellation/return model and `async-lending/cancel-lost-reply-v1`, while preserving the accepted A1 projection and fixtures. The current source inventory is 48 modules, 192 lessons, 194 concepts, 1,273 step occurrences, 349 sources, and 194 ordinary reviews; five of nine advanced concepts have two authored families and four remain provisional single-family concepts. A2 compiler/runtime, browser, offline, independent review, release, PR/main and learner-outcome evidence remain pending. No A2 outcome or readiness claim is made here. See the [frozen A2 plan](superpowers/plans/2026-10-15-cancellation-transfer.md).
+
 # Prepared Send handoff — 15 October 2026 source availability
 
 The current source appends a supplementary model and `async-lending-send-boundary-prepared-handoff` to the existing Send lesson. Its new family `async-lending/send-prepared-handoff-v1` requires synchronous exactly-once ordered formatting before future construction returns, owned output retained through genuine Pending, and a Send + 'static future after local input/captures disappear. Zero records skip formatting but still wait on pause. Dropping the future preserves already-recorded preparation effects. The supplied Box/dyn/Pin wrapper is explained locally before the later dyn lesson; allocation and dynamic dispatch are explicit costs.

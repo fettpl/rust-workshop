@@ -4,6 +4,7 @@ import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import baseline from "./fixtures/async-send-pre-handoff.json";
 import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtures";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 
 const sha = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -17,7 +18,7 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
     "async-lending-send-boundary-handoff-model",
     "async-lending-send-boundary-prepared-handoff",
   ]);
-  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1271);
+  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1273);
 });
 
 it("keeps all accepted immutable fixture bytes unchanged", () => {
@@ -64,7 +65,9 @@ import type { EvidenceEvent } from "../domain/types";
 import savedFixtures from "./fixtures/baseline-correction-saves.json";
 
 it("projects only the named A1 additions while preserving every accepted registry definition", () => {
-  const previous = historicalBeforeSendHandoff(currentCourse);
+  const previous = historicalBeforeSendHandoff(
+    historicalBeforeCancellationTransfer(currentCourse),
+  );
   for (const [name, expected] of Object.entries(baseline.registries)) {
     const registry = previous[name as keyof typeof previous];
     const actual = Array.isArray(registry)
@@ -126,7 +129,7 @@ it("keeps old V1/V2/V3 saved locations and raw history without passing either ne
   }
 });
 
-it("exposes four two-family advanced concepts while five remain provisional", () => {
+it("exposes five two-family advanced concepts while four remain provisional", () => {
   const state = createInitialState();
   state.events = currentCourse.lessons.flatMap((lesson) =>
     lesson.steps
@@ -159,7 +162,6 @@ it("exposes four two-family advanced concepts while five remain provisional", ()
     "scope-drop",
     "copy-semantics",
     "ownership-repair",
-    "async-lending-cancel-commit",
     "unsafe-miri-byte-view-contract",
     "unsafe-miri-disjoint-regions-contract",
     "unsafe-miri-slot-state-contract",

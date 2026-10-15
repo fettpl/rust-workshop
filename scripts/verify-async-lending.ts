@@ -6,6 +6,10 @@ import {
   verifySendHandoffConsumerBounds,
   verifySendHandoffTokio,
 } from "../src/content/async-lending-send-native";
+import {
+  verifyCancelTransferBehavior,
+  verifyCancelTransferBoundaries,
+} from "../src/content/async-lending-cancel-native";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -38,6 +42,7 @@ const evidence = {
   archive: {} as Record<string, string>,
   toolchain: "",
   sendHandoffEvidence: "",
+  cancelTransferEvidence: "",
   fixtures: [] as { id: string; passed: boolean; detail: string }[],
 };
 
@@ -421,6 +426,21 @@ try {
       );
       throw error;
     }
+  }
+  const cancelEvidence = mkdtempSync(
+    join(sourceEvidenceBase, `${msrv ? "msrv" : "stable"}-cancel-transfer-`),
+  );
+  evidence.cancelTransferEvidence = cancelEvidence;
+  for (const [id, verify] of [
+    ["behavior", () => verifyCancelTransferBehavior(join(cancelEvidence, "behavior"), rustc)],
+    ["boundaries", () => verifyCancelTransferBoundaries(join(cancelEvidence, "boundaries"), rustc)],
+  ] as const) {
+    const proofs = verify();
+    check(
+      `cancel-transfer/${id}`,
+      true,
+      `${proofs.length} source-bound proofs; durable commands in ${cancelEvidence}`,
+    );
   }
   for (const commandArgs of [
     ["fmt", "--all", "--", "--check"],

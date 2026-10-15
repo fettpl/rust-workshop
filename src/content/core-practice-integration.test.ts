@@ -1,4 +1,5 @@
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { describe, expect, it } from "vitest";
 import { createHash } from "node:crypto";
@@ -7,7 +8,9 @@ import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
-    historicalBeforeSendHandoff(currentCourse),
+    historicalBeforeSendHandoff(
+      historicalBeforeCancellationTransfer(currentCourse),
+    ),
   ),
 );
 import legacy from "./core-practice-legacy-baseline.json";

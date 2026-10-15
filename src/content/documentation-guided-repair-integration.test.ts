@@ -1,4 +1,5 @@
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { expect, it } from "vitest";
 import * as course from "./course";
 
@@ -109,7 +110,9 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
   expect(legacy.provenance.head).toBe(
     "c42c9253715ccd36d688677b0ef8e081f6771204",
   );
-  const preHandoff = historicalBeforeSendHandoff(course);
+  const preHandoff = historicalBeforeSendHandoff(
+    historicalBeforeCancellationTransfer(course),
+  );
   const previous = historicalBeforeDocumentationRepair(preHandoff);
   expect(previous.modules).toEqual(legacy.modules);
   expect(previous.concepts).toEqual(legacy.concepts);

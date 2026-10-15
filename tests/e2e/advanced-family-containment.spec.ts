@@ -289,6 +289,15 @@ const asyncTransferCases = [
     reviewExerciseId: "async-lending-dyn-adapter-review",
     mockPassed: 7,
   },
+  {
+    lessonId: "async-lending-cancel-commit",
+    conceptId: "async-lending-cancel-commit",
+    stepId: "async-lending-cancel-commit-lost-reply",
+    family: "async-lending/cancel-lost-reply-v1",
+    oldFamily: "async-lending/cancel-commit-v1",
+    reviewExerciseId: "async-lending-cancel-commit-review",
+    mockPassed: 9,
+  },
 ] as const;
 
 type AsyncTransferCase = (typeof asyncTransferCases)[number];
@@ -353,7 +362,10 @@ function oldAsyncState(item: AsyncTransferCase, helped: boolean): UserState {
     ...createStepProgress(blank.code),
     hints: helped ? 1 : 0,
   };
-  if (item.lessonId === "async-lending-send-boundary") {
+  if (
+    item.lessonId === "async-lending-send-boundary" ||
+    item.lessonId === "async-lending-cancel-commit"
+  ) {
     // A historically completed five-step lesson does not pass the appended work.
     for (const step of lesson.steps.slice(0, 5)) {
       const key = stepKey(lesson.id, step.id);
@@ -555,7 +567,10 @@ for (const item of asyncTransferCases) {
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
       await expect(editor).toHaveValue(draft);
-      if (item.lessonId === "async-lending-send-boundary") {
+      if (
+        item.lessonId === "async-lending-send-boundary" ||
+        item.lessonId === "async-lending-cancel-commit"
+      ) {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.getByRole("tab", { name: "Kod", exact: true }).click();
         await expect(editor).toBeVisible();
@@ -848,4 +863,223 @@ test("prepared handoff reveal persists across retry without laundering assistanc
   ).toEqual([item.oldFamily]);
   expect(gateRecovery(after, criterion, lessons).status).toBe("complete");
   expect(errors).toEqual([]);
+});
+
+test("lost reply reveal persists across retry without laundering assistance (UI/state only)", async ({
+  page,
+}) => {
+  const item = asyncTransferCases.find(
+    (candidate) => candidate.lessonId === "async-lending-cancel-commit",
+  )!;
+  const errors = observeBrowserErrors(page);
+  const { lesson, transfer, criterion } = asyncTransferContext(item);
+  const before = oldAsyncState(item, false);
+  await importOldAsyncState(page, before, item, false);
+  await openAsyncTransfer(page, item);
+  await revealAsyncSolution(page, item);
+  await page.reload();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await editor.fill(transfer.solution!);
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      code: transfer.solution,
+      mode: "test",
+      tests:
+        transfer.evaluator?.kind === "tests"
+          ? transfer.evaluator.tests
+          : undefined,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout: "assisted retry: UI/state only",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: item.mockPassed, failed: 0 },
+      }),
+    });
+  });
+  const beforeRetry = await savedState(page);
+  const isSubmittedTransfer = (event: EvidenceEvent) =>
+    event.lessonId === lesson.id &&
+    event.stepId === item.stepId &&
+    event.kind === "transfer" &&
+    event.evaluator === "tests" &&
+    event.passed;
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        (await savedState(page)).events.filter(isSubmittedTransfer).length,
+    )
+    .toBe(1);
+  const after = await savedState(page);
+  expect(after.events.slice(0, beforeRetry.events.length)).toEqual(
+    beforeRetry.events,
+  );
+  const submitted = after.events.find(isSubmittedTransfer)!;
+  expect(submitted).toMatchObject({
+    lessonId: lesson.id,
+    stepId: item.stepId,
+    kind: "transfer",
+    evaluator: "tests",
+    passed: true,
+    hints: 2,
+    revealed: true,
+    evidenceVersion: 2,
+  });
+  expect(courseEvidencePolicy.definitionForEvent(submitted)?.codingTaskId).toBe(
+    item.family,
+  );
+  expect(
+    independentCodingTaskIds(after, item.conceptId, courseEvidencePolicy),
+  ).toEqual([item.oldFamily]);
+  expect(gateRecovery(after, criterion, lessons).status).toBe("complete");
+  expect(errors).toEqual([]);
+});
+
+test("A2 cancellation prose stays within the mobile viewport", async ({
+  page,
+}, testInfo) => {
+  const lesson = lessons.find(
+    (candidate) => candidate.id === "async-lending-cancel-commit",
+  )!;
+  const model = lesson.steps.find(
+    (candidate) =>
+      candidate.id === "async-lending-cancel-commit-reply-model",
+  )!;
+  const primary = lesson.steps.find(
+    (candidate) => candidate.id === "async-lending-cancel-commit-lost-reply",
+  )!;
+  const state = createInitialState();
+  state.onboarding = { completed: true, name: "Ada", minutes: 15 };
+  state.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 0,
+    recommendation: "",
+  };
+  state.settings.accessibleEditor = true;
+  state.resume = {
+    ...state.resume,
+    view: "lesson",
+    lessonId: lesson.id,
+    stepIndex: lesson.steps.indexOf(model),
+    panel: "lesson",
+  };
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await seedState(page, state);
+
+  const modelHeading = page.getByRole("heading", {
+    name: "Przewiduj cztery stany po utracie odpowiedzi",
+    exact: true,
+  });
+  const modelPrompt = page.locator(
+    ".task-pane .task-prompt .learning-text",
+  );
+  await modelHeading.waitFor();
+  await modelPrompt.waitFor();
+  const modelHeadingText = await modelHeading.textContent();
+  const modelObservation = await page.evaluate(() => {
+    const prompt = document.querySelector(
+      ".task-pane .task-prompt .learning-text",
+    );
+    const rect = prompt?.getBoundingClientRect();
+    return {
+      documentWidth: Math.max(
+        document.documentElement.scrollWidth,
+        document.body.scrollWidth,
+      ),
+      innerWidth: window.innerWidth,
+      promptRight: rect?.right ?? Number.NaN,
+      promptText: prompt?.textContent ?? "",
+    };
+  });
+
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(lesson.steps.indexOf(primary))
+    .click();
+  const primaryHeading = page.getByRole("heading", {
+    name: "Zachowaj commit po utracie odpowiedzi",
+    exact: true,
+  });
+  const primaryPrompt = page.locator(
+    ".task-pane .task-prompt .learning-text",
+  );
+  await primaryHeading.waitFor();
+  await primaryPrompt.waitFor();
+  const primaryHeadingText = await primaryHeading.textContent();
+  const primaryObservation = await page.evaluate(() => {
+    const prompt = document.querySelector(
+      ".task-pane .task-prompt .learning-text",
+    );
+    const rect = prompt?.getBoundingClientRect();
+    return {
+      documentWidth: Math.max(
+        document.documentElement.scrollWidth,
+        document.body.scrollWidth,
+      ),
+      innerWidth: window.innerWidth,
+      promptRight: rect?.right ?? Number.NaN,
+      promptText: prompt?.textContent ?? "",
+    };
+  });
+  await testInfo.attach("a2-mobile-wrapping-observations.json", {
+    body: JSON.stringify(
+      {
+        viewport: { width: 390, height: 844 },
+        model: modelObservation,
+        primary: primaryObservation,
+      },
+      null,
+      2,
+    ),
+    contentType: "application/json",
+  });
+  const afterVisits = await savedState(page);
+  const observations = [modelObservation, primaryObservation];
+
+  for (const observation of observations) {
+    expect(observation.documentWidth).toBeLessThanOrEqual(
+      observation.innerWidth + 1,
+    );
+    expect(observation.promptRight).toBeLessThanOrEqual(
+      observation.innerWidth + 1,
+    );
+  }
+  expect(modelHeadingText).toBe(
+    "Przewiduj cztery stany po utracie odpowiedzi",
+  );
+  expect(primaryHeadingText).toBe("Zachowaj commit po utracie odpowiedzi");
+  expect(modelObservation.promptText).toContain(
+    "https://github.com/fettpl/rustcrushcourse/blob/main/docs/capstone-change-review.md",
+  );
+  expect(modelObservation.promptText).toContain(
+    "Wybierz i opisz wszystkie cztery stany: (1) przed pierwszym poll",
+  );
+  expect(primaryObservation.promptText).toContain(
+    "https://github.com/fettpl/rustcrushcourse/blob/main/docs/capstone-change-review.md",
+  );
+  expect(primaryObservation.promptText).toContain(
+    "Dla tego samego klucza i tego samego payloadu zwróć oryginalny receipt",
+  );
+  expect(
+    afterVisits.events.some(
+      (event) =>
+        event.lessonId === lesson.id &&
+        event.stepId === primary.id &&
+        event.kind === "transfer" &&
+        event.evaluator === "tests" &&
+        event.passed,
+    ),
+  ).toBe(false);
 });

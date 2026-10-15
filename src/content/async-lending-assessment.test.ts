@@ -35,9 +35,12 @@ const assessments = [
   ...Object.values(asyncLendingBoundaryReviewExercises),
 ];
 
-it("covers fourteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
-  expect(assessments).toHaveLength(19);
-  expect(asyncLendingAssessmentFixtures).toHaveLength(19);
+it("covers fifteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
+  expect(assessments).toHaveLength(20);
+  expect(asyncLendingAssessmentFixtures).toHaveLength(20);
+  expect(assessments.map((step) => step.id)).toContain(
+    "async-lending-cancel-commit-lost-reply",
+  );
   expect(
     asyncLendingAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());
@@ -60,6 +63,7 @@ it("covers fourteen coding assessments and five independent reviews with distinc
             "async-lending-callbacks-bounded-transform": 5,
             "async-lending-dyn-adapter-borrowed-sources": 6,
             "async-lending-send-boundary-prepared-handoff": 7,
+            "async-lending-cancel-commit-lost-reply": 8,
           } as Record<string, number>
         )[fixture.id],
       );
@@ -171,6 +175,16 @@ it("keeps the exact stable mutant ID to named assertion mapping", () => {
         qualified("borrowed_bytes_are_forwarded_without_substitution"),
       ],
     ],
+    "async-lending-cancel-commit-lost-reply": [
+      ["early-commit", qualified("precommit_pending_drop")],
+      ["late-commit", qualified("postcommit_pending_drop")],
+      ["bypass-reply", qualified("postcommit_pending_drop")],
+      ["replay-new-receipt", qualified("replay_bypasses_gates")],
+      ["overwrite-conflict", qualified("conflict_bypasses_gates")],
+      ["normalize-key", qualified("opaque_strings")],
+      ["one-based-receipt", qualified("ordinal_sequence")],
+      ["wait-on-replay", qualified("replay_bypasses_gates")],
+    ],
   });
 });
 
@@ -248,9 +262,11 @@ it.each(asyncLendingAssessmentFixtures)(
           expect(run.signal).toBeNull();
           expect(run.status, run.stdout + run.stderr).toBe(0);
           expect(run.stdout).toContain(
-            fixture.id.includes("callbacks")
-              ? "8 passed; 0 failed"
-              : "7 passed; 0 failed",
+              fixture.id.includes("callbacks")
+                ? "8 passed; 0 failed"
+                : fixture.id === "async-lending-cancel-commit-lost-reply"
+                  ? "9 passed; 0 failed"
+                  : "7 passed; 0 failed",
           );
         }
         for (const descriptor of descriptors) {

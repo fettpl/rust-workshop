@@ -1,9 +1,12 @@
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { describe, expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 const course = historicalBeforeDocumentationRepair(
-  historicalBeforeSendHandoff(currentCourse),
+  historicalBeforeSendHandoff(
+    historicalBeforeCancellationTransfer(currentCourse),
+  ),
 );
 import { createInitialState } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
