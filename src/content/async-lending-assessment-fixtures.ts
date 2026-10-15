@@ -1,4 +1,9 @@
 import {
+  sendTransferStep,
+  sendTransferEquivalent,
+  sendTransferMutants,
+} from "./async-lending-send-transfer";
+import {
   callbackTransferStep,
   callbackTransferEquivalent,
   callbackTransferMutants,
@@ -16,6 +21,7 @@ export const asyncLendingTransferMutants: Readonly<
 > = {
   [callbackTransferStep.id]: callbackTransferMutants,
   [dynTransferStep.id]: dynTransferMutants,
+  [sendTransferStep.id]: sendTransferMutants,
 };
 
 import {
@@ -162,6 +168,7 @@ function replaceFunctionBody(
 }
 
 function equivalent(id: string, solution: string): string {
+  if (id === sendTransferStep.id) return sendTransferEquivalent;
   if (id === callbackTransferStep.id) return callbackTransferEquivalent;
   if (id === dynTransferStep.id) return dynTransferEquivalent;
   if (id === "async-lending-receiver-bounded-batch") return batchEquivalent;

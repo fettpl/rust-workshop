@@ -35,9 +35,9 @@ const assessments = [
   ...Object.values(asyncLendingBoundaryReviewExercises),
 ];
 
-it("covers thirteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
-  expect(assessments).toHaveLength(18);
-  expect(asyncLendingAssessmentFixtures).toHaveLength(18);
+it("covers fourteen coding assessments and five independent reviews with distinct equivalents and compiling mutants", () => {
+  expect(assessments).toHaveLength(19);
+  expect(asyncLendingAssessmentFixtures).toHaveLength(19);
   expect(
     asyncLendingAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());
@@ -55,7 +55,13 @@ it("covers thirteen coding assessments and five independent reviews with distinc
     const descriptors = asyncLendingTransferMutants[fixture.id];
     if (descriptors) {
       expect(descriptors).toHaveLength(
-        fixture.id.includes("callbacks") ? 5 : 6,
+        (
+          {
+            "async-lending-callbacks-bounded-transform": 5,
+            "async-lending-dyn-adapter-borrowed-sources": 6,
+            "async-lending-send-boundary-prepared-handoff": 7,
+          } as Record<string, number>
+        )[fixture.id],
       );
       expect(new Set(descriptors.map((item) => item.id)).size).toBe(
         descriptors.length,
@@ -82,6 +88,33 @@ it("keeps the exact stable mutant ID to named assertion mapping", () => {
       ]),
     ),
   ).toEqual({
+    "async-lending-send-boundary-prepared-handoff": [
+      [
+        "duplicate-format",
+        qualified("preparation_is_synchronous_and_exactly_once"),
+      ],
+      [
+        "first-record-only",
+        qualified("preparation_is_synchronous_and_exactly_once"),
+      ],
+      [
+        "reversed-output",
+        qualified("prepared_outputs_preserve_order_and_values"),
+      ],
+      [
+        "ignore-pause",
+        qualified("pause_retains_owned_state_and_current_waker"),
+      ],
+      [
+        "empty-input-pause-bypass",
+        qualified("empty_records_still_wait_for_pause"),
+      ],
+      ["empty-output", qualified("prepared_outputs_preserve_order_and_values")],
+      [
+        "raw-input-output",
+        qualified("prepared_outputs_preserve_order_and_values"),
+      ],
+    ],
     "async-lending-callbacks-bounded-transform": [
       [
         "emitted-output-budget",

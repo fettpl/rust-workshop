@@ -1,3 +1,13 @@
+# Prepared Send handoff — 15 October 2026 source availability
+
+The current source appends a supplementary model and `async-lending-send-boundary-prepared-handoff` to the existing Send lesson. Its new family `async-lending/send-prepared-handoff-v1` requires synchronous exactly-once ordered formatting before future construction returns, owned output retained through genuine Pending, and a Send + 'static future after local input/captures disappear. Zero records skip formatting but still wait on pause. Dropping the future preserves already-recorded preparation effects. The supplied Box/dyn/Pin wrapper is explained locally before the later dyn lesson; allocation and dynamic dispatch are explicit costs.
+
+Receiver, callback, dyn adapter and Send now each have two authored primary families. Cancellation/commit and the four Miri concepts remain single-family. Old gate/blank aliases, review-only recall, saved assistance and raw history remain unchanged. Module criterion completion still requires one independent contract; concept confirmation still requires two eligible clean families, and delayed recall retains the strict more-than-24-hour policy. Availability does not mean learner confirmation.
+
+The accepted maintenance base is `3c1ee89c3d46b0b1b9e3798a317587464a236e5c`, coordinator-confirmed [main run 38733773185](https://github.com/fettpl/rustcrushcourse/actions/runs/38733773185) all eleven successful. A1 source and release evidence remain separate: combined local verification, exact-head review, PR/ordinary merge/resulting-main checks are pending. Native tests require three representation-diverse implementations, seven compiling behavioral mutants and matched compiler-boundary pairs on current Rust and exact 1.85. The maintained Tokio witness uses the existing current-thread runtime and polled-signal/permission barrier; it establishes actual spawn/suspension behavior, not worker migration. Browser API interceptions prove UI/state only. See the [frozen A1 plan](superpowers/plans/2026-10-15-advanced-continuation.md).
+
+The following 9 October evidence and its three-of-nine family inventory are historical and retain their original source/command scope.
+
 For the 10 October baseline correction inventory and current provisional counts, see the [source-bound curriculum audit](curriculum-audit-2026-10-10.md). The 9 October source/command observations below retain their dated scope.
 
 # Async transfer evidence — 9 October 2026

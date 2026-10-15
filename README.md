@@ -1,6 +1,6 @@
 # Rust Workshop
 
-Rust Workshop is an interactive Rust learning application for people who know basic programming but are starting Rust from zero. The [10 October source audit and correction candidate](docs/curriculum-audit-2026-10-10.md) documents the baseline scope; the current source appends two fallible-composition lessons and one documentation-guided repair lesson. The current source inventory is 48 modules, 192 lessons, 194 concepts, 1,269 steps, 349 sources and 194 ordinary reviews. Baseline PR56 and Feature 1 PR65 are accepted and merged. The dated [verification record](docs/verification.md#feature-2-documentation-guided-repair-source-cut-13-october-2026) records the Feature 2 source cut and separates authored content from release evidence. The [current objective and two-feature continuation](docs/superpowers/plans/2026-10-10-curriculum-baseline-and-synthesis.md) is separate from the accepted historical release. Counts describe implemented content, not skill or educational efficacy.
+Rust Workshop is an interactive Rust learning application for people who know basic programming but are starting Rust from zero. The [10 October source audit and correction candidate](docs/curriculum-audit-2026-10-10.md) documents the baseline scope; the current source appends two fallible-composition lessons, one documentation-guided repair lesson, and two steps for synchronous preparation of a Send handoff inside the existing async Send lesson. The current source inventory is 48 modules, 192 lessons, 194 concepts, 1,271 steps, 349 sources and 194 ordinary reviews. Baseline PR56 and Feature 1 PR65 are accepted and merged. The dated [verification record](docs/verification.md#feature-2-documentation-guided-repair-source-cut-13-october-2026) records the Feature 2 source cut and separates authored content from release evidence. The [current objective and two-feature continuation](docs/superpowers/plans/2026-10-10-curriculum-baseline-and-synthesis.md) is separate from the accepted historical release. The [15 October advanced continuation](docs/superpowers/plans/2026-10-15-advanced-continuation.md) records the accepted maintenance base and A1 scope; A1 release acceptance is pending. Counts describe implemented content, not skill or educational efficacy.
 
 The accepted M13 product source is the ordinary [PR54 merge commit `70682709eabb1d8f95dd067d6429df3190eae72d`](https://github.com/fettpl/rustcrushcourse/commit/70682709eabb1d8f95dd067d6429df3190eae72d) with source tree `ee303bdc5d451b162b45b7916e4fb901f5cff3a1`; the [verification snapshot](docs/verification.md#m13-current-verification-snapshot-9-october-2026) links the exact PR54, candidate ancestry, and natural PR/main runs. Dependency maintenance PR37, the Core17/discovery map PR38, ownership evidence PR39, and conversion practice PR40 remain merged historical milestones. The dated [curriculum review](docs/curriculum-review-2026-10-06.md) preserves the integrated baseline and remaining brief gaps.
 
@@ -153,15 +153,17 @@ Additional tests are hidden in the learner experience, but their source is part 
 
 ## Verification
 
-The suite requires local stable Rust. `npm test` also compiles small, trusted fixtures that check the curriculum verifier.
+The suite requires local stable Rust. `npm test` also compiles small, trusted fixtures that check the curriculum verifier, including the pinned Tokio runtime. On a fresh checkout, fetch that fixed profile before running the tests. This explicit preparation uses the network; the native tests then run offline with the lockfile enforced.
 
 ```sh
 npm run lint
 npm run typecheck
+cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
 npm test
 npm run content:check
 npm run content:rust
 npm run content:tokio -- --fetch
+npm run content:async-lending -- --fetch
 npm run content:operations -- --fetch
 npm run content:models -- --fetch
 npm run content:workspace -- --fetch
@@ -177,6 +179,8 @@ npm run build
 npx playwright install chromium
 npm run test:e2e
 ```
+
+`content:async-lending -- --fetch` explicitly prepares both authored dependency graphs: the extracted Tokio service solution and the fixed Tokio runtime profile. Its subsequent native checks stay offline/locked. Fetching dependencies alone is preparation, not behavioral verification.
 
 `content:rust` compiles and runs only trusted, authored examples in the repository. It checks correct starters, expected error classes, solutions—including solutions containing only generic functions—with tests declared in the evaluator, traces, and reviews. For test tasks, it also checks whether the unchanged starter requires correction according to the evaluator: behavior or an explicit source restriction. Missing tests, a timeout, and an infrastructure error are not evidence that a starter was correctly rejected; a required API error must have a source-code diagnostic. Code and contract review supplements these checks. Do not pass imported user drafts to this script.
 

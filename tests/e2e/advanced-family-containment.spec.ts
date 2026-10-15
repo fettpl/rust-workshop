@@ -263,12 +263,22 @@ for (const assistance of assistanceCases) {
 // Intercepted successes below verify production UI/state flow only; no Rust runs.
 const asyncTransferCases = [
   {
+    lessonId: "async-lending-send-boundary",
+    conceptId: "async-lending-send-boundary",
+    stepId: "async-lending-send-boundary-prepared-handoff",
+    family: "async-lending/send-prepared-handoff-v1",
+    oldFamily: "async-lending/send-boundary-v1",
+    reviewExerciseId: "async-lending-send-boundary-review",
+    mockPassed: 7,
+  },
+  {
     lessonId: "async-lending-callbacks",
     conceptId: "async-lending-callback-borrow",
     stepId: "async-lending-callbacks-bounded-transform",
     family: "async-lending/callback-bounded-transform-v1",
     oldFamily: "async-lending/sequential-callback-v1",
     reviewExerciseId: "async-lending-callbacks-review",
+    mockPassed: 8,
   },
   {
     lessonId: "async-lending-dyn-adapter",
@@ -277,6 +287,7 @@ const asyncTransferCases = [
     family: "async-lending/dyn-borrowed-sources-v1",
     oldFamily: "async-lending/dyn-adapter-v1",
     reviewExerciseId: "async-lending-dyn-adapter-review",
+    mockPassed: 7,
   },
 ] as const;
 
@@ -342,6 +353,16 @@ function oldAsyncState(item: AsyncTransferCase, helped: boolean): UserState {
     ...createStepProgress(blank.code),
     hints: helped ? 1 : 0,
   };
+  if (item.lessonId === "async-lending-send-boundary") {
+    // A historically completed five-step lesson does not pass the appended work.
+    for (const step of lesson.steps.slice(0, 5)) {
+      const key = stepKey(lesson.id, step.id);
+      state.steps[key] = {
+        ...(state.steps[key] ?? createStepProgress(step.code)),
+        completed: true,
+      };
+    }
+  }
   state.events = [
     {
       id: `preserved-${item.lessonId}-old-event`,
@@ -406,11 +427,20 @@ async function importOldAsyncState(
   await page.reload();
   const imported = await savedState(page);
   expect(imported.schemaVersion).toBe(3);
+  expect(imported.steps[stepKey(item.lessonId, item.stepId)]).toBeUndefined();
+  expect(
+    imported.events.some(
+      (event) =>
+        event.lessonId === item.lessonId && event.stepId === item.stepId,
+    ),
+  ).toBe(false);
   expect(imported.resume).toEqual(before.resume);
   expect(imported.reviewSession).toEqual(before.reviewSession);
   expect(imported.review).toEqual(before.review);
   expect(imported.notes).toEqual(before.notes);
   expect(imported.bookmarks).toEqual(before.bookmarks);
+  expect(imported.ratings).toEqual(before.ratings);
+  expect(imported.settings).toEqual(before.settings);
   for (const [key, progress] of Object.entries(before.steps)) {
     expect(imported.steps[key]).toEqual(progress);
   }
@@ -459,7 +489,7 @@ function observeBrowserErrors(page: Page) {
   return errors;
 }
 
-async function revealAsyncSolution(page: Page) {
+async function revealAsyncSolution(page: Page, item: AsyncTransferCase) {
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
   await page
@@ -471,6 +501,14 @@ async function revealAsyncSolution(page: Page) {
   await expect(
     page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
   ).toBeVisible();
+  await expect
+    .poll(async () => {
+      const progress = (await savedState(page)).steps[
+        stepKey(item.lessonId, item.stepId)
+      ];
+      return { hints: progress?.hints, revealed: progress?.revealed };
+    })
+    .toEqual({ hints: 2, revealed: true });
 }
 
 for (const item of asyncTransferCases) {
@@ -517,6 +555,23 @@ for (const item of asyncTransferCases) {
       await page.reload();
       await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
       await expect(editor).toHaveValue(draft);
+      if (item.lessonId === "async-lending-send-boundary") {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.getByRole("tab", { name: "Kod", exact: true }).click();
+        await expect(editor).toBeVisible();
+        expect(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        ).toBe(true);
+        await editor.focus();
+        await page.keyboard.press("Tab");
+        await expect(
+          page.getByRole("button", { name: "Monaco Editor", exact: true }),
+        ).toBeFocused();
+        await page.keyboard.press("Shift+Tab");
+        await expect(editor).toBeFocused();
+      }
       const reloaded = await savedState(page);
       expect(reloaded.resume.lessonId).toBe(lesson.id);
       expect(reloaded.resume.stepIndex).toBe(lesson.steps.indexOf(transfer));
@@ -542,7 +597,7 @@ for (const item of asyncTransferCases) {
             diagnostics: [],
             durationMs: 1,
             tests: {
-              passed: item.lessonId === "async-lending-callbacks" ? 8 : 7,
+              passed: item.mockPassed,
               failed: 0,
             },
           }),
@@ -625,7 +680,7 @@ for (const item of asyncTransferCases) {
     before.steps[unrelatedKey] = createStepProgress("// unrelated draft");
     await importOldAsyncState(page, before, item, false);
     await openAsyncTransfer(page, item);
-    await revealAsyncSolution(page);
+    await revealAsyncSolution(page, item);
     const after = await savedState(page);
     expect(after.steps[stepKey(lesson.id, item.stepId)]).toMatchObject({
       hints: 2,
@@ -713,3 +768,84 @@ for (const item of asyncTransferCases) {
     expect(errors).toEqual([]);
   });
 }
+
+test("prepared handoff reveal persists across retry without laundering assistance (UI/state only)", async ({
+  page,
+}) => {
+  const item = asyncTransferCases.find(
+    (candidate) => candidate.lessonId === "async-lending-send-boundary",
+  )!;
+  const errors = observeBrowserErrors(page);
+  const { lesson, transfer, criterion } = asyncTransferContext(item);
+  const before = oldAsyncState(item, false);
+  await importOldAsyncState(page, before, item, false);
+  await openAsyncTransfer(page, item);
+  await revealAsyncSolution(page, item);
+  await page.reload();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await editor.fill(transfer.solution!);
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      code: transfer.solution,
+      mode: "test",
+      tests:
+        transfer.evaluator?.kind === "tests"
+          ? transfer.evaluator.tests
+          : undefined,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout: "assisted retry: UI/state only",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: 7, failed: 0 },
+      }),
+    });
+  });
+  const beforeRetry = await savedState(page);
+  const isSubmittedTransfer = (event: EvidenceEvent) =>
+    event.lessonId === lesson.id &&
+    event.stepId === item.stepId &&
+    event.kind === "transfer" &&
+    event.evaluator === "tests" &&
+    event.passed;
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect
+    .poll(
+      async () =>
+        (await savedState(page)).events.filter(isSubmittedTransfer).length,
+    )
+    .toBe(1);
+  const after = await savedState(page);
+  expect(after.events.slice(0, beforeRetry.events.length)).toEqual(
+    beforeRetry.events,
+  );
+  const submitted = after.events.find(isSubmittedTransfer)!;
+  expect(courseEvidencePolicy.definitionForEvent(submitted)?.codingTaskId).toBe(
+    item.family,
+  );
+  expect(submitted).toMatchObject({
+    hints: 2,
+    revealed: true,
+    kind: "transfer",
+    evidenceVersion: 2,
+  });
+  expect(
+    after.events.find((event) => event.id === before.events[0].id),
+  ).toEqual(before.events[0]);
+  expect(after.steps[stepKey(lesson.id, item.stepId)]).toMatchObject({
+    hints: 2,
+    revealed: true,
+  });
+  expect(
+    independentCodingTaskIds(after, item.conceptId, courseEvidencePolicy),
+  ).toEqual([item.oldFamily]);
+  expect(gateRecovery(after, criterion, lessons).status).toBe("complete");
+  expect(errors).toEqual([]);
+});

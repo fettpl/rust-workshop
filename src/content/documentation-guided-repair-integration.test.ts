@@ -1,3 +1,4 @@
+import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { expect, it } from "vitest";
 import * as course from "./course";
 
@@ -108,7 +109,8 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
   expect(legacy.provenance.head).toBe(
     "c42c9253715ccd36d688677b0ef8e081f6771204",
   );
-  const previous = historicalBeforeDocumentationRepair(course);
+  const preHandoff = historicalBeforeSendHandoff(course);
+  const previous = historicalBeforeDocumentationRepair(preHandoff);
   expect(previous.modules).toEqual(legacy.modules);
   expect(previous.concepts).toEqual(legacy.concepts);
   expect(previous.sources).toEqual(legacy.sources);
@@ -117,7 +119,7 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
     legacy.lessons.map((l) => l.id),
   );
   for (const old of legacy.lessons) {
-    const current = course.lessons[old.index];
+    const current = preHandoff.lessons[old.index];
     expect(sha(JSON.stringify(current)), old.id).toBe(old.definitionHash);
     expect(current.steps.map((s) => s.id)).toEqual(old.stepIds);
   }

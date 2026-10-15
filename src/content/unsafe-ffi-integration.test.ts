@@ -1,3 +1,4 @@
+import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
@@ -14,7 +15,9 @@ import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const { concepts, lessons, modules, projects, roadmap, sources } =
   historicalBeforeFallibleComposition(
-    historicalBeforeDocumentationRepair(currentCourse),
+    historicalBeforeDocumentationRepair(
+      historicalBeforeSendHandoff(currentCourse),
+    ),
   );
 import {
   nestedPatternConcepts,

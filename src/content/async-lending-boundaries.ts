@@ -1,3 +1,7 @@
+import {
+  sendHandoffModelStep,
+  sendTransferStep,
+} from "./async-lending-send-transfer";
 import { dynTransferStep } from "./async-lending-dyn-transfer";
 import type {
   Competency,
@@ -506,6 +510,8 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         },
         evidenceKind: "recall",
       },
+      sendHandoffModelStep,
+      sendTransferStep,
     ],
     misconceptions: [
       "każdy async future jest Send",
@@ -620,7 +626,11 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
 for (const lesson of asyncLendingBoundaryLessons) {
   const family = boundaryEvidenceFamilies[lesson.id];
   for (const step of lesson.steps) {
-    if (step.id === "async-lending-dyn-adapter-borrowed-sources") continue;
+    if (
+      step.id === "async-lending-dyn-adapter-borrowed-sources" ||
+      step.id === sendTransferStep.id
+    )
+      continue;
     step.evidence = {
       version: 2,
       conceptIds: [...lesson.conceptIds],
