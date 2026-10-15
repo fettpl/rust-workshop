@@ -25,13 +25,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      # v7.0.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      # v7.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
-      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -44,8 +44,8 @@ jobs:
         run: npm run test:audit-production
       - name: Run full and production dependency audits
         run: npm run audit:production
-      # v7.0.1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      # v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: dependency-audit-reports
@@ -74,8 +74,8 @@ jobs:
       - run: npm run content:capstone -- --fetch
       - name: Run capstone assessment on stable Rust
         run: npx --no-install vitest run src/content/capstone-integration-assessment.test.ts src/content/capstone-verification.test.ts
-      # v7.0.1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      # v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: capstone-stable-report
@@ -84,7 +84,7 @@ jobs:
           retention-days: 7
       - run: npm run test:api-release
       - run: npm run content:api-release -- --stable
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: api-release-stable-report
@@ -93,7 +93,7 @@ jobs:
           retention-days: 7
       - run: npm run test:macro-contracts
       - run: npm run content:macro-contracts -- --stable
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: macro-contracts-stable-report
@@ -131,8 +131,8 @@ jobs:
 
           cat next-server.log
           exit 1
-      # v7.0.1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      # v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: failure()
         with:
           name: production-e2e-diagnostics
@@ -151,13 +151,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      # v7.0.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      # v7.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
-      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: 1.85.0
           components: rustfmt, clippy
@@ -177,7 +177,7 @@ jobs:
       # Fetch and run the restricted capstone archive verifier before the generic offline archive pass.
       - run: npm run content:capstone -- --fetch --msrv
       - run: npm run content:api-release -- --msrv
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: api-release-msrv-report
@@ -186,7 +186,7 @@ jobs:
           retention-days: 7
       - run: npm run test:macro-contracts
       - run: npm run content:macro-contracts -- --msrv
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: macro-contracts-msrv-report
@@ -206,8 +206,8 @@ jobs:
           fuzz_rust_bin="$(dirname "$(rustup which --toolchain 1.85.0 rustc)")"
           "$fuzz_rust_bin/rustc" --version
           PATH="$fuzz_rust_bin:$PATH" RUSTUP_TOOLCHAIN=1.85.0 npx --no-install vitest run src/content/fuzz-evidence-assessment.test.ts src/content/fuzz-evidence-integration.test.ts src/content/fuzz-evidence-verification.test.ts
-      # v7.0.1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      # v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: capstone-msrv-report
@@ -223,18 +223,18 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      # v7.0.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      # v7.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
-      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: nightly-2026-08-08
           components: rustfmt
       # The stable regression and MSRV replay are pinned independently from nightly instrumentation.
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: 1.85.0
       - name: Install cargo-fuzz with the pinned nightly
@@ -243,8 +243,8 @@ jobs:
         run: cargo +nightly-2026-08-08 fuzz --version
       - run: npm ci
       - run: npm run content:fuzz -- --fetch
-      # v7.0.1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      # v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: mini-grep-fuzz-evidence
@@ -260,8 +260,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      # v7.0.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      # v7.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
@@ -273,8 +273,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install --yes valgrind
           fi
-      # Verified upstream commit, resolved from dtolnay/rust-toolchain's master on 2026-09-13.
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -285,8 +285,8 @@ jobs:
         run: |
           npm run content:profiles -- --fetch --profile=callgrind
           npm run content:profiles -- --fetch --profile=dhat
-      # v7.0.1
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      # v7.0.2
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: log-analyzer-profile-evidence
@@ -317,17 +317,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: ${{ matrix.toolchain }}
           components: rustfmt, clippy
       - run: npm ci
       - run: ${{ matrix.verifier }}
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: ${{ matrix.artifact }}
@@ -343,22 +343,22 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      # v7.0.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      # v7.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
-      # Verified locally and in rustup's component index on 2026-09-18.
+      # Upstream rust-toolchain commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f verified via GitHub on 2026-10-13.
       # The date is pinned because Miri is coupled to its nightly compiler.
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: 1.85.0
           components: rustfmt, clippy
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: nightly-2026-08-08
           components: miri, rust-src
@@ -386,11 +386,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
-      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
         with:
           toolchain: ${{ matrix.toolchain }}
           components: rustfmt, clippy${{ matrix.mode == 'miri' && ', miri, rust-src' || '' }}
@@ -399,14 +399,14 @@ jobs:
         run: BORROWED_MEMORY_ARTIFACT_DIR=borrowed-memory-artifacts node --import tsx scripts/verify-borrowed-memory.ts ${{ matrix.args }} > borrowed-memory-${{ matrix.mode }}.json
       - name: Check Rust tool metadata
         run: rustfmt --version && cargo fmt --version && cargo clippy --version
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: unsafe-borrowed-memory-${{ matrix.mode }}
           path: borrowed-memory-${{ matrix.mode }}.json
           if-no-files-found: warn
           retention-days: 7
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: unsafe-borrowed-memory-evidence-${{ matrix.mode }}
