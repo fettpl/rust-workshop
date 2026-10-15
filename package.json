@@ -70,7 +70,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "toml-eslint-parser": "1.0.3",
-    "zod": "^4.6.5"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
