@@ -19,10 +19,10 @@ it("registers five async lending lessons, concepts, gates and reviews", () => {
   const taskRefs = stage!.gateCriteria!.flatMap(
     (criterion) => criterion.taskRefs,
   );
-  expect(taskRefs).toHaveLength(13);
+  expect(taskRefs).toHaveLength(15);
   expect(
     new Set(taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`)).size,
-  ).toBe(13);
+  ).toBe(15);
   for (const [index, id] of ids.entries()) {
     const lesson = lessons.find((candidate) => candidate.id === id)!;
     expect(lesson.conceptIds).toEqual([
@@ -59,14 +59,28 @@ it("registers five async lending lessons, concepts, gates and reviews", () => {
                 stepId: "async-lending-callbacks-bounded-transform",
               },
             ]
-          : id === "async-lending-dyn-adapter"
+          : id === "async-lending-send-boundary"
             ? [
                 {
                   lessonId: id,
-                  stepId: "async-lending-dyn-adapter-borrowed-sources",
+                  stepId: "async-lending-send-boundary-prepared-handoff",
                 },
               ]
-            : []),
+            : id === "async-lending-cancel-commit"
+              ? [
+                  {
+                    lessonId: id,
+                    stepId: "async-lending-cancel-commit-lost-reply",
+                  },
+                ]
+              : id === "async-lending-dyn-adapter"
+                ? [
+                    {
+                      lessonId: id,
+                      stepId: "async-lending-dyn-adapter-borrowed-sources",
+                    },
+                  ]
+                : []),
     ];
     expect(stage!.gateCriteria![index].taskRefs).toEqual(expectedRefs);
   }
@@ -104,10 +118,10 @@ it("states authored family availability separately from module completion and co
     (module) => module.id === "async-lending-contracts",
   )!;
   expect(stage.exitGate.join(" ")).toContain(
-    "Receiver, callback i adapter dyn mają po dwie opisane rodziny primary",
+    "Receiver, callback, adapter dyn, Send i cancellation/commit mają po dwie opisane rodziny primary",
   );
   expect(stage.exitGate.join(" ")).toContain(
-    "Cancellation/commit i Send mają po jednej",
+    "potwierdzenie pojęcia wymaga dwóch kwalifikujących się czystych rodzin",
   );
   expect(stage.exitGate.join(" ")).toContain("Ukończenie modułu");
   expect(
@@ -115,4 +129,37 @@ it("states authored family availability separately from module completion and co
       (item) => item.requiredIndependentCodingTasks === 1,
     ),
   ).toBe(true);
+});
+
+it("attributes the assembled handoff model and task only to the existing Send concept", () => {
+  const lesson = lessons.find(
+    (item) => item.id === "async-lending-send-boundary",
+  )!;
+  const model = lesson.steps.find(
+    (step) => step.id === "async-lending-send-boundary-handoff-model",
+  )!;
+  const task = lesson.steps.find(
+    (step) => step.id === "async-lending-send-boundary-prepared-handoff",
+  )!;
+  expect(model).toMatchObject({
+    kind: "predict",
+    evidenceKind: "prediction",
+    evidence: { version: 2, conceptIds: [lesson.id] },
+  });
+  expect(model.evidence).not.toHaveProperty("codingTaskId");
+  expect(model.evidenceGate).not.toBe(true);
+  expect(task).toMatchObject({
+    kind: "apply",
+    evidenceKind: "transfer",
+    evidenceGate: true,
+    evaluator: { kind: "tests" },
+    evidence: {
+      version: 2,
+      conceptIds: [lesson.id],
+      codingTaskId: "async-lending/send-prepared-handoff-v1",
+    },
+  });
+  expect(
+    concepts.find((concept) => concept.id === lesson.id)?.evidenceCalibration,
+  ).toEqual({ version: 2, minimumCodingTasks: 2 });
 });

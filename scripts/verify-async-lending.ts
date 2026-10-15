@@ -1,5 +1,15 @@
 /** Verifies the fixed async lending extension of the Tokio service archive. */
 import assert from "node:assert/strict";
+import {
+  verifySendHandoffBehavior,
+  verifySendHandoffBoundaries,
+  verifySendHandoffConsumerBounds,
+  verifySendHandoffTokio,
+} from "../src/content/async-lending-send-native";
+import {
+  verifyCancelTransferBehavior,
+  verifyCancelTransferBoundaries,
+} from "../src/content/async-lending-cancel-native";
 import { createHash } from "node:crypto";
 import {
   existsSync,
@@ -10,8 +20,9 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { delimiter, dirname, join } from "node:path";
+import { delimiter, dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
 import { asyncLendingBoundaryFixtures } from "../src/content/async-lending-fixtures";
@@ -30,6 +41,8 @@ const root = mkdtempSync(join(tmpdir(), "async-lending-verify-"));
 const evidence = {
   archive: {} as Record<string, string>,
   toolchain: "",
+  sendHandoffEvidence: "",
+  cancelTransferEvidence: "",
   fixtures: [] as { id: string; passed: boolean; detail: string }[],
 };
 
@@ -337,6 +350,97 @@ try {
     const fetched = run(solution, cargo, ["fetch", "--locked"]);
     assertCompleted(fetched, "solution/fetch");
     assert.equal(fetched.status, 0, "fixed dependency fetch failed");
+    const fixedProfile = fileURLToPath(
+      new URL("./fixtures/tokio-runtime-1.53.1/", import.meta.url),
+    );
+    const fixedLockPath = join(fixedProfile, "Cargo.lock");
+    const fixedLock = readFileSync(fixedLockPath);
+    const fixedFetched = run(root, cargo, [
+      "fetch",
+      "--locked",
+      "--manifest-path",
+      join(fixedProfile, "Cargo.toml"),
+    ]);
+    assertCompleted(fixedFetched, "fixed-profile/fetch");
+    assert(
+      fixedLock.equals(readFileSync(fixedLockPath)),
+      "fixed Tokio profile Cargo.lock changed during fetch",
+    );
+    assert.equal(fixedFetched.status, 0, "fixed Tokio profile fetch failed");
+  }
+  const sourceEvidenceBase = process.env.M11_NATIVE_EVIDENCE_DIR
+    ? resolve(process.env.M11_NATIVE_EVIDENCE_DIR)
+    : join(process.cwd(), "test-results", "async-lending");
+  mkdirSync(sourceEvidenceBase, { recursive: true });
+  const sourceEvidence = mkdtempSync(
+    join(sourceEvidenceBase, `${msrv ? "msrv" : "stable"}-send-handoff-`),
+  );
+  evidence.sendHandoffEvidence = sourceEvidence;
+  for (const [id, verify] of [
+    [
+      "behavior",
+      () =>
+        verifySendHandoffBehavior(join(sourceEvidence, "behavior"), rustc, env),
+    ],
+    [
+      "boundaries",
+      () =>
+        verifySendHandoffBoundaries(
+          join(sourceEvidence, "boundaries"),
+          rustc,
+          env,
+        ),
+    ],
+    [
+      "consumer-bounds",
+      () =>
+        verifySendHandoffConsumerBounds(
+          join(sourceEvidence, "consumer-bounds"),
+          rustc,
+          env,
+        ),
+    ],
+    [
+      "tokio",
+      () =>
+        verifySendHandoffTokio(
+          join(sourceEvidence, "tokio"),
+          cargo,
+          rustc,
+          env,
+        ),
+    ],
+  ] as const) {
+    try {
+      const proofs = verify();
+      check(
+        `send-handoff/${id}`,
+        true,
+        `${proofs.length} source-bound proofs; durable commands in ${sourceEvidence}`,
+      );
+    } catch (error) {
+      check(
+        `send-handoff/${id}`,
+        false,
+        error instanceof Error ? error.message : String(error),
+      );
+      throw error;
+    }
+  }
+  const cancelEvidence = mkdtempSync(
+    join(sourceEvidenceBase, `${msrv ? "msrv" : "stable"}-cancel-transfer-`),
+  );
+  evidence.cancelTransferEvidence = cancelEvidence;
+  for (const [id, verify] of [
+    ["behavior", () => verifyCancelTransferBehavior(join(cancelEvidence, "behavior"), rustc)],
+    ["boundaries", () => verifyCancelTransferBoundaries(join(cancelEvidence, "boundaries"), rustc)],
+  ] as const) {
+    const proofs = verify();
+    check(
+      `cancel-transfer/${id}`,
+      true,
+      `${proofs.length} source-bound proofs; durable commands in ${cancelEvidence}`,
+    );
   }
   for (const commandArgs of [
     ["fmt", "--all", "--", "--check"],

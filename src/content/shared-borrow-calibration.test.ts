@@ -1,8 +1,14 @@
+import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const historicalLessons = historicalBeforeFallibleComposition(
-  historicalBeforeDocumentationRepair(currentCourse),
+  historicalBeforeDocumentationRepair(
+    historicalBeforeSendHandoff(
+      historicalBeforeCancellationTransfer(currentCourse),
+    ),
+  ),
 ).lessons;
 import { expect, it } from "vitest";
 import type { LessonStep } from "@/domain/types";

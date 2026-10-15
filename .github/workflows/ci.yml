@@ -36,6 +36,8 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy
       - run: npm ci
+      - name: Prepare locked Tokio dependencies for offline native checks
+        run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
       - name: Test native runtime version minimums
         run: npm run test:sharp-runtime
       - name: Verify Linux sharp native runtime and SVG decoder
@@ -162,6 +164,8 @@ jobs:
           toolchain: 1.85.0
           components: rustfmt, clippy
       - run: npm ci
+      - name: Prepare locked Tokio dependencies for offline native checks
+        run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
       - run: npm run content:guessing -- --fetch --msrv
       - run: npm run content:property -- --fetch --msrv
       - run: npm run content:tokio -- --fetch

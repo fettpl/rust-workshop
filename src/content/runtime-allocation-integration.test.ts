@@ -1,3 +1,5 @@
+import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
+import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
@@ -5,7 +7,11 @@ import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const { concepts, lessons, modules, reviewExercises } =
   historicalBeforeFallibleComposition(
-    historicalBeforeDocumentationRepair(currentCourse),
+    historicalBeforeDocumentationRepair(
+      historicalBeforeSendHandoff(
+        historicalBeforeCancellationTransfer(currentCourse),
+      ),
+    ),
   );
 import { runtimeAllocationEvidenceLessons } from "./runtime-allocation-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
