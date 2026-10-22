@@ -43,6 +43,11 @@ commit. Historical runs remain historical observations.
 
 Keep an offline backup of the local repository, including `.git`, outside
 iCloud before cleanup or machine migration. Do not create new scheduled
-automation for this queue. The initial maintenance status is pending
-independent review; the controller records the final local evidence after that
-review and preserves any concerns or limitations.
+automation for this queue. Local maintenance is complete at source commit
+`d12d789fc3e35bb7ef4b8cbacb571079a2570a4e`: the fresh full suite recorded
+1,426 passes and one explicit opt-in skip; lint recorded zero errors and 29
+existing warnings; typecheck and content validation passed. Independent review
+is approved with no findings. Remote acceptance remains on hold, and main
+checks and a main merge remain unexecuted. When the controller creates a local
+Git bundle, retain it with the offline recovery materials; this document does
+not claim that the bundle already exists.
