@@ -45,13 +45,13 @@ jobs:
           QUALIFICATION_DIR="${GITHUB_WORKSPACE}/initialized-prefix-unit-artifacts/toolchains" node --input-type=module <<'NODE'
           import { execFileSync } from "node:child_process";
           import { createHash } from "node:crypto";
-          import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+          import { mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
           import { resolve } from "node:path";
           const outputDirectory = resolve(process.env.QUALIFICATION_DIR);
           mkdirSync(outputDirectory, { recursive: true });
           const text = (command, args) => execFileSync(command, args, { encoding: "utf8" });
           const ref = (path) => {
-            const absolute = resolve(path.trim());
+            const absolute = realpathSync(resolve(path.trim()));
             const bytes = readFileSync(absolute);
             return { path: absolute, bytes: bytes.byteLength, sha256: createHash("sha256").update(bytes).digest("hex") };
           };
@@ -443,7 +443,7 @@ jobs:
           mkdirSync(qualificationDirectory, { recursive: true });
           const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
           const ref = (path) => {
-            const absolute = resolve(path.trim());
+            const absolute = realpathSync(resolve(path.trim()));
             const bytes = readFileSync(absolute);
             return { path: absolute, bytes: bytes.byteLength, sha256: hash(bytes) };
           };

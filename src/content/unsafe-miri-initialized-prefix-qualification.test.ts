@@ -3,13 +3,15 @@ import {
   chmodSync,
   mkdirSync,
   mkdtempSync,
+  renameSync,
   readFileSync,
   readdirSync,
   realpathSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import type {
   PrefixFileRef,
@@ -29,6 +31,30 @@ const ref = (path: string): PrefixFileRef => {
     bytes: bytes.length,
     sha256: createHash("sha256").update(bytes).digest("hex"),
   };
+};
+const workflowRefsFromSource = (workflow: string) => {
+  const sources = [
+    ...workflow.matchAll(/const ref = \(path\) => \{[\s\S]*?\n\s*\};/g),
+  ].map((match) => match[0]);
+  if (sources.length !== 2)
+    throw new Error(
+      `expected two workflow qualification ref helpers, got ${sources.length}`,
+    );
+  const hash = (bytes: Uint8Array) =>
+    createHash("sha256").update(bytes).digest("hex");
+  return sources.map(
+    (source) =>
+      Function(
+        "readFileSync",
+        "resolve",
+        "realpathSync",
+        "createHash",
+        "hash",
+        `${source}; return ref;`,
+      )(readFileSync, resolve, realpathSync, createHash, hash) as (
+        path: string,
+      ) => PrefixFileRef,
+  );
 };
 const json = (path: string, value: unknown) =>
   writeFileSync(path, JSON.stringify(value, null, 2) + "\n", { flag: "wx" });
@@ -250,6 +276,50 @@ function expectBinding(
 }
 
 describe("production qualification with fixed Node metadata fakes", () => {
+  it.each([0, 1] as const)(
+    "uses canonical workflow executable refs from helper %s while retaining exact target bytes",
+    async (helperIndex) => {
+      const workflow = readFileSync(
+        join(process.cwd(), ".github/workflows/ci.yml"),
+        "utf8",
+      );
+      const workflowRef = workflowRefsFromSource(workflow)[helperIndex];
+      await withFixture("stable", async (f) => {
+        const target = join(f.rustupBin, "rustup-target");
+        renameSync(f.paths.rustup, target);
+        symlinkSync("rustup-target", f.paths.rustup);
+        const canonicalProfile = {
+          ...f.profile,
+          executables: {
+            ...f.profile.executables,
+            rustup: workflowRef(f.paths.rustup),
+          },
+        };
+        writeFileSync(
+          f.qualification,
+          `${JSON.stringify(canonicalProfile, null, 2)}\n`,
+        );
+        const binding = await qualifyInitializedPrefixToolchain({
+          mode: "stable",
+          attemptDirectory: f.attempt,
+        });
+        expect(binding.executables.rustup.path).toBe(realpathSync(target));
+        writeFileSync(target, "changed rustup target bytes\n", { flag: "a" });
+        await expect(
+          qualifyInitializedPrefixToolchain({
+            mode: "stable",
+            attemptDirectory: createInitializedPrefixAttempt({
+              mode: "stable",
+              evidenceDirectory: f.evidence,
+            }),
+          }),
+        ).rejects.toThrow(
+          "root-qualified rustup identity differs before lookup",
+        );
+      });
+    },
+  );
+
   it.each(["stable", "msrv", "miri"] as const)(
     "retains one canonical environment for %s including workflow sibling inputs",
     async (mode) => {
