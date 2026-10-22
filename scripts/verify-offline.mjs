@@ -1006,6 +1006,90 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.getByText("Tryb offline.", { exact: false })).toBeVisible();
     await page.setViewportSize({ width: 1280, height: 900 });
     console.log("Initialized-prefix model/primary, draft, note, help, exact resume and keyboard work offline; no compiler credit");
+    // Disjoint-range model/primary path: inspect the appended model, then
+    // preserve a real draft, note, hint and exact index-8 resume offline.
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(unsafeMiriTitle);
+    await page.locator(".module-picker > button").filter({ hasText: unsafeMiriTitle }).click();
+    await page.locator(".lesson-list-item").filter({ hasText: "Rozdziel mutowalne regiony" }).click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(7).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Model: dwa zakresy i kolejność argumentów", exact: true })).toBeVisible();
+    await expect(page.locator(".task-pane")).toContainText("0..2");
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(8).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Przenieś dowód na dwa zakresy", exact: true })).toBeVisible();
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const disjointEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    const simpleDisjointEditor = page.getByRole("button", { name: "Prosty edytor", exact: true });
+    if (await simpleDisjointEditor.count() && await simpleDisjointEditor.isVisible()) {
+      await simpleDisjointEditor.click();
+    }
+    await expect(disjointEditor).toBeVisible();
+    const disjointDraft = "// Zakresy zapisane offline bez transferu.\n";
+    await disjointEditor.fill(disjointDraft);
+    await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+    await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    const disjointNote = "Półotwarte zakresy zachowują kolejność caller'a offline.";
+    await page.getByLabel("Notatki do lekcji").fill(disjointNote);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
+    await expect.poll(async () => {
+      const state = await readLearningState();
+      const progress = state.steps["unsafe-miri-disjoint-regions:disjoint-regions-range-transfer"];
+      return {
+        code: progress?.code,
+        hints: progress?.hints,
+        note: state.notes["unsafe-miri-disjoint-regions"],
+        lessonId: state.resume.lessonId,
+        stepIndex: state.resume.stepIndex,
+      };
+    }).toEqual({
+      code: disjointDraft,
+      hints: 1,
+      note: disjointNote,
+      lessonId: "unsafe-miri-disjoint-regions",
+      stepIndex: 8,
+    });
+    const disjointOfflineState = await readLearningState();
+    expect(disjointOfflineState.events.filter((event) =>
+      event.lessonId === "unsafe-miri-disjoint-regions" &&
+      event.stepId === "disjoint-regions-range-transfer" &&
+      event.kind === "transfer" &&
+      event.passed,
+    )).toEqual([]);
+    await page.reload();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Przenieś dowód na dwa zakresy", exact: true })).toBeVisible();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(disjointNote);
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(disjointEditor).toBeVisible();
+    await expect(disjointEditor).toHaveValue(disjointDraft);
+    await disjointEditor.focus();
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Monaco Editor", exact: true })).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(disjointEditor).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const disjointReloadState = await readLearningState();
+    expect(disjointReloadState.resume).toMatchObject({
+      lessonId: "unsafe-miri-disjoint-regions",
+      stepIndex: 8,
+    });
+    expect(disjointReloadState.events.filter((event) =>
+      event.lessonId === "unsafe-miri-disjoint-regions" &&
+      event.stepId === "disjoint-regions-range-transfer" &&
+      event.kind === "transfer" &&
+      event.passed,
+    )).toEqual([]);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    console.log("Disjoint-range model/primary draft, note, help, exact index-8 resume and keyboard work offline; no compiler or transfer credit");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
       "Property testing: kontrakty, generatory i kontrprzykłady";
