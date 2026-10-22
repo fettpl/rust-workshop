@@ -108,8 +108,10 @@ export function verifyTrustedRust(
   const dir = mkdtempSync(join(tmpdir(), "rust-workshop-authored-"));
   const results: Verification[] = [];
   let number = 0;
-  function record(result: Verification) {
+  function record(result: Verification, ownedDirectory?: string) {
     results.push(result);
+    if (ownedDirectory)
+      rmSync(ownedDirectory, { recursive: true, force: true });
     reporter?.(result);
   }
   function verify(
@@ -134,7 +136,8 @@ export function verifyTrustedRust(
       });
       return;
     }
-    const path = join(dir, `example_${number++}.rs`);
+    const caseDirectory = mkdtempSync(join(dir, "case-"));
+    const path = join(caseDirectory, `example_${number++}.rs`);
     const binary = path + ".bin";
     const testMode = !!options.tests;
     const source = testMode ? appendHiddenTests(code, options.tests!) : code;
@@ -152,7 +155,7 @@ export function verifyTrustedRust(
         "-o",
         binary,
       ],
-      dir,
+      caseDirectory,
       COMPILE_TIMEOUT,
     );
     if (options.error || options.diagnostic) {
@@ -165,13 +168,16 @@ export function verifyTrustedRust(
           options.error === "any" ||
           compile.stderr.includes(`error[${options.error}]`)) &&
         (!options.diagnostic || compile.stderr.includes(options.diagnostic));
-      record({
-        id,
-        passed,
-        detail: passed
-          ? `przewidziany błąd ${options.diagnostic ?? options.error}`
-          : `oczekiwano ${options.diagnostic ?? options.error}: ${compile.error?.message ?? compile.stderr.slice(0, 700)}`,
-      });
+      record(
+        {
+          id,
+          passed,
+          detail: passed
+            ? `przewidziany błąd ${options.diagnostic ?? options.error}`
+            : `oczekiwano ${options.diagnostic ?? options.error}: ${compile.error?.message ?? compile.stderr.slice(0, 700)}`,
+        },
+        caseDirectory,
+      );
       return;
     }
     if (compile.error || compile.status !== 0) {
@@ -185,25 +191,34 @@ export function verifyTrustedRust(
         !compile.signal &&
         sourceError
       ) {
-        record({
-          id,
-          passed: true,
-          detail: "starter nie spełnia API wymaganego przez testy",
-        });
+        record(
+          {
+            id,
+            passed: true,
+            detail: "starter nie spełnia API wymaganego przez testy",
+          },
+          caseDirectory,
+        );
         return;
       }
-      record({
-        id,
-        passed: false,
-        detail: `kompilacja: ${compile.error?.message ?? compile.stderr.slice(0, 900)}`,
-      });
+      record(
+        {
+          id,
+          passed: false,
+          detail: `kompilacja: ${compile.error?.message ?? compile.stderr.slice(0, 900)}`,
+        },
+        caseDirectory,
+      );
       return;
     }
     if ((!main && !testMode) || options.run === false) {
-      record({ id, passed: true, detail: "kompiluje się (biblioteka)" });
+      record(
+        { id, passed: true, detail: "kompiluje się (biblioteka)" },
+        caseDirectory,
+      );
       return;
     }
-    const execution = command(binary, [], dir, EXECUTION_TIMEOUT);
+    const execution = command(binary, [], caseDirectory, EXECUTION_TIMEOUT);
     if (options.expectStarterRejection) {
       const counts = execution.stdout.match(
         /test result:.*?\. (\d+) passed; (\d+) failed;/,
@@ -230,15 +245,18 @@ export function verifyTrustedRust(
               },
             })
           : undefined;
-      record({
-        id,
-        passed: outcome !== undefined && !outcome.passed,
-        detail: !validRun
-          ? `nie udało się ocenić startera: ${execution.error?.message ?? execution.stderr}`
-          : outcome?.passed
-            ? "starter już zalicza zadanie bez zmiany kodu"
-            : "starter wymaga poprawy przed zaliczeniem evaluatora",
-      });
+      record(
+        {
+          id,
+          passed: outcome !== undefined && !outcome.passed,
+          detail: !validRun
+            ? `nie udało się ocenić startera: ${execution.error?.message ?? execution.stderr}`
+            : outcome?.passed
+              ? "starter już zalicza zadanie bez zmiany kodu"
+              : "starter wymaga poprawy przed zaliczeniem evaluatora",
+        },
+        caseDirectory,
+      );
       return;
     }
     if (options.expectTestFailure) {
@@ -252,13 +270,16 @@ export function verifyTrustedRust(
         execution.status !== 0 &&
         !!failed &&
         Number(failed[2]) > 0;
-      record({
-        id,
-        passed,
-        detail: passed
-          ? "zmieniona implementacja nie omija asercji testów"
-          : `oczekiwano nieprzechodzącej asercji; status=${execution.status}, signal=${execution.signal}, error=${execution.error?.message ?? "brak"}; stdout=${execution.stdout.slice(0, 900)}; stderr=${execution.stderr.slice(0, 900)}`,
-      });
+      record(
+        {
+          id,
+          passed,
+          detail: passed
+            ? "zmieniona implementacja nie omija asercji testów"
+            : `oczekiwano nieprzechodzącej asercji; status=${execution.status}, signal=${execution.signal}, error=${execution.error?.message ?? "brak"}; stdout=${execution.stdout.slice(0, 900)}; stderr=${execution.stderr.slice(0, 900)}`,
+        },
+        caseDirectory,
+      );
       return;
     }
     let passed = !execution.error && execution.status === 0;
@@ -313,15 +334,18 @@ export function verifyTrustedRust(
       passed = outcome.passed;
       detail = outcome.feedback;
     }
-    record({
-      id,
-      passed,
-      detail: passed
-        ? testMode
-          ? "rozwiązanie przechodzi testy z evaluator.tests"
-          : "kompilacja i wykonanie poprawne"
-        : detail.slice(0, 1000),
-    });
+    record(
+      {
+        id,
+        passed,
+        detail: passed
+          ? testMode
+            ? "rozwiązanie przechodzi testy z evaluator.tests"
+            : "kompilacja i wykonanie poprawne"
+          : detail.slice(0, 1000),
+      },
+      caseDirectory,
+    );
   }
   function stepCases(prefix: string, step: LessonStep) {
     if (step.editorMode === "toml") return;
