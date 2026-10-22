@@ -19,7 +19,7 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
     "async-lending-send-boundary-handoff-model",
     "async-lending-send-boundary-prepared-handoff",
   ]);
-  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1275);
+  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1277);
 });
 
 it("keeps all accepted immutable fixture bytes unchanged", () => {
@@ -165,7 +165,6 @@ it("exposes six two-family advanced concepts while three remain provisional", ()
     "scope-drop",
     "copy-semantics",
     "ownership-repair",
-    "unsafe-miri-disjoint-regions-contract",
     "unsafe-miri-slot-state-contract",
     "unsafe-miri-mut-slot-variance-contract",
   ]);

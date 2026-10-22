@@ -13,11 +13,11 @@ export const disjointRangesFamily = "unsafe-miri/disjoint-ranges-v1" as const;
 export const acceptedPreDisjointRangesCourseSha256 = baseline.wholeCourseSha256;
 
 const currentSubtitle =
-  "Zachowaj rozłączność `&mut` na obu krawędziach, także przy dwóch zakresach wybranych przez caller'a.";
+  "Zachowaj rozłączność `&mut` na obu krawędziach, także przy dwóch zakresach wybranych przez wywołującego.";
 const currentOutcome =
-  "Przeniesiesz dowód na dwa półotwarte zakresy z kolejnością caller'a i jawną polityką pustych zakresów.";
+  "Przeniesiesz dowód na dwa półotwarte zakresy z kolejnością podanych zakresów i jawną polityką pustych zakresów.";
 const currentExitGate =
-  "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania, a następnie wybierzesz dwa rozłączne zakresy z zachowaniem kolejności caller'a; druga forma starego podziału nie tworzy nowej rodziny.";
+  "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania, a następnie wybierzesz dwa rozłączne zakresy z zachowaniem kolejności podanych zakresów; druga forma starego podziału nie tworzy nowej rodziny.";
 const newCriterionRef = {
   lessonId: disjointRangesLessonId,
   stepId: disjointRangesPrimaryStepId,

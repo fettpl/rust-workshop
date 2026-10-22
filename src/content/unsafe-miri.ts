@@ -977,13 +977,13 @@ export const unsafeMiriLessons: Lesson[] = [
     prerequisites: ["unsafe-miri-byte-view"],
     title: "Rozdziel mutowalne regiony",
     subtitle:
-      "Zachowaj rozłączność `&mut` na obu krawędziach, także przy dwóch zakresach wybranych przez caller'a.",
+      "Zachowaj rozłączność `&mut` na obu krawędziach, także przy dwóch zakresach wybranych przez wywołującego.",
     minutes: 25,
     outcomes: [
       "Zaakceptujesz `mid == 0` i `mid == len`.",
       "Odrzucisz tylko indeks poza buforem.",
       "Udowodnisz niezależne mutacje bez nakładających się pożyczek.",
-      "Przeniesiesz dowód na dwa półotwarte zakresy z kolejnością caller'a i jawną polityką pustych zakresów.",
+      "Przeniesiesz dowód na dwa półotwarte zakresy z kolejnością podanych zakresów i jawną polityką pustych zakresów.",
     ],
     steps: [
       predict(
@@ -1383,7 +1383,7 @@ export const unsafeMiriModule: CourseModule = {
   lessonIds: unsafeMiriLessons.map((lesson) => lesson.id),
   exitGate: [
     "Zbudujesz ByteView tylko z zainicjalizowanych, żywych bajtów i nie wydłużysz lifetime storage; gate i blank należą do jednej rodziny.",
-    "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania, a następnie wybierzesz dwa rozłączne zakresy z zachowaniem kolejności caller'a; druga forma starego podziału nie tworzy nowej rodziny.",
+    "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania, a następnie wybierzesz dwa rozłączne zakresy z zachowaniem kolejności podanych zakresów; druga forma starego podziału nie tworzy nowej rodziny.",
     "Utrzymasz Slot<T> z poprawnym stanem MaybeUninit i dokładnym Drop; powtórka recall pozostaje osobnym sprawdzeniem.",
     "Rozpoznasz bezpieczny reborrow MutSlot oraz odrzucisz niepoprawne skrócenie wewnętrznego lifetime; przy jednej rodzinie potwierdzenie pozostaje prowizoryczne, a pomoc nie otwiera nowej wersji.",
   ],
