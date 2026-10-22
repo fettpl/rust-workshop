@@ -67,7 +67,14 @@ const changedKeys = [
   "MIRI_SYSROOT",
 ] as const;
 
-function fixture(mode: PrefixMode, wrongLookup = false) {
+type StableVersionName = "rustc" | "rustdoc" | "cargo";
+type StableVersionOverrides = Partial<Record<StableVersionName, string>>;
+
+function fixture(
+  mode: PrefixMode,
+  wrongLookup = false,
+  versionOverrides: StableVersionOverrides = {},
+) {
   const root = realpathSync(
     mkdtempSync(join(tmpdir(), "qualification-node-fakes-")),
   );
@@ -92,6 +99,7 @@ function fixture(mode: PrefixMode, wrongLookup = false) {
     cargo: `cargo ${release} (synthetic fixture)`,
     "cargo-miri": "miri 0.1.0 (synthetic fixture)",
     miri: "rustc 1.99.0-nightly (synthetic fixture)",
+    ...versionOverrides,
   };
   const names = [
     "rustup",
@@ -182,10 +190,13 @@ function fixture(mode: PrefixMode, wrongLookup = false) {
 async function withFixture<T>(
   mode: PrefixMode,
   run: (f: ReturnType<typeof fixture>) => Promise<T>,
-  options: { wrongLookup?: boolean } = {},
+  options: {
+    wrongLookup?: boolean;
+    versionOverrides?: StableVersionOverrides;
+  } = {},
 ) {
   const saved = Object.fromEntries(changedKeys.map((k) => [k, process.env[k]]));
-  const f = fixture(mode, options.wrongLookup);
+  const f = fixture(mode, options.wrongLookup, options.versionOverrides);
   json(f.qualification, f.profile);
   try {
     process.env.RUSTUP_HOME = f.rustupHome;
@@ -317,6 +328,65 @@ describe("production qualification with fixed Node metadata fakes", () => {
           "root-qualified rustup identity differs before lookup",
         );
       });
+    },
+  );
+
+  it("accepts stable release lines with beta/nightly/dev words in auxiliary metadata", async () => {
+    await withFixture(
+      "stable",
+      async (f) => {
+        const binding = await qualifyInitializedPrefixToolchain({
+          mode: "stable",
+          attemptDirectory: f.attempt,
+        });
+        expect(binding.mode).toBe("stable");
+      },
+      {
+        versionOverrides: {
+          rustc:
+            "rustc 1.99.1 (synthetic fixture)\nrelease: 1.99.1\nchannel: stable\nauxiliary: nightly dev beta metadata",
+          rustdoc:
+            "rustdoc 1.99.1 (synthetic fixture)\nrelease: 1.99.1\nchannel: stable\nauxiliary: nightly dev beta metadata",
+          cargo:
+            "cargo 1.99.1 (synthetic fixture)\nrelease: 1.99.1\nchannel: stable\nauxiliary: nightly dev beta metadata",
+        },
+      },
+    );
+  });
+
+  const unstableReleaseCases = [
+    ["rustc", "beta"],
+    ["rustc", "nightly"],
+    ["rustc", "dev"],
+    ["rustdoc", "beta"],
+    ["rustdoc", "nightly"],
+    ["rustdoc", "dev"],
+    ["cargo", "beta"],
+    ["cargo", "nightly"],
+    ["cargo", "dev"],
+  ] as const;
+
+  it.each(unstableReleaseCases)(
+    "rejects a %s first-line %s release marker",
+    async (name, channel) => {
+      const release = `${name} 1.99.1-${channel} (synthetic fixture)\nrelease: 1.99.1\nchannel: stable\nauxiliary: unrelated metadata`;
+      const versionOverrides = {
+        [name]: release,
+      } as StableVersionOverrides;
+      await withFixture(
+        "stable",
+        async (f) => {
+          await expect(
+            qualifyInitializedPrefixToolchain({
+              mode: "stable",
+              attemptDirectory: f.attempt,
+            }),
+          ).rejects.toThrow(
+            `stable ${name} did not report a current stable release`,
+          );
+        },
+        { versionOverrides },
+      );
     },
   );
 

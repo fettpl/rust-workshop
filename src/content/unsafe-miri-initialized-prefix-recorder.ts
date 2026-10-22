@@ -2187,11 +2187,11 @@ export async function qualifyInitializedPrefixToolchain(options: {
         ["rustdoc", "rustdoc", rustdocVersion],
         ["cargo", "cargo", cargoVersion],
       ] as const) {
+        const firstReleaseLine = output.split(/\r?\n/u, 1)[0] ?? "";
         if (
-          !new RegExp(`^${prefix} \\d+\\.\\d+\\.\\d+(?:\\s|$)`, "m").test(
-            output,
-          ) ||
-          /beta|nightly|dev/i.test(output)
+          !new RegExp(`^${prefix} \\d+\\.\\d+\\.\\d+(?:\\s|$)`, "u").test(
+            firstReleaseLine,
+          )
         )
           throw new Error(
             `stable ${name} did not report a current stable release`,

@@ -67,21 +67,29 @@ production-interpreter audit to the historical capture. Its raw receipts are no
 longer retained for fresh verification; these figures are historical attribution,
 not a current retained-data or strict-proof claim.
 
-At the 22 October development-branch checkpoint, the source/proof and
-canonical synthetic-write reviews are complete. All three scoped synthetic
-callbacks pass. Inspection of 20 result packets confirms exact nine/eleven
-control inventories, valid original and copied baselines, exact intended finite
-reason-code sets, and unchanged original/external bytes. These callbacks use
-synthetic fixtures, not native Rust behavior. Native07 stable strict passed with
-118 recipes, 125 commands, and 9 controls; MSRV strict passed with the same
-118/125/9 counts. Miri reached 122 recipes and 131 commands but exceeded the
-unchanged 480-second deadline, leaving 10 expected verdicts plus a
-category-mutator error and no native acceptance. A narrow category-only
-correction is regression-tested by 78 focused tests in both the private harness and the
-canonical repository. No native realpath optimization or memoization is included.
-Full tests, build, UI/offline, CI, final branch review, and release acceptance
-remain pending. The source is a development branch under validation; a draft PR
-is upcoming.
+At the 22 October recovery checkpoint, local validation passed the baseline
+1,380-test unit suite without skips, all 2,519 authored Rust cases, content
+validation (192 lessons, 194 concepts, 7 traces), and the production build.
+The complete production browser suite passed 184/184 without skips, flaky
+results, or retries. Offline checks preserved the initialized-prefix model,
+primary task, draft, notes, help, and exact resume, while withholding compiler
+credit when execution was unavailable. Follow-up qualification regressions
+exercise stable version metadata and reject beta/nightly/dev release tokens.
+Browser checks with intercepted runner responses establish UI/state behavior;
+the separate trusted Rust fixture checks are compiler-backed.
+
+The retained Native07 campaign passed stable and exact MSRV with 118 recipes,
+125 commands, and 9 controls per mode. Its Miri attempt reached 122 recipes and
+131 commands, exceeded the unchanged 480-second deadline, and retained ten
+expected verdicts plus a category-mutator error. That attempt remains failed.
+The category matcher is corrected. A subsequent Linux qualification failure
+exposed a version check that scanned auxiliary Cargo metadata for prerelease
+words; the check now validates the first release line while preserving exact
+full-stdout and executable-hash qualification.
+
+Full native acceptance requires the dedicated CI checks. Release acceptance
+requires all eleven checks on the exact PR head and all eleven on the resulting
+`main` commit; results are tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76).
 
 Availability counts describe authored content only: the expected source delta
 is 1,273 to 1,275 steps, with the advanced provisional-family count moving from
