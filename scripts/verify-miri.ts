@@ -1,5 +1,6 @@
 /** Verifies the repository-authored pure-Rust Miri safety package only. */
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -22,6 +23,10 @@ import {
   type InitializedPrefixDiagnosticCode,
 } from "./initialized-prefix-diagnostics";
 import { verifyInitializedPrefixNative } from "../src/content/unsafe-miri-initialized-prefix-native";
+import {
+  assertDisjointRangesMiriObservation,
+  DISJOINT_RANGES_FIXTURE_SOURCE_SHA256,
+} from "./miri-disjoint-ranges-diagnostics";
 
 const MIRI_TOOLCHAIN = "nightly-2026-08-08";
 const args = process.argv.slice(2);
@@ -47,9 +52,11 @@ const miriEnv = { ...process.env };
 let cargo = "cargo";
 let rustc = "rustc";
 let miriCargoExecutable = "cargo";
+let miriCargoVersion = "";
 
 function resolveRustupToolchain(toolchain: string, expectedVersion: RegExp) {
   const paths: Record<string, string> = {};
+  const versions: Record<string, string> = {};
   for (const tool of ["cargo", "rustc", "rustdoc"]) {
     const located = spawnSync(
       "rustup",
@@ -64,9 +71,10 @@ function resolveRustupToolchain(toolchain: string, expectedVersion: RegExp) {
     });
     assert.equal(version.status, 0, version.stderr ?? "");
     assert(expectedVersion.test(version.stdout), version.stdout);
+    versions[tool] = version.stdout.trim();
     console.log(version.stdout.trim());
   }
-  return paths;
+  return { ...paths, versions };
 }
 
 const safeToolchain = useMsrv ? "1.85.0" : "stable";
@@ -124,6 +132,13 @@ function run(
   return result;
 }
 
+type CommandResult = ReturnType<typeof command>;
+type ExecutedCommand = {
+  executable: string;
+  args: string[];
+  result: CommandResult;
+};
+
 function extractArchive(bytes: Uint8Array, directory: string) {
   for (const [path, contents] of Object.entries(unzipSync(bytes))) {
     const target = join(
@@ -157,6 +172,7 @@ function verifyMiriToolchain() {
     0,
     `${MIRI_TOOLCHAIN} with cargo-miri is required:\n${version.stderr ?? ""}`,
   );
+  miriCargoVersion = version.stdout.trim();
   console.log(`${MIRI_TOOLCHAIN}: ${version.stdout.trim()}`);
 }
 
@@ -213,17 +229,18 @@ function compileFixture(
   outputPath: string,
   directory: string,
 ) {
+  const args = [
+    "--edition=2024",
+    "--crate-type",
+    "bin",
+    "--emit=metadata",
+    sourcePath,
+    "-o",
+    outputPath,
+  ];
   const result = command(
     rustc,
-    [
-      "--edition=2024",
-      "--crate-type",
-      "bin",
-      "--emit=metadata",
-      sourcePath,
-      "-o",
-      outputPath,
-    ],
+    args,
     directory,
     60_000,
   );
@@ -237,6 +254,7 @@ function compileFixture(
     `rustc did not emit fixture metadata: ${outputPath}`,
   );
   console.log(`ok compiled fixture metadata ${sourcePath}`);
+  return { executable: rustc, args, result } satisfies ExecutedCommand;
 }
 
 function expectMiriUndefinedBehavior(
@@ -244,23 +262,35 @@ function expectMiriUndefinedBehavior(
   targetDirectory: string,
   binary: string,
 ) {
+  const args = miriCargo(
+    "miri",
+    "run",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    join(fixturesDirectory, "Cargo.toml"),
+    "--target-dir",
+    targetDirectory,
+    "--bin",
+    binary,
+  );
   const result = command(
     miriCargoExecutable,
-    miriCargo(
-      "miri",
-      "run",
-      "--manifest-path",
-      join(fixturesDirectory, "Cargo.toml"),
-      "--target-dir",
-      targetDirectory,
-      "--bin",
-      binary,
-    ),
+    args,
     fixturesDirectory,
     180_000,
     miriEnv,
   );
   const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
+  if (binary === "ub-overlapping-regions") {
+    const fixture = miriSafetyPackage.files.find(
+      (file) => file.path === "fixtures/ub_overlapping_regions.rs",
+    );
+    assert(fixture?.solution, "overlap fixture source is missing");
+    assertDisjointRangesMiriObservation(result, fixture.solution);
+    console.log("ok Miri rejected ub-overlapping-regions with strict first-event attribution");
+    return { executable: miriCargoExecutable, args, result } satisfies ExecutedCommand;
+  }
   const diagnostics = {
     "ub-out-of-bounds": {
       source: "ub_out_of_bounds.rs",
@@ -304,6 +334,94 @@ function expectMiriUndefinedBehavior(
     `Miri did not report the expected ${binary} diagnostic:\n${output}`,
   );
   console.log(`ok Miri rejected ${binary} without native execution`);
+  return { executable: miriCargoExecutable, args, result } satisfies ExecutedCommand;
+}
+
+function sha256(value: Uint8Array | string) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function writeDisjointRangesNativeReceipt(
+  mode: string,
+  compileCommand: ExecutedCommand,
+  miriCommand: ExecutedCommand,
+) {
+  const receiptDirectory = join(
+    process.cwd(),
+    "test-results",
+    "disjoint-ranges-native",
+    mode,
+  );
+  mkdirSync(receiptDirectory, { recursive: true });
+  const fixture = miriSafetyPackage.files.find(
+    (file) => file.path === "fixtures/ub_overlapping_regions.rs",
+  );
+  assert(fixture?.solution, "overlap fixture source is missing");
+  const fixtureSourceHash = sha256(fixture.solution);
+  assert.equal(
+    fixtureSourceHash,
+    DISJOINT_RANGES_FIXTURE_SOURCE_SHA256,
+    "overlap fixture source changed from the reviewed witness",
+  );
+  const solutionArchive = buildProjectArchive(miriSafetyPackage, "solution");
+  const servedArchivePath = join(
+    process.cwd(),
+    "public",
+    "projects",
+    miriSafetyPackage.id,
+    "solution.zip",
+  );
+  const servedArchive = readFileSync(servedArchivePath);
+  assert(
+    Buffer.from(solutionArchive).equals(servedArchive),
+    `Stale served Miri Safety solution archive: ${servedArchivePath}`,
+  );
+  const output = `${miriCommand.result.stdout ?? ""}${miriCommand.result.stderr ?? ""}`;
+  writeFileSync(join(receiptDirectory, "overlap.stderr.txt"), miriCommand.result.stderr ?? "");
+  writeFileSync(join(receiptDirectory, "overlap.stdout.txt"), miriCommand.result.stdout ?? "");
+  writeFileSync(
+    join(receiptDirectory, "receipt.json"),
+    `${JSON.stringify(
+      {
+        schema: "disjoint-ranges-native-v1",
+        scope: "trusted fixed package and one authored overlap witness",
+        package: miriSafetyPackage.id,
+        tooling: {
+          selectedSafeToolchain: env.RUSTUP_TOOLCHAIN,
+          safeVersions: safePaths.versions,
+          miriToolchain: MIRI_TOOLCHAIN,
+          miriCargoVersion,
+        },
+        archive: {
+          generatedSha256: sha256(solutionArchive),
+          servedSha256: sha256(servedArchive),
+          equal: Buffer.from(solutionArchive).equals(servedArchive),
+        },
+        fixture: {
+          path: "fixtures/ub_overlapping_regions.rs",
+          sha256: fixtureSourceHash,
+        },
+        compile: {
+          executable: compileCommand.executable,
+          args: compileCommand.args,
+          status: compileCommand.result.status,
+          signal: compileCommand.result.signal,
+          error: compileCommand.result.error?.message ?? null,
+        },
+        miri: {
+          executable: miriCommand.executable,
+          args: miriCommand.args,
+          status: miriCommand.result.status,
+          signal: miriCommand.result.signal,
+          error: miriCommand.result.error?.message ?? null,
+          outputBytes: Buffer.byteLength(output),
+          outputFiles: ["overlap.stdout.txt", "overlap.stderr.txt"],
+        },
+      },
+      null,
+      2,
+    )}\n`,
+  );
 }
 
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-miri-safety-"));
@@ -376,16 +494,19 @@ async function main() {
     );
     expectMutantRejected(packageRoot);
 
+    let overlapCompileResult: ExecutedCommand | undefined;
     for (const fixture of [
       "ub_out_of_bounds",
       "ub_use_after_free",
       "ub_aliasing",
+      "ub_overlapping_regions",
     ]) {
-      compileFixture(
+      const compiledFixture = compileFixture(
         join(fixturesDirectory, `${fixture}.rs`),
         join(root, `${fixture}.rmeta`),
         fixturesDirectory,
       );
+      if (fixture === "ub_overlapping_regions") overlapCompileResult = compiledFixture;
     }
 
     run(
@@ -408,8 +529,21 @@ async function main() {
       "ub-out-of-bounds",
       "ub-use-after-free",
       "ub-aliasing",
+      "ub-overlapping-regions",
     ]) {
-      expectMiriUndefinedBehavior(fixturesDirectory, miriTarget, binary);
+      const miriResult = expectMiriUndefinedBehavior(
+        fixturesDirectory,
+        miriTarget,
+        binary,
+      );
+      if (binary === "ub-overlapping-regions") {
+        assert(overlapCompileResult, "overlap fixture compile result is missing");
+        writeDisjointRangesNativeReceipt(
+          useMsrv ? "msrv" : useStable ? "stable" : "default",
+          overlapCompileResult,
+          miriResult,
+        );
+      }
     }
 
     const nativeArtifactRoot = process.env
