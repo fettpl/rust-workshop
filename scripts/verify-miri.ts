@@ -74,7 +74,12 @@ function resolveRustupToolchain(toolchain: string, expectedVersion: RegExp) {
     versions[tool] = version.stdout.trim();
     console.log(version.stdout.trim());
   }
-  return { ...paths, versions };
+  return {
+    cargo: paths.cargo,
+    rustc: paths.rustc,
+    rustdoc: paths.rustdoc,
+    versions,
+  };
 }
 
 const safeToolchain = useMsrv ? "1.85.0" : "stable";

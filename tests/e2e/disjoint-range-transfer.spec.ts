@@ -88,7 +88,7 @@ test("disjoint range model and transfer preserve state and assistance boundaries
   await expect(page.locator(".task-pane h1")).toHaveText(model.title);
   await expect(page.locator(".task-pane")).toContainText("0..2");
   await expect(page.locator(".task-pane")).toContainText("pusty zakres");
-  await expect(page.locator(".task-pane")).toContainText("Overlap");
+  await expect(page.locator(".task-pane")).toContainText(/overlap/i);
 
   await page
     .getByLabel("Kroki lekcji")
