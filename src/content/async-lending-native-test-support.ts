@@ -59,10 +59,18 @@ export function nativeRun(
         .map((entry) => resolve(cwd, entry || ".", command))
         .find(isRunnableFile);
   const actualCommand = executablePath ?? command;
+  const nativeTempRoot = join(cwd, ".native-tmp");
+  mkdirSync(nativeTempRoot, { recursive: true });
   const result = spawnSync(actualCommand, args, {
     cwd,
     encoding: "utf8",
     timeout,
+    env: {
+      ...process.env,
+      TMPDIR: nativeTempRoot,
+      TMP: nativeTempRoot,
+      TEMP: nativeTempRoot,
+    },
   });
   if (evidenceRoot) {
     const recordDirectory = mkdtempSync(join(cwd, "command-"));
