@@ -132,7 +132,7 @@ it("keeps old V1/V2/V3 saved locations and raw history without passing either ne
   }
 });
 
-it("exposes six two-family advanced concepts while three remain provisional", () => {
+it("exposes seven two-family advanced concepts while two remain provisional", () => {
   const state = createInitialState();
   state.events = currentCourse.lessons.flatMap((lesson) =>
     lesson.steps
