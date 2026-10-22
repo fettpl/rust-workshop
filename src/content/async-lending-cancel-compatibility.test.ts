@@ -30,6 +30,19 @@ import { courseEvidenceSummary } from "./learning-context";
 const sha = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
+// This maintenance successor is deliberately narrow and reversible: the
+// historical receipt remains pinned to the pre-maintenance source hash while
+// this test accepts only the reviewed 2026-10-22 replacement bytes.
+const reviewedMaintenanceDeltas = {
+  "src/content/async-lending-native-test-support.ts": {
+    reviewedOn: "2026-10-22",
+    previousSha256:
+      "aa602cc670e557951af547a3d471363af4c2a6c2863f72f179bffa5ca69f0ebc",
+    currentSha256:
+      "b1590e6615c7156c4815b162134d04ef88ce4e1723e181bd0ce3965805abdd3e",
+  },
+} as const;
+
 function cancellationHistoryState(version: 1 | 2 | 3) {
   const initial = createInitialState();
   const oldStepIds = acceptedCancellationLesson.steps.map((step) => step.id);
@@ -206,7 +219,7 @@ it("keeps the A2 model supplementary without primary credit", () => {
   expect(model.evidence).not.toHaveProperty("codingTaskId");
 });
 
-it("matches every accepted registry identity and retained fixture identity after the narrow projection", () => {
+it("matches accepted identities and reviewed maintenance successors", () => {
   const previous = historicalBeforeCancellationTransfer(
     historicalBeforeInitializedPrefix(currentCourse),
   );
@@ -258,13 +271,28 @@ it("matches every accepted registry identity and retained fixture identity after
       ]),
     ),
   ).toEqual(baseline.oldAsyncMutants);
-  for (const file of baseline.immutableFiles) {
+  const immutablePaths = new Set(
+    baseline.immutableFiles.map((file) => file.path),
+  );
+  expect(Object.keys(reviewedMaintenanceDeltas)).toEqual([
+    "src/content/async-lending-native-test-support.ts",
+  ]);
+  for (const [path, delta] of Object.entries(reviewedMaintenanceDeltas)) {
+    expect(immutablePaths.has(path), path).toBe(true);
     expect(
-      createHash("sha256")
-        .update(readFileSync(new URL(`../../${file.path}`, import.meta.url)))
-        .digest("hex"),
-      file.path,
-    ).toBe(file.sha256);
+      baseline.immutableFiles.find((file) => file.path === path)?.sha256,
+      `${path} historical receipt (${delta.reviewedOn})`,
+    ).toBe(delta.previousSha256);
+  }
+  for (const file of baseline.immutableFiles) {
+    const actual = createHash("sha256")
+      .update(readFileSync(new URL(`../../${file.path}`, import.meta.url)))
+      .digest("hex");
+    const delta =
+      reviewedMaintenanceDeltas[
+        file.path as keyof typeof reviewedMaintenanceDeltas
+      ];
+    expect(actual, file.path).toBe(delta?.currentSha256 ?? file.sha256);
   }
 });
 
