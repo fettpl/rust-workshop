@@ -71,6 +71,12 @@ for (const moduleId of [
     const lesson = lessons.find((item) => item.id === first.lessonId)!;
     const step = lesson.steps.find((item) => item.id === first.stepId)!;
     const blank = lesson.steps.find((item) => item.id === fresh.stepId)!;
+    const initializedPrefix =
+      moduleId === "unsafe-miri-contracts"
+        ? lesson.steps.find(
+            (item) => item.id === "byte-view-initialized-prefix",
+          )
+        : undefined;
     const batchRef =
       moduleId === "async-lending-contracts"
         ? stage.gateCriteria![0].taskRefs[2]
@@ -270,6 +276,19 @@ for (const moduleId of [
     } else {
       // Other criteria expose their available blank through the gate action.
       await page.locator(".gate-action").first().click();
+      if (moduleId === "unsafe-miri-contracts") {
+        expect(initializedPrefix).toBeDefined();
+        await expect(page.locator(".task-pane h1")).toHaveText(
+          initializedPrefix!.title,
+        );
+        // The historical blank remains directly navigable, but it is no
+        // longer the fresh gate recovery after the initialized-prefix family.
+        await page
+          .getByLabel("Kroki lekcji")
+          .getByRole("button")
+          .nth(lesson.steps.findIndex((item) => item.id === blank.id))
+          .click();
+      }
     }
     await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
     await expect(editor).toHaveValue("");

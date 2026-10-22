@@ -251,11 +251,17 @@ for (const assistance of assistanceCases) {
     expect(courseEvidenceSummary(after, conceptId).qualifyingCodingTasks).toBe(
       0,
     );
-    expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
+    expect(gateRecovery(after, criterion, lessons)).toEqual({
+      status: "available",
+      task: {
+        lessonId: lesson.id,
+        stepId: "byte-view-initialized-prefix",
+      },
+    });
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     await expect(page.locator(".solution-warning")).toContainText(
-      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+      "możesz przejść do dostępnego świeżego zadania",
     );
   });
 }
@@ -1234,7 +1240,15 @@ test("initialized prefix preserves old seven-step history through import, help, 
   state.bookmarks = [initializedLesson.id];
   const importedRawPrefix = state.events.slice();
   await page.goto("/");
-  await seedState(page, createInitialState());
+  const baseline = createInitialState();
+  baseline.onboarding = { completed: true, name: "Ada", minutes: 15 };
+  baseline.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 0,
+    recommendation: "",
+  };
+  await seedState(page, baseline);
   await importThroughUi(page, state);
   await expect
     .poll(async () => {
@@ -1345,7 +1359,9 @@ test("initialized prefix preserves old seven-step history through import, help, 
   await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
   await expect(page.locator("#workspace-panel-lesson")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Zainicjalizuj prefiks i pożycz wynik", exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
   await expect(editor).toHaveValue(draft);
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
   await page.getByText("Twój notatnik", { exact: true }).click();
   await expect(page.getByLabel("Notatki do lekcji")).toBeVisible();
   await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(note);
