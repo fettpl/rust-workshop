@@ -15,7 +15,7 @@ import { unzipSync } from "fflate";
 import { miriSafetyPackage } from "../src/content/projects/miri-safety";
 import { buildProjectArchive } from "./project-archive";
 import {
-  classifyInitializedPrefixDiagnostic,
+  projectInitializedPrefixDiagnostic,
   type InitializedPrefixDiagnosticCode,
 } from "./initialized-prefix-diagnostics";
 import { verifyInitializedPrefixNative } from "../src/content/unsafe-miri-initialized-prefix-native";
@@ -432,14 +432,25 @@ async function main() {
           ? join(nativeArtifactRoot, mode)
           : undefined,
       });
+      const diagnostic = projectInitializedPrefixDiagnostic(summary.reasons);
       const status = {
         mode,
         phase: summary.phase,
         ok: summary.ok,
         reasonCodes: summary.reasons.map((reason) => reason.code),
-        diagnosticCode: classifyInitializedPrefixDiagnostic(summary.reasons),
+        diagnosticCode: diagnostic.code,
         recipeCount: summary.expectedRecipes.length,
       };
+      if (
+        summary.phase === "capture" &&
+        summary.reasons.some(
+          (reason) => reason.code === "toolchain-qualification-failed",
+        )
+      ) {
+        process.stderr.write(
+          `Native qualification diagnostic: ${diagnostic.detail}\n`,
+        );
+      }
       process.stdout.write(`${JSON.stringify(status)}\n`);
       nativeSummaries.push(status);
       assert.equal(

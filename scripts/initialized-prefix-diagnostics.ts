@@ -13,6 +13,11 @@ export const INITIALIZED_PREFIX_DIAGNOSTIC_CODES = [
 export type InitializedPrefixDiagnosticCode =
   (typeof INITIALIZED_PREFIX_DIAGNOSTIC_CODES)[number];
 
+export type InitializedPrefixDiagnostic = {
+  code: InitializedPrefixDiagnosticCode;
+  detail: string;
+};
+
 type ReasonLike = {
   code?: unknown;
   message?: unknown;
@@ -20,6 +25,18 @@ type ReasonLike = {
 
 const messageOf = (reason: ReasonLike): string =>
   typeof reason.message === "string" ? reason.message : "";
+
+function normalizedMessagePrefix(message: string): string {
+  const normalized = message
+    .replace(/\u001b\[[0-9;]*m/g, "")
+    .replace(/(?:\/|[A-Za-z]:[\\/])[^\s,;]+/g, "<path>")
+    .replace(/\b[0-9a-f]{16,}\b/gi, "<hex>")
+    .replace(/\b\d+\b/g, "<n>")
+    .replace(/\s+/g, " ")
+    .trim();
+  const prefix = normalized.split(":", 1)[0]?.trim() ?? "";
+  return (prefix || "unknown").slice(0, 96);
+}
 
 export function classifyInitializedPrefixDiagnostic(
   reasons: readonly ReasonLike[],
@@ -64,4 +81,17 @@ export function classifyInitializedPrefixDiagnostic(
       return "qualification-toolchain-input";
   }
   return "qualification-unknown";
+}
+
+export function projectInitializedPrefixDiagnostic(
+  reasons: readonly ReasonLike[],
+): InitializedPrefixDiagnostic {
+  if (reasons.length === 0) return { code: "none", detail: "none" };
+  const message = reasons.map(messageOf).find((value) => value.length > 0);
+  if (!message)
+    return { code: "qualification-unknown", detail: "message-empty" };
+  return {
+    code: classifyInitializedPrefixDiagnostic(reasons),
+    detail: normalizedMessagePrefix(message),
+  };
 }

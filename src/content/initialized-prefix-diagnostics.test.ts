@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyInitializedPrefixDiagnostic,
   INITIALIZED_PREFIX_DIAGNOSTIC_CODES,
+  projectInitializedPrefixDiagnostic,
 } from "../../scripts/initialized-prefix-diagnostics";
 
 describe("initialized-prefix sanitized diagnostics", () => {
@@ -71,5 +72,44 @@ describe("initialized-prefix sanitized diagnostics", () => {
         { code: "unknown", message: "path=/tmp/token=secret sha256=abc123" },
       ]),
     ).toBe("qualification-unknown");
+  });
+
+  it("projects only a bounded path-free static message prefix", () => {
+    const projected = projectInitializedPrefixDiagnostic([
+      {
+        code: "raw-code",
+        message:
+          "ENOENT: no such file or directory, stat '/home/runner/private/secret.toml'",
+      },
+    ]);
+    expect(projected).toEqual({
+      code: "qualification-unknown",
+      detail: "ENOENT",
+    });
+    expect(projected.detail).toHaveLength(6);
+    expect(projected.detail).not.toContain("/home");
+    expect(projected.detail).not.toContain("secret");
+
+    const unknown = projectInitializedPrefixDiagnostic([
+      {
+        message: "invalid toolchain qualification: /private/runner/build/token",
+      },
+    ]);
+    expect(unknown.code).toBe("qualification-toolchain-input");
+    expect(unknown.detail).toBe("invalid toolchain qualification");
+    expect(unknown.detail).not.toContain("runner");
+    expect(unknown.detail.length).toBeLessThanOrEqual(96);
+  });
+
+  it("strips ANSI, dynamic numbers, and long hexadecimal values", () => {
+    const projected = projectInitializedPrefixDiagnostic([
+      {
+        message:
+          "\u001b[31mqualification failed: /tmp/run-1234-abcdef0123456789\u001b[0m",
+      },
+    ]);
+    expect(projected.detail).toBe("qualification failed");
+    expect(projected.detail).not.toContain("1234");
+    expect(projected.detail).not.toContain("abcdef");
   });
 });
