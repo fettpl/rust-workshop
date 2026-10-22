@@ -14,6 +14,10 @@ import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { miriSafetyPackage } from "../src/content/projects/miri-safety";
 import { buildProjectArchive } from "./project-archive";
+import {
+  classifyInitializedPrefixDiagnostic,
+  type InitializedPrefixDiagnosticCode,
+} from "./initialized-prefix-diagnostics";
 import { verifyInitializedPrefixNative } from "../src/content/unsafe-miri-initialized-prefix-native";
 
 const MIRI_TOOLCHAIN = "nightly-2026-08-08";
@@ -305,6 +309,7 @@ const nativeSummaries: Array<{
   phase: string;
   ok: boolean;
   reasonCodes: string[];
+  diagnosticCode: InitializedPrefixDiagnosticCode;
   recipeCount: number;
 }> = [];
 
@@ -432,6 +437,7 @@ async function main() {
         phase: summary.phase,
         ok: summary.ok,
         reasonCodes: summary.reasons.map((reason) => reason.code),
+        diagnosticCode: classifyInitializedPrefixDiagnostic(summary.reasons),
         recipeCount: summary.expectedRecipes.length,
       };
       process.stdout.write(`${JSON.stringify(status)}\n`);
