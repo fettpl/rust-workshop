@@ -39,10 +39,14 @@ export function assertDisjointRangesMiriObservation(
   trustedFixtureSource?: string,
 ): void {
   if (observation.error !== undefined) {
-    diagnosticError(`Miri overlap fixture failed to start: ${String(observation.error)}`);
+    diagnosticError(
+      `Miri overlap fixture failed to start: ${String(observation.error)}`,
+    );
   }
   if (observation.signal !== null) {
-    diagnosticError(`Miri overlap fixture terminated by signal ${String(observation.signal)}`);
+    diagnosticError(
+      `Miri overlap fixture terminated by signal ${String(observation.signal)}`,
+    );
   }
   if (observation.status !== 1) {
     diagnosticError(
@@ -50,8 +54,12 @@ export function assertDisjointRangesMiriObservation(
     );
   }
   if (trustedFixtureSource !== undefined) {
-    if (sourceHash(trustedFixtureSource) !== DISJOINT_RANGES_FIXTURE_SOURCE_SHA256) {
-      diagnosticError("trusted overlap fixture source hash does not match the reviewed fixture");
+    if (
+      sourceHash(trustedFixtureSource) !== DISJOINT_RANGES_FIXTURE_SOURCE_SHA256
+    ) {
+      diagnosticError(
+        "trusted overlap fixture source hash does not match the reviewed fixture",
+      );
     }
   }
 
@@ -59,7 +67,9 @@ export function assertDisjointRangesMiriObservation(
   const stderr = normalizeLineEndings(observation.stderr ?? "");
   const ubHeaders = [...stderr.matchAll(/^error: Undefined Behavior:/gm)];
   if (ubHeaders.length !== 1) {
-    diagnosticError(`expected exactly one primary Undefined Behavior event, got ${ubHeaders.length}`);
+    diagnosticError(
+      `expected exactly one primary Undefined Behavior event, got ${ubHeaders.length}`,
+    );
   }
 
   const headerIndex = ubHeaders[0].index ?? -1;
@@ -72,31 +82,50 @@ export function assertDisjointRangesMiriObservation(
   }
 
   const headerEnd = stderr.indexOf("\n", headerIndex);
-  const header = stderr.slice(headerIndex, headerEnd === -1 ? stderr.length : headerEnd);
+  const header = stderr.slice(
+    headerIndex,
+    headerEnd === -1 ? stderr.length : headerEnd,
+  );
   if (
     !/trying to retag\b.*\bUnique permission\b.*\b(?:borrow stack|borrow-stack)\b/i.test(
       header,
     )
   ) {
-    diagnosticError("primary header does not contain the reviewed Unique retag/borrow-stack category");
+    diagnosticError(
+      "primary header does not contain the reviewed Unique retag/borrow-stack category",
+    );
   }
 
   const primaryBodyStart = headerEnd === -1 ? stderr.length : headerEnd + 1;
   const primaryBody = stderr.slice(primaryBodyStart);
   const notesIndex = primaryBody.search(/(?:^|\n)\s*(?:=\s*)?(?:help|note):/im);
-  const beforeNotes = primaryBody.slice(0, notesIndex === -1 ? primaryBody.length : notesIndex);
+  const beforeNotes = primaryBody.slice(
+    0,
+    notesIndex === -1 ? primaryBody.length : notesIndex,
+  );
   const location = beforeNotes.match(/^\s*-->\s+(.+):(\d+):(\d+)\s*$/m);
   if (!location) {
     diagnosticError("primary source location is missing before help/notes");
   }
   const [, path, line, column] = location;
-  if (sourceBasename(path) !== DISJOINT_RANGES_FIXTURE_BASENAME || line !== "10" || column !== "9") {
-    diagnosticError("primary source location does not match ub_overlapping_regions.rs:10:9");
+  if (
+    sourceBasename(path) !== DISJOINT_RANGES_FIXTURE_BASENAME ||
+    line !== "10" ||
+    column !== "9"
+  ) {
+    diagnosticError(
+      "primary source location does not match ub_overlapping_regions.rs:10:9",
+    );
   }
 
   // The primary snippet must contain the authored tuple boundary. Later help,
   // allocation notes, and backtrace locations cannot establish this span.
-  if (!/^\s*10\s*\|\s*\/\s*\(/m.test(beforeNotes) || !/^\s*13\s*\|\s*\|\s*\)\s*$/m.test(beforeNotes)) {
-    diagnosticError("primary source snippet does not cover the authored tuple span 10:9..13:10");
+  if (
+    !/^\s*10\s*\|\s*\/\s*\(/m.test(beforeNotes) ||
+    !/^\s*13\s*\|\s*\|\s*\)\s*$/m.test(beforeNotes)
+  ) {
+    diagnosticError(
+      "primary source snippet does not cover the authored tuple span 10:9..13:10",
+    );
   }
 }

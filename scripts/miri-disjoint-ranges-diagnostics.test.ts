@@ -127,4 +127,3 @@ it("rejects signals, spawn errors, timeouts and non-UB status", () => {
     expect(() => assertDisjointRangesMiriObservation(observation)).toThrow();
   }
 });
-

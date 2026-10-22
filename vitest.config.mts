@@ -7,6 +7,7 @@ export default defineConfig({
       "src/**/*.test.ts",
       "scripts/verify-api-release.test.ts",
       "scripts/verify-macro-contracts.test.ts",
+      "scripts/miri-disjoint-ranges-diagnostics.test.ts",
     ],
     environment: "node",
   },

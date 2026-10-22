@@ -238,12 +238,7 @@ function compileFixture(
     "-o",
     outputPath,
   ];
-  const result = command(
-    rustc,
-    args,
-    directory,
-    60_000,
-  );
+  const result = command(rustc, args, directory, 60_000);
   assert.equal(
     result.status,
     0,
@@ -288,8 +283,14 @@ function expectMiriUndefinedBehavior(
     );
     assert(fixture?.solution, "overlap fixture source is missing");
     assertDisjointRangesMiriObservation(result, fixture.solution);
-    console.log("ok Miri rejected ub-overlapping-regions with strict first-event attribution");
-    return { executable: miriCargoExecutable, args, result } satisfies ExecutedCommand;
+    console.log(
+      "ok Miri rejected ub-overlapping-regions with strict first-event attribution",
+    );
+    return {
+      executable: miriCargoExecutable,
+      args,
+      result,
+    } satisfies ExecutedCommand;
   }
   const diagnostics = {
     "ub-out-of-bounds": {
@@ -334,7 +335,11 @@ function expectMiriUndefinedBehavior(
     `Miri did not report the expected ${binary} diagnostic:\n${output}`,
   );
   console.log(`ok Miri rejected ${binary} without native execution`);
-  return { executable: miriCargoExecutable, args, result } satisfies ExecutedCommand;
+  return {
+    executable: miriCargoExecutable,
+    args,
+    result,
+  } satisfies ExecutedCommand;
 }
 
 function sha256(value: Uint8Array | string) {
@@ -377,8 +382,14 @@ function writeDisjointRangesNativeReceipt(
     `Stale served Miri Safety solution archive: ${servedArchivePath}`,
   );
   const output = `${miriCommand.result.stdout ?? ""}${miriCommand.result.stderr ?? ""}`;
-  writeFileSync(join(receiptDirectory, "overlap.stderr.txt"), miriCommand.result.stderr ?? "");
-  writeFileSync(join(receiptDirectory, "overlap.stdout.txt"), miriCommand.result.stdout ?? "");
+  writeFileSync(
+    join(receiptDirectory, "overlap.stderr.txt"),
+    miriCommand.result.stderr ?? "",
+  );
+  writeFileSync(
+    join(receiptDirectory, "overlap.stdout.txt"),
+    miriCommand.result.stdout ?? "",
+  );
   writeFileSync(
     join(receiptDirectory, "receipt.json"),
     `${JSON.stringify(
@@ -506,7 +517,8 @@ async function main() {
         join(root, `${fixture}.rmeta`),
         fixturesDirectory,
       );
-      if (fixture === "ub_overlapping_regions") overlapCompileResult = compiledFixture;
+      if (fixture === "ub_overlapping_regions")
+        overlapCompileResult = compiledFixture;
     }
 
     run(
@@ -537,7 +549,10 @@ async function main() {
         binary,
       );
       if (binary === "ub-overlapping-regions") {
-        assert(overlapCompileResult, "overlap fixture compile result is missing");
+        assert(
+          overlapCompileResult,
+          "overlap fixture compile result is missing",
+        );
         writeDisjointRangesNativeReceipt(
           useMsrv ? "msrv" : useStable ? "stable" : "default",
           overlapCompileResult,
