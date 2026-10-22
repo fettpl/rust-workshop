@@ -12,15 +12,15 @@ fn main() {
     let forward_second: Range<usize> = 2..4;
     let first_forward = &buffer[forward_first.clone()];
     let second_forward = &buffer[forward_second.clone()];
-    println!("forward 0..2 then 2..4: {:?} {:?}", first_forward, second_forward);
+    println!("kolejno: 0..2, następnie 2..4: {:?} {:?}", first_forward, second_forward);
 
-    // The first argument is later in storage, but it stays first in the tuple.
+    // Pierwszy argument jest dalej w buforze, ale nadal pozostaje pierwszy w krotce.
     let reversed_first: Range<usize> = 4..6;
     let reversed_second: Range<usize> = 1..3;
     let first_reversed = &buffer[reversed_first.clone()];
     let second_reversed = &buffer[reversed_second.clone()];
     println!(
-        "caller order first 4..6, second 1..3: {:?} {:?}",
+        "kolejność argumentów: pierwszy 4..6, drugi 1..3: {:?} {:?}",
         first_reversed, second_reversed
     );
     println!("półotwarty zakres 0..2 zawiera indeksy 0 i 1, bez końca 2");
@@ -29,7 +29,7 @@ fn main() {
 }`;
 
 const modelRunExpected =
-  "forward 0..2 then 2..4: [10, 20] [30, 40]\ncaller order first 4..6, second 1..3: [50, 60] [20, 30]\npółotwarty zakres 0..2 zawiera indeksy 0 i 1, bez końca 2\npuste 2..2 wewnątrz 0..4: poprawne, bo nie zawiera elementu\nnakładające się 0..3 i 2..4: błąd Overlap\n";
+  "kolejno: 0..2, następnie 2..4: [10, 20] [30, 40]\nkolejność argumentów: pierwszy 4..6, drugi 1..3: [50, 60] [20, 30]\npółotwarty zakres 0..2 zawiera indeksy 0 i 1, bez końca 2\npuste 2..2 wewnątrz 0..4: poprawne, bo nie zawiera elementu\nnakładające się 0..3 i 2..4: błąd Overlap\n";
 
 export const disjointRangesSolution = String.raw`#![forbid(unsafe_code)]
 use std::ops::Range;
