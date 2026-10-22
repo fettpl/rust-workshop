@@ -503,6 +503,7 @@ export const disjointRangesSteps: LessonStep[] = [
     kind: "apply",
     title: "Przenieś dowód na dwa zakresy",
     prompt: primaryPrompt,
+    code: disjointRangesStarter,
     solution: disjointRangesSolution,
     hints: [
       "Najpierw sprawdź oba zakresy i dopiero potem rozstrzygnij overlap; pusty zakres nie zajmuje elementu.",

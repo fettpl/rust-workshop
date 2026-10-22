@@ -130,6 +130,7 @@ it("publishes the model and exactly two ordered range steps", () => {
   expect(disjointRangesSteps[0].evidence?.codingTaskId).toBeUndefined();
   expect(disjointRangesSteps[1]).toMatchObject({
     kind: "apply",
+    code: disjointRangesStarter,
     evidenceKind: "transfer",
     evidenceGate: true,
   });
@@ -166,6 +167,8 @@ it("states the public API and complete behavior without source spelling requirem
   expect(disjointRangesSolution).toMatch(/#!\[forbid\(unsafe_code\)\]/);
   expect(disjointRangesSolution).toMatch(/pub enum RangeError/);
   expect(disjointRangesSolution).toMatch(/pub fn select_regions/);
+  expect(disjointRangesStarter).not.toBe(disjointRangesSolution);
+  expect(disjointRangesStarter).toContain("pub fn select_regions");
   expect(disjointRangesStarter).not.toContain("unsafe { ");
 });
 
