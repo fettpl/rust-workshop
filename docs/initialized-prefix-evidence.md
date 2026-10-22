@@ -157,6 +157,28 @@ above and still requires fresh strict CI acceptance. Deadline summaries
 additionally expose only an allowlisted control ID and a before/after boundary,
 or a fixed unavailable-stage marker.
 
+A later Linux run with the explicit 30-minute Miri budget completed stable
+strict verification and reached strict Miri control adjudication after about
+17 minutes 25 seconds. Miri failed with `tamper-control-failed`; the native
+MSRV invocation did not run. Completion within the budget is not acceptance.
+The separate retained Native07 Miri diagnostic exposed a mutator defect:
+a caret or help line mentioning Undefined Behavior prematurely ended category
+replacement, leaving the later allocation note intact. The mutator now uses
+the verifier's anchored semantic-error headers for block boundaries. Its
+regression includes the complete help/allocation tail; verifier acceptance
+and the required control inventory are unchanged. Fresh strict CI acceptance
+is still required.
+
+Failed semantic-control adjudication now exposes only a fixed control ID,
+rejection boolean, expected reason code, and finite observed reason codes.
+Known semantic and control-mechanism codes remain distinguishable; unknown
+codes become `other`. This diagnostic seam deliberately covers semantic-control
+failures only. Inventory, duplicate, unexpected, missing-control, and invalid
+baseline failures retain their top-level reason codes without a new control
+projection. Legacy failures without the seam do not imply a control ID. Raw
+paths, messages, streams, hashes, and environment values remain private, and
+all acceptance rules remain unchanged.
+
 Full native acceptance requires the dedicated CI checks. Release acceptance
 requires all eleven checks on the exact PR head and all eleven on the resulting
 `main` commit; results are tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76).

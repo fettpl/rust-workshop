@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyInitializedPrefixDiagnostic,
   INITIALIZED_PREFIX_DIAGNOSTIC_CODES,
+  projectInitializedPrefixControlDiagnostics,
   projectInitializedPrefixDeadlineStage,
   projectInitializedPrefixDiagnostic,
 } from "../../scripts/initialized-prefix-diagnostics";
@@ -73,6 +74,92 @@ describe("initialized-prefix sanitized diagnostics", () => {
         { code: "unknown", message: "path=/tmp/token=secret sha256=abc123" },
       ]),
     ).toBe("qualification-unknown");
+  });
+
+  it("projects the exact tamper-control failure code with fixed detail", () => {
+    expect(
+      projectInitializedPrefixDiagnostic([
+        {
+          code: "tamper-control-failed",
+          message:
+            "Tamper control miri-category failed at /private/secret\nraw details",
+        },
+      ]),
+    ).toEqual({
+      code: "tamper-control-failed",
+      detail: "Tamper control rejection failed.",
+    });
+    expect(
+      projectInitializedPrefixDiagnostic([
+        {
+          code: "other",
+          message: "Tamper control miri-category failed",
+        },
+      ]).code,
+    ).toBe("qualification-unknown");
+  });
+
+  it("projects only the finite native tamper-control diagnostic seam", () => {
+    expect(
+      projectInitializedPrefixControlDiagnostics([
+        {
+          controlID: "miri-category",
+          rejected: false,
+          expectedReasonCode: "miri-category-mismatch",
+          observedReasonCodes: [],
+        },
+        {
+          controlID: "miri-category",
+          rejected: false,
+          expectedReasonCode: "miri-category-mismatch",
+          observedReasonCodes: [
+            "miri-category-mismatch",
+            "raw /private/secret\nmessage",
+            "miri-category-mismatch",
+          ],
+        },
+      ]),
+    ).toEqual([
+      {
+        controlID: "miri-category",
+        rejected: false,
+        expectedReasonCode: "miri-category-mismatch",
+        observedReasonCodes: ["none"],
+      },
+      {
+        controlID: "miri-category",
+        rejected: false,
+        expectedReasonCode: "miri-category-mismatch",
+        observedReasonCodes: ["miri-category-mismatch", "other"],
+      },
+    ]);
+    expect(
+      projectInitializedPrefixControlDiagnostics([
+        {
+          controlID: "miri-category",
+          rejected: false,
+          expectedReasonCode: "miri-category-mismatch",
+          observedReasonCodes: ["other"],
+        },
+        {
+          controlID: "unknown-control /private/secret",
+          rejected: false,
+          expectedReasonCode: "raw-path",
+          observedReasonCodes: ["raw-message\n"],
+        },
+        {
+          code: "tamper-control-failed",
+          message: "Tamper control miri-category did not produce a reason",
+        },
+      ]),
+    ).toEqual([
+      {
+        controlID: "miri-category",
+        rejected: false,
+        expectedReasonCode: "miri-category-mismatch",
+        observedReasonCodes: ["other"],
+      },
+    ]);
   });
 
   it("classifies only the exact native deadline capture reason", () => {

@@ -15,6 +15,7 @@ import { unzipSync } from "fflate";
 import { miriSafetyPackage } from "../src/content/projects/miri-safety";
 import { buildProjectArchive } from "./project-archive";
 import {
+  projectInitializedPrefixControlDiagnostics,
   projectInitializedPrefixDeadlineStage,
   projectInitializedPrefixDiagnostic,
   type InitializedPrefixDeadlineStage,
@@ -313,6 +314,9 @@ const nativeSummaries: Array<{
   reasonCodes: string[];
   diagnosticCode: InitializedPrefixDiagnosticCode;
   deadlineStage: InitializedPrefixDeadlineStage;
+  controlDiagnostics?: ReturnType<
+    typeof projectInitializedPrefixControlDiagnostics
+  >;
   recipeCount: number;
 }> = [];
 
@@ -439,6 +443,9 @@ async function main() {
       const deadlineStage = projectInitializedPrefixDeadlineStage(
         summary.reasons,
       );
+      const controlDiagnostics = projectInitializedPrefixControlDiagnostics(
+        summary.controlDiagnostics,
+      );
       const status = {
         mode,
         phase: summary.phase,
@@ -446,6 +453,7 @@ async function main() {
         reasonCodes: summary.reasons.map((reason) => reason.code),
         diagnosticCode: diagnostic.code,
         deadlineStage,
+        ...(controlDiagnostics.length > 0 ? { controlDiagnostics } : {}),
         recipeCount: summary.expectedRecipes.length,
       };
       if (

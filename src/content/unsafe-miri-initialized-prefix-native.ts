@@ -46,6 +46,7 @@ export type InitializedPrefixNativeResult = PrefixVerificationResult & {
   attemptDirectory: string;
   manifestPath: string;
   expectedRecipes: readonly string[];
+  controlDiagnostics?: readonly InitializedPrefixControlDiagnostic[];
 };
 
 const FULL_TEST_NAMES = [
@@ -196,6 +197,38 @@ const CONTROL_REASON_ALLOWLIST: Readonly<Record<string, readonly string[]>> =
     "miri-wrong-read": ["miri-read-mismatch"],
     "miri-category": ["miri-category-mismatch"],
   });
+type InitializedPrefixControlDiagnosticID = (typeof MIRI_CONTROL_IDS)[number];
+type InitializedPrefixControlDiagnosticReasonCode =
+  | "exit-code-mismatch"
+  | "unexpected-collateral"
+  | "source-binding-mismatch"
+  | "recipe-inventory-mismatch"
+  | "diagnostic-code-mismatch"
+  | "diagnostic-primary-mismatch"
+  | "diagnostic-multiplicity"
+  | "miri-read-mismatch"
+  | "miri-category-mismatch"
+  | "tamper-control-error"
+  | "control-packet-write-failed"
+  | "tamper-baseline-mutated"
+  | "tamper-unrelated-baseline-fault"
+  | "tamper-semantic-reason-missing"
+  | "none"
+  | "other";
+export type InitializedPrefixControlDiagnostic = {
+  controlID: InitializedPrefixControlDiagnosticID;
+  rejected: boolean;
+  expectedReasonCode: InitializedPrefixControlDiagnosticReasonCode;
+  observedReasonCodes: readonly InitializedPrefixControlDiagnosticReasonCode[];
+};
+const CONTROL_DIAGNOSTIC_REASON_CODES = new Set([
+  ...Object.values(CONTROL_REASON_ALLOWLIST).flat(),
+  "tamper-control-error",
+  "control-packet-write-failed",
+  "tamper-baseline-mutated",
+  "tamper-unrelated-baseline-fault",
+  "tamper-semantic-reason-missing",
+]);
 const WHOLE_CAPTURE_DEADLINE_MS = {
   stable: 8 * 60 * 1000,
   msrv: 8 * 60 * 1000,
@@ -227,6 +260,39 @@ export function isInitializedPrefixControlAccepted(
     codes.every((code) => allowed.includes(code)) &&
     allowed.every((code) => uniqueCodes.has(code))
   );
+}
+
+export function projectInitializedPrefixControlDiagnostic(control: {
+  id: string;
+  rejected: boolean;
+  reasons: readonly { code: string }[];
+}): InitializedPrefixControlDiagnostic | undefined {
+  if (
+    !MIRI_CONTROL_IDS.includes(
+      control.id as (typeof MIRI_CONTROL_IDS)[number],
+    ) ||
+    control.id === "baseline-valid" ||
+    isInitializedPrefixControlAccepted(control)
+  )
+    return undefined;
+  const allowed = CONTROL_REASON_ALLOWLIST[control.id] ?? [];
+  const observedReasonCodes = [
+    ...new Set(
+      control.reasons.map((entry) =>
+        CONTROL_DIAGNOSTIC_REASON_CODES.has(entry.code)
+          ? (entry.code as InitializedPrefixControlDiagnosticReasonCode)
+          : "other",
+      ),
+    ),
+  ];
+  return {
+    controlID: control.id as InitializedPrefixControlDiagnosticID,
+    rejected: control.rejected,
+    expectedReasonCode:
+      (allowed[0] as InitializedPrefixControlDiagnosticReasonCode) ?? "none",
+    observedReasonCodes:
+      observedReasonCodes.length > 0 ? observedReasonCodes : ["none"],
+  };
 }
 
 const UB_SOURCE = `use std::mem::MaybeUninit;
@@ -1318,6 +1384,7 @@ async function capture(
       const unexpectedControlIds = controls
         .map((control) => control.id)
         .filter((id) => !requiredControlSet.has(id));
+      const controlDiagnostics: InitializedPrefixControlDiagnostic[] = [];
       const controlFailure = [
         ...(controls.length !== requiredControlIds.length
           ? [
@@ -1369,15 +1436,17 @@ async function capture(
                 ]
               : [];
           }
-          return isInitializedPrefixControlAccepted(control)
-            ? []
-            : [
-                {
-                  code: "tamper-control-failed",
-                  message: `Tamper control ${id} did not produce a reason-specific rejection.`,
-                  path: manifestPath,
-                },
-              ];
+          const controlDiagnostic =
+            projectInitializedPrefixControlDiagnostic(control);
+          if (!controlDiagnostic) return [];
+          controlDiagnostics.push(controlDiagnostic);
+          return [
+            {
+              code: "tamper-control-failed",
+              message: `Tamper control ${id} did not produce a reason-specific rejection.`,
+              path: manifestPath,
+            },
+          ];
         }),
       ];
       checkDeadline("after tamper-control inventory finalization");
@@ -1390,6 +1459,7 @@ async function capture(
           manifestPath,
           expectedRecipes: manifest.expectedRecipes,
           reasons: controlFailure,
+          ...(controlDiagnostics.length > 0 ? { controlDiagnostics } : {}),
         };
       }
     }

@@ -9,6 +9,7 @@ import {
 import {
   initializedPrefixNativePlan,
   isInitializedPrefixControlAccepted,
+  projectInitializedPrefixControlDiagnostic,
   verifyInitializedPrefixNative,
 } from "./unsafe-miri-initialized-prefix-native";
 import {
@@ -154,6 +155,50 @@ describe("initialized-prefix maintained native proof contract", () => {
         }),
       ).toBe(false);
     }
+  });
+
+  it("projects finite failed-control codes without accepting them", () => {
+    expect(
+      projectInitializedPrefixControlDiagnostic({
+        id: "miri-category",
+        rejected: false,
+        reasons: [
+          { code: "miri-category-mismatch" },
+          { code: "miri-read-mismatch" },
+          { code: "tamper-control-error" },
+          { code: "/private/secret raw message\n" },
+        ],
+      }),
+    ).toEqual({
+      controlID: "miri-category",
+      rejected: false,
+      expectedReasonCode: "miri-category-mismatch",
+      observedReasonCodes: [
+        "miri-category-mismatch",
+        "miri-read-mismatch",
+        "tamper-control-error",
+        "other",
+      ],
+    });
+    expect(
+      projectInitializedPrefixControlDiagnostic({
+        id: "miri-category",
+        rejected: false,
+        reasons: [],
+      }),
+    ).toEqual({
+      controlID: "miri-category",
+      rejected: false,
+      expectedReasonCode: "miri-category-mismatch",
+      observedReasonCodes: ["none"],
+    });
+    expect(
+      projectInitializedPrefixControlDiagnostic({
+        id: "baseline-valid",
+        rejected: false,
+        reasons: [{ code: "tamper-baseline-mutated" }],
+      }),
+    ).toBeUndefined();
   });
 
   it.skipIf(!controlsAuthorized)(

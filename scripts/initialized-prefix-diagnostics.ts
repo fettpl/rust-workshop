@@ -8,6 +8,7 @@ export const INITIALIZED_PREFIX_DIAGNOSTIC_CODES = [
   "qualification-rustup-lookup",
   "qualification-tool-version",
   "qualification-installed-version-mismatch",
+  "tamper-control-failed",
   "qualification-unknown",
 ] as const;
 
@@ -45,6 +46,134 @@ export type InitializedPrefixDeadlineStage =
     }
   | { kind: "other" }
   | { kind: "unreported" };
+
+export const INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_IDS = [
+  "baseline-valid",
+  "mutate-outcome",
+  "mutate-stream",
+  "mutate-source",
+  "mutate-manifest-inventory",
+  "diagnostic-code",
+  "diagnostic-primary-same-line",
+  "diagnostic-multiplicity",
+  "diagnostic-collateral",
+  "miri-wrong-read",
+  "miri-category",
+] as const;
+
+export type InitializedPrefixControlDiagnosticID =
+  (typeof INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_IDS)[number];
+
+const INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_REASON_CODES = [
+  "exit-code-mismatch",
+  "unexpected-collateral",
+  "source-binding-mismatch",
+  "recipe-inventory-mismatch",
+  "diagnostic-code-mismatch",
+  "diagnostic-primary-mismatch",
+  "diagnostic-multiplicity",
+  "miri-read-mismatch",
+  "miri-category-mismatch",
+  "tamper-control-error",
+  "control-packet-write-failed",
+  "tamper-baseline-mutated",
+  "tamper-unrelated-baseline-fault",
+  "tamper-semantic-reason-missing",
+  "none",
+  "other",
+] as const;
+
+type InitializedPrefixControlDiagnosticReasonCode =
+  (typeof INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_REASON_CODES)[number];
+
+const INITIALIZED_PREFIX_CONTROL_EXPECTED_REASON_CODES: Readonly<
+  Record<
+    InitializedPrefixControlDiagnosticID,
+    InitializedPrefixControlDiagnosticReasonCode
+  >
+> = Object.freeze({
+  "baseline-valid": "none",
+  "mutate-outcome": "exit-code-mismatch",
+  "mutate-stream": "unexpected-collateral",
+  "mutate-source": "source-binding-mismatch",
+  "mutate-manifest-inventory": "recipe-inventory-mismatch",
+  "diagnostic-code": "diagnostic-code-mismatch",
+  "diagnostic-primary-same-line": "diagnostic-primary-mismatch",
+  "diagnostic-multiplicity": "diagnostic-multiplicity",
+  "diagnostic-collateral": "unexpected-collateral",
+  "miri-wrong-read": "miri-read-mismatch",
+  "miri-category": "miri-category-mismatch",
+});
+
+export type InitializedPrefixControlDiagnostic = {
+  controlID: InitializedPrefixControlDiagnosticID;
+  rejected: boolean;
+  expectedReasonCode: InitializedPrefixControlDiagnosticReasonCode;
+  observedReasonCodes: readonly InitializedPrefixControlDiagnosticReasonCode[];
+};
+
+type ControlDiagnosticLike = {
+  controlID?: unknown;
+  rejected?: unknown;
+  expectedReasonCode?: unknown;
+  observedReasonCodes?: unknown;
+};
+
+const isControlDiagnosticID = (
+  value: unknown,
+): value is InitializedPrefixControlDiagnosticID =>
+  typeof value === "string" &&
+  INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_IDS.includes(
+    value as InitializedPrefixControlDiagnosticID,
+  );
+
+const isControlDiagnosticReasonCode = (
+  value: unknown,
+): value is InitializedPrefixControlDiagnosticReasonCode =>
+  typeof value === "string" &&
+  INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_REASON_CODES.includes(
+    value as (typeof INITIALIZED_PREFIX_CONTROL_DIAGNOSTIC_REASON_CODES)[number],
+  );
+
+/**
+ * Accept only the native feature's finite, already-sanitized control seam.
+ * Generic legacy `tamper-control-failed` reasons intentionally remain
+ * unreported because they do not identify a control safely.
+ */
+export function projectInitializedPrefixControlDiagnostics(
+  value: unknown,
+): readonly InitializedPrefixControlDiagnostic[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((candidate) => {
+    if (candidate === null || typeof candidate !== "object") return [];
+    const entry = candidate as ControlDiagnosticLike;
+    if (
+      !isControlDiagnosticID(entry.controlID) ||
+      typeof entry.rejected !== "boolean" ||
+      !isControlDiagnosticReasonCode(entry.expectedReasonCode) ||
+      entry.expectedReasonCode !==
+        INITIALIZED_PREFIX_CONTROL_EXPECTED_REASON_CODES[entry.controlID] ||
+      !Array.isArray(entry.observedReasonCodes)
+    )
+      return [];
+    const observedReasonCodes = [
+      ...new Set(
+        entry.observedReasonCodes.map((code) =>
+          isControlDiagnosticReasonCode(code) ? code : "other",
+        ),
+      ),
+    ];
+    return [
+      {
+        controlID: entry.controlID,
+        rejected: entry.rejected,
+        expectedReasonCode: entry.expectedReasonCode,
+        observedReasonCodes:
+          observedReasonCodes.length > 0 ? observedReasonCodes : ["none"],
+      },
+    ];
+  });
+}
 
 type ReasonLike = {
   code?: unknown;
@@ -116,6 +245,8 @@ export function classifyInitializedPrefixDiagnostic(
 ): InitializedPrefixDiagnosticCode {
   if (reasons.length === 0) return "none";
   if (reasons.some(isNativeDeadlineReason)) return "native-deadline-exceeded";
+  if (reasons.some((reason) => reason.code === "tamper-control-failed"))
+    return "tamper-control-failed";
   const messages = reasons
     .map(messageOf)
     .filter((message) => message.length > 0);
@@ -165,6 +296,11 @@ export function projectInitializedPrefixDiagnostic(
     return {
       code: "native-deadline-exceeded",
       detail: "Native proof deadline exceeded.",
+    };
+  if (reasons.some((reason) => reason.code === "tamper-control-failed"))
+    return {
+      code: "tamper-control-failed",
+      detail: "Tamper control rejection failed.",
     };
   const message = reasons.map(messageOf).find((value) => value.length > 0);
   if (!message)

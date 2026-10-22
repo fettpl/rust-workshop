@@ -2536,7 +2536,7 @@ it(
     expect(recipe?.miri?.expression).toBeDefined();
     expect(sourcePath).toBeDefined();
     if (!recipe?.miri?.expression || !sourcePath) return;
-    const stderr = `error: Undefined Behavior: reading memory at alloc224[0x0..0x1], but memory is uninitialized at [0x0..0x1], and this operation requires initialized memory\n  --> ${sourcePath}:3:14\n   |\n3  |     unsafe { ${recipe.miri.expression}; }\n   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Undefined Behavior occurred here\n`;
+    const stderr = `error: Undefined Behavior: reading memory at alloc224[0x0..0x1], but memory is uninitialized at [0x0..0x1], and this operation requires initialized memory\n  --> ${sourcePath}:3:14\n   |\n3  |     unsafe { ${recipe.miri.expression}; }\n   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Undefined Behavior occurred here\n   |\n   = help: this indicates a bug in the program: it performed an invalid operation, and caused Undefined Behavior\n   = help: see https://doc.rust-lang.org/nightly/reference/behavior-considered-undefined.html for further information\n\nUninitialized memory occurred at alloc224[0x0..0x1], in this allocation:\nalloc224 (stack variable, size: 1, align: 1) {\n    __                                              │ ░\n}\n\nnote: some details are omitted, run with \`MIRIFLAGS=-Zmiri-backtrace=full\` for a verbose backtrace\n\nerror: aborting due to 1 previous error\n`;
     const bytes = encoder.encode(stderr);
     writeFileSync(command.record.stderr.path, bytes);
     command.record.stderr = {
@@ -2657,46 +2657,54 @@ it("proof-control-stable-tamper-controls", { timeout: 30_000 }, () => {
   expectInventoryUnchanged(originalExternal, fixture.externalRoot, true);
 });
 
-it("keeps the existing tamper-control contract when no checkpoint is provided", () => {
-  const fixture = makeFixture("control");
-  const result = verifyInitializedPrefixTamperControls({
-    manifestPath: fixture.manifestPath,
-    expected: fixture.expected,
-    evidenceDirectory: fixture.root,
-  });
-  expect(result.map((control) => control.id)).toEqual([
-    "baseline-valid",
-    "mutate-outcome",
-    "mutate-stream",
-    "mutate-source",
-    "mutate-manifest-inventory",
-    "diagnostic-code",
-    "diagnostic-primary-same-line",
-    "diagnostic-multiplicity",
-    "diagnostic-collateral",
-  ]);
-  expect(result.slice(1).every((control) => control.rejected)).toBe(true);
-});
+it(
+  "keeps the existing tamper-control contract when no checkpoint is provided",
+  { timeout: 30_000 },
+  () => {
+    const fixture = makeFixture("control");
+    const result = verifyInitializedPrefixTamperControls({
+      manifestPath: fixture.manifestPath,
+      expected: fixture.expected,
+      evidenceDirectory: fixture.root,
+    });
+    expect(result.map((control) => control.id)).toEqual([
+      "baseline-valid",
+      "mutate-outcome",
+      "mutate-stream",
+      "mutate-source",
+      "mutate-manifest-inventory",
+      "diagnostic-code",
+      "diagnostic-primary-same-line",
+      "diagnostic-multiplicity",
+      "diagnostic-collateral",
+    ]);
+    expect(result.slice(1).every((control) => control.rejected)).toBe(true);
+  },
+);
 
-it("reports before and after checkpoints in exact control order", () => {
-  const fixture = makeFixture("control");
-  const checkpoints: string[] = [];
-  const result = verifyInitializedPrefixTamperControls({
-    manifestPath: fixture.manifestPath,
-    expected: fixture.expected,
-    evidenceDirectory: fixture.root,
-    checkpoint: ({ controlID, phase }) => {
-      checkpoints.push(`${phase}:${controlID}`);
-    },
-  });
-  const controlIDs = result.map((control) => control.id);
-  expect(checkpoints).toEqual(
-    controlIDs.flatMap((controlID) => [
-      `before:${controlID}`,
-      `after:${controlID}`,
-    ]),
-  );
-});
+it(
+  "reports before and after checkpoints in exact control order",
+  { timeout: 30_000 },
+  () => {
+    const fixture = makeFixture("control");
+    const checkpoints: string[] = [];
+    const result = verifyInitializedPrefixTamperControls({
+      manifestPath: fixture.manifestPath,
+      expected: fixture.expected,
+      evidenceDirectory: fixture.root,
+      checkpoint: ({ controlID, phase }) => {
+        checkpoints.push(`${phase}:${controlID}`);
+      },
+    });
+    const controlIDs = result.map((control) => control.id);
+    expect(checkpoints).toEqual(
+      controlIDs.flatMap((controlID) => [
+        `before:${controlID}`,
+        `after:${controlID}`,
+      ]),
+    );
+  },
+);
 
 it("propagates a before-checkpoint failure before creating the next clone", () => {
   const fixture = makeFixture("control");
@@ -2820,51 +2828,55 @@ it("preserves the legacy error contract when native and legacy resolution fail",
   }
 });
 
-it("resolves a freshly retargeted external symlink for the next control", () => {
-  const fixture = makeFixture("control");
-  const original = regularFileInventory(fixture.root);
-  const alias = join(fixture.externalRoot, "bin/rustup");
-  const alternate = join(fixture.externalRoot, "bin/rustup-alt");
-  writeFileSync(
-    alternate,
-    readFileSync(join(fixture.externalRoot, "bin/rustup-real")),
-  );
-  const external = regularFileInventory(fixture.externalRoot, true);
-  const native = nativeRealpathMock();
-  native.mockClear();
-  try {
-    const result = withForcedLinux(() =>
-      verifyInitializedPrefixTamperControls({
-        manifestPath: fixture.manifestPath,
-        expected: fixture.expected,
-        evidenceDirectory: fixture.root,
-        checkpoint: ({ controlID, phase }) => {
-          if (controlID === "baseline-valid" && phase === "after") {
-            unlinkSync(alias);
-            symlinkSync("rustup-alt", alias);
-          }
-        },
-      }),
+it(
+  "resolves a freshly retargeted external symlink for the next control",
+  { timeout: 30_000 },
+  () => {
+    const fixture = makeFixture("control");
+    const original = regularFileInventory(fixture.root);
+    const alias = join(fixture.externalRoot, "bin/rustup");
+    const alternate = join(fixture.externalRoot, "bin/rustup-alt");
+    writeFileSync(
+      alternate,
+      readFileSync(join(fixture.externalRoot, "bin/rustup-real")),
     );
-    expect(result).toHaveLength(9);
-    expect(result.slice(1).every((control) => control.rejected)).toBe(true);
-    const packet = durableTamperPacket(fixture, "mutate-outcome").packet;
-    const entries = packet.externalBeforeEntries as {
-      qualifiedRef?: { path?: string };
-      canonicalIdentity?: string;
-    }[];
-    const rustupEntry = entries.find(
-      (entry) => entry.qualifiedRef?.path === alias,
-    );
-    expect(rustupEntry?.canonicalIdentity).toBe(alternate);
-    expectInventoryUnchanged(original, fixture.root);
-    expectInventoryUnchanged(external, fixture.externalRoot, true);
-  } finally {
-    if (existsSync(alias)) unlinkSync(alias);
-    symlinkSync("rustup-real", alias);
-    restoreNativeRealpathMock();
-  }
-});
+    const external = regularFileInventory(fixture.externalRoot, true);
+    const native = nativeRealpathMock();
+    native.mockClear();
+    try {
+      const result = withForcedLinux(() =>
+        verifyInitializedPrefixTamperControls({
+          manifestPath: fixture.manifestPath,
+          expected: fixture.expected,
+          evidenceDirectory: fixture.root,
+          checkpoint: ({ controlID, phase }) => {
+            if (controlID === "baseline-valid" && phase === "after") {
+              unlinkSync(alias);
+              symlinkSync("rustup-alt", alias);
+            }
+          },
+        }),
+      );
+      expect(result).toHaveLength(9);
+      expect(result.slice(1).every((control) => control.rejected)).toBe(true);
+      const packet = durableTamperPacket(fixture, "mutate-outcome").packet;
+      const entries = packet.externalBeforeEntries as {
+        qualifiedRef?: { path?: string };
+        canonicalIdentity?: string;
+      }[];
+      const rustupEntry = entries.find(
+        (entry) => entry.qualifiedRef?.path === alias,
+      );
+      expect(rustupEntry?.canonicalIdentity).toBe(alternate);
+      expectInventoryUnchanged(original, fixture.root);
+      expectInventoryUnchanged(external, fixture.externalRoot, true);
+    } finally {
+      if (existsSync(alias)) unlinkSync(alias);
+      symlinkSync("rustup-real", alias);
+      restoreNativeRealpathMock();
+    }
+  },
+);
 
 it("rejects a symlink escape from the selected evidence root", () => {
   const fixture = makeFixture("full-valid");

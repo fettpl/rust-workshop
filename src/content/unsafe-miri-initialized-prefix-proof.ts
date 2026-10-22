@@ -5353,15 +5353,14 @@ function mutateCopiedEvidence(
     );
   } else if (kind === "miri-category") {
     const lines = text.split(/(\r?\n)/);
-    const firstError = lines.findIndex(
-      (line) => /\berror\s*:/i.test(line) || /undefined behavior/i.test(line),
+    const firstError = lines.findIndex((line) =>
+      /^\s*error:\s*Undefined Behavior:/i.test(line),
     );
     if (firstError < 0)
       throw new Error("Miri category event is missing its first error");
     const nextError = lines.findIndex(
       (line, index) =>
-        index > firstError &&
-        (/^\s*error\s*:/i.test(line) || /undefined behavior/i.test(line)),
+        index > firstError && /^\s*error:\s*Undefined Behavior:/i.test(line),
     );
     const blockEnd = nextError >= 0 ? nextError : lines.length;
     const categoryPattern =
