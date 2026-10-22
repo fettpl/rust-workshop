@@ -1114,6 +1114,9 @@ function makeFixture(
   kind: FixtureKind,
   mutateLookupEnvironment?: (env: Record<string, string>) => void,
   repeatedExternalBytes = 0,
+  versionStdoutOverrides: Partial<
+    Record<"rustc" | "rustdoc" | "cargo" | "rustup", string>
+  > = {},
 ): Fixture {
   const parent = realpathSync(
     mkdtempSync(join(tmpdir(), "initialized-prefix-native-shaped-")),
@@ -1209,6 +1212,7 @@ function makeFixture(
         cargo: "cargo 1.90.0 stable\nrelease: 1.90.0\nchannel: stable\n",
         rustup: "rustup 1.28.1 stable\n",
       };
+  Object.assign(versionStdout, versionStdoutOverrides);
   const externalQualification = writeFixtureRef(
     externalRoot,
     `qualification/${mode}.json`,
@@ -2120,6 +2124,53 @@ it("verifies a canonical absolute-ref full-42 strict fixture", () => {
   );
   expect(result, reasonsJson(result)).toEqual({ ok: true, reasons: [] });
 });
+
+it("accepts stable compiler release lines with prerelease words only in metadata", () => {
+  const metadata =
+    "release: 1.90.0\nchannel: stable\nauxiliary: beta nightly dev";
+  const fixture = makeFixture("full-valid", undefined, 0, {
+    rustc: `rustc 1.90.0 stable\n${metadata}\n`,
+    rustdoc: `rustdoc 1.90.0 stable\n${metadata}\n`,
+    cargo: `cargo 1.90.0 stable\n${metadata}\n`,
+    rustup: `rustup 1.28.1 stable\n${metadata}\n`,
+  });
+  const result = verifyInitializedPrefixEvidence(
+    fixture.manifestPath,
+    fixture.expected,
+  );
+  expect(result, reasonsJson(result)).toEqual({ ok: true, reasons: [] });
+});
+
+const stablePrereleaseCases = [
+  ["rustc", "beta"],
+  ["rustc", "nightly"],
+  ["rustc", "dev"],
+  ["rustdoc", "beta"],
+  ["rustdoc", "nightly"],
+  ["rustdoc", "dev"],
+  ["cargo", "beta"],
+  ["cargo", "nightly"],
+  ["cargo", "dev"],
+] as const;
+
+it.each(stablePrereleaseCases)(
+  "rejects a stable %s first-line %s release token",
+  (name, channel) => {
+    const version = `${name} 1.90.0-${channel} (synthetic)\nrelease: 1.90.0\nchannel: stable\n`;
+    const fixture = makeFixture("full-valid", undefined, 0, {
+      [name]: version,
+    });
+    const result = verifyInitializedPrefixEvidence(
+      fixture.manifestPath,
+      fixture.expected,
+    );
+    expect(result.ok, reasonsJson(result)).toBe(false);
+    expect(
+      result.reasons.map((entry) => entry.code),
+      reasonsJson(result),
+    ).toContain("toolchain-version-mismatch");
+  },
+);
 
 it("verifies the finite Miri run fixture with the reviewed direct-run argv", () => {
   const fixture = makeFixture("miri-valid");

@@ -3828,7 +3828,9 @@ export function verifyInitializedPrefixEvidence(
         : false;
       const stablePlain =
         manifest.mode !== "stable" ||
-        !/\b(?:beta|nightly|dev)\b/i.test(stdoutText);
+        (name !== "rustc" && name !== "rustdoc" && name !== "cargo") ||
+        (outputLine?.startsWith(`${name} `) === true &&
+          /^\d+\.\d+\.\d+(?:\s|$)/u.test(outputLine.slice(name.length + 1)));
       const miriCommitDate =
         manifest.mode === "miri" && name === "rustc"
           ? /^commit-date:\s*(\d{4}-\d{2}-\d{2})\s*$/m.exec(stdoutText)?.[1]
