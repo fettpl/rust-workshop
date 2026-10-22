@@ -407,6 +407,42 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Reclaim unused hosted-runner SDKs before Rust setup
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_ACTIONS:-}" != "true" || "${RUNNER_ENVIRONMENT:-}" != "github-hosted" || "${RUNNER_OS:-}" != "Linux" ]]; then
+            echo "Refusing hosted-runner SDK cleanup outside the expected GitHub-hosted Linux environment."
+            exit 1
+          fi
+          . /etc/os-release
+          if [[ "${ID:-}" != "ubuntu" ]]; then
+            echo "Refusing hosted-runner SDK cleanup on non-Ubuntu Linux: ${ID:-unknown}"
+            exit 1
+          fi
+          workspace="${GITHUB_WORKSPACE:?GITHUB_WORKSPACE is required}"
+          df -Pk "$workspace"
+          for sdk in /usr/local/lib/android /usr/share/dotnet; do
+            if [[ -L "$sdk" ]]; then
+              echo "Refusing to remove symlink SDK path: $sdk"
+              exit 1
+            fi
+            if [[ -e "$sdk" ]]; then
+              if [[ ! -d "$sdk" ]]; then
+                echo "Refusing non-directory SDK path: $sdk"
+                exit 1
+              fi
+              resolved="$(realpath -e -- "$sdk")"
+              if [[ "$resolved" != "$sdk" ]]; then
+                echo "Refusing unexpected SDK path resolution: $sdk -> $resolved"
+                exit 1
+              fi
+              sudo rm -rf -- "$sdk"
+            else
+              echo "SDK path absent: $sdk"
+            fi
+          done
+          df -Pk "$workspace"
       # Upstream rust-toolchain commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f verified via GitHub on 2026-10-13.
       # The date is pinned because Miri is coupled to its nightly compiler.
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
@@ -431,6 +467,18 @@ jobs:
           cargo +nightly-2026-08-08 miri setup
           sysroot="$(cargo +nightly-2026-08-08 miri setup --print-sysroot)"
           test -d "$sysroot"
+          available_kib="$(df -Pk "$GITHUB_WORKSPACE" | awk 'NR == 2 && $4 ~ /^[0-9]+$/ { print $4 }')"
+          if [[ ! "$available_kib" =~ ^[0-9]+$ ]]; then
+            echo "Could not read numeric free-space value for $GITHUB_WORKSPACE"
+            exit 1
+          fi
+          minimum_kib=$((20 * 1024 * 1024))
+          if (( available_kib < minimum_kib )); then
+            echo "Insufficient free space after Miri sysroot setup: ${available_kib} KiB; need at least ${minimum_kib} KiB"
+            df -Pk "$GITHUB_WORKSPACE"
+            exit 1
+          fi
+          echo "Free-space floor passed after Miri sysroot setup: ${available_kib} KiB"
           SYSROOT="$sysroot" OUTPUT_DIRECTORY="${GITHUB_WORKSPACE}/initialized-prefix-native-inputs" QUALIFICATION_DIRECTORY="${GITHUB_WORKSPACE}/initialized-prefix-artifacts/toolchains" node --input-type=module <<'NODE'
           import { execFileSync } from "node:child_process";
           import { createHash } from "node:crypto";

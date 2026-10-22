@@ -87,6 +87,27 @@ exposed a version check that scanned auxiliary Cargo metadata for prerelease
 words; the check now validates the first release line while preserving exact
 full-stdout and executable-hash qualification.
 
+The later Linux Miri CI attempt failed before result upload because the hosted
+runner worker itself ran out of space while writing its diagnostic log
+(`System.IO.IOException: No space left on device`); this is a CI capacity
+failure, not a native-proof acceptance result. The retained Native07 Miri tree
+shows why the job needs headroom: one approximately 748 MB allocated original
+was accompanied by eleven approximately 573 MB allocated tamper clones; their
+logical sizes were approximately 699 MB for the original and 515 MB per clone.
+Stable and MSRV retained approximately 59–60 MB logical originals and nine
+approximately 60–62 MB logical clones each.
+The dedicated `miri-safety` job therefore removes only the literal unused
+Android and .NET SDK directories on the expected GitHub-hosted Ubuntu runner,
+before Rust setup, and fails closed for any other environment or path shape.
+After Miri sysroot setup it requires at least 20 GiB free on the workspace
+filesystem before qualification and artifact capture. This is a capacity
+preflight; it does not delete proof receipts, control inputs, toolchains,
+caches, workspaces, or swap, and it does not change the 480-second mode budget
+or the eleven-control proof contract. See the [GitHub-hosted runner
+documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+and the [runner image disk-space discussion](https://github.com/actions/runner/issues/954)
+for the hosted-image capacity context.
+
 Full native acceptance requires the dedicated CI checks. Release acceptance
 requires all eleven checks on the exact PR head and all eleven on the resulting
 `main` commit; results are tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76).
