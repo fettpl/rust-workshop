@@ -2615,6 +2615,104 @@ it("proof-control-stable-tamper-controls", { timeout: 30_000 }, () => {
   expectInventoryUnchanged(originalExternal, fixture.externalRoot, true);
 });
 
+it("keeps the existing tamper-control contract when no checkpoint is provided", () => {
+  const fixture = makeFixture("control");
+  const result = verifyInitializedPrefixTamperControls({
+    manifestPath: fixture.manifestPath,
+    expected: fixture.expected,
+    evidenceDirectory: fixture.root,
+  });
+  expect(result.map((control) => control.id)).toEqual([
+    "baseline-valid",
+    "mutate-outcome",
+    "mutate-stream",
+    "mutate-source",
+    "mutate-manifest-inventory",
+    "diagnostic-code",
+    "diagnostic-primary-same-line",
+    "diagnostic-multiplicity",
+    "diagnostic-collateral",
+  ]);
+  expect(result.slice(1).every((control) => control.rejected)).toBe(true);
+});
+
+it("reports before and after checkpoints in exact control order", () => {
+  const fixture = makeFixture("control");
+  const checkpoints: string[] = [];
+  const result = verifyInitializedPrefixTamperControls({
+    manifestPath: fixture.manifestPath,
+    expected: fixture.expected,
+    evidenceDirectory: fixture.root,
+    checkpoint: ({ controlID, phase }) => {
+      checkpoints.push(`${phase}:${controlID}`);
+    },
+  });
+  const controlIDs = result.map((control) => control.id);
+  expect(checkpoints).toEqual(
+    controlIDs.flatMap((controlID) => [
+      `before:${controlID}`,
+      `after:${controlID}`,
+    ]),
+  );
+});
+
+it("propagates a before-checkpoint failure before creating the next clone", () => {
+  const fixture = makeFixture("control");
+  const original = regularFileInventory(fixture.root);
+  const external = regularFileInventory(fixture.externalRoot, true);
+  const checkpoints: string[] = [];
+  expect(() =>
+    verifyInitializedPrefixTamperControls({
+      manifestPath: fixture.manifestPath,
+      expected: fixture.expected,
+      evidenceDirectory: fixture.root,
+      checkpoint: ({ controlID, phase }) => {
+        checkpoints.push(`${phase}:${controlID}`);
+        if (phase === "before" && controlID === "mutate-outcome")
+          throw new Error("checkpoint before second control");
+      },
+    }),
+  ).toThrow("checkpoint before second control");
+  expect(checkpoints).toEqual([
+    "before:baseline-valid",
+    "after:baseline-valid",
+    "before:mutate-outcome",
+  ]);
+  expectDurableMutation(fixture, "baseline-valid");
+  expect(() => durableTamperPacket(fixture, "mutate-outcome")).toThrow();
+  expectInventoryUnchanged(original, fixture.root);
+  expectInventoryUnchanged(external, fixture.externalRoot, true);
+});
+
+it("propagates an after-checkpoint failure only after the control packet is durable", () => {
+  const fixture = makeFixture("control");
+  const original = regularFileInventory(fixture.root);
+  const external = regularFileInventory(fixture.externalRoot, true);
+  const checkpoints: string[] = [];
+  expect(() =>
+    verifyInitializedPrefixTamperControls({
+      manifestPath: fixture.manifestPath,
+      expected: fixture.expected,
+      evidenceDirectory: fixture.root,
+      checkpoint: ({ controlID, phase }) => {
+        checkpoints.push(`${phase}:${controlID}`);
+        if (phase === "after" && controlID === "mutate-outcome")
+          throw new Error("checkpoint after completed control");
+      },
+    }),
+  ).toThrow("checkpoint after completed control");
+  expect(checkpoints).toEqual([
+    "before:baseline-valid",
+    "after:baseline-valid",
+    "before:mutate-outcome",
+    "after:mutate-outcome",
+  ]);
+  expectDurableMutation(fixture, "baseline-valid");
+  expectDurableMutation(fixture, "mutate-outcome");
+  expectInventoryUnchanged(original, fixture.root);
+  expectInventoryUnchanged(external, fixture.externalRoot, true);
+});
+
 it("proof-control-stable-outside-write-denial", { timeout: 30_000 }, () => {
   const fixture = makeFixture("full-valid");
   const sentinel = writeFixtureRef(

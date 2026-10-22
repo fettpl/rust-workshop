@@ -1,5 +1,6 @@
 export const INITIALIZED_PREFIX_DIAGNOSTIC_CODES = [
   "none",
+  "native-deadline-exceeded",
   "qualification-identity",
   "qualification-config-input",
   "qualification-toolchain-input",
@@ -26,6 +27,11 @@ type ReasonLike = {
 const messageOf = (reason: ReasonLike): string =>
   typeof reason.message === "string" ? reason.message : "";
 
+const isNativeDeadlineReason = (reason: ReasonLike): boolean =>
+  reason.code === "capture-aborted" &&
+  typeof reason.message === "string" &&
+  reason.message.startsWith("whole native proof deadline expired ");
+
 function normalizedMessagePrefix(message: string): string {
   const normalized = message
     .replace(/\u001b\[[0-9;]*m/g, "")
@@ -42,6 +48,7 @@ export function classifyInitializedPrefixDiagnostic(
   reasons: readonly ReasonLike[],
 ): InitializedPrefixDiagnosticCode {
   if (reasons.length === 0) return "none";
+  if (reasons.some(isNativeDeadlineReason)) return "native-deadline-exceeded";
   const messages = reasons
     .map(messageOf)
     .filter((message) => message.length > 0);
@@ -87,6 +94,11 @@ export function projectInitializedPrefixDiagnostic(
   reasons: readonly ReasonLike[],
 ): InitializedPrefixDiagnostic {
   if (reasons.length === 0) return { code: "none", detail: "none" };
+  if (reasons.some(isNativeDeadlineReason))
+    return {
+      code: "native-deadline-exceeded",
+      detail: "Native proof deadline exceeded.",
+    };
   const message = reasons.map(messageOf).find((value) => value.length > 0);
   if (!message)
     return { code: "qualification-unknown", detail: "message-empty" };

@@ -5445,6 +5445,10 @@ export function verifyInitializedPrefixTamperControls(options: {
   manifestPath: string;
   expected: PrefixObservedExpectations;
   evidenceDirectory: string;
+  checkpoint?: (checkpoint: {
+    controlID: string;
+    phase: "before" | "after";
+  }) => void;
 }): readonly {
   id: string;
   rejected: boolean;
@@ -5504,7 +5508,7 @@ export function verifyInitializedPrefixTamperControls(options: {
         ] as const)
       : []),
   ] as readonly (readonly [string, string | undefined])[];
-  return controls.map(([id, kind]) => {
+  const runControl = ([id, kind]: readonly [string, string | undefined]) => {
     const temporary = mkdtempSync(
       join(dirname(sourceRoot), `${basename(sourceRoot)}-tamper-`),
     );
@@ -5788,5 +5792,17 @@ export function verifyInitializedPrefixTamperControls(options: {
         reasons,
       };
     }
-  });
+  };
+  const results: {
+    id: string;
+    rejected: boolean;
+    reasons: PrefixVerificationResult["reasons"];
+  }[] = [];
+  for (const control of controls) {
+    const [controlID] = control;
+    options.checkpoint?.({ controlID, phase: "before" });
+    results.push(runControl(control));
+    options.checkpoint?.({ controlID, phase: "after" });
+  }
+  return results;
 }

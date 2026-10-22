@@ -506,6 +506,9 @@ describe("production qualification with fixed Node metadata fakes", () => {
       "utf8",
     );
     expect(workflow).not.toContain("initialized-prefix-artifacts/config");
-    expect(workflow.match(/initialized-prefix-native-inputs/g)).toHaveLength(5);
+    expect(workflow.match(/initialized-prefix-native-inputs/g)).toHaveLength(6);
+    expect(workflow).toContain(
+      "node scripts/benchmark-canonical-paths.mjs initialized-prefix-native-inputs/miri-sysroot.json",
+    );
   });
 });

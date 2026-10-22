@@ -553,6 +553,8 @@ jobs:
             echo "RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION_DIRECTORY=${GITHUB_WORKSPACE}/initialized-prefix-artifacts/toolchains"
             echo "RUST_WORKSHOP_INITIALIZED_PREFIX_PUBLIC_SUMMARY=${GITHUB_WORKSPACE}/initialized-prefix-public-summaries/stable.json"
           } >> "$GITHUB_ENV"
+      - name: Observe Linux canonical-path resolver parity
+        run: node scripts/benchmark-canonical-paths.mjs initialized-prefix-native-inputs/miri-sysroot.json
       - run: npm run content:miri -- --fetch
       - name: Set MSRV public native-proof summary path
         run: echo "RUST_WORKSHOP_INITIALIZED_PREFIX_PUBLIC_SUMMARY=${GITHUB_WORKSPACE}/initialized-prefix-public-summaries/msrv.json" >> "$GITHUB_ENV"

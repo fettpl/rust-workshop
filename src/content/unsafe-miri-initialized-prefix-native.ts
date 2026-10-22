@@ -1294,6 +1294,8 @@ async function capture(
         manifestPath,
         expected: observed,
         evidenceDirectory: attempt,
+        checkpoint: ({ controlID, phase }) =>
+          checkDeadline(`${phase} tamper control ${controlID}`),
       });
       checkDeadline("after tamper-control finalization");
       const requiredControlIds =

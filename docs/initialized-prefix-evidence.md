@@ -108,6 +108,24 @@ documentation](https://docs.github.com/en/actions/reference/runners/github-hoste
 and the [runner image disk-space discussion](https://github.com/actions/runner/issues/954)
 for the hosted-image capacity context.
 
+The subsequent capacity-preflight run retained approximately 27 GiB free after
+sysroot setup. Stable strict verification passed with 118 recipes, but Miri
+still aborted after capturing 122 recipes. Its sanitized summary did not identify
+the abort stage, so this is not a passing native result or proof of a specific
+abort cause. The next diagnostic revision maps the recorder's exact deadline
+abort prefix to a fixed public code without exposing paths or raw messages.
+
+The existing deadline is now checked before and after each tamper control.
+The synchronous callback runs outside the control's error handler: an expired
+budget aborts capture rather than becoming a control verdict. Completed control
+packets remain durable, and success still requires the entire applicable control
+inventory. These checkpoints detect overruns between controls; they do not
+preempt a running synchronous operation or extend the budget. A separate,
+observational CI probe compares JavaScript and native canonical-path resolution
+on bounded qualified sysroot inputs and private temporary fixtures. It reports
+finite status, counts, and timings only; neither resolver selection nor native
+acceptance depends on that experiment.
+
 Full native acceptance requires the dedicated CI checks. Release acceptance
 requires all eleven checks on the exact PR head and all eleven on the resulting
 `main` commit; results are tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76).

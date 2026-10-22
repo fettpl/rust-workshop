@@ -74,6 +74,51 @@ describe("initialized-prefix sanitized diagnostics", () => {
     ).toBe("qualification-unknown");
   });
 
+  it("classifies only the exact native deadline capture reason", () => {
+    expect(
+      classifyInitializedPrefixDiagnostic([
+        {
+          code: "capture-aborted",
+          message:
+            "whole native proof deadline expired after tamper control miri-category",
+        },
+      ]),
+    ).toBe("native-deadline-exceeded");
+    expect(
+      classifyInitializedPrefixDiagnostic([
+        {
+          code: "other-code",
+          message:
+            "whole native proof deadline expired after tamper control miri-category",
+        },
+      ]),
+    ).toBe("qualification-unknown");
+    expect(
+      classifyInitializedPrefixDiagnostic([
+        {
+          code: "capture-aborted",
+          message: "capture aborted after tamper control miri-category",
+        },
+      ]),
+    ).toBe("qualification-unknown");
+  });
+
+  it("projects a fixed safe detail for native deadline failures", () => {
+    const projected = projectInitializedPrefixDiagnostic([
+      {
+        code: "capture-aborted",
+        message:
+          "whole native proof deadline expired after /private/runner/secret-token-1234",
+      },
+    ]);
+    expect(projected).toEqual({
+      code: "native-deadline-exceeded",
+      detail: "Native proof deadline exceeded.",
+    });
+    expect(projected.detail).not.toContain("secret-token");
+    expect(projected.detail).not.toContain("/private");
+  });
+
   it("projects only a bounded path-free static message prefix", () => {
     const projected = projectInitializedPrefixDiagnostic([
       {
