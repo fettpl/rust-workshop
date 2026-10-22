@@ -621,6 +621,11 @@ describe("duplicate contract evidence families", () => {
           status: "available",
           task: { lessonId, stepId: "byte-view-initialized-prefix" },
         });
+      } else if (lessonId === "unsafe-miri-disjoint-regions") {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "available",
+          task: { lessonId, stepId: "disjoint-regions-range-transfer" },
+        });
       } else {
         expect(gateRecovery(state, criterion, lessons)).toEqual({
           status: "exhausted",
@@ -788,7 +793,15 @@ describe("duplicate contract evidence families", () => {
                   stepId: "byte-view-initialized-prefix",
                 },
               }
-            : { status: "exhausted" },
+            : lesson.id === "unsafe-miri-disjoint-regions"
+              ? {
+                  status: "available",
+                  task: {
+                    lessonId: lesson.id,
+                    stepId: "disjoint-regions-range-transfer",
+                  },
+                }
+              : { status: "exhausted" },
         );
 
         const primarySavedFirst = createInitialState();
@@ -816,7 +829,7 @@ describe("duplicate contract evidence families", () => {
     },
   );
 
-  it("keeps a clean supplementary family but exhausts the primary criterion after later help", () => {
+  it("keeps a clean supplementary family and recovers the fresh family task after later help", () => {
     for (const [, lessonId, gateId] of primaryPairs.slice(5)) {
       const { lesson, step: gate } = lessonStep(lessonId, gateId);
       const equivalent = lesson.steps.find((step) =>
@@ -856,7 +869,15 @@ describe("duplicate contract evidence families", () => {
                 stepId: "byte-view-initialized-prefix",
               },
             }
-          : { status: "exhausted" },
+          : lesson.id === "unsafe-miri-disjoint-regions"
+            ? {
+                status: "available",
+                task: {
+                  lessonId: lesson.id,
+                  stepId: "disjoint-regions-range-transfer",
+                },
+              }
+            : { status: "exhausted" },
       );
     }
   });

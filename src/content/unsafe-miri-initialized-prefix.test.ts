@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import * as ts from "typescript";
 import { expect, it } from "vitest";
+import * as currentCourse from "./course";
 import {
   initializedPrefixConceptId,
   initializedPrefixEquivalent,
@@ -17,6 +18,7 @@ import {
   initializedPrefixSafeVariants,
 } from "./unsafe-miri-initialized-prefix";
 import { unsafeMiriLessons, unsafeMiriModule } from "./unsafe-miri";
+import { historicalBeforeDisjointRanges } from "./unsafe-miri-disjoint-ranges-compatibility-fixture";
 import baseline from "./fixtures/unsafe-miri-pre-prefix.json";
 import { unsafeMiriAssessmentSourceFor } from "./unsafe-miri-assessment-fixtures";
 
@@ -314,13 +316,16 @@ it("rejects unknown fixture ids and preserves the accepted old seven objects", (
   expect(
     unsafeMiriAssessmentSourceFor(initializedPrefixPrimaryStepId).equivalent,
   ).toBe(initializedPrefixEquivalent);
-  const lesson = unsafeMiriLessons.find(
+  const beforeDisjointRanges = historicalBeforeDisjointRanges(currentCourse);
+  const lesson = beforeDisjointRanges.lessons.find(
     (candidate) => candidate.id === initializedPrefixLessonId,
   )!;
   expect({ ...lesson, steps: lesson.steps.slice(0, 7) }).toEqual(
     baseline.lesson,
   );
-  const initializedModule = unsafeMiriModule;
+  const initializedModule = beforeDisjointRanges.modules.find(
+    (candidate) => candidate.id === "unsafe-miri-contracts",
+  )!;
   expect({
     ...initializedModule,
     gateCriteria: initializedModule.gateCriteria?.map((criterion) =>
