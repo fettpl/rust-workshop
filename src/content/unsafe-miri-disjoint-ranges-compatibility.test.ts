@@ -33,7 +33,6 @@ import type {
 import {
   gateRecovery,
   independentCodingTaskIds,
-  moduleGate,
 } from "../engine/learning";
 import { lessons, modules, projects, reviewExercises } from "./course";
 
@@ -174,11 +173,11 @@ function oldState(version: 1 | 2 | 3): SyntheticState {
       schemaVersion: 2,
       onboarding: { ...state.onboarding, background: "both" },
     };
-  const {
-    schemaVersion: _schemaVersion,
-    routePreference: _routePreference,
-    ...v1
-  } = state;
+  const v1 = Object.fromEntries(
+    Object.entries(state).filter(
+      ([key]) => key !== "schemaVersion" && key !== "routePreference",
+    ),
+  ) as Omit<UserState, "schemaVersion" | "routePreference">;
   return {
     ...v1,
     schemaVersion: 1,
@@ -518,7 +517,7 @@ describe("disjoint range compatibility and evidence", () => {
     expect(starter.events).toHaveLength(0);
     const oldClean = eventFor(lesson, oldStep, "old-clean-before-help", 2_500);
     const prior = recordCourseEvidence(createInitialState(), oldClean);
-    let exposed = revealCourseProjectPackageVariant(
+    const exposed = revealCourseProjectPackageVariant(
       prior,
       project,
       lessons,
