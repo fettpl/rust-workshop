@@ -80,7 +80,7 @@ the separate trusted Rust fixture checks are compiler-backed.
 
 The retained Native07 campaign passed stable and exact MSRV with 118 recipes,
 125 commands, and 9 controls per mode. Its Miri attempt reached 122 recipes and
-131 commands, exceeded the unchanged 480-second deadline, and retained ten
+131 commands, exceeded the historical 480-second deadline, and retained ten
 expected verdicts plus a category-mutator error. That attempt remains failed.
 The category matcher is corrected. A subsequent Linux qualification failure
 exposed a version check that scanned auxiliary Cargo metadata for prerelease
@@ -102,8 +102,22 @@ before Rust setup, and fails closed for any other environment or path shape.
 After Miri sysroot setup it requires at least 20 GiB free on the workspace
 filesystem before qualification and artifact capture. This is a capacity
 preflight; it does not delete proof receipts, control inputs, toolchains,
-caches, workspaces, or swap, and it does not change the 480-second mode budget
-or the eleven-control proof contract. See the [GitHub-hosted runner
+caches, workspaces, or swap, and it does not alter the internal cooperative
+deadline checks or the eleven-control proof contract. The original brief
+imposed no 480-second operational requirement and
+learner-facing limits are unaffected. The current `miri-safety` job corrects
+the operational allowance to 60 minutes: stable retains 8 minutes, MSRV
+retains 8 minutes, and Miri has a 30-minute total deadline for the full
+capture and control campaign, including qualification, commands, controls, and
+failure retention, for a 46-minute plan with 14 minutes of headroom. The
+internal cooperative deadline checks and eleven-control proof contract remain
+unchanged; any campaign beyond its deadline remains failed.
+All prior Native07 and Linux CI failures remain failed historical results.
+The later Linux trial reached the sixth of eleven controls at approximately
+555 seconds before its cooperative deadline failure; it also remains failed
+historical evidence. The measured setup interval in that trial was 2 minutes
+03 seconds, from 02:09:09 to 02:11:12 UTC, and is part of the job headroom.
+See the [GitHub-hosted runner
 documentation](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 and the [runner image disk-space discussion](https://github.com/actions/runner/issues/954)
 for the hosted-image capacity context.
@@ -137,9 +151,11 @@ resolution. Each call remains fresh; reads, hashes, confinement checks,
 external snapshots, and complete control inventories remain unchanged. The
 fallback also preserves the legacy handling of platform and symlink-depth
 limitations described in the [Node.js filesystem documentation](https://nodejs.org/docs/latest-v22.x/api/fs.html#fsrealpathsyncnativepath-options).
-The trial retains the 480-second mode deadline and requires fresh strict CI
-acceptance. Deadline summaries additionally expose only an allowlisted control
-ID and a before/after boundary, or a fixed unavailable-stage marker.
+That historical trial retained the 480-second mode deadline and remained
+failed. The current operational job uses the 60-minute allowance described
+above and still requires fresh strict CI acceptance. Deadline summaries
+additionally expose only an allowlisted control ID and a before/after boundary,
+or a fixed unavailable-stage marker.
 
 Full native acceptance requires the dedicated CI checks. Release acceptance
 requires all eleven checks on the exact PR head and all eleven on the resulting

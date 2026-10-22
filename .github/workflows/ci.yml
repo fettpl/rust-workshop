@@ -389,14 +389,16 @@ jobs:
 
   miri-safety:
     runs-on: ubuntu-latest
-    # Each native mode has an 8-minute configured deadline including
-    # qualification, command work, and synchronous failure-retention
-    # finalization accounting. The three modes therefore have a configured
-    # 24-minute budget inside this 45-minute job. Deadline checks are
-    # cooperative: synchronous filesystem hashing can overrun the deadline,
-    # and the retained incomplete evidence records that measured overrun; no
-    # hard OS/I/O termination guarantee is claimed.
-    timeout-minutes: 45
+    # Stable and MSRV retain their 8-minute configured deadlines. Miri has a
+    # 30-minute total deadline for the full capture and control campaign,
+    # including qualification, commands, controls, and failure retention. The
+    # resulting 46-minute plan fits inside this 60-minute job with 14 minutes
+    # of setup and failure-retention headroom. Deadline checks are
+    # cooperative: synchronous filesystem hashing can overrun the configured
+    # deadline, and retained incomplete evidence records that measured
+    # overrun; any campaign beyond its deadline remains failed, and no hard
+    # OS/I/O termination guarantee is claimed.
+    timeout-minutes: 60
     steps:
       # v7.0.1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1

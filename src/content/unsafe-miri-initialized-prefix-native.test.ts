@@ -1,4 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { mkdtempSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import {
   classifyInitializedPrefixDiagnostics,
   classifyInitializedPrefixMiri,
@@ -8,6 +11,29 @@ import {
   isInitializedPrefixControlAccepted,
   verifyInitializedPrefixNative,
 } from "./unsafe-miri-initialized-prefix-native";
+import {
+  createInitializedPrefixAttempt,
+  qualifyInitializedPrefixToolchain,
+  recordInitializedPrefixCommand,
+} from "./unsafe-miri-initialized-prefix-recorder";
+
+vi.mock("./unsafe-miri-initialized-prefix-recorder", async () => {
+  const actual = await vi.importActual<
+    typeof import("./unsafe-miri-initialized-prefix-recorder")
+  >("./unsafe-miri-initialized-prefix-recorder");
+  return {
+    ...actual,
+    createInitializedPrefixAttempt: vi.fn(
+      actual.createInitializedPrefixAttempt,
+    ),
+    qualifyInitializedPrefixToolchain: vi.fn(
+      actual.qualifyInitializedPrefixToolchain,
+    ),
+    recordInitializedPrefixCommand: vi.fn(
+      actual.recordInitializedPrefixCommand,
+    ),
+  };
+});
 
 const controlsAuthorized =
   process.env.RUST_WORKSHOP_INITIALIZED_PREFIX_CONTROLS_AUTHORIZED === "1";
@@ -138,4 +164,95 @@ describe("initialized-prefix maintained native proof contract", () => {
       expect(result.ok).toBe(true);
     },
   );
+
+  it("uses eight-minute stable/MSRV and thirty-minute Miri capture budgets", async () => {
+    const qualificationEnv =
+      "RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION";
+    const previousQualification = process.env[qualificationEnv];
+    const createAttempt = vi.mocked(createInitializedPrefixAttempt);
+    const qualify = vi.mocked(qualifyInitializedPrefixToolchain);
+    const record = vi.mocked(recordInitializedPrefixCommand);
+    const defaultCreateAttempt = createAttempt.getMockImplementation();
+    const defaultQualify = qualify.getMockImplementation();
+    const defaultRecord = record.getMockImplementation();
+    let elapsedBeforeQualificationMs = 9 * 60 * 1000;
+    const testEvidenceDirectory = mkdtempSync(
+      join(tmpdir(), "initialized-prefix-native-budget-test-"),
+    );
+    vi.useFakeTimers();
+    try {
+      delete process.env[qualificationEnv];
+      expect(defaultCreateAttempt).toBeDefined();
+      createAttempt.mockImplementation((options) => {
+        const attempt = defaultCreateAttempt!({
+          ...options,
+          evidenceDirectory: testEvidenceDirectory,
+        });
+        vi.setSystemTime(
+          new Date(
+            Date.parse("2026-10-22T00:00:00.000Z") +
+              elapsedBeforeQualificationMs,
+          ),
+        );
+        return attempt;
+      });
+      qualify.mockRejectedValue(new Error("synthetic missing qualification"));
+      record.mockClear();
+      for (const mode of ["stable", "msrv"] as const) {
+        vi.setSystemTime(new Date("2026-10-22T00:00:00.000Z"));
+        qualify.mockClear();
+        const result = await verifyInitializedPrefixNative({ mode });
+        expect(result.ok).toBe(false);
+        expect(result.reasons[0]?.code).toBe("toolchain-qualification-failed");
+        expect(result.reasons[0]?.message).toContain(
+          "whole native proof deadline expired before qualification",
+        );
+        expect(qualify).not.toHaveBeenCalled();
+        expect(record).not.toHaveBeenCalled();
+      }
+
+      qualify.mockClear();
+      record.mockClear();
+      vi.setSystemTime(new Date("2026-10-22T00:00:00.000Z"));
+      const miriResult = await verifyInitializedPrefixNative({ mode: "miri" });
+      expect(miriResult.ok).toBe(false);
+      expect(miriResult.reasons[0]?.code).toBe(
+        "toolchain-qualification-failed",
+      );
+      expect(miriResult.reasons[0]?.message).toContain(
+        "synthetic missing qualification",
+      );
+      expect(qualify).toHaveBeenCalledTimes(1);
+      expect(record).not.toHaveBeenCalled();
+
+      qualify.mockClear();
+      elapsedBeforeQualificationMs = 31 * 60 * 1000;
+      vi.setSystemTime(new Date("2026-10-22T00:00:00.000Z"));
+      const lateMiriResult = await verifyInitializedPrefixNative({
+        mode: "miri",
+      });
+      expect(lateMiriResult.ok).toBe(false);
+      expect(lateMiriResult.reasons[0]?.code).toBe(
+        "toolchain-qualification-failed",
+      );
+      expect(lateMiriResult.reasons[0]?.message).toContain(
+        "whole native proof deadline expired before qualification",
+      );
+      expect(qualify).not.toHaveBeenCalled();
+      expect(record).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+      if (previousQualification === undefined)
+        delete process.env[qualificationEnv];
+      else process.env[qualificationEnv] = previousQualification;
+      qualify.mockReset();
+      if (defaultQualify) qualify.mockImplementation(defaultQualify);
+      record.mockReset();
+      if (defaultRecord) record.mockImplementation(defaultRecord);
+      createAttempt.mockReset();
+      if (defaultCreateAttempt)
+        createAttempt.mockImplementation(defaultCreateAttempt);
+      rmSync(testEvidenceDirectory, { recursive: true, force: true });
+    }
+  });
 });

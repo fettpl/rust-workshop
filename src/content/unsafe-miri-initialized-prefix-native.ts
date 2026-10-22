@@ -196,7 +196,11 @@ const CONTROL_REASON_ALLOWLIST: Readonly<Record<string, readonly string[]>> =
     "miri-wrong-read": ["miri-read-mismatch"],
     "miri-category": ["miri-category-mismatch"],
   });
-const WHOLE_CAPTURE_DEADLINE_MS = 8 * 60 * 1000;
+const WHOLE_CAPTURE_DEADLINE_MS = {
+  stable: 8 * 60 * 1000,
+  msrv: 8 * 60 * 1000,
+  miri: 30 * 60 * 1000,
+} as const;
 
 type InitializedPrefixControlResult = {
   id: string;
@@ -729,7 +733,11 @@ async function capture(
   strict: boolean,
 ): Promise<InitializedPrefixNativeResult> {
   const wholeStartedAt = Date.now();
-  const wholeDeadline = wholeStartedAt + WHOLE_CAPTURE_DEADLINE_MS;
+  const wholeDeadline =
+    wholeStartedAt +
+    (options.mode === "miri"
+      ? WHOLE_CAPTURE_DEADLINE_MS.miri
+      : WHOLE_CAPTURE_DEADLINE_MS.stable);
   const attempt = createInitializedPrefixAttempt(options);
   let capturedBinding:
     Awaited<ReturnType<typeof qualifyInitializedPrefixToolchain>> | undefined;

@@ -115,7 +115,7 @@ the separate trusted Rust fixture checks are compiler-backed.
 
 The retained Native07 campaign passed stable and exact MSRV with 118 recipes,
 125 commands, and 9 controls per mode. Its Miri attempt reached 122 recipes and
-131 commands, exceeded the unchanged 480-second deadline, and retained ten
+131 commands, exceeded the historical 480-second deadline, and retained ten
 expected verdicts plus a category-mutator error. That attempt remains failed.
 The category matcher is corrected. A subsequent Linux qualification failure
 exposed a version check that scanned auxiliary Cargo metadata for prerelease
@@ -125,6 +125,18 @@ full-stdout and executable-hash qualification.
 Full native acceptance requires the dedicated CI checks. Release acceptance
 requires all eleven checks on the exact PR head and all eleven on the resulting
 `main` commit; results are tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76).
+
+The original brief imposed no 480-second operational requirement, and no
+learner-facing limits change here. The current `miri-safety` job has a
+60-minute timeout with an operational plan of stable 8 minutes, MSRV 8 minutes,
+and Miri’s 30-minute total deadline for the full capture and control campaign,
+including qualification, commands, controls, and failure retention, totaling
+46 minutes and leaving 14 minutes for setup headroom. The measured setup
+interval in the Linux trial was 2 minutes 03 seconds, from 02:09:09 to
+02:11:12 UTC, and is part of that headroom. The internal cooperative deadline
+checks, all
+eleven controls, and fail-closed acceptance rules remain unchanged. Earlier
+480-second Native07 and Linux CI failures remain failed historical results.
 
 The narrow pre-prefix fixture is copied byte-for-byte from the accepted source
 snapshot. Its historical projection removes exactly the two appended steps and
@@ -215,6 +227,9 @@ The feature is releasable only when all of the following are true:
 4. A fresh strict run passes current stable, Rust 1.85, and pinned Miri with
    complete manifests, exact inventories, semantic checks, actual applicable
    controls, byte/transport/deadline/guard checks, and original immutability.
+   The dedicated CI job uses its documented 60-minute operational timeout and
+   8+8+30-minute mode plan; this timeout is execution headroom, not proof
+   acceptance or a learner limit.
 5. Required product integration checks pass on the exact source, including
    full unit, Rust/native, build, browser, offline, desktop/mobile/keyboard,
    resume, and history behavior. No human pilot or deployment is implied.
