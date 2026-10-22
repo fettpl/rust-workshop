@@ -96,6 +96,28 @@ const compileAndRunFull = (source: string) => {
   }
 };
 
+const compileAndRunModel = () => {
+  const directory = mkdtempSync(join(tmpdir(), "unsafe-miri-disjoint-model-"));
+  try {
+    const compiled = compile(disjointRangesModel, directory, false);
+    expect(compiled.error).toBeUndefined();
+    expect(compiled.status, compiled.stderr).toBe(0);
+    const executed = run(directory, []);
+    expect(executed.error).toBeUndefined();
+    expect(executed.signal).toBeNull();
+    expect(executed.status, outputOf(executed)).toBe(0);
+    expect(executed.stdout).toBe(
+      "forward 0..2 then 2..4: [10, 20] [30, 40]\n" +
+        "caller order first 4..6, second 1..3: [50, 60] [20, 30]\n" +
+        "półotwarty zakres 0..2 zawiera indeksy 0 i 1, bez końca 2\n" +
+        "puste 2..2 wewnątrz 0..4: poprawne, bo nie zawiera elementu\n" +
+        "nakładające się 0..3 i 2..4: błąd Overlap\n",
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+};
+
 it("publishes the model and exactly two ordered range steps", () => {
   expect(disjointRangesSteps.map((step) => step.id)).toEqual([
     "disjoint-regions-range-model",
@@ -120,7 +142,13 @@ it("publishes the model and exactly two ordered range steps", () => {
   );
   expect(disjointRangesModel).toContain("0..2");
   expect(disjointRangesModel).toContain("2..4");
+  expect(disjointRangesModel).toContain("4..6");
+  expect(disjointRangesModel).toContain("1..3");
+  expect(disjointRangesModel).toContain("półotwarty");
+  expect(disjointRangesModel).toContain("puste 2..2 wewnątrz 0..4");
   expect(disjointRangesModel).toContain("Overlap");
+  expect(disjointRangesModel).not.toContain("fn select_regions");
+  compileAndRunModel();
 });
 
 it("states the public API and complete behavior without source spelling requirements", () => {
@@ -133,7 +161,7 @@ it("states the public API and complete behavior without source spelling requirem
   expect(prompt).toMatch(/Overlap/);
   expect(prompt).toMatch(/half|półotwart/i);
   expect(prompt).toMatch(/pust/i);
-  expect(prompt).toMatch(/kolejności wywołania|caller order/i);
+  expect(prompt).toMatch(/kolejności argumentów|caller order/i);
   expect(prompt).toMatch(/unsafe|source spelling|konkretnej strategii/i);
   expect(disjointRangesSolution).toMatch(/#!\[forbid\(unsafe_code\)\]/);
   expect(disjointRangesSolution).toMatch(/pub enum RangeError/);

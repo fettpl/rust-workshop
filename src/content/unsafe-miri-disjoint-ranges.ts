@@ -6,22 +6,30 @@ export const disjointRangesFamily = "unsafe-miri/disjoint-ranges-v1" as const;
 
 export const disjointRangesModel = String.raw`use std::ops::Range;
 
-fn show_fixed_ranges(first: Range<usize>, second: Range<usize>) {
-    println!("pierwszy: {:?}, drugi: {:?}", first, second);
-}
-
 fn main() {
-    let mut buffer = [10_u8, 20, 30, 40];
-    let (first, second) = buffer.split_at_mut(2);
-    first[0] = 11;
-    println!("{:?} {:?}", first, second);
-    show_fixed_ranges(0..2, 2..4);
-    println!("puste 2..2 nie nachodzi na 0..4");
-    println!("nakładanie 0..3 i 2..4: Overlap");
+    let buffer = [10_u8, 20, 30, 40, 50, 60];
+    let forward_first: Range<usize> = 0..2;
+    let forward_second: Range<usize> = 2..4;
+    let first_forward = &buffer[forward_first.clone()];
+    let second_forward = &buffer[forward_second.clone()];
+    println!("forward 0..2 then 2..4: {:?} {:?}", first_forward, second_forward);
+
+    // The first argument is later in storage, but it stays first in the tuple.
+    let reversed_first: Range<usize> = 4..6;
+    let reversed_second: Range<usize> = 1..3;
+    let first_reversed = &buffer[reversed_first.clone()];
+    let second_reversed = &buffer[reversed_second.clone()];
+    println!(
+        "caller order first 4..6, second 1..3: {:?} {:?}",
+        first_reversed, second_reversed
+    );
+    println!("półotwarty zakres 0..2 zawiera indeksy 0 i 1, bez końca 2");
+    println!("puste 2..2 wewnątrz 0..4: poprawne, bo nie zawiera elementu");
+    println!("nakładające się 0..3 i 2..4: błąd Overlap");
 }`;
 
 const modelRunExpected =
-  "[11, 20] [30, 40]\npierwszy: 0..2, drugi: 2..4\npuste 2..2 nie nachodzi na 0..4\nnakładanie 0..3 i 2..4: Overlap\n";
+  "forward 0..2 then 2..4: [10, 20] [30, 40]\ncaller order first 4..6, second 1..3: [50, 60] [20, 30]\npółotwarty zakres 0..2 zawiera indeksy 0 i 1, bez końca 2\npuste 2..2 wewnątrz 0..4: poprawne, bo nie zawiera elementu\nnakładające się 0..3 i 2..4: błąd Overlap\n";
 
 export const disjointRangesSolution = String.raw`#![forbid(unsafe_code)]
 use std::ops::Range;
