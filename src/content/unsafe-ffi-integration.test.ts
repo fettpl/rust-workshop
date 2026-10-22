@@ -14,11 +14,14 @@ import {
 } from "./unsafe-ffi";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 const { concepts, lessons, modules, projects, roadmap, sources } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(
       historicalBeforeSendHandoff(
-        historicalBeforeCancellationTransfer(currentCourse),
+        historicalBeforeCancellationTransfer(
+          historicalBeforeInitializedPrefix(currentCourse),
+        ),
       ),
     ),
   );

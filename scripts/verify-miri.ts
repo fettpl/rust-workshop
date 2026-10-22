@@ -8,12 +8,13 @@ import {
   rmSync,
   writeFileSync,
 } from "node:fs";
-import { delimiter, dirname, join } from "node:path";
+import { delimiter, dirname, join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { miriSafetyPackage } from "../src/content/projects/miri-safety";
 import { buildProjectArchive } from "./project-archive";
+import { verifyInitializedPrefixNative } from "../src/content/unsafe-miri-initialized-prefix-native";
 
 const MIRI_TOOLCHAIN = "nightly-2026-08-08";
 const args = process.argv.slice(2);
@@ -23,8 +24,7 @@ assert(
       argument === "--fetch" ||
       argument === "--stable" ||
       argument === "--msrv",
-  ) &&
-    new Set(args).size === args.length,
+  ) && new Set(args).size === args.length,
   "Only --fetch, --stable and --msrv are supported; code, paths, dependency overrides and arbitrary toolchains are not accepted.",
 );
 
@@ -160,7 +160,11 @@ function expectMutantRejected(directory: string) {
     "input.split_at_mut_checked(at)",
     "input.split_at_mut_checked(at.saturating_sub(1))",
   );
-  assert.notEqual(mutant, source, "split-boundary mutant did not change source");
+  assert.notEqual(
+    mutant,
+    source,
+    "split-boundary mutant did not change source",
+  );
   writeFileSync(sourcePath, mutant);
   try {
     const result = command(
@@ -296,93 +300,166 @@ function expectMiriUndefinedBehavior(
 }
 
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-miri-safety-"));
+const nativeSummaries: Array<{
+  mode: string;
+  phase: string;
+  ok: boolean;
+  reasonCodes: string[];
+  recipeCount: number;
+}> = [];
 
-try {
-  verifyMiriToolchain();
-  const solution = buildProjectArchive(miriSafetyPackage, "solution");
-  const starter = buildProjectArchive(miriSafetyPackage, "starter");
-  for (const [variant, bytes] of [
-    ["starter", starter],
-    ["solution", solution],
-  ] as const) {
-    const servedPath = join(
-      process.cwd(),
-      "public",
-      "projects",
-      miriSafetyPackage.id,
-      `${variant}.zip`,
+async function main() {
+  try {
+    verifyMiriToolchain();
+    const solution = buildProjectArchive(miriSafetyPackage, "solution");
+    const starter = buildProjectArchive(miriSafetyPackage, "starter");
+    for (const [variant, bytes] of [
+      ["starter", starter],
+      ["solution", solution],
+    ] as const) {
+      const servedPath = join(
+        process.cwd(),
+        "public",
+        "projects",
+        miriSafetyPackage.id,
+        `${variant}.zip`,
+      );
+      assert(
+        existsSync(servedPath),
+        `Missing served ${variant} archive: ${servedPath}; run content:packages after registering the project`,
+      );
+      assert(
+        readFileSync(servedPath).equals(Buffer.from(bytes)),
+        `Stale Miri Safety ${variant} archive; run content:packages first`,
+      );
+    }
+
+    const packageRoot = join(root, miriSafetyPackage.id);
+    extractArchive(solution, packageRoot);
+    const fixturesDirectory = join(packageRoot, "fixtures");
+    const miriTarget = join(root, "miri-target");
+
+    if (fetchDependencies) {
+      run(cargo, ["fetch", "--locked"], packageRoot);
+    }
+    run(cargo, ["fmt", "--all", "--", "--check"], packageRoot);
+    run(
+      cargo,
+      ["check", "--all-targets", "--offline", "--locked"],
+      packageRoot,
     );
-    assert(
-      existsSync(servedPath),
-      `Missing served ${variant} archive: ${servedPath}; run content:packages after registering the project`,
+    run(cargo, ["test", "--all-targets", "--offline", "--locked"], packageRoot);
+    run(
+      cargo,
+      [
+        "clippy",
+        "--all-targets",
+        "--offline",
+        "--locked",
+        "--",
+        "-D",
+        "warnings",
+      ],
+      packageRoot,
     );
-    assert(
-      readFileSync(servedPath).equals(Buffer.from(bytes)),
-      `Stale Miri Safety ${variant} archive; run content:packages first`,
+    expectMutantRejected(packageRoot);
+
+    for (const fixture of [
+      "ub_out_of_bounds",
+      "ub_use_after_free",
+      "ub_aliasing",
+    ]) {
+      compileFixture(
+        join(fixturesDirectory, `${fixture}.rs`),
+        join(root, `${fixture}.rmeta`),
+        fixturesDirectory,
+      );
+    }
+
+    run(
+      miriCargoExecutable,
+      miriCargo(
+        "miri",
+        "test",
+        "--manifest-path",
+        join(packageRoot, "Cargo.toml"),
+        "--locked",
+        "--offline",
+        "--target-dir",
+        miriTarget,
+      ),
+      packageRoot,
+      180_000,
+      miriEnv,
     );
-  }
+    for (const binary of [
+      "ub-out-of-bounds",
+      "ub-use-after-free",
+      "ub-aliasing",
+    ]) {
+      expectMiriUndefinedBehavior(fixturesDirectory, miriTarget, binary);
+    }
 
-  const packageRoot = join(root, miriSafetyPackage.id);
-  extractArchive(solution, packageRoot);
-  const fixturesDirectory = join(packageRoot, "fixtures");
-  const miriTarget = join(root, "miri-target");
-
-  if (fetchDependencies) {
-    run(cargo, ["fetch", "--locked"], packageRoot);
+    const nativeArtifactRoot = process.env
+      .RUST_WORKSHOP_INITIALIZED_PREFIX_ARTIFACT_DIR
+      ? resolve(process.env.RUST_WORKSHOP_INITIALIZED_PREFIX_ARTIFACT_DIR)
+      : undefined;
+    const nativeQualificationDirectory = process.env
+      .RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION_DIRECTORY
+      ? resolve(
+          process.env
+            .RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION_DIRECTORY,
+        )
+      : undefined;
+    const nativeModes = useMsrv
+      ? (["msrv"] as const)
+      : useStable
+        ? (["stable"] as const)
+        : (["stable", "miri"] as const);
+    for (const mode of nativeModes) {
+      if (nativeQualificationDirectory) {
+        process.env.RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION =
+          join(nativeQualificationDirectory, `${mode}.json`);
+      }
+      const summary = await verifyInitializedPrefixNative({
+        mode,
+        evidenceDirectory: nativeArtifactRoot
+          ? join(nativeArtifactRoot, mode)
+          : undefined,
+      });
+      const status = {
+        mode,
+        phase: summary.phase,
+        ok: summary.ok,
+        reasonCodes: summary.reasons.map((reason) => reason.code),
+        recipeCount: summary.expectedRecipes.length,
+      };
+      process.stdout.write(`${JSON.stringify(status)}\n`);
+      nativeSummaries.push(status);
+      assert.equal(
+        summary.ok,
+        true,
+        `initialized-prefix ${mode} status failed: ${JSON.stringify(status)}`,
+      );
+    }
+  } finally {
+    const publicSummary =
+      process.env.RUST_WORKSHOP_INITIALIZED_PREFIX_PUBLIC_SUMMARY;
+    if (publicSummary) {
+      mkdirSync(dirname(resolve(publicSummary)), { recursive: true });
+      writeFileSync(
+        resolve(publicSummary),
+        `${JSON.stringify({ schema: "initialized-prefix-public-summary-v1", summaries: nativeSummaries }, null, 2)}\n`,
+        { flag: "wx" },
+      );
+    }
+    rmSync(root, { recursive: true, force: true });
   }
-  run(cargo, ["fmt", "--all", "--", "--check"], packageRoot);
-  run(cargo, ["check", "--all-targets", "--offline", "--locked"], packageRoot);
-  run(cargo, ["test", "--all-targets", "--offline", "--locked"], packageRoot);
-  run(
-    cargo,
-    [
-      "clippy",
-      "--all-targets",
-      "--offline",
-      "--locked",
-      "--",
-      "-D",
-      "warnings",
-    ],
-    packageRoot,
-  );
-  expectMutantRejected(packageRoot);
-
-  for (const fixture of [
-    "ub_out_of_bounds",
-    "ub_use_after_free",
-    "ub_aliasing",
-  ]) {
-    compileFixture(
-      join(fixturesDirectory, `${fixture}.rs`),
-      join(root, `${fixture}.rmeta`),
-      fixturesDirectory,
-    );
-  }
-
-  run(
-    miriCargoExecutable,
-    miriCargo(
-      "miri",
-      "test",
-      "--manifest-path",
-      join(packageRoot, "Cargo.toml"),
-      "--locked",
-      "--offline",
-      "--target-dir",
-      miriTarget,
-    ),
-    packageRoot,
-    180_000,
-    miriEnv,
-  );
-  for (const binary of [
-    "ub-out-of-bounds",
-    "ub-use-after-free",
-    "ub-aliasing",
-  ]) {
-    expectMiriUndefinedBehavior(fixturesDirectory, miriTarget, binary);
-  }
-} finally {
-  rmSync(root, { recursive: true, force: true });
 }
+
+main().catch((error) => {
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
+  process.exitCode = 1;
+});

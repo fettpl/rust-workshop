@@ -11,6 +11,16 @@ import {
   unsafeMiriReviewExercises,
 } from "./unsafe-miri";
 import { unsafeMiriAssessmentFixtures } from "./unsafe-miri-assessment-fixtures";
+import {
+  initializedPrefixFamily,
+  initializedPrefixModel,
+  initializedPrefixModelStepId,
+  initializedPrefixPrimaryStepId,
+  initializedPrefixSolution,
+  initializedPrefixStarter,
+  initializedPrefixSteps,
+  initializedPrefixTests,
+} from "./unsafe-miri-initialized-prefix";
 
 const lessonIds = [
   "unsafe-miri-byte-view",
@@ -19,7 +29,7 @@ const lessonIds = [
   "unsafe-miri-mut-slot",
 ];
 
-it("registers exactly four Miri lessons with eight rubric gates, twelve evidence gates, and independent retrievals", () => {
+it("registers exactly four Miri lessons with eight rubric gates, thirteen evidence gates, and independent retrievals", () => {
   expect(unsafeMiriLessons.map((lesson) => lesson.id)).toEqual(lessonIds);
   expect(unsafeMiriModule.lessonIds).toEqual(lessonIds);
   expect(unsafeMiriModule.prerequisites).toEqual(["unsafe-ffi-contracts"]);
@@ -28,7 +38,7 @@ it("registers exactly four Miri lessons with eight rubric gates, twelve evidence
     unsafeMiriLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(12);
+  ).toHaveLength(13);
 
   for (const lesson of unsafeMiriLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
@@ -39,7 +49,9 @@ it("registers exactly four Miri lessons with eight rubric gates, twelve evidence
         (step) => step.kind === "recall" && step.evaluator?.kind === "tests",
       ),
     ).toHaveLength(1);
-    expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(3);
+    expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(
+      lesson.id === "unsafe-miri-byte-view" ? 4 : 3,
+    );
     const blank = lesson.steps.find((step) => step.kind === "blank")!;
     expect(blank.evidenceGate).toBe(true);
     const retrieval = lesson.steps.find(
@@ -71,11 +83,52 @@ it("registers exactly four Miri lessons with eight rubric gates, twelve evidence
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(16);
-  expect(new Set(refs).size).toBe(16);
+  expect(refs).toHaveLength(17);
+  expect(new Set(refs).size).toBe(17);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,
   );
+});
+
+it("publishes the initialized-prefix bridge and complete shared harness", () => {
+  expect(initializedPrefixSteps.map((step) => step.id)).toEqual([
+    initializedPrefixModelStepId,
+    initializedPrefixPrimaryStepId,
+  ]);
+  expect(initializedPrefixSteps[0].evidenceGate).not.toBe(true);
+  expect(initializedPrefixSteps[0].evidence?.codingTaskId).toBeUndefined();
+  expect(initializedPrefixSteps[1].evidence?.codingTaskId).toBe(initializedPrefixFamily);
+  expect(initializedPrefixSteps[1].evidenceGate).toBe(true);
+  expect(initializedPrefixSteps[1].evidence?.version).toBe(2);
+  expect(initializedPrefixSteps[0].evaluator).toEqual({
+    kind: "exact-output",
+    expected: "[0, 255]\n",
+  });
+  expect(initializedPrefixModel).toContain("MaybeUninit");
+  expect(initializedPrefixModel).toContain("write(0)");
+  expect(initializedPrefixModel).toContain("write(255)");
+  expect(initializedPrefixStarter).not.toContain("unsafe");
+  expect(initializedPrefixStarter).toContain("Err(TooLong)");
+  expect(initializedPrefixSolution).toContain("slot.write");
+  for (const name of [
+    "case01_empty_destination_and_source",
+    "case35_initialized_prefix_only_is_read",
+    "intended_reverse_order",
+    "intended_wrong_prefix_value",
+    "intended_returned_length",
+    "intended_exact_capacity",
+    "intended_oversized_no_write",
+    "intended_suffix_preservation",
+    "intended_destination_identity",
+  ]) {
+    expect(initializedPrefixTests, name).toContain(`fn ${name}`);
+  }
+  expect(
+    unsafeMiriLessons
+      .find((lesson) => lesson.id === "unsafe-miri-byte-view")!
+      .steps.map((step) => step.id)
+      .slice(-2),
+  ).toEqual([initializedPrefixModelStepId, initializedPrefixPrimaryStepId]);
 });
 
 it("publishes complete pure-Rust declarations in every blank prompt", () => {

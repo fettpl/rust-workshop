@@ -5,11 +5,14 @@ import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 const { concepts, lessons, modules, reviewExercises } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(
       historicalBeforeSendHandoff(
-        historicalBeforeCancellationTransfer(currentCourse),
+        historicalBeforeCancellationTransfer(
+          historicalBeforeInitializedPrefix(currentCourse),
+        ),
       ),
     ),
   );

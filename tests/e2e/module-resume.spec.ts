@@ -53,6 +53,7 @@ for (const moduleId of [
   "performance-evidence",
   "profile-evidence",
   "unsafe-ffi-contracts",
+  "unsafe-miri-contracts",
   "fuzz-evidence-lifecycle",
 ]) {
   test(`${moduleId}: resume diagnostics and blank practice on mobile`, async ({

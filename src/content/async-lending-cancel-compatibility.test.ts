@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import * as currentCourse from "./course";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 import {
   acceptedCancellationCriterion,
   acceptedBaselineInputs,
@@ -206,7 +207,9 @@ it("keeps the A2 model supplementary without primary credit", () => {
 });
 
 it("matches every accepted registry identity and retained fixture identity after the narrow projection", () => {
-  const previous = historicalBeforeCancellationTransfer(currentCourse);
+  const previous = historicalBeforeCancellationTransfer(
+    historicalBeforeInitializedPrefix(currentCourse),
+  );
   for (const [name, expected] of Object.entries(baseline.registryHashes)) {
     const registry = previous[name as keyof typeof previous];
     const actual = Array.isArray(registry)
@@ -295,7 +298,9 @@ it("cannot mask unrelated old lesson or criterion metadata", () => {
           },
     ),
   } as typeof currentCourse;
-  const projected = historicalBeforeCancellationTransfer(mutated);
+  const projected = historicalBeforeCancellationTransfer(
+    historicalBeforeInitializedPrefix(mutated),
+  );
   expect(
     projected.lessons.find((item) => item.id === cancellationTransferLessonId)!
       .sourceIds,
@@ -313,7 +318,9 @@ it("cannot mask unrelated old lesson or criterion metadata", () => {
 });
 
 it("projects pre-A2 history by removing only the two declared steps and criterion ref", () => {
-  const previous = historicalBeforeCancellationTransfer(currentCourse);
+  const previous = historicalBeforeCancellationTransfer(
+    historicalBeforeInitializedPrefix(currentCourse),
+  );
   const lesson = previous.lessons.find(
     (candidate) => candidate.id === cancellationTransferLessonId,
   )!;
@@ -449,7 +456,7 @@ it("derives the post-A2 registry inventory without changing the accepted source 
   expect(currentCourse.concepts).toHaveLength(194);
   expect(currentCourse.sources).toHaveLength(349);
   expect(currentCourse.lessons.flatMap((lesson) => lesson.steps)).toHaveLength(
-    1273,
+    1275,
   );
   expect(Object.keys(currentCourse.reviewExercises)).toHaveLength(194);
   expect(

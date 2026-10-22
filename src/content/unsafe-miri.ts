@@ -6,6 +6,11 @@ import type {
   LessonStep,
   Source,
 } from "@/domain/types";
+import {
+  initializedPrefixConceptId,
+  initializedPrefixFamily,
+  initializedPrefixSteps,
+} from "./unsafe-miri-initialized-prefix";
 
 const reviewedAt = "2026-09-18";
 const moduleId = "unsafe-miri-contracts";
@@ -939,6 +944,7 @@ export const unsafeMiriLessons: Lesson[] = [
         solution: byteViewRecallSolution,
         tests: byteViewRecallTests,
       }),
+      ...initializedPrefixSteps,
     ],
     misconceptions: [
       "Każdy raw pointer wskazuje gotowe wartości.",
@@ -1284,6 +1290,18 @@ for (const lesson of unsafeMiriLessons) {
   }
 }
 
+// The initialized-prefix primary assignment is intentionally explicit and
+// follows the historical family loop above. It must not be inferred by the
+// broad `-gate`/`-blank` naming convention.
+const initializedPrefixPrimary = unsafeMiriLessons
+  .find((lesson) => lesson.id === "unsafe-miri-byte-view")!
+  .steps.find((step) => step.id === "byte-view-initialized-prefix")!;
+initializedPrefixPrimary.evidence = {
+  version: 2,
+  conceptIds: [initializedPrefixConceptId],
+  codingTaskId: initializedPrefixFamily,
+};
+
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   "unsafe-miri-byte-view-contract": coding({
     id: "review-unsafe-miri-byte-view",
@@ -1359,6 +1377,10 @@ export const unsafeMiriModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-gate" },
         { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-blank" },
+        {
+          lessonId: "unsafe-miri-byte-view",
+          stepId: "byte-view-initialized-prefix",
+        },
       ],
     },
     {

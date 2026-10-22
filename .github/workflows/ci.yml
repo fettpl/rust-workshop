@@ -36,6 +36,48 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy
       - run: npm ci
+      - name: Prepare current native-proof unit prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p initialized-prefix-unit-artifacts/toolchains
+          printf '[net]\noffline = true\n' > initialized-prefix-unit-artifacts/cargo-config.toml
+          QUALIFICATION_DIR="${GITHUB_WORKSPACE}/initialized-prefix-unit-artifacts/toolchains" node --input-type=module <<'NODE'
+          import { execFileSync } from "node:child_process";
+          import { createHash } from "node:crypto";
+          import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+          import { resolve } from "node:path";
+          const outputDirectory = resolve(process.env.QUALIFICATION_DIR);
+          mkdirSync(outputDirectory, { recursive: true });
+          const text = (command, args) => execFileSync(command, args, { encoding: "utf8" });
+          const ref = (path) => {
+            const absolute = resolve(path.trim());
+            const bytes = readFileSync(absolute);
+            return { path: absolute, bytes: bytes.byteLength, sha256: createHash("sha256").update(bytes).digest("hex") };
+          };
+          const completeOutput = (value) => value.trim();
+          const qualification = (mode, toolchain) => {
+            const names = ["rustup", "rustc", "rustdoc", "cargo"];
+            const paths = Object.fromEntries(names.map((name) => [
+              name,
+              ref(name === "rustup" ? text("which", ["rustup"]) : text("rustup", ["which", "--toolchain", toolchain, name])),
+            ]));
+            const versions = Object.fromEntries(names.map((name) => [
+              name,
+              completeOutput(name === "rustup" ? text(paths[name].path, ["--version"]) : text("rustup", ["run", toolchain, name, "--version", "--verbose"])),
+            ]));
+            const payload = { schema: "initialized-prefix-toolchain-qualification-v1", mode, toolchain, executables: paths, versionContains: versions };
+            if (mode === "miri") {
+              const compiler = text("rustup", ["run", toolchain, "rustc", "--version", "--verbose"]);
+              const commitDate = compiler.match(/^commit-date:\s*(\d{4}-\d{2}-\d{2})$/m)?.[1];
+              if (!commitDate) throw new Error("nightly compiler commit date was not reported");
+              payload.nightlyDistributionDate = "2026-08-08";
+              payload.compilerCommitDate = commitDate;
+            }
+            writeFileSync(`${outputDirectory}/${mode}.json`, `${JSON.stringify(payload, null, 2)}\n`);
+          };
+          qualification("stable", "stable");
+          NODE
       - name: Prepare locked Tokio dependencies for offline native checks
         run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
       - name: Test native runtime version minimums
@@ -57,7 +99,13 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run content:packages
-      - run: npm test
+      - name: Run full unit suite with authorized native recorder controls
+        env:
+          RUST_WORKSHOP_INITIALIZED_PREFIX_CARGO_CONFIG: ${{ github.workspace }}/initialized-prefix-unit-artifacts/cargo-config.toml
+          RUST_WORKSHOP_INITIALIZED_PREFIX_ARTIFACT_DIR: ${{ github.workspace }}/initialized-prefix-unit-artifacts
+          RUST_WORKSHOP_INITIALIZED_PREFIX_CONTROLS_AUTHORIZED: "1"
+          RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION: ${{ github.workspace }}/initialized-prefix-unit-artifacts/toolchains/stable.json
+        run: npm test
       - run: npm run content:check
       - run: npm run content:rust
       - run: npm run content:tokio -- --fetch
@@ -341,7 +389,14 @@ jobs:
 
   miri-safety:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Each native mode has an 8-minute configured deadline including
+    # qualification, command work, and synchronous failure-retention
+    # finalization accounting. The three modes therefore have a configured
+    # 24-minute budget inside this 45-minute job. Deadline checks are
+    # cooperative: synchronous filesystem hashing can overrun the deadline,
+    # and the retained incomplete evidence records that measured overrun; no
+    # hard OS/I/O termination guarantee is claimed.
+    timeout-minutes: 45
     steps:
       # v7.0.1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -367,8 +422,102 @@ jobs:
           toolchain: nightly-2026-08-08
           components: miri, rust-src
       - run: npm ci
+      - name: Prepare explicit offline native-proof inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p initialized-prefix-native-inputs initialized-prefix-artifacts/toolchains initialized-prefix-public-summaries
+          printf '[net]\noffline = true\n' > initialized-prefix-native-inputs/cargo-config.toml
+          cargo +nightly-2026-08-08 miri setup
+          sysroot="$(cargo +nightly-2026-08-08 miri setup --print-sysroot)"
+          test -d "$sysroot"
+          SYSROOT="$sysroot" OUTPUT_DIRECTORY="${GITHUB_WORKSPACE}/initialized-prefix-native-inputs" QUALIFICATION_DIRECTORY="${GITHUB_WORKSPACE}/initialized-prefix-artifacts/toolchains" node --input-type=module <<'NODE'
+          import { execFileSync } from "node:child_process";
+          import { createHash } from "node:crypto";
+          import { mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
+          import { dirname, join, resolve } from "node:path";
+          const root = resolve(process.env.SYSROOT);
+          const outputDirectory = resolve(process.env.OUTPUT_DIRECTORY);
+          const qualificationDirectory = resolve(process.env.QUALIFICATION_DIRECTORY);
+          mkdirSync(outputDirectory, { recursive: true });
+          mkdirSync(qualificationDirectory, { recursive: true });
+          const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+          const ref = (path) => {
+            const absolute = resolve(path.trim());
+            const bytes = readFileSync(absolute);
+            return { path: absolute, bytes: bytes.byteLength, sha256: hash(bytes) };
+          };
+          const completeOutput = (value) => value.trim();
+          const files = [];
+          const walk = (directory) => {
+            for (const entry of readdirSync(directory, { withFileTypes: true })) {
+              const path = join(directory, entry.name);
+                if (entry.isSymbolicLink()) throw new Error(`sysroot contains symlink: ${path}`);
+                if (entry.isDirectory()) walk(path);
+                else if (entry.isFile()) files.push(ref(path));
+                else throw new Error(`sysroot contains unsupported entry: ${path}`);
+            }
+          };
+          const canonicalRoot = realpathSync(root);
+          walk(canonicalRoot);
+          writeFileSync(`${outputDirectory}/miri-sysroot.json`, `${JSON.stringify({ schema: "initialized-prefix-sysroot-v1", root: canonicalRoot, toolchain: "nightly-2026-08-08", complete: true, files }, null, 2)}\n`);
+          const text = (command, args) => execFileSync(command, args, { encoding: "utf8" });
+          const qualification = (mode, toolchain, includeMiri = false) => {
+            const names = ["rustup", "rustc", "rustdoc", "cargo", ...(includeMiri ? ["cargo-miri", "miri"] : [])];
+            const rustcPath = text("rustup", ["which", "--toolchain", toolchain, "rustc"]).trim();
+            const selectedToolBin = dirname(rustcPath);
+            const selected = (name) => includeMiri && (name === "cargo-miri" || name === "miri")
+              ? join(selectedToolBin, name)
+              : name === "rustup"
+                ? text("which", ["rustup"])
+                : text("rustup", ["which", "--toolchain", toolchain, name]);
+            const paths = Object.fromEntries(names.map((name) => [
+              name,
+              ref(selected(name)),
+            ]));
+            const versions = Object.fromEntries(names.map((name) => [
+              name,
+              completeOutput(name === "rustup" || name === "miri"
+                ? text(paths[name].path, ["--version"])
+                : name === "cargo-miri"
+                  ? text(paths[name].path, ["miri", "--version"])
+                : text("rustup", ["run", toolchain, name, "--version", "--verbose"])),
+            ]));
+            const payload = { schema: "initialized-prefix-toolchain-qualification-v1", mode, toolchain, executables: paths, versionContains: versions };
+            if (mode === "miri") {
+              const compiler = text("rustup", ["run", toolchain, "rustc", "--version", "--verbose"]);
+              const commitDate = compiler.match(/^commit-date:\s*(\d{4}-\d{2}-\d{2})$/m)?.[1];
+              if (!commitDate) throw new Error("nightly compiler commit date was not reported");
+              payload.nightlyDistributionDate = "2026-08-08";
+              payload.compilerCommitDate = commitDate;
+            }
+            writeFileSync(`${qualificationDirectory}/${mode}.json`, `${JSON.stringify(payload, null, 2)}\n`);
+          };
+          qualification("stable", "stable");
+          qualification("msrv", "1.85.0");
+          qualification("miri", "nightly-2026-08-08", true);
+          NODE
+          {
+            echo "RUST_WORKSHOP_INITIALIZED_PREFIX_CARGO_CONFIG=${GITHUB_WORKSPACE}/initialized-prefix-native-inputs/cargo-config.toml"
+            echo "RUST_WORKSHOP_INITIALIZED_PREFIX_SYSROOT_MANIFEST=${GITHUB_WORKSPACE}/initialized-prefix-native-inputs/miri-sysroot.json"
+            echo "MIRI_SYSROOT=${sysroot}"
+            echo "RUST_WORKSHOP_INITIALIZED_PREFIX_ARTIFACT_DIR=${GITHUB_WORKSPACE}/initialized-prefix-artifacts"
+            echo "RUST_WORKSHOP_INITIALIZED_PREFIX_TOOLCHAIN_QUALIFICATION_DIRECTORY=${GITHUB_WORKSPACE}/initialized-prefix-artifacts/toolchains"
+            echo "RUST_WORKSHOP_INITIALIZED_PREFIX_PUBLIC_SUMMARY=${GITHUB_WORKSPACE}/initialized-prefix-public-summaries/stable.json"
+          } >> "$GITHUB_ENV"
       - run: npm run content:miri -- --fetch
+      - name: Set MSRV public native-proof summary path
+        run: echo "RUST_WORKSHOP_INITIALIZED_PREFIX_PUBLIC_SUMMARY=${GITHUB_WORKSPACE}/initialized-prefix-public-summaries/msrv.json" >> "$GITHUB_ENV"
       - run: npm run content:miri -- --msrv --fetch
+      # Same-repository public status only; raw streams, command archives, source/compiler
+      # evidence, private homes, targets, caches, and sysroot packets remain local.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: initialized-prefix-native-summary
+          path: initialized-prefix-public-summaries/*.json
+          if-no-files-found: warn
+          retention-days: 7
 
   unsafe-borrowed-memory:
     strategy:
