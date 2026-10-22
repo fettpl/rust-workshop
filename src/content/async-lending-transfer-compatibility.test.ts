@@ -5,11 +5,14 @@ import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import type { LessonStep } from "@/domain/types";
 import * as currentCourse from "./course";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(
-      historicalBeforeCancellationTransfer(currentCourse),
+      historicalBeforeCancellationTransfer(
+        historicalBeforeInitializedPrefix(currentCourse),
+      ),
     ),
   ),
 );

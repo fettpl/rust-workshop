@@ -1,4 +1,9 @@
 import {
+  initializedPrefixEquivalent,
+  initializedPrefixMutant,
+  initializedPrefixPrimaryStepId,
+} from "./unsafe-miri-initialized-prefix";
+import {
   unsafeMiriAssessmentSources,
   unsafeMiriLessons,
   unsafeMiriReviewExercises,
@@ -11,13 +16,41 @@ export interface UnsafeMiriAssessmentFixture {
 }
 
 function sourceFor(id: string, solution: string) {
-  const source = id.includes("byte-view")
-    ? unsafeMiriAssessmentSources.byteView
-    : id.includes("disjoint-regions")
-      ? unsafeMiriAssessmentSources.disjointRegions
-      : id.includes("slot-state")
-        ? unsafeMiriAssessmentSources.slotState
-        : unsafeMiriAssessmentSources.mutSlot;
+  if (id === initializedPrefixPrimaryStepId) {
+    return {
+      equivalent: initializedPrefixEquivalent,
+      mutant: initializedPrefixMutant,
+    };
+  }
+  const sourceById: Record<
+    string,
+    (typeof unsafeMiriAssessmentSources)[keyof typeof unsafeMiriAssessmentSources]
+  > = {
+    "byte-view-gate": unsafeMiriAssessmentSources.byteView,
+    "byte-view-contract-gate": unsafeMiriAssessmentSources.byteView,
+    "byte-view-blank": unsafeMiriAssessmentSources.byteView,
+    "byte-view-recall": unsafeMiriAssessmentSources.byteView,
+    "review-unsafe-miri-byte-view": unsafeMiriAssessmentSources.byteView,
+    "disjoint-regions-gate": unsafeMiriAssessmentSources.disjointRegions,
+    "disjoint-regions-contract-gate": unsafeMiriAssessmentSources.disjointRegions,
+    "disjoint-regions-blank": unsafeMiriAssessmentSources.disjointRegions,
+    "disjoint-regions-recall": unsafeMiriAssessmentSources.disjointRegions,
+    "review-unsafe-miri-disjoint-regions": unsafeMiriAssessmentSources.disjointRegions,
+    "slot-state-gate": unsafeMiriAssessmentSources.slotState,
+    "slot-state-contract-gate": unsafeMiriAssessmentSources.slotState,
+    "slot-state-blank": unsafeMiriAssessmentSources.slotState,
+    "slot-state-recall": unsafeMiriAssessmentSources.slotState,
+    "review-unsafe-miri-slot-state": unsafeMiriAssessmentSources.slotState,
+    "mut-slot-gate": unsafeMiriAssessmentSources.mutSlot,
+    "mut-slot-contract-gate": unsafeMiriAssessmentSources.mutSlot,
+    "mut-slot-blank": unsafeMiriAssessmentSources.mutSlot,
+    "mut-slot-recall": unsafeMiriAssessmentSources.mutSlot,
+    "review-unsafe-miri-mut-slot": unsafeMiriAssessmentSources.mutSlot,
+  };
+  const source = sourceById[id];
+  if (!source) {
+    throw new Error(`Unknown unsafe-miri assessment fixture id: ${id}`);
+  }
   return {
     equivalent:
       solution.replace(/\s+/g, "") === source.canonical.replace(/\s+/g, "")
@@ -25,6 +58,10 @@ function sourceFor(id: string, solution: string) {
         : source.canonical,
     mutant: source.mutant,
   };
+}
+
+export function unsafeMiriAssessmentSourceFor(id: string, solution = "") {
+  return sourceFor(id, solution);
 }
 
 const assessments = [

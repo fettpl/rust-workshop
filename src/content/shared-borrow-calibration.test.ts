@@ -3,10 +3,13 @@ import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-com
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 const historicalLessons = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(
-      historicalBeforeCancellationTransfer(currentCourse),
+      historicalBeforeCancellationTransfer(
+        historicalBeforeInitializedPrefix(currentCourse),
+      ),
     ),
   ),
 ).lessons;

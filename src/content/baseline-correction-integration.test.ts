@@ -6,10 +6,13 @@ import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(
-      historicalBeforeCancellationTransfer(currentCourse),
+      historicalBeforeCancellationTransfer(
+        historicalBeforeInitializedPrefix(currentCourse),
+      ),
     ),
   ),
 );

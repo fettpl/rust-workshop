@@ -4,11 +4,14 @@ import { historicalBeforeDocumentationRepair } from "./documentation-guided-repa
 import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 const { concepts, lessons, modules, reviewExercises } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(
       historicalBeforeSendHandoff(
-        historicalBeforeCancellationTransfer(currentCourse),
+        historicalBeforeCancellationTransfer(
+          historicalBeforeInitializedPrefix(currentCourse),
+        ),
       ),
     ),
   );

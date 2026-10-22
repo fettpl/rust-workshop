@@ -932,6 +932,80 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.getByText("Tryb offline.", { exact: false })).toBeVisible();
     await page.setViewportSize({ width: 1280, height: 900 });
     console.log("Cancellation transfer draft, note, help, exact resume and keyboard work offline; no compiler credit");
+    // Initialized-prefix source path: both new lesson panels are inspected
+    // before switching to Kod; only durable browser state is asserted offline.
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    const unsafeMiriTitle = "Miri i pure-Rust unsafe: inicjalizacja, aliasowanie oraz wariancja";
+    await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(unsafeMiriTitle);
+    await page.locator(".module-picker > button").filter({ hasText: unsafeMiriTitle }).click();
+    await page.locator(".lesson-list-item").filter({ hasText: "Zbuduj ByteView z jawne inicjalizacją" }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(7).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Od storage do zainicjalizowanego prefiksu", exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(8).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Zainicjalizuj prefiks i pożycz wynik", exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const prefixEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    const prefixDraft = "// Prefiks zapisany lokalnie bez uruchamiania runnera.\n";
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(page.locator("#workspace-panel-code")).toBeVisible();
+    const simplePrefixEditor = page.getByRole("button", { name: "Prosty edytor", exact: true });
+    if (await simplePrefixEditor.count() && await simplePrefixEditor.isVisible()) {
+      await simplePrefixEditor.click();
+    }
+    await expect(prefixEditor).toBeVisible();
+    await prefixEditor.fill(prefixDraft);
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.locator("#workspace-panel-lesson")).toBeVisible();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toBeVisible();
+    const prefixNote = "Zapisz tylko zainicjalizowane elementy i zachowaj sufiks.";
+    await page.getByLabel("Notatki do lekcji").fill(prefixNote);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+    await expect.poll(async () => {
+      const state = await readLearningState();
+      const progress = state.steps["unsafe-miri-byte-view:byte-view-initialized-prefix"];
+      return {
+        code: progress?.code,
+        hints: progress?.hints,
+        note: state.notes["unsafe-miri-byte-view"],
+        panel: state.resume.panel,
+        view: state.resume.view,
+        lessonId: state.resume.lessonId,
+        stepIndex: state.resume.stepIndex,
+      };
+    }).toEqual({
+      code: prefixDraft,
+      hints: 1,
+      note: prefixNote,
+      panel: "lesson",
+      view: "lesson",
+      lessonId: "unsafe-miri-byte-view",
+      stepIndex: 8,
+    });
+    const prefixState = await readLearningState();
+    expect(prefixState.events.filter((event) => event.lessonId === "unsafe-miri-byte-view" && event.stepId === "byte-view-initialized-prefix" && event.kind === "transfer" && event.evaluator === "tests")).toEqual([]);
+    await page.reload();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.locator("#workspace-panel-lesson")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Zainicjalizuj prefiks i pożycz wynik", exact: true })).toBeVisible();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toBeVisible();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(prefixNote);
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(prefixEditor).toBeVisible();
+    await expect(prefixEditor).toHaveValue(prefixDraft);
+    await prefixEditor.focus();
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Monaco Editor", exact: true })).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(prefixEditor).toBeFocused();
+    await expect(page.getByText("Tryb offline.", { exact: false })).toBeVisible();
+    await page.setViewportSize({ width: 1280, height: 900 });
+    console.log("Initialized-prefix model/primary, draft, note, help, exact resume and keyboard work offline; no compiler credit");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
       "Property testing: kontrakty, generatory i kontrprzykłady";

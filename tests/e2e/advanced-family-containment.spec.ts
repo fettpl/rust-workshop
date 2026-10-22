@@ -251,11 +251,17 @@ for (const assistance of assistanceCases) {
     expect(courseEvidenceSummary(after, conceptId).qualifyingCodingTasks).toBe(
       0,
     );
-    expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
+    expect(gateRecovery(after, criterion, lessons)).toEqual({
+      status: "available",
+      task: {
+        lessonId: lesson.id,
+        stepId: "byte-view-initialized-prefix",
+      },
+    });
     await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
     await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
     await expect(page.locator(".solution-warning")).toContainText(
-      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+      "możesz przejść do dostępnego świeżego zadania",
     );
   });
 }
@@ -270,6 +276,8 @@ const asyncTransferCases = [
     oldFamily: "async-lending/send-boundary-v1",
     reviewExerciseId: "async-lending-send-boundary-review",
     mockPassed: 7,
+    oldStepId: "async-lending-send-boundary-gate",
+    blankStepId: "async-lending-send-boundary-blank",
   },
   {
     lessonId: "async-lending-callbacks",
@@ -279,6 +287,8 @@ const asyncTransferCases = [
     oldFamily: "async-lending/sequential-callback-v1",
     reviewExerciseId: "async-lending-callbacks-review",
     mockPassed: 8,
+    oldStepId: "async-lending-callbacks-gate",
+    blankStepId: "async-lending-callbacks-blank",
   },
   {
     lessonId: "async-lending-dyn-adapter",
@@ -288,6 +298,8 @@ const asyncTransferCases = [
     oldFamily: "async-lending/dyn-adapter-v1",
     reviewExerciseId: "async-lending-dyn-adapter-review",
     mockPassed: 7,
+    oldStepId: "async-lending-dyn-adapter-gate",
+    blankStepId: "async-lending-dyn-adapter-blank",
   },
   {
     lessonId: "async-lending-cancel-commit",
@@ -297,6 +309,19 @@ const asyncTransferCases = [
     oldFamily: "async-lending/cancel-commit-v1",
     reviewExerciseId: "async-lending-cancel-commit-review",
     mockPassed: 9,
+    oldStepId: "async-lending-cancel-commit-gate",
+    blankStepId: "async-lending-cancel-commit-blank",
+  },
+  {
+    lessonId: "unsafe-miri-byte-view",
+    conceptId: "unsafe-miri-byte-view-contract",
+    stepId: "byte-view-initialized-prefix",
+    family: "unsafe-miri/initialized-prefix-v1",
+    oldFamily: "unsafe-miri/byte-view-v1",
+    reviewExerciseId: "review-unsafe-miri-byte-view",
+    mockPassed: 8,
+    oldStepId: "byte-view-gate",
+    blankStepId: "byte-view-blank",
   },
 ] as const;
 
@@ -304,12 +329,11 @@ type AsyncTransferCase = (typeof asyncTransferCases)[number];
 
 function asyncTransferContext(item: AsyncTransferCase) {
   const lesson = lessons.find((candidate) => candidate.id === item.lessonId)!;
-  // Both accepted M10 lessons saved their existing gate at index 2.
-  const oldStep = lesson.steps[2];
-  expect(oldStep.id).toBe(`${item.lessonId}-gate`);
-  expect(oldStep.evidenceKind).toBe("fix");
+  const oldStep = lesson.steps.find(
+    (candidate) => candidate.id === item.oldStepId,
+  )!;
   const blank = lesson.steps.find(
-    (candidate) => candidate.id === `${item.lessonId}-blank`,
+    (candidate) => candidate.id === item.blankStepId,
   )!;
   const transfer = lesson.steps.find(
     (candidate) => candidate.id === item.stepId,
@@ -342,7 +366,7 @@ function oldAsyncState(item: AsyncTransferCase, helped: boolean): UserState {
     ...state.resume,
     view: "lesson",
     lessonId: lesson.id,
-    stepIndex: 2,
+    stepIndex: lesson.steps.indexOf(oldStep),
     panel: "lesson",
   };
   state.steps[stepKey(lesson.id, oldStep.id)] = {
@@ -943,6 +967,81 @@ test("lost reply reveal persists across retry without laundering assistance (UI/
   expect(errors).toEqual([]);
 });
 
+test("initialized-prefix assisted primary retry stays uncredited without a prior clean new-family submission (UI/state only)", async ({
+  page,
+}) => {
+  const item = asyncTransferCases.find(
+    (candidate) => candidate.lessonId === "unsafe-miri-byte-view",
+  )!;
+  const errors = observeBrowserErrors(page);
+  const { lesson, transfer, criterion } = asyncTransferContext(item);
+  const before = oldAsyncState(item, false);
+  await importOldAsyncState(page, before, item, false);
+  await openAsyncTransfer(page, item);
+  await revealAsyncSolution(page, item);
+  await page.reload();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await editor.fill(transfer.solution!);
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      code: transfer.solution,
+      mode: "test",
+      tests:
+        transfer.evaluator?.kind === "tests" ? transfer.evaluator.tests : undefined,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout: "initialized-prefix assisted retry: UI/state only",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: item.mockPassed, failed: 0 },
+      }),
+    });
+  });
+  const beforeRetry = await savedState(page);
+  await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+  const isMatchingSubmission = (event: EvidenceEvent) =>
+    event.lessonId === lesson.id &&
+    event.stepId === item.stepId &&
+    event.kind === "transfer" &&
+    event.evaluator === "tests" &&
+    event.passed;
+  await expect
+    .poll(async () =>
+      (await savedState(page)).events.filter(isMatchingSubmission).length,
+    )
+    .toBe(1);
+  const after = await savedState(page);
+  expect(after.events.slice(0, beforeRetry.events.length)).toEqual(
+    beforeRetry.events,
+  );
+  const matchingSubmissions = after.events.filter(isMatchingSubmission);
+  expect(matchingSubmissions).toHaveLength(1);
+  const submitted = matchingSubmissions[0];
+  expect(submitted).toMatchObject({
+    lessonId: lesson.id,
+    stepId: item.stepId,
+    kind: "transfer",
+    evaluator: "tests",
+    passed: true,
+    hints: 2,
+    revealed: true,
+    evidenceVersion: 2,
+  });
+  expect(courseEvidencePolicy.definitionForEvent(submitted)?.codingTaskId).toBe(
+    item.family,
+  );
+  expect(
+    independentCodingTaskIds(after, item.conceptId, courseEvidencePolicy),
+  ).toEqual([item.oldFamily]);
+  expect(gateRecovery(after, criterion, lessons).status).toBe("complete");
+  expect(errors).toEqual([]);
+});
+
 test("A2 cancellation prose stays within the mobile viewport", async ({
   page,
 }, testInfo) => {
@@ -1082,4 +1181,195 @@ test("A2 cancellation prose stays within the mobile viewport", async ({
         event.passed,
     ),
   ).toBe(false);
+});
+
+test("initialized prefix preserves old seven-step history through import, help, and mobile resume", async ({
+  page,
+}) => {
+  const initializedLesson = lessons.find(
+    (candidate) => candidate.id === "unsafe-miri-byte-view",
+  )!;
+  const oldSteps = initializedLesson.steps.slice(0, 7);
+  const model = initializedLesson.steps.find(
+    (candidate) => candidate.id === "byte-view-initialized-prefix-model",
+  )!;
+  const primary = initializedLesson.steps.find(
+    (candidate) => candidate.id === "byte-view-initialized-prefix",
+  )!;
+  expect(initializedLesson.steps.slice(7).map((step) => step.id)).toEqual([
+    model.id,
+    primary.id,
+  ]);
+  const state = createInitialState();
+  state.onboarding = { completed: true, name: "Ada", minutes: 15 };
+  state.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 0,
+    recommendation: "",
+  };
+  state.resume = {
+    ...state.resume,
+    view: "lesson",
+    lessonId: initializedLesson.id,
+    stepIndex: 6,
+    panel: "lesson",
+  };
+  for (const [index, step] of oldSteps.entries()) {
+    state.steps[stepKey(initializedLesson.id, step.id)] = {
+      ...createStepProgress(step.code),
+      code: `// old seven draft ${index}`,
+      completed: true,
+      attempts: [],
+    };
+    state.events.push({
+      id: `old-byte-view-${index}`,
+      lessonId: initializedLesson.id,
+      stepId: step.id,
+      conceptIds: initializedLesson.conceptIds,
+      kind: step.evidenceKind,
+      evaluator: step.evaluator?.kind,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 1_700_000_000_000 + index,
+      ...(step.evidence ? { evidenceVersion: step.evidence.version } : {}),
+    });
+  }
+  state.notes[initializedLesson.id] = "Stara notatka zachowana po migracji.";
+  state.bookmarks = [initializedLesson.id];
+  const importedRawPrefix = state.events.slice();
+  await page.goto("/");
+  const baseline = createInitialState();
+  baseline.onboarding = { completed: true, name: "Ada", minutes: 15 };
+  baseline.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 0,
+    recommendation: "",
+  };
+  await seedState(page, baseline);
+  await importThroughUi(page, state);
+  await expect
+    .poll(async () => {
+      const saved = await savedState(page);
+      return {
+        rawPrefix: saved.events.slice(0, importedRawPrefix.length),
+        oldSteps: oldSteps.map(
+          (step) => saved.steps[stepKey(initializedLesson.id, step.id)],
+        ),
+        resume: saved.resume,
+        notes: saved.notes,
+        bookmarks: saved.bookmarks,
+      };
+    })
+    .toEqual({
+      rawPrefix: importedRawPrefix,
+      oldSteps: oldSteps.map(
+        (step) => state.steps[stepKey(initializedLesson.id, step.id)],
+      ),
+      resume: state.resume,
+      notes: state.notes,
+      bookmarks: state.bookmarks,
+    });
+  const imported = await savedState(page);
+  expect(imported.events.slice(0, importedRawPrefix.length)).toEqual(
+    importedRawPrefix,
+  );
+  expect(imported.resume).toEqual(state.resume);
+  expect(imported.notes).toEqual(state.notes);
+  expect(imported.bookmarks).toEqual(state.bookmarks);
+  for (const step of oldSteps) {
+    expect(imported.steps[stepKey(initializedLesson.id, step.id)]?.completed).toBe(
+      true,
+    );
+  }
+  expect(imported.steps[stepKey(initializedLesson.id, model.id)]).toBeUndefined();
+  expect(imported.steps[stepKey(initializedLesson.id, primary.id)]).toBeUndefined();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(initializedLesson.steps.indexOf(model))
+    .click();
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Od storage do zainicjalizowanego prefiksu", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(initializedLesson.steps.indexOf(primary))
+    .click();
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Zainicjalizuj prefiks i pożycz wynik", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  await expect(page.locator("#workspace-panel-code")).toBeVisible();
+  const simpleEditor = page.getByRole("button", { name: "Prosty edytor", exact: true });
+  await expect(simpleEditor).toBeVisible();
+  await simpleEditor.click();
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await expect(editor).toBeVisible();
+  const draft = "// Szkic prefiksu zachowany po imporcie i pomocy.\n";
+  await editor.fill(draft);
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await expect(page.locator("#workspace-panel-lesson")).toBeVisible();
+  await page.getByText("Twój notatnik", { exact: true }).click();
+  await expect(page.getByLabel("Notatki do lekcji")).toBeVisible();
+  const note = "Najpierw zapis, potem pożyczka dokładnego prefiksu.";
+  await page.getByLabel("Notatki do lekcji").fill(note);
+  await expect(page.locator(".save-status")).toHaveText("Zapisano na tym urządzeniu");
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await expect.poll(async () => {
+    const saved = await savedState(page);
+    return {
+      code: saved.steps[stepKey(initializedLesson.id, primary.id)]?.code,
+      hints: saved.steps[stepKey(initializedLesson.id, primary.id)]?.hints,
+      note: saved.notes[initializedLesson.id],
+      resume: saved.resume,
+    };
+  }).toMatchObject({
+    code: draft,
+    hints: 1,
+    note,
+    resume: {
+        panel: "lesson",
+        view: "lesson",
+      lessonId: initializedLesson.id,
+      stepIndex: initializedLesson.steps.indexOf(primary),
+    },
+  });
+  const helped = await savedState(page);
+  expect(helped.events.slice(0, importedRawPrefix.length)).toEqual(
+    importedRawPrefix,
+  );
+  expect(helped.events.filter((event) =>
+    event.lessonId === initializedLesson.id &&
+    event.stepId === primary.id &&
+    event.kind === "transfer" &&
+    event.evaluator === "tests",
+  )).toEqual([]);
+  expect(helped.events.filter((event) =>
+    event.lessonId === initializedLesson.id &&
+    event.stepId === model.id &&
+    event.kind === "exposure",
+  ).length).toBeGreaterThan(0);
+  await page.reload();
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await expect(page.locator("#workspace-panel-lesson")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Zainicjalizuj prefiks i pożycz wynik", exact: true })).toBeVisible();
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  await expect(editor).toHaveValue(draft);
+  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await page.getByText("Twój notatnik", { exact: true }).click();
+  await expect(page.getByLabel("Notatki do lekcji")).toBeVisible();
+  await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(note);
+  await page.getByRole("tab", { name: "Kod", exact: true }).click();
+  await expect(editor).toBeVisible();
+  await editor.focus();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("button", { name: "Monaco Editor", exact: true })).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(editor).toBeFocused();
 });

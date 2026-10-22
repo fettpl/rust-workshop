@@ -616,6 +616,11 @@ describe("duplicate contract evidence families", () => {
                     : "async-lending-dyn-adapter-borrowed-sources",
           },
         });
+      } else if (lessonId === "unsafe-miri-byte-view") {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "available",
+          task: { lessonId, stepId: "byte-view-initialized-prefix" },
+        });
       } else {
         expect(gateRecovery(state, criterion, lessons)).toEqual({
           status: "exhausted",
@@ -774,11 +779,17 @@ describe("duplicate contract evidence families", () => {
           courseEvidenceSummary(state, lesson.conceptIds[0])
             .qualifyingCodingTasks,
         ).toBe(0);
-        expect(
-          gateRecovery(state, primaryCriterion(lesson.id), lessons),
-        ).toEqual({
-          status: "exhausted",
-        });
+        expect(gateRecovery(state, primaryCriterion(lesson.id), lessons)).toEqual(
+          lesson.id === "unsafe-miri-byte-view"
+            ? {
+                status: "available",
+                task: {
+                  lessonId: lesson.id,
+                  stepId: "byte-view-initialized-prefix",
+                },
+              }
+            : { status: "exhausted" },
+        );
 
         const primarySavedFirst = createInitialState();
         primarySavedFirst.steps[stepKey(lesson.id, gate.id)] = {
@@ -837,9 +848,15 @@ describe("duplicate contract evidence families", () => {
         )?.passed,
       ).toBe(false);
       expect(gateRecovery(state, primaryCriterion(lesson.id), lessons)).toEqual(
-        {
-          status: "exhausted",
-        },
+        lesson.id === "unsafe-miri-byte-view"
+          ? {
+              status: "available",
+              task: {
+                lessonId: lesson.id,
+                stepId: "byte-view-initialized-prefix",
+              },
+            }
+          : { status: "exhausted" },
       );
     }
   });
@@ -1383,6 +1400,222 @@ describe.each(transferFamilies)(
     });
   },
 );
+
+it("keeps initialized-prefix model exposure separate, credits clean primary families, and preserves assisted history", () => {
+  const conceptId = "unsafe-miri-byte-view-contract";
+  const { lesson, step: model } = lessonStep(
+    "unsafe-miri-byte-view",
+    "byte-view-initialized-prefix-model",
+  );
+  const oldGate = lessonStep("unsafe-miri-byte-view", "byte-view-gate").step;
+  const oldBlank = lessonStep("unsafe-miri-byte-view", "byte-view-blank").step;
+  const primary = lessonStep(
+    "unsafe-miri-byte-view",
+    "byte-view-initialized-prefix",
+  ).step;
+  const day = 24 * 60 * 60 * 1000;
+  let state = recordCourseEvidence(
+    createInitialState(),
+    eventFor(lesson, oldGate, "prefix-old-gate", 1_000),
+  );
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, oldBlank, "prefix-old-blank", 2_000),
+  );
+  expect(
+    independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
+  ).toEqual(["unsafe-miri/byte-view-v1"]);
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, primary, "prefix-new-clean", 3_000),
+  );
+  expect(
+    independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
+  ).toEqual([
+    "unsafe-miri/byte-view-v1",
+    "unsafe-miri/initialized-prefix-v1",
+  ]);
+  state.review = [
+    { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "prefix due" },
+  ];
+  expect(courseDelayedReviewEligibility(state, conceptId, 3_000 + day)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 3_000 + day + 1)).toBe(
+    true,
+  );
+
+  state.steps[stepKey(lesson.id, primary.id)] = {
+    ...createStepProgress(primary.code),
+    revealed: true,
+  };
+  const assistedOnly = recordCourseEvidence(createInitialState(), {
+    ...eventFor(lesson, primary, "prefix-assisted-only", 3_500),
+    ...assistanceForLessonStep(
+      {
+        ...createInitialState(),
+        steps: {
+          [stepKey(lesson.id, primary.id)]: {
+            ...createStepProgress(primary.code),
+            revealed: true,
+          },
+        },
+      },
+      lesson,
+      primary,
+    ),
+  });
+  expect(
+    independentCodingTaskIds(assistedOnly, conceptId, courseEvidencePolicy),
+  ).toEqual([]);
+  state = recordCourseEvidence(state, {
+    ...eventFor(lesson, primary, "prefix-assisted-retry", 4_000),
+    ...assistanceForLessonStep(state, lesson, primary),
+  });
+  expect(
+    independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
+  ).toEqual(["unsafe-miri/byte-view-v1", "unsafe-miri/initialized-prefix-v1"]);
+  expect(state.events.at(-1)).toMatchObject({
+    id: "prefix-assisted-retry",
+    revealed: true,
+  });
+
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, model, "prefix-model-contact", 5_000),
+  );
+  expect(
+    independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
+  ).toEqual(["unsafe-miri/byte-view-v1", "unsafe-miri/initialized-prefix-v1"]);
+  state.ratings = [{ conceptId, rating: "good", at: 6_000 }];
+  expect(courseDelayedReviewEligibility(state, conceptId, 6_000 + day)).toBe(
+    false,
+  );
+  expect(courseDelayedReviewEligibility(state, conceptId, 6_000 + day + 1)).toBe(
+    true,
+  );
+  const imported = importState(exportState(state));
+  expect(imported.events.map((event) => event.id)).toEqual(
+    state.events.map((event) => event.id),
+  );
+  expect(imported.events.at(-2)).toMatchObject({
+    id: "prefix-assisted-retry",
+    revealed: true,
+  });
+  expect(imported.ratings).toEqual(state.ratings);
+  expect(importState(exportState(imported))).toEqual(imported);
+});
+
+it("keeps a helped initialized-prefix primary uncredited across retries and real later contacts", () => {
+  const conceptId = "unsafe-miri-byte-view-contract";
+  const { lesson, step: model } = lessonStep(
+    "unsafe-miri-byte-view",
+    "byte-view-initialized-prefix-model",
+  );
+  const oldGate = lessonStep("unsafe-miri-byte-view", "byte-view-gate").step;
+  const oldBlank = lessonStep("unsafe-miri-byte-view", "byte-view-blank").step;
+  const primary = lessonStep(
+    "unsafe-miri-byte-view",
+    "byte-view-initialized-prefix",
+  ).step;
+  expect(primary.evidence).toEqual({
+    version: 2,
+    conceptIds: [conceptId],
+    codingTaskId: "unsafe-miri/initialized-prefix-v1",
+  });
+  const assisted = createInitialState();
+  assisted.steps[stepKey(lesson.id, primary.id)] = {
+    ...createStepProgress(primary.code),
+    hints: 1,
+    revealed: true,
+  };
+  let state = recordCourseEvidence(assisted, {
+    ...eventFor(lesson, primary, "prefix-helped-first", 10_000),
+    ...assistanceForLessonStep(assisted, lesson, primary),
+  });
+  state = recordCourseEvidence(state, {
+    ...eventFor(lesson, primary, "prefix-helped-retry", 10_001),
+    ...assistanceForLessonStep(state, lesson, primary),
+  });
+  expect(
+    independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
+  ).toEqual([]);
+
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, oldGate, "prefix-old-clean", 10_002),
+  );
+  state = recordCourseEvidence(
+    state,
+    eventFor(lesson, oldBlank, "prefix-old-alias", 10_003),
+  );
+  expect(
+    independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
+  ).toEqual(["unsafe-miri/byte-view-v1"]);
+  let retention = createInitialState();
+  retention = recordCourseEvidence(
+    retention,
+    eventFor(lesson, oldGate, "prefix-retained-old-clean", 10_004),
+  );
+  retention = recordCourseEvidence(
+    retention,
+    eventFor(lesson, oldBlank, "prefix-retained-old-alias", 10_005),
+  );
+  retention = recordCourseEvidence(
+    retention,
+    eventFor(lesson, primary, "prefix-retained-new-clean", 10_006),
+  );
+  expect(
+    independentCodingTaskIds(retention, conceptId, courseEvidencePolicy),
+  ).toEqual(["unsafe-miri/byte-view-v1", "unsafe-miri/initialized-prefix-v1"]);
+  retention.steps[stepKey(lesson.id, primary.id)] = {
+    ...createStepProgress(primary.code),
+    hints: 1,
+    revealed: true,
+  };
+  retention = recordCourseEvidence(retention, {
+    ...eventFor(lesson, primary, "prefix-retained-assisted-retry", 10_007),
+    ...assistanceForLessonStep(retention, lesson, primary),
+  });
+  const contactsBefore = retention.events.slice();
+  for (let index = 0; index < 27; index += 1) {
+    retention = recordCourseEvidence(
+      retention,
+      eventFor(
+        lesson,
+        index % 3 === 0 ? model : oldGate,
+        `prefix-contact-${String(index).padStart(2, "0")}`,
+        10_100 + index,
+      ),
+    );
+  }
+  retention.ratings = [{ conceptId, rating: "good", at: 10_127 }];
+  retention.review = [
+    { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "prefix due" },
+  ];
+  expect(courseDelayedReviewEligibility(retention, conceptId, 10_127 + 24 * 60 * 60 * 1000)).toBe(false);
+  expect(courseDelayedReviewEligibility(retention, conceptId, 10_127 + 24 * 60 * 60 * 1000 + 1)).toBe(true);
+  expect(retention.events.slice(0, contactsBefore.length)).toEqual(contactsBefore);
+  expect(retention.events).toHaveLength(contactsBefore.length + 27);
+  expect(retention.events.every((event) => event.lessonId === lesson.id)).toBe(true);
+  const imported = importState(exportState(retention));
+  expect(imported.events).toEqual(retention.events);
+  expect(imported.ratings).toEqual(retention.ratings);
+  expect(imported.review).toEqual(retention.review);
+  expect(
+    independentCodingTaskIds(imported, conceptId, courseEvidencePolicy),
+  ).toEqual(["unsafe-miri/byte-view-v1", "unsafe-miri/initialized-prefix-v1"]);
+  const afterReload = recordCourseEvidence(
+    importState(exportState(imported)),
+    eventFor(lesson, model, "prefix-contact-after-reload", 10_128),
+  );
+  expect(afterReload.events.slice(0, retention.events.length)).toEqual(
+    retention.events,
+  );
+  expect(afterReload.events.at(-1)).toEqual(
+    eventFor(lesson, model, "prefix-contact-after-reload", 10_128),
+  );
+});
 
 it("keeps the new Send model supplementary and requires two families plus strictly more than 24 quiet hours", () => {
   const conceptId = "async-lending-send-boundary";

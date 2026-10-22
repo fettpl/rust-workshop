@@ -2,10 +2,13 @@ import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { describe, expect, it } from "vitest";
 import * as currentCourse from "./course";
+import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
 const course = historicalBeforeDocumentationRepair(
   historicalBeforeSendHandoff(
-    historicalBeforeCancellationTransfer(currentCourse),
+    historicalBeforeCancellationTransfer(
+      historicalBeforeInitializedPrefix(currentCourse),
+    ),
   ),
 );
 import { createInitialState } from "../persistence/state";
