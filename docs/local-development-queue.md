@@ -28,7 +28,7 @@ coverage, or learner achievement.
 The queue is maintained in this order:
 
 1. local maintenance and verification hygiene;
-2. disjoint-region transfer work;
+2. disjoint-region transfer work — authored; integrated local acceptance pending;
 3. `Slot` transfer work;
 4. variance transfer work;
 5. foundation reconciliation after those changes.
@@ -51,3 +51,13 @@ is approved with no findings. Remote acceptance remains on hold, and main
 checks and a main merge remain unexecuted. When the controller creates a local
 Git bundle, retain it with the offline recovery materials; this document does
 not claim that the bundle already exists.
+
+## Disjoint-range candidate
+
+The [portable feature contract and evidence boundary](disjoint-range-transfer-evidence.md)
+describes the appended model/primary, unchanged historical IDs and assistance
+policy, bounded native witnesses and current local acceptance status. The source
+adds two steps (1,275 to 1,277) while retaining 48 modules, 192 lessons, 194 concepts
+and 349 sources. Independent review has resolved the initial model/wording
+findings; the full integrated campaign remains pending. Slot implementation waits
+for this local milestone. Remote acceptance stays deferred.

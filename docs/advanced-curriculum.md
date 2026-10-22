@@ -1,5 +1,14 @@
 # Docelowa mapa kursu Rust: od zera do praktyki seniorskiej
 
+Local candidate update, 22 October 2026: PR 76 was merged as `7c760e3`, but
+resulting-main full CI jobs did not start because of the billing block. Local
+maintenance is committed separately. The disjoint-range candidate appends two
+steps, bringing authored availability to 1,277 steps; full local acceptance is
+pending. [Its dated contract and evidence boundary](disjoint-range-transfer-evidence.md)
+and [local queue](local-development-queue.md) govern this candidate. The records
+below retain their historical source and acceptance scope. No current green-main
+or release claim follows from a historical PR run.
+
 Accepted pre-A3a product source: `main` commit `3b95d5812891eafd9b867382c53787055cc87208`, after the accepted A2 and dependency updates. The initialized-prefix continuation is tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
 
 The accepted A1 product source is PR68 head `7e03e2d56d29a10f68dfbeba2c4bf530109ab830`, merged as `f975409feb0f1972089c2b368dc994417ca958d0` with tree `fad6f04d491b8e83a125327c7ba17a3818ca8a6c`. Its [natural PR checks](https://github.com/fettpl/rustcrushcourse/actions/runs/38747309342) and [resulting-main checks](https://github.com/fettpl/rustcrushcourse/actions/runs/38752602241) passed all eleven jobs. A2 source is accepted in PR69; this current source cut adds initialized-prefix content after that accepted release. Local product qualification is complete: baseline 1,380/1,380 units, Rust 2,519/2,519 cases, content validation (192 lessons, 194 concepts, 7 traces), build, full production browser 184/184 with zero skips/flaky results/retries, and offline verification all pass. Full native acceptance requires the dedicated CI checks; release acceptance requires all eleven checks on the exact PR head and all eleven on the resulting main commit.
