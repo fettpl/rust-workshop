@@ -15,7 +15,9 @@ import { unzipSync } from "fflate";
 import { miriSafetyPackage } from "../src/content/projects/miri-safety";
 import { buildProjectArchive } from "./project-archive";
 import {
+  projectInitializedPrefixDeadlineStage,
   projectInitializedPrefixDiagnostic,
+  type InitializedPrefixDeadlineStage,
   type InitializedPrefixDiagnosticCode,
 } from "./initialized-prefix-diagnostics";
 import { verifyInitializedPrefixNative } from "../src/content/unsafe-miri-initialized-prefix-native";
@@ -310,6 +312,7 @@ const nativeSummaries: Array<{
   ok: boolean;
   reasonCodes: string[];
   diagnosticCode: InitializedPrefixDiagnosticCode;
+  deadlineStage: InitializedPrefixDeadlineStage;
   recipeCount: number;
 }> = [];
 
@@ -433,12 +436,16 @@ async function main() {
           : undefined,
       });
       const diagnostic = projectInitializedPrefixDiagnostic(summary.reasons);
+      const deadlineStage = projectInitializedPrefixDeadlineStage(
+        summary.reasons,
+      );
       const status = {
         mode,
         phase: summary.phase,
         ok: summary.ok,
         reasonCodes: summary.reasons.map((reason) => reason.code),
         diagnosticCode: diagnostic.code,
+        deadlineStage,
         recipeCount: summary.expectedRecipes.length,
       };
       if (

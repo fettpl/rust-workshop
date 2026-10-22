@@ -19,6 +19,33 @@ export type InitializedPrefixDiagnostic = {
   detail: string;
 };
 
+const INITIALIZED_PREFIX_NATIVE_CONTROL_IDS = [
+  "baseline-valid",
+  "mutate-outcome",
+  "mutate-stream",
+  "mutate-source",
+  "mutate-manifest-inventory",
+  "diagnostic-code",
+  "diagnostic-primary-same-line",
+  "diagnostic-multiplicity",
+  "diagnostic-collateral",
+  "miri-wrong-read",
+  "miri-category",
+] as const;
+
+type InitializedPrefixNativeControlId =
+  (typeof INITIALIZED_PREFIX_NATIVE_CONTROL_IDS)[number];
+
+export type InitializedPrefixDeadlineStage =
+  | { kind: "none" }
+  | {
+      kind: "control";
+      controlID: InitializedPrefixNativeControlId;
+      boundary: "before" | "after";
+    }
+  | { kind: "other" }
+  | { kind: "unreported" };
+
 type ReasonLike = {
   code?: unknown;
   message?: unknown;
@@ -31,6 +58,46 @@ const isNativeDeadlineReason = (reason: ReasonLike): boolean =>
   reason.code === "capture-aborted" &&
   typeof reason.message === "string" &&
   reason.message.startsWith("whole native proof deadline expired ");
+
+const nativeDeadlinePrefix = "whole native proof deadline expired ";
+
+export function projectInitializedPrefixDeadlineStage(
+  reasons: readonly ReasonLike[],
+): InitializedPrefixDeadlineStage {
+  const exactDeadline = reasons.find(
+    (reason) =>
+      typeof reason.message === "string" &&
+      reason.message.startsWith(nativeDeadlinePrefix),
+  );
+  if (exactDeadline) {
+    if (!isNativeDeadlineReason(exactDeadline)) return { kind: "other" };
+    const suffix = (exactDeadline.message as string).slice(
+      nativeDeadlinePrefix.length,
+    );
+    const match = suffix.match(/^(before|after) tamper control ([a-z0-9-]+)$/);
+    if (!match || match[0] !== suffix) return { kind: "other" };
+    const boundary = match[1];
+    const controlID = match[2];
+    if (
+      (boundary !== "before" && boundary !== "after") ||
+      !INITIALIZED_PREFIX_NATIVE_CONTROL_IDS.includes(
+        controlID as InitializedPrefixNativeControlId,
+      )
+    )
+      return { kind: "other" };
+    return {
+      kind: "control",
+      controlID: controlID as InitializedPrefixNativeControlId,
+      boundary,
+    };
+  }
+  const captureAbort = reasons.find(
+    (reason) => reason.code === "capture-aborted",
+  );
+  return captureAbort && typeof captureAbort.message !== "string"
+    ? { kind: "unreported" }
+    : { kind: "none" };
+}
 
 function normalizedMessagePrefix(message: string): string {
   const normalized = message

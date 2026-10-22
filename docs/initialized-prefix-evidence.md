@@ -126,6 +126,21 @@ on bounded qualified sysroot inputs and private temporary fixtures. It reports
 finite status, counts, and timings only; neither resolver selection nor native
 acceptance depends on that experiment.
 
+The Linux probe subsequently completed 93 comparisons (81 qualified sysroot
+inputs and 12 private fixtures) with no mismatches, including matching failures
+for missing, broken, cyclic, and long-chain paths. Its bounded timings were
+approximately 61 ms for JavaScript resolution and 30 ms for native resolution;
+these are microbenchmark results, not a complete-proof speedup claim. The
+reviewed Linux trial now tries the native resolver and retries the unchanged
+JavaScript resolver on every native error. Other platforms retain JavaScript
+resolution. Each call remains fresh; reads, hashes, confinement checks,
+external snapshots, and complete control inventories remain unchanged. The
+fallback also preserves the legacy handling of platform and symlink-depth
+limitations described in the [Node.js filesystem documentation](https://nodejs.org/docs/latest-v22.x/api/fs.html#fsrealpathsyncnativepath-options).
+The trial retains the 480-second mode deadline and requires fresh strict CI
+acceptance. Deadline summaries additionally expose only an allowlisted control
+ID and a before/after boundary, or a fixed unavailable-stage marker.
+
 Full native acceptance requires the dedicated CI checks. Release acceptance
 requires all eleven checks on the exact PR head and all eleven on the resulting
 `main` commit; results are tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76).

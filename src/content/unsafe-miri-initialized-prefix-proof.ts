@@ -20,6 +20,16 @@ import {
 } from "node:path";
 import { readInitializedPrefixObservedExpectations } from "./unsafe-miri-initialized-prefix-observations";
 
+function canonicalPath(path: string): string {
+  if (process.platform !== "linux" || typeof realpathSync.native !== "function")
+    return realpathSync(path);
+  try {
+    return realpathSync.native(path);
+  } catch {
+    return realpathSync(path);
+  }
+}
+
 export type PrefixMode = "stable" | "msrv" | "miri";
 export type PrefixOperation =
   | "tool-locate"
@@ -487,9 +497,9 @@ function relativeSourceIdentity(
   attemptDirectory: string,
   refPath: string,
 ): string | undefined {
-  const attempt = realpathSync(resolve(attemptDirectory));
+  const attempt = canonicalPath(resolve(attemptDirectory));
   const absolute = resolve(refPath);
-  const canonical = realpathSync(absolute);
+  const canonical = canonicalPath(absolute);
   const within = canonical === attempt || canonical.startsWith(`${attempt}/`);
   if (!within) return undefined;
   const identity = relative(attempt, canonical).split("\\").join("/");
@@ -508,7 +518,7 @@ function relativeSourceIdentity(
 function isCanonicalAbsolutePath(path: string): boolean {
   if (!isAbsolute(path)) return false;
   try {
-    return realpathSync(path) === normalize(path);
+    return canonicalPath(path) === normalize(path);
   } catch {
     return false;
   }
@@ -1901,7 +1911,7 @@ let activeRefPolicy: RefPolicy | undefined;
 function policyPath(path: string): string {
   const absolute = resolve(path);
   try {
-    return realpathSync(absolute);
+    return canonicalPath(absolute);
   } catch {
     return normalize(absolute);
   }
@@ -2516,7 +2526,7 @@ function canonicalRefPath(ref: PrefixFileRef, manifestPath?: string): string {
     ? resolveRef(manifestPath, ref)
     : resolve(ref.path);
   try {
-    return realpathSync(resolved);
+    return canonicalPath(resolved);
   } catch {
     return normalize(resolved);
   }
@@ -3917,8 +3927,8 @@ export function verifyInitializedPrefixEvidence(
       try {
         if (
           !isAbsolute(record.spec.cwd) ||
-          realpathSync(record.spec.cwd) !==
-            realpathSync(resolve(manifest.attemptDirectory))
+          canonicalPath(record.spec.cwd) !==
+            canonicalPath(resolve(manifest.attemptDirectory))
         )
           reasons.push(
             reason(
@@ -4046,9 +4056,9 @@ export function verifyInitializedPrefixEvidence(
   const root =
     typeof manifest.attemptDirectory === "string" &&
     existsSync(resolve(manifest.attemptDirectory))
-      ? realpathSync(resolve(manifest.attemptDirectory))
+      ? canonicalPath(resolve(manifest.attemptDirectory))
       : dirname(resolve(manifestPath));
-  if (!isWithin(root, realpathSync(resolve(manifestPath))))
+  if (!isWithin(root, canonicalPath(resolve(manifestPath))))
     reasons.push(
       reason(
         "attempt-directory-mismatch",
@@ -4202,13 +4212,13 @@ function refreshTamperHashes(
 }
 
 function canonicalRoot(root: string): string {
-  return realpathSync(root);
+  return canonicalPath(root);
 }
 
 function containedPath(root: string, candidate: string): string | undefined {
   const rootReal = canonicalRoot(root);
   const absolute = resolve(candidate);
-  const existing = existsSync(absolute) ? realpathSync(absolute) : absolute;
+  const existing = existsSync(absolute) ? canonicalPath(absolute) : absolute;
   if (existing === rootReal || existing.startsWith(`${rootReal}/`))
     return existing;
   return undefined;
@@ -5183,7 +5193,7 @@ function mutateCopiedEvidence(
   if (kind === "source") {
     const attemptDirectory =
       typeof manifest.attemptDirectory === "string"
-        ? realpathSync(resolve(manifest.attemptDirectory))
+        ? canonicalPath(resolve(manifest.attemptDirectory))
         : dirname(resolve(manifestPath));
     const sourceRef = Array.isArray(record.spec?.inputs)
       ? record.spec.inputs.find(
@@ -5267,7 +5277,7 @@ function mutateCopiedEvidence(
   } else if (kind === "diagnostic-primary-same-line") {
     const attemptDirectory =
       typeof manifest.attemptDirectory === "string"
-        ? realpathSync(resolve(manifest.attemptDirectory))
+        ? canonicalPath(resolve(manifest.attemptDirectory))
         : dirname(resolve(manifestPath));
     const sourceRef = record.spec.inputs.find((ref) => {
       try {

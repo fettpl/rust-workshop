@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   classifyInitializedPrefixDiagnostic,
   INITIALIZED_PREFIX_DIAGNOSTIC_CODES,
+  projectInitializedPrefixDeadlineStage,
   projectInitializedPrefixDiagnostic,
 } from "../../scripts/initialized-prefix-diagnostics";
 
@@ -117,6 +118,85 @@ describe("initialized-prefix sanitized diagnostics", () => {
     });
     expect(projected.detail).not.toContain("secret-token");
     expect(projected.detail).not.toContain("/private");
+  });
+
+  it("projects only reviewed native control deadline boundaries", () => {
+    const controlIds = [
+      "baseline-valid",
+      "mutate-outcome",
+      "mutate-stream",
+      "mutate-source",
+      "mutate-manifest-inventory",
+      "diagnostic-code",
+      "diagnostic-primary-same-line",
+      "diagnostic-multiplicity",
+      "diagnostic-collateral",
+      "miri-wrong-read",
+      "miri-category",
+    ] as const;
+    for (const controlID of controlIds) {
+      expect(
+        projectInitializedPrefixDeadlineStage([
+          {
+            code: "capture-aborted",
+            message: `whole native proof deadline expired before tamper control ${controlID}`,
+          },
+        ]),
+      ).toEqual({ kind: "control", controlID, boundary: "before" });
+      expect(
+        projectInitializedPrefixDeadlineStage([
+          {
+            code: "capture-aborted",
+            message: `whole native proof deadline expired after tamper control ${controlID}`,
+          },
+        ]),
+      ).toEqual({ kind: "control", controlID, boundary: "after" });
+    }
+    expect(
+      projectInitializedPrefixDeadlineStage([
+        {
+          code: "capture-aborted",
+          message:
+            "whole native proof deadline expired before tamper control mutate-outcome /private/secret",
+        },
+      ]),
+    ).toEqual({ kind: "other" });
+    for (const lineEnding of ["\n", "\r\n"]) {
+      expect(
+        projectInitializedPrefixDeadlineStage([
+          {
+            code: "capture-aborted",
+            message: `whole native proof deadline expired before tamper control mutate-outcome${lineEnding}`,
+          },
+        ]),
+      ).toEqual({ kind: "other" });
+    }
+    expect(
+      projectInitializedPrefixDeadlineStage([
+        {
+          code: "other-code",
+          message:
+            "whole native proof deadline expired before tamper control mutate-outcome",
+        },
+      ]),
+    ).toEqual({ kind: "other" });
+    expect(
+      projectInitializedPrefixDeadlineStage([
+        {
+          code: "capture-aborted",
+          message:
+            "whole native proof deadline expired before tamper control unknown-control",
+        },
+      ]),
+    ).toEqual({ kind: "other" });
+    expect(
+      projectInitializedPrefixDeadlineStage([
+        { code: "capture-aborted", message: "capture aborted after control" },
+      ]),
+    ).toEqual({ kind: "none" });
+    expect(
+      projectInitializedPrefixDeadlineStage([{ code: "capture-aborted" }]),
+    ).toEqual({ kind: "unreported" });
   });
 
   it("projects only a bounded path-free static message prefix", () => {

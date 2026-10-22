@@ -7,6 +7,7 @@ import {
   readFileSync,
   realpathSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import * as fs from "node:fs";
@@ -16,10 +17,15 @@ import { expect, it, vi } from "vitest";
 
 vi.mock("node:fs", async () => {
   const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
+  const realpath = vi.fn(actual.realpathSync);
+  Object.defineProperty(realpath, "native", {
+    configurable: true,
+    value: vi.fn(actual.realpathSync.native),
+  });
   return {
     ...actual,
     readFileSync: vi.fn(actual.readFileSync),
-    realpathSync: vi.fn(actual.realpathSync),
+    realpathSync: realpath,
   };
 });
 import {
@@ -852,6 +858,38 @@ function expectInventoryUnchanged(
 ): void {
   const after = regularFileInventory(root, allowTrustedSymlinks);
   expect([...after.entries()]).toEqual([...before.entries()]);
+}
+
+function nativeRealpathMock(): ReturnType<typeof vi.fn> {
+  return (
+    fs.realpathSync as typeof fs.realpathSync & {
+      native: ReturnType<typeof vi.fn>;
+    }
+  ).native;
+}
+
+const defaultNativeRealpathImplementation =
+  nativeRealpathMock().getMockImplementation();
+
+function withForcedLinux<T>(callback: () => T): T {
+  const descriptor = Object.getOwnPropertyDescriptor(process, "platform");
+  Object.defineProperty(process, "platform", {
+    configurable: true,
+    value: "linux",
+  });
+  try {
+    return callback();
+  } finally {
+    if (descriptor) Object.defineProperty(process, "platform", descriptor);
+  }
+}
+
+function restoreNativeRealpathMock(): void {
+  const native = nativeRealpathMock();
+  native.mockReset();
+  if (!defaultNativeRealpathImplementation)
+    throw new Error("native realpath mock lost its default implementation");
+  native.mockImplementation(defaultNativeRealpathImplementation);
 }
 
 function durableTamperPacket(
@@ -2454,7 +2492,9 @@ it(
     manifest.artifacts = [...padding, ...manifest.artifacts];
     writeFileSync(fixture.manifestPath, `${JSON.stringify(manifest)}\n`);
     const realpath = vi.mocked(fs.realpathSync);
+    const native = nativeRealpathMock();
     realpath.mockClear();
+    native.mockClear();
     const result = verifyInitializedPrefixTamperControls({
       manifestPath: fixture.manifestPath,
       expected: fixture.expected,
@@ -2468,7 +2508,9 @@ it(
     expect(result).toHaveLength(9);
     expect(result.slice(1).every((control) => control.rejected)).toBe(true);
     expectInventoryUnchanged(externalBefore, fixture.externalRoot, true);
-    expect(realpath.mock.calls.length).toBeLessThan(285_000);
+    expect(realpath.mock.calls.length + native.mock.calls.length).toBeLessThan(
+      285_000,
+    );
   },
 );
 
@@ -2711,6 +2753,225 @@ it("propagates an after-checkpoint failure only after the control packet is dura
   expectDurableMutation(fixture, "mutate-outcome");
   expectInventoryUnchanged(original, fixture.root);
   expectInventoryUnchanged(external, fixture.externalRoot, true);
+});
+
+it("falls back to a fresh legacy realpath after a native resolver error", () => {
+  const fixture = makeFixture("full-valid");
+  const realpath = vi.mocked(fs.realpathSync);
+  const native = nativeRealpathMock();
+  const nativeFailure = new Error("synthetic native realpath failure");
+  native.mockReset();
+  native.mockImplementation(() => {
+    throw nativeFailure;
+  });
+  realpath.mockClear();
+  try {
+    const result = withForcedLinux(() =>
+      verifyInitializedPrefixEvidence(fixture.manifestPath, fixture.expected),
+    );
+    expect(result).toEqual({ ok: true, reasons: [] });
+    expect(native).toHaveBeenCalled();
+    expect(realpath).toHaveBeenCalled();
+  } finally {
+    restoreNativeRealpathMock();
+  }
+});
+
+it("preserves the legacy error contract when native and legacy resolution fail", () => {
+  const fixture = makeFixture("full-valid");
+  const realpath = vi.mocked(fs.realpathSync);
+  const native = nativeRealpathMock();
+  const legacyImplementation = realpath.getMockImplementation();
+  expect(legacyImplementation).toBeDefined();
+  native.mockReset();
+  native.mockImplementation(() => {
+    throw new Error("synthetic native ELOOP");
+  });
+  realpath.mockImplementation((path, options) => {
+    if (path === fixture.root) throw new Error("synthetic legacy ELOOP");
+    return legacyImplementation?.(path, options) as string;
+  });
+  try {
+    const result = withForcedLinux(() =>
+      verifyInitializedPrefixTamperControls({
+        manifestPath: fixture.manifestPath,
+        expected: fixture.expected,
+        evidenceDirectory: fixture.root,
+      }),
+    );
+    expect(result).toEqual([
+      {
+        id: "baseline-error",
+        rejected: false,
+        reasons: [
+          {
+            code: "tamper-baseline-error",
+            message: "synthetic legacy ELOOP",
+          },
+        ],
+      },
+    ]);
+    expect(native).toHaveBeenCalled();
+    expect(realpath).toHaveBeenCalledWith(fixture.root);
+  } finally {
+    realpath.mockReset();
+    realpath.mockImplementation(legacyImplementation!);
+    restoreNativeRealpathMock();
+  }
+});
+
+it("resolves a freshly retargeted external symlink for the next control", () => {
+  const fixture = makeFixture("control");
+  const original = regularFileInventory(fixture.root);
+  const alias = join(fixture.externalRoot, "bin/rustup");
+  const alternate = join(fixture.externalRoot, "bin/rustup-alt");
+  writeFileSync(
+    alternate,
+    readFileSync(join(fixture.externalRoot, "bin/rustup-real")),
+  );
+  const external = regularFileInventory(fixture.externalRoot, true);
+  const native = nativeRealpathMock();
+  native.mockClear();
+  try {
+    const result = withForcedLinux(() =>
+      verifyInitializedPrefixTamperControls({
+        manifestPath: fixture.manifestPath,
+        expected: fixture.expected,
+        evidenceDirectory: fixture.root,
+        checkpoint: ({ controlID, phase }) => {
+          if (controlID === "baseline-valid" && phase === "after") {
+            unlinkSync(alias);
+            symlinkSync("rustup-alt", alias);
+          }
+        },
+      }),
+    );
+    expect(result).toHaveLength(9);
+    expect(result.slice(1).every((control) => control.rejected)).toBe(true);
+    const packet = durableTamperPacket(fixture, "mutate-outcome").packet;
+    const entries = packet.externalBeforeEntries as {
+      qualifiedRef?: { path?: string };
+      canonicalIdentity?: string;
+    }[];
+    const rustupEntry = entries.find(
+      (entry) => entry.qualifiedRef?.path === alias,
+    );
+    expect(rustupEntry?.canonicalIdentity).toBe(alternate);
+    expectInventoryUnchanged(original, fixture.root);
+    expectInventoryUnchanged(external, fixture.externalRoot, true);
+  } finally {
+    if (existsSync(alias)) unlinkSync(alias);
+    symlinkSync("rustup-real", alias);
+    restoreNativeRealpathMock();
+  }
+});
+
+it("rejects a symlink escape from the selected evidence root", () => {
+  const fixture = makeFixture("full-valid");
+  const outside = join(fixture.parent, "outside-sentinel");
+  const escape = join(fixture.root, "private-tmp/escape");
+  writeFileSync(outside, "outside\n");
+  symlinkSync(outside, escape);
+  const external = regularFileInventory(fixture.externalRoot, true);
+  const native = nativeRealpathMock();
+  native.mockClear();
+  try {
+    const result = withForcedLinux(() =>
+      verifyInitializedPrefixTamperControls({
+        manifestPath: fixture.manifestPath,
+        expected: fixture.expected,
+        evidenceDirectory: fixture.root,
+      }),
+    );
+    expect(result).toEqual([
+      {
+        id: "baseline-error",
+        rejected: false,
+        reasons: [
+          {
+            code: "tamper-baseline-error",
+            message: "evidence symlink is not allowed: " + escape,
+          },
+        ],
+      },
+    ]);
+    expectInventoryUnchanged(external, fixture.externalRoot, true);
+  } finally {
+    restoreNativeRealpathMock();
+  }
+});
+
+it("accepts UTF-8 paths through the native-first resolver", () => {
+  const fixture = makeFixture("full-valid");
+  const alias = join(fixture.externalRoot, "bin/rustup");
+  const unicodeTarget = join(fixture.externalRoot, "bin/rüstup-éxecutable");
+  writeFileSync(
+    unicodeTarget,
+    readFileSync(join(fixture.externalRoot, "bin/rustup-real")),
+  );
+  unlinkSync(alias);
+  symlinkSync("rüstup-éxecutable", alias);
+  const native = nativeRealpathMock();
+  native.mockClear();
+  try {
+    const result = withForcedLinux(() =>
+      verifyInitializedPrefixEvidence(fixture.manifestPath, fixture.expected),
+    );
+    expect(result).toEqual({ ok: true, reasons: [] });
+    expect(native).toHaveBeenCalled();
+  } finally {
+    restoreNativeRealpathMock();
+  }
+});
+
+it("handles long symlink chains and nested missing or broken targets", () => {
+  const chained = makeFixture("full-valid");
+  const alias = join(chained.externalRoot, "bin/rustup");
+  const target = join(chained.externalRoot, "bin/rustup-chain-target");
+  writeFileSync(
+    target,
+    readFileSync(join(chained.externalRoot, "bin/rustup-real")),
+  );
+  for (let index = 15; index >= 0; index -= 1) {
+    const link = join(chained.externalRoot, `bin/rustup-chain-${index}`);
+    const destination =
+      index === 15 ? "rustup-chain-target" : `rustup-chain-${index + 1}`;
+    symlinkSync(destination, link);
+  }
+  unlinkSync(alias);
+  symlinkSync("rustup-chain-0", alias);
+  const native = nativeRealpathMock();
+  native.mockClear();
+  try {
+    const result = withForcedLinux(() =>
+      verifyInitializedPrefixEvidence(chained.manifestPath, chained.expected),
+    );
+    expect(result).toEqual({ ok: true, reasons: [] });
+    expect(native).toHaveBeenCalled();
+  } finally {
+    restoreNativeRealpathMock();
+  }
+
+  const missing = makeFixture("full-valid");
+  const missingAlias = join(missing.externalRoot, "bin/rustup");
+  unlinkSync(missingAlias);
+  symlinkSync("nested/missing/rustup", missingAlias);
+  const missingResult = withForcedLinux(() =>
+    verifyInitializedPrefixEvidence(missing.manifestPath, missing.expected),
+  );
+  expect(missingResult.ok).toBe(false);
+  expect(missingResult.reasons.length).toBeGreaterThan(0);
+
+  const broken = makeFixture("full-valid");
+  const brokenAlias = join(broken.externalRoot, "bin/rustup");
+  mkdirSync(join(broken.externalRoot, "nested"), { recursive: true });
+  unlinkSync(brokenAlias);
+  symlinkSync("nested/broken/rustup", brokenAlias);
+  const brokenResult = withForcedLinux(() =>
+    verifyInitializedPrefixEvidence(broken.manifestPath, broken.expected),
+  );
+  expect(brokenResult.ok).toBe(false);
+  expect(brokenResult.reasons.length).toBeGreaterThan(0);
 });
 
 it("proof-control-stable-outside-write-denial", { timeout: 30_000 }, () => {
