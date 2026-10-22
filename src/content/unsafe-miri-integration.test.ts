@@ -21,6 +21,11 @@ import {
   initializedPrefixSteps,
   initializedPrefixTests,
 } from "./unsafe-miri-initialized-prefix";
+import {
+  disjointRangesFamily,
+  disjointRangesPrimaryStepId,
+  disjointRangesSteps,
+} from "./unsafe-miri-disjoint-ranges";
 
 const lessonIds = [
   "unsafe-miri-byte-view",
@@ -29,7 +34,7 @@ const lessonIds = [
   "unsafe-miri-mut-slot",
 ];
 
-it("registers exactly four Miri lessons with eight rubric gates, thirteen evidence gates, and independent retrievals", () => {
+it("registers exactly four Miri lessons with eight rubric gates, fourteen evidence gates, and independent retrievals", () => {
   expect(unsafeMiriLessons.map((lesson) => lesson.id)).toEqual(lessonIds);
   expect(unsafeMiriModule.lessonIds).toEqual(lessonIds);
   expect(unsafeMiriModule.prerequisites).toEqual(["unsafe-ffi-contracts"]);
@@ -38,7 +43,7 @@ it("registers exactly four Miri lessons with eight rubric gates, thirteen eviden
     unsafeMiriLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(13);
+  ).toHaveLength(14);
 
   for (const lesson of unsafeMiriLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
@@ -50,7 +55,11 @@ it("registers exactly four Miri lessons with eight rubric gates, thirteen eviden
       ),
     ).toHaveLength(1);
     expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(
-      lesson.id === "unsafe-miri-byte-view" ? 4 : 3,
+      lesson.id === "unsafe-miri-byte-view"
+        ? 4
+        : lesson.id === "unsafe-miri-disjoint-regions"
+          ? 4
+          : 3,
     );
     const blank = lesson.steps.find((step) => step.kind === "blank")!;
     expect(blank.evidenceGate).toBe(true);
@@ -83,11 +92,49 @@ it("registers exactly four Miri lessons with eight rubric gates, thirteen eviden
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(17);
-  expect(new Set(refs).size).toBe(17);
+  expect(refs).toHaveLength(18);
+  expect(new Set(refs).size).toBe(18);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,
   );
+});
+
+it("appends the range family while preserving the old midpoint family", () => {
+  const lesson = unsafeMiriLessons.find(
+    (candidate) => candidate.id === "unsafe-miri-disjoint-regions",
+  )!;
+  expect(lesson.steps.map((step) => step.id).slice(0, 7)).toEqual([
+    "disjoint-regions-predict",
+    "disjoint-regions-run",
+    "disjoint-regions-explain",
+    "disjoint-regions-gate",
+    "disjoint-regions-contract-gate",
+    "disjoint-regions-blank",
+    "disjoint-regions-recall",
+  ]);
+  expect(lesson.steps.slice(-2).map((step) => step.id)).toEqual(
+    disjointRangesSteps.map((step) => step.id),
+  );
+  expect(
+    lesson.steps.find((step) => step.id === "disjoint-regions-gate")?.evidence
+      ?.codingTaskId,
+  ).toBe("unsafe-miri/disjoint-regions-v1");
+  expect(
+    lesson.steps.find((step) => step.id === disjointRangesPrimaryStepId)?.evidence
+      ?.codingTaskId,
+  ).toBe(disjointRangesFamily);
+  expect(
+    lesson.steps.find((step) => step.id === "disjoint-regions-range-model")
+      ?.evidence?.codingTaskId,
+  ).toBeUndefined();
+  const criterion = unsafeMiriModule.gateCriteria!.find(
+    (candidate) => candidate.id === "unsafe-miri-disjoint-regions-gate",
+  )!;
+  expect(criterion.requiredIndependentCodingTasks).toBe(1);
+  expect(criterion.taskRefs).toContainEqual({
+    lessonId: "unsafe-miri-disjoint-regions",
+    stepId: disjointRangesPrimaryStepId,
+  });
 });
 
 it("publishes the initialized-prefix bridge and complete shared harness", () => {

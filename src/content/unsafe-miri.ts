@@ -11,6 +11,14 @@ import {
   initializedPrefixFamily,
   initializedPrefixSteps,
 } from "./unsafe-miri-initialized-prefix";
+import {
+  disjointRangesFamily,
+  disjointRangesPrimaryStepId,
+  disjointRangesSteps,
+  disjointRangesEquivalent,
+  disjointRangesSolution,
+  disjointRangesStarter,
+} from "./unsafe-miri-disjoint-ranges";
 
 const reviewedAt = "2026-09-18";
 const moduleId = "unsafe-miri-contracts";
@@ -969,12 +977,13 @@ export const unsafeMiriLessons: Lesson[] = [
     prerequisites: ["unsafe-miri-byte-view"],
     title: "Rozdziel mutowalne regiony",
     subtitle:
-      "Zachowaj rozłączność `&mut` na obu krawędziach i nie ukrywaj błędu granicy.",
+      "Zachowaj rozłączność `&mut` na obu krawędziach, także przy dwóch zakresach wybranych przez caller'a.",
     minutes: 25,
     outcomes: [
       "Zaakceptujesz `mid == 0` i `mid == len`.",
       "Odrzucisz tylko indeks poza buforem.",
       "Udowodnisz niezależne mutacje bez nakładających się pożyczek.",
+      "Przeniesiesz dowód na dwa półotwarte zakresy z kolejnością caller'a i jawną polityką pustych zakresów.",
     ],
     steps: [
       predict(
@@ -1048,6 +1057,7 @@ export const unsafeMiriLessons: Lesson[] = [
         solution: regionsRecallSolution,
         tests: regionsRecallTests,
       }),
+      ...disjointRangesSteps,
     ],
     misconceptions: [
       "`mid == len` to błąd.",
@@ -1302,6 +1312,17 @@ initializedPrefixPrimary.evidence = {
   codingTaskId: initializedPrefixFamily,
 };
 
+// The range transfer is a second family and is assigned explicitly after the
+// historical naming loop so the old midpoint attribution remains byte-stable.
+const disjointRangesPrimary = unsafeMiriLessons
+  .find((lesson) => lesson.id === "unsafe-miri-disjoint-regions")!
+  .steps.find((step) => step.id === disjointRangesPrimaryStepId)!;
+disjointRangesPrimary.evidence = {
+  version: 2,
+  conceptIds: ["unsafe-miri-disjoint-regions-contract"],
+  codingTaskId: disjointRangesFamily,
+};
+
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   "unsafe-miri-byte-view-contract": coding({
     id: "review-unsafe-miri-byte-view",
@@ -1362,7 +1383,7 @@ export const unsafeMiriModule: CourseModule = {
   lessonIds: unsafeMiriLessons.map((lesson) => lesson.id),
   exitGate: [
     "Zbudujesz ByteView tylko z zainicjalizowanych, żywych bajtów i nie wydłużysz lifetime storage; gate i blank należą do jednej rodziny.",
-    "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania; druga forma nie tworzy nowej rodziny.",
+    "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania, a następnie wybierzesz dwa rozłączne zakresy z zachowaniem kolejności caller'a; druga forma starego podziału nie tworzy nowej rodziny.",
     "Utrzymasz Slot<T> z poprawnym stanem MaybeUninit i dokładnym Drop; powtórka recall pozostaje osobnym sprawdzeniem.",
     "Rozpoznasz bezpieczny reborrow MutSlot oraz odrzucisz niepoprawne skrócenie wewnętrznego lifetime; przy jednej rodzinie potwierdzenie pozostaje prowizoryczne, a pomoc nie otwiera nowej wersji.",
   ],
@@ -1395,6 +1416,10 @@ export const unsafeMiriModule: CourseModule = {
         {
           lessonId: "unsafe-miri-disjoint-regions",
           stepId: "disjoint-regions-blank",
+        },
+        {
+          lessonId: "unsafe-miri-disjoint-regions",
+          stepId: disjointRangesPrimaryStepId,
         },
       ],
     },
@@ -1473,6 +1498,11 @@ export const unsafeMiriAssessmentSources = {
     canonical: regionsSolution,
     equivalent: regionsEquivalent,
     mutant: regionsStarter,
+  },
+  disjointRanges: {
+    canonical: disjointRangesSolution,
+    equivalent: disjointRangesEquivalent,
+    mutant: disjointRangesStarter,
   },
   slotState: {
     canonical: slotSolution,

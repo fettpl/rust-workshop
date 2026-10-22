@@ -4,6 +4,9 @@ import {
   initializedPrefixPrimaryStepId,
 } from "./unsafe-miri-initialized-prefix";
 import {
+  disjointRangesPrimaryStepId,
+} from "./unsafe-miri-disjoint-ranges";
+import {
   unsafeMiriAssessmentSources,
   unsafeMiriLessons,
   unsafeMiriReviewExercises,
@@ -36,6 +39,7 @@ function sourceFor(id: string, solution: string) {
     "disjoint-regions-blank": unsafeMiriAssessmentSources.disjointRegions,
     "disjoint-regions-recall": unsafeMiriAssessmentSources.disjointRegions,
     "review-unsafe-miri-disjoint-regions": unsafeMiriAssessmentSources.disjointRegions,
+    [disjointRangesPrimaryStepId]: unsafeMiriAssessmentSources.disjointRanges,
     "slot-state-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-contract-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-blank": unsafeMiriAssessmentSources.slotState,
