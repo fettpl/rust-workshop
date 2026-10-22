@@ -462,8 +462,8 @@ Zakresy są półotwarte: start należy do zakresu, a end już nie. Zakres jest
 niepoprawny, gdy start > end albo end > buffer.len(). Najpierw zgłoś
 FirstInvalid, potem SecondInvalid, a Overlap dopiero po poprawności obu zakresów.
 Overlap oznacza dwa niepuste zakresy spełniające first.start < second.end i
-    second.start < first.end. Zachowaj kolejność wywołania (caller order), czyli
-    kolejność argumentów. Pusty zakres nie zawiera żadnego elementu i nie
+second.start < first.end. Zachowaj kolejność argumentów. Pusty zakres nie
+zawiera żadnego elementu i nie
 nachodzi na żaden zakres; 2..2 z 0..4 jest poprawne, a dwa puste zakresy też.
 
 Na błędzie nie zmieniaj bufora. Po sukcesie każdy niepusty slice musi wskazywać
@@ -480,7 +480,7 @@ export const disjointRangesSteps: LessonStep[] = [
   {
     id: "disjoint-regions-range-model",
     kind: "run",
-    title: "Model: dwa zakresy i kolejność caller'a",
+    title: "Model: dwa zakresy i kolejność argumentów",
     prompt:
       "Uruchom model dla ustalonych zakresów `0..2` i `2..4`; zwróć uwagę na półotwarty koniec, pusty zakres oraz błąd overlap.",
     code: disjointRangesModel,
