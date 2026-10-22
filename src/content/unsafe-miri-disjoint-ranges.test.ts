@@ -131,6 +131,7 @@ it("publishes the model and exactly two ordered range steps", () => {
   expect(disjointRangesSteps[1]).toMatchObject({
     kind: "apply",
     code: disjointRangesStarter,
+    expectedStatus: "success",
     evidenceKind: "transfer",
     evidenceGate: true,
   });

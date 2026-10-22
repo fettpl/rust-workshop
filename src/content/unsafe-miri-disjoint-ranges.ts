@@ -505,6 +505,7 @@ export const disjointRangesSteps: LessonStep[] = [
     prompt: primaryPrompt,
     code: disjointRangesStarter,
     solution: disjointRangesSolution,
+    expectedStatus: "success",
     hints: [
       "Najpierw sprawdź oba zakresy i dopiero potem rozstrzygnij overlap; pusty zakres nie zajmuje elementu.",
       "Posortuj niepuste zakresy tylko na czas dzielenia slice'a, a wynik zwróć w kolejności argumentów.",
