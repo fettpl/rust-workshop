@@ -3,10 +3,12 @@
 Date: 2026-10-22
 
 This queue starts from main commit `7c760e3`. The local native-test maintenance
-milestone is being developed on a separate branch while the GitHub Actions
+milestone is complete on a separate branch. Disjoint-range integration has
+completed its local verification and independent review. The GitHub Actions
 billing block is expected to remain until the 2026-11-01 reset. Full-main jobs
 never started during this period; that is an infrastructure scheduling result,
-not a source failure or evidence about the application.
+not a source failure or evidence about the application. GitHub Actions acceptance,
+remote integration, release and publication remain pending.
 
 ## Local workflow
 
@@ -28,16 +30,24 @@ coverage, or learner achievement.
 The queue is maintained in this order:
 
 1. local maintenance and verification hygiene;
-2. disjoint-region transfer work — authored; integrated local acceptance pending;
-3. `Slot` transfer work;
-4. variance transfer work;
-5. foundation reconciliation after those changes.
+2. disjoint-region transfer work — authored; local verification and independent
+   review complete;
+3. OSS readiness and public release — separate feature/PR after the current
+   disjoint milestone;
+4. `Slot` transfer work;
+5. `MutSlot` variance transfer work;
+6. foundation reconciliation after those changes.
 
 Future feature work remains split into separate feature branches and future
-pull requests. It must not be folded into the maintenance patch. Once Actions
-is available again, each future integration requires an independent review and
-fresh required checks on the exact feature head and on the resulting `main`
-commit. Historical runs remain historical observations.
+pull requests. The OSS milestone must wait for this disjoint chapter's local
+checks, independent review and English commit, and must remain separate from
+new chapters, dependency updates and application redesign. It requires license
+and copyright approval, exact-head CI and resulting-`main` checks when Actions
+is available, human publication on GitHub, and post-publication checks. During
+the current Actions hold, keep that work local: do not publish, change billing,
+or create hosting. Once Actions is available again, each integration requires
+independent review and fresh required checks on the exact feature head and on
+the resulting `main` commit. Historical runs remain historical observations.
 
 ## Recovery and scheduling boundary
 
@@ -59,5 +69,6 @@ describes the appended model/primary, unchanged historical IDs and assistance
 policy, bounded native witnesses and current local acceptance status. The source
 adds two steps (1,275 to 1,277) while retaining 48 modules, 192 lessons, 194 concepts
 and 349 sources. Independent review has resolved the initial model/wording
-findings; the full integrated campaign remains pending. Slot implementation waits
-for this local milestone. Remote acceptance stays deferred.
+findings; local unit, Rust, build, production E2E and offline checks are complete,
+with independent review complete. OSS readiness follows this milestone and
+precedes Slot implementation. Remote acceptance stays deferred.

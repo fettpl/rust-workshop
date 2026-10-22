@@ -3,11 +3,12 @@
 Local candidate update, 22 October 2026: PR 76 was merged as `7c760e3`, but
 resulting-main full CI jobs did not start because of the billing block. Local
 maintenance is committed separately. The disjoint-range candidate appends two
-steps, bringing authored availability to 1,277 steps; full local acceptance is
-pending. [Its dated contract and evidence boundary](disjoint-range-transfer-evidence.md)
-and [local queue](local-development-queue.md) govern this candidate. The records
-below retain their historical source and acceptance scope. No current green-main
-or release claim follows from a historical PR run.
+steps, bringing authored availability to 1,277 steps. Local verification and
+independent feature review are complete. [Its dated contract and evidence boundary](disjoint-range-transfer-evidence.md)
+and [local queue](local-development-queue.md) govern this candidate. GitHub
+Actions acceptance, remote integration, release and publication remain pending.
+The records below retain their historical source and acceptance scope. No current
+green-main or release claim follows from a historical PR run.
 
 Accepted pre-A3a product source: `main` commit `3b95d5812891eafd9b867382c53787055cc87208`, after the accepted A2 and dependency updates. The initialized-prefix continuation is tracked in [PR 76](https://github.com/fettpl/rustcrushcourse/pull/76). The dated records below are preserved history and target-scope discussion; their earlier current/candidate/pending labels are not current verification claims.
 

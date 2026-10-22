@@ -63,6 +63,17 @@ The assembled local candidate contains 48 modules, 192 lessons, 194 concepts,
 lesson, concept or source. Slot and MutSlot still each have one authored primary
 family; the four provisional foundation concepts remain separate follow-up work.
 
+## Earlier curriculum review follow-through
+
+This milestone follows the [6 October review](curriculum-review-2026-10-06.md):
+provide a distinct executable transfer contract, preserve historical assistance
+and raw evidence, verify exact resume and offline study, and separate authored
+availability from observed learning. The beginner route and prerequisite graph
+remain intact. The [original-scope audit](curriculum-audit-2026-10-10.md) retains
+its dated 19-topic/five-project reconciliation. Remaining foundation calibration,
+open design evidence and broader target-map work keep their separate queue and
+acceptance requirements.
+
 ## Trusted verification scope
 
 The exercise harness checks seven behaviors, including 2,274 endpoint combinations
@@ -90,12 +101,49 @@ credit.
 
 ## Local acceptance status
 
-Focused core checks passed on selected stable 1.98.1 and exact Rust 1.85.0. The
-fixed package passed fmt/check/test/Clippy on both toolchains and 12 tests under
-pinned Miri. Diagnostic regressions passed 12 tests. Five affected compatibility
-files passed 34 tests. Independent source review resolved both initial P1 findings;
-full integrated local campaign and final acceptance remain pending. This record
-will be updated with actual integrated results before the local milestone closes.
+Application source remains `5cdb2f1`, including the runnable starter-status fix.
+The final verification head is `9bfb357`; it contains script-only offline
+viewport/output fixes while the application source stayed unchanged. The fresh
+local campaign completed on that verification head:
+
+| Scope                                 | Result                                                                                     |
+| ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Lint / typecheck / content validation | Passed; 0 lint errors, 29 existing warnings                                                |
+| Structural source audit               | Passed; live URLs were not rechecked                                                       |
+| Focused browser check                 | 1 passed in 2.7 seconds; narrow coverage only                                              |
+| Full ordinary unit suite              | 133 files; 1,461 passed, 0 failed, 1 explicit prefix-profile opt-in skip, 0 other skips    |
+| Authored Rust, selected stable 1.98.1 | 2,525 / 2,525 passed in 456,464 ms                                                         |
+| Authored Rust, exact 1.85.0           | 2,525 / 2,525 passed in 421,815 ms                                                         |
+| Production build                      | Passed; exit 0 in 5,761 ms                                                                 |
+| Production E2E                        | 185 expected; 0 skipped, unexpected or flaky in 276,757.806 ms                             |
+| Offline flow                          | Passed; exit 0; no page errors; unavailable runner reported honestly and no credit granted |
+
+The offline flow covered the disjoint draft, note, hint, exact-index 8,
+keyboard and honest-unavailability paths. Two earlier offline RED findings were
+fixed in the verification scripts on `9bfb357` and independently approved. The
+focused browser result and the production run exercise the application source
+from `5cdb2f1`; the verification-head script changes do not change its learning
+policy. No production learning policy or historical credit was changed.
+
+The prior integrated campaign at source `9dbd27a` recorded 1,461 ordinary unit
+passes with one explicit native-profile opt-in skip and 2,523 / 2,523 authored
+Rust passes. Those results remain historical. Its first full-unit attempt exposed
+six stale historical expectations; targeted recovery and predecessor-projection
+corrections then passed 118 focused tests before that historical retry passed.
+
+The genuine qualified native proof also remains historical: frozen source
+`459da10` produced strict success for stable 118 recipes / 125 commands / 9
+controls, pinned Miri 122 / 131 / 11, and exact MSRV 118 / 125 / 9. The proof
+qualified unchanged runtime paths and does not claim a same-head native run or
+Linux CI parity.
+
+Narrow QA screenshots had empty console/page-error output on desktop and mobile.
+The existing long-module breadcrumb/mobile-header crowding remains a known,
+narrow UX observation rather than a new regression; this is not a complete
+accessibility claim. Independent review of the feature, assembled receipts and
+these documents is complete. Remote acceptance remains deferred until the
+expected 2026-11-01 Actions reset; no publishing, billing or hosting operation
+is part of this local milestone.
 
 For reproducible checks, use the commands and prerequisites in [AGENTS.md](../AGENTS.md)
 and [CI documentation](ci-cd.md), together with the current initialized-prefix
