@@ -1014,6 +1014,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .fill(unsafeMiriTitle);
     await page.locator(".module-picker > button").filter({ hasText: unsafeMiriTitle }).click();
     await page.locator(".lesson-list-item").filter({ hasText: "Rozdziel mutowalne regiony" }).click();
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.getByLabel("Kroki lekcji").getByRole("button").nth(7).click();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Model: dwa zakresy i kolejność argumentów", exact: true })).toBeVisible();
@@ -1021,7 +1022,6 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByLabel("Kroki lekcji").getByRole("button").nth(8).click();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Przenieś dowód na dwa zakresy", exact: true })).toBeVisible();
-    await page.setViewportSize({ width: 390, height: 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const disjointEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
     await page.getByRole("tab", { name: "Kod", exact: true }).click();
@@ -1033,6 +1033,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     const disjointDraft = "// Zakresy zapisane offline bez transferu.\n";
     await disjointEditor.fill(disjointDraft);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+    await page.getByRole("tab", { name: "Output", exact: false }).click();
     await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     await page.getByText("Twój notatnik", { exact: true }).click();
