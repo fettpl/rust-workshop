@@ -1,6 +1,7 @@
 /** Test-only pre-initialized-prefix projection; the accepted bytes are immutable. */
 import type * as Course from "./course";
 import baseline from "./fixtures/unsafe-miri-pre-prefix.json";
+import { historicalBeforeDisjointRanges } from "./unsafe-miri-disjoint-ranges-compatibility-fixture";
 
 export const initializedPrefixLessonId = "unsafe-miri-byte-view";
 export const initializedPrefixStepIds = [
@@ -15,9 +16,10 @@ export const acceptedPreInitializedPrefixCourseSha256 =
   baseline.wholeCourseSha256;
 
 export function historicalBeforeInitializedPrefix(course: typeof Course) {
+  const beforeDisjointRanges = historicalBeforeDisjointRanges(course);
   return {
-    ...course,
-    lessons: course.lessons.map((lesson) =>
+    ...beforeDisjointRanges,
+    lessons: beforeDisjointRanges.lessons.map((lesson) =>
       lesson.id !== initializedPrefixLessonId
         ? lesson
         : {
@@ -30,7 +32,7 @@ export function historicalBeforeInitializedPrefix(course: typeof Course) {
             ),
           },
     ),
-    modules: course.modules.map((module) =>
+    modules: beforeDisjointRanges.modules.map((module) =>
       module.id !== "unsafe-miri-contracts"
         ? module
         : {
