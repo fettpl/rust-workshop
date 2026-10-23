@@ -1,7 +1,7 @@
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   copyMonacoDistribution,
   upstreamNoticeFiles,
@@ -118,5 +118,143 @@ describe("served sanitizer security boundary", () => {
     expect(
       await readFile(join(root, "monaco/vs/dompurify-fixed.js"), "utf8"),
     ).toContain("DOMPurify 3.4.17");
+  });
+});
+
+describe("Monaco asset cleanup failures", () => {
+  async function failureScenario({
+    validationFailure = false,
+    promotionFailure = false,
+    restoreFailure = false,
+    stagingCleanupFailure = true,
+    backupCleanupFailure = false,
+  } = {}) {
+    const errors = Object.fromEntries(
+      [
+        "validation",
+        "promotion",
+        "restore",
+        "stagingCleanup",
+        "backupCleanup",
+      ].map((name) => [name, new Error(`${name} failed`)]),
+    );
+    const locations = new Map<string, string>([
+      ["/owned/monaco", "complete previous output"],
+    ]);
+    const removed: { path: string; force: boolean }[] = [];
+    const rename = async (from: string, to: string) => {
+      if (from.includes("-backup-") && restoreFailure) throw errors.restore;
+      locations.set(to, locations.get(from)!);
+      locations.delete(from);
+    };
+    vi.resetModules();
+    vi.doMock("node:fs/promises", () => ({
+      cp: async () => {},
+      mkdir: async () => {},
+      stat: async () => ({}),
+      mkdtemp: async (prefix: string) => {
+        const path = `${prefix}test`;
+        locations.set(path, "prepared staging");
+        return path;
+      },
+      rename,
+      rm: async (path: string, options: { force?: boolean }) => {
+        removed.push({ path, force: !!options.force });
+        if (
+          options.force &&
+          path.includes("-staging-") &&
+          stagingCleanupFailure
+        )
+          throw errors.stagingCleanup;
+        if (options.force && path.includes("-backup-") && backupCleanupFailure)
+          throw errors.backupCleanup;
+        locations.delete(path);
+      },
+    }));
+    vi.doMock("./monaco-sanitizer.mjs", () => ({
+      guardAppImports: async () => {},
+      adaptMonaco: async () => {
+        if (validationFailure) throw errors.validation;
+      },
+    }));
+    let caught: unknown;
+    try {
+      const isolated = await import("./setup-assets-lib.mjs");
+      await isolated.copyMonacoDistribution({
+        sourceRoot: "source",
+        destinationRoot: "/owned/monaco",
+        promote: async (from, to) => {
+          if (promotionFailure) throw errors.promotion;
+          await rename(from, to);
+        },
+      });
+    } catch (error) {
+      caught = error;
+    } finally {
+      vi.doUnmock("node:fs/promises");
+      vi.doUnmock("./monaco-sanitizer.mjs");
+      vi.resetModules();
+    }
+    return { caught, errors, locations, removed };
+  }
+
+  it("preserves promotion and restore causes and reports the retained backup when cleanup fails", async () => {
+    const { caught, errors, locations, removed } = await failureScenario({
+      promotionFailure: true,
+      restoreFailure: true,
+    });
+    expect(caught).toBeInstanceOf(AggregateError);
+    const aggregate = caught as AggregateError;
+    expect(aggregate.message).toContain("/owned/.monaco-backup-test");
+    expect(aggregate.errors[0]).toBeInstanceOf(AggregateError);
+    expect(aggregate.errors[0].errors).toEqual([
+      errors.promotion,
+      errors.restore,
+    ]);
+    expect(aggregate.errors[1]).toBe(errors.stagingCleanup);
+    expect(aggregate.cause).toBe(aggregate.errors[0]);
+    expect(locations.get("/owned/.monaco-backup-test")).toBe(
+      "complete previous output",
+    );
+    expect(
+      removed.some(({ path, force }) => force && path.includes("-backup-")),
+    ).toBe(false);
+  });
+
+  it("preserves a validation failure when staging cleanup also fails", async () => {
+    const { caught, errors, locations } = await failureScenario({
+      validationFailure: true,
+    });
+    expect(caught).toBeInstanceOf(AggregateError);
+    const aggregate = caught as AggregateError;
+    expect(aggregate.errors).toEqual([
+      errors.validation,
+      errors.stagingCleanup,
+    ]);
+    expect(aggregate.cause).toBe(errors.validation);
+    expect(aggregate.message).toContain("validation failed");
+    expect(locations.get("/owned/monaco")).toBe("complete previous output");
+  });
+
+  it("attempts independent backup cleanup after staging cleanup fails", async () => {
+    const { caught, errors, removed } = await failureScenario({
+      backupCleanupFailure: true,
+    });
+    expect(caught).toBeInstanceOf(AggregateError);
+    expect((caught as AggregateError).errors).toEqual([
+      errors.stagingCleanup,
+      errors.backupCleanup,
+    ]);
+    expect(
+      removed.filter(({ force }) => force).map(({ path }) => path),
+    ).toEqual(["/owned/.monaco-staging-test", "/owned/.monaco-backup-test"]);
+  });
+
+  it("preserves the original operation error object when cleanup succeeds", async () => {
+    const { caught, errors } = await failureScenario({
+      validationFailure: true,
+      stagingCleanupFailure: false,
+    });
+    expect(caught).toBe(errors.validation);
   });
 });

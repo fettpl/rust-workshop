@@ -18,6 +18,8 @@ export async function copyMonacoDistribution({
   );
   let backup;
   let keepBackup = false;
+  let operationFailed = false;
+  let operationError;
   try {
     await cp(join(sourceRoot, "min", "vs"), join(staging, "vs"), {
       recursive: true,
@@ -55,10 +57,29 @@ export async function copyMonacoDistribution({
       }
       throw error;
     }
-  } finally {
-    await rm(staging, { recursive: true, force: true });
-    if (backup && !keepBackup)
-      await rm(backup, { recursive: true, force: true });
+  } catch (error) {
+    operationFailed = true;
+    operationError = error;
   }
+  const cleanupErrors = [];
+  const cleanupPaths = [staging, ...(backup && !keepBackup ? [backup] : [])];
+  for (const path of cleanupPaths) {
+    try {
+      await rm(path, { recursive: true, force: true });
+    } catch (error) {
+      cleanupErrors.push(error);
+    }
+  }
+  if (cleanupErrors.length) {
+    const reason = operationFailed
+      ? `${operationError instanceof Error ? operationError.message : String(operationError)}; Monaco asset cleanup also failed`
+      : "Monaco asset cleanup failed";
+    throw new AggregateError(
+      [...(operationFailed ? [operationError] : []), ...cleanupErrors],
+      reason,
+      operationFailed ? { cause: operationError } : undefined,
+    );
+  }
+  if (operationFailed) throw operationError;
 }
 export { upstreamNoticeFiles };
