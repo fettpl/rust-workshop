@@ -5,6 +5,9 @@ basics of programming and are starting Rust from zero. Lessons and the learner
 interface are currently in Polish; this README and the contributor
 documentation are in English.
 
+See the [history redaction notice](docs/history-redaction.md) for historical
+presentation changes, frozen receipt hashes and current compatibility limits.
+
 The course asks you to predict what a program will do, experiment with it,
 read a real compiler diagnostic, repair the code, and transfer the idea to a
 new task. Spaced review brings concepts back after time away, and project

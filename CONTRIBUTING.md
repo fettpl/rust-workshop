@@ -6,6 +6,10 @@ focused interface improvements. Please read [AGENTS.md](AGENTS.md) before
 changing the repository; it explains the architecture, evidence boundaries,
 persistent IDs, and maintainer checks.
 
+Read the [history redaction notice](docs/history-redaction.md) before interpreting
+historical fixture hashes or report presentation copies. Preserve the frozen
+receipts and the closed reviewed maintenance exceptions.
+
 ## Before you start
 
 Use a supported Node version (`^22.13.0 || >=24`) and install the locked npm

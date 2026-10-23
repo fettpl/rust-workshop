@@ -1,3 +1,8 @@
+import {
+  assertReviewedHistoryRedaction,
+  historyRedactionDeltas,
+  historyRedactionPath,
+} from "./history-redaction-test-support";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
@@ -32,8 +37,12 @@ const sha = (value: unknown) =>
 
 // This maintenance successor is deliberately narrow and reversible: the
 // historical receipt remains pinned to the pre-maintenance source hash while
-// this test accepts only the reviewed 2026-10-22 replacement bytes.
+// this test accepts only the explicitly reviewed maintenance replacement bytes.
 const reviewedMaintenanceDeltas = {
+  [historyRedactionPath]: {
+    reviewedOn: "2026-10-23",
+    ...historyRedactionDeltas[historyRedactionPath],
+  },
   "src/content/async-lending-native-test-support.ts": {
     reviewedOn: "2026-10-22",
     previousSha256:
@@ -274,15 +283,22 @@ it("matches accepted identities and reviewed maintenance successors", () => {
   const immutablePaths = new Set(
     baseline.immutableFiles.map((file) => file.path),
   );
+  assertReviewedHistoryRedaction(
+    baseline.immutableFiles,
+    readFileSync(new URL(`../../${historyRedactionPath}`, import.meta.url)),
+  );
   expect(Object.keys(reviewedMaintenanceDeltas)).toEqual([
+    historyRedactionPath,
     "src/content/async-lending-native-test-support.ts",
   ]);
   for (const [path, delta] of Object.entries(reviewedMaintenanceDeltas)) {
     expect(immutablePaths.has(path), path).toBe(true);
     expect(
-      baseline.immutableFiles.find((file) => file.path === path)?.sha256,
+      baseline.immutableFiles
+        .filter((file) => file.path === path)
+        .map((file) => file.sha256),
       `${path} historical receipt (${delta.reviewedOn})`,
-    ).toBe(delta.previousSha256);
+    ).toEqual([delta.previousSha256]);
   }
   for (const file of baseline.immutableFiles) {
     const actual = createHash("sha256")

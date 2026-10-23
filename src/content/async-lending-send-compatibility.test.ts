@@ -1,3 +1,8 @@
+import {
+  assertReviewedHistoryRedaction,
+  historyRedactionDeltas,
+  historyRedactionPath,
+} from "./history-redaction-test-support";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
@@ -22,14 +27,24 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
   expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1277);
 });
 
-it("keeps all accepted immutable fixture bytes unchanged", () => {
-  for (const file of baseline.immutableFiles)
+it("keeps accepted immutable bytes or the exact reviewed presentation successor", () => {
+  expect(Object.keys(historyRedactionDeltas)).toEqual([historyRedactionPath]);
+  assertReviewedHistoryRedaction(
+    baseline.immutableFiles,
+    readFileSync(new URL(`../../${historyRedactionPath}`, import.meta.url)),
+  );
+  for (const file of baseline.immutableFiles) {
+    const expected =
+      file.path === historyRedactionPath
+        ? historyRedactionDeltas[historyRedactionPath].currentSha256
+        : file.sha256;
     expect(
       createHash("sha256")
         .update(readFileSync(new URL(`../../${file.path}`, import.meta.url)))
         .digest("hex"),
       file.path,
-    ).toBe(file.sha256);
+    ).toBe(expected);
+  }
 });
 
 it("preserves every accepted async fixture string and relative order", () => {

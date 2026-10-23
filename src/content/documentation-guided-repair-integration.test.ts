@@ -1,3 +1,8 @@
+import {
+  assertReviewedHistoryRedaction,
+  historyRedactionDeltas,
+  historyRedactionPath,
+} from "./history-redaction-test-support";
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { expect, it } from "vitest";
@@ -137,11 +142,20 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
     }));
     expect(actual).toEqual(legacy[name]);
   }
+  expect(Object.keys(historyRedactionDeltas)).toEqual([historyRedactionPath]);
+  assertReviewedHistoryRedaction(
+    legacy.immutable,
+    readFileSync(new URL(`../../${historyRedactionPath}`, import.meta.url)),
+  );
   for (const immutable of legacy.immutable)
     expect(
       sha(readFileSync(new URL(`../../${immutable.path}`, import.meta.url))),
       immutable.path,
-    ).toBe(immutable.sha256);
+    ).toBe(
+      immutable.path === historyRedactionPath
+        ? historyRedactionDeltas[historyRedactionPath].currentSha256
+        : immutable.sha256,
+    );
   expect(course.lessons.slice(legacy.lessons.length).map((l) => l.id)).toEqual([
     id,
   ]);
