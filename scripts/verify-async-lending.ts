@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
 import { asyncLendingBoundaryFixtures } from "../src/content/async-lending-fixtures";
-import { buildProjectArchive } from "./project-archive";
+import { buildProjectArchive, projectArchiveFiles } from "./project-archive";
 import { tokioServicePackage } from "../src/content/projects/tokio-service";
 
 const args = process.argv.slice(2);
@@ -122,10 +122,37 @@ function extract(variant: "starter" | "solution") {
   const directory = join(root, variant);
   mkdirSync(directory, { recursive: true });
   const files = unzipSync(buildProjectArchive(tokioServicePackage, variant));
-  const expected = projectFiles(tokioServicePackage, variant);
+  const expected = projectArchiveFiles(tokioServicePackage, variant);
+  const authored = projectFiles(tokioServicePackage, variant);
+  const prefix = `${tokioServicePackage.id}/`;
+  const paths = Object.keys(files).map((path) => path.slice(prefix.length));
+  for (const path of Object.keys(files)) {
+    assert(path.startsWith(prefix), `archive member outside package: ${path}`);
+    const relative = path.slice(prefix.length);
+    assert(
+      relative && !relative.startsWith("/") && !relative.includes(".."),
+      `unsafe archive path: ${path}`,
+    );
+  }
+  assert.deepEqual(paths.sort(), Object.keys(expected).sort());
   for (const [path, contents] of Object.entries(files)) {
-    const relative = path.slice(`${tokioServicePackage.id}/`.length);
-    assert.equal(strFromU8(contents), expected[relative], relative);
+    const relative = path.slice(prefix.length);
+    const expectedContent = expected[relative];
+    assert.notEqual(
+      expectedContent,
+      undefined,
+      `unexpected archive path: ${relative}`,
+    );
+    assert.equal(
+      strFromU8(contents),
+      expectedContent,
+      `archive bytes differ: ${relative}`,
+    );
+    if (relative in authored)
+      assert(
+        !/\bunsafe\s+(?:fn|impl|trait|\{)/.test(authored[relative]),
+        `unsafe source: ${relative}`,
+      );
     const target = join(directory, relative);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, contents);

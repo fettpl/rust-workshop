@@ -2,6 +2,10 @@ import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
 import { lessons, modules, projects } from "../../src/content/course";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 for (const [projectId, moduleId] of [
   ["tokio-service", "tokio-network-service"],
@@ -42,9 +46,8 @@ for (const [projectId, moduleId] of [
     expect(download.suggestedFilename()).toBe(`${archive.id}-starter.zip`);
     expect(await download.failure()).toBeNull();
     const files = unzipSync(await readFile((await download.path())!));
-    expect(Object.keys(files).sort()).toEqual(
-      archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
-    );
+    expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
+    assertArchiveNotices(files, archive);
     for (const file of archive.files)
       expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(file.starter);
     await panel
@@ -54,7 +57,9 @@ for (const [projectId, moduleId] of [
       panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
     ).toBeVisible();
     await expect(
-      page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+      page
+        .locator(".save-status")
+        .filter({ hasText: "Zapisano na tym urządzeniu" }),
     ).toBeVisible();
     await page.reload();
     await page

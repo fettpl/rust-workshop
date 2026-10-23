@@ -3,6 +3,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
 import { lessons, modules, projects } from "../../src/content/course";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 const project = projects.find((item) => item.id === "concurrency-lab")!;
 
@@ -39,9 +43,8 @@ test("downloads the actual Loom lab and keeps project work separate after viewin
     expect(await download.failure()).toBeNull();
     const files = unzipSync(await readFile((await download.path())!));
     const archive = project.package!;
-    expect(Object.keys(files).sort()).toEqual(
-      archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
-    );
+    expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
+    assertArchiveNotices(files, archive);
     for (const file of archive.files)
       expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(
         variant === "solution" ? (file.solution ?? file.starter) : file.starter,
@@ -103,7 +106,9 @@ test("resumes a fresh atomic task through its lab project without revealing code
   await expect(editor).toHaveValue("");
   await editor.fill("// Po konflikcie ponownie sprawdzę limit.\n");
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Projekt", exact: true }).click();

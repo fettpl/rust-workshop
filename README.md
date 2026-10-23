@@ -1,92 +1,127 @@
 # Rust Workshop
 
-**Make Rust click—one prediction, compiler message, and working program at a time.**
+Rust Workshop is a local-first, interactive course for people who know the
+basics of programming and are starting Rust from zero. Lessons and the learner
+interface are currently in Polish; this README and the contributor
+documentation are in English.
 
-Rust Workshop is an interactive course for people who know basic programming and are starting Rust from zero. It brings explanations, a code editor, executable exercises, ownership visualizations, spaced review, and downloadable Cargo projects into one learning workspace.
+The course asks you to predict what a program will do, experiment with it,
+read a real compiler diagnostic, repair the code, and transfer the idea to a
+new task. Spaced review brings concepts back after time away, and project
+work connects individual exercises into programs you can continue locally.
 
-Start with a small question: *Who owns this value? What will this program print? Why does the compiler reject it?* Then test your reasoning, repair the code, and apply the idea in a fresh task. The course grows from first Rust programs to borrowed APIs, concurrency, async services, testing, and unsafe contracts.
+## What you can learn
 
-**Language:** lessons and the learner interface are currently in Polish. This README and contributor instructions are in English.
+The **core route** ends at Log Analyzer. It starts with the first Rust program,
+control flow, ownership and borrowing, data modeling, collections, errors,
+Cargo, generics, traits, lifetimes, closures, iterators, testing, Number
+Guessing+, and Log Analyzer.
 
-## Learn by making decisions
+The course map also has optional extension groups. You can browse them without
+changing the core route:
 
-Each part of the learning loop has a job:
+- **Language and abstraction:** boxed values, shared ownership, callbacks,
+  GATs, and lending APIs.
+- **Concurrency and services:** threads, channels, async, Tokio, networking,
+  operations, and a capstone.
+- **Libraries and APIs:** public contracts, workspaces, dependencies, release
+  matrices, and macros.
+- **Testing and safety:** Mini grep, property tests, fuzzing, profiling,
+  allocation evidence, FFI, and Miri contracts.
 
-1. **Predict** output, ownership, or a compiler error before running code.
-2. **Experiment** in the editor and read the compiler's actual feedback.
-3. **Repair** a broken program and explain the contract behind the fix.
-4. **Transfer** the idea to a new problem, including tasks with an empty editor.
-5. **Return** to a spaced review queue and retrieve the idea after time away.
-6. **Build** a Cargo project that connects individual concepts into a working program.
+The course currently includes project work for Todo CLI, Number Guessing+,
+Log Analyzer, atomic protocols, Tokio pipelines and TCP services, service
+operations, public API workspaces, Mini grep, property contracts, an FFI
+buffer wrapper, Miri safety, and a durable log service. Project pages provide
+starter and solution archives where a Cargo package exists. Downloading an
+archive gives you files to work on locally; the web app does not run those
+archives on your computer.
 
-Hints and reference solutions support learning. The progress model tracks assistance and distinguishes reading, completion, coding evidence, and later recall, so opening a lesson or revealing an answer does not count as independent coding success.
+The workspace includes an ownership visualizer, progressive Compiler Coach
+hints, focus mode, keyboard controls, and light and dark themes alongside its
+lessons, projects, review history, and local export/import.
 
-## A workspace that remembers your work
+## A local learning workspace
 
-- **See ownership unfold.** Step through visual traces of owners, borrows, stack/heap relationships, and value lifetimes.
-- **Work with executable feedback.** Run Rust and exercise tests, inspect diagnostics, and navigate back to the relevant code.
-- **Follow the concept graph.** Explore prerequisites, concept-level evidence, module criteria, and reviews due next.
-- **Pick up where you stopped.** Keep your lesson position, editor drafts, notes, bookmarks, and review history in the browser.
-- **Take your progress with you.** Export and import a validated learning-state file; download starter and solution project archives.
-- **Make room to concentrate.** Use focus mode, keyboard navigation, a responsive mobile layout, and light or dark themes.
-- **Keep studying offline.** The production app caches learning materials and supports saved drafts after an initial online visit. Rust execution requires a reachable runner.
+- Progress, drafts, notes, bookmarks, review history, and evidence history are
+  stored in your browser's IndexedDB. No account is required.
+- Settings lets you export a validated progress file and import it later. Keep
+  an export before clearing browser data or moving to another device.
+- A production build registers a service worker and caches visited learning
+  resources and project downloads. After an initial online visit, saved work
+  and cached lessons can be opened offline.
+- Rust execution is a separate boundary. Pressing **Run** sends the current
+  editor code to `POST /api/run`, which forwards it to an isolated remote
+  runner (the default is the official Rust Playground). The app does not run
+  learner code, imported code, Cargo, or a shell locally. Offline study keeps
+  your state, but a run needs a reachable runner; an unavailable runner is
+  infrastructure feedback, not a wrong answer. See [the runner boundary](docs/runner.md).
 
-Learning state is stored locally in IndexedDB, with no account required. Export a backup before clearing browser data or switching devices. Running an exercise sends its code to the configured remote runner; the default is the official Rust Playground. See the [runner boundary](docs/runner.md) for the execution and privacy details.
+This is a learning workspace, not an authenticated assessment service. Browser
+state and imported evidence are local and are not proof of an external exam or
+of a particular learning outcome.
 
-## A path from first programs to deeper Rust
+## Run it locally
 
-The course map separates a beginner core from optional extensions, so advanced material stays discoverable without crowding the starting path.
+The supported Node engine is `^22.13.0 || >=24`. A Rust toolchain is not needed
+to serve the web app or use its browser exercises.
 
-| Path | What you work on |
-| --- | --- |
-| First Rust programs | Bindings, functions, control flow, ownership and borrowing, structs and enums, collections, and error handling |
-| Everyday Rust | Modules and Cargo, generics and traits, lifetimes, closures, iterator pipelines, conversions, and documentation-guided repair |
-| Projects that connect the basics | Todo CLI, Number Guessing+, Log Analyzer, Mini grep, and a learner-owned Study Session CLI assignment |
-| Ownership and abstraction | Smart pointers, shared ownership, variance, higher-ranked callbacks, generic associated types, and lending APIs |
-| Concurrency and services | Threads, channels, synchronized state, atomics, Futures, Tokio tasks and I/O, cancellation, bounded flow, and a Durable Log Service capstone |
-| Libraries and engineering practice | Workspaces, public API compatibility, dependency policy, macros, property testing, fuzz evidence, performance and allocation evidence, FFI, and Miri safety contracts |
-
-The beginner core runs through Log Analyzer. Mini grep, smart pointers, and threaded programs extend that foundation before the Study Session CLI assignment; the service capstone and other specializations are optional. Project archives let you continue with Cargo outside the browser.
-
-See the [curriculum and roadmap](docs/advanced-curriculum.md) for scope and remaining work. Advanced exercises focus on specific, executable contracts, with scope and remaining work documented alongside the curriculum.
-
-## Run locally
-
-Use **Node.js 22.13 or later in the 22.x line, or Node.js 24+**, and npm.
+From a clean checkout:
 
 ```sh
+git clone https://github.com/fettpl/rustcrushcourse.git
+cd rustcrushcourse
 npm ci
 npm run dev
 ```
 
-Open [localhost:3000](http://127.0.0.1:3000). The development and build commands generate the downloadable project assets automatically. You do not need a local Rust toolchain to use browser exercises; their remote execution needs internet access.
-
-To use the production build, including the service worker for offline study:
+Open <http://127.0.0.1:3000>. The development server generates project assets
+through the normal npm lifecycle. For a production build and its offline
+service-worker path:
 
 ```sh
 npm run build
-npm start
+npm start -- --port 3002
 ```
 
-There is no hosted demo configured in this repository. Local Rust toolchains are needed for downloaded Cargo projects and maintainer verification, rather than for serving the learning app.
+With that production server running, the maintainer offline check is:
 
-## Develop and contribute
+```sh
+npm run test:offline
+```
 
-Rust Workshop uses Next.js, React, TypeScript, Monaco, IndexedDB, and a data-driven course model. Start with [AGENTS.md](AGENTS.md) for repository conventions and the installed Next.js documentation requirement.
+It needs Playwright and the loopback production server; it verifies the cached
+offline path rather than making Rust execution local.
 
-| Area | Where to look |
+Rust is required when you unpack a Cargo project or run maintainer verification
+against trusted repository fixtures. Those commands use fixed inputs and are
+separate from the learner runner. Start with [CI and local verification](docs/ci-cd.md)
+before attempting the full suite.
+
+## Contribute
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, contribution types,
+validation, pull requests, and contribution rights. The short [PR template](.github/pull_request_template.md)
+helps reviewers identify learner-language, persistent-ID, evidence, and
+validation changes.
+
+The main source map is:
+
+| Area | Location |
 | --- | --- |
-| Lessons, concepts, reviews, sources, and projects | `src/content/`; assembled in `src/content/course.ts` |
-| Content and state contracts | `src/domain/types.ts` |
-| Evaluation, progression, review, and course routes | `src/engine/` |
-| Saved state, migrations, and import/export | `src/persistence/` |
+| Lessons, modules, concepts, reviews, sources, and projects | `src/content/`, assembled in `src/content/course.ts` |
+| Domain and persistence contracts | `src/domain/`, `src/persistence/` |
+| Evaluation, progression, and review | `src/engine/` |
 | Learner interface | `src/components/` |
-| Remote execution adapter and API boundary | `src/runner/`, `src/app/api/run/` |
-| Trusted Rust verification and browser scenarios | `scripts/`, `tests/e2e/` |
+| Remote runner and API route | `src/runner/`, `src/app/api/run/` |
+| Trusted fixtures, package generation, and verification | `scripts/`, `tests/`, `scripts/fixtures/` |
 
-Useful starting points are clearer explanations, new repair/transfer variants, accessibility improvements, project tests, source-reference maintenance, and beginner learner feedback. Keep learner-facing content in Polish and new contributor documentation, commits, and pull requests in English. Preserve existing content IDs and saved progress when extending the course.
+Useful first contributions include clearer Polish explanations, repair and
+transfer exercises, source-reference maintenance, project tests, and focused
+UI improvements. Preserve existing lesson, module, concept, review, project,
+and source IDs: saved progress and imported state depend on them.
 
-For the JavaScript and content checks:
+For quick application and content checks:
 
 ```sh
 npm run typecheck
@@ -94,12 +129,62 @@ npm run lint
 npm run content:check
 ```
 
-The full test suite also uses trusted Rust fixtures. Prepare the toolchains and fixed Cargo dependencies described in [CI and local verification](docs/ci-cd.md) before running `npm test`. The initialized-prefix native-proof test is skipped by default locally; [CI explicitly authorizes it and prepares its offline configuration and toolchain qualification](.github/workflows/ci.yml), then awaits the real native proof. Other trusted Rust tests still run locally. The CI guide also covers production browser/offline checks and the specialized `content:*` verifiers. Browser tests that intercept runner responses establish UI and saved-state behavior; real compiler and runtime checks establish Rust behavior separately.
+`npm test` includes trusted native-fixture work. A fresh maintainer run needs
+the stable Rust toolchain and the locked Tokio dependency cache described in
+[CI and local verification](docs/ci-cd.md). The initialized-prefix native proof
+also requires its explicit qualified profile; an ordinary local run skips that
+proof unless `RUST_WORKSHOP_INITIALIZED_PREFIX_CONTROLS_AUTHORIZED=1` is set
+after the documented offline setup. Do not treat a skipped or infrastructure-
+limited check as a passing proof.
 
-## Project status
+## Licensing status
 
-The learning app and its curriculum are implemented and continue to evolve. Current work includes deeper independent practice, advanced contract exercises, and learner validation. Human pilot evidence is still needed to evaluate learning effectiveness; software checks alone do not establish it.
+The maintainer has approved this license split and the project credit
+**Pixel Media Workshop Paweł Borawski** (2026). Public-release preparation and
+source-provenance checks remain in progress. The licenses cover only rights
+the project can grant:
 
-The [implementation record](docs/progress.md), [curriculum roadmap](docs/advanced-curriculum.md), and [verification record](docs/verification.md) retain detailed scope, dated results, and open work. Some existing project documentation is in Polish.
+- MIT for application code, scripts, tests, evaluator machinery, programming
+  examples, executable lesson code/solutions, and code in downloadable
+  project archives;
+- CC BY 4.0 for authored teaching narrative, exercise prose, didactic answer
+  text, explanations, and authored and approved original illustrations;
+- the original license and attribution for third-party material.
 
-The repository is being prepared for public release. No project license file is currently included.
+Some TypeScript files contain both executable code and authored lesson text. In
+those files, apply the split to the relevant portions rather than treating the
+whole file as one blanket license. Preserve notices and attribution when
+reusing a portion. Three existing authored Cargo package manifests retain a
+narrow, maintainer-approved `MIT OR Apache-2.0` expression; this is not
+a blanket license for the repository. See the current
+[licensing guide](docs/licensing.md) for the canonical file-level, mixed-file,
+and archive reference. This is not a choice between MIT and CC BY for the
+whole repository. The icon assets remain an unresolved provenance gate until
+their source and permissions are established.
+
+The maintainer reports that the course prepared for this milestone was generated
+with ChatGPT and Codex Desktop using GPT-5.6 and later models for drafting and
+research, from the maintainer's prompts and direction, with no manual drafting
+of course fragments. This describes the workflow, not proof of originality,
+copyright protection or third-party clearance. The licensing guide explains
+these limits and provides the approved attribution example.
+
+The current release draft covers the source repository, authored Cargo
+archives, and the published audit surface. It does not publish a hosted
+deployment, compiled browser application, `.next` directory, or
+`node_modules` tree.
+
+See [SECURITY.md](SECURITY.md) for the current reporting limitations and the
+required release gate. No private reporting route is claimed until verified.
+Do not include secrets, private attachments, account or billing information,
+or machine-specific paths in public issues and pull requests.
+
+## Project notes
+
+The [curriculum roadmap](docs/advanced-curriculum.md) describes the current
+scope and remaining course work. [AGENTS.md](AGENTS.md) contains repository
+operating rules, while [docs/runner.md](docs/runner.md) and
+[docs/ci-cd.md](docs/ci-cd.md) hold the specialist execution and verification
+details. The repository is being prepared for public release; local
+preparation does not by itself change repository visibility, publish packages,
+or deploy a hosted application.

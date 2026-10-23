@@ -3,6 +3,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { projects } from "../../src/content/course";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 test("downloads the Cargo starter, separates reference help and preserves it after reload", async ({
   page,
@@ -36,9 +40,8 @@ test("downloads the Cargo starter, separates reference help and preserves it aft
   const path = testInfo.outputPath("starter.zip");
   await download.saveAs(path);
   const contents = unzipSync(await readFile(path));
-  expect(Object.keys(contents).sort()).toEqual(
-    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
-  );
+  expect(Object.keys(contents).sort()).toEqual(expectedArchivePaths(archive));
+  assertArchiveNotices(contents, archive);
   for (const file of archive.files)
     expect(strFromU8(contents[`${archive.id}/${file.path}`])).toBe(
       file.starter,
@@ -81,7 +84,9 @@ test("downloads the Cargo starter, separates reference help and preserves it aft
     panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
   ).toBeVisible();
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   const after = await readState();

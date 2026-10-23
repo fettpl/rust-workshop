@@ -3,6 +3,10 @@ import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { lessons, modules, projects } from "../../src/content/course";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 async function startCourse(page: Page) {
   await page.goto("/");
@@ -85,7 +89,9 @@ test("keeps Tokio gate diagnostics and a hinted draft, while revealed success ca
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await expect(editor).toHaveValue(draft);
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
   await expect(editor).toHaveValue(draft);
@@ -158,9 +164,8 @@ test("downloads the Tokio pipeline starter and keeps an unexposed gate fresh aft
   );
   expect(await download.failure()).toBeNull();
   const files = unzipSync(await readFile((await download.path())!));
-  expect(Object.keys(files).sort()).toEqual(
-    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
-  );
+  expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
+  assertArchiveNotices(files, archive);
   for (const file of archive.files)
     expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(file.starter);
 
@@ -171,7 +176,9 @@ test("downloads the Tokio pipeline starter and keeps an unexposed gate fresh aft
     panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
   ).toBeVisible();
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
 
   await openTokioFlow(page);

@@ -12,7 +12,7 @@ import { delimiter, dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
-import { buildProjectArchive } from "./project-archive";
+import { buildProjectArchive, projectArchiveFiles } from "./project-archive";
 import { serviceOperationsPackage } from "../src/content/projects/service-operations";
 
 const args = process.argv.slice(2);
@@ -97,7 +97,8 @@ mkdirSync(root, { recursive: true });
 
 function extract(directory: string) {
   const files = unzipSync(archiveBytes);
-  const expected = projectFiles(serviceOperationsPackage, "solution");
+  const expected = projectArchiveFiles(serviceOperationsPackage, "solution");
+  const authored = projectFiles(serviceOperationsPackage, "solution");
   assert.deepEqual(
     Object.keys(files).sort(),
     Object.keys(expected)
@@ -109,8 +110,10 @@ function extract(directory: string) {
     assert.equal(
       strFromU8(contents),
       expected[relative],
-      `authored file mismatch: ${relative}`,
+      `archive file mismatch: ${relative}`,
     );
+    if (relative in authored)
+      assert(!/\bunsafe\s+(?:fn|impl|trait|\{)/.test(authored[relative]), `unsafe source: ${relative}`);
     const target = join(directory, relative);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, contents);

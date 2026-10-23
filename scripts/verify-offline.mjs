@@ -58,6 +58,22 @@ import { strFromU8, unzipSync } from "fflate";
     });
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
     await page.waitForTimeout(2500);
+    const monacoNoticeUrls = ["/monaco/LICENSE", "/monaco/ThirdPartyNotices.txt"];
+    for (const noticeUrl of monacoNoticeUrls) {
+      expect(
+        await page.evaluate(async (url) => !!(await caches.match(url)), noticeUrl),
+        `${noticeUrl} is in the app-shell cache`,
+      ).toBe(true);
+    }
+    await context.setOffline(true);
+    for (const noticeUrl of monacoNoticeUrls) {
+      const notice = await page.evaluate(async (url) => {
+        const response = await fetch(url);
+        return { ok: response.ok, text: await response.text() };
+      }, noticeUrl);
+      expect(notice.ok, `${noticeUrl} available offline`).toBe(true);
+      expect(notice.text.trim(), `${noticeUrl} has content offline`).not.toBe("");
+    }
     console.log(
       "Cache entries",
       await page.evaluate(async () => {
@@ -70,7 +86,6 @@ import { strFromU8, unzipSync } from "fflate";
         );
       }),
     );
-    await context.setOffline(true);
     await page.reload();
     await expect(editor).toHaveValue(
       'fn main() { println!("offline draft"); }',
@@ -456,13 +471,123 @@ import { strFromU8, unzipSync } from "fflate";
       capstoneSolutionUrl,
     );
     expect(capstoneSolutionBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
+    const archiveApacheExceptionPackageIds = new Set([
+      "mini-grep-workshop",
+      "frame-protocol-workspace",
+      "durable-log-service-workspace",
+    ]);
+    const capstoneAuthoredPaths = [
+      "CHANGE-REVIEW.md",
+      "CHANGELOG.md",
+      "Cargo.lock",
+      "Cargo.toml",
+      "PERFORMANCE.md",
+      "PROTOCOL.md",
+      "README.md",
+      "RELEASE.md",
+      "RUNBOOK.md",
+      "THREAT_MODEL.md",
+      "adr/0001-transaction-and-retry.md",
+      "adr/0002-storage-owner-and-shutdown.md",
+      "crates/ingest-core/Cargo.toml",
+      "crates/ingest-core/src/domain.rs",
+      "crates/ingest-core/src/lib.rs",
+      "crates/ingest-core/src/protocol.rs",
+      "crates/ingest-core/tests/protocol_properties.rs",
+      "crates/ingest-core/tests/public_api.rs",
+      "crates/ingest-service/Cargo.toml",
+      "crates/ingest-service/examples/fixed_workload.rs",
+      "crates/ingest-service/src/bin/ingest-client.rs",
+      "crates/ingest-service/src/config.rs",
+      "crates/ingest-service/src/lib.rs",
+      "crates/ingest-service/src/main.rs",
+      "crates/ingest-service/src/server.rs",
+      "crates/ingest-service/src/telemetry.rs",
+      "crates/ingest-service/src/worker.rs",
+      "crates/ingest-service/tests/lifecycle.rs",
+      "crates/ingest-service/tests/loopback.rs",
+      "crates/ingest-service/tests/process.rs",
+      "crates/ingest-service/tests/restart.rs",
+      "crates/ingest-store/Cargo.toml",
+      "crates/ingest-store/src/lib.rs",
+      "crates/ingest-store/src/store.rs",
+      "crates/ingest-store/tests/migrations.rs",
+      "crates/ingest-store/tests/stream_capacity.rs",
+      "crates/ingest-store/tests/transactions.rs",
+    ];
+    const capstoneOriginalAuthoredEntryCount = 37;
+    expect(capstoneAuthoredPaths).toHaveLength(
+      capstoneOriginalAuthoredEntryCount,
+    );
+    const readArchiveNoticeBytes = async (projectId) => {
+      const includesApacheNotice = archiveApacheExceptionPackageIds.has(projectId);
+      const scope = (await readFile("docs/licensing.md", "utf8"))
+        .replace(
+          /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
+          "]($1)",
+        )
+        .replace(
+          /\]\(\.\.\/LICENSE-APACHE\)/g,
+          includesApacheNotice
+            ? "](LICENSE-APACHE)"
+            : "](https://www.apache.org/licenses/LICENSE-2.0.txt)",
+        );
+      const notices = {
+        LICENSE: await readFile("LICENSE"),
+        "LICENSE-CONTENT": await readFile("LICENSE-CONTENT"),
+        "LICENSE-SCOPE.md": Buffer.from(scope),
+        "THIRD-PARTY-NOTICES.md": Buffer.from(
+          (await readFile("THIRD-PARTY-NOTICES.md", "utf8")).replaceAll(
+            "](docs/licensing.md)",
+            "](LICENSE-SCOPE.md)",
+          ),
+        ),
+      };
+      if (includesApacheNotice)
+        notices["LICENSE-APACHE"] = await readFile("LICENSE-APACHE");
+      return notices;
+    };
+    const assertArchiveNoticeContract = async (files, root, projectId) => {
+      const notices = await readArchiveNoticeBytes(projectId);
+      const noticePaths = Object.keys(notices);
+      const relativePaths = Object.keys(files).map((path) =>
+        path.startsWith(root) ? path.slice(root.length) : path,
+      );
+      const expectedPaths = [...capstoneAuthoredPaths, ...noticePaths].sort();
+      expect(relativePaths, `${projectId} archive entry names`).toEqual(
+        expectedPaths,
+      );
+      expect(
+        relativePaths.filter((path) => noticePaths.includes(path)),
+        `${projectId} archive notice names`,
+      ).toEqual([...noticePaths].sort());
+      expect(
+        relativePaths.filter((path) => !noticePaths.includes(path)),
+        `${projectId} authored payload names`,
+      ).toEqual([...capstoneAuthoredPaths].sort());
+      expect(Object.keys(files), `${projectId} archive entry count`).toHaveLength(
+        capstoneOriginalAuthoredEntryCount + noticePaths.length,
+      );
+      for (const [noticePath, expectedBytes] of Object.entries(notices)) {
+        const actualBytes = files[root + noticePath];
+        expect(actualBytes, `${projectId}/${noticePath} exists`).toBeDefined();
+        expect(
+          Array.from(actualBytes),
+          `${projectId}/${noticePath} exact canonical bytes`,
+        ).toEqual(Array.from(expectedBytes));
+      }
+    };
     for (const [variant, bytes] of [
       ["starter", capstoneStarterBytes],
       ["solution", capstoneSolutionBytes],
     ]) {
       const files = unzipSync(Uint8Array.from(bytes));
       const root = "durable-log-service-workspace/";
-      expect(Object.keys(files)).toHaveLength(37);
+      await assertArchiveNoticeContract(
+        files,
+        root,
+        "durable-log-service-workspace",
+      );
       const worksheet = strFromU8(files[root + "CHANGE-REVIEW.md"]);
       const capacity = strFromU8(
         files[root + "crates/ingest-store/tests/stream_capacity.rs"],

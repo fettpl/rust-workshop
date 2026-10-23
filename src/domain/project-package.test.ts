@@ -1,4 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { join } from "node:path";
 import { unzipSync, strFromU8 } from "fflate";
 import type { ProjectPackage } from "./types";
 import {
@@ -7,13 +15,17 @@ import {
   revealProjectPackageVariant,
   revealProjectSolution,
 } from "./project-package";
-import { buildProjectArchive } from "../../scripts/project-archive";
+import {
+  archiveApacheExceptionPackageIds,
+  buildProjectArchive,
+} from "../../scripts/project-archive";
 import {
   createInitialState,
   createStepProgress,
   stepKey,
 } from "../persistence/state";
 import { lessons } from "../content/course";
+import { projects } from "../content/course";
 
 const fixture: ProjectPackage = {
   id: "example-package",
@@ -39,7 +51,141 @@ const fixture: ProjectPackage = {
   ],
 };
 
+let archiveRepositoryRoot = "";
+
+beforeAll(() => {
+  archiveRepositoryRoot = mkdtempSync(
+    join("/tmp", "rust-workshop-project-archive-"),
+  );
+  mkdirSync(join(archiveRepositoryRoot, "docs"));
+  writeFileSync(join(archiveRepositoryRoot, "LICENSE"), "MIT fixture text\n");
+  writeFileSync(
+    join(archiveRepositoryRoot, "LICENSE-CONTENT"),
+    "CC BY fixture text\n",
+  );
+  writeFileSync(
+    join(archiveRepositoryRoot, "THIRD-PARTY-NOTICES.md"),
+    "Third-party fixture text\n",
+  );
+  writeFileSync(
+    join(archiveRepositoryRoot, "docs", "licensing.md"),
+    "# Scope fixture\n",
+  );
+});
+
+afterAll(() => rmSync(archiveRepositoryRoot, { recursive: true, force: true }));
+
+function archive(project: ProjectPackage, variant: "starter" | "solution") {
+  return buildProjectArchive(project, variant, {
+    repositoryRoot: archiveRepositoryRoot,
+  });
+}
+
 describe("downloadable project packages", () => {
+  it("preserves every authored payload and applicable notice in both variants", () => {
+    const packages = projects.flatMap((project) =>
+      project.package ? [project.package] : [],
+    );
+    expect(packages).toHaveLength(13);
+    expect(
+      packages.filter((project) =>
+        archiveApacheExceptionPackageIds.includes(
+          project.id as (typeof archiveApacheExceptionPackageIds)[number],
+        ),
+      ),
+    ).toHaveLength(3);
+
+    for (const project of packages) {
+      for (const variant of ["starter", "solution"] as const) {
+        const first = buildProjectArchive(project, variant);
+        const second = buildProjectArchive(project, variant);
+        expect(
+          Buffer.from(first).equals(Buffer.from(second)),
+          `${project.id}/${variant}`,
+        ).toBe(true);
+        const entries = unzipSync(first);
+        const authored = projectFiles(project, variant);
+        const includesApache = archiveApacheExceptionPackageIds.includes(
+          project.id as (typeof archiveApacheExceptionPackageIds)[number],
+        );
+        expect(
+          Object.hasOwn(entries, `${project.id}/LICENSE-APACHE`),
+          `${project.id}/${variant} Apache notice policy`,
+        ).toBe(includesApache);
+        const expectedPaths = [
+          ...Object.keys(authored),
+          "LICENSE",
+          "LICENSE-CONTENT",
+          "LICENSE-SCOPE.md",
+          "THIRD-PARTY-NOTICES.md",
+          ...(includesApache ? ["LICENSE-APACHE"] : []),
+        ].map((path) => `${project.id}/${path}`);
+        expect(
+          Object.keys(entries).sort(),
+          `${project.id}/${variant} names`,
+        ).toEqual(expectedPaths.sort());
+        for (const [path, content] of Object.entries(authored))
+          expect(
+            strFromU8(entries[`${project.id}/${path}`]),
+            `${project.id}/${variant}/${path}`,
+          ).toBe(content);
+        expect(strFromU8(entries[`${project.id}/LICENSE`])).toBe(
+          readFileSync(join(process.cwd(), "LICENSE"), "utf8"),
+        );
+        expect(strFromU8(entries[`${project.id}/LICENSE-CONTENT`])).toBe(
+          readFileSync(join(process.cwd(), "LICENSE-CONTENT"), "utf8"),
+        );
+        expect(strFromU8(entries[`${project.id}/THIRD-PARTY-NOTICES.md`])).toBe(
+          readFileSync(
+            join(process.cwd(), "THIRD-PARTY-NOTICES.md"),
+            "utf8",
+          ).replaceAll("](docs/licensing.md)", "](LICENSE-SCOPE.md)"),
+        );
+        if (includesApache)
+          expect(strFromU8(entries[`${project.id}/LICENSE-APACHE`])).toBe(
+            readFileSync(join(process.cwd(), "LICENSE-APACHE"), "utf8"),
+          );
+
+        const scope = strFromU8(entries[`${project.id}/LICENSE-SCOPE.md`]);
+        const canonicalScope = readFileSync(
+          join(process.cwd(), "docs", "licensing.md"),
+          "utf8",
+        );
+        const expectedScope = canonicalScope
+          .replace(
+            /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
+            "]($1)",
+          )
+          .replace(
+            /\]\(\.\.\/LICENSE-APACHE\)/g,
+            includesApache
+              ? "](LICENSE-APACHE)"
+              : "](https://www.apache.org/licenses/LICENSE-2.0.txt)",
+          );
+        expect(scope).toBe(expectedScope);
+        expect(scope).toContain(
+          includesApache
+            ? "](LICENSE-APACHE)"
+            : "](https://www.apache.org/licenses/LICENSE-2.0.txt)",
+        );
+        for (const noticePath of [
+          "LICENSE-SCOPE.md",
+          "THIRD-PARTY-NOTICES.md",
+        ]) {
+          const notice = strFromU8(entries[`${project.id}/${noticePath}`]);
+          for (const match of notice.matchAll(/\]\(([^)]+)\)/g)) {
+            const target = match[1];
+            if (target.startsWith("http") || target.startsWith("#")) continue;
+            expect(
+              entries[`${project.id}/${target}`],
+              `${project.id}/${target}`,
+            ).toBeDefined();
+          }
+        }
+      }
+    }
+  });
+
   it("archives a virtual workspace with real member roots and no fake root crate", () => {
     const workspace = {
       ...fixture,
@@ -66,9 +212,9 @@ describe("downloadable project packages", () => {
       ],
     };
     expect(validateProjectPackage(workspace)).toEqual([]);
-    const archive = unzipSync(buildProjectArchive(workspace, "starter"));
-    expect(Object.keys(archive)).toHaveLength(5);
-    expect(archive[`${workspace.id}/src/lib.rs`]).toBeUndefined();
+    const archiveEntries = unzipSync(archive(workspace, "starter"));
+    expect(Object.keys(archiveEntries)).toHaveLength(9);
+    expect(archiveEntries[`${workspace.id}/src/lib.rs`]).toBeUndefined();
     for (const removed of [
       "Cargo.toml",
       "crates/core/Cargo.toml",
@@ -97,10 +243,16 @@ describe("downloadable project packages", () => {
   });
 
   it("exports exact UTF-8 files under one directory, with a distinct starter and reference", () => {
-    const starter = unzipSync(buildProjectArchive(fixture, "starter"));
-    const solution = unzipSync(buildProjectArchive(fixture, "solution"));
+    const starter = unzipSync(archive(fixture, "starter"));
+    const solution = unzipSync(archive(fixture, "solution"));
     expect(Object.keys(solution).sort()).toEqual(
-      fixture.files.map((f) => `${fixture.id}/${f.path}`).sort(),
+      [
+        ...fixture.files.map((f) => `${fixture.id}/${f.path}`),
+        `${fixture.id}/LICENSE`,
+        `${fixture.id}/LICENSE-CONTENT`,
+        `${fixture.id}/LICENSE-SCOPE.md`,
+        `${fixture.id}/THIRD-PARTY-NOTICES.md`,
+      ].sort(),
     );
     for (const file of fixture.files) {
       expect(strFromU8(starter[`${fixture.id}/${file.path}`])).toBe(
@@ -128,7 +280,7 @@ describe("downloadable project packages", () => {
         files: [...fixture.files, { path, starter: "x" }],
       };
       expect(validateProjectPackage(broken).length, path).toBeGreaterThan(0);
-      expect(() => buildProjectArchive(broken, "starter")).toThrow();
+      expect(() => archive(broken, "starter")).toThrow();
     }
     expect(
       validateProjectPackage({

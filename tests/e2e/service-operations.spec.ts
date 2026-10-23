@@ -2,6 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { lessons, modules, projects } from "../../src/content/course";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 const moduleId = "service-operations";
 const projectId = "service-operations";
@@ -43,18 +47,20 @@ test("navigates, resumes a Service Operations gate, and downloads its authored p
   const draft = `${step.code ?? ""}\n// Trust and accounting stay explicit.\n`;
   await editor.fill(draft);
   await expect(
-    page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+    page
+      .locator(".save-status")
+      .filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();
   await page.reload();
-  await expect(page.getByRole("heading", { name: step.title, exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: step.title, exact: true }),
+  ).toBeVisible();
   await expect(editor).toHaveValue(draft);
 
   const project = projects.find((candidate) => candidate.id === projectId)!;
   await page.getByRole("button", { name: "Projekt", exact: true }).click();
   const picker = page.getByRole("navigation", { name: "Wybierz projekt" });
-  await picker
-    .getByRole("button", { name: new RegExp(project.title) })
-    .click();
+  await picker.getByRole("button", { name: new RegExp(project.title) }).click();
   const panel = page.getByRole("region", { name: "Pakiet Cargo" });
   const downloadStarted = page.waitForEvent("download");
   await panel
@@ -67,9 +73,12 @@ test("navigates, resumes a Service Operations gate, and downloads its authored p
   );
   const files = unzipSync(await readFile((await download.path())!));
   expect(Object.keys(files).sort()).toEqual(
-    project.package!.files.map((file) => `${project.package!.id}/${file.path}`).sort(),
+    expectedArchivePaths(project.package!),
   );
+  assertArchiveNotices(files, project.package!);
   for (const file of project.package!.files)
-    expect(strFromU8(files[`${project.package!.id}/${file.path}`])).toBe(file.starter);
+    expect(strFromU8(files[`${project.package!.id}/${file.path}`])).toBe(
+      file.starter,
+    );
   expect(errors).toEqual([]);
 });

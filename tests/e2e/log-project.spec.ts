@@ -5,6 +5,10 @@ import { unzipSync, strFromU8 } from "fflate";
 import { lessons, modules, projects } from "../../src/content/course";
 import type { UserState } from "../../src/domain/types";
 import { stepKey } from "../../src/persistence/state";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 test("shows a failed assertion as test feedback and preserves the corrected test", async ({
   page,
@@ -128,9 +132,8 @@ test("switches Cargo projects without leaking solution view, notes or help", asy
   );
   expect(await download.failure()).toBeNull();
   const files = unzipSync(await readFile((await download.path())!));
-  expect(Object.keys(files).sort()).toEqual(
-    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
-  );
+  expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
+  assertArchiveNotices(files, archive);
   for (const file of archive.files)
     expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(file.starter);
   await panel

@@ -6,6 +6,10 @@ import { lessons, modules, projects } from "../../src/content/course";
 import { reviewSessionKey } from "../../src/engine/review-session";
 import { createStepProgress } from "../../src/persistence/state";
 import type { ReviewSession, UserState } from "../../src/domain/types";
+import {
+  assertArchiveNotices,
+  expectedArchivePaths,
+} from "./archive-notices.helper";
 
 async function readLearningState(
   page: import("@playwright/test").Page,
@@ -230,9 +234,8 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
   const starter = await starterDownload;
   expect(await starter.failure()).toBeNull();
   const starterZip = unzipSync(await readFile((await starter.path())!));
-  expect(Object.keys(starterZip).sort()).toEqual(
-    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
-  );
+  expect(Object.keys(starterZip).sort()).toEqual(expectedArchivePaths(archive));
+  assertArchiveNotices(starterZip, archive);
   for (const path of [
     "CHANGE-REVIEW.md",
     "crates/ingest-store/tests/stream_capacity.rs",
@@ -266,8 +269,9 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
   expect(await solution.failure()).toBeNull();
   const solutionZip = unzipSync(await readFile((await solution.path())!));
   expect(Object.keys(solutionZip).sort()).toEqual(
-    archive.files.map((file) => `${archive.id}/${file.path}`).sort(),
+    expectedArchivePaths(archive),
   );
+  assertArchiveNotices(solutionZip, archive);
   for (const path of [
     "CHANGE-REVIEW.md",
     "crates/ingest-store/tests/stream_capacity.rs",

@@ -21,7 +21,7 @@ import { spawnSync } from "node:child_process";
 import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
 import { durableLogServicePackage } from "../src/content/projects/durable-log-service/archive";
-import { buildProjectArchive } from "./project-archive";
+import { buildProjectArchive, projectArchiveFiles } from "./project-archive";
 import { capstoneMutants, capstoneMutantTestArgs, type CapstoneMutant } from "./capstone-mutants";
 
 export interface CapstoneArgs {
@@ -371,7 +371,8 @@ function extractExactArchive(
   destination: string,
   variant: "starter" | "solution",
 ): string {
-  const expected = projectFiles(durableLogServicePackage, variant);
+  const expected = projectArchiveFiles(durableLogServicePackage, variant);
+  const authored = projectFiles(durableLogServicePackage, variant);
   const entries = unzipSync(archive);
   const prefix = `${packageRootName}/`;
   const paths = Object.keys(entries).map((path) => path.slice(prefix.length));
@@ -388,10 +389,22 @@ function extractExactArchive(
   const packageRoot = join(destination, packageRootName);
   for (const [path, contents] of Object.entries(entries)) {
     const relative = path.slice(prefix.length);
-    const authored = expected[relative];
-    assert.notEqual(authored, undefined, `unexpected authored path: ${relative}`);
-    assert.equal(strFromU8(contents), authored, `archive bytes differ: ${relative}`);
-    assert(!/\bunsafe\s+(?:fn|impl|trait|\{)/.test(authored), `unsafe source: ${relative}`);
+    const expectedContent = expected[relative];
+    assert.notEqual(
+      expectedContent,
+      undefined,
+      `unexpected archive path: ${relative}`,
+    );
+    assert.equal(
+      strFromU8(contents),
+      expectedContent,
+      `archive bytes differ: ${relative}`,
+    );
+    if (relative in authored)
+      assert(
+        !/\bunsafe\s+(?:fn|impl|trait|\{)/.test(authored[relative]),
+        `unsafe source: ${relative}`,
+      );
     const target = join(packageRoot, relative);
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, contents);
