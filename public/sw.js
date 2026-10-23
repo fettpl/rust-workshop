@@ -1,6 +1,6 @@
-const CACHE = 'rust-workshop-v29';
+const CACHE = 'rust-workshop-v30';
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest', '/monaco/LICENSE', '/monaco/ThirdPartyNotices.txt'])));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest', '/monaco/LICENSE', '/monaco/ThirdPartyNotices.txt', '/monaco/DOMPurify-LICENSE'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', event => {
@@ -18,11 +18,11 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
   if (event.request.mode === 'navigate') {
-    event.respondWith(cacheResponse(event.request, '/').catch(() => caches.match('/')));
+    event.respondWith(cacheResponse(event.request, '/').catch(() => caches.open(CACHE).then(cache => cache.match('/'))));
     return;
   }
   if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/monaco/') || url.pathname.startsWith('/icon') || url.pathname.startsWith('/projects/')) {
-    event.respondWith(caches.match(event.request).then(hit => hit || cacheResponse(event.request)));
+    event.respondWith(caches.open(CACHE).then(cache => cache.match(event.request)).then(hit => hit || cacheResponse(event.request)));
   }
 });
 self.addEventListener('message', event => {

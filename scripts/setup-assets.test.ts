@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -22,6 +22,14 @@ describe("Monaco distribution assets", () => {
     const sourceRoot = join(root, "source");
     const destinationRoot = join(root, "public", "monaco");
     await mkdir(join(sourceRoot, "min", "vs"), { recursive: true });
+    await cp(
+      "node_modules/monaco-editor/package.json",
+      join(sourceRoot, "package.json"),
+    );
+    await cp(
+      "node_modules/monaco-editor/min/vs/editor-BdtEMBbM.js",
+      join(sourceRoot, "min/vs/editor-BdtEMBbM.js"),
+    );
     await writeFile(join(sourceRoot, "min", "vs", "loader.js"), "loader\n");
     for (const file of upstreamNoticeFiles)
       await writeFile(join(sourceRoot, file), `${file}\n`);
@@ -43,6 +51,14 @@ describe("Monaco distribution assets", () => {
     const sourceRoot = join(root, "source");
     const destinationRoot = join(root, "public", "monaco");
     await mkdir(join(sourceRoot, "min", "vs"), { recursive: true });
+    await cp(
+      "node_modules/monaco-editor/package.json",
+      join(sourceRoot, "package.json"),
+    );
+    await cp(
+      "node_modules/monaco-editor/min/vs/editor-BdtEMBbM.js",
+      join(sourceRoot, "min/vs/editor-BdtEMBbM.js"),
+    );
     await writeFile(join(sourceRoot, "min", "vs", "loader.js"), "loader\n");
     await writeFile(join(sourceRoot, "LICENSE"), "LICENSE\n");
     await mkdir(join(destinationRoot, "vs"), { recursive: true });
@@ -62,6 +78,14 @@ describe("Monaco distribution assets", () => {
     const sourceRoot = join(root, "source");
     const destinationRoot = join(root, "public", "monaco");
     await mkdir(join(sourceRoot, "min", "vs"), { recursive: true });
+    await cp(
+      "node_modules/monaco-editor/package.json",
+      join(sourceRoot, "package.json"),
+    );
+    await cp(
+      "node_modules/monaco-editor/min/vs/editor-BdtEMBbM.js",
+      join(sourceRoot, "min/vs/editor-BdtEMBbM.js"),
+    );
     await writeFile(join(sourceRoot, "min", "vs", "new.js"), "new\n");
     for (const file of upstreamNoticeFiles)
       await writeFile(join(sourceRoot, file), `${file}\n`);
@@ -72,8 +96,27 @@ describe("Monaco distribution assets", () => {
     expect(await readFile(join(destinationRoot, "vs", "new.js"), "utf8")).toBe(
       "new\n",
     );
-    await expect(readFile(join(destinationRoot, "vs", "old.js"))).rejects.toThrow(
-      /ENOENT/,
+    await expect(
+      readFile(join(destinationRoot, "vs", "old.js")),
+    ).rejects.toThrow(/ENOENT/);
+  });
+});
+
+describe("served sanitizer security boundary", () => {
+  it("replaces the real embedded factory before serving Monaco", async () => {
+    const root = await mkdtemp(join(tmpdir(), "rust-workshop-real-monaco-"));
+    roots.push(root);
+    await copyMonacoDistribution({
+      sourceRoot: join(process.cwd(), "node_modules/monaco-editor"),
+      destinationRoot: join(root, "monaco"),
+    });
+    const chunk = await readFile(
+      join(root, "monaco/vs/editor-BdtEMBbM.js"),
+      "utf8",
     );
+    expect(chunk).not.toContain("function GR(");
+    expect(
+      await readFile(join(root, "monaco/vs/dompurify-fixed.js"), "utf8"),
+    ).toContain("DOMPurify 3.4.17");
   });
 });

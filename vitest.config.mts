@@ -10,6 +10,7 @@ export default defineConfig({
       "scripts/miri-disjoint-ranges-diagnostics.test.ts",
       "scripts/project-archive.test.ts",
       "scripts/setup-assets.test.ts",
+      "scripts/monaco-sanitizer.test.ts",
       "scripts/service-worker.test.ts",
     ],
     environment: "node",

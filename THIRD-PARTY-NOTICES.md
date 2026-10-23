@@ -19,10 +19,11 @@ The direct packages in `package.json` currently report these licenses in
 | Package | Version | License | Upstream |
 | --- | ---: | --- | --- |
 | `@monaco-editor/react` | 4.7.0 | MIT | <https://github.com/suren-atoyan/monaco-react> |
+| `dompurify` | 3.4.17 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
 | `idb` | 8.0.4 | ISC | <https://github.com/jakearchibald/idb> |
 | `lucide-react` | 1.55.0 | ISC | <https://github.com/lucide-icons/lucide> |
 | `monaco-editor` | 0.57.0 | MIT | <https://github.com/microsoft/monaco-editor> |
-| `next` | 16.3.8 | MIT | <https://github.com/vercel/next.js> |
+| `next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
 | `react` | 19.3.0 | MIT | <https://github.com/facebook/react> |
 | `react-dom` | 19.3.0 | MIT | <https://github.com/facebook/react> |
 | `toml-eslint-parser` | 1.0.3 | MIT | <https://github.com/ota-meshi/toml-eslint-parser> |
@@ -34,7 +35,7 @@ The direct packages in `package.json` currently report these licenses in
 | `@types/react` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `@types/react-dom` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `eslint` | 9.39.5 | MIT | <https://github.com/eslint/eslint> |
-| `eslint-config-next` | 16.3.8 | MIT | <https://github.com/vercel/next.js> |
+| `eslint-config-next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
 | `fake-indexeddb` | 6.2.5 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
 | `fflate` | 0.8.3 | MIT | <https://github.com/101arrowz/fflate> |
 | `prettier` | 3.9.9 | MIT | <https://github.com/prettier/prettier> |
@@ -53,7 +54,11 @@ The locked graph includes packages whose notices need separate preservation:
   into `public/monaco/`; a clean locked install and built-distribution check
   must still verify that they survive into each distribution containing those
   assets.
-- `dompurify` 3.4.15 is `MPL-2.0 OR Apache-2.0`; `marked` is MIT. Both are
+- The served Monaco AMD chunk replaces its embedded DOMPurify factory with the
+  official 3.4.17 AMD singleton during staged asset generation. Its unchanged
+  license is copied to `public/monaco/DOMPurify-LICENSE`; artifact headers and
+  source map are retained. Installed dormant Monaco ESM remains upstream stock.
+- `dompurify` 3.4.17 is `MPL-2.0 OR Apache-2.0`; `marked` is MIT. Both are
   dependencies of the copied Monaco editor package.
 - `caniuse-lite` 1.0.30001810 is CC BY 4.0. It is pulled into the Next.js
   toolchain and must retain its attribution/license notice where distributed.
