@@ -153,6 +153,10 @@ describe("downloadable project packages", () => {
         );
         const expectedScope = canonicalScope
           .replace(
+            /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
+            "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/$1$2)",
+          )
+          .replace(
             /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
             "]($1)",
           )
@@ -177,7 +181,7 @@ describe("downloadable project packages", () => {
             const target = match[1];
             if (target.startsWith("http") || target.startsWith("#")) continue;
             expect(
-              entries[`${project.id}/${target}`],
+              entries[`${project.id}/${target.split("#")[0]}`],
               `${project.id}/${target}`,
             ).toBeDefined();
           }

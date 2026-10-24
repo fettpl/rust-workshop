@@ -1,5 +1,14 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import {
+  mkdtempSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { join, posix } from "node:path";
+import { fileURLToPath } from "node:url";
+import { projects } from "../src/content/course";
+import { projectFiles } from "../src/domain/project-package";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ProjectPackage } from "../src/domain/types";
 import { buildProjectArchive } from "./project-archive";
@@ -44,6 +53,101 @@ afterEach(() => {
 });
 
 describe("project archive distribution notices", () => {
+  it("keeps real canonical notices self-contained in every authored archive variant", () => {
+    const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
+    const apacheIds = new Set([
+      "mini-grep-workshop",
+      "frame-protocol-workspace",
+      "durable-log-service-workspace",
+    ]);
+    const packages = projects.flatMap((project) =>
+      project.package ? [project.package] : [],
+    );
+    expect(packages.length).toBeGreaterThan(0);
+    for (const project of packages) {
+      for (const variant of ["starter", "solution"] as const) {
+        const bytes = buildProjectArchive(project, variant);
+        expect(bytes, `${project.id}/${variant} deterministic bytes`).toEqual(
+          buildProjectArchive(project, variant),
+        );
+        const files = unzipSync(bytes);
+        const authored = projectFiles(project, variant);
+        const noticeNames = [
+          "LICENSE",
+          "LICENSE-CONTENT",
+          "LICENSE-SCOPE.md",
+          "THIRD-PARTY-NOTICES.md",
+          ...(apacheIds.has(project.id) ? ["LICENSE-APACHE"] : []),
+        ];
+        expect(Object.keys(files).sort()).toEqual(
+          [...Object.keys(authored), ...noticeNames]
+            .map((path) => `${project.id}/${path}`)
+            .sort(),
+        );
+        for (const [path, content] of Object.entries(authored))
+          expect(
+            strFromU8(files[`${project.id}/${path}`]),
+            `${project.id}/${variant}/${path}`,
+          ).toBe(content);
+        for (const path of noticeNames.filter((path) => !path.endsWith(".md")))
+          expect(files[`${project.id}/${path}`]).toEqual(
+            new Uint8Array(readFileSync(join(repositoryRoot, path))),
+          );
+        expect(strFromU8(files[`${project.id}/THIRD-PARTY-NOTICES.md`])).toBe(
+          readFileSync(
+            join(repositoryRoot, "THIRD-PARTY-NOTICES.md"),
+            "utf8",
+          ).replaceAll("](docs/licensing.md)", "](LICENSE-SCOPE.md)"),
+        );
+        for (const path of ["LICENSE-SCOPE.md", "THIRD-PARTY-NOTICES.md"]) {
+          const notice = strFromU8(files[`${project.id}/${path}`]);
+          for (const [, target] of notice.matchAll(/\]\(([^)]+)\)/g)) {
+            if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith("#"))
+              continue;
+            const localPath = posix.normalize(
+              `${project.id}/${target.split("#")[0]}`,
+            );
+            expect(
+              files[localPath],
+              `${project.id}/${variant}/${path}: ${target}`,
+            ).toBeDefined();
+          }
+        }
+        expect(strFromU8(files[`${project.id}/LICENSE-SCOPE.md`])).toContain(
+          "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md)",
+        );
+      }
+    }
+  });
+
+  it("maps only known repository audit documents and preserves their fragments", () => {
+    const repositoryRoot = repositoryWithNotices();
+    writeFileSync(
+      join(repositoryRoot, "docs", "licensing.md"),
+      [
+        "[rights](rights-assessment.md)",
+        "[rights section](rights-assessment.md#findings)",
+        "[provenance](oss-provenance.md)",
+        "[provenance section](oss-provenance.md#inventory)",
+        "[other](other.md#unchanged)",
+        "[similar](nested/rights-assessment.md)",
+      ].join("\n"),
+    );
+    const files = unzipSync(
+      buildProjectArchive(fixture, "starter", { repositoryRoot }),
+    );
+    expect(strFromU8(files[`${fixture.id}/LICENSE-SCOPE.md`])).toBe(
+      [
+        "[rights](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md)",
+        "[rights section](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md#findings)",
+        "[provenance](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-provenance.md)",
+        "[provenance section](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-provenance.md#inventory)",
+        "[other](other.md#unchanged)",
+        "[similar](nested/rights-assessment.md)",
+      ].join("\n"),
+    );
+  });
+
   it("adds exact notices to both variants without changing authored payloads", () => {
     const repositoryRoot = repositoryWithNotices();
     const starter = unzipSync(

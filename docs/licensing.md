@@ -160,9 +160,11 @@ When reusing this scope in a project archive, place `LICENSE`,
 `LICENSE-CONTENT`, `LICENSE-APACHE` when the package exception applies, and
 `THIRD-PARTY-NOTICES.md` beside the archive's scope document, or preserve a
 directory layout whose links resolve to those entries. Check both starter and
-solution archives after extraction. This is an instruction for the archive
-owner; this guide does not claim that the generator's links or notice entries
-are already fixed.
+solution archives after extraction. The generator keeps these notice links
+local and turns links to the repository-only rights assessment and provenance
+record into canonical repository URLs, preserving section fragments. These
+URLs refer to the documents at their ordinary repository location; archive
+checks do not prove that a local change has been merged or published.
 
 Before the public-release gate, refresh the notice inventory after a clean locked
 install, verify all tracked assets and downloaded project sources, and resolve

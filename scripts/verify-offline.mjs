@@ -523,6 +523,10 @@ import { strFromU8, unzipSync } from "fflate";
       const includesApacheNotice = archiveApacheExceptionPackageIds.has(projectId);
       const scope = (await readFile("docs/licensing.md", "utf8"))
         .replace(
+          /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
+          "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/$1$2)",
+        )
+        .replace(
           /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
           "]($1)",
         )

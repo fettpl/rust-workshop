@@ -38,7 +38,12 @@ function noticeSourcesFor(project?: ProjectPackage) {
 }
 
 function adaptScopeLinks(scope: string, includesApacheNotice: boolean): string {
-  const withoutParent = scope.replace(
+  // Audit records stay in the repository; archives carry the applicable notices.
+  const repositoryLinks = scope.replace(
+    /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
+    "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/$1$2)",
+  );
+  const withoutParent = repositoryLinks.replace(
     /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
     "]($1)",
   );

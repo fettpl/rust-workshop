@@ -30,6 +30,10 @@ function readCanonicalNoticeTexts(
     "utf8",
   )
     .replace(
+      /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
+      "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/$1$2)",
+    )
+    .replace(
       /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
       "]($1)",
     )
@@ -95,7 +99,7 @@ export function assertArchiveNotices(
       const target = match[1];
       if (target.startsWith("http") || target.startsWith("#")) continue;
       expect(
-        files[`${archive.id}/${target}`],
+        files[`${archive.id}/${target.split("#")[0]}`],
         `${archive.id}/${target}`,
       ).toBeDefined();
     }
