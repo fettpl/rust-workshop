@@ -1,3 +1,4 @@
+import { dependencyFileSuccessor } from "./dependency-maintenance-compatibility-fixture";
 import {
   assertReviewedHistoryRedaction,
   historyRedactionDeltas,
@@ -34,16 +35,18 @@ it("keeps accepted immutable bytes or the exact reviewed presentation successor"
     readFileSync(new URL(`../../${historyRedactionPath}`, import.meta.url)),
   );
   for (const file of baseline.immutableFiles) {
+    const successor = dependencyFileSuccessor(file.path, file.sha256);
+    const bytes = readFileSync(
+      new URL(`../../${successor?.currentPath ?? file.path}`, import.meta.url),
+    );
+    if (successor) dependencyFileSuccessor(file.path, file.sha256, bytes);
     const expected =
       file.path === historyRedactionPath
         ? historyRedactionDeltas[historyRedactionPath].currentSha256
         : file.sha256;
-    expect(
-      createHash("sha256")
-        .update(readFileSync(new URL(`../../${file.path}`, import.meta.url)))
-        .digest("hex"),
-      file.path,
-    ).toBe(expected);
+    expect(createHash("sha256").update(bytes).digest("hex"), file.path).toBe(
+      successor?.currentSha256 ?? expected,
+    );
   }
 });
 

@@ -5,7 +5,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-tokio = { version = "=1.53.1", default-features = false, features = ["macros", "rt", "sync", "time", "test-util", "io-util", "net"] }
+tokio = { version = "=1.54.1", default-features = false, features = ["macros", "rt", "sync", "time", "test-util", "io-util", "net"] }
 tokio-stream = { version = "=0.1.19", default-features = false }
 
 [[bin]]

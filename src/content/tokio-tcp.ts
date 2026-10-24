@@ -7,42 +7,40 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-13";
-
 export const tokioTcpSources: Source[] = [
   {
     id: "tokio-tcp-listener",
-    title: "Tokio 1.53: net::TcpListener",
-    url: "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpListener.html",
+    title: "Tokio 1.54.1: net::TcpListener",
+    url: "https://docs.rs/tokio/1.54.1/tokio/net/struct.TcpListener.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki bind, accept albo zwracanych adresów lokalnych i peer-a.",
   },
   {
     id: "tokio-tcp-stream",
-    title: "Tokio 1.53: net::TcpStream",
-    url: "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpStream.html",
+    title: "Tokio 1.54.1: net::TcpStream",
+    url: "https://docs.rs/tokio/1.54.1/tokio/net/struct.TcpStream.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie connect, local_addr, peer_addr albo rozdzielania streamu na owned halves.",
   },
   {
     id: "tokio-tcp-owned-write-half",
-    title: "Tokio 1.53: net::tcp::OwnedWriteHalf",
-    url: "https://docs.rs/tokio/1.53.1/tokio/net/tcp/struct.OwnedWriteHalf.html",
+    title: "Tokio 1.54.1: net::tcp::OwnedWriteHalf",
+    url: "https://docs.rs/tokio/1.54.1/tokio/net/tcp/struct.OwnedWriteHalf.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie własności halves lub skutków explicit shutdown i Drop write half.",
   },
   {
     id: "tokio-async-write-shutdown",
-    title: "Tokio 1.53: io::AsyncWriteExt::shutdown",
-    url: "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncWriteExt.html#method.shutdown",
+    title: "Tokio 1.54.1: io::AsyncWriteExt::shutdown",
+    url: "https://docs.rs/tokio/1.54.1/tokio/io/trait.AsyncWriteExt.html#method.shutdown",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie kontraktu shutdown, flush albo propagowania io::Error.",
   },

@@ -353,7 +353,7 @@ export function verifySendHandoffTokio(
   version(directory, rustc, env);
   const profile = resolve(
     dirname(fileURLToPath(import.meta.url)),
-    "../../scripts/fixtures/tokio-runtime-1.53.1",
+    "../../scripts/fixtures/tokio-runtime-1.54.1",
   );
   const target = join(directory, "target");
   const summaries = [];

@@ -50,19 +50,19 @@ export const capstoneIntegrationSources: Source[] = [
   },
   {
     id: "capstone-tokio-mpsc",
-    title: "Tokio 1.53.1: bounded mpsc",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/index.html",
+    title: "Tokio 1.54.1: bounded mpsc",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/index.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj po zmianie przypiętej wersji Tokio albo kontraktu bounded kanału.",
   },
   {
     id: "capstone-tokio-blocking",
-    title: "Tokio 1.53.1: spawn_blocking",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn_blocking.html",
+    title: "Tokio 1.54.1: spawn_blocking",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/fn.spawn_blocking.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj po zmianie modelu właściciela blokującego zapisu i joinowania workera.",
   },

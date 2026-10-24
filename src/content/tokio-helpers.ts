@@ -1,6 +1,6 @@
 import type { LessonStep } from "@/domain/types";
 
-const tokioTarget = "cargo-tokio-runtime-1.53.1" as const;
+const tokioTarget = "cargo-tokio-runtime-1.54.1" as const;
 
 export function choose(
   id: string,

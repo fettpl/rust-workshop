@@ -21,9 +21,9 @@ export const asyncLendingBoundarySources: Source[] = [
   {
     id: "async-lending-boundary-send",
     title: "Tokio task::spawn documentation",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/fn.spawn.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj wymagania Send + 'static przy zmianie przykładu spawn.",
   },

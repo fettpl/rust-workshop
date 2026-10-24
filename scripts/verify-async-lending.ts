@@ -378,7 +378,7 @@ try {
     assertCompleted(fetched, "solution/fetch");
     assert.equal(fetched.status, 0, "fixed dependency fetch failed");
     const fixedProfile = fileURLToPath(
-      new URL("./fixtures/tokio-runtime-1.53.1/", import.meta.url),
+      new URL("./fixtures/tokio-runtime-1.54.1/", import.meta.url),
     );
     const fixedLockPath = join(fixedProfile, "Cargo.lock");
     const fixedLock = readFileSync(fixedLockPath);

@@ -1,3 +1,4 @@
+import { dependencyFileSuccessor } from "./dependency-maintenance-compatibility-fixture";
 import {
   assertReviewedHistoryRedaction,
   historyRedactionDeltas,
@@ -301,14 +302,19 @@ it("matches accepted identities and reviewed maintenance successors", () => {
     ).toEqual([delta.previousSha256]);
   }
   for (const file of baseline.immutableFiles) {
-    const actual = createHash("sha256")
-      .update(readFileSync(new URL(`../../${file.path}`, import.meta.url)))
-      .digest("hex");
+    const successor = dependencyFileSuccessor(file.path, file.sha256);
+    const bytes = readFileSync(
+      new URL(`../../${successor?.currentPath ?? file.path}`, import.meta.url),
+    );
+    if (successor) dependencyFileSuccessor(file.path, file.sha256, bytes);
+    const actual = createHash("sha256").update(bytes).digest("hex");
     const delta =
       reviewedMaintenanceDeltas[
         file.path as keyof typeof reviewedMaintenanceDeltas
       ];
-    expect(actual, file.path).toBe(delta?.currentSha256 ?? file.sha256);
+    expect(actual, file.path).toBe(
+      successor?.currentSha256 ?? delta?.currentSha256 ?? file.sha256,
+    );
   }
 });
 

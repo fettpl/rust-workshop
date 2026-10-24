@@ -7,42 +7,40 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-12";
-
 export const tokioShutdownSources: Source[] = [
   {
     id: "tokio-shutdown-mpsc-receiver-close",
-    title: "Tokio 1.53: mpsc::Receiver::close",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html",
+    title: "Tokio 1.54.1: mpsc::Receiver::close",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/struct.Receiver.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki close, recv, pojemności kanału albo wyjątków dla wcześniej wydanych Permit.",
   },
   {
     id: "tokio-shutdown-watch-receiver",
-    title: "Tokio 1.53: sync::watch::Receiver",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/watch/struct.Receiver.html",
+    title: "Tokio 1.54.1: sync::watch::Receiver",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/watch/struct.Receiver.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie changed, borrow_and_update albo wyniku po Drop ostatniego watch::Sender.",
   },
   {
     id: "tokio-shutdown-join-set",
-    title: "Tokio 1.53: task::JoinSet",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinSet.html",
+    title: "Tokio 1.54.1: task::JoinSet",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/struct.JoinSet.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie join_next_with_id, JoinError, shutdown lub join_all.",
   },
   {
     id: "tokio-shutdown-select",
-    title: "Tokio 1.53: select!",
-    url: "https://docs.rs/tokio/1.53.1/tokio/macro.select.html",
+    title: "Tokio 1.54.1: select!",
+    url: "https://docs.rs/tokio/1.54.1/tokio/macro.select.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie anulowania gałęzi albo gwarancji cancellation safety recv i changed.",
   },

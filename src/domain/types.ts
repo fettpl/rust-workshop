@@ -143,7 +143,8 @@ export interface LessonStep {
   /** Authored compiler message fragment when rustc emits no stable E-code. */
   expectedDiagnostic?: string;
   /** Maintainer-only compiler selection for repository-authored fixtures, never a runner request. */
-  trustedFixtureTarget?: "rustc-2024" | "cargo-tokio-runtime-1.53.1";
+  trustedFixtureTarget?:
+    "rustc-2024" | "cargo-tokio-runtime-1.54.1" | "cargo-tokio-runtime-1.53.1";
   editorMode?: "rust" | "toml";
   editorFile?: string;
 }

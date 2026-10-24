@@ -31,7 +31,7 @@ type Verification = { id: string; passed: boolean; detail: string };
 const profile = join(
   dirname(fileURLToPath(import.meta.url)),
   "fixtures",
-  "tokio-runtime-1.53.1",
+  "tokio-runtime-1.54.1",
 );
 const flags = process.argv.slice(2);
 if (flags.length > 1 || flags.some((flag) => flag !== "--fetch"))

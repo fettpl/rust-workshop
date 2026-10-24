@@ -31,7 +31,7 @@ describe("Service Operations authored package contract", () => {
         "RUNBOOK.md",
       ]),
     );
-    expect(solution["Cargo.toml"]).toContain('tokio = { version = "=1.53.1"');
+    expect(solution["Cargo.toml"]).toContain('tokio = { version = "=1.54.1"');
     expect(solution["src/operations.rs"]).toContain("StructuredEvent");
     expect(solution["src/operations.rs"]).toContain("DuplicateRequest");
     expect(solution["src/operations.rs"]).toContain(

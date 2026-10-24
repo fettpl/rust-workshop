@@ -12,46 +12,46 @@ const reviewedAt = "2026-09-12";
 export const tokioRuntimeSources: Source[] = [
   {
     id: "tokio-runtime-builder",
-    title: "Tokio 1.53: runtime::Builder",
-    url: "https://docs.rs/tokio/1.53.1/tokio/runtime/struct.Builder.html",
+    title: "Tokio 1.54.1: runtime::Builder",
+    url: "https://docs.rs/tokio/1.54.1/tokio/runtime/struct.Builder.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie kontraktu current-thread runtime, enter, block_on albo wymaganych feature flags.",
   },
   {
     id: "tokio-spawn",
-    title: "Tokio 1.53: tokio::spawn",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html",
+    title: "Tokio 1.54.1: tokio::spawn",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/fn.spawn.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie granicy Send/'static, momentu pierwszego poll albo zachowania JoinHandle.",
   },
   {
     id: "tokio-join-handle",
-    title: "Tokio 1.53: JoinHandle",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html",
+    title: "Tokio 1.54.1: JoinHandle",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/struct.JoinHandle.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie wyniku await, JoinError, abort lub semantyki Drop JoinHandle.",
   },
   {
     id: "tokio-task-id",
-    title: "Tokio 1.53: task::id",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/fn.id.html",
+    title: "Tokio 1.54.1: task::id",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/fn.id.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie dostępności tożsamości zadania podczas wykonania przez Tokio.",
   },
   {
     id: "tokio-oneshot",
-    title: "Tokio 1.53: sync::oneshot",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/oneshot/index.html",
+    title: "Tokio 1.54.1: sync::oneshot",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/oneshot/index.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie własności Sender/Receiver i zakończenia Receiver po Drop nadawcy.",
   },

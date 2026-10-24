@@ -612,19 +612,19 @@ export const tokioStreamSources: Source[] = [
   },
   {
     id: "tokio-stream-mpsc-close",
-    title: "Tokio 1.53.1: mpsc::Receiver::close",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html#method.close",
+    title: "Tokio 1.54.1: mpsc::Receiver::close",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/struct.Receiver.html#method.close",
     classification: "versioned",
-    reviewedAt: "2026-09-12",
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie odrzucania Sender, drenażu bufora lub wyjątku dla Permit wydanego przed close.",
   },
   {
     id: "tokio-stream-select-cancellation",
-    title: "Tokio 1.53.1: tokio::select! i cancellation safety",
-    url: "https://docs.rs/tokio/1.53.1/tokio/macro.select.html",
+    title: "Tokio 1.54.1: tokio::select! i cancellation safety",
+    url: "https://docs.rs/tokio/1.54.1/tokio/macro.select.html",
     classification: "versioned",
-    reviewedAt: "2026-09-12",
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie listy cancellation-safe API albo reguł biased; w select!.",
   },

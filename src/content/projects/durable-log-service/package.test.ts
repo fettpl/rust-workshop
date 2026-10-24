@@ -210,7 +210,7 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
       'rusqlite = { version = "=0.40.2", default-features = false, features = ["bundled"] }',
     );
     expect(serviceManifest).toContain(
-      'tokio = { version = "=1.53.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std"] }',
+      'tokio = { version = "=1.54.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std"] }',
     );
     expect(serviceManifest).toContain(
       'features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std", "test-util"]',

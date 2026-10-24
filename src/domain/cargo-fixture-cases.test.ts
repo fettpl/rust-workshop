@@ -8,7 +8,7 @@ const step: LessonStep = {
   prompt: "Work",
   kind: "debug",
   evidenceKind: "fix",
-  trustedFixtureTarget: "cargo-tokio-runtime-1.53.1",
+  trustedFixtureTarget: "cargo-tokio-runtime-1.54.1",
   code: "fn start() { tokio::spawn(async {}); }",
   solution: "fn start() { tokio::spawn(async {}); }",
   expectedStatus: "success",
@@ -16,6 +16,14 @@ const step: LessonStep = {
 };
 
 describe("complete authored Tokio case inventory", () => {
+  it("never executes historical Tokio profile metadata as a current fixture", () => {
+    expect(
+      tokioCasesForStep("historical", {
+        ...step,
+        trustedFixtureTarget: "cargo-tokio-runtime-1.53.1",
+      }),
+    ).toEqual([]);
+  });
   it("rejects missing and whitespace-only solutions even when a starter exists", () => {
     for (const solution of [undefined, "", "   "])
       expect(() => tokioCasesForStep("lesson", { ...step, solution })).toThrow(

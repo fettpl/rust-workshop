@@ -8,7 +8,7 @@ rust-version = "1.85.0"
 publish = false
 
 [dependencies]
-rand = { version = "=0.10.2", default-features = false, features = ["thread_rng"] }
+rand = { version = "=0.10.3", default-features = false, features = ["thread_rng"] }
 
 [lints.rust]
 unsafe_code = "forbid"
@@ -22,9 +22,9 @@ version = 4
 
 [[package]]
 name = "cfg-if"
-version = "1.0.4"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
+checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
 
 [[package]]
 name = "chacha20"
@@ -60,9 +60,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.189"
+version = "0.2.191"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
+checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "number-guessing"
@@ -79,9 +79,9 @@ checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
 
 [[package]]
 name = "rand"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7f5fa3a058cd35567ef9bfa5e75732bee0f9e4c55fa90477bef2dfcdbc4be80"
+checksum = "65c9fb96cbc91e3478eaae79a69fcd3f1ae4ad052e471fe6732fff548984b4af"
 dependencies = [
  "chacha20",
  "getrandom",
@@ -1271,8 +1271,9 @@ alokacji wykonanych wewnątrz dowolnego BufRead przekazanego przez wywołująceg
 
 Sprawdzenia: cargo fmt --check, cargo check --locked, cargo test --locked, cargo test --doc --locked oraz cargo clippy --all-targets -- -D warnings.
 
-Źródła przejrzane 2026-09-13: rozdział Rust Book o grze w zgadywanie, manifest rand
-0.10.2 oraz dokumentacja random_range/ThreadRng i książka o powtarzalności Rust Rand.
+Manifest rand 0.10.3 i jego dokumentacja random_range/ThreadRng sprawdzone
+2026-10-24. Wcześniejszy przegląd 2026-09-13 obejmował rozdział Rust Book o grze
+w zgadywanie i książkę o powtarzalności Rust Rand.
 `;
 
 const design = String.raw`# Projekt i granice

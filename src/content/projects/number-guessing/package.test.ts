@@ -36,7 +36,7 @@ describe("Number Guessing+ archive contract", () => {
     expect(starter["src/lib.rs"]).toContain("todo!");
     expect(starter["tests/contracts.rs"]).toContain("final_win");
     expect(solution["Cargo.toml"]).toContain(
-      'rand = { version = "=0.10.2", default-features = false, features = ["thread_rng"] }',
+      'rand = { version = "=0.10.3", default-features = false, features = ["thread_rng"] }',
     );
     expect(solution["src/main.rs"]).toContain("rand::random_range(1..=100)");
   });

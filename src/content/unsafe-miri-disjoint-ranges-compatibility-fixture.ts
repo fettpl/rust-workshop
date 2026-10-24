@@ -1,3 +1,4 @@
+import { historicalBeforeDependencyRefresh } from "./dependency-maintenance-compatibility-fixture";
 import { createHash } from "node:crypto";
 import type * as Course from "./course";
 import baseline from "./fixtures/unsafe-miri-pre-disjoint-ranges.json";
@@ -83,7 +84,8 @@ function removeNewProjectDelta(course: typeof Course) {
  * The package replacement is guarded by the complete reviewed successor hash so
  * unrelated project edits remain visible and fail the frozen digest.
  */
-export function historicalBeforeDisjointRanges(course: typeof Course) {
+export function historicalBeforeDisjointRanges(current: typeof Course) {
+  const course = historicalBeforeDependencyRefresh(current);
   return {
     ...course,
     lessons: course.lessons.map((lesson) =>

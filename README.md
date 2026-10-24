@@ -66,7 +66,7 @@ of a particular learning outcome.
 
 ## Run it locally
 
-The supported Node engine is `^22.13.0 || >=24`. A Rust toolchain is not needed
+The supported Node engine is `^22.23.4 || ^24.22.1 || ^26.12.1`. A Rust toolchain is not needed
 to serve the web app or use its browser exercises.
 
 From a clean checkout:

@@ -32,7 +32,7 @@ whole-architecture assessment.
 
 ## Commands and test selection
 
-Use a supported Node.js version from `package.json` (`^22.13.0 || >=24`) and
+Use a supported Node.js version from `package.json` (`^22.23.4 || ^24.22.1 || ^26.12.1`) and
 install the locked dependency graph with:
 
 ```sh

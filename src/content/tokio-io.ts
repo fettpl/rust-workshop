@@ -7,51 +7,49 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-12";
-
 export const tokioIoSources: Source[] = [
   {
     id: "tokio-async-read",
-    title: "Tokio 1.53.1: io::AsyncRead",
-    url: "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncRead.html",
+    title: "Tokio 1.54.1: io::AsyncRead",
+    url: "https://docs.rs/tokio/1.54.1/tokio/io/trait.AsyncRead.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie kontraktu poll_read, ReadBuf albo implementacji własnych readerów.",
   },
   {
     id: "tokio-async-write",
-    title: "Tokio 1.53.1: io::AsyncWrite",
-    url: "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncWrite.html",
+    title: "Tokio 1.54.1: io::AsyncWrite",
+    url: "https://docs.rs/tokio/1.54.1/tokio/io/trait.AsyncWrite.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie kontraktu poll_write, flush, shutdown albo implementacji własnych writerów.",
   },
   {
     id: "tokio-async-read-ext",
-    title: "Tokio 1.53.1: io::AsyncReadExt",
-    url: "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncReadExt.html",
+    title: "Tokio 1.54.1: io::AsyncReadExt",
+    url: "https://docs.rs/tokio/1.54.1/tokio/io/trait.AsyncReadExt.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki read, EOF, cancellation safety lub read_exact/read_to_end.",
   },
   {
     id: "tokio-async-write-ext",
-    title: "Tokio 1.53.1: io::AsyncWriteExt",
-    url: "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncWriteExt.html",
+    title: "Tokio 1.54.1: io::AsyncWriteExt",
+    url: "https://docs.rs/tokio/1.54.1/tokio/io/trait.AsyncWriteExt.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki write, write_all, flush, shutdown albo cancellation safety.",
   },
   {
     id: "tokio-duplex",
-    title: "Tokio 1.53.1: io::duplex",
-    url: "https://docs.rs/tokio/1.53.1/tokio/io/fn.duplex.html",
+    title: "Tokio 1.54.1: io::duplex",
+    url: "https://docs.rs/tokio/1.54.1/tokio/io/fn.duplex.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie pojemności, backpressure lub zachowania połówek DuplexStream.",
   },

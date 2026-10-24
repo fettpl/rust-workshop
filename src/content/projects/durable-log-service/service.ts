@@ -10,10 +10,10 @@ publish = false
 [dependencies]
 ingest-core = { path = "../ingest-core" }
 ingest-store = { path = "../ingest-store" }
-tokio = { version = "=1.53.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std"] }
+tokio = { version = "=1.54.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std"] }
 
 [dev-dependencies]
-tokio = { version = "=1.53.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std", "test-util"] }
+tokio = { version = "=1.54.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std", "test-util"] }
 
 [lints.rust]
 unsafe_code = "forbid"

@@ -21,30 +21,30 @@ The direct packages in `package.json` currently report these licenses in
 | `@monaco-editor/react` | 4.7.0 | MIT | <https://github.com/suren-atoyan/monaco-react> |
 | `dompurify` | 3.4.17 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
 | `idb` | 8.0.4 | ISC | <https://github.com/jakearchibald/idb> |
-| `lucide-react` | 1.55.0 | ISC | <https://github.com/lucide-icons/lucide> |
+| `lucide-react` | 1.61.0 | ISC | <https://github.com/lucide-icons/lucide> |
 | `monaco-editor` | 0.57.0 | MIT | <https://github.com/microsoft/monaco-editor> |
 | `next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
-| `react` | 19.3.0 | MIT | <https://github.com/facebook/react> |
-| `react-dom` | 19.3.0 | MIT | <https://github.com/facebook/react> |
+| `react` | 19.3.1 | MIT | <https://github.com/facebook/react> |
+| `react-dom` | 19.3.1 | MIT | <https://github.com/facebook/react> |
 | `toml-eslint-parser` | 1.0.3 | MIT | <https://github.com/ota-meshi/toml-eslint-parser> |
-| `zod` | 4.6.6 | MIT | <https://github.com/colinhacks/zod> |
-| `@axe-core/playwright` | 4.13.0 | MPL-2.0 | <https://github.com/dequelabs/axe-core-npm> |
-| `@playwright/test` | 1.64.0 | Apache-2.0 | <https://github.com/microsoft/playwright> |
+| `zod` | 4.6.7 | MIT | <https://github.com/colinhacks/zod> |
+| `@axe-core/playwright` | 4.14.0 | MPL-2.0 | <https://github.com/dequelabs/axe-core-npm> |
+| `@playwright/test` | 1.64.1 | Apache-2.0 | <https://github.com/microsoft/playwright> |
 | `@tailwindcss/postcss` | 4.3.3 | MIT | <https://github.com/tailwindlabs/tailwindcss> |
-| `@types/node` | 22.20.2 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
+| `@types/node` | 22.20.5 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `@types/react` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `@types/react-dom` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `eslint` | 9.39.5 | MIT | <https://github.com/eslint/eslint> |
 | `eslint-config-next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
-| `fake-indexeddb` | 6.2.5 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
+| `fake-indexeddb` | 6.2.6 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
 | `fflate` | 0.8.3 | MIT | <https://github.com/101arrowz/fflate> |
-| `prettier` | 3.9.9 | MIT | <https://github.com/prettier/prettier> |
+| `prettier` | 3.9.10 | MIT | <https://github.com/prettier/prettier> |
 | `sharp` | 0.35.5 | Apache-2.0 | <https://github.com/lovell/sharp> |
 | `tailwindcss` | 4.3.3 | MIT | <https://github.com/tailwindlabs/tailwindcss> |
 | `tsx` | 4.23.15 | MIT | <https://github.com/privatenumber/tsx> |
 | `typescript` | 6.0.3 | Apache-2.0 | <https://github.com/microsoft/TypeScript> |
-| `vite` | 8.3.3 | MIT | <https://github.com/vitejs/vite> |
-| `vitest` | 5.0.3 | MIT | <https://github.com/vitest-dev/vitest> |
+| `vite` | 8.3.5 | MIT | <https://github.com/vitejs/vite> |
+| `vitest` | 5.0.5 | MIT | <https://github.com/vitest-dev/vitest> |
 
 ## Bundled and transitive obligations
 
@@ -61,9 +61,9 @@ The locked graph includes packages whose notices need separate preservation:
   source map are retained. Installed dormant Monaco ESM remains upstream stock.
 - `dompurify` 3.4.17 is `MPL-2.0 OR Apache-2.0`; `marked` is MIT. Both are
   dependencies of the copied Monaco editor package.
-- `caniuse-lite` 1.0.30001810 is CC BY 4.0. It is pulled into the Next.js
+- `caniuse-lite` 1.0.30001819 is CC BY 4.0. It is pulled into the Next.js
   toolchain and must retain its attribution/license notice where distributed.
-- `axe-core` 4.13.0 and `@axe-core/playwright` 4.13.0 are MPL-2.0.
+- `axe-core` 4.14.0 and `@axe-core/playwright` 4.14.0 are MPL-2.0.
 - `lightningcss` and its platform packages are MPL-2.0. `@img/sharp-*`
   packages used by `sharp` include Apache-2.0 and, for some platform builds,
   LGPL-3.0-or-later terms. `sharp`'s own Apache notice does not replace those

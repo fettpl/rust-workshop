@@ -12,7 +12,7 @@ receipts and the closed reviewed maintenance exceptions.
 
 ## Before you start
 
-Use a supported Node version (`^22.13.0 || >=24`) and install the locked npm
+Use a supported Node version (`^22.23.4 || ^24.22.1 || ^26.12.1`) and install the locked npm
 dependencies:
 
 ```sh

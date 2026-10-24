@@ -7,51 +7,49 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-12";
-
 export const tokioTimeSources: Source[] = [
   {
     id: "tokio-timeout",
-    title: "Tokio 1.53: time::timeout",
-    url: "https://docs.rs/tokio/1.53.1/tokio/time/fn.timeout.html",
+    title: "Tokio 1.54.1: time::timeout",
+    url: "https://docs.rs/tokio/1.54.1/tokio/time/fn.timeout.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki Elapsed, Drop Future po przekroczeniu deadline albo wymaganej funkcji time.",
   },
   {
     id: "tokio-select",
-    title: "Tokio 1.53: tokio::select!",
-    url: "https://docs.rs/tokio/1.53.1/tokio/macro.select.html",
+    title: "Tokio 1.54.1: tokio::select!",
+    url: "https://docs.rs/tokio/1.54.1/tokio/macro.select.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie anulowania przegranych gałęzi, cancellation safety, fairness lub semantyki biased;.",
   },
   {
     id: "tokio-join-handle-time",
-    title: "Tokio 1.53: task::JoinHandle",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html",
+    title: "Tokio 1.54.1: task::JoinHandle",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/struct.JoinHandle.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie wyniku await albo semantyki Drop JoinHandle i odłączenia zadania.",
   },
   {
     id: "tokio-mpsc-recv-cancellation",
-    title: "Tokio 1.53: sync::mpsc::Receiver::recv",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html#method.recv",
+    title: "Tokio 1.54.1: sync::mpsc::Receiver::recv",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/struct.Receiver.html#method.recv",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie cancellation safety recv, zamknięcia kanału lub znaczenia None.",
   },
   {
     id: "tokio-oneshot-receiver-cancellation",
-    title: "Tokio 1.53: sync::oneshot::Receiver",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/oneshot/struct.Receiver.html",
+    title: "Tokio 1.54.1: sync::oneshot::Receiver",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/oneshot/struct.Receiver.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie await Receiver, RecvError lub gwarancji cancellation safety dla &mut Receiver.",
   },

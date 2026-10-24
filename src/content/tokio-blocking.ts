@@ -7,42 +7,40 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-12";
-
 export const tokioBlockingSources: Source[] = [
   {
     id: "tokio-blocking-spawn",
-    title: "Tokio 1.53: task::spawn_blocking",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn_blocking.html",
+    title: "Tokio 1.54.1: task::spawn_blocking",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/fn.spawn_blocking.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie granic FnOnce, Send i 'static, puli blokującej albo zachowania abort dla rozpoczętej pracy.",
   },
   {
     id: "tokio-blocking-runtime-shutdown",
-    title: "Tokio 1.53: runtime::Runtime shutdown",
-    url: "https://docs.rs/tokio/1.53.1/tokio/runtime/struct.Runtime.html",
+    title: "Tokio 1.54.1: runtime::Runtime shutdown",
+    url: "https://docs.rs/tokio/1.54.1/tokio/runtime/struct.Runtime.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie Drop runtime, shutdown_timeout albo warunków dalszego działania rozpoczętego blocking closure.",
   },
   {
     id: "tokio-blocking-semaphore",
-    title: "Tokio 1.53: sync::Semaphore",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/struct.Semaphore.html",
+    title: "Tokio 1.54.1: sync::Semaphore",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/struct.Semaphore.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie acquire_owned, AcquireError, OwnedSemaphorePermit albo zwalniania permit przez Drop.",
   },
   {
     id: "tokio-blocking-join-handle",
-    title: "Tokio 1.53: task::JoinHandle",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html",
+    title: "Tokio 1.54.1: task::JoinHandle",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/struct.JoinHandle.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie Result zwracanego przez await, JoinError panic lub skutków abort i Drop uchwytu.",
   },

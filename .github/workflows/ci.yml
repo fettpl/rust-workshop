@@ -29,9 +29,10 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
-      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      # Verified upstream commit 683b588c487a69d01f6c6ddf40f036ff682cc2c8 via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -79,7 +80,7 @@ jobs:
           qualification("stable", "stable");
           NODE
       - name: Prepare locked Tokio dependencies for offline native checks
-        run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
+        run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
       - name: Test native runtime version minimums
         run: npm run test:sharp-runtime
       - name: Verify Linux sharp native runtime and SVG decoder
@@ -205,15 +206,16 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
-      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      # Verified upstream commit 683b588c487a69d01f6c6ddf40f036ff682cc2c8 via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: 1.85.0
           components: rustfmt, clippy
       - run: npm ci
       - name: Prepare locked Tokio dependencies for offline native checks
-        run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
+        run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
       - run: npm run content:guessing -- --fetch --msrv
       - run: npm run content:property -- --fetch --msrv
       - run: npm run content:tokio -- --fetch
@@ -279,14 +281,15 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
-      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      # Verified upstream commit 683b588c487a69d01f6c6ddf40f036ff682cc2c8 via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: nightly-2026-08-08
           components: rustfmt
       # The stable regression and MSRV replay are pinned independently from nightly instrumentation.
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: 1.85.0
       - name: Install cargo-fuzz with the pinned nightly
@@ -316,6 +319,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
       # Valgrind is an explicit environment prerequisite for fresh Callgrind evidence.
       - name: Install Valgrind when the runner image does not provide it
@@ -325,8 +329,8 @@ jobs:
             sudo apt-get update
             sudo apt-get install --yes valgrind
           fi
-      # Verified upstream commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f via GitHub on 2026-10-13.
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      # Verified upstream commit 683b588c487a69d01f6c6ddf40f036ff682cc2c8 via GitHub on 2026-10-13.
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: stable
           components: rustfmt, clippy
@@ -372,8 +376,9 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: ${{ matrix.toolchain }}
           components: rustfmt, clippy
@@ -408,6 +413,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
       - name: Reclaim unused hosted-runner SDKs before Rust setup
         shell: bash
@@ -445,17 +451,17 @@ jobs:
             fi
           done
           df -Pk "$workspace"
-      # Upstream rust-toolchain commit e2a55d2ffb04f378e9626c28d38b36d230d1e12f verified via GitHub on 2026-10-13.
+      # Upstream rust-toolchain commit 683b588c487a69d01f6c6ddf40f036ff682cc2c8 verified via GitHub on 2026-10-24; action runtime is unchanged.
       # The date is pinned because Miri is coupled to its nightly compiler.
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: stable
           components: rustfmt, clippy
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: 1.85.0
           components: rustfmt, clippy
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: nightly-2026-08-08
           components: miri, rust-src
@@ -594,8 +600,9 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
+          check-latest: true
           cache: npm
-      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8
         with:
           toolchain: ${{ matrix.toolchain }}
           components: rustfmt, clippy${{ matrix.mode == 'miri' && ', miri, rust-src' || '' }}

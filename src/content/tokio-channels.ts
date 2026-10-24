@@ -7,42 +7,40 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-12";
-
 export const tokioChannelSources: Source[] = [
   {
     id: "tokio-mpsc-sender",
-    title: "Tokio 1.53.1: mpsc::Sender",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Sender.html",
+    title: "Tokio 1.54.1: mpsc::Sender",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/struct.Sender.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki capacity, send, reserve lub kolejki oczekujących nadawców.",
   },
   {
     id: "tokio-mpsc-receiver",
-    title: "Tokio 1.53.1: mpsc::Receiver",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html",
+    title: "Tokio 1.54.1: mpsc::Receiver",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/struct.Receiver.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie close, recv albo warunków, po których odbiornik zwraca None.",
   },
   {
     id: "tokio-mpsc-permit",
-    title: "Tokio 1.53.1: mpsc::Permit",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Permit.html",
+    title: "Tokio 1.54.1: mpsc::Permit",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/struct.Permit.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie własności po reserve, zwalniania po Drop Permit lub możliwości send po Receiver::close.",
   },
   {
     id: "tokio-mpsc-send-error",
-    title: "Tokio 1.53.1: mpsc::SendError",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/error/struct.SendError.html",
+    title: "Tokio 1.54.1: mpsc::SendError",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/mpsc/error/struct.SendError.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie typu błędu send albo dostępności niesłanej wartości w SendError<T>.",
   },

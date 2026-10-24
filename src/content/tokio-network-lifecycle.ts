@@ -7,78 +7,76 @@ import type {
   Source,
 } from "@/domain/types";
 
-const reviewedAt = "2026-09-13";
-
 export const tokioNetworkLifecycleSources: Source[] = [
   {
     id: "tokio-timeout-at",
-    title: "Tokio 1.53.1: time::timeout_at",
-    url: "https://docs.rs/tokio/1.53.1/tokio/time/fn.timeout_at.html",
+    title: "Tokio 1.54.1: time::timeout_at",
+    url: "https://docs.rs/tokio/1.54.1/tokio/time/fn.timeout_at.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie semantyki deadline, anulowania Future albo zachowania po upływie Instant.",
   },
   {
     id: "tokio-time-instant",
-    title: "Tokio 1.53.1: time::Instant",
-    url: "https://docs.rs/tokio/1.53.1/tokio/time/struct.Instant.html",
+    title: "Tokio 1.54.1: time::Instant",
+    url: "https://docs.rs/tokio/1.54.1/tokio/time/struct.Instant.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie testów zatrzymanego czasu, obliczania deadline albo konwersji czasu Tokio.",
   },
   {
     id: "tokio-network-lifecycle-tcp-listener",
-    title: "Tokio 1.53.1: net::TcpListener",
-    url: "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpListener.html",
+    title: "Tokio 1.54.1: net::TcpListener",
+    url: "https://docs.rs/tokio/1.54.1/tokio/net/struct.TcpListener.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie accept, cancellation safety, bind loopback lub sposobu zatrzymania listenera.",
   },
   {
     id: "tokio-network-lifecycle-tcp-stream",
-    title: "Tokio 1.53.1: net::TcpStream",
-    url: "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpStream.html",
+    title: "Tokio 1.54.1: net::TcpStream",
+    url: "https://docs.rs/tokio/1.54.1/tokio/net/struct.TcpStream.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie własności streamu, AsyncRead/AsyncWrite, half-close albo zachowania po Drop.",
   },
   {
     id: "tokio-semaphore",
-    title: "Tokio 1.53.1: sync::Semaphore",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/struct.Semaphore.html",
+    title: "Tokio 1.54.1: sync::Semaphore",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/struct.Semaphore.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie kolejki acquire_owned, close, fairness lub liczby dostępnych permitów.",
   },
   {
     id: "tokio-owned-semaphore-permit",
-    title: "Tokio 1.53.1: sync::OwnedSemaphorePermit",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/struct.OwnedSemaphorePermit.html",
+    title: "Tokio 1.54.1: sync::OwnedSemaphorePermit",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/struct.OwnedSemaphorePermit.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie własności permitu, Drop albo przekazywania go do taska po accept.",
   },
   {
     id: "tokio-watch-receiver",
-    title: "Tokio 1.53.1: sync::watch::Receiver",
-    url: "https://docs.rs/tokio/1.53.1/tokio/sync/watch/struct.Receiver.html",
+    title: "Tokio 1.54.1: sync::watch::Receiver",
+    url: "https://docs.rs/tokio/1.54.1/tokio/sync/watch/struct.Receiver.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie borrow_and_update, changed lub polityki dla Drop wszystkich Senderów stopu.",
   },
   {
     id: "tokio-join-handle-network",
-    title: "Tokio 1.53.1: task::JoinHandle",
-    url: "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html",
+    title: "Tokio 1.54.1: task::JoinHandle",
+    url: "https://docs.rs/tokio/1.54.1/tokio/task/struct.JoinHandle.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-10-24",
     recheckPolicy:
       "Sprawdzaj przy zmianie raportowania JoinError, Drop uchwytu albo shutdown, który rozlicza dzieci.",
   },

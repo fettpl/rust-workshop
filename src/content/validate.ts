@@ -764,7 +764,7 @@ export function validateContent(content: ContentBundle): string[] {
       source.url !==
         "https://docs.rs/crate/rand/0.10.2/source/Cargo.toml.orig" &&
       !source.url.startsWith("https://rust-random.github.io/book/") &&
-      !source.url.startsWith("https://docs.rs/tokio/1.53.1/tokio/") &&
+      !source.url.startsWith("https://docs.rs/tokio/1.54.1/tokio/") &&
       !source.url.startsWith(
         "https://docs.rs/tokio-stream/0.1.19/tokio_stream/",
       ) &&

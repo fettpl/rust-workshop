@@ -34,7 +34,7 @@ running native checks:
 
 ```sh
 npm ci
-cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
+cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
 ```
 
 The job then runs native runtime and audit checks, lint, TypeScript, generated
@@ -98,12 +98,12 @@ reviewing workflow changes.
 
 ## Local verification
 
-For a fresh checkout, use a supported Node version (`^22.13.0 || >=24` in
+For a fresh checkout, use a supported Node version (`^22.23.4 || ^24.22.1 || ^26.12.1` in
 `package.json`) and run:
 
 ```sh
 npm ci
-cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml
+cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
 npm run lint
 npm run typecheck
 npm run content:check

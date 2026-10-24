@@ -235,7 +235,7 @@ describe("curriculum content contract", () => {
         sources: [{ ...sources[0], url }, ...sources.slice(1)],
       }).filter((error) => error.includes("official Rust source"));
     expect(
-      check("https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html"),
+      check("https://docs.rs/tokio/1.54.1/tokio/task/fn.spawn.html"),
     ).toEqual([]);
     expect(check("https://tokio.rs/tokio/tutorial/spawning")).toEqual([]);
     expect(
@@ -247,7 +247,7 @@ describe("curriculum content contract", () => {
       "https://docs.rs/tokio/latest/tokio/",
       "https://docs.rs/tokio/1.53.0/tokio/",
       "https://tokio.rs.example.org/",
-      "https://docs.rs/unrelated/1.53.1/tokio/",
+      "https://docs.rs/unrelated/1.54.1/tokio/",
       "https://docs.rs/tokio-stream/latest/tokio_stream/",
       "https://docs.rs/tokio-stream/0.1.18/tokio_stream/",
       "https://docs.rs.example.org/tokio-stream/0.1.19/tokio_stream/",
@@ -297,7 +297,7 @@ describe("curriculum content contract", () => {
         ...broken.reviewExercises,
         [first]: {
           ...broken.reviewExercises[first],
-          trustedFixtureTarget: "cargo-tokio-runtime-1.53.1" as const,
+          trustedFixtureTarget: "cargo-tokio-runtime-1.54.1" as const,
         },
       },
     };

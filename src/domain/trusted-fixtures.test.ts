@@ -17,9 +17,18 @@ const plain: LessonStep = {
   evaluator: { kind: "compilation" },
   expectedStatus: "success",
 };
-const target = "cargo-tokio-runtime-1.53.1" as const;
+const target = "cargo-tokio-runtime-1.54.1" as const;
 
 describe("authored fixture compiler contract", () => {
+  it("preserves historical fixture identity without upgrading its proof", () => {
+    expect(
+      getTrustedFixtureTarget({
+        ...plain,
+        code: "fn start() { tokio::spawn(async {}); }",
+        trustedFixtureTarget: "cargo-tokio-runtime-1.53.1",
+      }),
+    ).toBe("cargo-tokio-runtime-1.53.1");
+  });
   it("requires the Cargo profile for Stream-only examples, aliases and hidden tests", () => {
     for (const source of [
       "fn values() { let _ = tokio_stream::iter([1, 2]); }",
