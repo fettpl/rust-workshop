@@ -432,11 +432,11 @@ function validateManifests(packageRoot: string): void {
   assert.match(store, /default-features\s*=\s*false/);
   assert.match(store, /features\s*=\s*\["bundled"\]/);
   const service = readFileSync(join(packageRoot, "crates/ingest-service/Cargo.toml"), "utf8");
-  assert.match(service, /tokio\s*=\s*\{\s*version\s*=\s*"=1\.53\.1"/);
+  assert.match(service, /tokio\s*=\s*\{\s*version\s*=\s*"=1\.54\.1"/);
   assert.match(service, /default-features\s*=\s*false/);
   const lock = readFileSync(join(packageRoot, "Cargo.lock"), "utf8");
   assert.match(lock, /name = "rusqlite"\nversion = "0\.40\.2"/);
-  assert.match(lock, /name = "tokio"\nversion = "1\.53\.1"/);
+  assert.match(lock, /name = "tokio"\nversion = "1\.54\.1"/);
   for (const path of ["README.md", "PROTOCOL.md", "THREAT_MODEL.md", "RUNBOOK.md", "CHANGELOG.md", "RELEASE.md", "PERFORMANCE.md"]) {
     assert.ok(readFileSync(join(packageRoot, path), "utf8"));
   }
