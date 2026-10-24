@@ -59,7 +59,7 @@ split:
   required by their inputs and must not be hand-edited.
 - `public/manifest.webmanifest` and `public/sw.js` are MIT-associated code or
   metadata. The `public/icon.svg` and its PNG derivatives have a traced
-  assistant-generated origin in the [bounded rights assessment](rights-assessment.md). Applying the
+  assistant-generated origin in the [bounded rights assessment](rights-assessment.md). The
   maintainer accepted that documented origin on 24 October 2026 and confirmed
   that, to their knowledge, no additional external icon file or reference was
   supplied. The existing acceptance condition is met; the approved CC BY 4.0
