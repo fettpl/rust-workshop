@@ -86,7 +86,7 @@ test("sends a Tokio gate through the existing code-only runner contract", async 
   const step = lessons
     .find((item) => item.id === ref.lessonId)!
     .steps.find((item) => item.id === ref.stepId)!;
-  expect(step.trustedFixtureTarget).toBe("cargo-tokio-runtime-1.53.1");
+  expect(step.trustedFixtureTarget).toBe("cargo-tokio-runtime-1.54.1");
   expect(step.evaluator?.kind).toBe("tests");
   await page.locator(".gate-action").first().click();
   await page
