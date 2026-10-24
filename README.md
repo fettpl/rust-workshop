@@ -3,7 +3,8 @@
 Rust Workshop is a local-first, interactive course for people who know the
 basics of programming and are starting Rust from zero. Lessons and the learner
 interface are currently in Polish; this README and the contributor
-documentation are in English.
+documentation are in English. The course explains Rust from first principles
+and does not assume Java, Python, or another language ecosystem.
 
 See the [history redaction notice](docs/history-redaction.md) for historical
 presentation changes, frozen receipt hashes and current compatibility limits.
@@ -20,8 +21,9 @@ control flow, ownership and borrowing, data modeling, collections, errors,
 Cargo, generics, traits, lifetimes, closures, iterators, testing, Number
 Guessing+, and Log Analyzer.
 
-The course map also has optional extension groups. You can browse them without
-changing the core route:
+The course map also has extension groups. You can browse them without changing
+the core route. The suggested continuation includes Mini grep, shared ownership,
+and threads; other specializations can be selected by topic:
 
 - **Language and abstraction:** boxed values, shared ownership, callbacks,
   GATs, and lending APIs.
@@ -38,7 +40,8 @@ operations, public API workspaces, Mini grep, property contracts, an FFI
 buffer wrapper, Miri safety, and a durable log service. Project pages provide
 starter and solution archives where a Cargo package exists. Downloading an
 archive gives you files to work on locally; the web app does not run those
-archives on your computer.
+archives on your computer. A separate Study Session CLI brief asks you to build
+your own project from scratch, with your own tests and CLI evidence.
 
 The workspace includes an ownership visualizer, progressive Compiler Coach
 hints, focus mode, keyboard controls, and light and dark themes alongside its
@@ -87,14 +90,18 @@ npm run build
 npm start -- --port 3002
 ```
 
-With that production server running, the maintainer offline check is:
+Keep that server running. In a second terminal, install the Chromium browser
+used by Playwright and run the maintainer offline check:
 
 ```sh
+npx --no-install playwright install chromium
 npm run test:offline
 ```
 
-It needs Playwright and the loopback production server; it verifies the cached
-offline path rather than making Rust execution local.
+On Linux, use `npx --no-install playwright install --with-deps chromium` if
+Chromium system libraries are missing. This check
+uses the loopback production server and verifies the cached offline path. Rust
+execution still needs the remote runner.
 
 Rust is required when you unpack a Cargo project or run maintainer verification
 against trusted repository fixtures. Those commands use fixed inputs and are
@@ -143,9 +150,10 @@ limited check as a passing proof.
 ## Licensing status
 
 The maintainer has approved this license split and the project credit
-**Pixel Media Workshop Paweł Borawski** (2026). Public-release preparation and
-source-provenance checks remain in progress. The licenses cover only rights
-the project can grant:
+**Pixel Media Workshop Paweł Borawski** (2026). The bounded course source review
+and icon-origin acceptance are recorded in the
+[rights assessment](docs/rights-assessment.md); wider release gates remain
+separate. The licenses cover only rights the project can grant:
 
 - MIT for application code, scripts, tests, evaluator machinery, programming
   examples, executable lesson code/solutions, and code in downloadable
@@ -162,8 +170,13 @@ narrow, maintainer-approved `MIT OR Apache-2.0` expression; this is not
 a blanket license for the repository. See the current
 [licensing guide](docs/licensing.md) for the canonical file-level, mixed-file,
 and archive reference. This is not a choice between MIT and CC BY for the
-whole repository. The icon assets remain an unresolved provenance gate until
-their source and permissions are established.
+whole repository. The bounded course review found no actionable substantial
+copied-expression case within its stated scope. The maintainer accepted the
+traced assistant-generated icon origin on 24 October 2026 and confirmed that,
+to their knowledge, no additional external icon file or reference was supplied.
+Both scoped provenance blockers are resolved. This is not exhaustive copyright
+or trademark clearance or permission to publish; any later concrete finding
+must be assessed.
 
 The maintainer reports that the course prepared for this milestone was generated
 with ChatGPT and Codex Desktop using GPT-5.6 and later models for drafting and

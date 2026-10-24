@@ -29,7 +29,8 @@ runner described in [docs/runner.md](docs/runner.md).
 ## Good contribution areas
 
 - Improve learner-facing lessons, prompts, hints, explanations, and review
-  tasks. Keep that material in Polish and explain Rust from first principles.
+  tasks. Keep that material in Polish and explain Rust from first principles,
+  without assuming Java, Python, or another language ecosystem.
 - Add or repair exercises, evaluators, project contracts, and source
   references. Keep the contract observable and support it with real trusted
   Rust evidence where the change requires compiler or runtime behavior.
@@ -64,13 +65,23 @@ npm run lint
 npm run content:check
 ```
 
-For a production/offline pass, use a separate terminal for the server:
+For a production/offline pass, build and keep the server running in one
+terminal:
 
 ```sh
 npm run build
 npm start -- --port 3002
+```
+
+In a second terminal, prepare Playwright Chromium and run the check:
+
+```sh
+npx --no-install playwright install chromium
 npm run test:offline
 ```
+
+On Linux, use `npx --no-install playwright install --with-deps chromium` if
+Chromium system libraries are missing.
 
 The full `npm test` suite includes trusted native Rust fixtures. Prepare the
 stable toolchain and the locked Tokio cache as described in
@@ -116,7 +127,9 @@ issue.
 
 The maintainer approved the following split and the project credit
 **Pixel Media Workshop Paweł Borawski** (2026). Grants cover only rights the
-project can grant; public-release and source-provenance checks remain open:
+project can grant. The [bounded rights assessment](docs/rights-assessment.md)
+records the completed course source review and icon-origin acceptance; wider
+release gates remain separate:
 
 - MIT for application code, scripts, tests, evaluator machinery, programming
   examples, executable lesson code/solutions, and code in downloaded project
@@ -135,10 +148,14 @@ authored Cargo package manifests retain a narrow `MIT OR Apache-2.0`
 expression with maintainer approval; this does not extend Apache to the
 repository as a whole. See the current [licensing guide](docs/licensing.md)
 for the repository's file-level, mixed-file, archive, and attribution rules.
-The icon assets remain an unresolved provenance gate; do not treat them as
-verified original CC BY 4.0 material until their source and permissions are
-established. The maintainer reports that the course prepared for this milestone
-was generated with ChatGPT and Codex Desktop using GPT-5.6 and later models for
+The bounded course review found no actionable substantial copied-expression
+case within its stated scope. The maintainer accepted the traced
+assistant-generated icon origin on 24 October 2026 and confirmed that, to their
+knowledge, no additional external icon file or reference was supplied. Both
+scoped provenance blockers are resolved; this is not exhaustive copyright or
+trademark clearance or permission to publish. Reassess any later concrete
+source or rights finding. The maintainer reports that the course prepared for
+this milestone was generated with ChatGPT and Codex Desktop using GPT-5.6 and later models for
 drafting and research, from the maintainer's prompts and direction, with no
 manual drafting of course fragments. This describes the workflow, not proof of
 originality, copyright protection or third-party clearance.

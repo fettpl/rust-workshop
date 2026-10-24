@@ -31,7 +31,9 @@ runtime, a controlled mock, or browser/UI state assertions.
 
 ## Rights
 
-<!-- State whether new material is code, authored course content, or third-party material. -->
+<!-- Identify code (MIT), teaching prose (CC BY 4.0), mixed portions, and any
+third-party licenses/notices. Disclose AI assistance and known adapted sources;
+model output alone does not prove originality. See ../docs/licensing.md. -->
 
 I created this contribution or have permission to license it under the
 applicable project terms.

@@ -148,9 +148,9 @@ required check. If required CI or infrastructure is unavailable, keep the
 work local and report the limitation; never bypass a gate or manufacture a
 success.
 
-All maintainer-dispatched subagents use GPT-5.6-Luna with high reasoning. Do
-not silently substitute another model; report unavailability. An explicit
-later user instruction takes precedence. This is a maintainer workflow
+The maintainer default for dispatched subagents is GPT-6.1-Sol with medium
+reasoning. Do not silently substitute another model; report unavailability. An
+explicit later user instruction takes precedence. This is a maintainer workflow
 preference and is not a paid-tool requirement for outside contributors.
 
 ## Human decisions and safety boundaries
