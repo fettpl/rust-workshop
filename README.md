@@ -139,6 +139,10 @@ npm run lint
 npm run content:check
 ```
 
+`npm run typecheck` first generates Next.js route types and `next-env.d.ts`
+through its `pretypecheck` hook. These generated files are ignored by Git;
+a development server or production build is not needed before this check.
+
 `npm test` includes trusted native-fixture work. A fresh maintainer run needs
 the stable Rust toolchain and the locked Tokio dependency cache described in
 [CI and local verification](docs/ci-cd.md). The initialized-prefix native proof
