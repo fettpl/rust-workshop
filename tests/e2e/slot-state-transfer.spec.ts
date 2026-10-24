@@ -210,7 +210,9 @@ test("Slot lazy-init model and primary preserve old evidence and mobile state", 
     .click();
   await expect(page.locator(".task-pane h1")).toHaveText(transfer.title);
   await expect(page.locator(".task-pane")).toContainText("get_or_try_init");
-  await expect(page.locator(".task-pane")).toContainText("FnOnce");
+  await expect(
+    page.getByRole("textbox", { name: "Kod Rust", exact: true }),
+  ).toHaveValue(/FnOnce/);
   await expect(page.locator(".task-pane")).toContainText("Empty");
 
   await page.getByRole("button", { name: stage.title, exact: true }).click();
@@ -296,7 +298,9 @@ test("Slot lazy-init model and primary preserve old evidence and mobile state", 
   await expect(editor).toHaveValue(draft);
 
   await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
-  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page
+    .getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true })
+    .click();
   await page
     .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
     .click();
