@@ -1,0 +1,1560 @@
+{
+  "schemaVersion": 1,
+  "scope": [
+    "src/content/",
+    "public/"
+  ],
+  "groups": [
+    {
+      "id": "course",
+      "category": "course",
+      "origin": "maintainer-reported-ai",
+      "review": {
+        "status": "pending",
+        "evidence": [
+          "docs/licensing.md",
+          "docs/oss-provenance.md"
+        ]
+      }
+    },
+    {
+      "id": "icons",
+      "category": "asset",
+      "origin": "unresolved",
+      "review": {
+        "status": "pending",
+        "evidence": [
+          "docs/licensing.md",
+          "docs/oss-provenance.md"
+        ]
+      }
+    },
+    {
+      "id": "public-software",
+      "category": "software",
+      "origin": "repository-software",
+      "review": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/licensing.md",
+          "docs/oss-provenance.md"
+        ]
+      }
+    }
+  ],
+  "entries": [
+    {
+      "path": "public/icon-192.png",
+      "sha256": "5cd7d71118ffc616a8a0525ee73c1d80bf90c0c60ec728115b7f58892cbf8859",
+      "group": "icons",
+      "derivedFrom": "public/icon.svg",
+      "generator": "scripts/setup-assets.mjs"
+    },
+    {
+      "path": "public/icon-512.png",
+      "sha256": "f3a6235822e0137174408ae8c50c363278fdac3571de30d65cedcca6c1dd5f50",
+      "group": "icons",
+      "derivedFrom": "public/icon.svg",
+      "generator": "scripts/setup-assets.mjs"
+    },
+    {
+      "path": "public/icon.svg",
+      "sha256": "d2568fdf68ea08079040808cd1afe36765ec3b6fd173b7b8a793b67a0ffec16b",
+      "group": "icons"
+    },
+    {
+      "path": "public/manifest.webmanifest",
+      "sha256": "bad79a566bfaa04a62cc506ce479f7b63071f467f5b46908ca94f723127f57a2",
+      "group": "public-software"
+    },
+    {
+      "path": "public/sw.js",
+      "sha256": "12b3224bd6f99206abb44ff39e5c8b4c13977dc9c3daa012b3f1e7e701af3335",
+      "group": "public-software"
+    },
+    {
+      "path": "src/content/abstraction-integration.test.ts",
+      "sha256": "cb1b2224ed9b706fe4fccb9473c86ab1500ea97f6b0d733d8429fa5032f6b28f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/allocation-verification.test.ts",
+      "sha256": "c6cd15ed5a1558f91396888f206ac8272d85e5761725cc839517ce4585cf2455",
+      "group": "course"
+    },
+    {
+      "path": "src/content/allocation-verification.ts",
+      "sha256": "85c61a2f1e4103ad1ef81fc14ad6ac0a42904fac7bba85a8af74d331e87dd75f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/api-release-matrix-integration.test.ts",
+      "sha256": "a2d9fd25bcdaaa4db9823b29a00ea448a65e5eb3693548847f892c7ed0894a6a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/api-release-matrix.ts",
+      "sha256": "b7817ebc5cb072d97b3f6e3d76acdafeb091c5cc926492c3484ca33b4b376a41",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-cancellation.ts",
+      "sha256": "2bee6dc46b42846fef43c8a06361e581dd3790f2a2a118ce9a6f9614a6419caa",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-foundations.ts",
+      "sha256": "d5d40ddaf9edd1141bc4957fef364b9877f9aad88efdeb289eadce058b83bb16",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-assessment-fixtures.ts",
+      "sha256": "a6a2904c6b09ed8cafab05f0a5655926fab159d88ef7345869364ee32b109553",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-assessment.test.ts",
+      "sha256": "0659e5a827fb5ddaf9814c664051aa6a8e934b61ec608d32b4fa9b852e6249c4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-boundaries.ts",
+      "sha256": "4be1ee1db2393a52150ef13471ff43444fcf10f703d4b6ed8a69d9a9c44ce00b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-callback-transfer.ts",
+      "sha256": "e725d717424d1f9e01193a41b5f4b580923702c2000c6cb0f4482f72f85b142f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-cancel-compatibility-fixture.ts",
+      "sha256": "eb6efc9581d23c4b824fc508043b90f960d018806aa43102b36a176e0c0f26f4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-cancel-compatibility.test.ts",
+      "sha256": "b6f854a53ac13c75d72e0208516f24732b0dba4fdd7178b99fc8ff210825d255",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-cancel-native.test.ts",
+      "sha256": "dba399cbf0bf6b410783bdca5858dbc6b8f4ed19d9d0f08d07e263cfe15a3f26",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-cancel-native.ts",
+      "sha256": "bfebab22a7c795402f0938a33d3806b217244ca16364f76acd5cbe092a940f71",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-cancel-transfer.test.ts",
+      "sha256": "ef975be685144147aad466b725c41eb1ff89b502f73f63637f0f1633c66d975b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-cancel-transfer.ts",
+      "sha256": "60162cf1793dcd0f13e97e89afaf1eef66c99a1e7e8fafb0a81c3b792d6ef78d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-core.ts",
+      "sha256": "8649bf7c4e6c43f291e07096adffd2135ebefd0ecab6a935f15ecb0536d4a8e7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-dyn-transfer.ts",
+      "sha256": "266ab9c73a54d1abd84ce814429e6bb4045e32cdcd16c8b5ddb3e8e253d2fb36",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-fixtures.test.ts",
+      "sha256": "c3c6d71993390c0dd85c4140347e2f7ebe7a5cb9fedd6bcdc3841550ad76edd6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-fixtures.ts",
+      "sha256": "51aed594d0f6797077244741c509018aacb8341d762985e2f212b7c8b26de240",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-integration.test.ts",
+      "sha256": "2adffb4c921a2244eec1d5b9ea6ac4fd52527f16f4518f75479c70ffc81f72b3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-module.ts",
+      "sha256": "acf71862f0357c0713e6a48e77a2d71864f2236407ac82fb94ff810da5fe30ae",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-native-test-support.test.ts",
+      "sha256": "7d84f30673ba7e72c5a8c4f544b5c3ec4bffd2832cfbde5c343de66ab59cb67a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-native-test-support.ts",
+      "sha256": "b1590e6615c7156c4815b162134d04ef88ce4e1723e181bd0ce3965805abdd3e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-send-compatibility-fixture.ts",
+      "sha256": "be8f55a5530fa99123f1ed40e9e403bbadcb1a6fedbbb88274bf29491eb0e7ec",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-send-compatibility.test.ts",
+      "sha256": "c83cad42aaaf8735f84294da4cb30b9c4d7b110e5ab63043a12b6d81cc198bc4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-send-native.ts",
+      "sha256": "c361985a37eba1fd5856c57030c4262a5f14a988c659b849c17edd3eb2eef564",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-send-transfer-boundaries.test.ts",
+      "sha256": "a56e5c6d5b6d0441bd85cfc3fd6f6a7e191bbc33407ce9446456bad696229f71",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-send-transfer.test.ts",
+      "sha256": "fcd05e267e270f7975ab4b151b635541e7e7c3aeb251c30433f8789fa5a576c0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-send-transfer.ts",
+      "sha256": "6581569073328b6370737dc73668804c2596632d98c4e2bff5aaf21c60687129",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-transfer-boundaries.test.ts",
+      "sha256": "39877c6b1d7fbac9a395d9b3bb25d85f696f918d2c63a1550cd8f1952e957682",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-lending-transfer-compatibility.test.ts",
+      "sha256": "9b9d2e5c7419ddab3fa0aa7248de021f66be28221d0a238592f72d4b82445828",
+      "group": "course"
+    },
+    {
+      "path": "src/content/async-ownership.ts",
+      "sha256": "bb14116cba1188e8a13d0437d9bd21b090dbc36e47cd32b5403f667581414a1d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/atomic-project-integration.test.ts",
+      "sha256": "32cd332c006682ef4a0943542ec817f38b293f046644af51baae8ae56d14e3c6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/atomic-state.ts",
+      "sha256": "d4363cd1fa5669b6d3da268d7986ed31260f339a93ff987be680106e4cd19bde",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-correction-delta.json",
+      "sha256": "03da961375a2d805a5004c6829e6704c3a02c9c49958c6c773a1529ebe23dda6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-correction-integration.test.ts",
+      "sha256": "2d975a5c16afb0d79f81d1c1c39098055f2f78920853a4cb9f7e6b8b458bd649",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-correction-legacy.json",
+      "sha256": "f44dea3bddecea8e60e4adbb3ae97c5f93ee02bf7ab8c6e8ee555fb207fa9052",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-execution-assessment.test.ts",
+      "sha256": "83fa8c0c094f6d64efff43776149e0c3e4fea47edd430bf40dd520858d4ee0cc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-patterns-contracts.test.ts",
+      "sha256": "a71d9c18056b0e0568b95ab13e2fe42b3154a0c902af9d74d94b6b8773786fa4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-patterns-fixtures.ts",
+      "sha256": "c477c87fd16763ebd48e248ead536c174749a6ed4b624da1815f1979cac983fc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-primitives-contracts.ts",
+      "sha256": "3f578d0ed587d1f07cd117e529f997dd4c50f366050024959c330394594db075",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-primitives-fixtures.ts",
+      "sha256": "0fb7c295ea47df5c9c39d050c7a1062c055908e77d15c73c08e98127ae98e4df",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-primitives-rust.test.ts",
+      "sha256": "2716e812eee4e2bbebb7e4a66bf2be59dd197e84ff1410b7f5b91db8fca84102",
+      "group": "course"
+    },
+    {
+      "path": "src/content/baseline-session-stops.test.ts",
+      "sha256": "89e3b73cc3409e115dd5cd70f323de44a423624a360570e4827d2b5b95cb89be",
+      "group": "course"
+    },
+    {
+      "path": "src/content/borrowed-callbacks-integration.test.ts",
+      "sha256": "1404887f568a9599f383eea9ca779f66a9dfbe79259b5a92b34a6e248b2727cb",
+      "group": "course"
+    },
+    {
+      "path": "src/content/borrowed-callbacks-module.ts",
+      "sha256": "41e098cb6acea2e52fd32d518747c9d758432e595f280058fbee3cb65d556b2c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/borrowed-hrtb.ts",
+      "sha256": "89ac28e7036073547a6f3dc6849abf2bfa4ef88b9847a8d4c2ae4cff17ddfcc7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/borrowed-variance.ts",
+      "sha256": "2134997012817732b4fe66becfb0a7acc9615885082e543c3f4d6ceb5ec38348",
+      "group": "course"
+    },
+    {
+      "path": "src/content/boxed-values.ts",
+      "sha256": "affa81d3a9c0c0052c3324be609d6a8f6065dc160f24c334017cc4930a29b6c3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/capstone-integration-assessment-fixtures.ts",
+      "sha256": "9da8b07a3255c122e0b47b63e4c32568e76330d4b137dca429a83d446a93acdc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/capstone-integration-assessment.test.ts",
+      "sha256": "3e20bc3428bb2da4f2df6f4965af7360b06f4bbe9dbfd34c6f248ed41ffda756",
+      "group": "course"
+    },
+    {
+      "path": "src/content/capstone-integration-integration.test.ts",
+      "sha256": "2fdc7ad2f5a5ed0686442643aa700ba5490a9c5c774c55da2055dc7b543beea1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/capstone-integration.ts",
+      "sha256": "a5e3b55de8667d1c18ac075b43850d03bad06c29954626148d021181c842c898",
+      "group": "course"
+    },
+    {
+      "path": "src/content/capstone-integration/contracts.ts",
+      "sha256": "a705d5d01c0aff29c7d32e2044f71f13dc636aa140d2eb35fc2a0dc7b1b56af8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/capstone-verification.test.ts",
+      "sha256": "ac312ca4c5a45fa4f90df5f42d37fd0dd1583740ba35333e01666d00bb7d9fdd",
+      "group": "course"
+    },
+    {
+      "path": "src/content/cargo-dependencies.test.ts",
+      "sha256": "b1228a911d85471f01c6be26ed257b3f56e907d557d3167cc2f4a434e7693c39",
+      "group": "course"
+    },
+    {
+      "path": "src/content/cargo-dependencies.ts",
+      "sha256": "1fcf27eac4add9d19568a6e64041de6aa4bd079a7e7c5d0f7016d96b85f61a6f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/cargo-dependency-lifecycle-module.ts",
+      "sha256": "b1b6ea018e2a370c6dfeace85e1388b6c5349ada9f535cfc2e5044b730acfebc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/cargo-lifecycle-integration.test.ts",
+      "sha256": "7f5e3537c00035e1b4222bb07549c34c588e6bc961101e635707086fbd1fc536",
+      "group": "course"
+    },
+    {
+      "path": "src/content/cargo-release-policy.test.ts",
+      "sha256": "3353df2fbd84045e1308b674f6adde4cd9244de9d91d46b850dfd04136c1320f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/cargo-release-policy.ts",
+      "sha256": "f59c746ad025863f8fb3a8844302fad18486d35043111701f7a160208a627e84",
+      "group": "course"
+    },
+    {
+      "path": "src/content/catalog.ts",
+      "sha256": "459a8e33ce9841b67ad0ae76ba6401d0d8ebd80bfaa871e1acc497070f03ed8d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/channels.ts",
+      "sha256": "dc84f7d57456daedae468d800297fe5f1575500c0e355cb8f8c3b3bb27e308c3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/closures.ts",
+      "sha256": "3ee2405dad8c60797174e9d16f0b1f9f5f1970ef2f6c8a26c3d801ffbe49a762",
+      "group": "course"
+    },
+    {
+      "path": "src/content/collections.ts",
+      "sha256": "15b7b13a25cecdf31c56168c25d096300715277e7536e29dc3892f94967f8670",
+      "group": "course"
+    },
+    {
+      "path": "src/content/content-validation.test.ts",
+      "sha256": "d4657432fe860bc3362e19a31b132a493533577a232e7b53fa89af0cfe8bff55",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-checked-conversions-fixtures.ts",
+      "sha256": "0855da8671838470556c1ef426bc63fa7ed6da6a8e54fd14d5c93f494b942424",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-checked-conversions.test.ts",
+      "sha256": "fb030e8aaa09e92e4d249c8a3aae073546a3035b8f2e776c0879487205379660",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-checked-conversions.ts",
+      "sha256": "5f51854845d1b393599321b716ba5870211c5826b1c7aa3773e27bbca5c63e5c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-conversions-fixtures.ts",
+      "sha256": "b07acab044a1bf08f92b8eef714da4a316c849807abbc30c030a5b862ea3ec83",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-conversions.test.ts",
+      "sha256": "c332f9d60c8774eeb20577ad4f7d8aa2340a683a45878098a342bd7aee8b6f26",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-conversions.ts",
+      "sha256": "771954fd639a923136180fecf193fcce061181dfc3a0b0828f4fa81821b16f5b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-option-contract.test.ts",
+      "sha256": "f36e7a645063b89b06b95b0a25b5b90018201bbb199e8156186581c41b53d3af",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-practice-integration.test.ts",
+      "sha256": "82928db49ec1278a8c3f9c3668e0beee7701c554d1e97419627b1a3a5d28c0d5",
+      "group": "course"
+    },
+    {
+      "path": "src/content/core-practice-legacy-baseline.json",
+      "sha256": "dcade79f66c1142a5dfcd52b305c4d6d33ef574179d0184e69924e7d44fc025b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/course.ts",
+      "sha256": "ff47154a5be56e575d1e9159078b8c8b0ee5efad5d3e653a33fe991e93ec1364",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-assurance-integration.test.ts",
+      "sha256": "dbe7e62d8ae7d5abb08b58ff5c1a5d317d40337dc915d24e75f9c44c3d938d26",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-assurance-module.ts",
+      "sha256": "160eb87916d66337585f076a49e9c73982ee382d581c69f29ede17b591e9988e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-assurance.ts",
+      "sha256": "9aa6212dd683f9547899350e52a561ee9861d704536ec92288ea2a45090ad705",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-maintenance-compatibility-deltas.json",
+      "sha256": "24d705c3bb9eafa8983b33901fc970f4e4eb79607b3c7c894de7b0c74e6eca37",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-maintenance-compatibility-fixture.ts",
+      "sha256": "4b6b3c5af01b2f5309c23faf685f7933f78c22b9acfa16fe54c487e7500d6413",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-maintenance-compatibility.test.ts",
+      "sha256": "1782dc8167bfb004f463491d96be1dd6e439f5a234c82efe3c4d32cfe51c6cbc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/dependency-maintenance-file-successors.json",
+      "sha256": "6e4930035baa2db2e42ace114d6f0bb0a27e143261acf13f6a1874279237dbba",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair-compatibility-fixture.ts",
+      "sha256": "145b992bf1669cbb9392302abae4a8ac59820f80011d56080c03ef4bf0b55b99",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair-contracts.ts",
+      "sha256": "b9ec99d9afbf34e75461355537b6fdfd09f27c3f290bd8722ed1828a8056de1b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair-fixtures.ts",
+      "sha256": "af93398c27cea0f58760d62bb2af67341bdc6934019283c63b16c9b24d470953",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair-integration.test.ts",
+      "sha256": "c87079f83bbea3c6951daf1a91a1efccdda80c3ad7a5f87f2147154e5526fb5d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair-legacy.json",
+      "sha256": "92bd1425f3e5acf0bdf20877e919924c4aef5c5f3aa9d0e1433ec0fa0081ffb3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair-rust.test.ts",
+      "sha256": "3c5ef7538ccaf6390917d79dc7ef0b698b56e355acf153802f389863e5c221bd",
+      "group": "course"
+    },
+    {
+      "path": "src/content/documentation-guided-repair.ts",
+      "sha256": "2126c7603a0a9e8a706748036284e3ad3351e937bb9609634dd0c65f4f94bdb4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/duplicate-contract-evidence.test.ts",
+      "sha256": "e0f0eb845ddf977b1bdd91c322f648acd0c13895ca9c9f1a0aa47fd6ea01d0bb",
+      "group": "course"
+    },
+    {
+      "path": "src/content/error-handling.ts",
+      "sha256": "5360c258a6fc183fc29c2f7642bbf4d20ddf5582ab34c0c17007223f578195fa",
+      "group": "course"
+    },
+    {
+      "path": "src/content/expansion.test.ts",
+      "sha256": "d14d81cde7500abe149e93c2be426a0f34bc1809c0954d8c6be000f94f05d014",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fallible-composition-compatibility-fixture.ts",
+      "sha256": "18fd58f01786afb498652bc46209e156098f18d589b409da23b78507edd6db9a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fallible-composition-contracts.ts",
+      "sha256": "2568db63e2fcee4c294bc299f34dcca8115c6a857bc103fef8b163035715d574",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fallible-composition-fixtures.ts",
+      "sha256": "d6f393d9e575e087512d11e3222988185af768b0d2f9cfe49e5346a7edb74c85",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fallible-composition-integration.test.ts",
+      "sha256": "9a8c6e8c6b4f9303685f817707be2c087b5713c7751792a5ab2c3c0af96e6130",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fallible-composition-rust.test.ts",
+      "sha256": "ac8fbaee8703ec2c04f9ff8487e110a5f6c04f4250566fd81e4967d70907da60",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fallible-composition.ts",
+      "sha256": "5e4a8eeb5bda1276f973f80d9e5c7c7f5658a7985e37e53e77113927d36bbf89",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/async-cancel-pre-transfer.json",
+      "sha256": "ee522d4e734f5a00af10990a77d5dff6b24bf9d50831bdb69063ebb38fd7e1d0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/async-send-pre-handoff.json",
+      "sha256": "6d4e410f8752934b4ccc308f6982e67b1f2d39d1e6abd628109bda52232a304f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/baseline-correction-saves.json",
+      "sha256": "89c666e72f395a07f97b1afb648c84d4c53b882da044a6ce681e807d0ac4a60d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/initialized-prefix-observation-provenance.json",
+      "sha256": "8b396f8d36a3f0004e0d856fc92becb2ea25c54e3edad803566d4153307843df",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/initialized-prefix-observations.json",
+      "sha256": "b3cc91ea1b4589047e456095cba412b785314fbd513b49eaa964bfa115bece69",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/m11-m10-identity.json",
+      "sha256": "2ef586f7b67f8f83621c1e53c3b4bfdddec9dc89c1af4612ed702f978607c563",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/unsafe-miri-pre-disjoint-ranges.json",
+      "sha256": "444504d56d8cc858f227db1f0c93212a20ec14dac6b9e8c9daa95c832e99da14",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/unsafe-miri-pre-prefix.json",
+      "sha256": "fe4d61f9a05629d00ca016455f1fd1f1917ff6b05522808fd80e3b46522cda27",
+      "group": "course"
+    },
+    {
+      "path": "src/content/foundations-evidence.test.ts",
+      "sha256": "d000d774f07be311781daab2ab979b78f00ca50893b61c8fe70e0fe68099baa7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/foundations.ts",
+      "sha256": "bf5df3763f7dedd4d3e1871a5f9ac52dd78857762afe41a28f3af68a0d543b18",
+      "group": "course"
+    },
+    {
+      "path": "src/content/function-ownership-calibration.test.ts",
+      "sha256": "5483a5eb89a727ee71079ae800a001048b052df67ff211e560f5e60c9a32e493",
+      "group": "course"
+    },
+    {
+      "path": "src/content/function-ownership-calibration.ts",
+      "sha256": "9ee37dcf0d677e225b197d3b4effc74d41d18688c88ef996998f360f1769703f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-evidence-assessment-fixtures.ts",
+      "sha256": "74113e983048fdef54a626bdf447ed87f87f223bd098756f59911bb633b1b674",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-evidence-assessment.test.ts",
+      "sha256": "782e377b72be5b222c7adb5d08ecf5529cc4132599208ab6054d2b44dab0af6e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-evidence-integration.test.ts",
+      "sha256": "168eb483dd5101bfa3e0671047d77daaab56c1d9724a8c4341e905033a4da6b2",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-evidence-module.ts",
+      "sha256": "9171ea677cab059ba06639f09c52aab0c43047285a75aace61906f07bc07cb7b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-evidence-verification.test.ts",
+      "sha256": "de755cbaefc6c63386b810fe32b370e9e0c9b91ec4974fc89e8f171176c03b90",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-evidence.ts",
+      "sha256": "0c3a5f4bf39378bd104cdcd1ea0038b18785bfacbfbbe00aa9f3b6750c3d29e6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-result.test.ts",
+      "sha256": "20e7f4c59c33f7c2c5aba3af8be1b9cc11388763689f4bf7938123088b1eb1cc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-assessment.test.ts",
+      "sha256": "73dd05f4ba66e7523a72858e400db7915a6a9899f902c643cdd1d4bf784eeb34",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-consumer-assessment-fixtures.ts",
+      "sha256": "a19bcfedbe8a66ee2633c4ad508b296f4e96997431a89961562f6ed3e2c06107",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-consumers.test.ts",
+      "sha256": "5afc209176dbe7e6e0d8da39d34f9b5016c176ebc2be10435caa7db57273a26e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-consumers.ts",
+      "sha256": "0f0eed3d0fefa1114eabc94259f51d5cee57cc8acddd986e474e2a9f70f84ed7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-lending-integration.test.ts",
+      "sha256": "0ce9c06c733b30f7c710baad9a01a6bb0bb36309bc2491b9128a0d9bc2f1fc83",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-lending-module.ts",
+      "sha256": "d3abf72149ef5a96854bf1577bb2236293f682fe8971919ec2e438d506e05347",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-producer-assessment-fixtures.ts",
+      "sha256": "401b64220a849cef23f49bca4888a76cea7d33fc4ab3dc5f763dfd7246a40747",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-producers.test.ts",
+      "sha256": "665cd3d5dc7ba4a4446807919c823244044a5064ea04ee3e72eb9c7a4fa212db",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gat-producers.ts",
+      "sha256": "1ce71163feb93677abdc63b1cfd21b5f5efee2ca62e1017d502d4ee5b00b23ed",
+      "group": "course"
+    },
+    {
+      "path": "src/content/generics.ts",
+      "sha256": "61656cc5ffd91e41ba71b122ff6d3f89d5c47dea6bf27d9aebe674be93a53be9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/guessing-core.ts",
+      "sha256": "4b4f96f75d33e1b6369cb1009e29ed81ce5ac7c5a8923c709ce8e2477b2a7c60",
+      "group": "course"
+    },
+    {
+      "path": "src/content/guessing-integration.test.ts",
+      "sha256": "cde328f000cf28fc0d10cd84c3808564f882673d7b71d04454c13858be5157f6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/guessing-io.ts",
+      "sha256": "b72823aba997b75eb676603a76c67ef0370cc0cc8bb03652f625ccd712f8612a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/guessing-module.ts",
+      "sha256": "f18fda23c539e74457323f13f2ee36d4fdb1229529371186792c024754dfaf5f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/history-redaction-maintenance.test.ts",
+      "sha256": "1bfd8241ab38219f3d540101bde1d922949b9de2f600ebbedd22311e48edaa74",
+      "group": "course"
+    },
+    {
+      "path": "src/content/history-redaction-test-support.ts",
+      "sha256": "b72061c267d8486cfc33c06bcd627c2f900f230676b381c90ee4adfd6aa151e0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/initialized-prefix-diagnostics.test.ts",
+      "sha256": "cbc2781f31dd0abf8e3e9206a3556e699da9ac38477d77ad5e3eec8145ca4611",
+      "group": "course"
+    },
+    {
+      "path": "src/content/io-review-probe-fixtures.ts",
+      "sha256": "468cd3e554249aa40f8b0692ddeae8d032dced00e77ea55583fde556c2116e8e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/io-review-probes.test.ts",
+      "sha256": "c95288e6960d5403e11bea1be2b8f75365434dbc03ad7c8503eed4b496e1d354",
+      "group": "course"
+    },
+    {
+      "path": "src/content/io-review-probes.ts",
+      "sha256": "0593b30ae4b2b9670f2cb1dc56f964f2ec71dd631d761a8379c96acef3424416",
+      "group": "course"
+    },
+    {
+      "path": "src/content/io.ts",
+      "sha256": "dc48a210187e119f1d25bbaa39cb7b050bddc4b6859137ea5fddb26eb99971b8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/iterators.ts",
+      "sha256": "88f6c1fe2d02d00ff24d4b369fbd85c74bb882a809820a2f993b96852d941d5b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/learning-context.test.ts",
+      "sha256": "f21340e5c40ab25f1f18ec9a2f9f7cf46520237acda7a60e073ba13dce9e9383",
+      "group": "course"
+    },
+    {
+      "path": "src/content/learning-context.ts",
+      "sha256": "c7555582c1f70b94808f86706c9cfed0ce0d1b2c1377db8d788810c625d35109",
+      "group": "course"
+    },
+    {
+      "path": "src/content/lifetimes.ts",
+      "sha256": "d3543cc6ad56fc00836be4a77fdce03c4cf35d73198ba457f228272cd7d411bd",
+      "group": "course"
+    },
+    {
+      "path": "src/content/log-analyzer.ts",
+      "sha256": "86f46a21bdd95d387508ac6e596685c541a513f04ba0b193f2c0fb74e3dbdcd7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/log-project-integration.test.ts",
+      "sha256": "893b88be5e1c99d823c4389d98ff9b4b8456035a7bacb82cfd8cdd0d926273ae",
+      "group": "course"
+    },
+    {
+      "path": "src/content/loops.ts",
+      "sha256": "ee04378a0c39754fb45c5e39b5fa207aed3d27768b0a5343a927d6c24163335e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/macros-as-api-integration.test.ts",
+      "sha256": "521a12226bc40b5d14daeb5d7bf735e9b5ed809a5cd24c225cc02094bbb63c31",
+      "group": "course"
+    },
+    {
+      "path": "src/content/macros-as-api.ts",
+      "sha256": "623320375c2961659d7e9b9df739ac80cff43b1e587f75839f95e968a4f4bbd8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/memory-ordering.ts",
+      "sha256": "74fe04544a823f3b6bd6a43eca1521a7108487e7808ccdf7309ef5f673b45675",
+      "group": "course"
+    },
+    {
+      "path": "src/content/mini-grep-integration.test.ts",
+      "sha256": "f1de39682795278d67f42b8eecedfd971c0c1d04ab2d1b52948f9e2a1a7f2eb3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/mini-grep-module.ts",
+      "sha256": "b3cd619574f4bb11d561256db0c64387fa98cbed959fe51162af70ec37e49fdf",
+      "group": "course"
+    },
+    {
+      "path": "src/content/mini-grep-mutants.test.ts",
+      "sha256": "af700a3ce60e6c41ff03e5f0fcc7a3e87d5c72647bda5c014f84405710cc742b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/mini-grep-search.ts",
+      "sha256": "f5ce736c9260ca0b0bf0d5140855b8dd1a7188282bcab16fabf441a38688bb5c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/mini-grep-system.ts",
+      "sha256": "9444349b44393bd6e89f12e55ef8f3a5e18edaef6cf21a75e34a9490263ad956",
+      "group": "course"
+    },
+    {
+      "path": "src/content/model-verification.test.ts",
+      "sha256": "3f43c1aca10075c779ceb64409b75efda2769b4b645326fec2d555c73b5a3ad0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/modeling-integration.test.ts",
+      "sha256": "612773513db8c23699b81d0790ba58b8b642a1b0aa32c7eb5c1cc440360c283a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/modeling-records.ts",
+      "sha256": "73ef242d1424a47edd38b9d5e2ee10092892de9db44ec339da63ae56628b85c1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/modeling-variants.ts",
+      "sha256": "a6b5fdefc91d3eba3cfebb056c6a223a461da65ce220bbc784635217c36d1255",
+      "group": "course"
+    },
+    {
+      "path": "src/content/modeling.ts",
+      "sha256": "cf3df1d4d4cf00905798e335dc8eda20bf48b423194811393f100ad866f166b6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/modules-cargo.ts",
+      "sha256": "9e195d16d1bc71e4904978606f4293a0b06b626b75353e574aa2b408adb80c2b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/nested-patterns-fixtures.ts",
+      "sha256": "034080c61df2be5505682ce92f4b07be7279c6d8d56633b0ef32ca197c4b9f3f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/nested-patterns.test.ts",
+      "sha256": "c27d17bae3a9ec62d11643f9f53808d70e9276cbe64d4f0dc0dd09bb89e1bfa8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/nested-patterns.ts",
+      "sha256": "ccfb6a2b5b570624786abfdae46b50b537894ea4123a857669227a04bed61094",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-evidence-assessment-fixtures.ts",
+      "sha256": "b8c3459af2aa7e25b8a9db9bb67ef22d7c4aa115792a54206fe6dc539dc3ecb1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-evidence-assessment.test.ts",
+      "sha256": "2675add353f3209294c83c173e2d302171000a498cd8869c529c9e14622e020f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-evidence-contracts.ts",
+      "sha256": "0722f48ce717336bc1121372c99dd926f3254710a0310493f18a3bc783ef1bf9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/performance-evidence-assessment-fixtures.ts",
+      "sha256": "42860373b8bb92e70a4f77da152645360ed696cdc79b705c0dc9c0ace3985e6c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/performance-evidence-assessment.test.ts",
+      "sha256": "5370a10682ca17f5f41aea09efa44ca5c2d801476a2bbfd40ff5d060178d4d4b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/performance-evidence-integration.test.ts",
+      "sha256": "8ec419aa7ee8efd186b59a6336b06ae9636c34a334c97dfe2f420d2690ca47d2",
+      "group": "course"
+    },
+    {
+      "path": "src/content/performance-evidence.ts",
+      "sha256": "0abd98ae7436592c36a27bcfa475b20c9c2a8c3a8c41161600c7640f2f43d083",
+      "group": "course"
+    },
+    {
+      "path": "src/content/prerequisite-entries.test.ts",
+      "sha256": "40d16afefc054da2ee2d4ca779ef33e95c9da5f00148c310b90a7f539b8f6fa9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/profile-evidence-integration.test.ts",
+      "sha256": "7316c5ddf445930449bfa8d9bb0d21ffc973454983d341918ecf0fd06ba4945d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/profile-evidence.ts",
+      "sha256": "1352bfda1468deb630939ac199d22cf83abd3b9d272682bc134d041c60446055",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/concurrency-lab.ts",
+      "sha256": "df5742b2bfbf7d62990a51f912704020202becec4fe0bcdb952b3601b45622b6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service.ts",
+      "sha256": "b77b80fc6ddd1cff21a319abf32dae7579c2d12ac8d7f56e2522396fa4e31682",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service/archive.ts",
+      "sha256": "a592b0fa93e00b3aec5126e7390168c6747f2f26eb4a47411194cfdf4341a51f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service/core.ts",
+      "sha256": "d38d742a6f1259bf19f5ecd2bd0df043a0b25723860b033cf582f0cbec256bc3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service/package.test.ts",
+      "sha256": "04766dd036c18e0d3acddfbb1b90ad5863ec0b65cd6fbd2ff08fc1f764d1128c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service/service.ts",
+      "sha256": "43584cf50bf79fbbb60f69278861f2621247c0f827549809571f4f4167d680e2",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service/store.ts",
+      "sha256": "e542139d28490a68ab55d60057037835f92ee453f1d7c6222e80e7c497388011",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-service/stream-capacity.ts",
+      "sha256": "13eb6badc48ce94ab2495cbda0c30f883a78082accbe878e43d83eb19c1aaaa6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/ffi-buffer.ts",
+      "sha256": "4b68198706f8a87d4a9710529fe90842f592e5e265bbae1ce064ce32dab91497",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/ffi-buffer/archive.ts",
+      "sha256": "0f14bc7a51acd63f6b232b4118a28bb7be54282c261ed2388e8951b1aa32738d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/ffi-buffer/package.test.ts",
+      "sha256": "1c933fc27970ddf5d200d9f4f6f4a24b7a0d701810d73b970ba9a30755ef2034",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/frame-protocol.ts",
+      "sha256": "47181a52e9941a5d870c16b20ecad6362b9d9e116b35647562ce542bd5356eef",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/log-analyzer.ts",
+      "sha256": "ea4df4514656deb1e7a69044db7297faa27220cc7e22cf8d7375ed67203446c5",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/log-analyzer/package.test.ts",
+      "sha256": "f04a883b833572a8cbb80f82cce50f49f2c555a932e1d7017bc587ec2d593d6c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/mini-grep.ts",
+      "sha256": "d976329c5f53440c0a9c76acbac9fb9cca6fdb2ab1955027b89acaa09c772df5",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/mini-grep/archive.ts",
+      "sha256": "98938be6cadbad6f24dfa80527c12eb36c996eb83d4333415a1bbe1e2feffe07",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/mini-grep/fuzz-evidence.ts",
+      "sha256": "d526d2c0f553424148d5c1b1cff0dd1de98f6ca57c658d636974d4a45c3f2873",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/mini-grep/fuzz.ts",
+      "sha256": "7fa00d35c3745721bc017c0e39f9fb9ab2cc28badd1bbc5ac56311902fb0dbfc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/mini-grep/package.test.ts",
+      "sha256": "9bd76beae8bc955b357e7f13262f7e32e4d06e504ae9caab0acbd53b8d846041",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/miri-safety.ts",
+      "sha256": "2c05ae54cd46085f8317d8d20a76ec64f709006d3e7982649ebbe7bff75c937a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/miri-safety/package.test.ts",
+      "sha256": "3efba4adaab8477b041d73bf65c6958e1fd2cbf0083eb1e13226ebf69cdcd88b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/number-guessing.ts",
+      "sha256": "3a8a18a0477c1fc8d8526a7e90ffe1a5965111a5480c045c17477b89f94c5ae1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/number-guessing/archive.ts",
+      "sha256": "d9593adcd1a2c39668fdf7b6c9afff986db9401a6f2ee997e33b74d48e8b7a26",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/number-guessing/package.test.ts",
+      "sha256": "a189ec9adcc2856a6fbf07984f1fe18b6d52e3ba2d4bfc38ee40e6d9cc2d5e96",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/property-contracts.ts",
+      "sha256": "c639b2e1f4a612b062545586bb0647f0a183716eb8f98a2d9a0158c65835c920",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/property-contracts/archive.ts",
+      "sha256": "7a8a0a1172e30cfe33fa905210282154755cd3a117f0e464f34e03bf37309d9d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/property-contracts/package.test.ts",
+      "sha256": "a8f7197b3df9dd1db9ca4f1f121e407db67c267dce33f4744fc1704c4815bac9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/service-operations.ts",
+      "sha256": "adea8bacdc8af78a1f56874c0ee2548ab57ce2facf2b9199ed27634a2022395d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/service-operations/package.test.ts",
+      "sha256": "934c77520f0023fca5f825b4f200140906191fe894cdd9a3e362e690c3eaafb6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/todo-cli.ts",
+      "sha256": "0ed7ff1c4b7146726ab555dcc4c8aa0f92422ce09a4ef1df0aaa84ddf0b889b8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/tokio-pipeline.ts",
+      "sha256": "7ed152c3bcc76d3ffbf9c00f57f22f09fd25cabbcfaf77cecf27d96404e95586",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/tokio-service-lending.ts",
+      "sha256": "1e183670820a587314f9908dc776405b9939a66895dd751c6f536564d8fb4ecb",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/tokio-service.ts",
+      "sha256": "f9f3ce6ca4d38a702a8beea67a822ea7cfe4785caf399aa1fada1ac4a38eccdb",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-contracts-integration.test.ts",
+      "sha256": "a7fb884e66329f647e7f655786bfde022842e49f31ff8849cc49938b7555b144",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-contracts-module.ts",
+      "sha256": "7bb9253e6ddfc13dc59c7a398d37877b77dbca44cf53e3abac22b9ea7e55da93",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-counterexample-assessment-fixtures.ts",
+      "sha256": "7589a8c4d7aa859f57ce4480151a6850dff171b7024cb4b3eb7105f4f05f939d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-counterexamples.test.ts",
+      "sha256": "42741131ca0f9dfa62bdbc9b5a7c3852db2500d24494432d3cb769bf3f10d378",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-counterexamples.ts",
+      "sha256": "03674338718fca195226f9dee225484904b7e6dc73cf4185c7747af1de8a43d9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-foundation-assessment-fixtures.ts",
+      "sha256": "43e77b2c9fd3e74375158cafe2619ef0d83a931f82907a272696d2546b918a1f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-foundations.test.ts",
+      "sha256": "0367a0e46c1427fc5a98aedf88be9485a17123aa399c9f1cc35092b01fa6059c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-foundations.ts",
+      "sha256": "b256c7838b8ccddff4bedb4fb850982707b0709a9287ceffc8681ca05bf64e67",
+      "group": "course"
+    },
+    {
+      "path": "src/content/public-api-evolution.ts",
+      "sha256": "25ec9224a33a61d57a1ffea2f7efe219263de630e0b8c4b0fcb0c01e14dd14c5",
+      "group": "course"
+    },
+    {
+      "path": "src/content/public-api-integration.test.ts",
+      "sha256": "909a541054a653130c3e4650fc2ab0ed6ab3618fca23d8559b4750c18400d2bc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/public-api-module.ts",
+      "sha256": "f2c4588c6cbc30ca113092ec3787cdefb61c7fc6f0c48de5c736266f9fd34466",
+      "group": "course"
+    },
+    {
+      "path": "src/content/public-api-values.ts",
+      "sha256": "b378331e2d3effb23f1ac102c298e16688171e139c44503e6e6fea50f3311963",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rc-trace.ts",
+      "sha256": "c28b1e87a4e1034fa658906b3cbafbe3c98aef475ba03a7e811de7aad30e7902",
+      "group": "course"
+    },
+    {
+      "path": "src/content/runner-payloads.test.ts",
+      "sha256": "3e76c98251890dde07ca18c020d04d63ddacf978e5f862e110538158bf1ec209",
+      "group": "course"
+    },
+    {
+      "path": "src/content/runtime-allocation-assessment-fixtures.ts",
+      "sha256": "84a152ad839dc61f42f2cbb72206f14c5a43dd3467b596e8086c6a2b8faec980",
+      "group": "course"
+    },
+    {
+      "path": "src/content/runtime-allocation-assessment.test.ts",
+      "sha256": "7d2c3fa38c6295f89218445700169910dbc5796c6977ac08254d8384c80cb3dc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/runtime-allocation-evidence.ts",
+      "sha256": "4768cec8f8e3d3ad5333983a55a7cffae9f203569d0e819ce14a3e4fa7bfb33c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/runtime-allocation-integration.test.ts",
+      "sha256": "bb97b3c210bf4967f4e409381138307178f9afe34bb2cdffac17d0f266f81077",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rust-verification-cleanup.test.ts",
+      "sha256": "4b6b780a555140fae947a021f6f5748ce80f25daeb477c89f7b13906a048dcf4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rust-verification-macro.test.ts",
+      "sha256": "78bc869e8f5c8e1b4766733acf1a3cffbb1b799af7464a5193fb11c1072fcd1b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rust-verification-progress.test.ts",
+      "sha256": "a32516c233430abd27303747a0b2ab5af2601c9ad7582a7aab85b9982cf11fc1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rust-verification-short-review.test.ts",
+      "sha256": "a1b66703ad9d4d5c0344490b0d5621688dcdb104e15aad591ef726977c24d347",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rust-verification-timeouts.test.ts",
+      "sha256": "799a172070bfa1a1c57a3f787fde61633c4c98a97dcabedd1ce60e7562e0f4f2",
+      "group": "course"
+    },
+    {
+      "path": "src/content/rust-verification.test.ts",
+      "sha256": "5fb196c5686482c516a6725d44d20b8486d72ccb9e8e2cc2f1fe58643b79dbf0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-operations-assessment-fixtures.ts",
+      "sha256": "744b60bece950136de159b208922a4b8460f9d0501f72528cf0daa19fd312b16",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-operations-assessment.test.ts",
+      "sha256": "961cb8fb7a8a4927ced586f39a7ca482573c36d3c8faf35038b26e081d6341b3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-operations-integration.test.ts",
+      "sha256": "6d55edb81abe410a8763ea4e3dcd5f8c26ab7b3ed779d267a67f1696104a9261",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-operations.ts",
+      "sha256": "e96ac9eafae97431d2a70bd3960b4d3cebef0a56be13fd750a98e4ec6d7fa93c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/shared-borrow-calibration.test.ts",
+      "sha256": "872080bb6459f6a437e064b37eab7e0bf9e9bb6f64c55ce08136f920d19de613",
+      "group": "course"
+    },
+    {
+      "path": "src/content/shared-borrow-calibration.ts",
+      "sha256": "c75c1ff871c28217432334edd295f3e01d3096198bcd931d272c9230a32b0a38",
+      "group": "course"
+    },
+    {
+      "path": "src/content/shared-borrow-contracts.test.ts",
+      "sha256": "162ef17718699c5ce8838233411edf4a88d4e17800313750ca152efb3387f8b6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/shared-borrow-learner-flow.test.ts",
+      "sha256": "950a38b446b5f79f622487636889f89ae82bba72ee99135d9ef9389bb7a81d66",
+      "group": "course"
+    },
+    {
+      "path": "src/content/shared-ownership.ts",
+      "sha256": "95f1906cd9822565198d54c6dd6cf64406f6145c6a0075567c08378e0dd9a9f8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/synchronized-state.ts",
+      "sha256": "5209b2b34ab9866060002af7493a88e57b00bd1ce3fbc32ca46cb80f7967d629",
+      "group": "course"
+    },
+    {
+      "path": "src/content/testing.ts",
+      "sha256": "44a56eefdfde3213159962166fdc34d09075efeb9987f347dea6a958ea83b6b7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/threads.ts",
+      "sha256": "c4b7f8c8ec65da7b6b11cfb0f1db537c9fc91ba285a5976ad96c2f92a9699ccc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/todo-project.ts",
+      "sha256": "4fc019257ea5915a39c38bb90dd4c21fac4abaf47ae60edc452b5b0907943d63",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-blocking.ts",
+      "sha256": "4c14e79e0225c06ace806f040a7c54c00f48440588fe3ce30c521cf888f8d0b0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-channels.ts",
+      "sha256": "586382e877ea05b9fb154b99a86e635a1443087476142a21a8f224da6b04393f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-flow-control.ts",
+      "sha256": "80a063773872b38eae650f143ce9a68d76eaa4237c3377cecb472ceebc2ec6ac",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-helpers.ts",
+      "sha256": "1be6d0831872a1181884c6640366c4374eb5ecdefab371e2864e888c415b83b0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-io-modules.ts",
+      "sha256": "26bb958d0ed1f4f2e98a948d52711f3789faedc58562d3b50e7aab5aba412adb",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-io.ts",
+      "sha256": "b202cfcc188a10033c0c9596ea15a93225f870cb289f3207339ec2dd0ea397ea",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-network-lifecycle.ts",
+      "sha256": "58cd0d519e26a45ace7f1f541e0f6576f93ac03c4f24b55bde44f66e362da1fc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-network-module.ts",
+      "sha256": "e2bce7d81f15d0779527002421753c0b2b28a898f4a68b0d574404f50331c80f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-project-integration.test.ts",
+      "sha256": "aedef196731f41a53abf5b98f89f4455b935061ee2b99252f736b389c3743b73",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-runtime-tasks.ts",
+      "sha256": "20d5a2e35f9cbc30d17603b7e6f8583111ff692d78462ec28fe008239e25713d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-service-integration.test.ts",
+      "sha256": "5adbcdb168528973595e3ea8718fcad3ea1d20fba468aecd4ea2e5a422295ee0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-service-operations-integration.test.ts",
+      "sha256": "19a8bcbc199a38fdd987aa080d5424f0ad23575eb6ca5c55a4cd7f9649457619",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-shutdown.ts",
+      "sha256": "66416190af24268c0c77097b54c2b63ffc2eaaf90acc7ee2a4d06610a267e756",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-streams.ts",
+      "sha256": "f786eb8164cdc2619d2a89eb740b198f785154487b297da851a911a17c79b251",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-tcp.ts",
+      "sha256": "0982b50ddd4d61979697571912f28a98a3ca1ccc0b995bf6cc2aaa62993a5e4b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-time-select.ts",
+      "sha256": "c74a91fe88378a65e841cf7fc8917de83ca3ea1e2a64fdccb5aab8b218dce5a7",
+      "group": "course"
+    },
+    {
+      "path": "src/content/traits.ts",
+      "sha256": "025ed1094a7d0d01d224aebd3df6eb2d79533e55319cd5fcb638336264c29f93",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-borrowed-memory-assessment-fixtures.ts",
+      "sha256": "2f2bc2f257f950eb439542e0cf48e43ffecabf0569a6a8d137061af05374d1af",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-borrowed-memory-assessment.test.ts",
+      "sha256": "35519bc6f4e666ea45d836c6ad0e950e9e6577209819d94333ddc95c38a55760",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-borrowed-memory-contracts.ts",
+      "sha256": "9888027e9539f790713130d97a1da3bd2e02eb9325d2f2d5ea54dc19d06f4dae",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-borrowed-memory-integration.test.ts",
+      "sha256": "073c66c5cb6ba8fb406344e54f7f2d13040d18c8340f0cf16df22122e853c059",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-borrowed-memory-verification.test.ts",
+      "sha256": "6321d7ff06d98708e76e4c022a4eff224eba28a3980fce42dc8412c9cf4f7698",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-borrowed-memory.ts",
+      "sha256": "611ecc58998102fe71df846fad788ea8ace9b45bd1a7119de03432c8c412ffff",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-ffi-assessment-fixtures.ts",
+      "sha256": "6459c3ff614acb4434ecb9c1e3b4d03e666b0b663815d031237fce9a7b72df3f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-ffi-assessment.test.ts",
+      "sha256": "d473526b58c81741c4adc7bac180b5640eaedf695eb781ae0bd10388d5736dad",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-ffi-integration.test.ts",
+      "sha256": "1bd1510fe10cddb50684affdd57acf3ac0d75ba605d5f42f97be8c5be7748d4d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-ffi.ts",
+      "sha256": "94405b6439dd12a4622cb29bc5f147f6f6af1543427843c0cc32115d06238ee2",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-assessment-fixtures.ts",
+      "sha256": "47cd6ce74eb320e08ccde2e8d361b8828634f28a0752d7a90842876c702c0ab4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-disjoint-ranges-compatibility-fixture.ts",
+      "sha256": "8ff763e45d2551704cf68dda91aa2aa92a6d53a29ec466b411283310e34c6a87",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-disjoint-ranges-compatibility.test.ts",
+      "sha256": "4c98077b1379cda6924153da83dc7ebe95a5388ffe8c41d62df8e59e320eeb1e",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-disjoint-ranges.test.ts",
+      "sha256": "7622aa8b076f569a23533f456a2bd896d09f82b3bc444fa5c771302ff6ef32d9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-disjoint-ranges.ts",
+      "sha256": "452164fa802fd2b775bdafd2d5ca40f183d34ff7ce8e8b1b185186b4d3babc81",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-native.test.ts",
+      "sha256": "ca5029b9bea7c38ee034f1f8c5471772b59705cdfcaa213de1d968a4dc0e2170",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-native.ts",
+      "sha256": "60344a7423488b176253931e51da26aaf8df7e62c9183a4c4cb7e6316ff1b7ab",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-observations.test.ts",
+      "sha256": "dcef2b55402b62ed20cf1d468310c7293be9f58d839f02cef3ea38a1025f8cec",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-observations.ts",
+      "sha256": "b8c20bd5e1ffb4ff959b4a8c0b4aa29a95c5335b21c125037de63b0722f96b30",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-proof.test.ts",
+      "sha256": "830395c939ee0c657ae0d6dba9b18706be7563b125234b113a445d6a5c97e300",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-proof.ts",
+      "sha256": "457291406307be8587a1d05e4660642e984b448e6bb8a5b91bf9bf8f611f5dfd",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-qualification.test.ts",
+      "sha256": "a84e03ecc416a35c3ee41453e042b016a17649bb7b2a06f029820a50a916e2c1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-recorder.test.ts",
+      "sha256": "22cf365e2d64da6c392a69ca01e718e6aef951ac12813a659aeae99a9431e4a8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-recorder.ts",
+      "sha256": "563a234283a9a7e4190532bd34ec3e3801b396eaf1063fd0e041910478b628a6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix.test.ts",
+      "sha256": "20665f8adfd8445d9650586909d12c287a4eaaa3bd1a9ab4e1903e431ed796f1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix.ts",
+      "sha256": "accd1bda64402c0b6c5d00a7cf1fc30354c6cbd226604ca7978131a01ac21558",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-integration.test.ts",
+      "sha256": "e5905fb01846fb0f0621dee528cae5454795d98e3d811123dff41db3248898cf",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-prefix-compatibility-fixture.ts",
+      "sha256": "d380c1828045764b81e35d6aabf4eb2164f0346ce282217fb1e1f17d396bad23",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-prefix-compatibility.test.ts",
+      "sha256": "689e66e1cd5dc9b61b04b3e3ec2774c9a5512e556b20236c5b9c324796659c9f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri.ts",
+      "sha256": "48ff6763c957d605ae3b64ec9eb4497c55e32d6a3a528ff0492c9892f725f151",
+      "group": "course"
+    },
+    {
+      "path": "src/content/validate.ts",
+      "sha256": "7b93c1609386504ed8d7cfc2bed75bebc50f081b881e59d93444c227495c20ab",
+      "group": "course"
+    },
+    {
+      "path": "src/content/workspace-verification.test.ts",
+      "sha256": "b32f74f4e38c57f8caa3cb2c07f8ac96a4ac03e1222a1f6c428cdf9e92c33c7d",
+      "group": "course"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "course-source-review",
+      "group": "course",
+      "status": "open",
+      "reason": "Maintainer-reported AI generation is an origin disclosure. Source/copying and applicable-rights review remains pending; research citations do not grant permission."
+    },
+    {
+      "id": "icon-rights",
+      "group": "icons",
+      "status": "open",
+      "reason": "SVG source and permissions remain unresolved. PNG derivation from that SVG does not establish illustration rights."
+    }
+  ]
+}

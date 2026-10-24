@@ -18,7 +18,10 @@ CC BY 4.0 teaching material, the three existing narrow Cargo exceptions, and
 the project credit Pixel Media Workshop Paweł Borawski (starting in 2026).
 These approvals do not establish rights in all AI-generated or third-party
 material. Source provenance, privacy remediation and public visibility remain
-separate gates. The maintainer selected GitHub private vulnerability reporting
+separate gates. The [scoped provenance inventory](oss-provenance.md) checks
+tracked course/public-file coverage and hashes; its structural pass leaves the
+course-source and icon-rights reviews unresolved. The maintainer selected GitHub
+private vulnerability reporting
 for enablement and verification immediately after human publication; no current
 working private channel is claimed. No paid infrastructure,
 billing changes, package publication, deployment, history rewriting or removal of
