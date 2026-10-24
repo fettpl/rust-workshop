@@ -1243,7 +1243,6 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     const slotHeading = await page.locator(".task-pane h1").innerText();
     await expect(page.locator(".task-pane")).toContainText("get_or_try_init");
-    await expect(page.locator(".task-pane")).toContainText("FnOnce");
     await expect(page.locator(".task-pane")).toContainText("Empty");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const slotEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
@@ -1253,6 +1252,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       await simpleSlotEditor.click();
     }
     await expect(slotEditor).toBeVisible();
+    await expect(slotEditor).toHaveValue(/FnOnce/);
     const slotDraft = "// Lazy init zapisany offline bez uruchamiania runnera.\n";
     await slotEditor.fill(slotDraft);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
