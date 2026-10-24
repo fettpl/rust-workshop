@@ -115,6 +115,7 @@ function oldState(): UserState {
     conceptIds: ["unsafe-miri-slot-state-contract"],
     lessonId: lesson.id,
     stepId: oldGate.id,
+    evidenceVersion: 2,
     kind: oldGate.evidenceKind,
     evaluator: "tests",
     passed: true,
