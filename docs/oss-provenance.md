@@ -45,6 +45,10 @@ Do not add that expected blocked result as an ordinary always-failing CI job.
   clearance. `icon-rights` stays open for maintainer acceptance of the
   documented origin and any additional known external asset input; it does
   not require a false assertion of hand-drawn originality.
+  The coarse ledger origin remains `unresolved` until that maintainer-specific
+  confirmation; this does not mean the observed technical generation is unknown.
+  `maintainer-reported-ai` would imply a maintainer report about the icon that
+  has not yet been given.
 - `public/manifest.webmanifest` and `public/sw.js` are MIT-associated metadata
   or software under the existing guide. Their `not-applicable` review disposition
   means that the illustration/course gate does not apply to these two files;
