@@ -24,20 +24,27 @@ references, paths and current file bytes agree. Open rights gates remain visible
 recorded review dispositions satisfy this limited provenance check. No result
 establishes global OSS readiness, publication permission, integration, security,
 privacy, CI status, or a visibility decision. The current project's expected
-release result is **2**, with `course-source-review` and `icon-rights` open.
+release result is **2**, with only `icon-rights` open. The completed bounded
+course source assessment is recorded as reviewed, not exhaustive rights clearance.
 Do not add that expected blocked result as an ordinary always-failing CI job.
 
 ## Current facts and unresolved review
 
 - The course group records the maintainer's report of generation using ChatGPT
   and Codex from prompts and direction, with no manual drafting of fragments.
-  Source/copying and applicable-rights review remains pending. Research source
-  citations are leads, never automatic evidence of permission.
-- The icon SVG's provenance and permissions remain unresolved. The two PNGs
-  derive from `public/icon.svg`: `scripts/setup-assets.mjs` uses sharp to resize
-  to 192 by 192 and 512 by 512, respectively, then writes PNG. This observed
-  pipeline establishes a derivation relationship, without proving external
-  rights or reproducibility from all historical tool versions.
+  The [bounded rights assessment](rights-assessment.md) inventories all 294
+  course files and documents extracted-unit screening and contextual manual
+  review. No actionable substantial copied-expression case was identified
+  within that scope; `course-source-review` is resolved as that assessment
+  record. Source citations remain leads, never automatic permission.
+- The icon origin is traced assistant generation: private maintainer records
+  show inline SVG construction with a successful receipt, followed by an
+  assistant-reported palette change. Current PNGs reproduce byte-for-byte and
+  pixel-for-pixel from the SVG using the measured sharp pipeline. This does
+  not establish human authorship, historical tool versions or trademark
+  clearance. `icon-rights` stays open for maintainer acceptance of the
+  documented origin and any additional known external asset input; it does
+  not require a false assertion of hand-drawn originality.
 - `public/manifest.webmanifest` and `public/sw.js` are MIT-associated metadata
   or software under the existing guide. Their `not-applicable` review disposition
   means that the illustration/course gate does not apply to these two files;
@@ -65,8 +72,8 @@ references are review records, not machine-verified permission grants.
 When tracked files are added, removed or changed, inspect the exact diff and
 review the affected scope before refreshing entries and hashes. Record known
 copied/adapted inputs with their exact source, version, applicable license and
-required notices in review documentation. Establish the icon's source and
-permissions and assess the course's copying/source evidence separately. Preserve
+required notices in review documentation. Revisit concrete new copying/source
+evidence under its actual license and complete the icon acceptance condition described in the assessment. Preserve
 available generation records and prior evidence privately. Do not include local
 paths, private records, account data or copied prompts in this public ledger.
 Only record a reviewed disposition after the underlying evidence supports it;

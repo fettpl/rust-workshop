@@ -10,22 +10,24 @@
       "category": "course",
       "origin": "maintainer-reported-ai",
       "review": {
-        "status": "pending",
+        "status": "reviewed",
         "evidence": [
           "docs/licensing.md",
-          "docs/oss-provenance.md"
+          "docs/oss-provenance.md",
+          "docs/rights-assessment.md"
         ]
       }
     },
     {
       "id": "icons",
       "category": "asset",
-      "origin": "unresolved",
+      "origin": "maintainer-reported-ai",
       "review": {
         "status": "pending",
         "evidence": [
           "docs/licensing.md",
-          "docs/oss-provenance.md"
+          "docs/oss-provenance.md",
+          "docs/rights-assessment.md"
         ]
       }
     },
@@ -1547,14 +1549,14 @@
     {
       "id": "course-source-review",
       "group": "course",
-      "status": "open",
-      "reason": "Maintainer-reported AI generation is an origin disclosure. Source/copying and applicable-rights review remains pending; research citations do not grant permission."
+      "status": "resolved",
+      "reason": "Bounded inventory, extracted-unit comparison and contextual manual review identified no actionable substantial copied-expression case. This records the completed assessment, not exhaustive rights clearance; new concrete source evidence requires review."
     },
     {
       "id": "icon-rights",
       "group": "icons",
       "status": "open",
-      "reason": "SVG source and permissions remain unresolved. PNG derivation from that SVG does not establish illustration rights."
+      "reason": "Generation records trace assistant SVG construction and PNG derivation. Maintainer acceptance of this documented origin and identification of any additional known external asset input remains pending; no assertion of hand-drawn human authorship is required."
     }
   ]
 }

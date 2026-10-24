@@ -57,11 +57,14 @@ split:
   in an archive remains CC BY 4.0. Generated files must carry the notices
   required by their inputs and must not be hand-edited.
 - `public/manifest.webmanifest` and `public/sw.js` are MIT-associated code or
-  metadata. The `public/icon.svg` and its PNG derivatives are proposed for
-  the illustration scope only after the maintainer confirms authorship or
-  records the actual external source license. Their provenance is currently
-  unresolved; do not presume that they are original or apply CC BY 4.0 before
-  that human audit.
+  metadata. The `public/icon.svg` and its PNG derivatives have a traced
+  assistant-generated origin in the [bounded rights assessment](rights-assessment.md). Applying the
+  proposed illustration scope still awaits maintainer acceptance of that
+  documented origin and identification of any additional known external asset
+  input, or the actual external source license if one is identified. For this
+  generated icon, confirmation does not mean claiming hand-drawn human authorship
+  or guaranteeing training-data originality. Do not apply CC BY 4.0 to it before
+  that existing human acceptance condition is met.
 - Downloaded Rust code supplied by an external source keeps that source's
   license. A source citation identifies provenance; it does not grant
   permission to copy the source.
@@ -194,17 +197,21 @@ For provenance review, record known copied or adapted material with its exact
 source, version, license and required notices. Research citations are useful
 leads, not proof of copying or permission. Preserve available generation
 records privately; neither automated similarity checks nor a model's account
-of its training data can prove exhaustive clearance. The icon SVG and derived
-PNGs remain outside any claim of verified original illustration rights until
-their source and permissions are established. Do not ask contributors to
-certify that every model output is original without supporting evidence.
+of its training data can prove exhaustive clearance. The
+[bounded rights assessment](rights-assessment.md) records the completed course
+comparison and traced icon generation. The course review found no
+actionable substantial copied-expression case within its stated scope; this
+is not exhaustive clearance. The icon acceptance condition above remains open,
+without asking anyone to certify human originality in generated geometry. Do
+not ask contributors to certify that every model output is original without
+supporting evidence.
 
 ## Remaining release gates
 
-License selection and credit are approved; icon/source provenance, privacy
-remediation, security reporting, dependency security, required CI, integration
-and human publication are separate gates. Resolve concrete copied-material or
-asset findings before including them in the public release. An unresolved
+License selection and credit are approved. The bounded course source assessment
+is recorded as reviewed; icon acceptance, privacy remediation, security
+reporting, dependency security, required CI, integration and human publication
+remain separate gates. Resolve concrete copied-material or asset findings before including them in the public release. An unresolved
 record is not cleared by the project's general license notice. See
 [the release plan](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-release.md) in the repository for the full sequence.
 
