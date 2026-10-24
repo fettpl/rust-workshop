@@ -33,6 +33,7 @@ the public release complete, the maintainer must enable it and verify the
 reporting form from a separate account. Replace this draft status with the
 verified route. If secure reporting is required before visibility changes,
 provide and verify an alternative private contact first; do not invent one.
+Follow the gated [human publication handoff](docs/publication-handoff.md).
 See [GitHub's configuration instructions](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
 
 ## Scope and limitations

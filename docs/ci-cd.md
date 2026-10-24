@@ -25,8 +25,12 @@ The configured job timeouts are part of the current contract:
 | `unsafe-borrowed-memory` (MSRV) | Repository-authored fixture on Rust 1.85.0 | 30 min |
 | `unsafe-borrowed-memory` (Miri) | Repository-authored fixture on nightly Miri | 30 min |
 
-`verify` installs Node 22 with npm caching, the current stable Rust toolchain
-with rustfmt and Clippy, and the locked npm graph. It qualifies the stable
+`verify` installs the latest available Node 22 release (`check-latest: true`)
+with npm caching, the current stable Rust toolchain with rustfmt and Clippy,
+and the locked npm graph. The major selector is not
+an exact runtime pin: the selected release must satisfy the Node floor in
+`package.json` (currently 22.23.4 for Node 22); record the actual installed
+version. It qualifies the stable
 `rustup`, `rustc`, `rustdoc`, and `cargo` executables by recording their paths,
 versions, and file hashes, then prepares an offline Cargo configuration for the
 initialized-prefix unit proof. It fetches the fixed Tokio profile before
@@ -96,6 +100,53 @@ as the fallback. Preserve least-privilege `contents: read`, credential-free
 checkout, and the absence of privileged `pull_request_target` execution when
 reviewing workflow changes.
 
+## Fork trust, caches, artifacts, and cost
+
+The tracked workflow uses `pull_request`, `push` to `main`, and manual
+`workflow_dispatch`; it has no `pull_request_target` or `workflow_run`
+consumer. Every job uses `contents: read`, checks out without persisted Git
+credentials, and runs on standard `ubuntu-latest` or `macos-latest`
+GitHub-hosted runners. It references no repository or environment secrets,
+OIDC permission, deployment environment, self-hosted runner, or publish step.
+The shell expressions use repository-defined matrix values and workspace
+paths, not PR titles, bodies, or branch-provided command inputs. PR code still
+executes package installation scripts and authored checks, so review proposed
+workflow and script changes before approving a fork run. Approval permits
+execution; it does not make the contribution trusted.
+
+Fork approval policy, allowed actions, token defaults, branch protection and
+required checks are GitHub settings, not facts established by this YAML.
+Recheck their effective values in the live UI at integration and publication,
+including any organization policy. Keep fork runs away from secrets, write
+tokens and maintainer machines. Do not enable privileged fork execution to
+make a required check run.
+
+`setup-node` caches npm download data; `npm ci` still installs the locked
+graph in every job. No workflow step downloads another run's artifacts or
+executes an artifact. Fork PRs can read eligible base-branch caches, so caches
+must never contain credentials, learner exports or private reports. Cache
+scope and access are not an integrity or confidentiality guarantee; a cache
+hit is not verification evidence. A future privileged consumer must not
+execute code or artifacts produced by an untrusted run.
+
+Uploads use scoped report/diagnostic paths and seven-day retention. The
+initialized-prefix job uploads only its public summaries, leaving its raw
+native packet out of uploads. Review new artifact paths and report contents
+before extending them. Retention limits lifetime, not access or proof:
+public-repository logs are public, and signed-in readers can download retained
+artifacts. Never put secrets or private audit inputs in either. Missing
+reports, incomplete campaigns and diagnostic uploads do not satisfy checks.
+
+All eleven checks and their timeouts remain required by the current contract.
+Concurrency cancels obsolete PR runs while preserving running `main` jobs.
+Under GitHub's current rules, standard hosted runner execution is free for
+public repositories; private usage, storage, larger runners and other products
+have separate rules. This is not evidence about current account restrictions,
+accrued charges or effective repository settings. Do not reduce checks, buy
+capacity, change budgets or switch to maintainer machines to work around a
+blocked gate. Follow the [publication handoff](publication-handoff.md) for
+external verification.
+
 ## Local verification
 
 For a fresh checkout, use a supported Node version (`^22.23.4 || ^24.22.1 || ^26.12.1` in
@@ -154,7 +205,7 @@ Production browser and offline checks are separate from ordinary unit tests:
 ```sh
 npm ci
 npm run build
-npm start -- --port 3002
+npm start -- --hostname 127.0.0.1 --port 3002
 # In another terminal:
 npx --no-install playwright install chromium
 npx --no-install playwright test --config .github/playwright.production.config.ts
@@ -186,6 +237,8 @@ hosting, billing, visibility, or release settings from this document.
 
 ## References
 
+External guidance checked 24 October 2026; recheck it at the actual handoff.
+
 - [AGENTS.md format](https://agents.md/) — standard Markdown with no required
   schema; the nearest file takes precedence and explicit user instructions win.
 - [GitHub secure use](https://docs.github.com/en/actions/reference/security/secure-use)
@@ -194,3 +247,13 @@ hosting, billing, visibility, or release settings from this document.
 - [Rust runner boundary](runner.md) — remote learner execution and trusted
   local fixture limits.
 - [Verification records](verification.md) — scoped evidence and limitations.
+- [Approving fork runs](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/approve-runs-from-forks)
+  — review workflow changes before allowing execution; effective approval rules
+  are repository, organization or enterprise settings.
+- [Dependency cache access](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching)
+  — cache scope, fork read access and sensitive-data restrictions.
+- [Artifact access](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/download-workflow-artifacts)
+  and [visibility effects](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility)
+  — retained artifacts and logs are part of the release-surface review.
+- [Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)
+  — standard public runner execution and separate storage/account constraints.
