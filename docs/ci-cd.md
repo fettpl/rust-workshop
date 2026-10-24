@@ -194,6 +194,18 @@ npm run content:manifests
 npm run content:audit
 ```
 
+`content:cargo` checks the authored archives offline and locked; it does not
+populate the registry cache. Generating ZIP files is also not dependency
+preparation. A fresh local cache needs the fixed Tokio fetch above and the
+relevant package-specific `--fetch` verifiers before those archive checks.
+For example, `content:models -- --fetch` prepares the Loom graph,
+`content:performance -- --fetch` prepares Criterion, and
+`content:property -- --fetch` prepares property-test dependencies. Follow each
+verifier's documented prerequisites and keep its fixed repository inputs;
+missing cached crates are infrastructure failures, not failed learner behavior.
+CI performs these preparation phases explicitly. Do not make an offline
+behavioral check silently retry online or substitute an arbitrary manifest.
+
 Use `--msrv` only with the verifier that documents it, after installing and
 qualifying exact Rust `1.85.0`. Specialized commands reject arbitrary paths,
 source, dependency overrides, and arbitrary toolchain selectors. Heavy native
