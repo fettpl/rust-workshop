@@ -3,7 +3,7 @@
 This inventory accompanies the mixed-license source-release draft. The license
 split and project credit are approved; the inventory remains a release draft
 pending provenance and public-release review. It is based on the locked
-dependency graph on 22 October 2026. The proposed release
+dependency graph on 24 October 2026. The proposed release
 surface is the source repository, authored Cargo project archives, and the
 published audit surface; no hosted deployment, compiled browser application,
 `.next` directory, or `node_modules` tree is being published in this
@@ -43,6 +43,7 @@ The direct packages in `package.json` currently report these licenses in
 | `tailwindcss` | 4.3.3 | MIT | <https://github.com/tailwindlabs/tailwindcss> |
 | `tsx` | 4.23.15 | MIT | <https://github.com/privatenumber/tsx> |
 | `typescript` | 6.0.3 | Apache-2.0 | <https://github.com/microsoft/TypeScript> |
+| `vite` | 8.3.3 | MIT | <https://github.com/vitejs/vite> |
 | `vitest` | 5.0.3 | MIT | <https://github.com/vitest-dev/vitest> |
 
 ## Bundled and transitive obligations
