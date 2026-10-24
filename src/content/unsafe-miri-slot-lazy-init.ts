@@ -256,7 +256,10 @@ export const slotLazyInitMutant = slotLazyInitSafeOption.replace(
 );
 
 /** The same behavioral contract is exercised for every native positive fixture. */
-export const slotLazyInitTests = String.raw`use std::panic::{AssertUnwindSafe, catch_unwind};
+export const slotLazyInitTests = String.raw`use std::cell::Cell;
+use std::marker::PhantomPinned;
+use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::rc::Rc;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
@@ -442,11 +445,28 @@ fn true_zst_drop_is_still_exactly_once() {
 
 #[test]
 fn non_clone_value_needs_no_extra_trait_bound() {
-    struct NonClone(u8);
+    struct NonClone {
+        cell: Rc<Cell<u8>>,
+        _pin: PhantomPinned,
+    }
 
+    let shared = Rc::new(Cell::new(3));
     let mut slot = LazySlot::new();
-    let value = slot.get_or_try_init(|| Ok::<_, ()>(NonClone(3))).unwrap();
-    assert_eq!(value.0, 3);
+    {
+        let value = slot
+            .get_or_try_init(|| {
+                Ok::<_, ()>(NonClone {
+                    cell: Rc::clone(&shared),
+                    _pin: PhantomPinned,
+                })
+            })
+            .unwrap();
+        value.cell.set(value.cell.get() + 4);
+        assert_eq!(value.cell.get(), 7);
+    }
+    assert_eq!(shared.get(), 7);
+    let taken = slot.take().unwrap();
+    assert_eq!(taken.cell.get(), 7);
 }
 
 #[test]

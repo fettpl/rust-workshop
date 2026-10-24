@@ -10,7 +10,7 @@ export const slotLazyInitStepIds = [
 ] as const;
 export const slotLazyInitPrimaryStepId = slotLazyInitStepIds[1];
 export const expectedPostSlotMiriProjectSha256 =
-  "917eb05f53be13fbc60e61f4206a56a81e7c3d4259f6a3aee9a35e121d429816";
+  "02fc7cfeb73ce283ef977b068ec4423f269e934b5b3e1a40938a805463a5cb3c";
 export const expectedPreSlotMiriProjectSha256 =
   "d89637d76561828110eaedcb72b82f652b41fd04896effc7a64fffa39efba8c3";
 

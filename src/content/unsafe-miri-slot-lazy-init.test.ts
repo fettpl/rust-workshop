@@ -117,6 +117,8 @@ it("publishes the lazy-init model and one primary transfer step", () => {
   }
   expect(slotLazyInitTests.match(/#\[test\]/g)).toHaveLength(14);
   expect(slotLazyInitTests).toContain("size_of::<Zst>()");
+  expect(slotLazyInitTests).toContain("Rc<Cell<u8>>");
+  expect(slotLazyInitTests).toContain("PhantomPinned");
   expect(slotLazyInitMutant).not.toContain("MaybeUninit");
   expect(slotLazyInitMutant).toContain("if self.value.is_some()");
   expect(slotLazyInitMutant).toContain("let _ = init()?;");
@@ -140,6 +142,31 @@ it("accepts the canonical and equivalent native implementations", () => {
 
 it("accepts the safe Option behavioral twin", () => {
   compileAndRun(slotLazyInitSafeOption, 14);
+});
+
+it("rejects surplus Send and Unpin bounds with E0277", () => {
+  for (const trait of ["Send", "Unpin"] as const) {
+    const directory = mkdtempSync(
+      join(tmpdir(), `unsafe-miri-slot-lazy-${trait.toLowerCase()}-bound-`),
+    );
+    try {
+      const bounded = slotLazyInitSolution.replace(
+        "        F: FnOnce() -> Result<T, E>,",
+        `        F: FnOnce() -> Result<T, E>,\n        T: ${trait},`,
+      );
+      const rejected = compile(
+        appendHiddenTests(bounded, slotLazyInitTests),
+        directory,
+      );
+      expect(rejected.error).toBeUndefined();
+      expect(rejected.status).not.toBe(0);
+      expect(rejected.signal).toBeNull();
+      expect(rejected.stderr).toMatch(/error\[E0277\]/);
+      expect(rejected.stderr).toContain(`trait \`${trait}\``);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }
 });
 
 it("rejects the named Full-path eager-initializer mutant", () => {

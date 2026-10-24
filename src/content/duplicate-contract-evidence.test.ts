@@ -626,6 +626,14 @@ describe("duplicate contract evidence families", () => {
           status: "available",
           task: { lessonId, stepId: "disjoint-regions-range-transfer" },
         });
+      } else if (lessonId === "unsafe-miri-slot-state") {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "available",
+          task: {
+            lessonId,
+            stepId: "slot-state-lazy-init-transfer",
+          },
+        });
       } else {
         expect(gateRecovery(state, criterion, lessons)).toEqual({
           status: "exhausted",
@@ -784,7 +792,9 @@ describe("duplicate contract evidence families", () => {
           courseEvidenceSummary(state, lesson.conceptIds[0])
             .qualifyingCodingTasks,
         ).toBe(0);
-        expect(gateRecovery(state, primaryCriterion(lesson.id), lessons)).toEqual(
+        expect(
+          gateRecovery(state, primaryCriterion(lesson.id), lessons),
+        ).toEqual(
           lesson.id === "unsafe-miri-byte-view"
             ? {
                 status: "available",
@@ -801,7 +811,15 @@ describe("duplicate contract evidence families", () => {
                     stepId: "disjoint-regions-range-transfer",
                   },
                 }
-              : { status: "exhausted" },
+              : lesson.id === "unsafe-miri-slot-state"
+                ? {
+                    status: "available",
+                    task: {
+                      lessonId: lesson.id,
+                      stepId: "slot-state-lazy-init-transfer",
+                    },
+                  }
+                : { status: "exhausted" },
         );
 
         const primarySavedFirst = createInitialState();
@@ -877,7 +895,15 @@ describe("duplicate contract evidence families", () => {
                   stepId: "disjoint-regions-range-transfer",
                 },
               }
-            : { status: "exhausted" },
+            : lesson.id === "unsafe-miri-slot-state"
+              ? {
+                  status: "available",
+                  task: {
+                    lessonId: lesson.id,
+                    stepId: "slot-state-lazy-init-transfer",
+                  },
+                }
+              : { status: "exhausted" },
       );
     }
   });
@@ -1452,19 +1478,16 @@ it("keeps initialized-prefix model exposure separate, credits clean primary fami
   );
   expect(
     independentCodingTaskIds(state, conceptId, courseEvidencePolicy),
-  ).toEqual([
-    "unsafe-miri/byte-view-v1",
-    "unsafe-miri/initialized-prefix-v1",
-  ]);
+  ).toEqual(["unsafe-miri/byte-view-v1", "unsafe-miri/initialized-prefix-v1"]);
   state.review = [
     { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "prefix due" },
   ];
   expect(courseDelayedReviewEligibility(state, conceptId, 3_000 + day)).toBe(
     false,
   );
-  expect(courseDelayedReviewEligibility(state, conceptId, 3_000 + day + 1)).toBe(
-    true,
-  );
+  expect(
+    courseDelayedReviewEligibility(state, conceptId, 3_000 + day + 1),
+  ).toBe(true);
 
   state.steps[stepKey(lesson.id, primary.id)] = {
     ...createStepProgress(primary.code),
@@ -1512,9 +1535,9 @@ it("keeps initialized-prefix model exposure separate, credits clean primary fami
   expect(courseDelayedReviewEligibility(state, conceptId, 6_000 + day)).toBe(
     false,
   );
-  expect(courseDelayedReviewEligibility(state, conceptId, 6_000 + day + 1)).toBe(
-    true,
-  );
+  expect(
+    courseDelayedReviewEligibility(state, conceptId, 6_000 + day + 1),
+  ).toBe(true);
   const imported = importState(exportState(state));
   expect(imported.events.map((event) => event.id)).toEqual(
     state.events.map((event) => event.id),
@@ -1614,11 +1637,27 @@ it("keeps a helped initialized-prefix primary uncredited across retries and real
   retention.review = [
     { conceptId, dueAt: 0, intervalDays: 1, attempts: 1, reason: "prefix due" },
   ];
-  expect(courseDelayedReviewEligibility(retention, conceptId, 10_127 + 24 * 60 * 60 * 1000)).toBe(false);
-  expect(courseDelayedReviewEligibility(retention, conceptId, 10_127 + 24 * 60 * 60 * 1000 + 1)).toBe(true);
-  expect(retention.events.slice(0, contactsBefore.length)).toEqual(contactsBefore);
+  expect(
+    courseDelayedReviewEligibility(
+      retention,
+      conceptId,
+      10_127 + 24 * 60 * 60 * 1000,
+    ),
+  ).toBe(false);
+  expect(
+    courseDelayedReviewEligibility(
+      retention,
+      conceptId,
+      10_127 + 24 * 60 * 60 * 1000 + 1,
+    ),
+  ).toBe(true);
+  expect(retention.events.slice(0, contactsBefore.length)).toEqual(
+    contactsBefore,
+  );
   expect(retention.events).toHaveLength(contactsBefore.length + 27);
-  expect(retention.events.every((event) => event.lessonId === lesson.id)).toBe(true);
+  expect(retention.events.every((event) => event.lessonId === lesson.id)).toBe(
+    true,
+  );
   const imported = importState(exportState(retention));
   expect(imported.events).toEqual(retention.events);
   expect(imported.ratings).toEqual(retention.ratings);

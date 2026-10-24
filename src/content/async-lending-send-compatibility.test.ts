@@ -25,7 +25,7 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
     "async-lending-send-boundary-handoff-model",
     "async-lending-send-boundary-prepared-handoff",
   ]);
-  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1277);
+  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1279);
 });
 
 it("keeps accepted immutable bytes or the exact reviewed presentation successor", () => {
@@ -150,7 +150,7 @@ it("keeps old V1/V2/V3 saved locations and raw history without passing either ne
   }
 });
 
-it("exposes seven two-family advanced concepts while two remain provisional", () => {
+it("exposes eight two-family advanced concepts while one remains provisional", () => {
   const state = createInitialState();
   state.events = currentCourse.lessons.flatMap((lesson) =>
     lesson.steps
@@ -183,7 +183,6 @@ it("exposes seven two-family advanced concepts while two remain provisional", ()
     "scope-drop",
     "copy-semantics",
     "ownership-repair",
-    "unsafe-miri-slot-state-contract",
     "unsafe-miri-mut-slot-variance-contract",
   ]);
   expect(

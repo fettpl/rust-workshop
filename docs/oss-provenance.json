@@ -137,7 +137,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "b6f854a53ac13c75d72e0208516f24732b0dba4fdd7178b99fc8ff210825d255",
+      "sha256": "01b51d411d87235225639d6656b94e4d1293fcafda00eb9ab57b32bd18113f5c",
       "group": "course"
     },
     {
@@ -207,7 +207,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "c83cad42aaaf8735f84294da4cb30b9c4d7b110e5ab63043a12b6d81cc198bc4",
+      "sha256": "7fd32bd29b018d742aa21d84630b3d957c12f2dfb119d3c4549134899378e6fb",
       "group": "course"
     },
     {
@@ -537,7 +537,7 @@
     },
     {
       "path": "src/content/duplicate-contract-evidence.test.ts",
-      "sha256": "e0f0eb845ddf977b1bdd91c322f648acd0c13895ca9c9f1a0aa47fd6ea01d0bb",
+      "sha256": "462f076b4618302600db8addcc1dbfbde43066b4cc6189ddc24c2991bbdf5911",
       "group": "course"
     },
     {
@@ -1537,7 +1537,7 @@
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init-compatibility-fixture.ts",
-      "sha256": "9348e3c8b62c2a7e7a9b8bb95a85b8c027100f13f76fcb964dc6f6d411f52890",
+      "sha256": "fe139b21c6a23b408dbae68b51df4beaa2f5ee667b35b23a80a61bff012d0960",
       "group": "course"
     },
     {
@@ -1547,12 +1547,12 @@
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init.test.ts",
-      "sha256": "3034ed2bc2a8be774147f952996593e044ce480fb842486810c04d9f1622d972",
+      "sha256": "025e1fc9230c46626d465a4f919d589647a59267a4eb448daf2e62a372b69687",
       "group": "course"
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init.ts",
-      "sha256": "e913fd038fff3447e35d30d37be9f5762d4fdafbe0869ea7055c8ff9af2a473c",
+      "sha256": "4fd236523ed3a4525594a76c7fa69681e1c68a00e64d437f323c80906f0e60b0",
       "group": "course"
     },
     {
