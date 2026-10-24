@@ -1220,6 +1220,100 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     )).toEqual([]);
     await page.setViewportSize({ width: 1280, height: 900 });
     console.log("Disjoint-range model/primary draft, note, help, exact index-8 resume and keyboard work offline; no compiler or transfer credit");
+    // Slot lazy-init model/primary path: the historical seven-step prefix is
+    // followed by the exposure model and a fresh transfer family.
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(unsafeMiriTitle);
+    await page.locator(".module-picker > button").filter({ hasText: unsafeMiriTitle }).click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Utrzymaj stan Slot<T> z MaybeUninit" })
+      .click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(7).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    const slotModelHeading = await page.locator(".task-pane h1").innerText();
+    expect(slotModelHeading).toMatch(/model|Empty|Full/i);
+    await expect(page.locator(".task-pane")).toContainText("Option");
+    await expect(page.locator(".task-pane")).toContainText("pusty");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(8).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    const slotHeading = await page.locator(".task-pane h1").innerText();
+    await expect(page.locator(".task-pane")).toContainText("get_or_try_init");
+    await expect(page.locator(".task-pane")).toContainText("FnOnce");
+    await expect(page.locator(".task-pane")).toContainText("Empty");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const slotEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    const simpleSlotEditor = page.getByRole("button", { name: "Prosty edytor", exact: true });
+    if (await simpleSlotEditor.count() && await simpleSlotEditor.isVisible()) {
+      await simpleSlotEditor.click();
+    }
+    await expect(slotEditor).toBeVisible();
+    const slotDraft = "// Lazy init zapisany offline bez uruchamiania runnera.\n";
+    await slotEditor.fill(slotDraft);
+    await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    const slotNote = "Full pomija inicjalizator; Empty po błędzie pozostaje pusty.";
+    await page.getByLabel("Notatki do lekcji").fill(slotNote);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
+    await expect.poll(async () => {
+      const state = await readLearningState();
+      const progress = state.steps["unsafe-miri-slot-state:slot-state-lazy-init-transfer"];
+      return {
+        code: progress?.code,
+        hints: progress?.hints,
+        note: state.notes["unsafe-miri-slot-state"],
+        lessonId: state.resume.lessonId,
+        stepIndex: state.resume.stepIndex,
+      };
+    }).toEqual({
+      code: slotDraft,
+      hints: 1,
+      note: slotNote,
+      lessonId: "unsafe-miri-slot-state",
+      stepIndex: 8,
+    });
+    const slotOfflineState = await readLearningState();
+    expect(slotOfflineState.events.filter((event) =>
+      event.lessonId === "unsafe-miri-slot-state" &&
+      event.stepId === "slot-state-lazy-init-transfer" &&
+      event.kind === "transfer" &&
+      event.passed,
+    )).toEqual([]);
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(slotHeading);
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(slotNote);
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(slotEditor).toBeVisible();
+    await expect(slotEditor).toHaveValue(slotDraft);
+    await slotEditor.focus();
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Monaco Editor", exact: true })).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(slotEditor).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const slotReloadState = await readLearningState();
+    expect(slotReloadState.resume).toMatchObject({
+      lessonId: "unsafe-miri-slot-state",
+      stepIndex: 8,
+    });
+    expect(slotReloadState.events.filter((event) =>
+      event.lessonId === "unsafe-miri-slot-state" &&
+      event.stepId === "slot-state-lazy-init-transfer" &&
+      event.kind === "transfer" &&
+      event.passed,
+    )).toEqual([]);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    console.log("Slot lazy-init model/primary draft, note, help, exact index-8 resume and keyboard work offline; no compiler or transfer credit");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
       "Property testing: kontrakty, generatory i kontrprzykłady";

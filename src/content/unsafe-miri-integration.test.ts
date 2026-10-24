@@ -26,6 +26,12 @@ import {
   disjointRangesPrimaryStepId,
   disjointRangesSteps,
 } from "./unsafe-miri-disjoint-ranges";
+import {
+  slotLazyInitEquivalent,
+  slotLazyInitFamily,
+  slotLazyInitPrimaryStepId,
+  slotLazyInitSteps,
+} from "./unsafe-miri-slot-lazy-init";
 
 const lessonIds = [
   "unsafe-miri-byte-view",
@@ -34,7 +40,7 @@ const lessonIds = [
   "unsafe-miri-mut-slot",
 ];
 
-it("registers exactly four Miri lessons with eight rubric gates, fourteen evidence gates, and independent retrievals", () => {
+it("registers exactly four Miri lessons with eight rubric gates, fifteen evidence gates, and independent retrievals", () => {
   expect(unsafeMiriLessons.map((lesson) => lesson.id)).toEqual(lessonIds);
   expect(unsafeMiriModule.lessonIds).toEqual(lessonIds);
   expect(unsafeMiriModule.prerequisites).toEqual(["unsafe-ffi-contracts"]);
@@ -43,7 +49,7 @@ it("registers exactly four Miri lessons with eight rubric gates, fourteen eviden
     unsafeMiriLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(14);
+  ).toHaveLength(15);
 
   for (const lesson of unsafeMiriLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
@@ -59,7 +65,9 @@ it("registers exactly four Miri lessons with eight rubric gates, fourteen eviden
         ? 4
         : lesson.id === "unsafe-miri-disjoint-regions"
           ? 4
-          : 3,
+          : lesson.id === "unsafe-miri-slot-state"
+            ? 4
+            : 3,
     );
     const blank = lesson.steps.find((step) => step.kind === "blank")!;
     expect(blank.evidenceGate).toBe(true);
@@ -92,11 +100,41 @@ it("registers exactly four Miri lessons with eight rubric gates, fourteen eviden
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(18);
-  expect(new Set(refs).size).toBe(18);
+  expect(refs).toHaveLength(19);
+  expect(new Set(refs).size).toBe(19);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,
   );
+});
+
+it("appends lazy initialization after historical slot steps and attributes only its primary", () => {
+  const lesson = unsafeMiriLessons.find(
+    (candidate) => candidate.id === "unsafe-miri-slot-state",
+  )!;
+  expect(lesson.steps.map((step) => step.id).slice(-2)).toEqual(
+    slotLazyInitSteps.map((step) => step.id),
+  );
+  const primary = lesson.steps.find(
+    (step) => step.id === slotLazyInitPrimaryStepId,
+  )!;
+  expect(primary.evidence).toEqual({
+    version: 2,
+    conceptIds: ["unsafe-miri-slot-state-contract"],
+    codingTaskId: slotLazyInitFamily,
+  });
+  expect(
+    lesson.steps.find((step) => step.id === "slot-state-lazy-init-model")
+      ?.evidence?.codingTaskId,
+  ).toBeUndefined();
+  expect(primary.solution).not.toBe(slotLazyInitEquivalent);
+  const criterion = unsafeMiriModule.gateCriteria!.find(
+    (candidate) => candidate.id === "unsafe-miri-slot-state-gate",
+  )!;
+  expect(criterion.requiredIndependentCodingTasks).toBe(1);
+  expect(criterion.taskRefs).toContainEqual({
+    lessonId: "unsafe-miri-slot-state",
+    stepId: slotLazyInitPrimaryStepId,
+  });
 });
 
 it("appends the range family while preserving the old midpoint family", () => {
@@ -120,8 +158,8 @@ it("appends the range family while preserving the old midpoint family", () => {
       ?.codingTaskId,
   ).toBe("unsafe-miri/disjoint-regions-v1");
   expect(
-    lesson.steps.find((step) => step.id === disjointRangesPrimaryStepId)?.evidence
-      ?.codingTaskId,
+    lesson.steps.find((step) => step.id === disjointRangesPrimaryStepId)
+      ?.evidence?.codingTaskId,
   ).toBe(disjointRangesFamily);
   expect(
     lesson.steps.find((step) => step.id === "disjoint-regions-range-model")
@@ -144,7 +182,9 @@ it("publishes the initialized-prefix bridge and complete shared harness", () => 
   ]);
   expect(initializedPrefixSteps[0].evidenceGate).not.toBe(true);
   expect(initializedPrefixSteps[0].evidence?.codingTaskId).toBeUndefined();
-  expect(initializedPrefixSteps[1].evidence?.codingTaskId).toBe(initializedPrefixFamily);
+  expect(initializedPrefixSteps[1].evidence?.codingTaskId).toBe(
+    initializedPrefixFamily,
+  );
   expect(initializedPrefixSteps[1].evidenceGate).toBe(true);
   expect(initializedPrefixSteps[1].evidence?.version).toBe(2);
   expect(initializedPrefixSteps[0].evaluator).toEqual({

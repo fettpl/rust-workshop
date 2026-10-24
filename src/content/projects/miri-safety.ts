@@ -1,4 +1,9 @@
 import type { ProjectContract, ProjectPackage } from "../../domain/types";
+import {
+  slotLazyInitSolution,
+  slotLazyInitStarter,
+  slotLazyInitTests,
+} from "../unsafe-miri-slot-lazy-init";
 
 const manifest = String.raw`[package]
 name = "miri-safety-workshop"
@@ -659,6 +664,13 @@ const fixtureFiles = {
   "fixtures/ub_overlapping_regions.rs": overlappingRegionsFixture,
 };
 
+// This integration-test crate teaches valid MaybeUninit invariants. Keep the
+// exception here; the safe library and Cargo-wide unsafe denial stay unchanged.
+const slotLazyInitArchiveStarter = `#![allow(unsafe_code)]
+${slotLazyInitStarter}${slotLazyInitTests}`;
+const slotLazyInitArchiveSolution = `#![allow(unsafe_code)]
+${slotLazyInitSolution}${slotLazyInitTests}`;
+
 const commonFiles = [
   { path: "Cargo.toml", starter: manifest, solution: manifest },
   { path: "Cargo.lock", starter: lockfile, solution: lockfile },
@@ -679,6 +691,11 @@ const commonFiles = [
     path: "tests/mutation_contract.rs",
     starter: mutationTests,
     solution: mutationTests,
+  },
+  {
+    path: "tests/slot_lazy_init.rs",
+    starter: slotLazyInitArchiveStarter,
+    solution: slotLazyInitArchiveSolution,
   },
   ...Object.entries(fixtureFiles).map(([path, contents]) => ({
     path,
@@ -709,6 +726,10 @@ export const miriSafetyPackage: ProjectPackage = {
       stepId: "disjoint-regions-range-transfer",
     },
     { lessonId: "unsafe-miri-slot-state", stepId: "slot-state-gate" },
+    {
+      lessonId: "unsafe-miri-slot-state",
+      stepId: "slot-state-lazy-init-transfer",
+    },
     { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
   ],
   files: commonFiles,

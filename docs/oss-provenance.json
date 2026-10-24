@@ -14,7 +14,8 @@
         "evidence": [
           "docs/licensing.md",
           "docs/oss-provenance.md",
-          "docs/rights-assessment.md"
+          "docs/rights-assessment.md",
+          "docs/slot-lazy-init-transfer-evidence.md"
         ]
       }
     },
@@ -620,6 +621,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/fixtures/unsafe-miri-pre-slot-lazy-init.json",
+      "sha256": "1d38e4b6e941c018bd2a32921e76eeb3f42bf30d72041952942bac8596666609",
+      "group": "course"
+    },
+    {
       "path": "src/content/foundations-evidence.test.ts",
       "sha256": "d000d774f07be311781daab2ab979b78f00ca50893b61c8fe70e0fe68099baa7",
       "group": "course"
@@ -1046,12 +1052,12 @@
     },
     {
       "path": "src/content/projects/miri-safety.ts",
-      "sha256": "2c05ae54cd46085f8317d8d20a76ec64f709006d3e7982649ebbe7bff75c937a",
+      "sha256": "4cf306391a1b9f8517e6714a80841d21df5da9fd814da49007fe92abbf176fae",
       "group": "course"
     },
     {
       "path": "src/content/projects/miri-safety/package.test.ts",
-      "sha256": "3efba4adaab8477b041d73bf65c6958e1fd2cbf0083eb1e13226ebf69cdcd88b",
+      "sha256": "d8896d0dbd8ef2f770521c2142e55f615469d855d35cf34b63a1c9ef02c3ff49",
       "group": "course"
     },
     {
@@ -1436,17 +1442,17 @@
     },
     {
       "path": "src/content/unsafe-miri-assessment-fixtures.ts",
-      "sha256": "47cd6ce74eb320e08ccde2e8d361b8828634f28a0752d7a90842876c702c0ab4",
+      "sha256": "18c7658c46747740c7d5c864c0e7844c454e26b76f69c93e3467a7b8e2051fda",
       "group": "course"
     },
     {
       "path": "src/content/unsafe-miri-disjoint-ranges-compatibility-fixture.ts",
-      "sha256": "8ff763e45d2551704cf68dda91aa2aa92a6d53a29ec466b411283310e34c6a87",
+      "sha256": "c191f9778e1931b39c50195cdf6f84b7ab9720db4cc0ff7cde5ef8b1e80e3c8e",
       "group": "course"
     },
     {
       "path": "src/content/unsafe-miri-disjoint-ranges-compatibility.test.ts",
-      "sha256": "4c98077b1379cda6924153da83dc7ebe95a5388ffe8c41d62df8e59e320eeb1e",
+      "sha256": "47690b5b491813b9ce622aaf3bb16f139096318b72251803496ddbf9000e7153",
       "group": "course"
     },
     {
@@ -1516,7 +1522,7 @@
     },
     {
       "path": "src/content/unsafe-miri-integration.test.ts",
-      "sha256": "e5905fb01846fb0f0621dee528cae5454795d98e3d811123dff41db3248898cf",
+      "sha256": "c5dc165156baefb1ce7dd2193642b22dcd6605ffe074eec6258b749bc1561e8a",
       "group": "course"
     },
     {
@@ -1530,8 +1536,28 @@
       "group": "course"
     },
     {
+      "path": "src/content/unsafe-miri-slot-lazy-init-compatibility-fixture.ts",
+      "sha256": "9348e3c8b62c2a7e7a9b8bb95a85b8c027100f13f76fcb964dc6f6d411f52890",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-slot-lazy-init-compatibility.test.ts",
+      "sha256": "1445a3b306ae342273ad5701777a0a169b76d0694524033acd4adafdc9f30946",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-slot-lazy-init.test.ts",
+      "sha256": "3034ed2bc2a8be774147f952996593e044ce480fb842486810c04d9f1622d972",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-slot-lazy-init.ts",
+      "sha256": "e913fd038fff3447e35d30d37be9f5762d4fdafbe0869ea7055c8ff9af2a473c",
+      "group": "course"
+    },
+    {
       "path": "src/content/unsafe-miri.ts",
-      "sha256": "48ff6763c957d605ae3b64ec9eb4497c55e32d6a3a528ff0492c9892f725f151",
+      "sha256": "3591a4a4adc906ba31814366d4a3764d861cf59357c78640025e7425a684cda4",
       "group": "course"
     },
     {

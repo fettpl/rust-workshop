@@ -1,6 +1,6 @@
 # Local development queue
 
-Date: 2026-10-22
+Date: 2026-10-22; local continuation updated 2026-10-24 (UTC).
 
 This queue starts from main commit `7c760e3`. The local native-test maintenance
 milestone is complete on a separate branch. Disjoint-range integration has
@@ -9,6 +9,15 @@ billing block is expected to remain until the 2026-11-01 reset. Full-main jobs
 never started during this period; that is an infrastructure scheduling result,
 not a source failure or evidence about the application. GitHub Actions acceptance,
 remote integration, release and publication remain pending.
+
+## Maintainer-authorized continuation
+
+On 24 October 2026 the maintainer explicitly authorized continuing the approved
+course order after the independently reviewed local OSS preparation. Public OSS
+release waits for usable Actions and its separate privacy/integration/human
+publication gates. The preserved OSS candidate is not modified by this course
+feature. Continue on separate local branches without push, project remote
+changes or main integration; this decision does not bypass future CI gates.
 
 ## Local workflow
 
@@ -32,16 +41,18 @@ The queue is maintained in this order:
 1. local maintenance and verification hygiene;
 2. disjoint-region transfer work — authored; local verification and independent
    review complete;
-3. OSS readiness and public release — separate feature/PR after the current
-   disjoint milestone;
-4. `Slot` transfer work;
+3. OSS readiness and public release — local preparation reviewed and complete;
+   public release deferred behind its separate external gates;
+4. `Slot` lazy-initialization transfer — current separate local feature candidate;
 5. `MutSlot` variance transfer work;
 6. foundation reconciliation after those changes.
 
 Future feature work remains split into separate feature branches and future
 pull requests. The OSS milestone must wait for this disjoint chapter's local
 checks, independent review and English commit, and must remain separate from
-new chapters, dependency updates and application redesign. It requires license
+new chapters, dependency updates and application redesign. Local preparation is
+complete; the maintainer continuation above permits Slot work while publication
+is deferred. It requires license
 and copyright approval, exact-head CI and resulting-`main` checks when Actions
 is available, human publication on GitHub, and post-publication checks. During
 the current Actions hold, keep that work local: do not publish, change billing,
@@ -70,5 +81,7 @@ policy, bounded native witnesses and current local acceptance status. The source
 adds two steps (1,275 to 1,277) while retaining 48 modules, 192 lessons, 194 concepts
 and 349 sources. Independent review has resolved the initial model/wording
 findings; local unit, Rust, build, production E2E and offline checks are complete,
-with independent review complete. OSS readiness follows this milestone and
-precedes Slot implementation. Remote acceptance stays deferred.
+with independent review complete. OSS local preparation followed this milestone. The maintainer continuation
+above now permits Slot implementation while public release and remote acceptance
+stay deferred. The [Slot transfer contract](slot-lazy-init-transfer-evidence.md)
+records the next distinct primary family and its verification boundaries.

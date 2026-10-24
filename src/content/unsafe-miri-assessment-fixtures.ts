@@ -3,9 +3,8 @@ import {
   initializedPrefixMutant,
   initializedPrefixPrimaryStepId,
 } from "./unsafe-miri-initialized-prefix";
-import {
-  disjointRangesPrimaryStepId,
-} from "./unsafe-miri-disjoint-ranges";
+import { disjointRangesPrimaryStepId } from "./unsafe-miri-disjoint-ranges";
+import { slotLazyInitPrimaryStepId } from "./unsafe-miri-slot-lazy-init";
 import {
   unsafeMiriAssessmentSources,
   unsafeMiriLessons,
@@ -35,11 +34,14 @@ function sourceFor(id: string, solution: string) {
     "byte-view-recall": unsafeMiriAssessmentSources.byteView,
     "review-unsafe-miri-byte-view": unsafeMiriAssessmentSources.byteView,
     "disjoint-regions-gate": unsafeMiriAssessmentSources.disjointRegions,
-    "disjoint-regions-contract-gate": unsafeMiriAssessmentSources.disjointRegions,
+    "disjoint-regions-contract-gate":
+      unsafeMiriAssessmentSources.disjointRegions,
     "disjoint-regions-blank": unsafeMiriAssessmentSources.disjointRegions,
     "disjoint-regions-recall": unsafeMiriAssessmentSources.disjointRegions,
-    "review-unsafe-miri-disjoint-regions": unsafeMiriAssessmentSources.disjointRegions,
+    "review-unsafe-miri-disjoint-regions":
+      unsafeMiriAssessmentSources.disjointRegions,
     [disjointRangesPrimaryStepId]: unsafeMiriAssessmentSources.disjointRanges,
+    [slotLazyInitPrimaryStepId]: unsafeMiriAssessmentSources.slotLazyInit,
     "slot-state-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-contract-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-blank": unsafeMiriAssessmentSources.slotState,

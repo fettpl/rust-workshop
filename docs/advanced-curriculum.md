@@ -1,3 +1,15 @@
+# Local Slot transfer continuation — 24 October 2026 (UTC)
+
+The maintainer authorized course continuation after completed local OSS
+preparation while publication remains deferred. The next separate local feature
+appends a lazy/fallible initialization model and primary transfer to the existing
+Slot lesson. The [contract and evidence boundary](slot-lazy-init-transfer-evidence.md)
+and [local queue](local-development-queue.md) define this bounded scope. Existing
+learner records and original step prefixes remain unchanged; an authored family
+is availability, never earned credit or proof of learning. GitHub CI, remote
+integration and public release remain separate gates. Earlier dated checkpoints
+below retain their original source attribution and are not new execution claims.
+
 # Docelowa mapa kursu Rust: od zera do praktyki seniorskiej
 
 Local candidate update, 22 October 2026: PR 76 was merged as `7c760e3`, but

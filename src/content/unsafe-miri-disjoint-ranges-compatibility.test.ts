@@ -30,10 +30,7 @@ import type {
   LessonStep,
   UserState,
 } from "../domain/types";
-import {
-  gateRecovery,
-  independentCodingTaskIds,
-} from "../engine/learning";
+import { gateRecovery, independentCodingTaskIds } from "../engine/learning";
 import { lessons, modules, projects, reviewExercises } from "./course";
 
 const hashText = (value: string | Buffer) =>
@@ -506,7 +503,7 @@ describe("disjoint range compatibility and evidence", () => {
     const project = projects.find(
       (candidate) => candidate.id === "miri-safety",
     )!.package!;
-    expect(project.revealStepRefs).toHaveLength(5);
+    expect(project.revealStepRefs).toHaveLength(6);
     const starter = revealCourseProjectPackageVariant(
       createInitialState(),
       project,

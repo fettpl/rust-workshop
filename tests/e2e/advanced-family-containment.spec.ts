@@ -323,6 +323,17 @@ const asyncTransferCases = [
     oldStepId: "byte-view-gate",
     blankStepId: "byte-view-blank",
   },
+  {
+    lessonId: "unsafe-miri-slot-state",
+    conceptId: "unsafe-miri-slot-state-contract",
+    stepId: "slot-state-lazy-init-transfer",
+    family: "unsafe-miri/slot-lazy-init-v1",
+    oldFamily: "unsafe-miri/slot-state-v1",
+    reviewExerciseId: "review-unsafe-miri-slot-state",
+    mockPassed: 5,
+    oldStepId: "slot-state-gate",
+    blankStepId: "slot-state-blank",
+  },
 ] as const;
 
 type AsyncTransferCase = (typeof asyncTransferCases)[number];
@@ -593,7 +604,8 @@ for (const item of asyncTransferCases) {
       await expect(editor).toHaveValue(draft);
       if (
         item.lessonId === "async-lending-send-boundary" ||
-        item.lessonId === "async-lending-cancel-commit"
+        item.lessonId === "async-lending-cancel-commit" ||
+        item.lessonId === "unsafe-miri-slot-state"
       ) {
         await page.setViewportSize({ width: 390, height: 844 });
         await page.getByRole("tab", { name: "Kod", exact: true }).click();

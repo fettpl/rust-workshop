@@ -19,6 +19,13 @@ import {
   disjointRangesSolution,
   disjointRangesStarter,
 } from "./unsafe-miri-disjoint-ranges";
+import {
+  slotLazyInitFamily,
+  slotLazyInitPrimaryStepId,
+  slotLazyInitSteps,
+  slotLazyInitEquivalent,
+  slotLazyInitMutant,
+} from "./unsafe-miri-slot-lazy-init";
 
 const reviewedAt = "2026-09-18";
 const moduleId = "unsafe-miri-contracts";
@@ -1161,6 +1168,7 @@ export const unsafeMiriLessons: Lesson[] = [
         solution: slotRecallSolution,
         tests: slotRecallTests,
       }),
+      ...slotLazyInitSteps,
     ],
     misconceptions: [
       "MaybeUninit automatycznie dropuje T.",
@@ -1323,6 +1331,17 @@ disjointRangesPrimary.evidence = {
   codingTaskId: disjointRangesFamily,
 };
 
+// The lazy-init transfer is a new family appended after the historical slot
+// state steps. Keep the model supplementary and attribute only the primary.
+const slotLazyInitPrimary = unsafeMiriLessons
+  .find((lesson) => lesson.id === "unsafe-miri-slot-state")!
+  .steps.find((step) => step.id === slotLazyInitPrimaryStepId)!;
+slotLazyInitPrimary.evidence = {
+  version: 2,
+  conceptIds: ["unsafe-miri-slot-state-contract"],
+  codingTaskId: slotLazyInitFamily,
+};
+
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   "unsafe-miri-byte-view-contract": coding({
     id: "review-unsafe-miri-byte-view",
@@ -1430,6 +1449,10 @@ export const unsafeMiriModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-miri-slot-state", stepId: "slot-state-gate" },
         { lessonId: "unsafe-miri-slot-state", stepId: "slot-state-blank" },
+        {
+          lessonId: "unsafe-miri-slot-state",
+          stepId: slotLazyInitPrimaryStepId,
+        },
       ],
     },
     {
@@ -1508,6 +1531,11 @@ export const unsafeMiriAssessmentSources = {
     canonical: slotSolution,
     equivalent: slotEquivalent,
     mutant: slotMutant,
+  },
+  slotLazyInit: {
+    canonical: slotLazyInitSteps[1].solution!,
+    equivalent: slotLazyInitEquivalent,
+    mutant: slotLazyInitMutant,
   },
   mutSlot: {
     canonical: mutSlotSolution,

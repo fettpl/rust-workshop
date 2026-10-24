@@ -10,7 +10,7 @@ describe("Miri safety authored package contract", () => {
     expect(validateProjectPackage(miriSafetyPackage)).toEqual([]);
     expect(miriSafetyProject.id).toBe("miri-safety");
     expect(miriSafetyPackage.id).toBe("miri-safety-workshop");
-    expect(miriSafetyPackage.revealStepRefs).toHaveLength(5);
+    expect(miriSafetyPackage.revealStepRefs).toHaveLength(6);
 
     const solution = projectFiles(miriSafetyPackage, "solution");
     expect(Object.keys(solution)).toEqual(
@@ -23,6 +23,7 @@ describe("Miri safety authored package contract", () => {
         "src/lib.rs",
         "tests/safety_contract.rs",
         "tests/mutation_contract.rs",
+        "tests/slot_lazy_init.rs",
         "fixtures/Cargo.toml",
         "fixtures/ub_out_of_bounds.rs",
         "fixtures/ub_use_after_free.rs",
@@ -33,8 +34,10 @@ describe("Miri safety authored package contract", () => {
     expect(solution["Cargo.toml"]).toContain('edition = "2024"');
     expect(solution["Cargo.toml"]).toContain('rust-version = "1.85.0"');
     expect(solution["Cargo.toml"]).not.toContain("[dependencies]");
-    expect(solution["fixtures/Cargo.lock"]).toContain('version = 4');
-    expect(solution["fixtures/Cargo.lock"]).toContain('name = "miri-ub-fixtures"');
+    expect(solution["fixtures/Cargo.lock"]).toContain("version = 4");
+    expect(solution["fixtures/Cargo.lock"]).toContain(
+      'name = "miri-ub-fixtures"',
+    );
     expect(solution["src/lib.rs"]).toContain("#![forbid(unsafe_code)]");
     expect(solution["tests/safety_contract.rs"]).toContain(
       "byte_view_borrows_initialized_bytes_without_owning_them",
@@ -53,6 +56,10 @@ describe("Miri safety authored package contract", () => {
     expect(solution["fixtures/ub_overlapping_regions.rs"]).toContain(
       "0..2, 1..3",
     );
+    expect(solution["tests/slot_lazy_init.rs"]).toContain("MaybeUninit");
+    expect(solution["tests/slot_lazy_init.rs"]).toContain(
+      "full_suppresses_initializer_and_drops_captured_closure",
+    );
   });
 
   it("keeps the starter unfinished while retaining safety tests and fixtures", () => {
@@ -66,6 +73,10 @@ describe("Miri safety authored package contract", () => {
     );
     expect(starter["fixtures/ub_out_of_bounds.rs"]).toContain("unsafe");
     expect(starter["src/lib.rs"]).toContain("select_regions");
+    expect(starter["tests/slot_lazy_init.rs"]).toContain("todo!");
+    expect(starter["tests/slot_lazy_init.rs"]).toContain(
+      "full_suppresses_initializer_and_drops_captured_closure",
+    );
     expect(starter["tests/safety_contract.rs"]).toContain(
       "select_regions_accepts_empty_reversed_adjacent_and_gapped_ranges",
     );

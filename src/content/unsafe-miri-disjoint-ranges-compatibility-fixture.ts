@@ -1,3 +1,4 @@
+import { historicalBeforeSlotLazyInit } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
 import { historicalBeforeDependencyRefresh } from "./dependency-maintenance-compatibility-fixture";
 import { createHash } from "node:crypto";
 import type * as Course from "./course";
@@ -85,7 +86,9 @@ function removeNewProjectDelta(course: typeof Course) {
  * unrelated project edits remain visible and fail the frozen digest.
  */
 export function historicalBeforeDisjointRanges(current: typeof Course) {
-  const course = historicalBeforeDependencyRefresh(current);
+  const course = historicalBeforeDependencyRefresh(
+    historicalBeforeSlotLazyInit(current),
+  );
   return {
     ...course,
     lessons: course.lessons.map((lesson) =>
