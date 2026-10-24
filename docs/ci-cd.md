@@ -158,6 +158,7 @@ cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo
 npm run lint
 npm run typecheck
 npm run content:check
+npm run content:packages
 npm test
 ```
 

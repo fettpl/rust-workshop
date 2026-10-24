@@ -1,7 +1,8 @@
 # OSS readiness and public release plan
 
-Status: local preparation, not permission to publish. Base: completed local
-disjoint-range milestone `a51f306`. This is one separate feature and future PR.
+Status: local OSS preparation, not permission to publish. The separate OSS
+feature follows the completed local disjoint-range milestone `a51f306`.
+Local verification and a reviewable candidate do not complete the public release.
 No next curriculum chapter starts before this milestone is completed or the
 maintainer explicitly changes the sequence.
 
@@ -38,7 +39,9 @@ in ignored handoff storage, never in the public package.
 
 Independent authors may work in parallel on disjoint files. Every author is
 reviewed by a different worker. Maintainer-dispatched subagents use
-GPT-5.6-Luna with high reasoning; external contributors do not need that tool.
+GPT-6.1-Sol with medium reasoning under the current maintainer preference;
+external contributors do not need that tool. Later explicit user instructions
+take precedence. Routine reversible local work does not need repeated approval.
 
 1. **Inspect the actual release surface.** Inventory current files, Git history,
    published branches/tags, issues, PRs/reviews, Actions history, available logs
@@ -97,6 +100,31 @@ GPT-5.6-Luna with high reasoning; external contributors do not need that tool.
    The maintainer personally changes visibility only after accepted integration
    and resolution of public-surface blockers. Reverify public access and CI after
    that human confirmation.
+
+## Local completion and deferred publication gates
+
+Complete all reversible local preparation before the integration handoff: accurate
+README/contributor/agent instructions; approved license scope and notices;
+recorded bounded source/icon assessment; generated-archive checks; static fork
+workflow review; a fresh locked setup and appropriate application, browser and
+offline checks; and independent review of the exact candidate. Retain dated
+receipts with actual versions, source bindings, warnings, skips and coverage
+privately. Do not turn this plan into a claim that unexecuted checks passed.
+
+The scoped provenance validator returning zero covers its recorded inventory
+only. The local history-redaction trial is also a separate bounded result. An
+ordinary merge cannot erase old remote ancestry, branches, provider refs or
+comments, and trial approval does not authorize remote rewriting or deletion.
+Review the preserved public-surface exports with their dates and missing-data
+limits, then resolve and recheck actual provider surfaces under separate
+authorization before publication. Keep existing backups and historical evidence.
+
+Required GitHub checks, ordinary integration and resulting-main verification,
+authorized provider-side privacy remediation, the maintainer's personal visibility
+decision, and private vulnerability-reporting activation remain deferred while
+work is local. No push, remote change, hosted deployment, package publication or
+paid service is implied. The future [human publication handoff](publication-handoff.md)
+contains the live-setting checks and procedure; do not issue that handoff early.
 
 ## Definition of Done
 

@@ -1,10 +1,15 @@
 # Third-party notices (draft)
 
 This inventory accompanies the mixed-license source-release draft. The license
-split and project credit are approved; the inventory remains a release draft
-pending provenance and public-release review. It is based on the locked
-dependency graph on 24 October 2026. The proposed release
-surface is the source repository, authored Cargo project archives, and the
+split and project credit are approved. The [bounded rights assessment](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md)
+records the completed course source review and accepted icon origin; this does
+not establish exhaustive clearance. Public-release gates remain separate.
+This inventory was checked against the locked dependency graph and a fresh
+locked installation on 24 October 2026: 535 dependency entries across platforms
+and 413 physically installed packages on macOS ARM64, all matching their locked
+versions. License metadata describes that scope, not an independent permission
+grant or proof that every optional platform package was installed. The proposed
+release surface is the source repository, authored Cargo project archives, and the
 published audit surface; no hosted deployment, compiled browser application,
 `.next` directory, or `node_modules` tree is being published in this
 milestone. This file does not replace the license or notice shipped by an
@@ -52,9 +57,10 @@ The locked graph includes packages whose notices need separate preservation:
 
 - `monaco-editor` includes `LICENSE` and `ThirdPartyNotices.txt` for bundled
   upstream components. The current setup path copies both beside `min/vs`
-  into `public/monaco/`; a clean locked install and built-distribution check
-  must still verify that they survive into each distribution containing those
-  assets.
+  into `public/monaco/`. A fresh locked local setup verified those copies and
+  the separate DOMPurify notice against their installed inputs. Every future
+  distribution containing these assets must retain and verify the same notices;
+  setup-file agreement alone does not prove a browser delivered them.
 - The served Monaco AMD chunk replaces its embedded DOMPurify factory with the
   official 3.4.17 AMD singleton during staged asset generation. Its unchanged
   license is copied to `public/monaco/DOMPurify-LICENSE`; artifact headers and
@@ -94,11 +100,12 @@ Cargo manifests or lockfiles. Naming a registry crate in `Cargo.lock` does not
 copy or redistribute that crate's source. Include its notice only when the
 crate source, asset, example, or other external work is actually vendored or
 copied into the archive. A course citation or URL is not a license grant. The
-archive generator must include the applicable project license and notices for
-material actually present in every distributed variant; generated ZIP files
-must not be edited by hand. Verify extracted starter and solution archives and
-resolve local scope-document links before claiming this requirement is
-satisfied.
+archive generator includes the applicable project license and notices for
+material actually present in each authored starter and solution variant. Its
+regression checks extracted entries, exact license texts, authored payloads and
+local notice links for every current package. Generated ZIP files must not be
+edited by hand. Regenerate and verify the actual distributions whenever their
+inputs change; repository audit URLs do not establish remote integration.
 
 This file is a draft notice index, not a claim that every historical source,
 icon, or example has verified provenance. Resolve any source-rights or

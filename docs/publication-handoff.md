@@ -24,6 +24,13 @@ evidence. Do not rewrite history, delete records, or claim exhaustive rights
 clearance from the bounded source/icon review. Exposed live credentials need
 revocation through an authorized process.
 
+A local history-redaction trial is preparation evidence, not authorization to
+rewrite published refs or remove provider-side records. An ordinary merge does
+not erase existing ancestry, stale branches, PR refs or comments. Resolve the
+publication scope and obtain any separately required maintainer authorization
+before changing those surfaces; keep recoverable backups and reverify the
+provider state afterwards. Do not publish while that remediation is pending.
+
 Check effective branch protection/rulesets, required checks, fork approvals,
 allowed actions and standard hosted runners in the live UI. Recheck current
 [GitHub visibility instructions](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility)
