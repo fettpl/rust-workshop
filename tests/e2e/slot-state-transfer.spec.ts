@@ -129,6 +129,18 @@ function oldState(): UserState {
   return state;
 }
 
+function assertExposureAppend(before: UserState, after: UserState) {
+  expect(after.events.slice(0, before.events.length)).toEqual(before.events);
+  const additions = after.events.slice(before.events.length);
+  expect(additions.length).toBeGreaterThan(0);
+  for (const event of additions) {
+    expect(event.kind).toBe("exposure");
+    expect(
+      courseEvidencePolicy.definitionForEvent(event)?.codingTaskId,
+    ).toBeUndefined();
+  }
+}
+
 test("Slot lazy-init model and primary preserve old evidence and mobile state", async ({
   page,
 }) => {
@@ -170,8 +182,18 @@ test("Slot lazy-init model and primary preserve old evidence and mobile state", 
   await expect(page.locator(".task-pane h1")).toHaveText(model.title);
   await expect(page.locator(".task-pane")).toContainText("Option");
   await expect(page.locator(".task-pane")).toContainText("pusty");
+  await expect
+    .poll(async () =>
+      (await savedState(page)).events.some(
+        (event) =>
+          event.lessonId === lesson.id &&
+          event.stepId === model.id &&
+          event.kind === "exposure",
+      ),
+    )
+    .toBe(true);
   const afterModel = await savedState(page);
-  expect(afterModel.events).toEqual(before.events);
+  assertExposureAppend(before, afterModel);
   expect(
     independentCodingTaskIds(
       afterModel,
@@ -287,7 +309,7 @@ test("Slot lazy-init model and primary preserve old evidence and mobile state", 
     revealed: true,
     code: draft,
   });
-  expect(afterReveal.events).toEqual(before.events);
+  assertExposureAppend(before, afterReveal);
   expect(
     independentCodingTaskIds(
       afterReveal,
@@ -318,7 +340,7 @@ test("Slot lazy-init model and primary preserve old evidence and mobile state", 
   await packagePanel.getByRole("link", { name: "Pobierz rozwiązanie" }).click();
   expect(await (await solution).failure()).toBeNull();
   const afterDownloads = await savedState(page);
-  expect(afterDownloads.events).toEqual(before.events);
+  assertExposureAppend(before, afterDownloads);
   expect(
     independentCodingTaskIds(
       afterDownloads,
