@@ -6,8 +6,9 @@ Cargo package exceptions on 23 October 2026. The approved project credit is
 uses 2026; extend the year range when later-year contributions occur, rather
 than asserting copyright in future work. This records the maintainer's choice,
 not a determination that every AI-generated part is protected or rights-cleared.
-Source provenance and public-release checks remain open. This is not permission
-to publish the repository. The project URL used in examples is
+The bounded source review and icon-origin acceptance are recorded in the
+[rights assessment](rights-assessment.md); wider public-release checks remain
+open. This is not permission to publish the repository. The project URL used in examples is
 <https://github.com/fettpl/rustcrushcourse>.
 
 ## Two licenses with separate scopes
@@ -59,12 +60,12 @@ split:
 - `public/manifest.webmanifest` and `public/sw.js` are MIT-associated code or
   metadata. The `public/icon.svg` and its PNG derivatives have a traced
   assistant-generated origin in the [bounded rights assessment](rights-assessment.md). Applying the
-  proposed illustration scope still awaits maintainer acceptance of that
-  documented origin and identification of any additional known external asset
-  input, or the actual external source license if one is identified. For this
-  generated icon, confirmation does not mean claiming hand-drawn human authorship
-  or guaranteeing training-data originality. Do not apply CC BY 4.0 to it before
-  that existing human acceptance condition is met.
+  maintainer accepted that documented origin on 24 October 2026 and confirmed
+  that, to their knowledge, no additional external icon file or reference was
+  supplied. The existing acceptance condition is met; the approved CC BY 4.0
+  illustration scope applies only to rights the project holds. This does not
+  claim hand-drawn human authorship, training-data originality or trademark
+  clearance. Any later identified external input retains its actual rights.
 - Downloaded Rust code supplied by an external source keeps that source's
   license. A source citation identifies provenance; it does not grant
   permission to copy the source.
@@ -201,17 +202,17 @@ of its training data can prove exhaustive clearance. The
 [bounded rights assessment](rights-assessment.md) records the completed course
 comparison and traced icon generation. The course review found no
 actionable substantial copied-expression case within its stated scope; this
-is not exhaustive clearance. The icon acceptance condition above remains open,
-without asking anyone to certify human originality in generated geometry. Do
-not ask contributors to certify that every model output is original without
-supporting evidence.
+is not exhaustive clearance. The maintainer has met the icon acceptance
+condition above without certifying human originality in generated geometry.
+Do not ask contributors to certify that every model output is original
+without supporting evidence.
 
 ## Remaining release gates
 
 License selection and credit are approved. The bounded course source assessment
-is recorded as reviewed; icon acceptance, privacy remediation, security
-reporting, dependency security, required CI, integration and human publication
-remain separate gates. Resolve concrete copied-material or asset findings before including them in the public release. An unresolved
+and icon-origin acceptance are recorded as reviewed; privacy remediation,
+security reporting, dependency security, required CI, integration and human
+publication remain separate gates. Resolve concrete copied-material or asset findings before including them in the public release. An unresolved
 record is not cleared by the project's general license notice. See
 [the release plan](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-release.md) in the repository for the full sequence.
 

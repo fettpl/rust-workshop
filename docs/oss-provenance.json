@@ -21,9 +21,9 @@
     {
       "id": "icons",
       "category": "asset",
-      "origin": "unresolved",
+      "origin": "maintainer-reported-ai",
       "review": {
-        "status": "pending",
+        "status": "reviewed",
         "evidence": [
           "docs/licensing.md",
           "docs/oss-provenance.md",
@@ -1555,8 +1555,8 @@
     {
       "id": "icon-rights",
       "group": "icons",
-      "status": "open",
-      "reason": "Generation records trace assistant SVG construction and PNG derivation. Maintainer acceptance of this documented origin and identification of any additional known external asset input remains pending; no assertion of hand-drawn human authorship is required."
+      "status": "resolved",
+      "reason": "Generation records trace assistant SVG construction and PNG derivation. On 24 October 2026 the maintainer accepted this documented origin and confirmed that, to their knowledge, no additional external icon file or reference was supplied. This resolves the bounded acceptance condition, not exhaustive rights or trademark clearance, human authorship or publication approval."
     }
   ]
 }

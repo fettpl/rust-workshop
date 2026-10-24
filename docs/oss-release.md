@@ -22,8 +22,11 @@ separate gates. The [scoped provenance inventory](oss-provenance.md) checks
 tracked course/public-file coverage and hashes. The [bounded rights
 assessment](rights-assessment.md) records the course source review as complete
 within its stated comparison scope, with no identified actionable
-copied-expression case; it does not establish exhaustive rights clearance. Icon acceptance remains
-open for the documented generated origin and any additional known asset input.
+copied-expression case; it does not establish exhaustive rights clearance. On
+24 October 2026 the maintainer accepted the documented generated icon origin
+and confirmed that, to their knowledge, no additional external icon file or
+reference was supplied. Both scoped provenance blockers are resolved; wider
+release gates remain separate.
 The maintainer selected GitHub private vulnerability reporting
 for enablement and verification immediately after human publication; no current
 working private channel is claimed. No paid infrastructure,

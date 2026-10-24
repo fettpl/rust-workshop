@@ -23,12 +23,12 @@ references, paths and current file bytes agree. Open rights gates remain visible
 **1** for invalid inventory or infrastructure failure, and **0** only when the
 recorded review dispositions satisfy this limited provenance check. No result
 establishes global OSS readiness, publication permission, integration, security,
-privacy, CI status, or a visibility decision. The current project's expected
-release result is **2**, with only `icon-rights` open. The completed bounded
-course source assessment is recorded as reviewed, not exhaustive rights clearance.
-Do not add that expected blocked result as an ordinary always-failing CI job.
+privacy, CI status, or a visibility decision. After the maintainer's icon-origin
+confirmation on 24 October 2026, the current project's expected release result
+is **0**: both scoped groups are reviewed and their recorded blockers resolved.
+This records the bounded assessment and acceptance, not exhaustive rights clearance.
 
-## Current facts and unresolved review
+## Current facts and review dispositions
 
 - The course group records the maintainer's report of generation using ChatGPT
   and Codex from prompts and direction, with no manual drafting of fragments.
@@ -42,13 +42,11 @@ Do not add that expected blocked result as an ordinary always-failing CI job.
   assistant-reported palette change. Current PNGs reproduce byte-for-byte and
   pixel-for-pixel from the SVG using the measured sharp pipeline. This does
   not establish human authorship, historical tool versions or trademark
-  clearance. `icon-rights` stays open for maintainer acceptance of the
-  documented origin and any additional known external asset input; it does
-  not require a false assertion of hand-drawn originality.
-  The coarse ledger origin remains `unresolved` until that maintainer-specific
-  confirmation; this does not mean the observed technical generation is unknown.
-  `maintainer-reported-ai` would imply a maintainer report about the icon that
-  has not yet been given.
+  clearance. On 24 October 2026 the maintainer accepted the documented origin
+  and confirmed that, to their knowledge, no additional external icon file or
+  reference was supplied. The icon origin is now `maintainer-reported-ai`, its
+  review is `reviewed`, and `icon-rights` is resolved within this bounded scope.
+  This does not assert hand-drawn originality or complete rights clearance.
 - `public/manifest.webmanifest` and `public/sw.js` are MIT-associated metadata
   or software under the existing guide. Their `not-applicable` review disposition
   means that the illustration/course gate does not apply to these two files;
@@ -77,8 +75,9 @@ When tracked files are added, removed or changed, inspect the exact diff and
 review the affected scope before refreshing entries and hashes. Record known
 copied/adapted inputs with their exact source, version, applicable license and
 required notices in review documentation. Revisit concrete new copying/source
-evidence under its actual license and complete the icon acceptance condition described in the assessment. Preserve
-available generation records and prior evidence privately. Do not include local
+evidence under its actual license and reassess the affected group when new
+inputs or findings change the basis of the recorded review. Preserve available
+generation records and prior evidence privately. Do not include local
 paths, private records, account data or copied prompts in this public ledger.
 Only record a reviewed disposition after the underlying evidence supports it;
 retain unresolved findings and document any limits. Hashes, credit, model output,

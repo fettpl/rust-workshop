@@ -148,7 +148,7 @@ literals were inspected statically; generated archive packaging/notices and
 executable correctness remain separate checks. No private snippets or assets
 were sent to external search services.
 
-## Icon origin and remaining acceptance
+## Icon origin and maintainer acceptance
 
 Private maintainer generation records show an assistant writing the complete
 three-shape SVG inline and a successful execution receipt. The initial design
@@ -187,18 +187,23 @@ Workshop name and overall presentation must still avoid confusion, and no global
 trademark-register search was performed.
 
 The supported origin is traced assistant-generated project artwork with PNG
-derivatives. The icon remains pending under the existing maintainer acceptance
-condition: confirm acceptance of the documented generated origin and identify
-any additional known external asset input outside the reviewed records. This
-does not ask the maintainer to claim hand-drawn authorship or to prove
-unknowable training-data originality. No new artwork, license grant or automatic
-gate closure follows from this assessment.
+derivatives. On 24 October 2026 the maintainer explicitly accepted this
+documented origin and confirmed that, to their knowledge, no additional
+external icon file or reference had been supplied. This meets the existing
+maintainer acceptance condition: the icon review is recorded as reviewed and
+`icon-rights` is resolved within this bounded scope. The previously approved
+CC BY 4.0 illustration scope applies only to rights the project holds; no new
+license selection or artwork is introduced. The confirmation does not claim
+hand-drawn authorship, prove training-data originality, clear all third-party
+rights or authorize publication. Reassess any concrete external input or
+rights finding identified later.
 
 ## Review disposition and release boundary
 
 The course disposition must be read with its comparison scope and residual
 limitations above. An assessed source group is not a warranty covering every
-possible external source or all rights. Icon acceptance remains open.
+possible external source or all rights. Icon acceptance is recorded above; both
+scoped provenance blockers are resolved, without closing wider release gates.
 Structural/hash agreement, legal assessment, dependency/security/privacy review,
 exact-head CI, integration and the human visibility decision are distinct. This
 assessment changes no source bytes, third-party terms, publication authorization
