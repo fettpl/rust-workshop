@@ -38,7 +38,7 @@ test("keeps Tokio gate diagnostics and a hinted draft, while revealed success ca
   const lesson = lessons.find((item) => item.id === ref.lessonId)!;
   const step = lesson.steps.find((item) => item.id === ref.stepId)!;
   expect(step.evaluator?.kind).toBe("tests");
-  expect(step.trustedFixtureTarget).toBe("cargo-tokio-runtime-1.53.1");
+  expect(step.trustedFixtureTarget).toBe("cargo-tokio-runtime-1.54.1");
 
   await page.locator(".gate-action").first().click();
   await expect(
