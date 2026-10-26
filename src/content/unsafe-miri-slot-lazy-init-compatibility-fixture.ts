@@ -2,6 +2,7 @@
 import { createHash } from "node:crypto";
 import type * as Course from "./course";
 import type { ModuleGateCriterion, ProjectContract } from "../domain/types";
+import { historicalBeforeMutSlotWithMut } from "./unsafe-miri-mut-slot-with-mut-compatibility-fixture";
 
 export const slotLazyInitLessonId = "unsafe-miri-slot-state" as const;
 export const slotLazyInitStepIds = [
@@ -83,10 +84,11 @@ function removeNewProjectDelta(project: ProjectContract) {
  * it never imports a later predecessor projection.
  */
 export function historicalBeforeSlotLazyInit(current: typeof Course) {
+  const beforeMutSlotWithMut = historicalBeforeMutSlotWithMut(current);
   return {
-    ...current,
-    lessons: current.lessons.map(removeNewLessonShape),
-    modules: current.modules.map(removeNewModuleShape),
-    projects: current.projects.map(removeNewProjectDelta),
+    ...beforeMutSlotWithMut,
+    lessons: beforeMutSlotWithMut.lessons.map(removeNewLessonShape),
+    modules: beforeMutSlotWithMut.modules.map(removeNewModuleShape),
+    projects: beforeMutSlotWithMut.projects.map(removeNewProjectDelta),
   };
 }

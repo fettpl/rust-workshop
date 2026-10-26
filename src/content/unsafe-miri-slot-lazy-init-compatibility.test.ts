@@ -10,6 +10,7 @@ import {
   slotLazyInitPrimaryStepId,
   slotLazyInitStepIds,
 } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
+import { historicalBeforeMutSlotWithMut } from "./unsafe-miri-mut-slot-with-mut-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,
@@ -23,7 +24,8 @@ const hashJson = (value: unknown) =>
 
 describe("slot lazy-init historical compatibility", () => {
   it("projects the authentic e1 predecessor and restores only the new package delta", () => {
-    const projected = historicalBeforeSlotLazyInit(currentCourse);
+    const beforeMutSlotWithMut = historicalBeforeMutSlotWithMut(currentCourse);
+    const projected = historicalBeforeSlotLazyInit(beforeMutSlotWithMut);
     const lesson = projected.lessons.find(
       (candidate) => candidate.id === slotLazyInitLessonId,
     );
@@ -36,7 +38,9 @@ describe("slot lazy-init historical compatibility", () => {
     expect(baseline.primaryStepId).toBe(slotLazyInitPrimaryStepId);
     expect(
       hashJson(
-        currentCourse.projects.find((project) => project.id === "miri-safety"),
+        beforeMutSlotWithMut.projects.find(
+          (project) => project.id === "miri-safety",
+        ),
       ),
     ).toBe(expectedPostSlotMiriProjectSha256);
     expect(baseline.preSlotMiriProjectSha256).toBe(

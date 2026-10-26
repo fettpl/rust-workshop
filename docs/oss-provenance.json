@@ -137,7 +137,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "01b51d411d87235225639d6656b94e4d1293fcafda00eb9ab57b32bd18113f5c",
+      "sha256": "20869b7c9371db9dab2e3b90d81f13614eb81246cccc3595730868389b97ebe8",
       "group": "course"
     },
     {
@@ -207,7 +207,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "7fd32bd29b018d742aa21d84630b3d957c12f2dfb119d3c4549134899378e6fb",
+      "sha256": "a5beebfa9a576193c535ab0de4be05f72a5ebc7d33daa3244a8383594d8b92dc",
       "group": "course"
     },
     {
@@ -1457,7 +1457,7 @@
     },
     {
       "path": "src/content/unsafe-miri-disjoint-ranges-compatibility.test.ts",
-      "sha256": "47690b5b491813b9ce622aaf3bb16f139096318b72251803496ddbf9000e7153",
+      "sha256": "4aea492ff3b52657954318da7042e10301898d35c3323163246301754b259beb",
       "group": "course"
     },
     {
@@ -1562,12 +1562,12 @@
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init-compatibility-fixture.ts",
-      "sha256": "fe139b21c6a23b408dbae68b51df4beaa2f5ee667b35b23a80a61bff012d0960",
+      "sha256": "ccc9486b363c8efd8e0e2ccad06bb9f0f08561151ab02f3a051da127240b8749",
       "group": "course"
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init-compatibility.test.ts",
-      "sha256": "1445a3b306ae342273ad5701777a0a169b76d0694524033acd4adafdc9f30946",
+      "sha256": "26fff06065aa4d7d3c6a561982d354433ca2f153b4440d42cff568a04d4ca5d5",
       "group": "course"
     },
     {

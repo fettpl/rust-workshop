@@ -503,7 +503,7 @@ describe("disjoint range compatibility and evidence", () => {
     const project = projects.find(
       (candidate) => candidate.id === "miri-safety",
     )!.package!;
-    expect(project.revealStepRefs).toHaveLength(6);
+    expect(project.revealStepRefs).toHaveLength(7);
     const starter = revealCourseProjectPackageVariant(
       createInitialState(),
       project,

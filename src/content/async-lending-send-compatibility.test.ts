@@ -25,7 +25,7 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
     "async-lending-send-boundary-handoff-model",
     "async-lending-send-boundary-prepared-handoff",
   ]);
-  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1279);
+  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1281);
 });
 
 it("keeps accepted immutable bytes or the exact reviewed presentation successor", () => {
@@ -178,13 +178,7 @@ it("exposes eight two-family advanced concepts while one remains provisional", (
             .length < concept.evidenceCalibration.minimumCodingTasks,
       )
       .map((concept) => concept.id),
-  ).toEqual([
-    "stack-heap",
-    "scope-drop",
-    "copy-semantics",
-    "ownership-repair",
-    "unsafe-miri-mut-slot-variance-contract",
-  ]);
+  ).toEqual(["stack-heap", "scope-drop", "copy-semantics", "ownership-repair"]);
   expect(
     independentCodingTaskIds(
       state,

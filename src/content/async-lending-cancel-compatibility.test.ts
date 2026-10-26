@@ -506,7 +506,7 @@ it("derives the post-A2 registry inventory without changing the accepted source 
   expect(currentCourse.concepts).toHaveLength(194);
   expect(currentCourse.sources).toHaveLength(349);
   expect(currentCourse.lessons.flatMap((lesson) => lesson.steps)).toHaveLength(
-    1279,
+    1281,
   );
   expect(Object.keys(currentCourse.reviewExercises)).toHaveLength(194);
   expect(
