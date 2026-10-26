@@ -634,6 +634,11 @@ describe("duplicate contract evidence families", () => {
             stepId: "slot-state-lazy-init-transfer",
           },
         });
+      } else if (lessonId === "unsafe-miri-mut-slot") {
+        expect(gateRecovery(state, criterion, lessons)).toEqual({
+          status: "available",
+          task: { lessonId, stepId: "mut-slot-with-mut-transfer" },
+        });
       } else {
         expect(gateRecovery(state, criterion, lessons)).toEqual({
           status: "exhausted",
@@ -819,7 +824,15 @@ describe("duplicate contract evidence families", () => {
                       stepId: "slot-state-lazy-init-transfer",
                     },
                   }
-                : { status: "exhausted" },
+                : lesson.id === "unsafe-miri-mut-slot"
+                  ? {
+                      status: "available",
+                      task: {
+                        lessonId: lesson.id,
+                        stepId: "mut-slot-with-mut-transfer",
+                      },
+                    }
+                  : { status: "exhausted" },
         );
 
         const primarySavedFirst = createInitialState();
@@ -903,9 +916,76 @@ describe("duplicate contract evidence families", () => {
                     stepId: "slot-state-lazy-init-transfer",
                   },
                 }
-              : { status: "exhausted" },
+              : lesson.id === "unsafe-miri-mut-slot"
+                ? {
+                    status: "available",
+                    task: {
+                      lessonId: lesson.id,
+                      stepId: "mut-slot-with-mut-transfer",
+                    },
+                  }
+                : { status: "exhausted" },
       );
     }
+  });
+
+  it("recovers the MutSlot transfer family until its assisted attempt exhausts recovery", () => {
+    const { lesson, step: gate } = lessonStep(
+      "unsafe-miri-mut-slot",
+      "mut-slot-gate",
+    );
+    const { step: blank } = lessonStep(
+      "unsafe-miri-mut-slot",
+      "mut-slot-blank",
+    );
+    const { step: fresh } = lessonStep(
+      "unsafe-miri-mut-slot",
+      "mut-slot-with-mut-transfer",
+    );
+    const criterion = primaryCriterion(lesson.id);
+    const assistedOld = createInitialState();
+    assistedOld.steps[stepKey(lesson.id, gate.id)] = {
+      ...createStepProgress(),
+      hints: 1,
+    };
+    assistedOld.steps[stepKey(lesson.id, blank.id)] = {
+      ...createStepProgress(),
+      hints: 1,
+    };
+    let state = recordCourseEvidence(assistedOld, {
+      ...eventFor(lesson, gate, "mut-slot-helped-gate", 1_000),
+      ...assistanceForLessonStep(assistedOld, lesson, gate),
+    });
+    state = recordCourseEvidence(state, {
+      ...eventFor(lesson, blank, "mut-slot-helped-blank", 2_000),
+      ...assistanceForLessonStep(state, lesson, blank),
+    });
+    expect(gateRecovery(state, criterion, lessons)).toEqual({
+      status: "available",
+      task: {
+        lessonId: lesson.id,
+        stepId: fresh.id,
+      },
+    });
+
+    state.steps[stepKey(lesson.id, fresh.id)] = {
+      ...createStepProgress(),
+      hints: 1,
+    };
+    state = recordCourseEvidence(state, {
+      ...eventFor(lesson, fresh, "mut-slot-helped-transfer", 3_000),
+      ...assistanceForLessonStep(state, lesson, fresh),
+    });
+    expect(
+      independentCodingTaskIds(
+        state,
+        lesson.conceptIds[0],
+        courseEvidencePolicy,
+      ),
+    ).toEqual([]);
+    expect(gateRecovery(state, criterion, lessons)).toEqual({
+      status: "exhausted",
+    });
   });
 
   it("blocks a later clean sibling after an unversioned assisted event", () => {
