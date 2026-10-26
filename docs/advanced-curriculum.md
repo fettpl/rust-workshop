@@ -327,3 +327,32 @@ At this dated A1 source cut, the source appended two steps to the existing Send 
 ## 15 October 2026 A2 source addendum
 
 The accepted A2 source (PR69) appends `async-lending-cancel-commit-reply-model` as supplementary exposure and `async-lending/cancel-lost-reply-v1` as the primary transfer task after the five existing cancellation steps. The A1 Send steps and old cancellation family retain their identities, and availability remains separate from clean learner evidence. The pre-A3a checkpoint inventory was 48 modules, 192 lessons, 194 concepts, 1,273 steps, 349 sources and 194 ordinary reviews; the current authored source is 1,275 steps with 195 competencies and 199 registered review exercises. The current local product qualification is complete, while native acceptance and final release qualification remain tied to all eleven PR checks and all eleven resulting-main checks for PR 76. See the [frozen A2 cancellation/transfer plan](superpowers/plans/2026-10-15-cancellation-transfer.md).
+
+
+## 26 October 2026 local MutSlot source continuation
+
+The existing MutSlot lesson appends a safe HRTB model and the distinct
+`unsafe-miri/mut-slot-with-mut-v1` primary. All eight historical steps, their
+identities and the old reborrow family remain unchanged. An optional stop after
+the historical recall separates the two new steps; the specifically identified
+ten-step shape does not relax the global lesson-size guard. The callback's
+temporary mutable loan cannot escape, while a result may borrow another owner
+or appropriate shared data carried by T. No rollback or physical-memory claim
+is made. The [portable contract](mut-slot-with-mut-transfer-evidence.md)
+distinguishes authored safe compiler/package witnesses, UI/state checks and
+actual learner evidence.
+
+This source has 48 modules, 192 lessons, 194 concepts, 1,281 steps and 349
+sources. Counts describe available material. They do not record learner
+attainment, delayed recall, general mastery or professional readiness. Actual
+local command/review results and any later exact-head hosted integration are
+separate evidence; this addendum makes no GitHub CI, main or public-release
+claim. Earlier dated snapshots retain their own counts and identities.
+
+The maintainer-authorized local queue proceeds through A5 foundation evidence,
+A6 changed-client library maintenance, A7 performance/test-strategy
+investigation, A8 service/capstone maintenance and A9 final source-bound
+reconciliation. Each needs a fresh bounded design against current source,
+tests, independent review and an English local commit. Core17 and thematic
+extensions remain intentional; foundational conceptual limits must not be
+filled by relabeling traces or repeated aliases as independent code evidence.

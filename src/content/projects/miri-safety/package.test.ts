@@ -10,7 +10,7 @@ describe("Miri safety authored package contract", () => {
     expect(validateProjectPackage(miriSafetyPackage)).toEqual([]);
     expect(miriSafetyProject.id).toBe("miri-safety");
     expect(miriSafetyPackage.id).toBe("miri-safety-workshop");
-    expect(miriSafetyPackage.revealStepRefs).toHaveLength(6);
+    expect(miriSafetyPackage.revealStepRefs).toHaveLength(7);
 
     const solution = projectFiles(miriSafetyPackage, "solution");
     expect(Object.keys(solution)).toEqual(
@@ -24,6 +24,7 @@ describe("Miri safety authored package contract", () => {
         "tests/safety_contract.rs",
         "tests/mutation_contract.rs",
         "tests/slot_lazy_init.rs",
+        "tests/mut_slot_with_mut.rs",
         "fixtures/Cargo.toml",
         "fixtures/ub_out_of_bounds.rs",
         "fixtures/ub_use_after_free.rs",
@@ -60,6 +61,9 @@ describe("Miri safety authored package contract", () => {
     expect(solution["tests/slot_lazy_init.rs"]).toContain(
       "full_suppresses_initializer_and_drops_captured_closure",
     );
+    expect(solution["tests/mut_slot_with_mut.rs"]).toContain(
+      "with_mut_panic_propagates_without_rollback_promise",
+    );
   });
 
   it("keeps the starter unfinished while retaining safety tests and fixtures", () => {
@@ -76,6 +80,9 @@ describe("Miri safety authored package contract", () => {
     expect(starter["tests/slot_lazy_init.rs"]).toContain("todo!");
     expect(starter["tests/slot_lazy_init.rs"]).toContain(
       "full_suppresses_initializer_and_drops_captured_closure",
+    );
+    expect(starter["tests/mut_slot_with_mut.rs"]).toContain(
+      "with_mut_mutates_non_copy_string_and_reuses_parent",
     );
     expect(starter["tests/safety_contract.rs"]).toContain(
       "select_regions_accepts_empty_reversed_adjacent_and_gapped_ranges",

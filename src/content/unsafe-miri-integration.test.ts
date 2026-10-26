@@ -32,6 +32,11 @@ import {
   slotLazyInitPrimaryStepId,
   slotLazyInitSteps,
 } from "./unsafe-miri-slot-lazy-init";
+import {
+  mutSlotWithMutFamily,
+  mutSlotWithMutPrimaryStepId,
+  mutSlotWithMutSteps,
+} from "./unsafe-miri-mut-slot-with-mut";
 
 const lessonIds = [
   "unsafe-miri-byte-view",
@@ -40,7 +45,7 @@ const lessonIds = [
   "unsafe-miri-mut-slot",
 ];
 
-it("registers exactly four Miri lessons with eight rubric gates, fifteen evidence gates, and independent retrievals", () => {
+it("registers exactly four Miri lessons with eight rubric gates, sixteen evidence gates, and independent retrievals", () => {
   expect(unsafeMiriLessons.map((lesson) => lesson.id)).toEqual(lessonIds);
   expect(unsafeMiriModule.lessonIds).toEqual(lessonIds);
   expect(unsafeMiriModule.prerequisites).toEqual(["unsafe-ffi-contracts"]);
@@ -49,7 +54,7 @@ it("registers exactly four Miri lessons with eight rubric gates, fifteen evidenc
     unsafeMiriLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(15);
+  ).toHaveLength(16);
 
   for (const lesson of unsafeMiriLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
@@ -67,7 +72,7 @@ it("registers exactly four Miri lessons with eight rubric gates, fifteen evidenc
           ? 4
           : lesson.id === "unsafe-miri-slot-state"
             ? 4
-            : 3,
+          : 4,
     );
     const blank = lesson.steps.find((step) => step.kind === "blank")!;
     expect(blank.evidenceGate).toBe(true);
@@ -100,11 +105,50 @@ it("registers exactly four Miri lessons with eight rubric gates, fifteen evidenc
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(19);
-  expect(new Set(refs).size).toBe(19);
+  expect(refs).toHaveLength(20);
+  expect(new Set(refs).size).toBe(20);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,
   );
+});
+
+it("appends the with_mut callback family after the exact eight-step MutSlot prefix", () => {
+  const lesson = unsafeMiriLessons.find(
+    (candidate) => candidate.id === "unsafe-miri-mut-slot",
+  )!;
+  expect(lesson.steps.map((step) => step.id).slice(0, 8)).toEqual([
+    "mut-slot-predict",
+    "mut-slot-run",
+    "mut-slot-explain",
+    "mut-slot-gate",
+    "mut-slot-contract-gate",
+    "mut-slot-variance-compile-fail",
+    "mut-slot-blank",
+    "mut-slot-recall",
+  ]);
+  expect(lesson.steps.slice(-2).map((step) => step.id)).toEqual(
+    mutSlotWithMutSteps.map((step) => step.id),
+  );
+  const primary = lesson.steps.find(
+    (step) => step.id === mutSlotWithMutPrimaryStepId,
+  )!;
+  expect(primary.evidence).toEqual({
+    version: 2,
+    conceptIds: ["unsafe-miri-mut-slot-variance-contract"],
+    codingTaskId: mutSlotWithMutFamily,
+  });
+  expect(
+    lesson.steps.find((step) => step.id === "mut-slot-with-mut-model")?.evidence
+      ?.codingTaskId,
+  ).toBeUndefined();
+  expect(
+    unsafeMiriModule.gateCriteria
+      ?.find((criterion) => criterion.id === "unsafe-miri-mut-slot-gate")
+      ?.taskRefs,
+  ).toContainEqual({
+    lessonId: "unsafe-miri-mut-slot",
+    stepId: mutSlotWithMutPrimaryStepId,
+  });
 });
 
 it("appends lazy initialization after historical slot steps and attributes only its primary", () => {

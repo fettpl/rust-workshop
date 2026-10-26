@@ -412,7 +412,7 @@
     },
     {
       "path": "src/content/content-validation.test.ts",
-      "sha256": "d4657432fe860bc3362e19a31b132a493533577a232e7b53fa89af0cfe8bff55",
+      "sha256": "165dc3dc01d8158fa6c5c687f1654243c07f87fe9372fed2b58db71b311c7a0b",
       "group": "course"
     },
     {
@@ -613,6 +613,11 @@
     {
       "path": "src/content/fixtures/unsafe-miri-pre-disjoint-ranges.json",
       "sha256": "444504d56d8cc858f227db1f0c93212a20ec14dac6b9e8c9daa95c832e99da14",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/unsafe-miri-pre-mut-slot-with-mut.json",
+      "sha256": "ecd19dcb6ae1c30f9932264d97ef69072a1d40a9c6635e79ff42a5a9c21dcd7c",
       "group": "course"
     },
     {
@@ -1052,12 +1057,12 @@
     },
     {
       "path": "src/content/projects/miri-safety.ts",
-      "sha256": "4cf306391a1b9f8517e6714a80841d21df5da9fd814da49007fe92abbf176fae",
+      "sha256": "4c685add1f8d2bd7faabf98706eec8eb5b34022ede214e6e8e7ae3ba8b8b72b4",
       "group": "course"
     },
     {
       "path": "src/content/projects/miri-safety/package.test.ts",
-      "sha256": "d8896d0dbd8ef2f770521c2142e55f615469d855d35cf34b63a1c9ef02c3ff49",
+      "sha256": "18c43dea3a31a6bf6c45182e8e64e1f45d7eaff4235dcb00a282de06f6f20047",
       "group": "course"
     },
     {
@@ -1442,7 +1447,7 @@
     },
     {
       "path": "src/content/unsafe-miri-assessment-fixtures.ts",
-      "sha256": "18c7658c46747740c7d5c864c0e7844c454e26b76f69c93e3467a7b8e2051fda",
+      "sha256": "a408bfc635c91459f1d4989249f9621f72f94ce4b602012d2c50395c60b8937e",
       "group": "course"
     },
     {
@@ -1522,7 +1527,27 @@
     },
     {
       "path": "src/content/unsafe-miri-integration.test.ts",
-      "sha256": "c5dc165156baefb1ce7dd2193642b22dcd6605ffe074eec6258b749bc1561e8a",
+      "sha256": "dcc545f75160baf588bedd2a3cf8837f642f80867326fbfe9ee7dae57c0a8b47",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility-fixture.ts",
+      "sha256": "b524ff98eb6eb7988a07650299b45367713f84c2f6f6ee501ca2afadfc887c9d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility.test.ts",
+      "sha256": "12ca912912f64d266b70b9ccb23100aa646fbce1ebe59222ba929e7aa215dcf9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-mut-slot-with-mut.test.ts",
+      "sha256": "b090fe872859a73a2ec50f7873f99612b1ae1a5e5a636d04bb22b5e7f8a83c21",
+      "group": "course"
+    },
+    {
+      "path": "src/content/unsafe-miri-mut-slot-with-mut.ts",
+      "sha256": "da0c82c8eefbfbd02f550f622ce6020f452109f44fac39d2b085a4af92b68598",
       "group": "course"
     },
     {
@@ -1557,12 +1582,12 @@
     },
     {
       "path": "src/content/unsafe-miri.ts",
-      "sha256": "3591a4a4adc906ba31814366d4a3764d861cf59357c78640025e7425a684cda4",
+      "sha256": "95e3a47ced66adb72ceb460b841db24f0b05f2e098bdfe2ee74148631a9cc993",
       "group": "course"
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "7b93c1609386504ed8d7cfc2bed75bebc50f081b881e59d93444c227495c20ab",
+      "sha256": "853bfe1142d6aba8f99eb3f1ff153379638a0aa37b768cd21848fcaab5d19454",
       "group": "course"
     },
     {

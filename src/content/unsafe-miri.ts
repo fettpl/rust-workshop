@@ -26,6 +26,14 @@ import {
   slotLazyInitEquivalent,
   slotLazyInitMutant,
 } from "./unsafe-miri-slot-lazy-init";
+import {
+  mutSlotWithMutEquivalent,
+  mutSlotWithMutFamily,
+  mutSlotWithMutPrimaryStepId,
+  mutSlotWithMutSessionStop,
+  mutSlotWithMutSteps,
+  mutSlotWithMutMutant,
+} from "./unsafe-miri-mut-slot-with-mut";
 
 const reviewedAt = "2026-09-18";
 const moduleId = "unsafe-miri-contracts";
@@ -1279,7 +1287,9 @@ export const unsafeMiriLessons: Lesson[] = [
         solution: mutSlotRecallSolution,
         tests: mutSlotRecallTests,
       }),
+      ...mutSlotWithMutSteps,
     ],
+    sessionStops: [mutSlotWithMutSessionStop],
     misconceptions: [
       "Skoro lifetime można skrócić, można też skrócić każdy lifetime w T.",
       "`&mut T` zachowuje się jak `&T` w każdym wymiarze.",
@@ -1340,6 +1350,18 @@ slotLazyInitPrimary.evidence = {
   version: 2,
   conceptIds: ["unsafe-miri-slot-state-contract"],
   codingTaskId: slotLazyInitFamily,
+};
+
+// The callback transfer is a distinct family appended after the historical
+// MutSlot prefix. Attribute only its primary after the broad naming loop so
+// the original eight-step family remains byte-stable.
+const mutSlotWithMutPrimary = unsafeMiriLessons
+  .find((lesson) => lesson.id === "unsafe-miri-mut-slot")!
+  .steps.find((step) => step.id === mutSlotWithMutPrimaryStepId)!;
+mutSlotWithMutPrimary.evidence = {
+  version: 2,
+  conceptIds: ["unsafe-miri-mut-slot-variance-contract"],
+  codingTaskId: mutSlotWithMutFamily,
 };
 
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
@@ -1462,6 +1484,10 @@ export const unsafeMiriModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
         { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-blank" },
+        {
+          lessonId: "unsafe-miri-mut-slot",
+          stepId: mutSlotWithMutPrimaryStepId,
+        },
       ],
     },
     {
@@ -1541,5 +1567,10 @@ export const unsafeMiriAssessmentSources = {
     canonical: mutSlotSolution,
     equivalent: mutSlotEquivalent,
     mutant: mutSlotMutant,
+  },
+  mutSlotWithMut: {
+    canonical: mutSlotWithMutSteps[1].solution!,
+    equivalent: mutSlotWithMutEquivalent,
+    mutant: mutSlotWithMutMutant,
   },
 };

@@ -5,6 +5,7 @@ import {
 } from "./unsafe-miri-initialized-prefix";
 import { disjointRangesPrimaryStepId } from "./unsafe-miri-disjoint-ranges";
 import { slotLazyInitPrimaryStepId } from "./unsafe-miri-slot-lazy-init";
+import { mutSlotWithMutPrimaryStepId } from "./unsafe-miri-mut-slot-with-mut";
 import {
   unsafeMiriAssessmentSources,
   unsafeMiriLessons,
@@ -42,6 +43,7 @@ function sourceFor(id: string, solution: string) {
       unsafeMiriAssessmentSources.disjointRegions,
     [disjointRangesPrimaryStepId]: unsafeMiriAssessmentSources.disjointRanges,
     [slotLazyInitPrimaryStepId]: unsafeMiriAssessmentSources.slotLazyInit,
+    [mutSlotWithMutPrimaryStepId]: unsafeMiriAssessmentSources.mutSlotWithMut,
     "slot-state-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-contract-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-blank": unsafeMiriAssessmentSources.slotState,

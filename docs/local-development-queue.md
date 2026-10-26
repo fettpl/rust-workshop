@@ -1,6 +1,6 @@
 # Local development queue
 
-Date: 2026-10-22; local continuation updated 2026-10-24 (UTC).
+Date: 2026-10-22; local continuation updated 2026-10-26.
 
 This queue starts from main commit `7c760e3`. The local native-test maintenance
 milestone is complete on a separate branch. Disjoint-range integration has
@@ -43,9 +43,13 @@ The queue is maintained in this order:
    review complete;
 3. OSS readiness and public release — local preparation reviewed and complete;
    public release deferred behind its separate external gates;
-4. `Slot` lazy-initialization transfer — current separate local feature candidate;
-5. `MutSlot` variance transfer work;
-6. foundation reconciliation after those changes.
+4. `Slot` lazy-initialization transfer — local verification, independent review and recovery checkpoint complete;
+5. `MutSlot` scoped callback/variance transfer — current separate local feature candidate;
+6. A5 foundation evidence reconciliation: independent ownership repair, observable scope/drop and Copy contracts; conceptual stack/heap claims remain bounded;
+7. A6 Frame Protocol library-maintenance synthesis;
+8. A7 changed-workload performance and test-strategy investigation;
+9. A8 service/capstone maintenance and recovery synthesis;
+10. A9 final advanced coverage, prerequisite and recommended-route reconciliation.
 
 Future feature work remains split into separate feature branches and future
 pull requests. The OSS milestone must wait for this disjoint chapter's local
@@ -85,3 +89,26 @@ with independent review complete. OSS local preparation followed this milestone.
 above now permits Slot implementation while public release and remote acceptance
 stay deferred. The [Slot transfer contract](slot-lazy-init-transfer-evidence.md)
 records the next distinct primary family and its verification boundaries.
+
+## Continuous local continuation — 26 October 2026
+
+The maintainer authorizes advancing through the approved sequence without a
+new prompt after each local milestone. Each feature retains its own branch,
+meaningful tests, independent review, English commits and recovery checkpoint.
+The [15 October requirements](superpowers/plans/2026-10-15-advanced-continuation.md)
+remain the ordered A5–A9 scope after the current
+[MutSlot transfer](mut-slot-with-mut-transfer-evidence.md). Fresh bounded design
+must resolve actual current contracts before each implementation; no topic is
+missing merely because a historical plan calls it pending.
+
+Keep Core17 and extension groups intentional. The original continuation and
+Study Session assignment remain discoverable without making every advanced
+specialization a beginner prerequisite. Preserve source-qualified historical
+counts and distinguish authored availability, independent coding, delayed
+retrieval, self-review and observed outcomes. No software check supplies a
+learner's mastery, seniority or professional-readiness result.
+
+This continuation changes no external gate: no push, project remote/main
+changes, hosted Actions, visibility, publication, paid infrastructure or
+deployment. Public release and future exact-head integration checks remain
+deferred. Previous sealed local milestones and their evidence are preserved.

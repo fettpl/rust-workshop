@@ -336,7 +336,13 @@ describe("curriculum content contract", () => {
           (lesson.steps.length >= 5 && lesson.steps.length <= 9) ||
           (lesson.id === "nested-patterns-and-destructuring" &&
             lesson.steps.length === 11 &&
-            lesson.sessionStops?.length === 2),
+            lesson.sessionStops?.length === 2) ||
+          (lesson.id === "unsafe-miri-mut-slot" &&
+            lesson.steps.length === 10 &&
+            lesson.steps[8]?.id === "mut-slot-with-mut-model" &&
+            lesson.steps[9]?.id === "mut-slot-with-mut-transfer" &&
+            lesson.sessionStops?.length === 1 &&
+            lesson.sessionStops[0]?.afterStepId === "mut-slot-recall"),
       ),
     ).toBe(true);
     expect(
@@ -348,6 +354,51 @@ describe("curriculum content contract", () => {
       true,
     );
     expect(project.adversarialInject.toLowerCase()).toContain("clone");
+  });
+
+  it("admits only the authored ten-step MutSlot append shape", () => {
+    const mutSlot = lessons.find(
+      (lesson) => lesson.id === "unsafe-miri-mut-slot",
+    )!;
+    const sizeErrors = (candidate: Lesson) =>
+      validateContent({
+        ...bundle,
+        lessons: lessons.map((lesson) =>
+          lesson.id === mutSlot.id ? candidate : lesson,
+        ),
+      }).filter((error) => error.includes("steps"));
+
+    expect(sizeErrors(mutSlot)).toEqual([]);
+    expect(sizeErrors({ ...mutSlot, sessionStops: undefined })).not.toEqual([]);
+    expect(
+      sizeErrors({
+        ...mutSlot,
+        sessionStops: mutSlot.sessionStops?.map((stop) => ({
+          ...stop,
+          afterStepId: "mut-slot-with-mut-transfer",
+        })),
+      }),
+    ).not.toEqual([]);
+    expect(
+      sizeErrors({ ...mutSlot, id: "unrelated-ten-step-lesson" }),
+    ).not.toEqual([]);
+    expect(
+      sizeErrors({
+        ...mutSlot,
+        steps: [
+          ...mutSlot.steps,
+          { ...mutSlot.steps[0], id: "mut-slot-with-mut-extra" },
+        ],
+      }),
+    ).not.toEqual([]);
+    expect(
+      sizeErrors({
+        ...mutSlot,
+        steps: mutSlot.steps.map((step, index) =>
+          index === 9 ? { ...step, id: "mut-slot-with-mut-renamed" } : step,
+        ),
+      }),
+    ).not.toEqual([]);
   });
 
   it("reports duplicate IDs and missing references instead of silently accepting them", () => {

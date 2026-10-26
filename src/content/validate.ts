@@ -408,12 +408,21 @@ export function validateContent(content: ContentBundle): string[] {
       lesson.steps.length === 11 &&
       Array.isArray(lesson.sessionStops) &&
       lesson.sessionStops.length >= 2;
+    const mutSlotWithMutBridge =
+      lesson.id === "unsafe-miri-mut-slot" &&
+      lesson.steps.length === 10 &&
+      lesson.steps[8]?.id === "mut-slot-with-mut-model" &&
+      lesson.steps[9]?.id === "mut-slot-with-mut-transfer" &&
+      Array.isArray(lesson.sessionStops) &&
+      lesson.sessionStops.length === 1 &&
+      lesson.sessionStops[0]?.afterStepId === "mut-slot-recall";
     if (
       (lesson.steps.length < 5 || lesson.steps.length > 9) &&
-      !appendedPatternBridge
+      !appendedPatternBridge &&
+      !mutSlotWithMutBridge
     )
       errors.push(
-        `lesson ${lesson.id} must have 5-9 steps (the appended pattern bridge permits 11 with optional stops)`,
+        `lesson ${lesson.id} must have 5-9 steps (approved append bridges permit only the authored 10-step MutSlot or 11-step pattern shapes)`,
       );
     if (!lesson.transferTask.trim())
       errors.push(`lesson ${lesson.id} is missing transferTask`);

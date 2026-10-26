@@ -4,6 +4,11 @@ import {
   slotLazyInitStarter,
   slotLazyInitTests,
 } from "../unsafe-miri-slot-lazy-init";
+import {
+  mutSlotWithMutSolution,
+  mutSlotWithMutStarter,
+  mutSlotWithMutTests,
+} from "../unsafe-miri-mut-slot-with-mut";
 
 const manifest = String.raw`[package]
 name = "miri-safety-workshop"
@@ -670,6 +675,8 @@ const slotLazyInitArchiveStarter = `#![allow(unsafe_code)]
 ${slotLazyInitStarter}${slotLazyInitTests}`;
 const slotLazyInitArchiveSolution = `#![allow(unsafe_code)]
 ${slotLazyInitSolution}${slotLazyInitTests}`;
+const mutSlotWithMutArchiveStarter = `${mutSlotWithMutStarter}${mutSlotWithMutTests}`;
+const mutSlotWithMutArchiveSolution = `${mutSlotWithMutSolution}${mutSlotWithMutTests}`;
 
 const commonFiles = [
   { path: "Cargo.toml", starter: manifest, solution: manifest },
@@ -696,6 +703,11 @@ const commonFiles = [
     path: "tests/slot_lazy_init.rs",
     starter: slotLazyInitArchiveStarter,
     solution: slotLazyInitArchiveSolution,
+  },
+  {
+    path: "tests/mut_slot_with_mut.rs",
+    starter: mutSlotWithMutArchiveStarter,
+    solution: mutSlotWithMutArchiveSolution,
   },
   ...Object.entries(fixtureFiles).map(([path, contents]) => ({
     path,
@@ -731,6 +743,10 @@ export const miriSafetyPackage: ProjectPackage = {
       stepId: "slot-state-lazy-init-transfer",
     },
     { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
+    {
+      lessonId: "unsafe-miri-mut-slot",
+      stepId: "mut-slot-with-mut-transfer",
+    },
   ],
   files: commonFiles,
 };

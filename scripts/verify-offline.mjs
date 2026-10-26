@@ -1314,6 +1314,103 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     )).toEqual([]);
     await page.setViewportSize({ width: 1280, height: 900 });
     console.log("Slot lazy-init model/primary draft, note, help, exact index-8 resume and keyboard work offline; no compiler or transfer credit");
+    // MutSlot with_mut source path: inspect the appended model at index 8,
+    // then the primary at index 9. The starter editor is observed before the
+    // offline draft replaces it; no compiler or learner execution is claimed.
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(unsafeMiriTitle);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: unsafeMiriTitle })
+      .click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "MutSlot" })
+      .click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(8).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.locator(".task-pane")).toContainText("with_mut");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(9).click();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await expect(page.locator(".task-pane")).toContainText("with_mut");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const mutSlotEditor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    const simpleMutSlotEditor = page.getByRole("button", { name: "Prosty edytor", exact: true });
+    if (await simpleMutSlotEditor.count() && await simpleMutSlotEditor.isVisible()) {
+      await simpleMutSlotEditor.click();
+    }
+    await expect(mutSlotEditor).toBeVisible();
+    const mutSlotStarter = await mutSlotEditor.inputValue();
+    expect(mutSlotStarter).toContain("with_mut");
+    expect(mutSlotStarter).toMatch(/for\s*<\s*'short\s*>\s*FnOnce/);
+    const mutSlotDraft = "// with_mut draft zachowany offline bez uruchamiania runnera.\n";
+    await mutSlotEditor.fill(mutSlotDraft);
+    await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
+    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    const mutSlotNote = "FnOnce dostaje krótkie reborrow; R pozostaje poza callbackiem.";
+    await page.getByLabel("Notatki do lekcji").fill(mutSlotNote);
+    await page.getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true })).toBeVisible();
+    await expect.poll(async () => {
+      const state = await readLearningState();
+      const progress = state.steps["unsafe-miri-mut-slot:mut-slot-with-mut-transfer"];
+      return {
+        code: progress?.code,
+        hints: progress?.hints,
+        note: state.notes["unsafe-miri-mut-slot"],
+        lessonId: state.resume.lessonId,
+        stepIndex: state.resume.stepIndex,
+      };
+    }).toEqual({
+      code: mutSlotDraft,
+      hints: 1,
+      note: mutSlotNote,
+      lessonId: "unsafe-miri-mut-slot",
+      stepIndex: 9,
+    });
+    const mutSlotOfflineState = await readLearningState();
+    expect(mutSlotOfflineState.events.filter((event) =>
+      event.lessonId === "unsafe-miri-mut-slot" &&
+      event.stepId === "mut-slot-with-mut-transfer" &&
+      event.kind === "transfer" &&
+      event.passed,
+    )).toEqual([]);
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toBeVisible();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(mutSlotNote);
+    await expect(page.getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(mutSlotEditor).toBeVisible();
+    await expect(mutSlotEditor).toHaveValue(mutSlotDraft);
+    await mutSlotEditor.focus();
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Monaco Editor", exact: true })).toBeFocused();
+    await page.keyboard.press("Shift+Tab");
+    await expect(mutSlotEditor).toBeFocused();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const mutSlotReloadState = await readLearningState();
+    expect(mutSlotReloadState.resume).toMatchObject({
+      lessonId: "unsafe-miri-mut-slot",
+      stepIndex: 9,
+    });
+    expect(mutSlotReloadState.events.filter((event) =>
+      event.lessonId === "unsafe-miri-mut-slot" &&
+      event.stepId === "mut-slot-with-mut-transfer" &&
+      event.kind === "transfer" &&
+      event.passed,
+    )).toEqual([]);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    console.log("MutSlot with_mut model/primary, real FnOnce starter, draft, note, help, exact index-9 resume and keyboard work offline; no compiler or transfer credit");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
       "Property testing: kontrakty, generatory i kontrprzykłady";
