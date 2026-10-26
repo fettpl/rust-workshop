@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { miriSafetyPackage, miriSafetyProject } from "../miri-safety";
 import {
+  mutSlotWithMutSolution,
+  mutSlotWithMutStandaloneWitness,
+  mutSlotWithMutStarter,
+  mutSlotWithMutTests,
+} from "../../unsafe-miri-mut-slot-with-mut";
+import {
   projectFiles,
   validateProjectPackage,
 } from "../../../domain/project-package";
@@ -61,8 +67,8 @@ describe("Miri safety authored package contract", () => {
     expect(solution["tests/slot_lazy_init.rs"]).toContain(
       "full_suppresses_initializer_and_drops_captured_closure",
     );
-    expect(solution["tests/mut_slot_with_mut.rs"]).toContain(
-      "with_mut_panic_propagates_without_rollback_promise",
+    expect(solution["tests/mut_slot_with_mut.rs"]).toBe(
+      `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutSolution}${mutSlotWithMutTests}`,
     );
   });
 
@@ -81,8 +87,8 @@ describe("Miri safety authored package contract", () => {
     expect(starter["tests/slot_lazy_init.rs"]).toContain(
       "full_suppresses_initializer_and_drops_captured_closure",
     );
-    expect(starter["tests/mut_slot_with_mut.rs"]).toContain(
-      "with_mut_mutates_non_copy_string_and_reuses_parent",
+    expect(starter["tests/mut_slot_with_mut.rs"]).toBe(
+      `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutStarter}${mutSlotWithMutTests}`,
     );
     expect(starter["tests/safety_contract.rs"]).toContain(
       "select_regions_accepts_empty_reversed_adjacent_and_gapped_ranges",

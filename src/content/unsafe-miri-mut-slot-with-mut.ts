@@ -333,6 +333,10 @@ fn with_mut_panic_propagates_without_rollback_promise() {
 }
 `;
 
+export const mutSlotWithMutStandaloneWitness = String.raw`// Standalone authored transfer witness: these tests exercise the lesson's
+// MutSlot::with_mut implementation independently of the packaged library.
+`;
+
 export const mutSlotWithMutSteps: LessonStep[] = [
   {
     id: "mut-slot-with-mut-model",

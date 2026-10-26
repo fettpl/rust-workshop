@@ -6,6 +6,7 @@ import {
 } from "../unsafe-miri-slot-lazy-init";
 import {
   mutSlotWithMutSolution,
+  mutSlotWithMutStandaloneWitness,
   mutSlotWithMutStarter,
   mutSlotWithMutTests,
 } from "../unsafe-miri-mut-slot-with-mut";
@@ -675,8 +676,8 @@ const slotLazyInitArchiveStarter = `#![allow(unsafe_code)]
 ${slotLazyInitStarter}${slotLazyInitTests}`;
 const slotLazyInitArchiveSolution = `#![allow(unsafe_code)]
 ${slotLazyInitSolution}${slotLazyInitTests}`;
-const mutSlotWithMutArchiveStarter = `${mutSlotWithMutStarter}${mutSlotWithMutTests}`;
-const mutSlotWithMutArchiveSolution = `${mutSlotWithMutSolution}${mutSlotWithMutTests}`;
+const mutSlotWithMutArchiveStarter = `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutStarter}${mutSlotWithMutTests}`;
+const mutSlotWithMutArchiveSolution = `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutSolution}${mutSlotWithMutTests}`;
 
 const commonFiles = [
   { path: "Cargo.toml", starter: manifest, solution: manifest },

@@ -11,7 +11,7 @@ export const mutSlotWithMutStepIds = [
 ] as const;
 export const mutSlotWithMutPrimaryStepId = mutSlotWithMutStepIds[1];
 export const expectedPostMutSlotWithMutProjectSha256 =
-  "bccb5c470eded65abbc31482e1c3da5afa672206d0d5e174f9dbb491dd5fc0e4";
+  "bac8d3f35d3a3abf93d9ae4f7ab583b3057f7b695284a489975124db1c190109";
 export const expectedPreMutSlotWithMutProjectSha256 =
   "02fc7cfeb73ce283ef977b068ec4423f269e934b5b3e1a40938a805463a5cb3c";
 
