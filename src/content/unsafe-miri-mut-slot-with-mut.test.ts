@@ -55,6 +55,27 @@ it("publishes the appended model, primary family, and focused callback contract"
   expect(mutSlotWithMutTests.match(/#\[test\]/g)).toHaveLength(7);
 });
 
+it("keeps the model exposure-only while the primary owns the transfer contract", () => {
+  const [model, primary] = mutSlotWithMutSteps;
+
+  expect(model.kind).toBe("run");
+  expect(model.evidenceKind).toBe("exposure");
+  expect(model.evidenceGate).not.toBe(true);
+  expect(model.evidence).toBeUndefined();
+  expect(model.code).not.toMatch(/\bfn\s+with_mut\s*</);
+
+  expect(primary.id).toBe(mutSlotWithMutPrimaryStepId);
+  expect(primary.kind).toBe("apply");
+  expect(primary.evidenceKind).toBe("transfer");
+  expect(primary.evidenceGate).toBe(true);
+  expect(primary.code).toBe(mutSlotWithMutStarter);
+  expect(primary.solution).toBe(mutSlotWithMutSolution);
+  expect(primary.evaluator).toEqual({
+    kind: "tests",
+    tests: mutSlotWithMutTests,
+  });
+});
+
 it("accepts canonical and equivalent implementations through the real rustc harness", () => {
   for (const source of [mutSlotWithMutSolution, mutSlotWithMutEquivalent]) {
     const directory = mkdtempSync(join(tmpdir(), "mut-slot-with-mut-green-"));

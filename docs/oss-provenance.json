@@ -1542,12 +1542,12 @@
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut.test.ts",
-      "sha256": "b090fe872859a73a2ec50f7873f99612b1ae1a5e5a636d04bb22b5e7f8a83c21",
+      "sha256": "c1ebec800d98519079c4b68695b365eed0a72cebc0b1bc83a1e72eb761cd425c",
       "group": "course"
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut.ts",
-      "sha256": "d041893891306a06a16f8010f83f5436ac9c2fb834dd2d26ba843e7c8b6a7bb8",
+      "sha256": "f3b13643df7185f29147cffd92c02405feb37c5674c88b90ca1115fbc3bc30dd",
       "group": "course"
     },
     {

@@ -19,33 +19,31 @@ impl<'a, T> MutSlot<'a, T> {
     fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {
         MutSlot { value: &mut *self.value }
     }
-
-    fn with_mut<R, F>(&mut self, f: F) -> R
-    where
-        F: for<'short> FnOnce(&'short mut T) -> R,
-    {
-        f(&mut *self.value)
-    }
 }
 
 fn main() {
     let mut value = String::from("Rust");
     let mut slot = MutSlot::new(&mut value);
-    let report = slot.with_mut(|text| {
+    let callback = |text: &mut String| {
         text.push_str(" + HRTB");
         text.len()
-    });
+    };
+    let report = {
+        let mut short_slot = slot.reborrow();
+        callback(short_slot.get_mut())
+    };
     assert_eq!(report, 11);
     println!("{}", report);
-    slot.with_mut(|text| text.push('!'));
+    slot.get_mut().push('!');
     assert_eq!(slot.get(), "Rust + HRTB!");
 }
 
-// for<'short> daje przy każdym wywołaniu świeżą, krótką pożyczkę.
-// R ma jeden typ wyniku niezależny od chwilowej pożyczki, ale może pożyczać
-// z zewnętrznego właściciela albo ze wspólnych danych niesionych przez T.
-// FnOnce wywołuje callback dokładnie raz; zwykły unwind zachowuje wcześniejsze
-// mutacje i nie obiecuje rollbacku.
+// Wcześniejsza lekcja „Callback odwiedza lokalne pożyczki” pokazała jawny,
+// krótki reborrow i lokalne wywołanie callbacka. Docelowe with_mut uogólni
+// tę operację: F: for<'short> FnOnce(&'short mut T) -> R dostaje nową krótką
+// pożyczkę przy każdym wywołaniu; R może pożyczać z zewnętrznego właściciela
+// albo ze wspólnych danych niesionych przez T. FnOnce wywołuje callback raz,
+// a zwykły unwind zachowuje wcześniejsze mutacje bez obietnicy rollbacku.
 `;
 
 export const mutSlotWithMutStarter = String.raw`struct MutSlot<'a, T> {
@@ -343,7 +341,7 @@ export const mutSlotWithMutSteps: LessonStep[] = [
     kind: "run",
     title: "Zobacz callback z krótkim reborrow",
     prompt:
-      "Prześledź, jak `with_mut` przez HRTB dostaje przy każdym wywołaniu świeżą krótką pożyczkę `for<'short>`, wywołuje callback dokładnie raz i oddaje wynik bez przenoszenia T. Wróć myślą do wcześniejszej lekcji „Callback odwiedza lokalne pożyczki”: R jest niezależne od chwilowej pożyczki, ale może pożyczać z zewnętrznego właściciela albo ze wspólnych danych niesionych przez T. FnOnce oznacza jedno wywołanie, a zwykły unwind zachowuje mutacje wykonane przed paniką — bez obietnicy rollbacku.",
+      "Prześledź jawny krótki reborrow i lokalny callback. Wcześniejsza lekcja „Callback odwiedza lokalne pożyczki” jest tu mostem: docelowe `with_mut` dopiero uogólni tę operację przez HRTB `F: for<'short> FnOnce(&'short mut T) -> R`, aby przy każdym wywołaniu dać świeżą pożyczkę, wywołać callback raz i oddać R. R może być niezależne od chwilowej pożyczki, ale może pożyczać z zewnętrznego właściciela albo ze wspólnych danych niesionych przez T; zwykły unwind zachowuje wcześniejsze mutacje bez obietnicy rollbacku.",
     code: mutSlotWithMutModel,
     solution: mutSlotWithMutModel,
     evaluator: {
