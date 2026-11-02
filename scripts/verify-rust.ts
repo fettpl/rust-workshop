@@ -11,6 +11,7 @@ import {
   traces,
 } from "../src/content/course";
 import { shortReviewProbeFixtures } from "../src/content/io-review-probe-fixtures";
+import { ownershipFoundationDropFixtures } from "../src/content/ownership-foundation-drop";
 import type { Lesson, LessonStep, Trace } from "../src/domain/types";
 import { appendHiddenTests } from "../src/runner";
 import { evaluate } from "../src/engine/evaluate";
@@ -20,6 +21,38 @@ export type VerificationReporter = (result: Verification) => void;
 const COMPILE_TIMEOUT = 60_000;
 const EXECUTION_TIMEOUT = 8_000;
 const FAILURE_REASON_LIMIT = 180;
+
+const trustedStarterHarnesses = new Map<
+  string,
+  { code: string; harness: string }
+>([
+  [
+    "scope-nested-drop-transfer",
+    {
+      code: ownershipFoundationDropFixtures.nested.starter,
+      harness: ownershipFoundationDropFixtures.nested.harness,
+    },
+  ],
+  [
+    "scope-conditional-drop-transfer",
+    {
+      code: ownershipFoundationDropFixtures.conditional.starter,
+      harness: ownershipFoundationDropFixtures.conditional.harness,
+    },
+  ],
+] as const);
+
+function trustedStarterHarnessFor(step: LessonStep): string | undefined {
+  if (step.evaluator?.kind !== "tests") return undefined;
+  const fixture = trustedStarterHarnesses.get(step.id);
+  if (
+    !fixture ||
+    fixture.code !== step.code ||
+    fixture.harness !== step.evaluator.tests
+  )
+    return undefined;
+  return fixture.harness;
+}
 
 export function formatVerificationFailure(result: Verification): string {
   const firstUsefulLine = result.detail
@@ -213,7 +246,14 @@ export function verifyTrustedRust(
     }
     if ((!main && !testMode) || options.run === false) {
       record(
-        { id, passed: true, detail: "kompiluje się (biblioteka)" },
+        {
+          id,
+          passed: true,
+          detail:
+            testMode && options.run === false
+              ? "kompiluje się (testy nieuruchomione)"
+              : "kompiluje się (biblioteka)",
+        },
         caseDirectory,
       );
       return;
@@ -356,6 +396,7 @@ export function verifyTrustedRust(
         error: "any",
       });
     if (step.code) {
+      const trustedStarterHarness = trustedStarterHarnessFor(step);
       verify(`${prefix}/${step.id}/starter`, step.code, {
         error:
           step.expectedStatus === "compile-error"
@@ -365,7 +406,10 @@ export function verifyTrustedRust(
           step.expectedStatus === "compile-error"
             ? step.expectedDiagnostic
             : undefined,
-        run: step.expectedStatus !== "runtime-error",
+        run:
+          trustedStarterHarness === undefined &&
+          step.expectedStatus !== "runtime-error",
+        tests: trustedStarterHarness,
       });
       if (
         step.evaluator?.kind === "tests" &&

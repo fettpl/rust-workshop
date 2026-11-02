@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { verifyTrustedRust } from "../../scripts/verify-rust";
 import type { Lesson, LessonStep } from "../domain/types";
+import { ownershipFoundationDropSteps } from "./ownership-foundation-drop";
 
 function fixture(
   id: string,
@@ -137,4 +138,84 @@ describe("authored Rust starter verification", () => {
       "verifier-fixtures/ignored-tests/solution",
     ]);
   }, 90_000);
+
+  it("composes the closed drop harness only for its exact starter fixtures", () => {
+    const [nested, conditional] = ownershipFoundationDropSteps;
+    const nearMiss: LessonStep = {
+      ...nested,
+      id: "scope-nested-drop-transfer-near-miss",
+      code: nested.code!.replace(
+        "use __rust_workshop_hidden_tests::support;",
+        "use __rust_workshop_hidden_tests::missing_support;",
+      ),
+    };
+    const unrelated: LessonStep = {
+      ...fixture("unrelated-compiler-error", "fn answer() -> i32 { missing }"),
+      solution: "fn answer() -> i32 { 2 }",
+    };
+    const results = verifyTrustedRust({
+      lessons: [
+        {
+          id: "closed-drop-harness",
+          moduleId: "fixture",
+          conceptIds: [],
+          competencyIds: [],
+          prerequisites: [],
+          title: "Closed harness",
+          subtitle: "Trusted fixture regression",
+          minutes: 1,
+          outcomes: [],
+          misconceptions: [],
+          transferTask: "",
+          evidenceGate: "",
+          sourceIds: [],
+          steps: [nested, conditional, nearMiss, unrelated],
+        },
+      ],
+      reviewExercises: {},
+      delayedReviewExercises: {},
+      traces: {},
+    });
+
+    expect(
+      results.filter((result) => result.id.startsWith("closed-drop-harness/")),
+    ).toHaveLength(16);
+    for (const step of [nested, conditional]) {
+      expect(
+        results.find(
+          (result) => result.id === `closed-drop-harness/${step.id}/starter`,
+        ),
+      ).toMatchObject({ passed: true });
+      expect(
+        results.find(
+          (result) =>
+            result.id === `closed-drop-harness/${step.id}/starter-rejected`,
+        ),
+      ).toMatchObject({ passed: true });
+      expect(
+        results.find(
+          (result) => result.id === `closed-drop-harness/${step.id}/solution`,
+        ),
+      ).toMatchObject({ passed: true });
+    }
+    expect(
+      results.find(
+        (result) =>
+          result.id ===
+          "closed-drop-harness/scope-nested-drop-transfer-near-miss/starter",
+      ),
+    ).toMatchObject({ passed: false });
+    expect(
+      results.find(
+        (result) =>
+          result.id === "closed-drop-harness/unrelated-compiler-error/starter",
+      ),
+    ).toMatchObject({ passed: false });
+    expect(
+      results.filter((result) => !result.passed).map((result) => result.id),
+    ).toEqual([
+      "closed-drop-harness/scope-nested-drop-transfer-near-miss/starter",
+      "closed-drop-harness/unrelated-compiler-error/starter",
+    ]);
+  });
 });
