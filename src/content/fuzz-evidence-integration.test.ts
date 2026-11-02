@@ -5,12 +5,15 @@ import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 const { concepts, lessons, modules, reviewExercises } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(
       historicalBeforeSendHandoff(
         historicalBeforeCancellationTransfer(
-          historicalBeforeInitializedPrefix(currentCourse),
+          historicalBeforeInitializedPrefix(
+            historicalBeforeExistingContractRepair(currentCourse),
+          ),
         ),
       ),
     ),

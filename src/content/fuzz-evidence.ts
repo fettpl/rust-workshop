@@ -117,7 +117,7 @@ export const fuzzEvidenceConcepts: Concept[] = [
     prerequisites: ["fuzz-counterexample-regression"],
     competencyIds: ["fuzz-audit-campaign-evidence"],
     reviewPrompt:
-      'Zaimplementuj `classify_dossier(report: &Triage) -> &\'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, toolchain, expected_toolchain, instrumented, normal, runs, replay_only }`; `replay_only` zwraca `"failed"`, a niezgodny archive/manifest/toolchain, brak instrumentacji, nienormalne zakończenie albo `runs < 1000` zwraca `"infrastructure"`; wyłącznie świeży, instrumentowany raport zwraca `"passed"`.',
+      'Zaimplementuj `classify_dossier(report: &Triage) -> &\'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, toolchain, expected_toolchain, instrumented, normal, runs, replay_only }`; `replay_only` zwraca `"failed"`, a puste lub niezgodne archive/manifest/toolchain, brak instrumentacji, nienormalne zakończenie albo `runs < 1000` zwraca `"infrastructure"`; wyłącznie świeży, instrumentowany raport z niepustym provenance zwraca `"passed"`.',
     reviewAnswer:
       "Najpierw rozdzielam replay od kampanii, potem sprawdzam wszystkie hash oraz toolchain i dopiero wtedy uznaję normalną kampanię z minimum 1000 uruchomień za passed.",
     distinguish:
@@ -556,7 +556,7 @@ export const fuzzEvidenceLessons: Lesson[] = [
         "fuzz-campaign-evidence-gate",
         "modify",
         "Sklasyfikuj raport",
-        "Użyj `Dossier` oraz `classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, current_manifest: &str) -> &'static str`; `replay_only` ma pierwszeństwo i zwraca literal `failed`; następnie wymagaj równości run/archive/manifest z argumentami, `instrumented`, `normal` i `runs >= 1000`; poprawny raport zwraca `status`, a brakujące lub niezgodne dowody `infrastructure`.",
+        "Użyj `Dossier` oraz `classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, current_manifest: &str) -> &'static str`; `replay_only` ma pierwszeństwo i zwraca literal `failed`; następnie wymagaj niepustych i równych run/archive/manifest z argumentami, `instrumented`, `normal` i `runs >= 1000`; poprawny raport zwraca `status`, a brakujące lub niezgodne dowody `infrastructure`.",
         codeOf(fixture("fuzz-campaign-evidence-gate").reference),
         testsOf(fixture("fuzz-campaign-evidence-gate").reference),
         "struct Dossier { run_id: &'static str, archive_hash: &'static str, manifest_hash: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool, status: &'static str } fn classify_report(dossier: &Dossier, _: &str, _: &str, _: &str) -> &'static str { let _ = dossier; \"infrastructure\" }",
@@ -565,7 +565,7 @@ export const fuzzEvidenceLessons: Lesson[] = [
         "fuzz-campaign-evidence-blank",
         "blank",
         "Transfer: report triage",
-        "Zaimplementuj `triage_report(report: &Triage) -> &'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, instrumented, tool_ok, finding }`; stale hash, missing instrumentation lub tool failure to `infrastructure`, finding to `failed`, a czysty raport to `passed`.",
+        "Zaimplementuj `triage_report(report: &Triage) -> &'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, instrumented, tool_ok, finding }`; puste lub niezgodne archive/manifest, missing instrumentation lub tool failure to `infrastructure`, finding to `failed`, a czysty raport z niepustym provenance to `passed`.",
         codeOf(fixture("fuzz-campaign-evidence-blank").reference),
         testsOf(fixture("fuzz-campaign-evidence-blank").reference),
       ),

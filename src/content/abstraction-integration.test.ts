@@ -4,10 +4,13 @@ import { describe, expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 const course = historicalBeforeDocumentationRepair(
   historicalBeforeSendHandoff(
     historicalBeforeCancellationTransfer(
-      historicalBeforeInitializedPrefix(currentCourse),
+      historicalBeforeInitializedPrefix(
+        historicalBeforeExistingContractRepair(currentCourse),
+      ),
     ),
   ),
 );

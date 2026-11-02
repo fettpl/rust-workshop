@@ -23,6 +23,10 @@ it("covers every allocation coding task with distinct passing equivalent and rej
     expect(step.solution).toBeTruthy();
     expect(normalizeRust(fixture.equivalent)).not.toBe(normalizeRust(step.solution!));
     expect(normalizeRust(fixture.mutant)).not.toBe(normalizeRust(fixture.equivalent));
+    for (const namedMutant of fixture.mutants ?? []) {
+      expect(normalizeRust(namedMutant.source), namedMutant.id).not.toBe(normalizeRust(fixture.equivalent));
+      expect(normalizeRust(namedMutant.source), namedMutant.id).not.toBe(normalizeRust(step.solution!));
+    }
     const directory = mkdtempSync(join(tmpdir(), "allocation-evidence-"));
     try {
       for (const [name, source, shouldPass] of [["equivalent", fixture.equivalent, true], ["mutant", fixture.mutant, false]] as const) {
@@ -64,6 +68,67 @@ it("experimentally rejects each comparison review contract mutant", () => {
       expect(executed.status, `${label}: ${executed.stdout}${executed.stderr}`).toBe(101);
     }
   } finally { rmSync(directory, { recursive: true, force: true }); }
+}, 120_000);
+
+it("rejects the named allocation error-payload mutant at the payload boundary", () => {
+  const fixture = runtimeAllocationAssessmentFixtures.find(
+    (candidate) => candidate.id === "allocation-scope-blank",
+  )!;
+  const namedMutants = fixture.mutants ?? [];
+  expect(namedMutants).toHaveLength(1);
+  expect(namedMutants[0].id).toBe("allocation-scope-blank-wrong-error-payload");
+  const step = runtimeAllocationEvidenceLessons
+    .find((lesson) => lesson.id === "runtime-allocation-scope")!
+    .steps.find((candidate) => candidate.id === "allocation-scope-blank")!;
+  const directory = mkdtempSync(join(tmpdir(), "allocation-error-payload-mutants-"));
+  try {
+    for (const [index, namedMutant] of namedMutants.entries()) {
+      const source = namedMutant.source;
+      const file = join(directory, `wrong-error-payload-${index}.rs`);
+      const binary = join(directory, `wrong-error-payload-${index}`);
+      writeFileSync(file, appendHiddenTests(source, (step.evaluator as { kind: "tests"; tests: string }).tests));
+      const compiled = spawnSync(
+        "rustc",
+        ["--edition=2024", "--test", file, "-o", binary],
+        { cwd: directory, encoding: "utf8", timeout: 60_000 },
+      );
+      expect(compiled.status, `wrong-error-payload/${index} compile: ${compiled.stderr}`).toBe(0);
+      const executed = spawnSync(binary, ["--test-threads=1"], { cwd: directory, encoding: "utf8", timeout: 30_000 });
+      const output = executed.stdout + executed.stderr;
+      expect(executed.status, `wrong-error-payload/${index}: ${output}`).toBe(101);
+      expect(output).toContain("allocation_finish_rejects_different_error_keeps_window_open");
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}, 120_000);
+
+it("rejects the preserved premature-finish mutant at its named boundary", () => {
+  const fixture = runtimeAllocationAssessmentFixtures.find(
+    (candidate) => candidate.id === "allocation-scope-blank",
+  )!;
+  const step = runtimeAllocationEvidenceLessons
+    .find((lesson) => lesson.id === "runtime-allocation-scope")!
+    .steps.find((candidate) => candidate.id === "allocation-scope-blank")!;
+  const directory = mkdtempSync(join(tmpdir(), "allocation-premature-finish-mutant-"));
+  try {
+    const file = join(directory, "premature-finish.rs");
+    const binary = join(directory, "premature-finish");
+    writeFileSync(file, appendHiddenTests(fixture.mutant, (step.evaluator as { kind: "tests"; tests: string }).tests));
+    const compiled = spawnSync(
+      "rustc",
+      ["--edition=2024", "--test", file, "-o", binary],
+      { cwd: directory, encoding: "utf8", timeout: 60_000 },
+    );
+    expect(compiled.status, `premature-finish compile: ${compiled.stderr}`).toBe(0);
+    const executed = spawnSync(binary, ["--test-threads=1"], { cwd: directory, encoding: "utf8", timeout: 30_000 });
+    const output = executed.stdout + executed.stderr;
+    expect(executed.status, `premature-finish: ${output}`).toBe(101);
+    expect(output).toContain("setup_is_outside_and_teardown_runs_for_both_results");
+    expect(output).toContain("finish-before-measure");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 }, 120_000);
 
 it("experimentally rejects blank window guard mutants", () => {

@@ -11,6 +11,7 @@ import {
   slotLazyInitStepIds,
 } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
 import { historicalBeforeMutSlotWithMut } from "./unsafe-miri-mut-slot-with-mut-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,
@@ -24,7 +25,9 @@ const hashJson = (value: unknown) =>
 
 describe("slot lazy-init historical compatibility", () => {
   it("projects the authentic e1 predecessor and restores only the new package delta", () => {
-    const beforeMutSlotWithMut = historicalBeforeMutSlotWithMut(currentCourse);
+    const beforeMutSlotWithMut = historicalBeforeMutSlotWithMut(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
     const projected = historicalBeforeSlotLazyInit(beforeMutSlotWithMut);
     const lesson = projected.lessons.find(
       (candidate) => candidate.id === slotLazyInitLessonId,
@@ -97,7 +100,9 @@ describe("slot lazy-init historical compatibility", () => {
           project.id === "miri-safety" ? mutate(project) : project,
         ),
       };
-      const projected = historicalBeforeSlotLazyInit(mutated);
+      const projected = historicalBeforeSlotLazyInit(
+        historicalBeforeExistingContractRepair(mutated),
+      );
       const project = projected.projects.find(
         (candidate) => candidate.id === "miri-safety",
       )!;
@@ -202,7 +207,9 @@ const serializedRegistry = (course: typeof currentCourse) =>
   );
 
 it("preserves the complete authentic e1 registry and original seven-step Slot prefix", () => {
-  const projected = historicalBeforeSlotLazyInit(currentCourse);
+  const projected = historicalBeforeSlotLazyInit(
+    historicalBeforeExistingContractRepair(currentCourse),
+  );
   expect(hashJson(serializedRegistry(projected))).toBe(
     baseline.wholeCourseSha256,
   );
@@ -240,7 +247,9 @@ it("does not erase changes to original Slot or previously authored disjoint tran
             },
       ),
     };
-    const projected = historicalBeforeSlotLazyInit(mutated);
+    const projected = historicalBeforeSlotLazyInit(
+      historicalBeforeExistingContractRepair(mutated),
+    );
     expect(hashJson(serializedRegistry(projected))).not.toBe(
       baseline.wholeCourseSha256,
     );

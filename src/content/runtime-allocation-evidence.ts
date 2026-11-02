@@ -120,7 +120,7 @@ fn distinguishes_closed_success_and_error_from_incomplete_reports() {
 
 const scopeBlankSolution = String.raw`#[derive(Debug, PartialEq, Eq)]
 enum Event { Setup { input_len: usize }, Open, Measured { ok: bool, value: usize }, Closed, Reported { value: usize }, ErrorClosed, Teardown }
-enum Measurement { Success(usize), Error }
+enum Measurement { Success(usize), Error(&'static str) }
 
 struct Window { open: bool, measured: Option<Measurement>, events: Vec<Event> }
 impl Window {
@@ -131,7 +131,7 @@ impl Window {
         if !self.open { return Err("work-before-open"); }
         match work() {
             Ok(value) => { self.measured = Some(Measurement::Success(value)); self.events.push(Event::Measured { ok: true, value }); Ok(value) }
-            Err(error) => { self.measured = Some(Measurement::Error); self.events.push(Event::Measured { ok: false, value: 0 }); Err(error) }
+            Err(error) => { self.measured = Some(Measurement::Error(error)); self.events.push(Event::Measured { ok: false, value: 0 }); Err(error) }
         }
     }
     fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str> {
@@ -139,7 +139,7 @@ impl Window {
         match (self.measured.as_ref(), result) {
             (None, _) => Err("finish-before-measure"),
             (Some(Measurement::Success(measured)), Ok(value)) if *measured == value => { self.open = false; self.events.push(Event::Closed); self.events.push(Event::Reported { value: *measured }); Ok(()) },
-            (Some(Measurement::Error), Err(_)) => { self.open = false; self.events.push(Event::ErrorClosed); Ok(()) },
+            (Some(Measurement::Error(measured)), Err(error)) if *measured == error => { self.open = false; self.events.push(Event::ErrorClosed); Ok(()) },
             _ => Err("finish-result-mismatch"),
         }
     }
@@ -169,8 +169,45 @@ fn setup_is_outside_and_teardown_runs_for_both_results() {
     assert_eq!(mismatch.measure(|| Ok(11)), Ok(11));
     assert_eq!(mismatch.finish(Ok(999)), Err("finish-result-mismatch"));
     assert_eq!(mismatch.teardown(), Err("teardown-while-open"));
+    assert_eq!(mismatch.finish(Ok(11)), Ok(()));
+    mismatch.teardown().unwrap();
     let mut fresh = Window::empty();
     assert_eq!(fresh.teardown(), Err("teardown-before-close"));
+}
+
+#[test]
+fn allocation_finish_rejects_different_error_keeps_window_open() {
+    let mut window = Window::empty(); window.setup(7).unwrap(); window.begin().unwrap();
+    assert_eq!(window.measure(|| Err::<usize, _>("measured-error")), Err("measured-error"));
+    assert_eq!(window.finish(Err("reported-error")), Err("finish-result-mismatch"));
+    assert_eq!(window.teardown(), Err("teardown-while-open"));
+}
+
+#[test]
+fn allocation_finish_accepts_measured_error_emits_error_closed() {
+    let mut window = Window::empty(); window.setup(7).unwrap(); window.begin().unwrap();
+    assert_eq!(window.measure(|| Err::<usize, _>("measured-error")), Err("measured-error"));
+    assert_eq!(window.finish(Err("measured-error")), Ok(()));
+    window.teardown().unwrap();
+    assert_eq!(window.collect().unwrap(), vec![Event::Setup { input_len: 7 }, Event::Open, Event::Measured { ok: false, value: 0 }, Event::ErrorClosed, Event::Teardown]);
+}
+
+#[test]
+fn allocation_finish_accepts_equal_direct_error_closes() {
+    let mut window = Window::empty(); window.setup(7).unwrap(); window.begin().unwrap();
+    assert_eq!(window.measure(|| Err::<usize, _>("parser")), Err("parser"));
+    assert_eq!(window.finish(Err("parser")), Ok(()));
+    assert_eq!(window.teardown(), Ok(()));
+}
+
+#[test]
+fn allocation_success_value_mismatch_keeps_window_open_for_correct_retry() {
+    let mut window = Window::empty(); window.setup(7).unwrap(); window.begin().unwrap();
+    assert_eq!(window.measure(|| Ok(11)), Ok(11));
+    assert_eq!(window.finish(Ok(999)), Err("finish-result-mismatch"));
+    assert_eq!(window.teardown(), Err("teardown-while-open"));
+    assert_eq!(window.finish(Ok(11)), Ok(()));
+    assert_eq!(window.teardown(), Ok(()));
 }`;
 
 const compareGateSolution = String.raw`#[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -281,7 +318,7 @@ fn close_window(input: &[u8], work: impl FnOnce(&[u8]) -> Result<usize, &'static
 fn main() { println!("{:?}", close_window(b"records", |bytes| Ok(bytes.len()))); }`, "[Setup { input_len: 7 }, Measured { ok: true }, Reported { value: 7 }, Teardown]\n"),
     tested({ id: "allocation-scope-gate", kind: "modify", title: "Zamknij okno po sukcesie i błędzie", prompt: "Uzupełnij close_window tak, aby wynik pozostał bez zmian, a teardown i measured były zapisane po Ok i Err.", code: scopeGateStarter, solution: scopeGateSolution, tests: scopeGateTests, gate: true }),
     tested({ id: "allocation-scope-error-gate", kind: "apply", title: "Odrzuć niedomknięty raport", prompt: "Rozróżnij poprawnie zamknięte Ok, poprawnie zamknięte Err i niekompletne okno.", code: errorGateStarter, solution: errorGateSolution, tests: errorGateTests, gate: true }),
-    tested({ id: "allocation-scope-blank", kind: "blank", title: "Blank page: trzy fazy pomiaru", prompt: "Zaimplementuj publiczny kontrakt Rust: enum Event (Debug, PartialEq, Eq) z wariantami Setup { input_len: usize }, Open, Measured { ok: bool, value: usize }, Closed, Reported { value: usize }, ErrorClosed i Teardown oraz struct Window. Udostępnij Window::empty() -> Window, fn setup(&mut self, input_len: usize) -> Result<(), &'static str>, fn begin(&mut self) -> Result<(), &'static str>, fn measure(&mut self, work: impl FnOnce() -> Result<usize, &'static str>) -> Result<usize, &'static str>, fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str>, fn teardown(&mut self) -> Result<(), &'static str> i fn collect(self) -> Result<Vec<Event>, &'static str>. Udostępnij też fn scope(input: &[u8], work: impl FnOnce() -> Result<usize, &'static str>) -> (Result<usize, &'static str>, Vec<Event>). Hidden tests wymagają, aby po Err pojawiło się Measured { ok: false, value: 0 }, po sukcesie Measured { ok: true, value } i Reported { value }, a kolejność obejmowała Setup, Open, Measured, Closed lub ErrorClosed, opcjonalnie Reported, Teardown. setup musi odrzucić setup-inside-window, begin już otwarte okno jako already-open, measure poza oknem jako work-before-open, finish przed pomiarem jako finish-before-measure i rozbieżny wynik jako finish-result-mismatch, a zamknięte okno jako already-closed; teardown ma odrzucać teardown-while-open i teardown-before-close, zaś collect brak końcowego Teardown jako missing-teardown.", solution: scopeBlankSolution, tests: scopeBlankTests }),
+    tested({ id: "allocation-scope-blank", kind: "blank", title: "Blank page: trzy fazy pomiaru", prompt: "Zaimplementuj publiczny kontrakt Rust: enum Event (Debug, PartialEq, Eq) z wariantami Setup { input_len: usize }, Open, Measured { ok: bool, value: usize }, Closed, Reported { value: usize }, ErrorClosed i Teardown oraz struct Window. Udostępnij Window::empty() -> Window, fn setup(&mut self, input_len: usize) -> Result<(), &'static str>, fn begin(&mut self) -> Result<(), &'static str>, fn measure(&mut self, work: impl FnOnce() -> Result<usize, &'static str>) -> Result<usize, &'static str>, fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str>, fn teardown(&mut self) -> Result<(), &'static str> i fn collect(self) -> Result<Vec<Event>, &'static str>. Udostępnij też fn scope(input: &[u8], work: impl FnOnce() -> Result<usize, &'static str>) -> (Result<usize, &'static str>, Vec<Event>). Hidden tests wymagają, aby po Err pojawiło się Measured { ok: false, value: 0 }, po sukcesie Measured { ok: true, value } i Reported { value }, a kolejność obejmowała Setup, Open, Measured, Closed lub ErrorClosed, opcjonalnie Reported, Teardown. Zachowaj payload Err(&'static str) w Measurement::Error: finish(Err(...)) zamyka okno tylko dla identycznego komunikatu, a inny komunikat zwraca finish-result-mismatch i pozostawia okno otwarte do poprawnej próby. setup musi odrzucić setup-inside-window, begin już otwarte okno jako already-open, measure poza oknem jako work-before-open, finish przed pomiarem jako finish-before-measure i rozbieżny wynik jako finish-result-mismatch, a zamknięte okno jako already-closed; teardown ma odrzucać teardown-while-open i teardown-before-close, zaś collect brak końcowego Teardown jako missing-teardown.", solution: scopeBlankSolution, tests: scopeBlankTests }),
     answer("allocation-scope-recall", "Retrieval: granica GlobalAlloc", "Czy licznik wywołań GlobalAlloc jest twierdzeniem o RSS?", ["Nie; to obserwacja wywołań alokatora w nazwanym oknie procesu, nie RSS ani retained memory."]),
   ], misconceptions: ["Formatowanie JSON może być częścią pomiaru.", "Err nie wymaga zamknięcia okna.", "GlobalAlloc mierzy RSS całego systemu."], transferTask: "Rozpisz setup, warm-up, pomiar analyze_reader i teardown dla własnego workloadu.", evidenceGate: "Bramki wymagają jawnej granicy i kompletności po obu ścieżkach wyniku.", sourceIds: ["profile-global-allocator", "profile-criterion"] },
   { id: "runtime-allocation-comparison", moduleId: "profile-evidence", conceptIds: ["runtime-allocation-comparison"], competencyIds: ["transfer-optimization-evidence"], prerequisites: ["runtime-allocation-scope"], title: "Porównaj identyczny workload", subtitle: "Sprawdzisz wynik, kompletność i zakres, zanim nazwiesz różnicę poprawą.", minutes: 27, outcomes: ["Porównasz baseline, candidate i mutanta na tym samym input.", "Oddzielisz calls, requested bytes i retained memory.", "Odrzucisz niekompletne lub różne Summary."], steps: [

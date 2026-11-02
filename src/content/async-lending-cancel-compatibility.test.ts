@@ -19,6 +19,7 @@ import {
   historicalBeforeCancellationTransfer,
 } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import baseline from "./fixtures/async-cancel-pre-transfer.json";
 import savedFixtures from "./fixtures/baseline-correction-saves.json";
 import {
@@ -232,7 +233,9 @@ it("keeps the A2 model supplementary without primary credit", () => {
 
 it("matches accepted identities and reviewed maintenance successors", () => {
   const previous = historicalBeforeCancellationTransfer(
-    historicalBeforeInitializedPrefix(currentCourse),
+    historicalBeforeInitializedPrefix(
+      historicalBeforeExistingContractRepair(currentCourse),
+    ),
   );
   for (const [name, expected] of Object.entries(baseline.registryHashes)) {
     const registry = previous[name as keyof typeof previous];
@@ -350,7 +353,9 @@ it("cannot mask unrelated old lesson or criterion metadata", () => {
     ),
   } as typeof currentCourse;
   const projected = historicalBeforeCancellationTransfer(
-    historicalBeforeInitializedPrefix(mutated),
+    historicalBeforeInitializedPrefix(
+      historicalBeforeExistingContractRepair(mutated),
+    ),
   );
   expect(
     projected.lessons.find((item) => item.id === cancellationTransferLessonId)!
@@ -370,7 +375,9 @@ it("cannot mask unrelated old lesson or criterion metadata", () => {
 
 it("projects pre-A2 history by removing only the two declared steps and criterion ref", () => {
   const previous = historicalBeforeCancellationTransfer(
-    historicalBeforeInitializedPrefix(currentCourse),
+    historicalBeforeInitializedPrefix(
+      historicalBeforeExistingContractRepair(currentCourse),
+    ),
   );
   const lesson = previous.lessons.find(
     (candidate) => candidate.id === cancellationTransferLessonId,
@@ -502,8 +509,9 @@ it.each([1, 2, 3] as const)(
 );
 
 it("derives the post-A2 registry inventory without changing the accepted source count", () => {
-  const historicalCourse =
-    historicalBeforeFrameProtocolMaintenance(currentCourse);
+  const historicalCourse = historicalBeforeFrameProtocolMaintenance(
+    historicalBeforeExistingContractRepair(currentCourse),
+  );
   expect(historicalCourse.modules).toHaveLength(48);
   expect(historicalCourse.lessons).toHaveLength(193);
   expect(historicalCourse.concepts).toHaveLength(194);

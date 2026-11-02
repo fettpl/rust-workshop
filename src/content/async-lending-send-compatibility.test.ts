@@ -13,6 +13,7 @@ import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtu
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 
 const sha = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -26,8 +27,9 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
     "async-lending-send-boundary-handoff-model",
     "async-lending-send-boundary-prepared-handoff",
   ]);
-  const historicalCourse =
-    historicalBeforeFrameProtocolMaintenance(currentCourse);
+  const historicalCourse = historicalBeforeFrameProtocolMaintenance(
+    historicalBeforeExistingContractRepair(currentCourse),
+  );
   expect(historicalCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1287);
 });
 
@@ -89,7 +91,9 @@ import savedFixtures from "./fixtures/baseline-correction-saves.json";
 it("projects only the named A1 additions while preserving every accepted registry definition", () => {
   const previous = historicalBeforeSendHandoff(
     historicalBeforeCancellationTransfer(
-      historicalBeforeInitializedPrefix(currentCourse),
+      historicalBeforeInitializedPrefix(
+        historicalBeforeExistingContractRepair(currentCourse),
+      ),
     ),
   );
   for (const [name, expected] of Object.entries(baseline.registries)) {

@@ -7,6 +7,7 @@ export interface RuntimeAllocationAssessmentFixture {
   id: string;
   equivalent: string;
   mutant: string;
+  mutants?: { id: string; source: string }[];
 }
 
 const equivalents: Record<string, string> = {
@@ -35,14 +36,14 @@ fn close_window(input: &[u8], work: impl FnOnce() -> Result<usize, &'static str>
 }`,
   "allocation-scope-blank": `#[derive(Debug, PartialEq, Eq)]
 enum Event { Setup { input_len: usize }, Open, Measured { ok: bool, value: usize }, Closed, Reported { value: usize }, ErrorClosed, Teardown }
-enum Measurement { Success(usize), Error }
+enum Measurement { Success(usize), Error(&'static str) }
 struct Window { active: bool, measured: Option<Measurement>, events: Vec<Event> }
 impl Window {
     fn empty() -> Self { Self { active: false, measured: None, events: Vec::new() } }
     fn setup(&mut self, bytes: usize) -> Result<(), &'static str> { if self.active || !self.events.is_empty() { return Err("setup-inside-window"); } self.events.push(Event::Setup { input_len: bytes }); Ok(()) }
     fn begin(&mut self) -> Result<(), &'static str> { self.active = true; self.events.push(Event::Open); Ok(()) }
-    fn measure(&mut self, job: impl FnOnce() -> Result<usize, &'static str>) -> Result<usize, &'static str> { if !self.active { return Err("work-before-open"); } match job() { Ok(value) => { self.measured = Some(Measurement::Success(value)); self.events.push(Event::Measured { ok: true, value }); Ok(value) }, Err(error) => { self.measured = Some(Measurement::Error); self.events.push(Event::Measured { ok: false, value: 0 }); Err(error) } } }
-    fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str> { if !self.active { return Err("already-closed"); } match (self.measured.as_ref(), result) { (None, _) => Err("finish-before-measure"), (Some(Measurement::Success(measured)), Ok(value)) if *measured == value => { self.active = false; self.events.push(Event::Closed); self.events.push(Event::Reported { value: *measured }); Ok(()) }, (Some(Measurement::Error), Err(_)) => { self.active = false; self.events.push(Event::ErrorClosed); Ok(()) }, _ => Err("finish-result-mismatch") } }
+    fn measure(&mut self, job: impl FnOnce() -> Result<usize, &'static str>) -> Result<usize, &'static str> { if !self.active { return Err("work-before-open"); } match job() { Ok(value) => { self.measured = Some(Measurement::Success(value)); self.events.push(Event::Measured { ok: true, value }); Ok(value) }, Err(error) => { self.measured = Some(Measurement::Error(error)); self.events.push(Event::Measured { ok: false, value: 0 }); Err(error) } } }
+    fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str> { if !self.active { return Err("already-closed"); } match (self.measured.as_ref(), result) { (None, _) => Err("finish-before-measure"), (Some(Measurement::Success(measured)), Ok(value)) if *measured == value => { self.active = false; self.events.push(Event::Closed); self.events.push(Event::Reported { value: *measured }); Ok(()) }, (Some(Measurement::Error(measured)), Err(error)) if *measured == error => { self.active = false; self.events.push(Event::ErrorClosed); Ok(()) }, _ => Err("finish-result-mismatch") } }
     fn teardown(&mut self) -> Result<(), &'static str> { if self.active { return Err("teardown-while-open"); } if !self.events.iter().any(|event| matches!(event, Event::Closed | Event::ErrorClosed)) { return Err("teardown-before-close"); } self.events.push(Event::Teardown); Ok(()) }
     fn collect(self) -> Result<Vec<Event>, &'static str> { if !matches!(self.events.last(), Some(Event::Teardown)) { return Err("missing-teardown"); } Ok(self.events) }
 }
@@ -105,6 +106,18 @@ const mutants: Record<string, string> = {
   "allocation-comparison-review": equivalents["allocation-comparison-review"].replace("baseline.input == candidate.input", "baseline.input != candidate.input"),
 };
 
+const namedMutants: Record<string, { id: string; source: string }[]> = {
+  "allocation-scope-blank": [
+    {
+      id: "allocation-scope-blank-wrong-error-payload",
+      source: equivalents["allocation-scope-blank"].replace(
+        "(Some(Measurement::Error(measured)), Err(error)) if *measured == error =>",
+        "(Some(Measurement::Error(_)), Err(_)) =>",
+      ),
+    },
+  ],
+};
+
 const assessed = [
   ...runtimeAllocationEvidenceLessons.flatMap((lesson) => lesson.steps.filter((step) => step.evaluator?.kind === "tests")),
   ...Object.values(runtimeAllocationEvidenceReviewExercises),
@@ -114,4 +127,5 @@ export const runtimeAllocationAssessmentFixtures: RuntimeAllocationAssessmentFix
   id: step.id,
   equivalent: equivalents[step.id],
   mutant: mutants[step.id],
+  ...(namedMutants[step.id] ? { mutants: namedMutants[step.id] } : {}),
 }));

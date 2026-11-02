@@ -110,7 +110,7 @@ export const unsafeMiriConcepts: Concept[] = [
     reviewPrompt:
       "Jakie warunki musi spełnić caller `ByteView::from_raw_parts`, zanim widok może zostać użyty, i co zmienia długość zero?",
     reviewAnswer:
-      "Caller musi zapewnić niezerowy i poprawnie wyrównany adres dla dodatniej długości, jeden żywy alokowany obiekt z `len` zainicjalizowanymi bajtami, poprawny zakres oraz brak mutowalnego aliasowania przez życie widoku. Dla zera można zwrócić pusty widok bez odczytu; lifetime jest pożyczką, a nie sposobem na przedłużenie życia storage.",
+      "Caller musi zapewnić dla dodatniej długości niezerowy i poprawnie wyrównany adres do `len` zainicjalizowanych bajtów w jednej żywej alokacji, bez mutowalnego aliasowania przez życie widoku. `len` nie może przekraczać `isize::MAX`, a zakres końcowy nie może zawijać przestrzeni adresowej. Wrapper dla `len == 0` może zwrócić `&[]` bez wywołania `slice::from_raw_parts` i dlatego zachować politykę `null + 0`; samo std wymaga wyrównanego, niezerowego pointera także dla pustego slice'a. Lifetime jest pożyczką, a nie sposobem na przedłużenie życia storage.",
     distinguish:
       "`MaybeUninit<u8>` nie staje się zainicjalnym `u8` tylko dlatego, że ma adres. Miri pomaga ujawnić odczyt niezainicjalizowanej pamięci, ale poprawny kontrakt musi być spełniony także poza Miri.",
     evidenceArtifact: "rust-code",
@@ -292,8 +292,13 @@ struct ByteView<'a> { bytes: &'a [u8] }
 
 impl<'a> ByteView<'a> {
     /// # Safety
-    /// For len > 0, raw points to len initialized bytes in one live allocation,
-    /// is aligned, non-null, and remains valid and unaliased for 'a.
+    /// For len > 0, raw points to len initialized u8 bytes in one live
+    /// allocation, is aligned and non-null, remains valid for 'a, len <=
+    /// isize::MAX, and the range end does not wrap the address space. No
+    /// mutable aliasing may occur while the returned shared borrow is live;
+    /// shared read-only aliases are permitted. The wrapper handles len == 0 by returning &[] without calling
+    /// slice::from_raw_parts, so it permits null + 0; std itself requires an
+    /// aligned, non-null pointer even for a zero-length slice.
     unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {
         if len == 0 { return Some(Self { bytes: &[] }); }
         if raw.is_null() { return None; }
@@ -327,8 +332,14 @@ const byteViewEquivalent = String.raw`use std::slice;
 struct ByteView<'a> { bytes: &'a [u8] }
 
 impl<'a> ByteView<'a> {
-    /// The caller must keep the storage initialized, aligned, valid, and
-    /// alive for the returned borrow; this constructor cannot extend it.
+    /// For len > 0, the caller must provide initialized u8 bytes in one live
+    /// allocation with an aligned, non-null pointer, len <= isize::MAX, and a
+    /// non-wrapping range end. The storage must remain valid for the returned
+    /// borrow; mutable aliasing is forbidden while it is live, but shared
+    /// read-only aliases are permitted. This constructor cannot extend its lifetime.
+    /// For len == 0 this wrapper returns &[] without calling
+    /// slice::from_raw_parts, so null + 0 is accepted even though std's raw
+    /// function itself requires an aligned, non-null pointer.
     unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {
         match (raw.is_null(), len) {
             (_, 0) => Some(Self { bytes: &[] }),
@@ -378,6 +389,14 @@ const byteViewRecallSolution = String.raw`use std::slice;
 struct ByteView<'a> { bytes: &'a [u8] }
 
 impl<'a> ByteView<'a> {
+    /// # Safety
+    /// For len > 0, raw must point to initialized u8 bytes in one live
+    /// allocation; it must be aligned and non-null, len <= isize::MAX, and
+    /// the range end must not wrap. The bytes stay valid for 'a; mutable
+    /// aliasing is forbidden while the shared borrow is live, but shared
+    /// read-only aliases are permitted. For len == 0, this wrapper returns &[] without calling the std
+    /// function, so null + 0 is allowed; std itself still requires aligned,
+    /// non-null pointers.
     unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {
         if len == 0 { return Some(Self { bytes: &[] }); }
         if raw.is_null() { return None; }
@@ -930,7 +949,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "modify",
         title: "Napraw ByteView",
         prompt:
-          "Uzupełnij `ByteView<'a>` i `unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<ByteView<'a>>`. Dla dodatniej długości caller musi zapewnić niezerowy, wyrównany adres do `len` zainicjalizowanych bajtów w jednej żywej alokacji, bez mutowalnego aliasowania przez `'a`; dla zera zwróć pusty widok bez odczytu. Nie wydłużaj życia storage.",
+          "Uzupełnij `ByteView<'a>` i `unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<ByteView<'a>>`. Dla dodatniej długości caller musi zapewnić niezerowy, wyrównany adres do `len` zainicjalizowanych bajtów w jednej żywej alokacji, bez mutowalnego aliasowania przez `'a`; współdzielone aliasy tylko-do-odczytu są dozwolone. `len` nie może przekraczać `isize::MAX`, a koniec zakresu nie może zawijać przestrzeni adresowej. Dla zera wrapper ma zwrócić `&[]` bez wywołania `slice::from_raw_parts`, więc zachować `null + 0`; sama funkcja std wymaga wyrównanego, niezerowego pointera także dla zera. Nie wydłużaj życia storage.",
         code: byteViewStarter,
         solution: byteViewSolution,
         tests: byteViewTests,
@@ -941,7 +960,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "apply",
         title: "Przenieś kontrakt na pusty widok",
         prompt:
-          "Zachowaj ten sam kontrakt ByteView dla ważnych bajtów, pustego null view i pożyczki kończącej się wraz ze storage. To równoważna forma gate i należy do tej samej rodziny dowodu.",
+          "Zachowaj ten sam kontrakt ByteView dla zainicjalizowanych bajtów w jednej żywej alokacji, wyrównania, niezerowego adresu, `len <= isize::MAX`, niezwijającego się końca zakresu i pożyczki bez mutowalnego aliasowania; współdzielone aliasy tylko-do-odczytu są dozwolone. Dla `len == 0` wrapper zwraca `&[]` bez wywołania `slice::from_raw_parts`, więc dopuszcza `null + 0`; sama funkcja std nadal wymaga wyrównanego, niezerowego pointera. To równoważna forma gate i należy do tej samej rodziny dowodu.",
         code: byteViewStarter,
         solution: byteViewEquivalent,
         tests: byteViewTests,
@@ -952,7 +971,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "blank",
         title: "Blank page: initialized bytes",
         prompt:
-          "Od pustej kartki zdefiniuj dokładnie `struct ByteView<'a> { bytes: &'a [u8] }` oraz `impl<'a> ByteView<'a> { unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self>; fn as_slice(&self) -> &[u8]; }`. Dodaj safety contract o inicjalizacji, wyrównaniu, ważności, niealiasowaniu i lifetime; `len == 0` ma zwrócić pusty widok bez dereferencji. Nie implementuj odczytu z `MaybeUninit` jako `u8`. Blank jest drugą formą tej samej rodziny co gate.",
+          "Od pustej kartki zdefiniuj dokładnie `struct ByteView<'a> { bytes: &'a [u8] }` oraz `impl<'a> ByteView<'a> { unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self>; fn as_slice(&self) -> &[u8]; }`. Dodaj safety contract o zainicjalizowanych `u8` w jednej żywej alokacji, wyrównaniu, niezerowym adresie, ważności i zakazie mutowalnego aliasowania przy żywym współdzielonym borrow; współdzielone aliasy tylko-do-odczytu są dozwolone. Wymagaj też `len <= isize::MAX` i niezwijającego się końca zakresu; `len == 0` ma zwrócić pusty widok bez wywołania `slice::from_raw_parts`, zachowując `null + 0`, choć sama funkcja std wymaga wyrównanego, niezerowego pointera. Nie implementuj odczytu z `MaybeUninit` jako `u8`. Blank jest drugą formą tej samej rodziny co gate.",
         solution: byteViewSolution,
         tests: byteViewTests,
         gate: true,
@@ -962,7 +981,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "recall",
         title: "Retrieval: widok i initialized storage",
         prompt:
-          "Odtwórz kontrakt `ByteView` z pamięci: zainicjalizowane bajty, żywa alokacja, brak aliasowania, null tylko dla zera i lifetime ograniczony do storage.",
+          "Odtwórz kontrakt `ByteView` z pamięci: zainicjalizowane `u8` w jednej żywej alokacji, wyrównany i niezerowy adres, `len <= isize::MAX`, niezwijający się koniec zakresu, brak mutowalnego aliasowania przy żywym współdzielonym borrow oraz dozwolone współdzielone aliasy tylko-do-odczytu; lifetime jest ograniczony do storage. Wrapper dla `len == 0` zwraca `&[]` bez wywołania std, więc `null + 0` jest dozwolone; sama funkcja std wymaga wyrównanego, niezerowego pointera.",
         code: byteViewRecallStarter,
         solution: byteViewRecallSolution,
         tests: byteViewRecallTests,
@@ -1370,7 +1389,7 @@ export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: initialized ByteView",
     prompt:
-      "Utwórz ByteView bez odczytu null/zero i z kontraktem zainicjalizowanych bajtów.",
+      "Utwórz ByteView z kontraktem zainicjalizowanych `u8` w jednej żywej alokacji, wyrównanego i niezerowego adresu, `len <= isize::MAX`, niezwijającego się końca zakresu, braku mutowalnego aliasowania i lifetime. Wrapper dla `len == 0` ma zwrócić `&[]` bez wywołania std, zachowując `null + 0`; sama funkcja std wymaga wyrównanego, niezerowego pointera.",
     code: byteViewStarter,
     solution: byteViewEquivalent,
     tests: byteViewTests,
@@ -1434,7 +1453,8 @@ export const unsafeMiriModule: CourseModule = {
   gateCriteria: [
     {
       id: "unsafe-miri-byte-view-gate",
-      label: "ByteView zachowuje kontrakt inicjalizacji i lifetime.",
+      label:
+        "ByteView zachowuje zainicjalizowane, wyrównane, niezerowe `u8` w jednej żywej alokacji, `len <= isize::MAX`, zakres bez overflow, zakaz mutowalnego aliasowania przy żywym borrow i dozwolone aliasy współdzielone tylko-do-odczytu.",
       requiredIndependentCodingTasks: 1,
       taskRefs: [
         { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-gate" },
@@ -1492,7 +1512,8 @@ export const unsafeMiriModule: CourseModule = {
     },
     {
       id: "unsafe-miri-byte-view-recall",
-      label: "Retrieval ByteView zachowuje initialized storage.",
+      label:
+        "Retrieval ByteView zachowuje zainicjalizowane, wyrównane, niezerowe `u8` w jednej żywej alokacji, `len <= isize::MAX`, zakres bez overflow, zakaz mutowalnego aliasowania przy żywym borrow i dozwolone aliasy współdzielone tylko-do-odczytu.",
       taskRefs: [
         {
           lessonId: "unsafe-miri-byte-view",

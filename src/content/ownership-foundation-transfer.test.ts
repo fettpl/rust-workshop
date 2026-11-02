@@ -8,6 +8,7 @@ import {
   ownershipFoundationLessonId,
   ownershipFoundationStepIds,
 } from "./ownership-foundation-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import {
   ownershipFoundationModel,
   ownershipFoundationTransferLesson,
@@ -116,7 +117,9 @@ describe("ownership foundation transfer integration", () => {
   });
 
   it("projects the exact authentic pre-foundation registry without refreshing it", () => {
-    const projected = historicalBeforeOwnershipFoundation(currentCourse);
+    const projected = historicalBeforeOwnershipFoundation(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
     expect(hashJson(serializedRegistry(projected))).toBe(
       acceptedPreFoundationCourseSha256,
     );
@@ -153,7 +156,9 @@ describe("ownership foundation transfer integration", () => {
             },
       ),
     };
-    const projected = historicalBeforeOwnershipFoundation(mutated);
+    const projected = historicalBeforeOwnershipFoundation(
+      historicalBeforeExistingContractRepair(mutated),
+    );
     expect(hashJson(serializedRegistry(projected))).not.toBe(
       acceptedPreFoundationCourseSha256,
     );

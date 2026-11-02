@@ -19,6 +19,7 @@ import {
 } from "./unsafe-miri-initialized-prefix";
 import { unsafeMiriLessons, unsafeMiriModule } from "./unsafe-miri";
 import { historicalBeforeDisjointRanges } from "./unsafe-miri-disjoint-ranges-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import baseline from "./fixtures/unsafe-miri-pre-prefix.json";
 import { unsafeMiriAssessmentSourceFor } from "./unsafe-miri-assessment-fixtures";
 
@@ -316,7 +317,9 @@ it("rejects unknown fixture ids and preserves the accepted old seven objects", (
   expect(
     unsafeMiriAssessmentSourceFor(initializedPrefixPrimaryStepId).equivalent,
   ).toBe(initializedPrefixEquivalent);
-  const beforeDisjointRanges = historicalBeforeDisjointRanges(currentCourse);
+  const beforeDisjointRanges = historicalBeforeDisjointRanges(
+    historicalBeforeExistingContractRepair(currentCourse),
+  );
   const lesson = beforeDisjointRanges.lessons.find(
     (candidate) => candidate.id === initializedPrefixLessonId,
   )!;

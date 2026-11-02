@@ -10,6 +10,7 @@ import {
   disjointRangesPrimaryStepId,
   disjointRangesStepIds,
 } from "./unsafe-miri-disjoint-ranges-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import {
   assistanceForLessonStep,
   evidenceForLessonStep,
@@ -184,7 +185,9 @@ function oldState(version: 1 | 2 | 3): SyntheticState {
 
 describe("disjoint range compatibility and evidence", () => {
   it("projects the exact pre-feature course and preserves the supplied baseline bytes", () => {
-    const projected = historicalBeforeDisjointRanges(currentCourse);
+    const projected = historicalBeforeDisjointRanges(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
     expect(acceptedPreDisjointRangesCourseSha256).toBe(
       "ce77d3f044159372bacc143ff4d22c04241333e09fbbba3b52bba8b1dc1296d5",
     );
@@ -352,7 +355,9 @@ describe("disjoint range compatibility and evidence", () => {
       ],
     ];
     for (const [label, apply, assertMutation] of mutations) {
-      const projected = historicalBeforeDisjointRanges(apply(currentCourse));
+      const projected = historicalBeforeDisjointRanges(
+        historicalBeforeExistingContractRepair(apply(currentCourse)),
+      );
       assertMutation(projected);
       expect(hashJson(serializedRegistry(projected)), label).not.toBe(
         acceptedPreDisjointRangesCourseSha256,

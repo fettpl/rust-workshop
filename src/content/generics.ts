@@ -940,7 +940,7 @@ export const genericsLessons: Lesson[] = [
         "bounds-explain",
         "explain",
         "Ograniczenie wynika z operacji",
-        "Zapis fn same<T>(a: &T, b: &T) -> bool where T: PartialEq { a == b } ma tę samą obietnicę co <T: PartialEq>. where przenosi warunki za listę argumentów i wynik, przed ciało. Funkcja porównuje dwa posiadane T i następnie przenosi jedno do wyniku. Jakich warunków wymaga samo takie ciało?",
+        "Zapis fn same<T>(a: &T, b: &T) -> bool where T: PartialEq { a == b } ma tę samą obietnicę co <T: PartialEq>. where przenosi warunki za listę argumentów i wynik, przed ciało. Funkcja porównuje dwa pożyczone argumenty i zwraca wynik bool; nie przenosi żadnego T do wyniku. Jakich warunków wymaga samo takie ciało?",
         2,
         [
           "PartialEq + Copy, bo return zawsze kopiuje",
@@ -948,9 +948,9 @@ export const genericsLessons: Lesson[] = [
           "PartialEq; samo przeniesienie wyniku nie wymaga dodatkowego traitu",
         ],
         [
-          "Zwrócenie posiadanej wartości może ją przenieść. Copy nie jest konieczne.",
+          "Porównanie pożyczonych argumentów zwraca bool. Copy nie jest konieczne i nie ma tu przenoszenia T.",
           "Clone dotyczy jawnego klonowania, Debug formatowania {:?}. Zbędne warunki odrzucają poprawnych klientów.",
-          "Każdy bound powinien mieć uzasadnienie w operacji. Możesz porównać wartości i później oddać jedną przez przeniesienie.",
+          "Każdy bound powinien mieć uzasadnienie w operacji. Możesz porównać pożyczone wartości i zwrócić wynik bool; nie przenosisz żadnego T.",
         ],
       ),
       coding({

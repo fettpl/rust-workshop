@@ -11,6 +11,7 @@ import {
   initializedPrefixLessonId,
   initializedPrefixStepIds,
 } from "./unsafe-miri-prefix-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,
@@ -136,7 +137,9 @@ function syntheticInitializedPrefixState(version: 1 | 2 | 3): SyntheticState {
 }
 
 it("pins the exact pre-prefix projection and accepted narrow metadata", () => {
-  const projected = historicalBeforeInitializedPrefix(currentCourse);
+  const projected = historicalBeforeInitializedPrefix(
+    historicalBeforeExistingContractRepair(currentCourse),
+  );
   const serializedProjection = Object.fromEntries(
     [
       "competencies",
@@ -212,7 +215,9 @@ it("removes only the initialized-prefix additions and preserves unrelated mutati
           },
     ),
   } as typeof currentCourse;
-  const projected = historicalBeforeInitializedPrefix(mutated);
+  const projected = historicalBeforeInitializedPrefix(
+    historicalBeforeExistingContractRepair(mutated),
+  );
   const lesson = projected.lessons.find(
     (item) => item.id === initializedPrefixLessonId,
   )!;

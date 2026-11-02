@@ -7,11 +7,14 @@ import type { LessonStep } from "@/domain/types";
 import * as currentCourse from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(
       historicalBeforeCancellationTransfer(
-        historicalBeforeInitializedPrefix(currentCourse),
+        historicalBeforeInitializedPrefix(
+          historicalBeforeExistingContractRepair(currentCourse),
+        ),
       ),
     ),
   ),

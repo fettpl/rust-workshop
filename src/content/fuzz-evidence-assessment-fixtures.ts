@@ -199,7 +199,7 @@ fn frame_reduction_keeps_named_error_and_rejects_timeout() {
 struct Dossier { run_id: &'static str, archive_hash: &'static str, manifest_hash: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool, status: &'static str }
 fn classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, current_manifest: &str) -> &'static str {
     if dossier.replay_only { return "failed"; }
-    if dossier.run_id != current_run || dossier.archive_hash != current_archive || dossier.manifest_hash != current_manifest { return "infrastructure"; }
+    if dossier.run_id.is_empty() || current_run.is_empty() || dossier.archive_hash.is_empty() || current_archive.is_empty() || dossier.manifest_hash.is_empty() || current_manifest.is_empty() || dossier.run_id != current_run || dossier.archive_hash != current_archive || dossier.manifest_hash != current_manifest { return "infrastructure"; }
     if !dossier.instrumented || !dossier.normal || dossier.runs < 1000 { return "infrastructure"; }
     dossier.status
 }
@@ -207,7 +207,16 @@ fn classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, 
 fn dossier_requires_fresh_identity_and_campaign_phases() {
     let current = ("run-1", "archive-a", "manifest-a");
     assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "passed");
+    assert_eq!(classify_report(&Dossier { run_id: "", archive_hash: "", manifest_hash: "", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, "", "", ""), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "", archive_hash: "", manifest_hash: "", instrumented: true, normal: true, runs: 1000, replay_only: true, status: "passed" }, "", "", ""), "failed");
     assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "stale", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "stale", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "stale", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
+    assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "failed" }, current.0, current.1, current.2), "failed");
+    assert_eq!(classify_report(&Dossier { run_id: "opaque run/id", archive_hash: "opaque archive", manifest_hash: "opaque manifest", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "failed" }, "opaque run/id", "opaque archive", "opaque manifest"), "failed");
     assert_eq!(classify_report(&Dossier { run_id: "", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
     assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1, replay_only: false, status: "passed" }, current.0, current.1, current.2), "infrastructure");
     assert_eq!(classify_report(&Dossier { run_id: "run-1", archive_hash: "archive-a", manifest_hash: "manifest-a", instrumented: true, normal: true, runs: 1000, replay_only: true, status: "passed" }, current.0, current.1, current.2), "failed");
@@ -217,12 +226,19 @@ fn dossier_requires_fresh_identity_and_campaign_phases() {
   campaignBlank: String.raw`#[derive(Debug, PartialEq, Eq)]
 struct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, instrumented: bool, tool_ok: bool, finding: bool }
 fn triage_report(report: &Triage) -> &'static str {
-    if report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || !report.instrumented || !report.tool_ok { "infrastructure" } else if report.finding { "failed" } else { "passed" }
+    if report.archive_hash.is_empty() || report.expected_archive_hash.is_empty() || report.manifest_hash.is_empty() || report.expected_manifest_hash.is_empty() || report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || !report.instrumented || !report.tool_ok { "infrastructure" } else if report.finding { "failed" } else { "passed" }
 }
 #[test]
 fn triage_distinguishes_hash_mismatch_tool_failure_and_oracle_finding() {
     let good = ("archive-a", "manifest-a");
+    assert_eq!(triage_report(&Triage { archive_hash: "", expected_archive_hash: "", manifest_hash: "", expected_manifest_hash: "", instrumented: true, tool_ok: true, finding: false }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: "", expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: false }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: "", manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: false }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: "", expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: false }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: "", instrumented: true, tool_ok: true, finding: false }), "infrastructure");
     assert_eq!(triage_report(&Triage { archive_hash: "stale", expected_archive_hash: "archive-a", manifest_hash: "manifest-a", expected_manifest_hash: "manifest-a", instrumented: true, tool_ok: true, finding: true }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: "stale", manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: false }), "infrastructure");
+    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: "stale", instrumented: true, tool_ok: true, finding: false }), "infrastructure");
     assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: false, tool_ok: true, finding: true }), "infrastructure");
     assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: false, finding: false }), "infrastructure");
     assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: true }), "failed");
@@ -269,15 +285,27 @@ fn window_retrieval_requires_framed_payload_and_named_failure() {
 }`,
   dossierRetrieval: String.raw`struct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, toolchain: &'static str, expected_toolchain: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool }
 fn classify_dossier(report: &Triage) -> &'static str {
-    if report.replay_only { "failed" } else if report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || report.toolchain != report.expected_toolchain || !report.instrumented || !report.normal || report.runs < 1000 { "infrastructure" } else { "passed" }
+    if report.replay_only { "failed" } else if report.archive_hash.is_empty() || report.expected_archive_hash.is_empty() || report.manifest_hash.is_empty() || report.expected_manifest_hash.is_empty() || report.toolchain.is_empty() || report.expected_toolchain.is_empty() || report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || report.toolchain != report.expected_toolchain || !report.instrumented || !report.normal || report.runs < 1000 { "infrastructure" } else { "passed" }
 }
 #[test]
 fn dossier_retrieval_requires_fresh_instrumented_runs() {
     let good = Triage { archive_hash: "archive-a", expected_archive_hash: "archive-a", manifest_hash: "manifest-a", expected_manifest_hash: "manifest-a", toolchain: "stable", expected_toolchain: "stable", instrumented: true, normal: true, runs: 1000, replay_only: false };
     assert_eq!(classify_dossier(&good), "passed");
+    assert_eq!(classify_dossier(&Triage { archive_hash: "opaque archive", expected_archive_hash: "opaque archive", manifest_hash: "opaque manifest", expected_manifest_hash: "opaque manifest", toolchain: "opaque toolchain", expected_toolchain: "opaque toolchain", instrumented: true, normal: true, runs: 1000, replay_only: false }), "passed");
+    assert_eq!(classify_dossier(&Triage { archive_hash: "", expected_archive_hash: "", manifest_hash: "", expected_manifest_hash: "", toolchain: "", expected_toolchain: "", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { archive_hash: "", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { expected_archive_hash: "", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { manifest_hash: "", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { expected_manifest_hash: "", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { toolchain: "", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { expected_toolchain: "", ..good }), "infrastructure");
     assert_eq!(classify_dossier(&Triage { archive_hash: "stale", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { expected_archive_hash: "stale", ..good }), "infrastructure");
     assert_eq!(classify_dossier(&Triage { manifest_hash: "stale", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { expected_manifest_hash: "stale", ..good }), "infrastructure");
     assert_eq!(classify_dossier(&Triage { toolchain: "nightly", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { expected_toolchain: "nightly", ..good }), "infrastructure");
+    assert_eq!(classify_dossier(&Triage { archive_hash: "", expected_archive_hash: "", manifest_hash: "", expected_manifest_hash: "", toolchain: "", expected_toolchain: "", replay_only: true, ..good }), "failed");
     assert_eq!(classify_dossier(&Triage { runs: 1, ..good }), "infrastructure");
     assert_eq!(classify_dossier(&Triage { replay_only: true, ..good }), "failed");
     assert_eq!(classify_dossier(&Triage { instrumented: false, ..good }), "infrastructure");

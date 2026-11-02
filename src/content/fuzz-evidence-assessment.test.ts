@@ -39,10 +39,15 @@ const compileAndRun = (
       timeout: 8_000,
     });
     expect(executed.error, `${id}: runner`).toBeUndefined();
-    expect(
-      executed.status === 0,
-      `${id}: ${executed.stdout}${executed.stderr}`,
-    ).toBe(expected);
+    const output = `${executed.stdout}${executed.stderr}`;
+    if (expected) {
+      expect(executed.status, `${id}: ${output}`).toBe(0);
+    } else {
+      expect(executed.status, `${id}: ${output}`).toBe(101);
+      expect(output, `${id}: missing named assertion marker`).toMatch(
+        /test __rust_workshop_hidden_tests::[A-Za-z0-9_]+ \.\.\. FAILED/,
+      );
+    }
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -50,6 +55,18 @@ const compileAndRun = (
 
 const codeOf = (reference: string) =>
   reference.slice(0, reference.indexOf("\n#[test]"));
+
+const campaignReport = () => ({
+  schemaVersion: 1 as const,
+  runId: "opaque run/id",
+  archiveSha256: "opaque archive",
+  manifestSha256: "opaque manifest",
+  instrumentation: true,
+  normalCompletion: true,
+  observedRuns: 1000,
+  status: "failed" as const,
+  phase: "campaign" as const,
+});
 
 it("publishes the learner-facing Rust signatures without hiding the contract", () => {
   const gates = fuzzEvidenceLessons.flatMap((lesson) =>
@@ -302,6 +319,287 @@ it("compares complete output, retains typed findings and classifies dossiers", (
       phase: "campaign",
     }),
   ).toBe("infrastructure");
+});
+
+it("fuzz-ts-all-empty-identities-infrastructure", () => {
+  expect(
+    classifyReport({
+      ...campaignReport(),
+      runId: "",
+      archiveSha256: "",
+      manifestSha256: "",
+    }),
+  ).toBe("infrastructure");
+});
+
+it("fuzz-ts-empty-run-id-infrastructure", () => {
+  expect(classifyReport({ ...campaignReport(), runId: "" })).toBe(
+    "infrastructure",
+  );
+});
+
+it("fuzz-ts-empty-archive-sha256-infrastructure", () => {
+  expect(classifyReport({ ...campaignReport(), archiveSha256: "" })).toBe(
+    "infrastructure",
+  );
+});
+
+it("fuzz-ts-empty-manifest-sha256-infrastructure", () => {
+  expect(classifyReport({ ...campaignReport(), manifestSha256: "" })).toBe(
+    "infrastructure",
+  );
+});
+
+it("fuzz-ts-replay-plus-empty-identities-infrastructure", () => {
+  expect(
+    classifyReport({
+      ...campaignReport(),
+      runId: "",
+      archiveSha256: "",
+      manifestSha256: "",
+      phase: "replay",
+      replayOnly: true,
+    }),
+  ).toBe("infrastructure");
+});
+
+it("fuzz-ts-valid-opaque-identities-status-passthrough", () => {
+  expect(classifyReport(campaignReport())).toBe("failed");
+});
+
+type NativeControl = { name: string; reference: string; tests: string };
+
+const dedicatedNativeTest = (
+  name: string,
+  reference: string,
+  assertion: string,
+): NativeControl => ({
+  name,
+  reference,
+  tests: `#[test]\nfn ${name.replace(/-/g, "_")}() {\n    ${assertion}\n}`,
+});
+
+const campaignDossier = (
+  runId = '"run-1"',
+  archive = '"archive-a"',
+  manifest = '"manifest-a"',
+  status = '"passed"',
+  replayOnly = "false",
+) =>
+  `Dossier { run_id: ${runId}, archive_hash: ${archive}, manifest_hash: ${manifest}, instrumented: true, normal: true, runs: 1000, replay_only: ${replayOnly}, status: ${status} }`;
+
+const campaignControl = (
+  name: string,
+  dossier: string,
+  currentRun = '"run-1"',
+  currentArchive = '"archive-a"',
+  currentManifest = '"manifest-a"',
+  result = '"infrastructure"',
+) =>
+  dedicatedNativeTest(
+    name,
+    fuzzEvidenceAssessmentFixtures["fuzz-campaign-evidence-gate"].reference,
+    `assert_eq!(classify_report(&${dossier}, ${currentRun}, ${currentArchive}, ${currentManifest}), ${result});`,
+  );
+
+const triageReport = (
+  archive = '"archive-a"',
+  expectedArchive = '"archive-a"',
+  manifest = '"manifest-a"',
+  expectedManifest = '"manifest-a"',
+  instrumented = "true",
+  toolOk = "true",
+  finding = "false",
+) =>
+  `Triage { archive_hash: ${archive}, expected_archive_hash: ${expectedArchive}, manifest_hash: ${manifest}, expected_manifest_hash: ${expectedManifest}, instrumented: ${instrumented}, tool_ok: ${toolOk}, finding: ${finding} }`;
+
+const triageControl = (
+  name: string,
+  report: string,
+  result = '"infrastructure"',
+) =>
+  dedicatedNativeTest(
+    name,
+    fuzzEvidenceAssessmentFixtures["fuzz-campaign-evidence-blank"].reference,
+    `assert_eq!(triage_report(&${report}), ${result});`,
+  );
+
+const reviewReport = (
+  archive = '"archive-a"',
+  expectedArchive = '"archive-a"',
+  manifest = '"manifest-a"',
+  expectedManifest = '"manifest-a"',
+  toolchain = '"stable"',
+  expectedToolchain = '"stable"',
+  instrumented = "true",
+  normal = "true",
+  runs = "1000",
+  replayOnly = "false",
+) =>
+  `Triage { archive_hash: ${archive}, expected_archive_hash: ${expectedArchive}, manifest_hash: ${manifest}, expected_manifest_hash: ${expectedManifest}, toolchain: ${toolchain}, expected_toolchain: ${expectedToolchain}, instrumented: ${instrumented}, normal: ${normal}, runs: ${runs}, replay_only: ${replayOnly} }`;
+
+const reviewControl = (
+  name: string,
+  report: string,
+  result = '"infrastructure"',
+) =>
+  dedicatedNativeTest(
+    name,
+    fuzzEvidenceRetrievalFixtures["fuzz-campaign-evidence"].reference,
+    `assert_eq!(classify_dossier(&${report}), ${result});`,
+  );
+
+const nativeControlReferences: NativeControl[] = [
+  campaignControl(
+    "fuzz-campaign-all-empty-identities-infrastructure",
+    campaignDossier("\"\"", "\"\"", "\"\""),
+    '""',
+    '""',
+    '""',
+  ),
+  campaignControl(
+    "fuzz-campaign-empty-run-id-infrastructure",
+    campaignDossier('""'),
+  ),
+  campaignControl(
+    "fuzz-campaign-empty-archive-hash-infrastructure",
+    campaignDossier('"run-1"', '""'),
+  ),
+  campaignControl(
+    "fuzz-campaign-empty-manifest-hash-infrastructure",
+    campaignDossier('"run-1"', '"archive-a"', '""'),
+  ),
+  campaignControl(
+    "fuzz-campaign-mismatch-run-id-infrastructure",
+    campaignDossier('"stale"'),
+  ),
+  campaignControl(
+    "fuzz-campaign-mismatch-archive-hash-infrastructure",
+    campaignDossier('"run-1"', '"stale"'),
+  ),
+  campaignControl(
+    "fuzz-campaign-mismatch-manifest-hash-infrastructure",
+    campaignDossier('"run-1"', '"archive-a"', '"stale"'),
+  ),
+  campaignControl(
+    "fuzz-campaign-empty-current-run-id-infrastructure",
+    campaignDossier(),
+    '""',
+  ),
+  campaignControl(
+    "fuzz-campaign-empty-current-archive-hash-infrastructure",
+    campaignDossier(),
+    '"run-1"',
+    '""',
+  ),
+  campaignControl(
+    "fuzz-campaign-empty-current-manifest-hash-infrastructure",
+    campaignDossier(),
+    '"run-1"',
+    '"archive-a"',
+    '""',
+  ),
+  campaignControl(
+    "fuzz-campaign-mismatch-current-run-id-infrastructure",
+    campaignDossier(),
+    '"stale"',
+  ),
+  campaignControl(
+    "fuzz-campaign-mismatch-current-archive-hash-infrastructure",
+    campaignDossier(),
+    '"run-1"',
+    '"stale"',
+  ),
+  campaignControl(
+    "fuzz-campaign-mismatch-current-manifest-hash-infrastructure",
+    campaignDossier(),
+    '"run-1"',
+    '"archive-a"',
+    '"stale"',
+  ),
+  campaignControl(
+    "fuzz-campaign-replay-plus-empty-identities-failed",
+    campaignDossier('""', '""', '""', '"passed"', "true"),
+    '""',
+    '""',
+    '""',
+    '"failed"',
+  ),
+  campaignControl(
+    "fuzz-campaign-valid-opaque-status-passthrough",
+    campaignDossier('"opaque run/id"', '"opaque archive"', '"opaque manifest"', '"failed"'),
+    '"opaque run/id"',
+    '"opaque archive"',
+    '"opaque manifest"',
+    '"failed"',
+  ),
+  triageControl(
+    "fuzz-triage-all-empty-identities-infrastructure",
+    triageReport('""', '""', '""', '""'),
+  ),
+  triageControl(
+    "fuzz-triage-each-actual-and-expected-identity-empty-infrastructure",
+    triageReport('""'),
+  ),
+  triageControl("fuzz-triage-empty-expected-archive-infrastructure", triageReport('"archive-a"', '""')),
+  triageControl("fuzz-triage-empty-manifest-infrastructure", triageReport('"archive-a"', '"archive-a"', '""')),
+  triageControl("fuzz-triage-empty-expected-manifest-infrastructure", triageReport('"archive-a"', '"archive-a"', '"manifest-a"', '""')),
+  triageControl(
+    "fuzz-triage-each-identity-mismatch-infrastructure",
+    triageReport('"stale"'),
+  ),
+  triageControl("fuzz-triage-mismatch-expected-archive-infrastructure", triageReport('"archive-a"', '"stale"')),
+  triageControl("fuzz-triage-mismatch-manifest-infrastructure", triageReport('"archive-a"', '"archive-a"', '"stale"')),
+  triageControl("fuzz-triage-mismatch-expected-manifest-infrastructure", triageReport('"archive-a"', '"archive-a"', '"manifest-a"', '"stale"')),
+  triageControl(
+    "fuzz-triage-valid-opaque-identities-passed",
+    triageReport('"opaque archive"', '"opaque archive"', '"opaque manifest"', '"opaque manifest"'),
+    '"passed"',
+  ),
+  reviewControl(
+    "fuzz-review-all-empty-identities-infrastructure",
+    reviewReport('""', '""', '""', '""', '""', '""'),
+  ),
+  reviewControl(
+    "fuzz-review-each-actual-and-expected-identity-empty-infrastructure",
+    reviewReport('""'),
+  ),
+  reviewControl("fuzz-review-empty-expected-archive-infrastructure", reviewReport('"archive-a"', '""')),
+  reviewControl("fuzz-review-empty-manifest-infrastructure", reviewReport('"archive-a"', '"archive-a"', '""')),
+  reviewControl("fuzz-review-empty-expected-manifest-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"manifest-a"', '""')),
+  reviewControl("fuzz-review-empty-toolchain-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"manifest-a"', '"manifest-a"', '""')),
+  reviewControl("fuzz-review-empty-expected-toolchain-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"manifest-a"', '"manifest-a"', '"stable"', '""')),
+  reviewControl(
+    "fuzz-review-each-identity-mismatch-infrastructure",
+    reviewReport('"stale"'),
+  ),
+  reviewControl("fuzz-review-mismatch-expected-archive-infrastructure", reviewReport('"archive-a"', '"stale"')),
+  reviewControl("fuzz-review-mismatch-manifest-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"stale"')),
+  reviewControl("fuzz-review-mismatch-expected-manifest-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"manifest-a"', '"stale"')),
+  reviewControl("fuzz-review-mismatch-toolchain-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"manifest-a"', '"manifest-a"', '"nightly"')),
+  reviewControl("fuzz-review-mismatch-expected-toolchain-infrastructure", reviewReport('"archive-a"', '"archive-a"', '"manifest-a"', '"manifest-a"', '"stable"', '"nightly"')),
+  reviewControl(
+    "fuzz-review-replay-plus-empty-identities-failed",
+    reviewReport('""', '""', '""', '""', '""', '""', "true", "true", "1000", "true"),
+    '"failed"',
+  ),
+  reviewControl(
+    "fuzz-review-valid-opaque-identities-passed",
+    reviewReport('"opaque archive"', '"opaque archive"', '"opaque manifest"', '"opaque manifest"', '"opaque toolchain"', '"opaque toolchain"'),
+    '"passed"',
+  ),
+];
+
+it.each(nativeControlReferences)("$name", ({ name, reference, tests }) => {
+  const marker = reference.indexOf("\n#[test]");
+  expect(marker).toBeGreaterThan(0);
+  compileAndRun(name, reference.slice(0, marker), tests, true);
+});
+
+it("fuzz-triage-no-replay-branch", () => {
+  expect(
+    fuzzEvidenceAssessmentFixtures["fuzz-campaign-evidence-blank"].reference,
+  ).not.toContain("replay");
 });
 
 it("tagged retrieval preserves empty payloads, short headers and raw borrowed bytes", () => {

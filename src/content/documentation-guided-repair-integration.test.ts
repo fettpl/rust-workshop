@@ -9,6 +9,7 @@ import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-co
 import { expect, it } from "vitest";
 import * as course from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 
 it("appends one documentation lesson after the testing workflow with executable recall and counted families", () => {
   const stage = course.modules.find((m) => m.id === "testing-quality")!;
@@ -37,7 +38,9 @@ it("appends one documentation lesson after the testing workflow with executable 
     id: "testing-documentation-repair-gate",
     requiredIndependentCodingTasks: 2,
   });
-  const historicalCourse = historicalBeforeFrameProtocolMaintenance(course);
+  const historicalCourse = historicalBeforeFrameProtocolMaintenance(
+    historicalBeforeExistingContractRepair(course),
+  );
   expect(historicalCourse.lessons).toHaveLength(193);
   expect(course.concepts).toHaveLength(194);
 });
@@ -120,7 +123,9 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
   );
   const preHandoff = historicalBeforeSendHandoff(
     historicalBeforeCancellationTransfer(
-      historicalBeforeInitializedPrefix(course),
+      historicalBeforeInitializedPrefix(
+        historicalBeforeExistingContractRepair(course),
+      ),
     ),
   );
   const previous = historicalBeforeDocumentationRepair(preHandoff);
@@ -158,7 +163,9 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
         ? historyRedactionDeltas[historyRedactionPath].currentSha256
         : immutable.sha256,
     );
-  const historicalCourse = historicalBeforeFrameProtocolMaintenance(course);
+  const historicalCourse = historicalBeforeFrameProtocolMaintenance(
+    historicalBeforeExistingContractRepair(course),
+  );
   expect(
     historicalCourse.lessons.slice(legacy.lessons.length).map((l) => l.id),
   ).toEqual([id, "ownership-foundation-transfer"]);

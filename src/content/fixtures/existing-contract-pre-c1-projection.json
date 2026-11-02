@@ -1,0 +1,446 @@
+{
+  "schema": "existing-contract-repair-pre-c1-projection-v1",
+  "engineeringLabel": "existing-contract-repair-v1",
+  "predecessor": {
+    "wholeCourseSha256": "06c25a783eaec0643cae62d8804b46689042be41bea932836d948c7ee69ce160",
+    "registrySha256ByKey": {
+      "competencies": "4e3a94355c196b6276e2aec7f1c6188f8c534ee806333bcb31a996cfb4fa1851",
+      "concepts": "df42156348b703ab03019d052d1cb93a4a9720961892718590494740c993eba3",
+      "default": "0a39cda34edbd4bf1ad98379538f400da72bf7b9285d664be1dc2087e7ceb89a",
+      "delayedReviewExercises": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c",
+      "lessons": "960ee032dcd32b278405811276468db049abda1b2798de7e6668e0ac52ea2223",
+      "modules": "24eb0aa5440c850ad612d28b79478031666d0ed54dadfffd6c26d277ad8f987e",
+      "ownershipModule": "a49b89d28c14ca64c42429ac0d946ee13b6f5d638cd55ea311c1e6746b44cec1",
+      "project": "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+      "projects": "12ca1b30c738589b69ff4a5894f7785ba1b2bb1001a7a69033c07a233eff88f4",
+      "reviewExercises": "1489f8c86b0c57c913f40f403375487b82fe7b0e667b0d00997b9601cb1dd2c1",
+      "reviewExercisesById": "d4d18fb9c0852bf13ca6b644d60b12150afa1e35722defcc35bc67d76e373470",
+      "roadmap": "63c94381759dcb101770b8f8f56e3d66aebdcf27e19e6fccfaa21c1d8971792a",
+      "shortReviewExercises": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+      "sources": "e9ae605cb3b4accd0483bef877e991c113a53ae4b069838bcde34d3c52ff194a",
+      "traces": "f501901ba89841109381b3f99e858606cb6cebd888b595518f556504efcaa263"
+    },
+    "counts": {
+      "modules": 48,
+      "lessons": 194,
+      "concepts": 194,
+      "steps": 1293,
+      "sources": 349,
+      "projects": 13
+    },
+    "namespaceKeys": [
+      "competencies",
+      "concepts",
+      "default",
+      "delayedReviewExercises",
+      "lessons",
+      "modules",
+      "ownershipModule",
+      "project",
+      "projects",
+      "reviewExerciseForId",
+      "reviewExercises",
+      "reviewExercisesById",
+      "roadmap",
+      "shortReviewExercises",
+      "sources",
+      "traces"
+    ],
+    "registryKeys": [
+      "competencies",
+      "concepts",
+      "default",
+      "delayedReviewExercises",
+      "lessons",
+      "modules",
+      "ownershipModule",
+      "project",
+      "projects",
+      "reviewExercises",
+      "reviewExercisesById",
+      "roadmap",
+      "shortReviewExercises",
+      "sources",
+      "traces"
+    ],
+    "aliasChecks": {
+      "delayedReviewExercisesDefault": true,
+      "shortReviewExercisesDefault": true,
+      "projectProjects": true,
+      "ownershipModuleModules": true,
+      "reviewExercisesByIdUsesStepIds": true
+    }
+  },
+  "restorations": [
+    {
+      "registry": "lessons",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "steps",
+        3,
+        "prompt"
+      ],
+      "before": "Użyj `Dossier` oraz `classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, current_manifest: &str) -> &'static str`; `replay_only` ma pierwszeństwo i zwraca literal `failed`; następnie wymagaj równości run/archive/manifest z argumentami, `instrumented`, `normal` i `runs >= 1000`; poprawny raport zwraca `status`, a brakujące lub niezgodne dowody `infrastructure`.",
+      "successorSha256": "82b43e97744bfa3bc1837b041dddcbafb7ad5aca210b0e15f7b0ede22bc11a2a"
+    },
+    {
+      "registry": "lessons",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "steps",
+        3,
+        "solution"
+      ],
+      "before": "#[derive(Debug, PartialEq, Eq)]\nstruct Dossier { run_id: &'static str, archive_hash: &'static str, manifest_hash: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool, status: &'static str }\nfn classify_report(dossier: &Dossier, current_run: &str, current_archive: &str, current_manifest: &str) -> &'static str {\n    if dossier.replay_only { return \"failed\"; }\n    if dossier.run_id != current_run || dossier.archive_hash != current_archive || dossier.manifest_hash != current_manifest { return \"infrastructure\"; }\n    if !dossier.instrumented || !dossier.normal || dossier.runs < 1000 { return \"infrastructure\"; }\n    dossier.status\n}",
+      "successorSha256": "125e06d9b0715375f82c59c021769fd2f3f20c1303d95da1411c9191282b5cdb"
+    },
+    {
+      "registry": "lessons",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "steps",
+        3,
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn dossier_requires_fresh_identity_and_campaign_phases() {\n    let current = (\"run-1\", \"archive-a\", \"manifest-a\");\n    assert_eq!(classify_report(&Dossier { run_id: \"run-1\", archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", instrumented: true, normal: true, runs: 1000, replay_only: false, status: \"passed\" }, current.0, current.1, current.2), \"passed\");\n    assert_eq!(classify_report(&Dossier { run_id: \"run-1\", archive_hash: \"stale\", manifest_hash: \"manifest-a\", instrumented: true, normal: true, runs: 1000, replay_only: false, status: \"passed\" }, current.0, current.1, current.2), \"infrastructure\");\n    assert_eq!(classify_report(&Dossier { run_id: \"\", archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", instrumented: true, normal: true, runs: 1000, replay_only: false, status: \"passed\" }, current.0, current.1, current.2), \"infrastructure\");\n    assert_eq!(classify_report(&Dossier { run_id: \"run-1\", archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", instrumented: true, normal: true, runs: 1, replay_only: false, status: \"passed\" }, current.0, current.1, current.2), \"infrastructure\");\n    assert_eq!(classify_report(&Dossier { run_id: \"run-1\", archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", instrumented: true, normal: true, runs: 1000, replay_only: true, status: \"passed\" }, current.0, current.1, current.2), \"failed\");\n    assert_eq!(classify_report(&Dossier { run_id: \"run-1\", archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", instrumented: false, normal: true, runs: 1000, replay_only: false, status: \"passed\" }, current.0, current.1, current.2), \"infrastructure\");\n    assert_eq!(classify_report(&Dossier { run_id: \"run-1\", archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", instrumented: true, normal: false, runs: 1000, replay_only: false, status: \"passed\" }, current.0, current.1, current.2), \"infrastructure\");\n}",
+      "successorSha256": "eed1ae005bf1c34a8fa06e1cd4dddcd33ef4fc8fe7d2f87fb924f795e9fa761e"
+    },
+    {
+      "registry": "lessons",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "steps",
+        4,
+        "prompt"
+      ],
+      "before": "Zaimplementuj `triage_report(report: &Triage) -> &'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, instrumented, tool_ok, finding }`; stale hash, missing instrumentation lub tool failure to `infrastructure`, finding to `failed`, a czysty raport to `passed`.",
+      "successorSha256": "899eb132f2c8cc701af78bb9cd550e9f2d225362d0574160f6f0de3a2378e836"
+    },
+    {
+      "registry": "lessons",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "steps",
+        4,
+        "solution"
+      ],
+      "before": "#[derive(Debug, PartialEq, Eq)]\nstruct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, instrumented: bool, tool_ok: bool, finding: bool }\nfn triage_report(report: &Triage) -> &'static str {\n    if report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || !report.instrumented || !report.tool_ok { \"infrastructure\" } else if report.finding { \"failed\" } else { \"passed\" }\n}",
+      "successorSha256": "b214ddf9b5799a99618201583c768e4d0b979979a730391afc7505b636a7edcd"
+    },
+    {
+      "registry": "lessons",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "steps",
+        4,
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn triage_distinguishes_hash_mismatch_tool_failure_and_oracle_finding() {\n    let good = (\"archive-a\", \"manifest-a\");\n    assert_eq!(triage_report(&Triage { archive_hash: \"stale\", expected_archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", expected_manifest_hash: \"manifest-a\", instrumented: true, tool_ok: true, finding: true }), \"infrastructure\");\n    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: false, tool_ok: true, finding: true }), \"infrastructure\");\n    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: false, finding: false }), \"infrastructure\");\n    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: true }), \"failed\");\n    assert_eq!(triage_report(&Triage { archive_hash: good.0, expected_archive_hash: good.0, manifest_hash: good.1, expected_manifest_hash: good.1, instrumented: true, tool_ok: true, finding: false }), \"passed\");\n}",
+      "successorSha256": "02616b21ff47f6a6c8c0a48a7d87c5f1c1c06b11dee1a858690083a29ac8780a"
+    },
+    {
+      "registry": "lessons",
+      "selector": "runtime-allocation-scope",
+      "path": [
+        "steps",
+        4,
+        "prompt"
+      ],
+      "before": "Zaimplementuj publiczny kontrakt Rust: enum Event (Debug, PartialEq, Eq) z wariantami Setup { input_len: usize }, Open, Measured { ok: bool, value: usize }, Closed, Reported { value: usize }, ErrorClosed i Teardown oraz struct Window. Udostępnij Window::empty() -> Window, fn setup(&mut self, input_len: usize) -> Result<(), &'static str>, fn begin(&mut self) -> Result<(), &'static str>, fn measure(&mut self, work: impl FnOnce() -> Result<usize, &'static str>) -> Result<usize, &'static str>, fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str>, fn teardown(&mut self) -> Result<(), &'static str> i fn collect(self) -> Result<Vec<Event>, &'static str>. Udostępnij też fn scope(input: &[u8], work: impl FnOnce() -> Result<usize, &'static str>) -> (Result<usize, &'static str>, Vec<Event>). Hidden tests wymagają, aby po Err pojawiło się Measured { ok: false, value: 0 }, po sukcesie Measured { ok: true, value } i Reported { value }, a kolejność obejmowała Setup, Open, Measured, Closed lub ErrorClosed, opcjonalnie Reported, Teardown. setup musi odrzucić setup-inside-window, begin już otwarte okno jako already-open, measure poza oknem jako work-before-open, finish przed pomiarem jako finish-before-measure i rozbieżny wynik jako finish-result-mismatch, a zamknięte okno jako already-closed; teardown ma odrzucać teardown-while-open i teardown-before-close, zaś collect brak końcowego Teardown jako missing-teardown.",
+      "successorSha256": "614f9929f12aff58de4bf92c89c39a268b3f06ecb23f64e1a6773f99f11e25e6"
+    },
+    {
+      "registry": "lessons",
+      "selector": "runtime-allocation-scope",
+      "path": [
+        "steps",
+        4,
+        "solution"
+      ],
+      "before": "#[derive(Debug, PartialEq, Eq)]\nenum Event { Setup { input_len: usize }, Open, Measured { ok: bool, value: usize }, Closed, Reported { value: usize }, ErrorClosed, Teardown }\nenum Measurement { Success(usize), Error }\n\nstruct Window { open: bool, measured: Option<Measurement>, events: Vec<Event> }\nimpl Window {\n    fn empty() -> Self { Self { open: false, measured: None, events: Vec::new() } }\n    fn setup(&mut self, input_len: usize) -> Result<(), &'static str> { if self.open || !self.events.is_empty() { return Err(\"setup-inside-window\"); } self.events.push(Event::Setup { input_len }); Ok(()) }\n    fn begin(&mut self) -> Result<(), &'static str> { if self.open { return Err(\"already-open\"); } self.open = true; self.events.push(Event::Open); Ok(()) }\n    fn measure(&mut self, work: impl FnOnce() -> Result<usize, &'static str>) -> Result<usize, &'static str> {\n        if !self.open { return Err(\"work-before-open\"); }\n        match work() {\n            Ok(value) => { self.measured = Some(Measurement::Success(value)); self.events.push(Event::Measured { ok: true, value }); Ok(value) }\n            Err(error) => { self.measured = Some(Measurement::Error); self.events.push(Event::Measured { ok: false, value: 0 }); Err(error) }\n        }\n    }\n    fn finish(&mut self, result: Result<usize, &'static str>) -> Result<(), &'static str> {\n        if !self.open { return Err(\"already-closed\"); }\n        match (self.measured.as_ref(), result) {\n            (None, _) => Err(\"finish-before-measure\"),\n            (Some(Measurement::Success(measured)), Ok(value)) if *measured == value => { self.open = false; self.events.push(Event::Closed); self.events.push(Event::Reported { value: *measured }); Ok(()) },\n            (Some(Measurement::Error), Err(_)) => { self.open = false; self.events.push(Event::ErrorClosed); Ok(()) },\n            _ => Err(\"finish-result-mismatch\"),\n        }\n    }\n    fn teardown(&mut self) -> Result<(), &'static str> { if self.open { return Err(\"teardown-while-open\"); } if !self.events.iter().any(|event| matches!(event, Event::Closed | Event::ErrorClosed)) { return Err(\"teardown-before-close\"); } self.events.push(Event::Teardown); Ok(()) }\n    fn collect(self) -> Result<Vec<Event>, &'static str> { if !matches!(self.events.last(), Some(Event::Teardown)) { return Err(\"missing-teardown\"); } Ok(self.events) }\n}\n\nfn scope(input: &[u8], work: impl FnOnce() -> Result<usize, &'static str>) -> (Result<usize, &'static str>, Vec<Event>) {\n    let mut window = Window::empty();\n    window.setup(input.len()).unwrap();\n    window.begin().unwrap();\n    let result = window.measure(work);\n    let outcome = match result { Ok(value) => { window.finish(Ok(value)).unwrap(); Ok(value) }, Err(error) => { window.finish(Err(error)).unwrap(); Err(error) } };\n    window.teardown().unwrap();\n    (outcome, window.collect().unwrap())\n}",
+      "successorSha256": "f36f9a0673f1006442ac9bfa509b8408aa5a2864b368338ad5e097cc0f6a5f76"
+    },
+    {
+      "registry": "lessons",
+      "selector": "runtime-allocation-scope",
+      "path": [
+        "steps",
+        4,
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn setup_is_outside_and_teardown_runs_for_both_results() {\n    let input = b\"records\";\n    assert_eq!(scope(input, || Ok(11)).1, vec![Event::Setup { input_len: 7 }, Event::Open, Event::Measured { ok: true, value: 11 }, Event::Closed, Event::Reported { value: 11 }, Event::Teardown]);\n    assert_eq!(scope(input, || Err(\"bad\")).1, vec![Event::Setup { input_len: 7 }, Event::Open, Event::Measured { ok: false, value: 0 }, Event::ErrorClosed, Event::Teardown]);\n    let mut before_measure = Window::empty(); before_measure.setup(7).unwrap(); before_measure.begin().unwrap();\n    assert_eq!(before_measure.finish(Ok(11)), Err(\"finish-before-measure\"));\n    assert_eq!(before_measure.teardown(), Err(\"teardown-while-open\"));\n    assert_eq!(before_measure.collect(), Err(\"missing-teardown\"));\n    let mut mismatch = Window::empty(); mismatch.setup(7).unwrap(); mismatch.begin().unwrap();\n    assert_eq!(mismatch.measure(|| Ok(11)), Ok(11));\n    assert_eq!(mismatch.finish(Ok(999)), Err(\"finish-result-mismatch\"));\n    assert_eq!(mismatch.teardown(), Err(\"teardown-while-open\"));\n    let mut fresh = Window::empty();\n    assert_eq!(fresh.teardown(), Err(\"teardown-before-close\"));\n}",
+      "successorSha256": "44d4866c28b4849d0512eaac2fea51fe90911c0c48a4d872041c313f6e06a7d3"
+    },
+    {
+      "registry": "lessons",
+      "selector": "bindings-types",
+      "path": [
+        "steps",
+        6,
+        "prompt"
+      ],
+      "before": "Liczby całkowite ze znakiem, np. i8 i i32, obejmują też wartości ujemne; u8 i u32 zaczynają od zera. Liczba w nazwie to szerokość w bitach: i8 mieści -128..=127, a u8 0..=255. usize służy m.in. do długości i indeksów, a jego szerokość zależy od platformy; nie zakładaj 64 bitów. Kompilator wnioskuje typ z wartości i użycia; bez innych wskazówek liczba całkowita otrzymuje i32, a zmiennoprzecinkowa f64. `: u8` wybiera typ jawnie. const wymaga typu i wyrażenia obliczalnego jako stała; nie może mieć mut. let tworzy lokalne wiązanie, a ponowne let może je przesłonić. Sprawdź przykład: / dla liczb całkowitych ucina część ułamkową w stronę zera, a % daje resztę. Jaki jest wynik?",
+      "successorSha256": "98d2e740fd358c3d41a15acdcdd06729ad06ae0d8b0e2819e118547ce76042a7"
+    },
+    {
+      "registry": "lessons",
+      "selector": "generic-bounds",
+      "path": [
+        "steps",
+        3,
+        "prompt"
+      ],
+      "before": "Zapis fn same<T>(a: &T, b: &T) -> bool where T: PartialEq { a == b } ma tę samą obietnicę co <T: PartialEq>. where przenosi warunki za listę argumentów i wynik, przed ciało. Funkcja porównuje dwa posiadane T i następnie przenosi jedno do wyniku. Jakich warunków wymaga samo takie ciało?",
+      "successorSha256": "59378dc47151e398839e09c2ebd9afb12e42db56697f3b4aa70ccbad98d0ed64"
+    },
+    {
+      "registry": "lessons",
+      "selector": "generic-bounds",
+      "path": [
+        "steps",
+        3,
+        "evaluator",
+        "explanations",
+        "0"
+      ],
+      "before": "Zwrócenie posiadanej wartości może ją przenieść. Copy nie jest konieczne.",
+      "successorSha256": "9402261eeac337c8f83a6af3ad9dc9c23e9a6837c5379729edef451c371cfadb"
+    },
+    {
+      "registry": "lessons",
+      "selector": "generic-bounds",
+      "path": [
+        "steps",
+        3,
+        "evaluator",
+        "explanations",
+        "2"
+      ],
+      "before": "Każdy bound powinien mieć uzasadnienie w operacji. Możesz porównać wartości i później oddać jedną przez przeniesienie.",
+      "successorSha256": "07850440fd6d4f4bb9ca5f20cac0cfe08c4717a546e42f4b5a77f4f2dde22735"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        3,
+        "prompt"
+      ],
+      "before": "Uzupełnij `ByteView<'a>` i `unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<ByteView<'a>>`. Dla dodatniej długości caller musi zapewnić niezerowy, wyrównany adres do `len` zainicjalizowanych bajtów w jednej żywej alokacji, bez mutowalnego aliasowania przez `'a`; dla zera zwróć pusty widok bez odczytu. Nie wydłużaj życia storage.",
+      "successorSha256": "8d74f2cc2bff5f23402914caf2283904c51ad5ed8c4f0f8d6e18f1fa2d369afd"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        3,
+        "solution"
+      ],
+      "before": "use std::slice;\n\n#[derive(Debug, PartialEq, Eq)]\nstruct ByteView<'a> { bytes: &'a [u8] }\n\nimpl<'a> ByteView<'a> {\n    /// # Safety\n    /// For len > 0, raw points to len initialized bytes in one live allocation,\n    /// is aligned, non-null, and remains valid and unaliased for 'a.\n    unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {\n        if len == 0 { return Some(Self { bytes: &[] }); }\n        if raw.is_null() { return None; }\n        Some(Self { bytes: unsafe { slice::from_raw_parts(raw, len) } })\n    }\n\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}",
+      "successorSha256": "736594720cad3ddd2996573df579374d3b7de9be1565d998ebf016ef93438dc3"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        4,
+        "prompt"
+      ],
+      "before": "Zachowaj ten sam kontrakt ByteView dla ważnych bajtów, pustego null view i pożyczki kończącej się wraz ze storage. To równoważna forma gate i należy do tej samej rodziny dowodu.",
+      "successorSha256": "923733d43d253b68831255cca641094069b11fa786043460375cf90e48e67557"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        4,
+        "solution"
+      ],
+      "before": "use std::slice;\n\n#[derive(Debug, PartialEq, Eq)]\nstruct ByteView<'a> { bytes: &'a [u8] }\n\nimpl<'a> ByteView<'a> {\n    /// The caller must keep the storage initialized, aligned, valid, and\n    /// alive for the returned borrow; this constructor cannot extend it.\n    unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {\n        match (raw.is_null(), len) {\n            (_, 0) => Some(Self { bytes: &[] }),\n            (true, _) => None,\n            (false, _) => Some(Self { bytes: unsafe { slice::from_raw_parts(raw, len) } }),\n        }\n    }\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}",
+      "successorSha256": "2c5cf1a28b85beacc589cb95c50a1b66a539c8ecc2657b5902213c83621ca10c"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        5,
+        "prompt"
+      ],
+      "before": "Od pustej kartki zdefiniuj dokładnie `struct ByteView<'a> { bytes: &'a [u8] }` oraz `impl<'a> ByteView<'a> { unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self>; fn as_slice(&self) -> &[u8]; }`. Dodaj safety contract o inicjalizacji, wyrównaniu, ważności, niealiasowaniu i lifetime; `len == 0` ma zwrócić pusty widok bez dereferencji. Nie implementuj odczytu z `MaybeUninit` jako `u8`. Blank jest drugą formą tej samej rodziny co gate.",
+      "successorSha256": "5cbd2fbee36730de58856a5f8de1150a0582bfe626740519728d670919ac2deb"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        5,
+        "solution"
+      ],
+      "before": "use std::slice;\n\n#[derive(Debug, PartialEq, Eq)]\nstruct ByteView<'a> { bytes: &'a [u8] }\n\nimpl<'a> ByteView<'a> {\n    /// # Safety\n    /// For len > 0, raw points to len initialized bytes in one live allocation,\n    /// is aligned, non-null, and remains valid and unaliased for 'a.\n    unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {\n        if len == 0 { return Some(Self { bytes: &[] }); }\n        if raw.is_null() { return None; }\n        Some(Self { bytes: unsafe { slice::from_raw_parts(raw, len) } })\n    }\n\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}",
+      "successorSha256": "736594720cad3ddd2996573df579374d3b7de9be1565d998ebf016ef93438dc3"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        6,
+        "prompt"
+      ],
+      "before": "Odtwórz kontrakt `ByteView` z pamięci: zainicjalizowane bajty, żywa alokacja, brak aliasowania, null tylko dla zera i lifetime ograniczony do storage.",
+      "successorSha256": "c357b4a1e4aa196439249fd80c00f8e5aa714fbe7537e0856007658e6d511903"
+    },
+    {
+      "registry": "lessons",
+      "selector": "unsafe-miri-byte-view",
+      "path": [
+        "steps",
+        6,
+        "solution"
+      ],
+      "before": "use std::slice;\n\n#[derive(Debug, PartialEq, Eq)]\nstruct ByteView<'a> { bytes: &'a [u8] }\n\nimpl<'a> ByteView<'a> {\n    unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {\n        if len == 0 { return Some(Self { bytes: &[] }); }\n        if raw.is_null() { return None; }\n        let bytes = unsafe { slice::from_raw_parts(raw, len) };\n        Some(Self { bytes })\n    }\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}",
+      "successorSha256": "502de36d3d2530a1c049db0d8af15f610aea9f8a6899e7a66c966f7538032880"
+    },
+    {
+      "registry": "concepts",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "reviewPrompt"
+      ],
+      "before": "Zaimplementuj `classify_dossier(report: &Triage) -> &'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, toolchain, expected_toolchain, instrumented, normal, runs, replay_only }`; `replay_only` zwraca `\"failed\"`, a niezgodny archive/manifest/toolchain, brak instrumentacji, nienormalne zakończenie albo `runs < 1000` zwraca `\"infrastructure\"`; wyłącznie świeży, instrumentowany raport zwraca `\"passed\"`.",
+      "successorSha256": "3440b3c834060969b945d898919c31cf9a3e51152eaa113fc702ded3db121368"
+    },
+    {
+      "registry": "concepts",
+      "selector": "unsafe-miri-byte-view-contract",
+      "path": [
+        "reviewAnswer"
+      ],
+      "before": "Caller musi zapewnić niezerowy i poprawnie wyrównany adres dla dodatniej długości, jeden żywy alokowany obiekt z `len` zainicjalizowanymi bajtami, poprawny zakres oraz brak mutowalnego aliasowania przez życie widoku. Dla zera można zwrócić pusty widok bez odczytu; lifetime jest pożyczką, a nie sposobem na przedłużenie życia storage.",
+      "successorSha256": "d61ab0e1e7a7ae333c77c79804ec4e7f1f15f73cc017d6aa9add9cf8a6099a01"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": [
+        "gateCriteria",
+        0,
+        "label"
+      ],
+      "before": "ByteView zachowuje kontrakt inicjalizacji i lifetime.",
+      "successorSha256": "2c8f3696a1c4d594f4d23b4340af8ae84e34fd7b608ee38bb9e47736bc564f43"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": [
+        "gateCriteria",
+        4,
+        "label"
+      ],
+      "before": "Retrieval ByteView zachowuje initialized storage.",
+      "successorSha256": "0513cdeecd5be00a59d25f75fe265982403e8bbc5d6c4172e41f1fc69b4d77ee"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "prompt"
+      ],
+      "before": "Zaimplementuj `classify_dossier(report: &Triage) -> &'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, toolchain, expected_toolchain, instrumented, normal, runs, replay_only }`; `replay_only` zwraca `\"failed\"`, a niezgodny archive/manifest/toolchain, brak instrumentacji, nienormalne zakończenie albo `runs < 1000` zwraca `\"infrastructure\"`; wyłącznie świeży, instrumentowany raport zwraca `\"passed\"`. Napisz i uruchom funkcję Rust z testami ukrytymi.",
+      "successorSha256": "06df494284d000ff8230dbb06d305bcfa3f475b43b00316772662ea640dcd5a4"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "solution"
+      ],
+      "before": "struct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, toolchain: &'static str, expected_toolchain: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool }\nfn classify_dossier(report: &Triage) -> &'static str {\n    if report.replay_only { \"failed\" } else if report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || report.toolchain != report.expected_toolchain || !report.instrumented || !report.normal || report.runs < 1000 { \"infrastructure\" } else { \"passed\" }\n}",
+      "successorSha256": "b7ed163f9d3b7fc8f5719bc3c80644109fb976bb27d34b02dfa3428eda3bbbae"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "fuzz-campaign-evidence",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn dossier_retrieval_requires_fresh_instrumented_runs() {\n    let good = Triage { archive_hash: \"archive-a\", expected_archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", expected_manifest_hash: \"manifest-a\", toolchain: \"stable\", expected_toolchain: \"stable\", instrumented: true, normal: true, runs: 1000, replay_only: false };\n    assert_eq!(classify_dossier(&good), \"passed\");\n    assert_eq!(classify_dossier(&Triage { archive_hash: \"stale\", ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { manifest_hash: \"stale\", ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { toolchain: \"nightly\", ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { runs: 1, ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { replay_only: true, ..good }), \"failed\");\n    assert_eq!(classify_dossier(&Triage { instrumented: false, ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { normal: false, ..good }), \"infrastructure\");\n}",
+      "successorSha256": "75f8c72041a9e38825724f288d1e4de7f488e2e8036ce8ed22c92e40b9334b3e"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "unsafe-miri-byte-view-contract",
+      "path": [
+        "prompt"
+      ],
+      "before": "Utwórz ByteView bez odczytu null/zero i z kontraktem zainicjalizowanych bajtów.",
+      "successorSha256": "f3406f0ff390c76d2da2aeffeb8b823403ece0343f3992e08593dad6addf6e06"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "unsafe-miri-byte-view-contract",
+      "path": [
+        "solution"
+      ],
+      "before": "use std::slice;\n\n#[derive(Debug, PartialEq, Eq)]\nstruct ByteView<'a> { bytes: &'a [u8] }\n\nimpl<'a> ByteView<'a> {\n    /// The caller must keep the storage initialized, aligned, valid, and\n    /// alive for the returned borrow; this constructor cannot extend it.\n    unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {\n        match (raw.is_null(), len) {\n            (_, 0) => Some(Self { bytes: &[] }),\n            (true, _) => None,\n            (false, _) => Some(Self { bytes: unsafe { slice::from_raw_parts(raw, len) } }),\n        }\n    }\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}",
+      "successorSha256": "2c5cf1a28b85beacc589cb95c50a1b66a539c8ecc2657b5902213c83621ca10c"
+    },
+    {
+      "registry": "reviewExercisesById",
+      "selector": "fuzz-campaign-evidence-review",
+      "path": [
+        "prompt"
+      ],
+      "before": "Zaimplementuj `classify_dossier(report: &Triage) -> &'static str` dla `Triage { archive_hash, expected_archive_hash, manifest_hash, expected_manifest_hash, toolchain, expected_toolchain, instrumented, normal, runs, replay_only }`; `replay_only` zwraca `\"failed\"`, a niezgodny archive/manifest/toolchain, brak instrumentacji, nienormalne zakończenie albo `runs < 1000` zwraca `\"infrastructure\"`; wyłącznie świeży, instrumentowany raport zwraca `\"passed\"`. Napisz i uruchom funkcję Rust z testami ukrytymi.",
+      "successorSha256": "06df494284d000ff8230dbb06d305bcfa3f475b43b00316772662ea640dcd5a4"
+    },
+    {
+      "registry": "reviewExercisesById",
+      "selector": "fuzz-campaign-evidence-review",
+      "path": [
+        "solution"
+      ],
+      "before": "struct Triage { archive_hash: &'static str, expected_archive_hash: &'static str, manifest_hash: &'static str, expected_manifest_hash: &'static str, toolchain: &'static str, expected_toolchain: &'static str, instrumented: bool, normal: bool, runs: usize, replay_only: bool }\nfn classify_dossier(report: &Triage) -> &'static str {\n    if report.replay_only { \"failed\" } else if report.archive_hash != report.expected_archive_hash || report.manifest_hash != report.expected_manifest_hash || report.toolchain != report.expected_toolchain || !report.instrumented || !report.normal || report.runs < 1000 { \"infrastructure\" } else { \"passed\" }\n}",
+      "successorSha256": "b7ed163f9d3b7fc8f5719bc3c80644109fb976bb27d34b02dfa3428eda3bbbae"
+    },
+    {
+      "registry": "reviewExercisesById",
+      "selector": "fuzz-campaign-evidence-review",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn dossier_retrieval_requires_fresh_instrumented_runs() {\n    let good = Triage { archive_hash: \"archive-a\", expected_archive_hash: \"archive-a\", manifest_hash: \"manifest-a\", expected_manifest_hash: \"manifest-a\", toolchain: \"stable\", expected_toolchain: \"stable\", instrumented: true, normal: true, runs: 1000, replay_only: false };\n    assert_eq!(classify_dossier(&good), \"passed\");\n    assert_eq!(classify_dossier(&Triage { archive_hash: \"stale\", ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { manifest_hash: \"stale\", ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { toolchain: \"nightly\", ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { runs: 1, ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { replay_only: true, ..good }), \"failed\");\n    assert_eq!(classify_dossier(&Triage { instrumented: false, ..good }), \"infrastructure\");\n    assert_eq!(classify_dossier(&Triage { normal: false, ..good }), \"infrastructure\");\n}",
+      "successorSha256": "75f8c72041a9e38825724f288d1e4de7f488e2e8036ce8ed22c92e40b9334b3e"
+    },
+    {
+      "registry": "reviewExercisesById",
+      "selector": "review-unsafe-miri-byte-view",
+      "path": [
+        "prompt"
+      ],
+      "before": "Utwórz ByteView bez odczytu null/zero i z kontraktem zainicjalizowanych bajtów.",
+      "successorSha256": "f3406f0ff390c76d2da2aeffeb8b823403ece0343f3992e08593dad6addf6e06"
+    },
+    {
+      "registry": "reviewExercisesById",
+      "selector": "review-unsafe-miri-byte-view",
+      "path": [
+        "solution"
+      ],
+      "before": "use std::slice;\n\n#[derive(Debug, PartialEq, Eq)]\nstruct ByteView<'a> { bytes: &'a [u8] }\n\nimpl<'a> ByteView<'a> {\n    /// The caller must keep the storage initialized, aligned, valid, and\n    /// alive for the returned borrow; this constructor cannot extend it.\n    unsafe fn from_raw_parts(raw: *const u8, len: usize) -> Option<Self> {\n        match (raw.is_null(), len) {\n            (_, 0) => Some(Self { bytes: &[] }),\n            (true, _) => None,\n            (false, _) => Some(Self { bytes: unsafe { slice::from_raw_parts(raw, len) } }),\n        }\n    }\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}",
+      "successorSha256": "2c5cf1a28b85beacc589cb95c50a1b66a539c8ecc2657b5902213c83621ca10c"
+    }
+  ]
+}

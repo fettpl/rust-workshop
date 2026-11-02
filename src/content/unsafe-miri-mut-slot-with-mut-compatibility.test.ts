@@ -15,6 +15,7 @@ import {
   expectedPreSlotMiriProjectSha256,
   historicalBeforeSlotLazyInit,
 } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,
@@ -35,7 +36,9 @@ const serializedRegistry = (course: typeof currentCourse) =>
 
 describe("MutSlot with_mut historical compatibility", () => {
   it("projects the authentic 8a registry and removes only the reviewed successor delta", () => {
-    const projected = historicalBeforeMutSlotWithMut(currentCourse);
+    const projected = historicalBeforeMutSlotWithMut(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
     const lesson = projected.lessons.find(
       (candidate) => candidate.id === mutSlotWithMutLessonId,
     );
@@ -92,7 +95,11 @@ describe("MutSlot with_mut historical compatibility", () => {
     };
     expect(
       hashJson(
-        serializedRegistry(historicalBeforeMutSlotWithMut(oldStepMutation)),
+        serializedRegistry(
+          historicalBeforeMutSlotWithMut(
+            historicalBeforeExistingContractRepair(oldStepMutation),
+          ),
+        ),
       ),
     ).not.toBe(baseline.wholeCourseSha256);
 
@@ -114,7 +121,9 @@ describe("MutSlot with_mut historical compatibility", () => {
             },
       ),
     };
-    const projected = historicalBeforeMutSlotWithMut(packageMutation);
+    const projected = historicalBeforeMutSlotWithMut(
+      historicalBeforeExistingContractRepair(packageMutation),
+    );
     const packageAfter = projected.projects.find(
       (p) => p.id === "miri-safety",
     )!.package!;
@@ -142,8 +151,9 @@ describe("MutSlot with_mut historical compatibility", () => {
             },
       ),
     };
-    const nearMissProjected =
-      historicalBeforeMutSlotWithMut(nearMissStopMutation);
+    const nearMissProjected = historicalBeforeMutSlotWithMut(
+      historicalBeforeExistingContractRepair(nearMissStopMutation),
+    );
     const nearMissLesson = nearMissProjected.lessons.find(
       (lesson) => lesson.id === mutSlotWithMutLessonId,
     )!;
@@ -160,7 +170,9 @@ describe("MutSlot with_mut historical compatibility", () => {
 
   it("composes before the older Slot helper without erasing the 8a predecessor delta", () => {
     const projected = historicalBeforeSlotLazyInit(
-      historicalBeforeMutSlotWithMut(currentCourse),
+      historicalBeforeMutSlotWithMut(
+        historicalBeforeExistingContractRepair(currentCourse),
+      ),
     );
     const project = projected.projects.find(
       (candidate) => candidate.id === "miri-safety",

@@ -8,6 +8,7 @@ import {
   historicalBeforeFrameProtocolMaintenance,
 } from "./frame-maintenance-compatibility-fixture";
 import { historicalBeforeOwnershipFoundation } from "./ownership-foundation-compatibility-fixture";
+import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -46,7 +47,9 @@ const serializedRegistry = (course: typeof currentCourse) =>
 
 describe("Frame Protocol A6 historical compatibility", () => {
   it("projects the genuine complete pre-A6 registry and preserves counts", () => {
-    const projected = historicalBeforeFrameProtocolMaintenance(currentCourse);
+    const projected = historicalBeforeFrameProtocolMaintenance(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
 
     expect(serializableRegistryKeys(projected)).toEqual(registryKeys);
     expect(hashJson(serializedRegistry(projected))).toBe(
@@ -84,7 +87,9 @@ describe("Frame Protocol A6 historical compatibility", () => {
   });
 
   it("composes A6 before the existing A5 projection entrypoint", () => {
-    const projected = historicalBeforeOwnershipFoundation(currentCourse);
+    const projected = historicalBeforeOwnershipFoundation(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
     expect(
       projected.lessons.some(
         (lesson) => lesson.id === frameProtocolMaintenanceLessonId,
@@ -122,7 +127,9 @@ describe("Frame Protocol A6 historical compatibility", () => {
       ),
     } as typeof currentCourse;
 
-    const projected = historicalBeforeFrameProtocolMaintenance(mutated);
+    const projected = historicalBeforeFrameProtocolMaintenance(
+      historicalBeforeExistingContractRepair(mutated),
+    );
     expect(projected.project.title).toContain("unknown primary alias change");
     const frame = projected.projects.find(
       (project) => project.id === "frame-protocol",
@@ -162,7 +169,9 @@ describe("Frame Protocol A6 historical compatibility", () => {
       unknownTopLevelAlias: { keep: true },
     } as typeof currentCourse;
 
-    const projected = historicalBeforeFrameProtocolMaintenance(mutated);
+    const projected = historicalBeforeFrameProtocolMaintenance(
+      historicalBeforeExistingContractRepair(mutated),
+    );
     const projectedDefault = (projected as unknown as Record<string, unknown>)
       .default as RegistryAlias;
     expect(projectedDefault.project.title).toBe("UNEXPECTED_ALIAS_METADATA");
@@ -184,7 +193,9 @@ describe("Frame Protocol A6 historical compatibility", () => {
   });
 
   it("is idempotent after exact A6 restoration", () => {
-    const once = historicalBeforeFrameProtocolMaintenance(currentCourse);
+    const once = historicalBeforeFrameProtocolMaintenance(
+      historicalBeforeExistingContractRepair(currentCourse),
+    );
     expect(historicalBeforeFrameProtocolMaintenance(once)).toEqual(once);
   });
 });
