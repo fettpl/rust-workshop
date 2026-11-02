@@ -578,7 +578,10 @@ for (const item of asyncTransferCases) {
           .click();
         const criterionRow = page
           .locator(".gate-panel li")
-          .filter({ hasText: criterion.label });
+          .filter({
+            has: page.getByText(criterion.label, { exact: true }),
+          });
+        await expect(criterionRow).toHaveCount(1);
         await criterionRow
           .getByRole("button", { name: "Sprawdź w zadaniu" })
           .click();
@@ -809,7 +812,13 @@ for (const item of asyncTransferCases) {
     );
     const criterionRow = page
       .locator(".gate-panel li")
-      .filter({ hasText: criterion.label });
+      .filter({
+        has: page.getByText(
+          `${criterion.label} · Brak świeżego samodzielnego wariantu`,
+          { exact: true },
+        ),
+      });
+    await expect(criterionRow).toHaveCount(1);
     await expect(criterionRow).toContainText(
       "Brak świeżego samodzielnego wariantu",
     );
