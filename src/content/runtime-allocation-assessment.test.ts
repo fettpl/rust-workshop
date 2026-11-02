@@ -75,14 +75,21 @@ it("rejects the named allocation error-payload mutant at the payload boundary", 
     (candidate) => candidate.id === "allocation-scope-blank",
   )!;
   const namedMutants = fixture.mutants ?? [];
-  expect(namedMutants).toHaveLength(1);
-  expect(namedMutants[0].id).toBe("allocation-scope-blank-wrong-error-payload");
+  expect(namedMutants.map((mutant) => mutant.id).sort()).toEqual([
+    "allocation-scope-blank-premature-finish",
+    "allocation-scope-blank-wrong-error-payload",
+  ]);
+  const wrongErrorPayload = namedMutants.find(
+    (candidate) => candidate.id === "allocation-scope-blank-wrong-error-payload",
+  );
+  expect(wrongErrorPayload).toBeDefined();
+  if (!wrongErrorPayload) throw new Error("wrong-error-payload mutant must be named");
   const step = runtimeAllocationEvidenceLessons
     .find((lesson) => lesson.id === "runtime-allocation-scope")!
     .steps.find((candidate) => candidate.id === "allocation-scope-blank")!;
   const directory = mkdtempSync(join(tmpdir(), "allocation-error-payload-mutants-"));
   try {
-    for (const [index, namedMutant] of namedMutants.entries()) {
+    for (const [index, namedMutant] of [wrongErrorPayload].entries()) {
       const source = namedMutant.source;
       const file = join(directory, `wrong-error-payload-${index}.rs`);
       const binary = join(directory, `wrong-error-payload-${index}`);
@@ -107,6 +114,11 @@ it("rejects the preserved premature-finish mutant at its named boundary", () => 
   const fixture = runtimeAllocationAssessmentFixtures.find(
     (candidate) => candidate.id === "allocation-scope-blank",
   )!;
+  const prematureMutant = fixture.mutants?.find(
+    (candidate) => candidate.id === "allocation-scope-blank-premature-finish",
+  );
+  expect(prematureMutant).toBeDefined();
+  if (!prematureMutant) throw new Error("premature-finish mutant must be named");
   const step = runtimeAllocationEvidenceLessons
     .find((lesson) => lesson.id === "runtime-allocation-scope")!
     .steps.find((candidate) => candidate.id === "allocation-scope-blank")!;
@@ -114,7 +126,7 @@ it("rejects the preserved premature-finish mutant at its named boundary", () => 
   try {
     const file = join(directory, "premature-finish.rs");
     const binary = join(directory, "premature-finish");
-    writeFileSync(file, appendHiddenTests(fixture.mutant, (step.evaluator as { kind: "tests"; tests: string }).tests));
+    writeFileSync(file, appendHiddenTests(prematureMutant.source, (step.evaluator as { kind: "tests"; tests: string }).tests));
     const compiled = spawnSync(
       "rustc",
       ["--edition=2024", "--test", file, "-o", binary],

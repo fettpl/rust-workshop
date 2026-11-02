@@ -110,7 +110,7 @@ export const unsafeMiriConcepts: Concept[] = [
     reviewPrompt:
       "Jakie warunki musi spełnić caller `ByteView::from_raw_parts`, zanim widok może zostać użyty, i co zmienia długość zero?",
     reviewAnswer:
-      "Caller musi zapewnić dla dodatniej długości niezerowy i poprawnie wyrównany adres do `len` zainicjalizowanych bajtów w jednej żywej alokacji, bez mutowalnego aliasowania przez życie widoku. `len` nie może przekraczać `isize::MAX`, a zakres końcowy nie może zawijać przestrzeni adresowej. Wrapper dla `len == 0` może zwrócić `&[]` bez wywołania `slice::from_raw_parts` i dlatego zachować politykę `null + 0`; samo std wymaga wyrównanego, niezerowego pointera także dla pustego slice'a. Lifetime jest pożyczką, a nie sposobem na przedłużenie życia storage.",
+      "Caller musi zapewnić dla dodatniej długości niezerowy i poprawnie wyrównany adres do `len` zainicjalizowanych bajtów w jednej żywej alokacji, bez mutowalnego aliasowania przez życie widoku; współdzielone aliasy tylko-do-odczytu są dozwolone. `len` nie może przekraczać `isize::MAX`, a zakres końcowy nie może zawijać przestrzeni adresowej. Wrapper dla `len == 0` może zwrócić `&[]` bez wywołania `slice::from_raw_parts` i dlatego zachować politykę `null + 0`; samo std wymaga wyrównanego, niezerowego pointera także dla pustego slice'a. Lifetime jest pożyczką, a nie sposobem na przedłużenie życia storage.",
     distinguish:
       "`MaybeUninit<u8>` nie staje się zainicjalnym `u8` tylko dlatego, że ma adres. Miri pomaga ujawnić odczyt niezainicjalizowanej pamięci, ale poprawny kontrakt musi być spełniony także poza Miri.",
     evidenceArtifact: "rust-code",
@@ -1389,7 +1389,7 @@ export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: initialized ByteView",
     prompt:
-      "Utwórz ByteView z kontraktem zainicjalizowanych `u8` w jednej żywej alokacji, wyrównanego i niezerowego adresu, `len <= isize::MAX`, niezwijającego się końca zakresu, braku mutowalnego aliasowania i lifetime. Wrapper dla `len == 0` ma zwrócić `&[]` bez wywołania std, zachowując `null + 0`; sama funkcja std wymaga wyrównanego, niezerowego pointera.",
+      "Utwórz ByteView z kontraktem zainicjalizowanych `u8` w jednej żywej alokacji, wyrównanego i niezerowego adresu, `len <= isize::MAX`, niezwijającego się końca zakresu, braku mutowalnego aliasowania przy żywym współdzielonym borrow oraz lifetime ograniczonego do storage; współdzielone aliasy tylko-do-odczytu są dozwolone. Wrapper dla `len == 0` ma zwrócić `&[]` bez wywołania std, zachowując `null + 0`; sama funkcja std wymaga wyrównanego, niezerowego pointera.",
     code: byteViewStarter,
     solution: byteViewEquivalent,
     tests: byteViewTests,

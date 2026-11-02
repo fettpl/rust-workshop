@@ -115,6 +115,10 @@ const namedMutants: Record<string, { id: string; source: string }[]> = {
         "(Some(Measurement::Error(_)), Err(_)) =>",
       ),
     },
+    {
+      id: "allocation-scope-blank-premature-finish",
+      source: mutants["allocation-scope-blank"],
+    },
   ],
 };
 

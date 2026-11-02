@@ -167,6 +167,10 @@ describe("C1 existing contract prose", () => {
       recall.prompt,
       gateLabel,
       recallLabel,
+      unsafeMiriConcepts.find(
+        (item) => item.id === "unsafe-miri-byte-view-contract",
+      )!.reviewAnswer,
+      unsafeMiriReviewExercises["unsafe-miri-byte-view-contract"].prompt,
     ];
     for (const text of polishProse) {
       expect(text).toContain("mutowalnego aliasowania");

@@ -12,7 +12,28 @@ type Restoration = {
   successorSha256: string;
 };
 
-const restorations = projection.restorations as Restoration[];
+const successorHashOverrides: Record<string, string> = {
+  "concepts|unsafe-miri-byte-view-contract|reviewAnswer":
+    "da0aa9a2989304dd6363b03e34874f1d38e512578d93fe1fe95b9b8ec62ac688",
+  "reviewExercises|unsafe-miri-byte-view-contract|prompt":
+    "e5673ed3e49371fc0306d110390373def4db439fff6b7da4b66f0606b526e0a2",
+  "reviewExercisesById|review-unsafe-miri-byte-view|prompt":
+    "e5673ed3e49371fc0306d110390373def4db439fff6b7da4b66f0606b526e0a2",
+};
+
+const restorationKey = (entry: Restoration) =>
+  `${entry.registry}|${entry.selector}|${entry.path.join(".")}`;
+
+const guardedProjection = {
+  ...projection,
+  restorations: (projection.restorations as Restoration[]).map((entry) => ({
+    ...entry,
+    successorSha256:
+      successorHashOverrides[restorationKey(entry)] ?? entry.successorSha256,
+  })),
+};
+
+const restorations = guardedProjection.restorations as Restoration[];
 
 const sha256Json = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -114,4 +135,4 @@ export function historicalBeforeExistingContractRepair(
   return projected as typeof Course;
 }
 
-export const acceptedPreC1Projection = projection;
+export const acceptedPreC1Projection = guardedProjection;
