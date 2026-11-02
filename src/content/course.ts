@@ -122,6 +122,7 @@ import {
   publicApiEvolutionSources,
   publicApiEvolutionReviewExercises,
 } from "./public-api-evolution";
+import { apiFrameProtocolMaintenanceLesson } from "./api-frame-protocol-maintenance";
 import {
   apiReleaseMatrixLessons,
   apiReleaseMatrixConcepts,
@@ -678,6 +679,7 @@ export const lessons = [
   ...asyncLendingBoundaryLessons,
   ...publicApiValueLessons,
   ...publicApiEvolutionLessons,
+  apiFrameProtocolMaintenanceLesson,
   ...apiReleaseMatrixLessons,
   ...macrosAsApiLessons,
   ...cargoDependencyLessons,

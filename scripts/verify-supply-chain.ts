@@ -205,13 +205,44 @@ try {
   const dossier = JSON.parse(
     readFileSync(join(packageRoot, "evidence/release-evidence.json"), "utf8"),
   ) as {
+    release?: string;
     publish?: boolean;
+    predecessor?: { head?: string; tree?: string };
+    normalized?: boolean;
+    dossier_excludes_self?: boolean;
+    archive_digest?: string;
+    archive_sha256?: string;
     manifest_sha256?: string;
     lock_sha256?: string;
+    normalized_fixture_sha256?: string;
+    file_sha256?: Record<string, string>;
     external_consumer?: string;
     archive_kind?: string;
     decision?: string;
   };
+  assert.equal(dossier.release, "1.1.0");
+  assert.deepEqual(dossier.predecessor, {
+    head: "16356613b729f5a456e506fc7508424994ab369b",
+    tree: "e68b5123d83ac456c59d4e5c4125c9f94ac698fc",
+  });
+  assert.equal(dossier.normalized, true);
+  assert.equal(dossier.dossier_excludes_self, true);
+  assert.equal(dossier.archive_digest, "outer-coordinator-report");
+  assert.equal(dossier.archive_sha256, undefined);
+  assert.equal(
+    dossier.normalized_fixture_sha256,
+    "sha256:b19872e49a2984d0c23ff763b75758f6cb0d7510244f8119e31738d75ac775e0",
+    "normalized Frame predecessor fixture hash",
+  );
+  for (const [path, hash] of Object.entries(dossier.file_sha256 ?? {})) {
+    assert.notEqual(path, "evidence/release-evidence.json");
+    assert(
+      existsSync(join(packageRoot, path)),
+      `normalized file hash points outside authored archive: ${path}`,
+    );
+    assert.match(hash, /^sha256:[0-9a-f]{64}$/, `normalized file hash: ${path}`);
+    assert.equal(hash, sha256File(join(packageRoot, path)), `file hash: ${path}`);
+  }
   assert.equal(dossier.publish, false, "publish = false is required");
   assert.equal(
     dossier.manifest_sha256,
@@ -252,6 +283,29 @@ try {
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
+  assert.deepEqual(
+    [...packageListing].sort(),
+    [
+      "frame-protocol-workspace/Cargo.lock",
+      "frame-protocol-workspace/Cargo.toml",
+      "frame-protocol-workspace/CHANGE-REVIEW.md",
+      "frame-protocol-workspace/DEPENDENCY-POLICY.md",
+      "frame-protocol-workspace/MAINTENANCE-CHALLENGE.md",
+      "frame-protocol-workspace/README.md",
+      "frame-protocol-workspace/RELEASE-CHECKLIST.md",
+      "frame-protocol-workspace/RELEASE-EVIDENCE.json",
+      "frame-protocol-workspace/deny.toml",
+      "frame-protocol-workspace/evidence/actual-cargo-tree.txt",
+      "frame-protocol-workspace/evidence/cargo-deny-snapshot.json",
+      "frame-protocol-workspace/evidence/duplicate-dependencies.toml",
+      "frame-protocol-workspace/evidence/package-list.txt",
+      "frame-protocol-workspace/evidence/release-evidence.json",
+      "frame-protocol-workspace/exceptions/advisories.toml",
+      "frame-protocol-workspace/fixtures/external-consumer/Cargo.toml",
+      "frame-protocol-workspace/fixtures/external-consumer/src/main.rs",
+    ].sort(),
+    "virtual workspace package listing must contain only the reviewed files",
+  );
   for (const path of packageListing) {
     assert(
       archivePaths.has(path),
@@ -295,8 +349,8 @@ try {
     "utf8",
   );
   assert.match(treeEvidence, /source\s*=\s*"cargo tree executed/);
-  assert.match(actualTree, /frame-probe v1\.0\.0/);
-  assert.match(actualTree, /frame-protocol v1\.0\.0/);
+  assert.match(actualTree, /frame-probe v1\.1\.0/);
+  assert.match(actualTree, /frame-protocol v1\.1\.0/);
   assert.doesNotMatch(actualTree, /serde v1\.0\.228|serde v1\.0\.229/);
   run(packageRoot, [
     "check",

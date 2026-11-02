@@ -44,6 +44,7 @@ export function assertFrameWorkspaceAuthoredLayout(
   assert.ok(rootLines.has("[workspace]"), "root: virtual workspace table");
   assert.ok(!rootLines.has("[package]"), "root must stay a virtual workspace");
   assert.ok(rootLines.has('resolver = "3"'), "root: resolver 3");
+  assert.ok(rootLines.has('version = "1.1.0"'), "root: candidate version 1.1.0");
   assert.ok(rootLines.has("publish = false"), "root: publish=false");
   assert.ok(
     rootLines.has('[workspace.dependencies]'),
@@ -197,8 +198,8 @@ export function assertFrameWorkspaceMetadata(
       `${member.name}: explicit compiler floor`,
     );
     assert.ok(
-      member.version.startsWith("1."),
-      `${member.name}: compatibility examples assume a 1.x public API`,
+      member.version === "1.1.0",
+      `${member.name}: candidate version must remain 1.1.0`,
     );
     assert.ok(
       member.targets.some((target) =>

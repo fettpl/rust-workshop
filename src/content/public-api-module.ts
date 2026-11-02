@@ -1,4 +1,5 @@
 import type { CourseModule } from "../domain/types";
+import { apiFrameProtocolMaintenanceLesson } from "./api-frame-protocol-maintenance";
 
 const skills = [
   [
@@ -32,7 +33,10 @@ export const publicApiModule: CourseModule = {
     "Przećwiczysz osobnego klienta, features i MSRV w pobieranym workspace Cargo.",
   ],
   prerequisites: ["testing-quality", "traits", "modules-cargo"],
-  lessonIds: skills.map(([lessonId]) => lessonId),
+  lessonIds: [
+    ...skills.map(([lessonId]) => lessonId),
+    apiFrameProtocolMaintenanceLesson.id,
+  ],
   exitGate: [
     "Rozwiążesz cztery nowe kontrakty API bez podglądania referencji.",
     "Testy sprawdzą poprawność wartości, źródła błędów oraz wcześniejsze sposoby użycia API. Nie są pełnym dowodem zgodności każdej przyszłej zmiany.",

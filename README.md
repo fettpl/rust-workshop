@@ -42,6 +42,12 @@ archive gives you files to work on locally; the web app does not run those
 archives on your computer. A separate Study Session CLI brief asks you to build
 your own project from scratch, with your own tests and CLI evidence.
 
+Frame Protocol also includes an optional
+[library maintenance checkpoint](docs/frame-protocol-maintenance.md): preserve
+an existing downstream client while adding typed error categories, then write
+your own regression tests, architecture decision, and review response in the
+downloaded workspace.
+
 The workspace includes an ownership visualizer, progressive Compiler Coach
 hints, focus mode, keyboard controls, and light and dark themes alongside its
 lessons, projects, review history, and local export/import.

@@ -4,6 +4,21 @@ import { revealProjectSolution } from "../domain/project-package";
 import { createInitialState, stepKey } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
 
+const historicalReviewConceptIds = [
+  "api-validated-construction",
+  "api-error-source-chain",
+  "api-trait-compatibility",
+  "api-compatible-surface",
+  "cargo-dependency-contract",
+  "cargo-resolver-feature-unification",
+  "cargo-lock-msrv-policy",
+  "cargo-package-rehearsal",
+  "dependency-graph-diagnosis",
+  "dependency-source-license-policy",
+  "dependency-advisory-exceptions",
+  "dependency-release-dossier",
+];
+
 it("preserves independent API evidence after revealing the workspace reference", () => {
   const project = projects.find((entry) => entry.id === "frame-protocol");
   const stage = modules.find((entry) => entry.id === "public-api-workspaces");
@@ -14,9 +29,14 @@ it("preserves independent API evidence after revealing the workspace reference",
     "traits",
     "modules-cargo",
   ]);
+  expect(stage!.lessonIds.slice(-1)).toEqual([
+    "api-frame-protocol-maintenance",
+  ]);
   expect(project!.lessonIds).toEqual(expect.arrayContaining(stage!.lessonIds));
-  expect(project!.reviewConceptIds).toEqual(
-    expect.arrayContaining(stage!.lessonIds),
+  expect(project!.lessonIds).toContain("api-frame-protocol-maintenance");
+  expect(project!.reviewConceptIds).toEqual(historicalReviewConceptIds);
+  expect(project!.reviewConceptIds).not.toContain(
+    "api-frame-protocol-maintenance",
   );
   const archive = project!.package!;
   expect(archive.id).toBe("frame-protocol-workspace");

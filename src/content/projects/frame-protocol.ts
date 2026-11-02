@@ -5,7 +5,7 @@ members = ["crates/frame-protocol", "crates/frame-probe"]
 resolver = "3"
 
 [workspace.package]
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
 rust-version = "1.85.0"
 authors = ["Rust Crush Course"]
@@ -28,14 +28,14 @@ version = 4
 
 [[package]]
 name = "frame-probe"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "frame-protocol",
 ]
 
 [[package]]
 name = "frame-protocol"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "serde",
 ]
@@ -248,7 +248,7 @@ const actualCargoTreeEvidence = `# Actual Cargo graph observation for the shippe
 
 command = "cargo tree --offline --locked --workspace -e features"
 observation = "runtime verifier must confirm this clean baseline"
-members = ["frame-probe v1.0.0", "frame-protocol v1.0.0"]
+members = ["frame-probe v1.1.0", "frame-protocol v1.1.0"]
 duplicate_status = "not-observed"
 source = "cargo tree executed after ZIP extraction"
 `;
@@ -267,14 +267,101 @@ const advisorySnapshot = `{
 }
 `;
 
+const maintenanceChallenge = `# Ćwiczenie utrzymaniowe: Frame Protocol
+
+Uzupełnij ten plik własnymi obserwacjami. Nie jest to dowód uruchomienia Cargo
+ani samodzielnego kodowania. Opisz obserwowalny kontrakt błędu klienta: stały
+output domyślny oraz linię diagnostyczną z kodem \`io\` i źródłem
+\`UnexpectedEof\`. Zanotuj własny test błędnego writera zwracającego
+\`BrokenPipe\` oraz odmowę payloadu ponad limitem przed I/O.
+
+## Granica zachowania publicznego
+
+- zachowaj wskaźniki funkcji \`read_frame\`/\`write_frame\`, moduł \`legacy\`,
+  \`dyn FrameReader\` oraz stary implementer bez \`Clone\` i \`Debug\`;
+- dodaj typowany \`FrameErrorCode\` i zachowaj oryginalne źródło w
+  \`Error::source\`, bez parsowania \`Display\`;
+- zachowaj wire format u16, kolejność kontroli limitu oraz przypadki zero i
+  dokładnej granicy.
+
+## Matrix i wydanie
+
+Zapisz wynik obserwacji dla default, \`--no-default-features\`, jawnego
+\`diagnostics\` i niezależnego \`format\`. Kandydat to \`1.1.0\`, a MSRV to
+\`1.85.0\`; \`publish = false\` pozostaje wymagane. Odwołaj się do listy
+archiwum, dossier i hashy: \`evidence/package-list.txt\`,
+\`evidence/release-evidence.json\`, manifestu oraz lockfile.
+
+## Granice dowodu
+
+Makra: N/A — Frame Protocol nie zmienia kontraktu makr. Ten plik, przegląd
+ucznia i struktura ZIP-a nie dają dowodu Cargo, feature, MSRV ani niezależnego
+coding credit. Maintainer verifier używa wyłącznie stałych, autorskich
+fixture; kod ucznia uruchamiasz tylko we własnym pobranym workspace.
+`;
+
+const changeReview = `# Przegląd zmiany: Frame Protocol 1.1.0
+
+To jest nieuzupełniony formularz własnego przeglądu. Samo jego istnienie,
+self-rating ani struktura przeglądarkowa nie przyznają dowodu Cargo, archiwum,
+feature, MSRV, zewnętrznego crate ani niezależnego kodowania.
+
+## Alternatywy ADR
+
+1. Alternatywa i jej koszt:
+2. Wybrana decyzja o kodzie błędu i źródle:
+3. Powód zachowania starej powierzchni:
+
+## Własne wyniki regresji
+
+- BrokenPipe writer: wynik / obserwowany \`ErrorKind\`:
+- payload ponad limitem przed I/O: wynik / obserwowane zapisy:
+- default, diagnostics, format i exact Rust 1.85.0: wynik:
+
+## Odpowiedź self-review
+
+Co sprawdziłem, czego nie sprawdziłem i jakie ograniczenie pozostaje:
+
+## Komentarz i dyspozycja
+
+Komentarz recenzenta:
+
+Dyspozycja (zaakceptuj, popraw, zatrzymaj) i uzasadnienie:
+`;
+
 const releaseEvidenceManifest = `{
-  "schema": 1,
+  "schema": 2,
   "project": "frame-protocol",
-  "release": "1.0.0",
+  "release": "1.1.0",
   "publish": false,
-  "reviewed_at": "2026-09-18",
-  "manifest_sha256": "sha256:6307aa9b031600c36dfc7f4105ad5bb957ff6c09d8c24ce072bbf6e36861e5b5",
-  "lock_sha256": "sha256:0068cc64876d703c1adc13fe62f24fdf4c6b304bf8c98d804e41c595e808c005",
+  "reviewed_at": "2026-11-02",
+  "predecessor": {
+    "head": "16356613b729f5a456e506fc7508424994ab369b",
+    "tree": "e68b5123d83ac456c59d4e5c4125c9f94ac698fc"
+  },
+  "source_cut": "accepted-pre-a6",
+  "normalized": true,
+  "dossier_excludes_self": true,
+  "archive_digest": "outer-coordinator-report",
+  "manifest_sha256": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
+  "lock_sha256": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
+  "normalized_fixture_sha256": "sha256:b19872e49a2984d0c23ff763b75758f6cb0d7510244f8119e31738d75ac775e0",
+  "file_sha256": {
+    "README.md": "sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f",
+    "MAINTENANCE-CHALLENGE.md": "sha256:26939bf26b0548961d1e43c102e4d952ef8eedac7c7ef6494b562e13dcb89185",
+    "CHANGE-REVIEW.md": "sha256:ba590cd96bbd327ef82e27c15180c1c66d256cfc10f2cc899cf3053a9456d069",
+    "evidence/package-list.txt": "sha256:18be1aa921d9d2e26a6ceb45c573accb69496a39454226007966954c44579569"
+  },
+  "fixed_commands": [
+    "cargo metadata --offline --locked",
+    "cargo tree --offline --locked --workspace -e features",
+    "cargo test --workspace --offline --locked",
+    "cargo test -p frame-protocol --no-default-features --offline --locked",
+    "cargo test -p frame-probe --features diagnostics --offline --locked",
+    "cargo test -p frame-probe --features format --offline --locked",
+    "cargo +1.85.0 test --workspace --offline --locked"
+  ],
+  "output_tails": [],
   "supply_chain_report": "evidence/cargo-deny-snapshot.json",
   "duplicate_report": "evidence/duplicate-dependencies.toml",
   "archive_listing": "evidence/package-list.txt",
@@ -284,7 +371,8 @@ const releaseEvidenceManifest = `{
   "limits": [
     "No registry publish is attempted.",
     "The advisory snapshot is pinned authored evidence, not a live database.",
-    "The external consumer is compiled only after archive extraction."
+    "The external consumer is compiled only after archive extraction.",
+    "This dossier never hashes itself or its containing archive; the outer coordinator report binds the full archive hash."
   ]
 }
 `;
@@ -302,6 +390,8 @@ frame-protocol-workspace/evidence/duplicate-dependencies.toml
 frame-protocol-workspace/evidence/actual-cargo-tree.txt
 frame-protocol-workspace/evidence/package-list.txt
 frame-protocol-workspace/evidence/release-evidence.json
+frame-protocol-workspace/MAINTENANCE-CHALLENGE.md
+frame-protocol-workspace/CHANGE-REVIEW.md
 frame-protocol-workspace/fixtures/external-consumer/Cargo.toml
 frame-protocol-workspace/fixtures/external-consumer/src/main.rs
 `;
@@ -349,6 +439,20 @@ const referenceLibrary = `#![forbid(unsafe_code)]
 //!     match error {
 //!         FrameError::PayloadTooLarge { .. } => "too large",
 //!         FrameError::Io { .. } => "io",
+//!     }
+//! }
+//! \`\`\`
+//!
+//! \`FrameErrorCode\` is non-exhaustive as well, so downstream code keeps a
+//! wildcard when classifying its stable categories.
+//!
+//! \`\`\`compile_fail
+//! use frame_protocol::FrameErrorCode;
+//!
+//! fn classify(code: FrameErrorCode) -> &'static str {
+//!     match code {
+//!         FrameErrorCode::PayloadTooLarge => "too large",
+//!         FrameErrorCode::Io => "io",
 //!     }
 //! }
 //! \`\`\`
@@ -416,11 +520,16 @@ impl fmt::Debug for Frame {
     }
 }
 
-/// A machine-readable framing failure.
-///
-/// The enum is non-exhaustive so a future release may add a variant. This is
-/// protective only when present in the initial public release: adding the
-/// attribute later can break existing exhaustive downstream matches.
+/// Stable machine-readable categories for framing failures.
+#[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FrameErrorCode {
+    /// A payload exceeded the configured u16 limit.
+    PayloadTooLarge,
+    /// An underlying I/O operation failed.
+    Io,
+}
+
 #[non_exhaustive]
 #[derive(Debug)]
 pub enum FrameError {
@@ -442,6 +551,14 @@ pub enum FrameError {
 }
 
 impl FrameError {
+    /// Returns the stable category without inspecting the display text.
+    pub fn code(&self) -> FrameErrorCode {
+        match self {
+            Self::PayloadTooLarge { .. } => FrameErrorCode::PayloadTooLarge,
+            Self::Io { .. } => FrameErrorCode::Io,
+        }
+    }
+
     fn io(operation: &'static str, source: io::Error) -> Self {
         Self::Io { operation, source }
     }
@@ -568,6 +685,15 @@ pub mod legacy {
 #[cfg(feature = "diagnostics")]
 pub fn diagnostic_summary(frame: &Frame) -> String {
     format!("frame payload length: {} bytes", frame.len())
+}
+
+/// Formats a stable machine-readable error category for explicit diagnostics.
+#[cfg(feature = "diagnostics")]
+pub fn diagnostic_error_summary(error: &FrameError) -> String {
+    match error.code() {
+        FrameErrorCode::PayloadTooLarge => "code=payload-too-large".to_owned(),
+        FrameErrorCode::Io => "code=io".to_owned(),
+    }
 }
 
 /// Returns whether this crate's format feature can consume a validated frame.
@@ -736,11 +862,39 @@ mod tests {
         assert_eq!(source.kind(), io::ErrorKind::BrokenPipe);
     }
 
+    #[test]
+    fn error_code_distinguishes_categories_without_changing_display_or_source() {
+        let mut payload_input = [0_u8, 2].as_slice();
+        let payload = read_frame(&mut payload_input, 0).unwrap_err();
+        assert_eq!(payload.code(), FrameErrorCode::PayloadTooLarge);
+        assert_eq!(payload.to_string(), "frame payload of 2 bytes exceeds 0");
+
+        let mut input = [].as_slice();
+        let io = read_frame(&mut input, 0).unwrap_err();
+        assert_eq!(io.code(), FrameErrorCode::Io);
+        assert_eq!(io.to_string(), "read frame length");
+        assert_eq!(
+            io.source()
+                .and_then(|source| source.downcast_ref::<io::Error>())
+                .expect("typed I/O source")
+                .kind(),
+            io::ErrorKind::UnexpectedEof
+        );
+    }
+
     #[cfg(feature = "diagnostics")]
     #[test]
     fn diagnostics_are_an_explicit_additive_feature() {
         let frame = Frame::try_from_payload(vec![1, 2]).unwrap();
         assert_eq!(diagnostic_summary(&frame), "frame payload length: 2 bytes");
+    }
+
+    #[cfg(feature = "diagnostics")]
+    #[test]
+    fn error_diagnostics_are_stable_machine_text() {
+        let mut input = [].as_slice();
+        let error = read_frame(&mut input, 0).unwrap_err();
+        assert_eq!(diagnostic_error_summary(&error), "code=io");
     }
 
     #[cfg(feature = "format")]
@@ -814,6 +968,13 @@ impl fmt::Debug for Frame {
 }
 
 #[non_exhaustive]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FrameErrorCode {
+    PayloadTooLarge,
+    Io,
+}
+
+#[non_exhaustive]
 #[derive(Debug)]
 pub enum FrameError {
     PayloadTooLarge {
@@ -824,6 +985,15 @@ pub enum FrameError {
         operation: &'static str,
         source: io::Error,
     },
+}
+
+impl FrameError {
+    pub fn code(&self) -> FrameErrorCode {
+        match self {
+            Self::PayloadTooLarge { .. } => FrameErrorCode::PayloadTooLarge,
+            Self::Io { .. } => FrameErrorCode::Io,
+        }
+    }
 }
 
 impl fmt::Display for FrameError {
@@ -890,6 +1060,14 @@ pub fn diagnostic_summary(frame: &Frame) -> String {
     format!("frame payload length: {} bytes", frame.len())
 }
 
+#[cfg(feature = "diagnostics")]
+pub fn diagnostic_error_summary(error: &FrameError) -> String {
+    match error.code() {
+        FrameErrorCode::PayloadTooLarge => "code=payload-too-large".to_owned(),
+        FrameErrorCode::Io => "code=io".to_owned(),
+    }
+}
+
 #[cfg(feature = "format")]
 pub fn format_supports_serialize(_: &Frame) -> bool {
     todo!("prove the format feature's Serialize consumer")
@@ -899,7 +1077,8 @@ const publicConsumerTest = `use std::error::Error as _;
 use std::io::{self, Read};
 
 use frame_protocol::{
-    Frame, FrameError, FrameReader, FrameReaderExt, read_frame, read_frame_checked, write_frame,
+    Frame, FrameError, FrameErrorCode, FrameReader, FrameReaderExt, read_frame, read_frame_checked,
+    write_frame,
 };
 
 struct ExistingReader {
@@ -968,6 +1147,18 @@ fn public_error_source_is_typed_instead_of_parsed_from_display() {
         .and_then(|source| source.downcast_ref::<io::Error>())
         .expect("source must retain the concrete I/O error");
     assert_eq!(source.kind(), io::ErrorKind::ConnectionReset);
+}
+
+#[test]
+fn public_error_code_is_typed_and_keeps_the_original_source() {
+    let mut bytes = [0_u8; 0].as_slice();
+    let error = read_frame(&mut bytes, 8).unwrap_err();
+    assert_eq!(error.code(), FrameErrorCode::Io);
+    let source = error
+        .source()
+        .and_then(|source| source.downcast_ref::<io::Error>())
+        .expect("source must remain the concrete I/O error");
+    assert_eq!(source.kind(), io::ErrorKind::UnexpectedEof);
 }
 
 #[derive(Debug)]
@@ -1063,6 +1254,11 @@ use std::io::Cursor;
 
 use frame_protocol::{read_frame, write_frame_checked};
 
+#[cfg(feature = "diagnostics")]
+use frame_protocol::{FrameErrorCode, diagnostic_error_summary};
+#[cfg(feature = "diagnostics")]
+use std::io;
+
 fn main() -> Result<(), Box<dyn Error>> {
     let wire = vec![0, 4, b'r', b'u', b's', b't'];
     let mut input = Cursor::new(wire.clone());
@@ -1074,10 +1270,22 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("frame-probe: payload={} bytes", frame.len());
 
     #[cfg(feature = "diagnostics")]
-    println!(
-        "diagnostics: {}",
-        frame_protocol::diagnostic_summary(&frame)
-    );
+    {
+        let mut eof = [].as_slice();
+        let error = read_frame(&mut eof, 0).expect_err("empty input is an EOF failure");
+        let code = error.code();
+        assert_eq!(code, FrameErrorCode::Io);
+        let source = error
+            .source()
+            .and_then(|source| source.downcast_ref::<io::Error>())
+            .expect("diagnostics retain the concrete I/O source");
+        assert_eq!(source.kind(), io::ErrorKind::UnexpectedEof);
+        println!(
+            "diagnostics: error {} source_kind={:?}",
+            diagnostic_error_summary(&error),
+            source.kind()
+        );
+    }
 
     Ok(())
 }
@@ -1115,7 +1323,7 @@ fn diagnostics_feature_changes_only_the_opt_in_process_output() {
     );
     assert_eq!(
         String::from_utf8(output.stdout).unwrap(),
-        "frame-probe: payload=4 bytes\\ndiagnostics: frame payload length: 4 bytes\\n"
+        "frame-probe: payload=4 bytes\\ndiagnostics: error code=io source_kind=UnexpectedEof\\n"
     );
 }
 
@@ -1142,6 +1350,18 @@ i \`write_frame\` są oryginalnymi, nadal wspieranymi wywołaniami. Nowe
 \`*_checked\` są dodatkami. \`FrameReaderExt\` daje nową metodę przez default
 blanket implementation bez dokładania wymaganej metody, \`Clone\`, \`Debug\`
 ani \`Self: Sized\` do starego \`FrameReader\`.
+
+Kandydat utrzymaniowy 1.1.0 dodaje niekompletny \`FrameErrorCode\` oraz
+\`FrameError::code()\`. Przy jawnym feature \`diagnostics\`
+\`diagnostic_error_summary\` zwraca stabilny tekst maszynowy
+\`code=payload-too-large\` albo \`code=io\`; helper nie parsuje \`Display\`.
+Domyślny proces nadal wypisuje dokładnie \`frame-probe: payload=4 bytes\`.
+Wariant diagnostics dopisuje deterministyczny test EOF:
+\`diagnostics: error code=io source_kind=UnexpectedEof\`.
+
+\`MAINTENANCE-CHALLENGE.md\` i \`CHANGE-REVIEW.md\` są pustymi arkuszami dla
+ucznia. Własny przypadek \`BrokenPipe\` writera i payload ponad limitem przed
+I/O jest osobnym ćwiczeniem; nie jest wykonywany przez maintainer verifiera.
 
 ## Układ
 
@@ -1261,6 +1481,12 @@ alokacją i odczytem payloadu. Zapis checked weryfikuje limit zanim dotknie
 writer. \`FrameError::Io\` przechowuje niesfałszowane \`io::Error\` jako
 \`source\`; display jest opisem dla człowieka, a nie kontraktem maszyny.
 
+Kandydat 1.1.0 dodaje niekompletny \`FrameErrorCode\` oraz \`code()\`.
+Feature \`diagnostics\` udostępnia \`diagnostic_error_summary\`, ale klient
+sam pobiera kod i downcastuje \`Error::source()\` do \`io::Error\`. Stały
+przypadek EOF daje \`source_kind=UnexpectedEof\`; tekst \`Display\` nie jest
+parsowany. Domyślne output pozostaje bez zmian, a \`format\` jest niezależne.
+
 Stare \`read_frame\` i \`write_frame\` zostają publiczne i opisane z dokładnymi
 sygnaturami. Dodatkowe nazwy są additive. Zamiast wymagać nowej metody od
 \`FrameReader\`, \`FrameReaderExt\` ma default method oraz blanket impl dla
@@ -1281,7 +1507,7 @@ limitu przed odczytem lub semantyki starej funkcji powoduje błąd kompilacji al
 asercji. Doctesty \`compile_fail\` uruchamiają się jako klient zewnętrzny.
 
 Nie twierdzimy, że te fixtures dowodzą zgodności z każdym klientem ani pełnej
-reguły SemVer. \`#[non_exhaustive]\` jest od wersji 1.0.0, ponieważ dopisanie go
+reguły SemVer. \`#[non_exhaustive]\` jest od pierwszego wydania, ponieważ dopisanie go
 po wydaniu byłoby samo w sobie breaking dla exhaustive matches. \`rust-version
 = 1.85.0\` deklaruje podłogę; ograniczony dowód wymaga rzeczywistego testu
 \`cargo +1.85.0\`, a nie tylko metadanych.
@@ -1289,7 +1515,7 @@ po wydaniu byłoby samo w sobie breaking dla exhaustive matches. \`rust-version
 
 const changelog = `# Changelog
 
-## 1.0.0 — unreleased educational reference
+## 1.1.0 — unreleased educational candidate
 
 - Dodano virtual Cargo workspace z \`frame-protocol\` i oddzielnym klientem
   \`frame-probe\`.
@@ -1298,6 +1524,8 @@ const changelog = `# Changelog
 - Zachowano udokumentowane \`read_frame\` i \`write_frame\`; dodano checked facade
   oraz extension trait dla istniejących implementerów i trait objects.
 - Dodano zewnętrzne testy konsumenta, procesowy test CLI i compile-fail doctesty.
+- Dodano typowany kod błędu i opcjonalne, deterministyczne podsumowanie EOF dla
+  klienta diagnostycznego; dwa arkusze utrzymania pozostają nieuzupełnione.
 
 Nie jest to ogłoszenie publikacji. Evidence obejmuje wskazane klientów,
 konfiguracje feature i compiler 1.85.0, nie pełne twierdzenie o SemVer ani
@@ -1352,6 +1580,16 @@ export const frameProtocolPackage: ProjectPackage = {
     { path: "DEPENDENCY-POLICY.md", starter: dependencyPolicy },
     { path: "RELEASE-CHECKLIST.md", starter: releaseChecklist },
     { path: "RELEASE-EVIDENCE.json", starter: releaseEvidenceManifest },
+    {
+      path: "MAINTENANCE-CHALLENGE.md",
+      starter: maintenanceChallenge,
+      solution: maintenanceChallenge,
+    },
+    {
+      path: "CHANGE-REVIEW.md",
+      starter: changeReview,
+      solution: changeReview,
+    },
     { path: "exceptions/advisories.toml", starter: exceptionLedger },
     {
       path: "evidence/duplicate-dependencies.toml",
@@ -1423,6 +1661,7 @@ export const frameProtocolProject: ProjectContract = {
     "dependency-source-license-policy",
     "dependency-advisory-exceptions",
     "dependency-release-dossier",
+    "api-frame-protocol-maintenance",
   ],
   reviewConceptIds: [
     "api-validated-construction",

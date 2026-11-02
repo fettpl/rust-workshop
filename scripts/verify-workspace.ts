@@ -20,6 +20,7 @@ import { verifyFrameWorkspaceMutants } from "./workspace-mutants";
 import {
   assertExactFramePackageFiles,
   assertNormalizedFramePackageManifest,
+  assertRestrictedFrameLockDelta,
 } from "./workspace-package";
 import {
   assertFrameWorkspaceAuthoredLayout,
@@ -153,6 +154,14 @@ function assertAuthoredLock(lock: string) {
     9,
     "Authored lock must contain exactly nine packages",
   );
+  for (const name of ["frame-probe", "frame-protocol"])
+    assert.match(
+      lock,
+      new RegExp(
+        `name = "${name}"\\nversion = "1\\.1\\.0"`,
+      ),
+      `${name}: candidate local version`,
+    );
   for (const [name, version, checksum] of packages) {
     assert.match(
       lock,
@@ -162,6 +171,29 @@ function assertAuthoredLock(lock: string) {
       `${name}: pinned source, version and checksum`,
     );
   }
+}
+
+/** Reads the root-owned, sanitized pre-A6 Frame projection for compatibility. */
+function readPreA6FrameLock(): string {
+  const projectionPath = join(
+    process.cwd(),
+    "src/content/fixtures/frame-protocol-pre-a6-projection.json",
+  );
+  const projection = JSON.parse(readFileSync(projectionPath, "utf8")) as {
+    predecessor?: { head?: string; tree?: string };
+    frameProject?: {
+      package?: { files?: Array<{ path?: string; starter?: string }> };
+    };
+  };
+  assert.deepEqual(projection.predecessor, {
+    head: "16356613b729f5a456e506fc7508424994ab369b",
+    tree: "e68b5123d83ac456c59d4e5c4125c9f94ac698fc",
+  });
+  const lock = projection.frameProject?.package?.files?.find(
+    (file) => file.path === "Cargo.lock",
+  )?.starter;
+  assert.equal(typeof lock, "string", "pre-A6 projection must include Cargo.lock");
+  return lock!;
 }
 
 function assertStarterTestsFailIntentionally() {
@@ -201,14 +233,14 @@ function verifyLibraryPackage() {
     "--offline",
     "--locked",
   ]);
-  const cratePath = join(root, "target/package/frame-protocol-1.0.0.crate");
+  const cratePath = join(root, "target/package/frame-protocol-1.1.0.crate");
   const archive = spawnSync("tar", ["-tf", cratePath], {
     encoding: "utf8",
     timeout: 10_000,
   });
   assert.ifError(archive.error);
   assert.equal(archive.status, 0, archive.stderr);
-  const prefixPath = "frame-protocol-1.0.0/";
+  const prefixPath = "frame-protocol-1.1.0/";
   const archiveFiles = archive.stdout
     .trim()
     .split("\n")
@@ -279,12 +311,19 @@ try {
       ...features,
     ]);
   assertStarterTestsFailIntentionally();
+  const starterLock = readFileSync(join(root, "Cargo.lock"), "utf8");
   installVariant("solution");
   assertFrameWorkspaceAuthoredLayout(
     root,
     frameProtocolPackage.workspaceMembers!,
   );
   const lockBefore = readFileSync(join(root, "Cargo.lock"), "utf8");
+  assert.equal(
+    starterLock,
+    lockBefore,
+    "A6 starter and solution lockfiles must remain byte-identical",
+  );
+  assertRestrictedFrameLockDelta(readPreA6FrameLock(), lockBefore);
   assertAuthoredLock(lockBefore);
   const metadata = JSON.parse(
     cargo(["metadata", "--offline", "--locked", "--format-version", "1"]),

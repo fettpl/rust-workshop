@@ -1,6 +1,7 @@
 import type * as Course from "./course";
 import baseline from "./fixtures/ownership-foundation-pre-a5-registry.json";
 import type { Lesson } from "../domain/types";
+import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 
 export const ownershipFoundationLessonId =
   "ownership-foundation-transfer" as const;
@@ -115,12 +116,14 @@ function removeFoundationModule(module: (typeof Course.modules)[number]) {
  * evidence record untouched for the historical projections that compose it.
  */
 export function historicalBeforeOwnershipFoundation(current: typeof Course) {
+  const beforeFrameProtocolMaintenance =
+    historicalBeforeFrameProtocolMaintenance(current);
   return {
-    ...current,
-    lessons: current.lessons.flatMap((lesson) => {
+    ...beforeFrameProtocolMaintenance,
+    lessons: beforeFrameProtocolMaintenance.lessons.flatMap((lesson) => {
       const restored = removeFoundationLesson(lesson);
       return restored ? [restored] : [];
     }),
-    modules: current.modules.map(removeFoundationModule),
+    modules: beforeFrameProtocolMaintenance.modules.map(removeFoundationModule),
   };
 }

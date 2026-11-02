@@ -16,7 +16,10 @@ import {
 import {
   assertExactFramePackageFiles,
   assertNormalizedFramePackageManifest,
+  assertRestrictedFrameLockDelta,
 } from "../../scripts/workspace-package";
+import { frameProtocolPackage } from "./projects/frame-protocol";
+import { projectFiles } from "../domain/project-package";
 
 // A fixed repository-authored fixture. Cargo reads metadata; no learner code runs.
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-metadata-test-"));
@@ -195,6 +198,29 @@ it("rejects extra files from the reviewed frame-protocol package boundary", () =
   );
 });
 
+it("exposes the bounded A6 maintenance packet and normalized predecessor dossier", () => {
+  const files = projectFiles(frameProtocolPackage, "solution");
+  expect(files["MAINTENANCE-CHALLENGE.md"]).toContain("BrokenPipe");
+  expect(files["MAINTENANCE-CHALLENGE.md"]).toContain("1.1.0");
+  expect(files["CHANGE-REVIEW.md"]).toContain("ADR");
+  expect(files["CHANGE-REVIEW.md"]).toContain("self-review");
+  expect(files["evidence/package-list.txt"]).toContain(
+    "frame-protocol-workspace/MAINTENANCE-CHALLENGE.md",
+  );
+  expect(files["evidence/package-list.txt"]).toContain(
+    "frame-protocol-workspace/CHANGE-REVIEW.md",
+  );
+  const dossier = JSON.parse(files["evidence/release-evidence.json"]);
+  expect(dossier.release).toBe("1.1.0");
+  expect(dossier.predecessor).toEqual({
+    head: "16356613b729f5a456e506fc7508424994ab369b",
+    tree: "e68b5123d83ac456c59d4e5c4125c9f94ac698fc",
+  });
+  expect(dossier.dossier_excludes_self).toBe(true);
+  expect(dossier.archive_digest).toBe("outer-coordinator-report");
+  expect(dossier).not.toHaveProperty("archive_sha256");
+});
+
 it("rejects include and exclude assignments in a normalized package manifest", () => {
   const normalized = '[package]\npublish = false\n';
   expect(() => assertNormalizedFramePackageManifest(normalized)).not.toThrow();
@@ -204,4 +230,30 @@ it("rejects include and exclude assignments in a normalized package manifest", (
   expect(() =>
     assertNormalizedFramePackageManifest(`${normalized}exclude = ["notes"]\n`),
   ).toThrow("include/exclude");
+});
+
+it("accepts only the two local 1.0.0 to 1.1.0 lock records", () => {
+  const before = `version = 4
+
+[[package]]
+name = "frame-probe"
+version = "1.0.0"
+dependencies = ["frame-protocol"]
+
+[[package]]
+name = "frame-protocol"
+version = "1.0.0"
+dependencies = ["serde"]
+
+[[package]]
+name = "serde"
+version = "1.0.229"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fixed"
+`;
+  const after = before.replaceAll('version = "1.0.0"', 'version = "1.1.0"');
+  expect(() => assertRestrictedFrameLockDelta(before, after)).not.toThrow();
+  expect(() =>
+    assertRestrictedFrameLockDelta(before, after.replace('checksum = "fixed"', 'checksum = "drift"')),
+  ).toThrow("external lock package changed");
 });
