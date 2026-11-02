@@ -1,7 +1,16 @@
 import { chromium, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
+import { tsImport } from "tsx/esm/api";
 (async () => {
+  const { independentCodingTaskIds } = await tsImport(
+    "../src/engine/learning.ts",
+    import.meta.url,
+  );
+  const { courseEvidencePolicy } = await tsImport(
+    "../src/content/learning-context.ts",
+    import.meta.url,
+  );
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
@@ -1887,7 +1896,17 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .getByRole("button", { name: "Pokaż drugą wskazówkę" })
       .click();
     await expect(page.getByText("WSKAZÓWKA 2 · REGUŁA")).toBeVisible();
-    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    const foundationCodeTab = page.getByRole("tab", {
+      name: "Kod",
+      exact: true,
+    });
+    await foundationCodeTab.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(
+      page.getByRole("tab", { name: "Zadanie", exact: true }),
+    ).toBeFocused();
+    await foundationCodeTab.click();
+    await expect(foundationEditor).toBeVisible();
     await context.setOffline(true);
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
