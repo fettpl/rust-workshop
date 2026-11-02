@@ -245,7 +245,7 @@ it("does not treat an unexecuted or report-only dossier as passed", () => {
     ),
   ).toThrow();
   const executed = runBorrowedMemoryVerification("stable");
-  expect(executed.status).toBe("passed");
+  expect(executed.status, JSON.stringify(executed, null, 2)).toBe("passed");
   expect(executed.compileFailChecks).toHaveLength(4);
 }, 60_000);
 

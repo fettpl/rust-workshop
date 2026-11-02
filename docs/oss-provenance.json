@@ -1502,7 +1502,7 @@
     },
     {
       "path": "src/content/unsafe-borrowed-memory-verification.test.ts",
-      "sha256": "6321d7ff06d98708e76e4c022a4eff224eba28a3980fce42dc8412c9cf4f7698",
+      "sha256": "5f0d07234b1ec90361f33c0b5487bb8e5a7f45e0d19664b74a2bdcab926a1331",
       "group": "course"
     },
     {
