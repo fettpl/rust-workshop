@@ -1812,22 +1812,51 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.locator(".save-status")).toHaveText(
       "Zapisano na tym urządzeniu",
     );
+    await expect
+      .poll(
+        async () => {
+          const state = await readLearningState();
+          return state.events.filter(
+            (event) =>
+              event.lessonId === "ownership-foundation-transfer" &&
+              event.stepId === "foundation-contract-model" &&
+              event.evaluator === "choice",
+          ).length;
+        },
+        { message: "model choice evidence must be persisted exactly once" },
+      )
+      .toBe(1);
     const foundationModelState = await readLearningState();
+    const foundationEvents = foundationModelState.events.filter(
+      (event) => event.lessonId === "ownership-foundation-transfer",
+    );
+    const foundationExposureEvents = foundationEvents.filter(
+      (event) => event.kind === "exposure",
+    );
     expect(
-      foundationModelState.events
-        .filter((event) => event.lessonId === "ownership-foundation-transfer")
-        .every(
-          (event) =>
-            event.kind === "exposure" &&
-            event.passed &&
-            !event.gate &&
-            event.evaluator === "choice",
-        ),
+      foundationExposureEvents.length,
+      "model visit must record at least one neutral exposure",
+    ).toBeGreaterThan(0);
+    expect(
+      foundationEvents.every(
+        (event) => event.kind === "exposure" && event.passed && !event.gate,
+      ),
     ).toBe(true);
+    const foundationModelChoices = foundationEvents.filter(
+      (event) =>
+        event.stepId === "foundation-contract-model" &&
+        event.evaluator === "choice",
+    );
+    expect(foundationModelChoices).toHaveLength(1);
+    expect(foundationModelChoices[0]).toMatchObject({
+      kind: "exposure",
+      passed: true,
+      gate: false,
+      evaluator: "choice",
+    });
     expect(
-      foundationModelState.events.filter(
+      foundationEvents.filter(
         (event) =>
-          event.lessonId === "ownership-foundation-transfer" &&
           event.evaluator === "tests",
       ),
     ).toEqual([]);
