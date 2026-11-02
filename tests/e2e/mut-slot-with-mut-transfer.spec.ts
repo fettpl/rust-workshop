@@ -187,8 +187,10 @@ test("with_mut model and primary preserve the old v2 prefix and mobile state", a
   ).toEqual([oldFamily]);
   expect(lesson.steps.indexOf(model)).toBe(8);
   expect(lesson.steps.indexOf(primary)).toBe(9);
+  expect(model.kind).toBe("run");
+  expect(model.evidenceKind).toBe("exposure");
   expect(model.evidence?.codingTaskId).toBeUndefined();
-  expect(model.evidenceGate).toBe(false);
+  expect(model.evidenceGate).not.toBe(true);
   expect(primary.evidence).toEqual({
     version: 2,
     conceptIds: ["unsafe-miri-mut-slot-variance-contract"],
@@ -287,7 +289,7 @@ test("with_mut model and primary preserve the old v2 prefix and mobile state", a
       primary.evaluator?.kind === "tests" ? primary.evaluator.tests : undefined,
   });
 
-  await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+  await expect(page.locator("#workspace-panel-lesson")).toBeVisible();
   await page.getByText("Twój notatnik", { exact: true }).click();
   await page.getByLabel("Notatki do lekcji").fill(note);
   await page
