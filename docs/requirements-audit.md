@@ -1,4 +1,4 @@
-Current authored correction candidate (10 October 2026): [source-bound curriculum audit](curriculum-audit-2026-10-10.md) and [objective/Definition of Done/ordered delivery](superpowers/plans/2026-10-10-curriculum-baseline-and-synthesis.md). Counts are 48 modules, 189 lessons, 191 concepts, 1,242 steps and 341 sources. Integrated verification, final review and release acceptance are pending; the dated accepted records below remain historical. No human pilot blocks this development.
+Current authored foundation source checkpoint — 2 November 2026: 48 modules, 193 lessons, 194 concepts, 1,287 steps and 349 sources. The [ownership foundation contracts](ownership-foundation-transfer-evidence.md) add five primary task families and four optional Cargo session stops while preserving the historical course prefix and learner records. These counts describe authored availability. Hosted CI and integration remain separate pending gates; authored tests do not establish learner mastery or professional readiness. Older dated records below retain their execution identities and are historical, including their former current/candidate labels.
 
 # Alignment with the original brief
 

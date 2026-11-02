@@ -502,11 +502,11 @@ it.each([1, 2, 3] as const)(
 
 it("derives the post-A2 registry inventory without changing the accepted source count", () => {
   expect(currentCourse.modules).toHaveLength(48);
-  expect(currentCourse.lessons).toHaveLength(192);
+  expect(currentCourse.lessons).toHaveLength(193);
   expect(currentCourse.concepts).toHaveLength(194);
   expect(currentCourse.sources).toHaveLength(349);
   expect(currentCourse.lessons.flatMap((lesson) => lesson.steps)).toHaveLength(
-    1281,
+    1287,
   );
   expect(Object.keys(currentCourse.reviewExercises)).toHaveLength(194);
   expect(

@@ -137,7 +137,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "20869b7c9371db9dab2e3b90d81f13614eb81246cccc3595730868389b97ebe8",
+      "sha256": "bedcfa5b820697dedbfd40c1a398af5ffb8b207fbedcee1ed63fea51839762e4",
       "group": "course"
     },
     {
@@ -207,7 +207,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "a5beebfa9a576193c535ab0de4be05f72a5ebc7d33daa3244a8383594d8b92dc",
+      "sha256": "c0550c9e08f027fda837c89fe81b2aadd94c2d337afd943496a19a6fe4b32ee2",
       "group": "course"
     },
     {
@@ -462,7 +462,7 @@
     },
     {
       "path": "src/content/course.ts",
-      "sha256": "ff47154a5be56e575d1e9159078b8c8b0ee5efad5d3e653a33fe991e93ec1364",
+      "sha256": "82b91ef9f4c2b31e07b3830d63642df372f4c590ee8bfc170d0b245b473648b7",
       "group": "course"
     },
     {
@@ -517,7 +517,7 @@
     },
     {
       "path": "src/content/documentation-guided-repair-integration.test.ts",
-      "sha256": "c87079f83bbea3c6951daf1a91a1efccdda80c3ad7a5f87f2147154e5526fb5d",
+      "sha256": "530a67e1d48ec736afb82805aa554bb5cfab1fda53d85a1a2b0c2945c02a8c6a",
       "group": "course"
     },
     {
@@ -872,7 +872,7 @@
     },
     {
       "path": "src/content/modeling-integration.test.ts",
-      "sha256": "612773513db8c23699b81d0790ba58b8b642a1b0aa32c7eb5c1cc440360c283a",
+      "sha256": "3c83497db836509a570f7902f873a80cb92d92117291c5de6430a5c051876e4f",
       "group": "course"
     },
     {
@@ -892,7 +892,7 @@
     },
     {
       "path": "src/content/modules-cargo.ts",
-      "sha256": "9e195d16d1bc71e4904978606f4293a0b06b626b75353e574aa2b408adb80c2b",
+      "sha256": "e17a224a232a2c0f673497653015d650798fb1310cefd884ec02c0039af4b091",
       "group": "course"
     },
     {
@@ -923,6 +923,41 @@
     {
       "path": "src/content/ownership-evidence-contracts.ts",
       "sha256": "0722f48ce717336bc1121372c99dd926f3254710a0310493f18a3bc783ef1bf9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-compatibility-fixture.ts",
+      "sha256": "268aec2257af5391decc4c8e087d3dffa3ab59fa60bdfdd5d862673426fec2c9",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-drop.test.ts",
+      "sha256": "84fb5552ed9729c5f79253e86ea745aecc8e77650f2f513cc17259c3a88b4199",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-drop.ts",
+      "sha256": "7f816f33e868d83e87de247264b5e595aaf49282caa58aada3a7a8f167fb8d87",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-transfer.test.ts",
+      "sha256": "f391ed46301f7d02f501b22f6435735e0244cd4bfffa74b8688d361c41b045bf",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-transfer.ts",
+      "sha256": "1a9ce06f33272e4d70d2261bbcb8af8897143de7c02ac42cfdfa242bb5e6df43",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-values.test.ts",
+      "sha256": "56637ae702135bd74150e4762169eef32aef65cf2bc5c8c35d208a7d7cc05747",
+      "group": "course"
+    },
+    {
+      "path": "src/content/ownership-foundation-values.ts",
+      "sha256": "0c49ad08886a3f5dca6a7862f27172464dd4045a4608c9aba634d53db3fdb474",
       "group": "course"
     },
     {
@@ -1532,7 +1567,7 @@
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility-fixture.ts",
-      "sha256": "61191c26aa519eb9f3b9d53b65c9d70eb0a70e4dbe9a57cdbf290d9e9db91df9",
+      "sha256": "8cbcb46d7888758e096181a992ca52c468381cabd83232383fc5a2864e4a1095",
       "group": "course"
     },
     {

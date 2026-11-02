@@ -834,6 +834,14 @@ fn repaired_path_handles_more_than_one_label() {
     evidenceGate:
       "Jedno z dwóch zadań z kodem poprawnie udostępnia zagnieżdżoną funkcję i łączy ją z klientem w korzeniu.",
     sourceIds: ["cargo-book-module-tree", "cargo-book-paths"],
+    sessionStops: [
+      {
+        afterStepId: "paths-transfer",
+        title: "Opcjonalna przerwa po ścieżkach",
+        nextGoal:
+          "Wróć do modułu, widoczności i importów, aby utrwalić granice API przed kolejną lekcją.",
+      },
+    ],
   },
   {
     id: "module-visibility",
@@ -973,6 +981,14 @@ fn repaired_path_handles_more_than_one_label() {
     evidenceGate:
       "Konstruktor przyjmuje wszystkie sprawdzane poprawne numery, odrzuca obie niepoprawne granice i zachowuje prywatne pole.",
     sourceIds: ["cargo-book-paths", "cargo-reference-visibility"],
+    sessionStops: [
+      {
+        afterStepId: "visibility-transfer",
+        title: "Opcjonalna przerwa po widoczności",
+        nextGoal:
+          "Wróć do importów i re-eksportów, zachowując dokładny punkt wznowienia.",
+      },
+    ],
   },
   {
     id: "imports-and-reexports",
@@ -1125,6 +1141,14 @@ fn child_scope_uses_the_existing_function() {
     evidenceGate:
       "Jedna z fasad udostępnia oba wymagane re-eksporty i składa poprawne wyniki przy zachowaniu prywatnych modułów.",
     sourceIds: ["cargo-book-use", "cargo-reference-visibility"],
+    sessionStops: [
+      {
+        afterStepId: "imports-transfer",
+        title: "Opcjonalna przerwa po fasadzie API",
+        nextGoal:
+          "Wróć do granicy Cargo i sprawdź, które nazwy pozostają publiczne.",
+      },
+    ],
   },
   {
     id: "cargo-package-integration",
@@ -1293,6 +1317,14 @@ fn child_scope_uses_the_existing_function() {
       "cargo-command-build",
       "cargo-command-test",
       "cargo-command-run",
+    ],
+    sessionStops: [
+      {
+        afterStepId: "cargo-modify",
+        title: "Opcjonalna przerwa przed pustą stroną",
+        nextGoal:
+          "Wróć do Cargo: biblioteka i program mają osobne granice. Następny krok to cargo-blank.",
+      },
     ],
   },
 ];

@@ -3,8 +3,7 @@
 Rust Workshop is a local-first, interactive course for people who know the
 basics of programming and are starting Rust from zero. Lessons and the learner
 interface are currently in Polish; this README and the contributor
-documentation are in English. The course explains Rust from first principles
-and does not assume Java, Python, or another language ecosystem.
+documentation are in English. The course explains Rust from first principles.
 
 See the [history redaction notice](docs/history-redaction.md) for historical
 presentation changes, frozen receipt hashes and current compatibility limits.

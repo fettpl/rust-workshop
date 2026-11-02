@@ -1,3 +1,7 @@
+# Foundation practice source checkpoint — 2 November 2026
+
+The authored catalog now contains 48 modules, 193 lessons, 194 concepts, 1,287 steps and 349 sources. One later checkpoint in Data Modeling supplies ownership restoration, observable nested/conditional Drop and concrete Copy contracts. The [contract and evidence note](ownership-foundation-transfer-evidence.md) separates task availability from earned coding evidence and explains the preserved route, history and Cargo stops. Exact hosted CI and integration remain separate gates. The earlier Slot and dated curriculum sections below remain historical source checkpoints.
+
 # Local Slot transfer continuation — 24 October 2026 (UTC)
 
 The maintainer authorized course continuation after completed local OSS

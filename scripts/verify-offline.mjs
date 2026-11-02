@@ -1782,6 +1782,160 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     console.log(
       "Ownership versioned choice/history, assisted draft and current 0/2 resume offline; unavailable runner awards no assessment",
     );
+    await context.setOffline(false);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("Modelowanie danych");
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: "Modelowanie danych" })
+      .click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: "Fundamenty własności: odtworzenie, drop i Copy" })
+      .click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(0).click();
+    await expect(page.locator(".task-pane")).toContainText("Option::take");
+    await expect(page.locator(".task-pane")).toContainText("support::Marker");
+    await page
+      .getByRole("radio", { name: /Błąd przywraca oryginał/ })
+      .check();
+    await page
+      .getByRole("button", { name: "Sprawdź odpowiedź", exact: true })
+      .click();
+    await expect(page.locator(".task-pane").getByRole("status")).toContainText(
+      "Poprawnie",
+    );
+    await expect(page.locator(".save-status")).toHaveText(
+      "Zapisano na tym urządzeniu",
+    );
+    const foundationModelState = await readLearningState();
+    expect(
+      foundationModelState.events
+        .filter((event) => event.lessonId === "ownership-foundation-transfer")
+        .every(
+          (event) =>
+            event.kind === "exposure" &&
+            event.passed &&
+            !event.gate &&
+            event.evaluator === "choice",
+        ),
+    ).toBe(true);
+    expect(
+      foundationModelState.events.filter(
+        (event) =>
+          event.lessonId === "ownership-foundation-transfer" &&
+          event.evaluator === "tests",
+      ),
+    ).toEqual([]);
+    const foundationBefore = await readLearningState();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(1).click();
+    await expect(page.getByLabel("Miejsce na przerwę")).toContainText(
+      "Opcjonalna przerwa przed Drop i Copy",
+    );
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    const foundationEditor = page.getByRole("textbox", {
+      name: "Kod Rust",
+      exact: true,
+    });
+    const foundationDraft = `${await foundationEditor.inputValue()}\n// Szkic transferu zachowany offline.\n`;
+    await foundationEditor.fill(foundationDraft);
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    const foundationNote =
+      "Po odrzuceniu zachować String; obserwacje DropLog i Copy pozostają lokalne.";
+    await page.getByLabel("Notatki do lekcji").fill(foundationNote);
+    await expect(page.locator(".save-status")).toHaveText(
+      "Zapisano na tym urządzeniu",
+    );
+    await page
+      .getByRole("button", { name: "Pomóż mi to zrozumieć" })
+      .click();
+    await page
+      .getByRole("button", { name: "Pokaż drugą wskazówkę" })
+      .click();
+    await expect(page.getByText("WSKAZÓWKA 2 · REGUŁA")).toBeVisible();
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await context.setOffline(true);
+    await page
+      .getByRole("button", { name: "Uruchom testy", exact: true })
+      .click();
+    await expect(page.locator(".task-pane")).toContainText(
+      "Próba nie wpływa na mastery",
+    );
+    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await expect(page.getByLabel("Wynik kompilatora")).toContainText(
+      "Kompilator niedostępny",
+    );
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    const foundationAfter = await readLearningState();
+    expect(
+      foundationAfter.events.slice(0, foundationBefore.events.length),
+    ).toEqual(foundationBefore.events);
+    expect(
+      foundationAfter.events.filter(
+        (event) =>
+          event.lessonId === "ownership-foundation-transfer" &&
+          event.evaluator === "tests",
+      ),
+    ).toEqual([]);
+    expect(
+      independentCodingTaskIds(
+        foundationAfter,
+        "ownership-repair",
+        courseEvidencePolicy,
+      ),
+    ).toEqual([]);
+    const foundationStep =
+      foundationAfter.steps[
+        "ownership-foundation-transfer:ownership-restore-rejection-transfer"
+      ];
+    expect(foundationStep).toMatchObject({
+      code: foundationDraft,
+      hints: 2,
+      revealed: false,
+      completed: false,
+      attempts: [
+        {
+          passed: false,
+          result: { status: "infrastructure-error" },
+        },
+      ],
+    });
+    expect(foundationAfter.notes["ownership-foundation-transfer"]).toBe(
+      foundationNote,
+    );
+    expect(foundationAfter.resume).toMatchObject({
+      view: "lesson",
+      lessonId: "ownership-foundation-transfer",
+      stepIndex: 1,
+      panel: "lesson",
+    });
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(
+      "Przywróć odrzuconą etykietę",
+    );
+    await expect(
+      page.getByRole("tab", { name: "Kod", exact: true }),
+    ).toHaveAttribute("aria-selected", "false");
+    await page.getByRole("tab", { name: "Kod", exact: true }).click();
+    await expect(foundationEditor).toHaveValue(foundationDraft);
+    await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
+    await page.getByText("Twój notatnik", { exact: true }).click();
+    await expect(page.getByLabel("Notatki do lekcji")).toHaveValue(
+      foundationNote,
+    );
+    await expect(page.getByText("WSKAZÓWKA 2 · REGUŁA")).toBeVisible();
+    await expect(page.locator(".task-pane")).toContainText(
+      "samodzielne zadania kodowe 0/2",
+    );
+    await context.setOffline(false);
+    console.log(
+      "A5 FOUNDATION OFFLINE CHECKPOINT: model exposure, draft/note/panel, exact primary resume and unavailable runner preserve state without independent credit",
+    );
     expect(errors).toEqual([]);
     expect(consoleErrors).toEqual([]);
     console.log(

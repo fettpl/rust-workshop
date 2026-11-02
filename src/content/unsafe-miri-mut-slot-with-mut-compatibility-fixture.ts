@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type * as Course from "./course";
 import type { ModuleGateCriterion, ProjectContract } from "../domain/types";
 import { mutSlotWithMutSessionStop } from "./unsafe-miri-mut-slot-with-mut";
+import { historicalBeforeOwnershipFoundation } from "./ownership-foundation-compatibility-fixture";
 export { mutSlotWithMutSessionStop };
 
 export const mutSlotWithMutLessonId = "unsafe-miri-mut-slot" as const;
@@ -98,10 +99,12 @@ function removeNewProjectDelta(project: ProjectContract) {
  * Slot, range, or project changes.
  */
 export function historicalBeforeMutSlotWithMut(current: typeof Course) {
+  const beforeOwnershipFoundation =
+    historicalBeforeOwnershipFoundation(current);
   return {
-    ...current,
-    lessons: current.lessons.map(removeNewLessonShape),
-    modules: current.modules.map(removeNewModuleShape),
-    projects: current.projects.map(removeNewProjectDelta),
+    ...beforeOwnershipFoundation,
+    lessons: beforeOwnershipFoundation.lessons.map(removeNewLessonShape),
+    modules: beforeOwnershipFoundation.modules.map(removeNewModuleShape),
+    projects: beforeOwnershipFoundation.projects.map(removeNewProjectDelta),
   };
 }

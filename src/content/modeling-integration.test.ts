@@ -6,7 +6,7 @@ import { moduleGate } from "../engine/learning";
 import { nextLessonForNavigation } from "../engine/course-route";
 
 describe("data modeling learning path", () => {
-  it("connects ownership to seven modeling lessons without moving an existing resume", () => {
+  it("connects ownership to eight modeling lessons without moving an existing resume", () => {
     const courseModule = modules.find((item) => item.id === "data-modeling");
     expect(courseModule).toBeDefined();
     expect(courseModule!.prerequisites).toEqual(["ownership"]);
@@ -18,6 +18,7 @@ describe("data modeling learning path", () => {
       "option-and-absence",
       "modeling-assessment",
       "nested-patterns-and-destructuring",
+      "ownership-foundation-transfer",
     ]);
     const state = createInitialState();
     state.resume.lessonId = "scenario-assessment";
@@ -48,11 +49,7 @@ describe("data modeling learning path", () => {
     expect(moduleGate(state, lessons, courseModule!).passed).toBe(false);
     expect(state.events).toEqual([]);
     expect(
-      nextLessonForNavigation(
-        "modeling-assessment",
-        lessons,
-        modules,
-      )?.id,
+      nextLessonForNavigation("modeling-assessment", lessons, modules)?.id,
     ).toBe("nested-patterns-and-destructuring");
     expect(state.resume).toMatchObject({
       lessonId: "scenario-assessment",
@@ -107,9 +104,9 @@ describe("data modeling learning path", () => {
     expect(reviewExercises["nested-pattern-matching"].evaluator).toMatchObject({
       kind: "tests",
     });
-    expect(
-      lessons.flatMap((lesson) => lesson.steps).includes(review),
-    ).toBe(false);
+    expect(lessons.flatMap((lesson) => lesson.steps).includes(review)).toBe(
+      false,
+    );
   });
 });
 

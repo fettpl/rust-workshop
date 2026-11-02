@@ -36,7 +36,7 @@ it("appends one documentation lesson after the testing workflow with executable 
     id: "testing-documentation-repair-gate",
     requiredIndependentCodingTasks: 2,
   });
-  expect(course.lessons).toHaveLength(192);
+  expect(course.lessons).toHaveLength(193);
   expect(course.concepts).toHaveLength(194);
 });
 
@@ -158,6 +158,7 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
     );
   expect(course.lessons.slice(legacy.lessons.length).map((l) => l.id)).toEqual([
     id,
+    "ownership-foundation-transfer",
   ]);
   expect(
     course.concepts.slice(legacy.concepts.length).map((c) => c.id),

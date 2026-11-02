@@ -514,6 +514,7 @@ import {
   nestedPatternSources,
   nestedPatternReviewExercises,
 } from "./nested-patterns";
+import { ownershipFoundationTransferLesson } from "./ownership-foundation-transfer";
 import {
   functionOwnershipCalibrationLesson,
   delayedReviewExercises as functionOwnershipDelayedReviewExercises,
@@ -572,11 +573,18 @@ export const ownershipModule = {
   ...ownership.ownershipModule,
   prerequisites: [foundationsModule.id],
 };
+const dataModelingModule = {
+  ...modelingModule,
+  lessonIds: [
+    ...modelingModule.lessonIds,
+    ownershipFoundationTransferLesson.id,
+  ],
+};
 export const modules = [
   foundationsModule,
   loopsModule,
   ownershipModule,
-  modelingModule,
+  dataModelingModule,
   collectionsModule,
   errorsModule,
   todoModule,
@@ -695,6 +703,7 @@ export const lessons = [
   sharedBorrowCalibrationLesson,
   ...fallibleCompositionLessons,
   ...documentationRepairLessons,
+  ownershipFoundationTransferLesson,
 ];
 export const concepts = [
   ...foundationsConcepts,
