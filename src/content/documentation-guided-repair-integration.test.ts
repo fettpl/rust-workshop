@@ -5,6 +5,7 @@ import {
 } from "./history-redaction-test-support";
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
+import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 import { expect, it } from "vitest";
 import * as course from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
@@ -36,7 +37,8 @@ it("appends one documentation lesson after the testing workflow with executable 
     id: "testing-documentation-repair-gate",
     requiredIndependentCodingTasks: 2,
   });
-  expect(course.lessons).toHaveLength(193);
+  const historicalCourse = historicalBeforeFrameProtocolMaintenance(course);
+  expect(historicalCourse.lessons).toHaveLength(193);
   expect(course.concepts).toHaveLength(194);
 });
 
@@ -156,10 +158,10 @@ it("preserves the actual accepted Feature1 registry, all old definitions and the
         ? historyRedactionDeltas[historyRedactionPath].currentSha256
         : immutable.sha256,
     );
-  expect(course.lessons.slice(legacy.lessons.length).map((l) => l.id)).toEqual([
-    id,
-    "ownership-foundation-transfer",
-  ]);
+  const historicalCourse = historicalBeforeFrameProtocolMaintenance(course);
+  expect(
+    historicalCourse.lessons.slice(legacy.lessons.length).map((l) => l.id),
+  ).toEqual([id, "ownership-foundation-transfer"]);
   expect(
     course.concepts.slice(legacy.concepts.length).map((c) => c.id),
   ).toEqual([id]);

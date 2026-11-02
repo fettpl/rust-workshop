@@ -152,7 +152,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "bedcfa5b820697dedbfd40c1a398af5ffb8b207fbedcee1ed63fea51839762e4",
+      "sha256": "0bd9f99c3791a277266600e5f53f30dba7f55199d543b87d1a1d9ce4bcaa1eaf",
       "group": "course"
     },
     {
@@ -222,7 +222,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "c0550c9e08f027fda837c89fe81b2aadd94c2d337afd943496a19a6fe4b32ee2",
+      "sha256": "d885801585974ba96aed6edaed17d9b59af9e604ea054f5cb8cc74100343cd30",
       "group": "course"
     },
     {
@@ -532,7 +532,7 @@
     },
     {
       "path": "src/content/documentation-guided-repair-integration.test.ts",
-      "sha256": "530a67e1d48ec736afb82805aa554bb5cfab1fda53d85a1a2b0c2945c02a8c6a",
+      "sha256": "07c2375e4dc7e80c9dc8b45371c622d90e4ad9ca03fdef9214374141c03e35c1",
       "group": "course"
     },
     {

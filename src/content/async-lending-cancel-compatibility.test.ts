@@ -18,6 +18,7 @@ import {
   cancellationTransferStepIds,
   historicalBeforeCancellationTransfer,
 } from "./async-lending-cancel-compatibility-fixture";
+import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 import baseline from "./fixtures/async-cancel-pre-transfer.json";
 import savedFixtures from "./fixtures/baseline-correction-saves.json";
 import {
@@ -501,16 +502,18 @@ it.each([1, 2, 3] as const)(
 );
 
 it("derives the post-A2 registry inventory without changing the accepted source count", () => {
-  expect(currentCourse.modules).toHaveLength(48);
-  expect(currentCourse.lessons).toHaveLength(193);
-  expect(currentCourse.concepts).toHaveLength(194);
-  expect(currentCourse.sources).toHaveLength(349);
-  expect(currentCourse.lessons.flatMap((lesson) => lesson.steps)).toHaveLength(
-    1287,
-  );
-  expect(Object.keys(currentCourse.reviewExercises)).toHaveLength(194);
+  const historicalCourse =
+    historicalBeforeFrameProtocolMaintenance(currentCourse);
+  expect(historicalCourse.modules).toHaveLength(48);
+  expect(historicalCourse.lessons).toHaveLength(193);
+  expect(historicalCourse.concepts).toHaveLength(194);
+  expect(historicalCourse.sources).toHaveLength(349);
   expect(
-    currentCourse.lessons
+    historicalCourse.lessons.flatMap((lesson) => lesson.steps),
+  ).toHaveLength(1287);
+  expect(Object.keys(historicalCourse.reviewExercises)).toHaveLength(194);
+  expect(
+    historicalCourse.lessons
       .flatMap((lesson) => lesson.steps)
       .filter((step) => cancellationTransferStepIds.includes(step.id as never)),
   ).toHaveLength(2);

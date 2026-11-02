@@ -11,6 +11,7 @@ import * as currentCourse from "./course";
 import baseline from "./fixtures/async-send-pre-handoff.json";
 import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtures";
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
+import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 
 const sha = (value: unknown) =>
@@ -25,7 +26,9 @@ it("appends exactly two Send steps without changing the accepted lesson prefix",
     "async-lending-send-boundary-handoff-model",
     "async-lending-send-boundary-prepared-handoff",
   ]);
-  expect(currentCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1287);
+  const historicalCourse =
+    historicalBeforeFrameProtocolMaintenance(currentCourse);
+  expect(historicalCourse.lessons.flatMap((l) => l.steps)).toHaveLength(1287);
 });
 
 it("keeps accepted immutable bytes or the exact reviewed presentation successor", () => {
