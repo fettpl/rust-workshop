@@ -29,6 +29,16 @@ They do not execute the downloaded Cargo workspace or award an independent
 coding family. Existing concepts, calibrations, review exercises, four module
 criteria, saved positions and historical evidence keep their identities.
 
+This lesson is explicitly authored as `practiceOnly`. That role records an
+optional, ungated practice checkpoint; it is not a gate or independent coding
+credit. Its steps may contain exposure, prediction, same-session recall and
+rubric self-rating, but must not add an evidence gate or `codingTaskId`.
+Curators must also keep it out of module gate task references, module
+assessments and a project's primary `lessonId`; ordinary lessons remain subject
+to the normal non-rubric evidence-gate audit. The content check and source audit
+share this role policy, and the audit reports the checkpoint under
+`practiceOnlyLessons`.
+
 Maintainer verification is restricted to fixed repository-authored fixtures:
 
 ```sh

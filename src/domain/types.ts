@@ -149,6 +149,8 @@ export interface LessonStep {
   editorFile?: string;
 }
 export interface Lesson {
+  /** Optional authoring role for ungated practice lessons; when present it must be true. */
+  practiceOnly?: true;
   id: string;
   moduleId: string;
   conceptIds: string[];

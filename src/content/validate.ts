@@ -1,4 +1,5 @@
 import { validateProjectPackage } from "../domain/project-package";
+import { auditLessonEvidence } from "../domain/lesson-evidence-role";
 import {
   checkManifestContract,
   manifestContractIssues,
@@ -119,6 +120,13 @@ function checkAcyclic(
 
 export function validateContent(content: ContentBundle): string[] {
   const errors: string[] = [];
+  errors.push(
+    ...auditLessonEvidence({
+      lessons: content.lessons,
+      modules: content.modules,
+      projects: [...(content.projects ?? []), content.project],
+    }).errors,
+  );
   const lessonIds = new Set(content.lessons.map((lesson) => lesson.id));
   const conceptIds = new Set(content.concepts.map((concept) => concept.id));
   const competencyIds = new Set(

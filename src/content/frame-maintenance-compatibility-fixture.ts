@@ -18,7 +18,7 @@ export const acceptedPreA6CourseSha256 = baseline.wholeCourseSha256;
 export const acceptedPreA6Registry = baseline;
 
 const canonicalA6LessonSha256 =
-  "1db190a8a5062191a21745805681551fd3da7acb0f37a11195b9696c5af3b974";
+  "d4a734517ba6411ebaef8eda7ebb7e410f1ae48123a509ee6fe9914ddba7549a";
 const canonicalA6ModuleLessonIds = [
   ...baseline.publicApiModuleLessonIds,
   frameProtocolMaintenanceLessonId,

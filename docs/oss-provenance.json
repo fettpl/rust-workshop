@@ -102,7 +102,7 @@
     },
     {
       "path": "src/content/api-frame-protocol-maintenance.ts",
-      "sha256": "47d5eec6b0396855efc22fe39f50eaf2c5cfb1f9f4ffc57c4b44f6d2ea0fa56b",
+      "sha256": "a0c276bbe10f9552afc8a9fdadb8fc908b6c5111f458690e64c13c4745b6c053",
       "group": "course"
     },
     {
@@ -427,7 +427,7 @@
     },
     {
       "path": "src/content/content-validation.test.ts",
-      "sha256": "165dc3dc01d8158fa6c5c687f1654243c07f87fe9372fed2b58db71b311c7a0b",
+      "sha256": "9aa82a3ccb38a64ff921a299d89d73178825175b4f85ec6ce6f0c27f7adf041e",
       "group": "course"
     },
     {
@@ -667,7 +667,7 @@
     },
     {
       "path": "src/content/frame-maintenance-compatibility-fixture.ts",
-      "sha256": "43d69849976e814588031cbd300d5ad18ff11797aa898a6672342640cb658d59",
+      "sha256": "d179f1e21b15d5f1fdff51530a8c8a480dcc5ae795f872de3b60b6d76e14a49c",
       "group": "course"
     },
     {
@@ -1652,7 +1652,7 @@
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "853bfe1142d6aba8f99eb3f1ff153379638a0aa37b768cd21848fcaab5d19454",
+      "sha256": "fa9ad22f800d909bda86d3ac9b67cfcaac03cb72a7ca34bd70c0eec985b19b4d",
       "group": "course"
     },
     {

@@ -16,6 +16,7 @@ import {
   roadmap,
 } from "./course";
 import { validateContent, type ContentBundle } from "./validate";
+import { auditLessonEvidence } from "@/domain/lesson-evidence-role";
 import { frameTextContract } from "./ownership-evidence-contracts";
 
 const bundle: ContentBundle = {
@@ -628,6 +629,206 @@ describe("curriculum content contract", () => {
     expect(
       errors.some((error) => error.includes("no active review exercise")),
     ).toBe(true);
+  });
+});
+
+describe("practice-only lesson evidence role", () => {
+  const roleInput = () => ({
+    lessons: bundle.lessons,
+    modules: bundle.modules,
+    projects: [...(bundle.projects ?? []), bundle.project],
+  });
+
+  it("allows the authored A6 practice lesson and reports it outside required gates", () => {
+    expect(validateContent(bundle)).toEqual([]);
+    const audit = auditLessonEvidence(roleInput());
+    expect(audit.practiceOnlyLessons).toContain(
+      "api-frame-protocol-maintenance",
+    );
+    expect(audit.lessonsWithoutEvidence).not.toContain(
+      "api-frame-protocol-maintenance",
+    );
+    expect(audit.errors).toEqual([]);
+  });
+
+  it("still reports an unmarked lesson without a non-rubric evidence gate", () => {
+    const copy = structuredClone(bundle);
+    const lesson = copy.lessons.find((item) => item.id === "borrow-intro")!;
+    for (const step of lesson.steps) step.evidenceGate = false;
+    const audit = auditLessonEvidence({
+      lessons: copy.lessons,
+      modules: copy.modules,
+      projects: [...(copy.projects ?? []), copy.project],
+    });
+    expect(audit.lessonsWithoutEvidence).toContain("borrow-intro");
+  });
+
+  it("rejects a practice-only lesson that declares a primary coding task", () => {
+    const copy = structuredClone(bundle);
+    const lesson = copy.lessons.find(
+      (item) => item.id === "api-frame-protocol-maintenance",
+    )!;
+    lesson.steps[0].evidence = {
+      version: 1,
+      conceptIds: lesson.conceptIds,
+      codingTaskId: "api-frame-primary",
+    };
+    const errors = validateContent(copy);
+    expect(errors.some((error) => error.includes("practice-only"))).toBe(true);
+  });
+
+  it("rejects a module gate task reference to a practice-only lesson", () => {
+    const copy = structuredClone(bundle);
+    copy.modules
+      .find((module) => module.id === "public-api-workspaces")!
+      .gateCriteria![0].taskRefs.push({
+        lessonId: "api-frame-protocol-maintenance",
+        stepId: "api-frame-protocol-maintenance-challenge",
+      });
+    const errors = validateContent(copy);
+    expect(errors.some((error) => error.includes("module gate"))).toBe(true);
+  });
+
+  it("rejects module assessment and project primary references to practice-only lessons", () => {
+    const copy = structuredClone(bundle);
+    const courseModule = copy.modules.find(
+      (item) => item.id === "public-api-workspaces",
+    )!;
+    courseModule.assessmentId = "api-frame-protocol-maintenance-recall";
+    const project = copy.projects!.find(
+      (item) => item.id === "frame-protocol",
+    )!;
+    project.lessonId = "api-frame-protocol-maintenance";
+    const errors = validateContent(copy);
+    expect(
+      errors.filter((error) => error.includes("practice-only")),
+    ).toHaveLength(2);
+  });
+
+  it.each([
+    "api-frame-protocol-maintenance",
+    "api-frame-protocol-maintenance/api-frame-protocol-maintenance-recall",
+    "api-frame-protocol-maintenance-recall",
+  ])("rejects a practice-only module assessment using %s", (assessmentId) => {
+    const copy = structuredClone(bundle);
+    copy.modules.find(
+      (item) => item.id === "public-api-workspaces",
+    )!.assessmentId = assessmentId;
+    const errors = validateContent(copy);
+    expect(errors.some((error) => error.includes("as its assessment"))).toBe(
+      true,
+    );
+  });
+
+  it.each([
+    ["ordinary-first", false],
+    ["practice-first", true],
+  ])(
+    "does not let an %s same-step collision hide a practice-only module assessment",
+    (_, practiceFirst) => {
+      const source = bundle.lessons.find(
+        (item) => item.id === "api-frame-protocol-maintenance",
+      )!;
+      const ordinary = structuredClone(source);
+      delete (
+        ordinary as Omit<Lesson, "practiceOnly"> & { practiceOnly?: unknown }
+      ).practiceOnly;
+      ordinary.id = "api-frame-ordinary-collision";
+      ordinary.steps = [structuredClone(ordinary.steps[0])];
+      ordinary.steps[0].id = "shared-assessment-step";
+      const practice = structuredClone(source);
+      practice.id = "api-frame-practice-collision";
+      practice.steps = [structuredClone(practice.steps[0])];
+      practice.steps[0].id = "shared-assessment-step";
+      const lessons = practiceFirst
+        ? [practice, ordinary]
+        : [ordinary, practice];
+      const courseModule = structuredClone(
+        bundle.modules.find((item) => item.id === "public-api-workspaces")!,
+      );
+      courseModule.id = "assessment-collision-module";
+      courseModule.lessonIds = [ordinary.id, practice.id];
+      courseModule.assessmentId = "shared-assessment-step";
+      const audit = auditLessonEvidence({
+        lessons,
+        modules: [courseModule],
+        projects: [],
+      });
+      expect(
+        audit.errors.some((error) => error.includes("as its assessment")),
+      ).toBe(true);
+    },
+  );
+
+  it("does not reject a bare assessment step from another module's practice lesson", () => {
+    const source = bundle.lessons.find(
+      (item) => item.id === "api-frame-protocol-maintenance",
+    )!;
+    const ordinary = structuredClone(source);
+    delete (
+      ordinary as Omit<Lesson, "practiceOnly"> & { practiceOnly?: unknown }
+    ).practiceOnly;
+    ordinary.id = "api-frame-ordinary-module-assessment";
+    ordinary.steps = [structuredClone(ordinary.steps[0])];
+    ordinary.steps[0].id = "shared-assessment-step";
+    const practice = structuredClone(source);
+    practice.id = "api-frame-other-module-practice";
+    practice.moduleId = "other-module";
+    practice.steps = [structuredClone(practice.steps[0])];
+    practice.steps[0].id = "shared-assessment-step";
+    const courseModule = structuredClone(
+      bundle.modules.find((item) => item.id === "public-api-workspaces")!,
+    );
+    courseModule.id = "ordinary-assessment-module";
+    courseModule.lessonIds = [ordinary.id];
+    courseModule.assessmentId = "shared-assessment-step";
+    const audit = auditLessonEvidence({
+      lessons: [ordinary, practice],
+      modules: [courseModule],
+      projects: [],
+    });
+    expect(audit.errors).toEqual([]);
+  });
+
+  it("uses module lesson membership before global bare-step matches", () => {
+    const source = bundle.lessons.find(
+      (item) => item.id === "api-frame-protocol-maintenance",
+    )!;
+    const ordinary = structuredClone(source);
+    delete (
+      ordinary as Omit<Lesson, "practiceOnly"> & { practiceOnly?: unknown }
+    ).practiceOnly;
+    ordinary.id = "api-frame-global-ordinary";
+    ordinary.steps = [structuredClone(ordinary.steps[0])];
+    ordinary.steps[0].id = "module-selected-step";
+    const practice = structuredClone(source);
+    practice.id = "api-frame-module-practice";
+    practice.steps = [structuredClone(practice.steps[0])];
+    practice.steps[0].id = "module-selected-step";
+    const courseModule = structuredClone(
+      bundle.modules.find((item) => item.id === "public-api-workspaces")!,
+    );
+    courseModule.id = "module-membership-selection";
+    courseModule.lessonIds = [practice.id];
+    courseModule.assessmentId = "module-selected-step";
+    const audit = auditLessonEvidence({
+      lessons: [ordinary, practice],
+      modules: [courseModule],
+      projects: [],
+    });
+    expect(
+      audit.errors.some((error) => error.includes("as its assessment")),
+    ).toBe(true);
+  });
+
+  it("rejects an explicitly false or unknown practice-only role", () => {
+    const copy = structuredClone(bundle);
+    const lesson = copy.lessons.find(
+      (item) => item.id === "api-frame-protocol-maintenance",
+    )! as Omit<Lesson, "practiceOnly"> & { practiceOnly?: unknown };
+    lesson.practiceOnly = false;
+    const errors = validateContent(copy);
+    expect(errors.some((error) => error.includes("practiceOnly"))).toBe(true);
   });
 });
 

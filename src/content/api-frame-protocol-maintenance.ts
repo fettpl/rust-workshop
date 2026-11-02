@@ -52,6 +52,7 @@ const maintenanceReviewCriteria = [
 
 export const apiFrameProtocolMaintenanceLesson: Lesson = {
   id: "api-frame-protocol-maintenance",
+  practiceOnly: true,
   moduleId: "public-api-workspaces",
   conceptIds: ["api-compatible-surface", "api-error-source-chain"],
   competencyIds: [

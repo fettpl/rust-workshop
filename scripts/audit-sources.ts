@@ -3,11 +3,20 @@ import {
   lessons,
   concepts,
   reviewExercises,
+  modules,
+  projects,
+  project,
 } from "../src/content/course";
+import { auditLessonEvidence } from "../src/domain/lesson-evidence-role";
 import { spawnSync } from "node:child_process";
 async function main() {
 const date = new Date().toISOString().slice(0, 10);
 const dynamic = sources.filter((s) => s.classification === "dynamic");
+const evidenceAudit = auditLessonEvidence({
+  lessons,
+  modules,
+  projects: [...projects, project],
+});
 const report = {
   generatedAt: date,
   toolchain: spawnSync("rustc", ["--version"], {
@@ -26,12 +35,9 @@ const report = {
     recheckPolicy: source.recheckPolicy,
     classification: source.classification,
   })),
-  lessonsWithoutEvidence: lessons
-    .filter(
-      (l) =>
-        !l.steps.some((s) => s.evidenceGate && s.evaluator?.kind !== "rubric"),
-    )
-    .map((l) => l.id),
+  practiceOnlyLessons: evidenceAudit.practiceOnlyLessons,
+  lessonsWithoutEvidence: evidenceAudit.lessonsWithoutEvidence,
+  evidenceRoleErrors: evidenceAudit.errors,
   conceptsWithoutActiveReview: concepts
     .filter((c) => !reviewExercises[c.id])
     .map((c) => c.id),
@@ -58,11 +64,11 @@ if (process.argv.includes("--check-links")) {
 console.log(JSON.stringify(report, null, 2));
 if (
   report.lessonsWithoutEvidence.length ||
+  report.evidenceRoleErrors.length ||
   report.conceptsWithoutActiveReview.length ||
   report.brokenReferences.length ||
   report.linkStatus.some((s) => typeof s.status !== "number" || s.status >= 400)
 )
   process.exitCode = 1;
-
 }
 void main();
