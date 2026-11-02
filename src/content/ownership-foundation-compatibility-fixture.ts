@@ -1,5 +1,5 @@
 import type * as Course from "./course";
-import baseline from "../../../research/authentic-pre-foundation-registry.json";
+import baseline from "./fixtures/ownership-foundation-pre-a5-registry.json";
 import type { Lesson } from "../domain/types";
 
 export const ownershipFoundationLessonId =

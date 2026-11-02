@@ -611,6 +611,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/fixtures/ownership-foundation-pre-a5-registry.json",
+      "sha256": "5e0a37f5c3813ddf7ef0f2adf2f038021f558315218ec98ded4e542ea27ff005",
+      "group": "course"
+    },
+    {
       "path": "src/content/fixtures/unsafe-miri-pre-disjoint-ranges.json",
       "sha256": "444504d56d8cc858f227db1f0c93212a20ec14dac6b9e8c9daa95c832e99da14",
       "group": "course"
@@ -927,7 +932,7 @@
     },
     {
       "path": "src/content/ownership-foundation-compatibility-fixture.ts",
-      "sha256": "268aec2257af5391decc4c8e087d3dffa3ab59fa60bdfdd5d862673426fec2c9",
+      "sha256": "ce328b350e3423c8ba259cd84e3df455901d9b519f53643f88e2157753165715",
       "group": "course"
     },
     {

@@ -1,0 +1,3354 @@
+{
+  "schema": "authentic-pre-a5-foundation-registry-v1",
+  "provenance": {
+    "sourceHead": "1090259eed8a91bd948d982343ac3bf829218d8a",
+    "sourceTree": "e868247b59e1bf4de1f3f37c6898e909ff1ed81f",
+    "sourceClean": true,
+    "scope": "Actual complete registry read before any A5 authoring; no reconstruction from successor",
+    "sourceHashes": {
+      "src/content/course.ts": "ff47154a5be56e575d1e9159078b8c8b0ee5efad5d3e653a33fe991e93ec1364",
+      "src/content/modeling.ts": "cf3df1d4d4cf00905798e335dc8eda20bf48b423194811393f100ad866f166b6",
+      "src/content/modules-cargo.ts": "9e195d16d1bc71e4904978606f4293a0b06b626b75353e574aa2b408adb80c2b",
+      "src/content/catalog.ts": "459a8e33ce9841b67ad0ae76ba6401d0d8ebd80bfaa871e1acc497070f03ed8d",
+      "src/engine/learning.ts": "7428d5193e7de19f0b7f0533c83a2d7095b8be24accb86f5a9fadacf0a23802b",
+      "src/engine/course-route.ts": "f57d375d1a4c1b2eee3f5cae8bcaeba026d105f5c3e3fd1babcd46ad58d43f4d"
+    }
+  },
+  "registryKeys": [
+    "competencies",
+    "concepts",
+    "delayedReviewExercises",
+    "lessons",
+    "modules",
+    "ownershipModule",
+    "project",
+    "projects",
+    "reviewExercises",
+    "reviewExercisesById",
+    "roadmap",
+    "shortReviewExercises",
+    "sources",
+    "traces"
+  ],
+  "wholeCourseSha256": "828794775ad4b3300c8450f7d44f5ad320c98ab167a8489a03a8dbc240303319",
+  "registrySha256ByKey": {
+    "competencies": "4e3a94355c196b6276e2aec7f1c6188f8c534ee806333bcb31a996cfb4fa1851",
+    "concepts": "df42156348b703ab03019d052d1cb93a4a9720961892718590494740c993eba3",
+    "delayedReviewExercises": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c",
+    "lessons": "f593785847dfcf181cc859d53519c354dee5d930849c28f0ad3f059f13ebb5c9",
+    "modules": "6ddae476668a11a170c0704c6441df110daa66cdf543f3aa48ffe1c8faaa0423",
+    "ownershipModule": "a49b89d28c14ca64c42429ac0d946ee13b6f5d638cd55ea311c1e6746b44cec1",
+    "project": "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+    "projects": "c8fcbe5aad162d39744bb540404c98ec9af90846bcb220c04ddd0907542891f5",
+    "reviewExercises": "1489f8c86b0c57c913f40f403375487b82fe7b0e667b0d00997b9601cb1dd2c1",
+    "reviewExercisesById": "d4d18fb9c0852bf13ca6b644d60b12150afa1e35722defcc35bc67d76e373470",
+    "roadmap": "63c94381759dcb101770b8f8f56e3d66aebdcf27e19e6fccfaa21c1d8971792a",
+    "shortReviewExercises": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "sources": "e9ae605cb3b4accd0483bef877e991c113a53ae4b069838bcde34d3c52ff194a",
+    "traces": "f501901ba89841109381b3f99e858606cb6cebd888b595518f556504efcaa263"
+  },
+  "inventory": {
+    "modules": 48,
+    "lessons": 192,
+    "concepts": 194,
+    "steps": 1281,
+    "sources": 349
+  },
+  "module": {
+    "id": "data-modeling",
+    "title": "Modelowanie danych",
+    "whyItMatters": "Gdy program zaczyna przechowywać więcej danych, sam zestaw zmiennych przestaje wystarczać. Nauczysz się wybierać pożyczony widok, nazywać pola i możliwe stany oraz odróżniać brak wartości od zera.",
+    "capabilities": [
+      "Dobierzesz wycinek &[i32] lub &str i sprawdzisz granice zakresu.",
+      "Połączysz powiązane dane w strukturze posiadającej własny tekst.",
+      "Oddzielisz odczyt przez &self od zmiany stanu przez &mut self.",
+      "Obsłużysz warianty enumu przez match oraz brak danych przez Option.",
+      "Zbudujesz mały model zadania i przetestujesz przejścia stanu oraz przypadki brzegowe."
+    ],
+    "prerequisites": [
+      "ownership"
+    ],
+    "lessonIds": [
+      "slices-and-views",
+      "structs-and-fields",
+      "methods-and-state",
+      "enums-and-match",
+      "option-and-absence",
+      "modeling-assessment",
+      "nested-patterns-and-destructuring"
+    ],
+    "exitGate": [
+      "Funkcja operuje na pożyczonym wycinku i daje poprawne wyniki dla różnych danych.",
+      "Rekord oraz metody zachowują własność danych i prawidłowo zmieniają stan.",
+      "Match pokrywa warianty, a Option rozróżnia brak i obecne zero.",
+      "Samodzielny model przechodzi testy dla nowych danych i kolejnych zmian stanu."
+    ],
+    "projectConnection": "Zbudujesz rdzeń danych dla przyszłego Todo CLI: własny tytuł, nazwany stan i opcjonalną estymatę. Dzięki temu kolejne lekcje będą mogły dodać kolekcję zadań, wejście użytkownika i zapis.",
+    "assessmentId": "modeling-assessment/modeling-blank",
+    "gateCriteria": [
+      {
+        "id": "slice-gate",
+        "label": "Pożyczony wycinek działa dla różnych danych",
+        "taskRefs": [
+          {
+            "lessonId": "slices-and-views",
+            "stepId": "slice-repair"
+          },
+          {
+            "lessonId": "slices-and-views",
+            "stepId": "slice-gate"
+          },
+          {
+            "lessonId": "slices-and-views",
+            "stepId": "slice-edge-gate"
+          }
+        ]
+      },
+      {
+        "id": "record-gate",
+        "label": "Nazwane pola zachowują właściwą własność tekstu",
+        "taskRefs": [
+          {
+            "lessonId": "structs-and-fields",
+            "stepId": "record-repair"
+          },
+          {
+            "lessonId": "structs-and-fields",
+            "stepId": "record-gate"
+          },
+          {
+            "lessonId": "structs-and-fields",
+            "stepId": "record-state-gate"
+          }
+        ]
+      },
+      {
+        "id": "method-gate",
+        "label": "Metoda zmienia stan przez właściwy rodzaj dostępu",
+        "taskRefs": [
+          {
+            "lessonId": "methods-and-state",
+            "stepId": "method-repair"
+          },
+          {
+            "lessonId": "methods-and-state",
+            "stepId": "method-gate"
+          },
+          {
+            "lessonId": "methods-and-state",
+            "stepId": "method-reset-gate"
+          }
+        ]
+      },
+      {
+        "id": "variant-gate",
+        "label": "Match obsługuje nazwane warianty enumu",
+        "taskRefs": [
+          {
+            "lessonId": "enums-and-match",
+            "stepId": "enum-error"
+          },
+          {
+            "lessonId": "enums-and-match",
+            "stepId": "enum-payload"
+          }
+        ]
+      },
+      {
+        "id": "option-gate",
+        "label": "Option odróżnia brak wartości od obecnego zera",
+        "taskRefs": [
+          {
+            "lessonId": "option-and-absence",
+            "stepId": "option-error"
+          },
+          {
+            "lessonId": "option-and-absence",
+            "stepId": "option-match"
+          }
+        ]
+      },
+      {
+        "id": "model-transfer-gate",
+        "label": "Nowy model z rekordem, stanem i opcjonalnością przechodzi testy",
+        "taskRefs": [
+          {
+            "lessonId": "modeling-assessment",
+            "stepId": "modeling-blank"
+          },
+          {
+            "lessonId": "modeling-assessment",
+            "stepId": "modeling-alt"
+          }
+        ]
+      },
+      {
+        "id": "nested-pattern-gate",
+        "label": "Zagnieżdżone wzorce rozróżniają brak, stan i dane pożyczone",
+        "taskRefs": [
+          {
+            "lessonId": "nested-patterns-and-destructuring",
+            "stepId": "nested-repair"
+          },
+          {
+            "lessonId": "nested-patterns-and-destructuring",
+            "stepId": "nested-transfer"
+          }
+        ]
+      }
+    ]
+  },
+  "cargoLessons": [
+    {
+      "id": "module-tree-paths",
+      "moduleId": "modules-cargo",
+      "conceptIds": [
+        "module-paths"
+      ],
+      "competencyIds": [
+        "navigate-modules"
+      ],
+      "prerequisites": [
+        "todo-session-project"
+      ],
+      "title": "Moduły: znajdź funkcję w drzewie",
+      "subtitle": "Porządkujesz znane funkcje za pomocą mod i ścieżek.",
+      "minutes": 30,
+      "outcomes": [
+        "Zbudujesz zagnieżdżony moduł bez tworzenia osobnego pliku.",
+        "Odróżnisz korzeń crate, bieżący self i rodzica super.",
+        "Naprawisz ścieżkę, zachowując odpowiedzialność funkcji."
+      ],
+      "steps": [
+        {
+          "id": "paths-run",
+          "kind": "run",
+          "title": "Uruchom funkcję z modułu",
+          "prompt": "Todo połączyło kilka funkcji i typów w jednym źródle. Gdy ich przybywa, mod reports { ... } nadaje wspólną nazwę grupie elementów. Zagnieżdżone mod daily tworzy dziecko reports. Drzewo całej jednostki kompilacji, czyli crate, ma korzeń crate. Zapis :: przechodzi do kolejnej nazwy: crate::reports::daily::label. self::clean zaczyna szukanie w daily, a super::prefix w jego rodzicu reports. Funkcja prefix rodzica może być użyta przez dziecko. Na razie pub przed daily i label pozwala wywołać je spoza reports; pełne reguły dostępu poznasz w następnej lekcji. mod samo niczego nie wykonuje: dopiero wywołanie label w main tworzy wynik. Uruchom przykład i wskaż trzy miejsca startu ścieżek. Wszystkie moduły są tu rzeczywistymi modułami Rust w jednym pliku.",
+          "code": "mod reports {\n    fn prefix() -> String { String::from(\"Plan\") }\n\n    pub mod daily {\n        fn clean(text: &str) -> String { String::from(text.trim()) }\n\n        pub fn label(text: &str) -> String {\n            format!(\"{}: {}\", super::prefix(), self::clean(text))\n        }\n    }\n}\n\nfn main() {\n    println!(\"{}\", crate::reports::daily::label(\"  dostawa  \"));\n}",
+          "solution": "mod reports {\n    fn prefix() -> String { String::from(\"Plan\") }\n\n    pub mod daily {\n        fn clean(text: &str) -> String { String::from(text.trim()) }\n\n        pub fn label(text: &str) -> String {\n            format!(\"{}: {}\", super::prefix(), self::clean(text))\n        }\n    }\n}\n\nfn main() {\n    println!(\"{}\", crate::reports::daily::label(\"  dostawa  \"));\n}",
+          "evaluator": {
+            "kind": "exact-output",
+            "expected": "Plan: dostawa\n"
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "paths-predict",
+          "kind": "predict",
+          "title": "Przewidź start ścieżki",
+          "prompt": "Jesteś wewnątrz reports::daily z poprzedniego przykładu. Gdzie self::clean i super::prefix szukają funkcji?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "clean w reports, prefix w daily"
+            },
+            {
+              "id": "1",
+              "label": "clean w daily, prefix w reports"
+            },
+            {
+              "id": "2",
+              "label": "Obie funkcje w korzeniu crate"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "1",
+            "explanations": {
+              "0": "Kierunki są odwrotne: self pozostaje na miejscu, super wychodzi do rodzica.",
+              "1": "self wskazuje bieżący moduł, a jeden super przechodzi o jeden poziom do rodzica.",
+              "2": "Tylko ścieżka rozpoczynająca się od crate ma zawsze korzeń crate jako punkt startu."
+            }
+          },
+          "evidenceKind": "prediction"
+        },
+        {
+          "id": "paths-error",
+          "kind": "observe",
+          "title": "Zobacz brakujący poziom",
+          "prompt": "Uruchom celowo błędny program. E0433 oznacza tutaj, że w korzeniu crate nie ma modułu daily. Istnieje on dopiero wewnątrz reports. Przeczytaj ścieżkę od lewej strony i porównaj ją z blokami mod; nie zmieniaj jeszcze struktury.",
+          "code": "mod reports {\n    pub mod daily {\n        pub fn label(text: &str) -> String { format!(\"Plan: {}\", text.trim()) }\n    }\n}\n\nfn report(text: &str) -> String {\n    crate::daily::label(text)\n}\n\nfn main() { println!(\"{}\", report(\"dostawa\")); }",
+          "solution": "mod reports {\n    pub mod daily {\n        pub fn label(text: &str) -> String { format!(\"Plan: {}\", text.trim()) }\n    }\n}\n\nfn report(text: &str) -> String {\n    crate::reports::daily::label(text)\n}\n\nfn main() { println!(\"{}\", report(\"dostawa\")); }",
+          "evaluator": {
+            "kind": "expected-error",
+            "code": "E0433"
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0433",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "paths-debug",
+          "kind": "debug",
+          "title": "Napraw drogę do funkcji",
+          "prompt": "Napraw wywołanie w report, tak aby trafiało do istniejącego reports::daily::label. report ma zwracać Plan: i spację przed tekstem po trim, także przy pustym tekście. Zachowaj moduły i funkcję label; nie przenoś jej do korzenia.",
+          "code": "mod reports {\n    pub mod daily {\n        pub fn label(text: &str) -> String { format!(\"Plan: {}\", text.trim()) }\n    }\n}\n\nfn report(text: &str) -> String {\n    crate::daily::label(text)\n}\n\nfn main() { println!(\"{}\", report(\"dostawa\")); }",
+          "solution": "mod reports {\n    pub mod daily {\n        pub fn label(text: &str) -> String { format!(\"Plan: {}\", text.trim()) }\n    }\n}\n\nfn report(text: &str) -> String {\n    crate::reports::daily::label(text)\n}\n\nfn main() { println!(\"{}\", report(\"dostawa\")); }",
+          "hints": [
+            "Narysuj kolejno crate, reports, daily i label.",
+            "Między crate:: a daily:: brakuje nazwy modułu rodzica."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn repaired_path_handles_more_than_one_label() {\n    assert_eq!(report(\" nowy plan \"), \"Plan: nowy plan\");\n    assert_eq!(report(\"\"), \"Plan: \");\n    assert_eq!(crate::reports::daily::label(\"żółć\"), \"Plan: żółć\");\n}"
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0433",
+          "evidenceKind": "fix",
+          "evidenceGate": false
+        },
+        {
+          "id": "paths-modify",
+          "kind": "modify",
+          "title": "Połącz trzy punkty startu",
+          "prompt": "Uzupełnij notes::lines::render i summary. render tworzy String Notatka: TEKST, obcinając tylko brzegi argumentu. Nie zmieniaj prefix ani clean: wywołaj prefix przez super i clean przez self. summary ma zwrócić ten sam wynik, wywołując render ścieżką od crate. Zachowaj zagnieżdżone moduły i publiczne render. Testy sprawdzają ścieżkę API oraz wynik dla pustego tekstu, Unicode i wewnętrznych spacji.",
+          "code": "mod notes {\n    fn prefix() -> String { String::from(\"Notatka\") }\n    pub mod lines {\n        fn clean(text: &str) -> String { String::from(text.trim()) }\n        pub fn render(text: &str) -> String { String::from(text) }\n    }\n}\nfn summary(text: &str) -> String { String::from(text) }",
+          "solution": "mod notes {\n    fn prefix() -> String { String::from(\"Notatka\") }\n    pub mod lines {\n        fn clean(text: &str) -> String { String::from(text.trim()) }\n        pub fn render(text: &str) -> String {\n            format!(\"{}: {}\", super::prefix(), self::clean(text))\n        }\n    }\n}\nfn summary(text: &str) -> String { crate::notes::lines::render(text) }",
+          "hints": [
+            "render jest w lines, więc jego rodzicem jest notes.",
+            "W format! połącz super::prefix() i self::clean(text); klient z korzenia wskazuje crate::notes::lines::render(text)."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn nested_api_and_root_client_agree() {\n    for (input, expected) in [(\" plan \", \"Notatka: plan\"), (\"żółć\", \"Notatka: żółć\"), (\"\", \"Notatka: \"), (\"a  b\", \"Notatka: a  b\")] {\n        assert_eq!(crate::notes::lines::render(input), expected);\n        assert_eq!(crate::summary(input), expected);\n    }\n}"
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "paths-transfer",
+          "kind": "apply",
+          "title": "Przenieś drzewo do identyfikatorów",
+          "prompt": "Uzupełnij nową domenę identyfikatorów gości. badges::names::render zwraca Gość: TEKST, z trim tylko na brzegach. Użyj istniejących prefix rodzica przez super i clean bieżącego modułu przez self. Funkcja badge w korzeniu wywołuje render ścieżką od crate i zwraca ten sam String. Zachowaj hierarchię badges → names i oba pomocniki.",
+          "code": "mod badges {\n    fn prefix() -> String { String::from(\"Gość\") }\n    pub mod names {\n        fn clean(text: &str) -> String { String::from(text.trim()) }\n        pub fn render(text: &str) -> String { String::from(text) }\n    }\n}\nfn badge(text: &str) -> String { String::from(text) }",
+          "solution": "mod badges {\n    fn prefix() -> String { String::from(\"Gość\") }\n    pub mod names {\n        fn clean(text: &str) -> String { String::from(text.trim()) }\n        pub fn render(text: &str) -> String {\n            format!(\"{}: {}\", super::prefix(), self::clean(text))\n        }\n    }\n}\nfn badge(text: &str) -> String { crate::badges::names::render(text) }",
+          "hints": [
+            "To inne nazwy modułów, ale te same relacje rodzica i dziecka.",
+            "Z wnętrza names rodzic to super; pełna ścieżka klienta biegnie przez badges oraz names."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn nested_badge_api_and_client_agree() {\n    for (input, expected) in [(\" Ada \", \"Gość: Ada\"), (\"Łucja\", \"Gość: Łucja\"), (\"\", \"Gość: \"), (\"A  B\", \"Gość: A  B\")] {\n        assert_eq!(crate::badges::names::render(input), expected);\n        assert_eq!(crate::badge(input), expected);\n    }\n}"
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "paths-explain",
+          "kind": "explain",
+          "title": "Oddziel drzewo od wykonania",
+          "prompt": "Co zmienia otoczenie istniejących funkcji blokiem mod reports { ... }?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Tworzy osobny program z własnym main"
+            },
+            {
+              "id": "1",
+              "label": "Ich miejsce w drzewie nazw i reguły dostępu"
+            },
+            {
+              "id": "2",
+              "label": "Uruchamia każdą funkcję raz przy starcie"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "1",
+            "explanations": {
+              "0": "Jeden plik może zawierać wiele modułów należących do tego samego crate.",
+              "1": "Moduł grupuje elementy. Wywołania nadal decydują, kiedy funkcje pracują.",
+              "2": "Definicja funkcji wewnątrz mod nie jest jej wywołaniem."
+            }
+          },
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "paths-recall",
+          "kind": "recall",
+          "title": "Odtwórz drogę bez uruchamiania",
+          "prompt": "Funkcja jest w crate::a::b. Która para wskazuje moduł b i jego rodzica a?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "super oraz crate"
+            },
+            {
+              "id": "1",
+              "label": "self oraz super"
+            },
+            {
+              "id": "2",
+              "label": "crate oraz self"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "1",
+            "explanations": {
+              "0": "super wskazuje a, a crate korzeń ponad a.",
+              "1": "self pozostaje w b, super zaczyna w a.",
+              "2": "crate jest korzeniem całej jednostki, a nie bieżącym b."
+            }
+          },
+          "evidenceKind": "recall"
+        }
+      ],
+      "misconceptions": [
+        "Każdy mod wymaga osobnego pliku.",
+        "super wskazuje zawsze korzeń całego programu.",
+        "Blok mod wykonuje funkcje w kolejności ich definicji."
+      ],
+      "transferTask": "Przenieś układ notes → lines do badges → names i zachowaj poprawne wywołania między poziomami.",
+      "evidenceGate": "Jedno z dwóch zadań z kodem poprawnie udostępnia zagnieżdżoną funkcję i łączy ją z klientem w korzeniu.",
+      "sourceIds": [
+        "cargo-book-module-tree",
+        "cargo-book-paths"
+      ]
+    },
+    {
+      "id": "module-visibility",
+      "moduleId": "modules-cargo",
+      "conceptIds": [
+        "visibility-boundaries"
+      ],
+      "competencyIds": [
+        "protect-module-api"
+      ],
+      "prerequisites": [
+        "module-tree-paths"
+      ],
+      "title": "Prywatny stan, publiczna obietnica",
+      "subtitle": "Konstruktor sprawdza dane, zanim powstanie wartość.",
+      "minutes": 35,
+      "outcomes": [
+        "Rozróżnisz prywatność, pub i pub(crate).",
+        "Zachowasz prywatne pole publicznej struktury.",
+        "Zaimplementujesz konstruktor, który odrzuca niepoprawny zakres przez Result."
+      ],
+      "steps": [
+        {
+          "id": "visibility-run",
+          "kind": "run",
+          "title": "Uruchom kontrolowaną konstrukcję",
+          "prompt": "Wcześniej pola struct można było wypełniać w tym samym module. Po umieszczeniu typu w booking potrzebujemy granicy: element bez pub jest dostępny w module, który go definiuje, i jego potomkach. Rodzic nie dostaje dostępu do prywatnego wnętrza dziecka. pub struct Seat udostępnia nazwę typu, ale pole number pozostaje prywatne. Publiczne Seat::new sprawdza numer przed zbudowaniem wartości, dlatego nazywamy je konstruktorem z walidacją; new to zwykła wybrana przez nas nazwa funkcji skojarzonej, nie specjalne słowo Rust. Publiczna metoda number pożycza &self i zwraca Copy liczby. Zapis Seat { number } jest skrótem Seat { number: number }. pub(crate) przy limit pozwala użyć pomocnika w bieżącym crate. Nie daje dostępu innemu crate. Publiczny enum SeatError udostępnia też swój wariant Outside. is_err() sprawdza, czy Result jest Err. Uruchom: poprawne miejsce 8 powstaje, zero jest odrzucone.",
+          "code": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn main() {\n    match crate::booking::Seat::new(8) {\n        Ok(seat) => println!(\"miejsce {}\", seat.number()),\n        Err(error) => println!(\"{:?}\", error),\n    }\n    println!(\"limit {}\", crate::booking::limit());\n    println!(\"odrzucono: {}\", crate::booking::Seat::new(0).is_err());\n}",
+          "solution": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn main() {\n    match crate::booking::Seat::new(8) {\n        Ok(seat) => println!(\"miejsce {}\", seat.number()),\n        Err(error) => println!(\"{:?}\", error),\n    }\n    println!(\"limit {}\", crate::booking::limit());\n    println!(\"odrzucono: {}\", crate::booking::Seat::new(0).is_err());\n}",
+          "evaluator": {
+            "kind": "exact-output",
+            "expected": "miejsce 8\nlimit 8\nodrzucono: true\n"
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "visibility-predict",
+          "kind": "predict",
+          "title": "Przewidź skutek pub struct",
+          "prompt": "Kod poza booking widzi publiczny Seat z prywatnym number. Który sposób chroni zakres 1–8?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "pub(crate) sprawia, że number jest dostępne w każdym pakiecie"
+            },
+            {
+              "id": "1",
+              "label": "Seat::new sprawdza numer, a number() pozwala go odczytać"
+            },
+            {
+              "id": "2",
+              "label": "pub struct automatycznie pozwala ustawić każde pole"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "1",
+            "explanations": {
+              "0": "pub(crate) dotyczy tylko jednego crate; tutaj nie umieszczono go nawet przy polu.",
+              "1": "Pole pozostaje ukryte, więc klient korzysta z kontrolowanej konstrukcji i odczytu.",
+              "2": "Widoczność pól jest osobna od widoczności struktury."
+            }
+          },
+          "evidenceKind": "prediction"
+        },
+        {
+          "id": "visibility-error",
+          "kind": "observe",
+          "title": "Odczytaj E0616",
+          "prompt": "Uruchom próbę odczytu seat.number spoza booking. Kompilator zgłosi E0616: pole number jest prywatne. To celowa ochrona danych. Publiczna metoda number() daje odczyt bez udostępniania samego pola do zapisu.",
+          "code": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn chosen() -> u8 {\n    match crate::booking::Seat::new(3) {\n        Ok(seat) => seat.number,\n        Err(_) => 0,\n    }\n}\nfn main() { println!(\"{}\", chosen()); }",
+          "solution": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn chosen() -> u8 {\n    match crate::booking::Seat::new(3) {\n        Ok(seat) => seat.number(),\n        Err(_) => 0,\n    }\n}\nfn main() { println!(\"{}\", chosen()); }",
+          "evaluator": {
+            "kind": "expected-error",
+            "code": "E0616"
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0616",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "visibility-debug",
+          "kind": "debug",
+          "title": "Użyj API zamiast pola",
+          "prompt": "Napraw chosen: odczytaj numer poprawnego Seat przez istniejącą publiczną metodę. Zachowaj prywatne pole i konstruktor. Wynik chosen pozostaje liczbą 3. Nie dodawaj pub do number.",
+          "code": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn chosen() -> u8 {\n    match crate::booking::Seat::new(3) {\n        Ok(seat) => seat.number,\n        Err(_) => 0,\n    }\n}\nfn main() { println!(\"{}\", chosen()); }",
+          "solution": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn chosen() -> u8 {\n    match crate::booking::Seat::new(3) {\n        Ok(seat) => seat.number(),\n        Err(_) => 0,\n    }\n}\nfn main() { println!(\"{}\", chosen()); }",
+          "hints": [
+            "Nazwa pola i nazwa metody mogą być takie same; odróżnia je wywołanie.",
+            "seat.number() wywołuje metodę, a seat.number próbuje czytać prywatne pole."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn client_reads_through_api() { assert_eq!(chosen(), 3); }",
+            "forbiddenPatterns": [
+              "pub number:",
+              "pub(crate) number:",
+              "pub(super) number:",
+              ".unwrap(",
+              ".expect("
+            ]
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0616",
+          "evidenceKind": "fix",
+          "evidenceGate": false
+        },
+        {
+          "id": "visibility-modify",
+          "kind": "modify",
+          "title": "Uszczelnij konstruktor Seat",
+          "prompt": "Starter przyjmuje zero. Napraw Seat::new: wyłącznie numery od 1 do limit() włącznie dają Ok z dokładnie tym numerem. Pozostałe u8 dają SeatError::Outside. Zachowaj publiczny typ i metody, prywatne number oraz pomocnik limit z pub(crate). Klient może odczytać numer, ale nie może ustawić pola bez walidacji. Bez unwrap i expect.",
+          "code": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}",
+          "solution": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}",
+          "hints": [
+            "Sprawdź obie granice przed utworzeniem Seat.",
+            "Niepoprawny jest numer równy zero albo większy od self::limit()."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn constructor_accepts_only_real_seats() {\n    assert_eq!(crate::booking::limit(), 8);\n    for number in [1, 2, 7, 8] {\n        match crate::booking::Seat::new(number) {\n            Ok(seat) => assert_eq!(seat.number(), number),\n            Err(_) => panic!(\"valid seat rejected\"),\n        }\n    }\n    for number in [0, 9, u8::MAX] {\n        match crate::booking::Seat::new(number) {\n            Ok(_) => panic!(\"invalid seat accepted\"),\n            Err(error) => assert_eq!(error, crate::booking::SeatError::Outside),\n        }\n    }\n}",
+            "forbiddenPatterns": [
+              "pub number:",
+              "pub(crate) number:",
+              "pub(super) number:",
+              ".unwrap(",
+              ".expect("
+            ]
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "visibility-transfer",
+          "kind": "apply",
+          "title": "Chroń numery szafek",
+          "prompt": "Napraw analogiczną granicę w nowej domenie. storage::Locker::new przyjmuje tylko numery u8 od 1 do limit() włącznie; limit wynosi 12. Inne numery dają LockerError::Outside. Publiczna metoda number zwraca dokładnie przyjęty numer. Pozostaw pole prywatne, limit dostępne przez pub(crate), a typ i metody publiczne. Bez unwrap i expect.",
+          "code": "mod storage {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum LockerError { Outside }\n    pub struct Locker { number: u8 }\n    pub(crate) fn limit() -> u8 { 12 }\n    impl Locker {\n        pub fn new(number: u8) -> Result<Locker, LockerError> {\n            if number == 0 {\n                Err(LockerError::Outside)\n            } else {\n                Ok(Locker { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}",
+          "solution": "mod storage {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum LockerError { Outside }\n    pub struct Locker { number: u8 }\n    pub(crate) fn limit() -> u8 { 12 }\n    impl Locker {\n        pub fn new(number: u8) -> Result<Locker, LockerError> {\n            if number == 0 || number > self::limit() {\n                Err(LockerError::Outside)\n            } else {\n                Ok(Locker { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}",
+          "hints": [
+            "Samo odrzucenie zera nie chroni końca zakresu.",
+            "Walidacja ma poprzedzać Ok(Locker { number }); sprawdź też limit oraz u8::MAX."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn constructor_accepts_only_real_lockers() {\n    assert_eq!(crate::storage::limit(), 12);\n    for number in [1, 2, 11, 12] {\n        match crate::storage::Locker::new(number) {\n            Ok(locker) => assert_eq!(locker.number(), number),\n            Err(_) => panic!(\"valid locker rejected\"),\n        }\n    }\n    for number in [0, 13, u8::MAX] {\n        match crate::storage::Locker::new(number) {\n            Ok(_) => panic!(\"invalid locker accepted\"),\n            Err(error) => assert_eq!(error, crate::storage::LockerError::Outside),\n        }\n    }\n}",
+            "forbiddenPatterns": [
+              "pub number:",
+              "pub(crate) number:",
+              "pub(super) number:",
+              ".unwrap(",
+              ".expect("
+            ]
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "visibility-explain",
+          "kind": "explain",
+          "title": "Sprawdź granicę pomocnika",
+          "prompt": "Biblioteka udostępnia pub(crate) fn limit. Osobny program w tym samym pakiecie Cargo jest innym crate. Czy może wywołać ten pomocnik biblioteki?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Tak, jeśli użyje pełnej ścieżki z crate::"
+            },
+            {
+              "id": "1",
+              "label": "Nie, pub(crate) kończy się na granicy crate biblioteki"
+            },
+            {
+              "id": "2",
+              "label": "Tak, bo oba pliki należą do jednego pakietu"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "1",
+            "explanations": {
+              "0": "Pełna ścieżka wskazuje element, ale nie omija zasad prywatności.",
+              "1": "Pakiet może grupować kilka crate. Dostęp ograniczony do jednego nie rozszerza się na pozostałe.",
+              "2": "Wspólny pakiet nie usuwa granicy widoczności. Strukturę pakietu przećwiczysz w ostatniej lekcji."
+            }
+          },
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "visibility-recall",
+          "kind": "recall",
+          "title": "Odtwórz cel prywatnego pola",
+          "prompt": "Dlaczego walidacja new przestaje wystarczać, gdy klient może sam ustawić publiczne pole number?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Rust nigdy nie pozwala użyć publicznych pól"
+            },
+            {
+              "id": "1",
+              "label": "Klient może utworzyć lub zmienić stan, pomijając new"
+            },
+            {
+              "id": "2",
+              "label": "Publiczne pola automatycznie wyłączają Result"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "1",
+            "explanations": {
+              "0": "Publiczne pola są legalne; wybór zależy od tego, czy dane wymagają chronionych niezmienników.",
+              "1": "Ukryte pole sprawia, że klient spoza modułu musi użyć dozwolonej drogi do zmiany stanu.",
+              "2": "Result nadal działa, lecz nie kontroluje operacji, które w ogóle nie wywołują new."
+            }
+          },
+          "evidenceKind": "recall"
+        }
+      ],
+      "misconceptions": [
+        "pub struct oznacza publiczne pola.",
+        "Pełna ścieżka pozwala obejść prywatność.",
+        "pub(crate) oznacza dostęp ze wszystkich crate jednego pakietu."
+      ],
+      "transferTask": "Zastosuj tę samą granicę konstrukcji do szafek o innym dozwolonym zakresie.",
+      "evidenceGate": "Konstruktor przyjmuje wszystkie sprawdzane poprawne numery, odrzuca obie niepoprawne granice i zachowuje prywatne pole.",
+      "sourceIds": [
+        "cargo-book-paths",
+        "cargo-reference-visibility"
+      ]
+    },
+    {
+      "id": "imports-and-reexports",
+      "moduleId": "modules-cargo",
+      "conceptIds": [
+        "scoped-imports"
+      ],
+      "competencyIds": [
+        "shape-import-api"
+      ],
+      "prerequisites": [
+        "module-visibility"
+      ],
+      "title": "use: krótkie nazwy i małe API",
+      "subtitle": "Alias usuwa kolizję nazw, a pub use pokazuje klientowi wybraną drogę.",
+      "minutes": 35,
+      "outcomes": [
+        "Wprowadzisz nazwę przez use w miejscu, które jej potrzebuje.",
+        "Rozróżnisz dwie funkcje label przy pomocy as.",
+        "Udostępnisz funkcje z prywatnych modułów przez pub use."
+      ],
+      "steps": [
+        {
+          "id": "imports-run",
+          "kind": "run",
+          "title": "Uruchom dwa formaty",
+          "prompt": "Długie ścieżki są jednoznaczne, lecz przy wielu wywołaniach przydaje się lokalna nazwa. use path::name wprowadza nazwę do bieżącego zakresu; niczego nie kopiuje i nie wywołuje. as input nadaje alias, więc dwie różne funkcje label mogą współistnieć w pair jako input i output. use można umieścić także wewnątrz funkcji. Zapis use crate::formats::{incoming_label, outgoing_label} skraca dwa importy o wspólnym początku. pub use jest re-eksportem: klient widzi nazwę formats::incoming_label, chociaż definicja pozostaje w prywatnym incoming. Funkcja w środku musi być publiczna, lecz moduł zawierający implementację może zostać prywatny. Uruchom i porównaj wywołania przez re-eksport z lokalnymi aliasami.",
+          "code": "mod formats {\n    mod incoming {\n        pub fn label(text: &str) -> String { format!(\"IN:{}\", text.trim()) }\n    }\n    mod outgoing {\n        pub fn label(text: &str) -> String { format!(\"OUT:{}\", text.trim()) }\n    }\n    pub use self::incoming::label as incoming_label;\n    pub use self::outgoing::label as outgoing_label;\n\n    pub fn pair(text: &str) -> String {\n        use self::incoming::label as input;\n        use self::outgoing::label as output;\n        format!(\"{} | {}\", input(text), output(text))\n    }\n}\nuse crate::formats::{incoming_label, outgoing_label};\nfn main() {\n    println!(\"{}\", incoming_label(\"  paczka  \"));\n    println!(\"{}\", outgoing_label(\"  paczka  \"));\n    println!(\"{}\", crate::formats::pair(\"  paczka  \"));\n}",
+          "solution": "mod formats {\n    mod incoming {\n        pub fn label(text: &str) -> String { format!(\"IN:{}\", text.trim()) }\n    }\n    mod outgoing {\n        pub fn label(text: &str) -> String { format!(\"OUT:{}\", text.trim()) }\n    }\n    pub use self::incoming::label as incoming_label;\n    pub use self::outgoing::label as outgoing_label;\n\n    pub fn pair(text: &str) -> String {\n        use self::incoming::label as input;\n        use self::outgoing::label as output;\n        format!(\"{} | {}\", input(text), output(text))\n    }\n}\nuse crate::formats::{incoming_label, outgoing_label};\nfn main() {\n    println!(\"{}\", incoming_label(\"  paczka  \"));\n    println!(\"{}\", outgoing_label(\"  paczka  \"));\n    println!(\"{}\", crate::formats::pair(\"  paczka  \"));\n}",
+          "evaluator": {
+            "kind": "exact-output",
+            "expected": "IN:paczka\nOUT:paczka\nIN:paczka | OUT:paczka\n"
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "imports-predict",
+          "kind": "predict",
+          "title": "Przewidź zakres importu",
+          "prompt": "Rodzic zawiera use crate::messages::tag. Jego dziecko screen chce użyć krótkiego tag(text). Co należy zrobić?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Nic: każdy import rodzica automatycznie działa jako krótka nazwa dziecka"
+            },
+            {
+              "id": "1",
+              "label": "Skopiować definicję tag do każdego modułu"
+            },
+            {
+              "id": "2",
+              "label": "Wprowadzić tag w screen albo użyć jawnej ścieżki"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "2",
+            "explanations": {
+              "0": "Dziecko nie dziedziczy automatycznie krótkich nazw importowanych w rodzicu.",
+              "1": "use pozwala korzystać z jednej definicji, więc kopiowanie nie jest potrzebne.",
+              "2": "Import należy do zakresu. Dziecko może wprowadzić własną nazwę lub wskazać istniejącą ścieżkę, np. super::tag."
+            }
+          },
+          "evidenceKind": "prediction"
+        },
+        {
+          "id": "imports-error",
+          "kind": "observe",
+          "title": "Zobacz brak lokalnej nazwy",
+          "prompt": "Uruchom przykład. E0425 wskazuje, że screen nie ma w swoim zakresie funkcji o krótkiej nazwie tag. Definicja istnieje w messages; problem dotyczy miejsca importu, a nie treści funkcji.",
+          "code": "mod messages {\n    pub fn tag(text: &str) -> String { format!(\"Wiadomość: {}\", text.trim()) }\n}\nuse crate::messages::tag;\nmod screen {\n    pub fn show(text: &str) -> String { tag(text) }\n}\nfn main() { println!(\"{}\", crate::screen::show(\"start\")); }",
+          "solution": "mod messages {\n    pub fn tag(text: &str) -> String { format!(\"Wiadomość: {}\", text.trim()) }\n}\nuse crate::messages::tag;\nmod screen {\n    use crate::messages::tag;\n    pub fn show(text: &str) -> String { tag(text) }\n}\nfn main() { println!(\"{}\", crate::screen::show(\"start\")); }",
+          "evaluator": {
+            "kind": "expected-error",
+            "code": "E0425"
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0425",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "imports-debug",
+          "kind": "debug",
+          "title": "Przenieś użycie do właściwego zakresu",
+          "prompt": "Napraw screen::show, wprowadzając istniejącą tag w screen przez use. show ma zwracać Wiadomość: i spację przed tekstem po trim. Nie duplikuj funkcji tag. Import w korzeniu można usunąć, jeśli przestaje być potrzebny.",
+          "code": "mod messages {\n    pub fn tag(text: &str) -> String { format!(\"Wiadomość: {}\", text.trim()) }\n}\nuse crate::messages::tag;\nmod screen {\n    pub fn show(text: &str) -> String { tag(text) }\n}\nfn main() { println!(\"{}\", crate::screen::show(\"start\")); }",
+          "solution": "mod messages {\n    pub fn tag(text: &str) -> String { format!(\"Wiadomość: {}\", text.trim()) }\n}\nuse crate::messages::tag;\nmod screen {\n    use crate::messages::tag;\n    pub fn show(text: &str) -> String { tag(text) }\n}\nfn main() { println!(\"{}\", crate::screen::show(\"start\")); }",
+          "hints": [
+            "Import musi być widoczny tam, gdzie używasz krótkiej nazwy.",
+            "Wewnątrz screen dodaj use crate::messages::tag;."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn child_scope_uses_the_existing_function() {\n    assert_eq!(crate::screen::show(\"  gotowe  \"), \"Wiadomość: gotowe\");\n    assert_eq!(crate::screen::show(\"\"), \"Wiadomość: \");\n}"
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0425",
+          "evidenceKind": "fix",
+          "evidenceGate": false
+        },
+        {
+          "id": "imports-modify",
+          "kind": "modify",
+          "title": "Udostępnij fasadę formatowania",
+          "prompt": "Fasada to mały zestaw nazw, przez które klient używa większego wnętrza. Zachowaj prywatne incoming i outgoing oraz ich funkcje label. Udostępnij je z formats przez pub use jako incoming_label i outgoing_label. W pair wprowadź dwie funkcje label lokalnymi aliasami i zwróć ich wyniki w kolejności IN, OUT, oddzielone dokładnie spacją, pionową kreską i spacją. Dla pustego tekstu wynik to IN: | OUT:. Nie upubliczniaj modułów implementacji.",
+          "code": "mod formats {\n    mod incoming {\n        pub fn label(text: &str) -> String { format!(\"IN:{}\", text.trim()) }\n    }\n    mod outgoing {\n        pub fn label(text: &str) -> String { format!(\"OUT:{}\", text.trim()) }\n    }\n    pub fn pair(text: &str) -> String { String::from(text) }\n}",
+          "solution": "mod formats {\n    mod incoming {\n        pub fn label(text: &str) -> String { format!(\"IN:{}\", text.trim()) }\n    }\n    mod outgoing {\n        pub fn label(text: &str) -> String { format!(\"OUT:{}\", text.trim()) }\n    }\n    pub use self::incoming::label as incoming_label;\n    pub use self::outgoing::label as outgoing_label;\n\n    pub fn pair(text: &str) -> String {\n        use self::incoming::label as input;\n        use self::outgoing::label as output;\n        format!(\"{} | {}\", input(text), output(text))\n    }\n}",
+          "hints": [
+            "Re-eksport może jednocześnie nadać alias: pub use ścieżka as nazwa;.",
+            "W pair użyj dwóch różnych nazw lokalnych, aby oba label były dostępne bez kolizji."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn public_names_and_composed_result_match() {\n    use crate::formats::{incoming_label, outgoing_label, pair};\n    for text in [\"\", \"  start  \", \"żółć\", \"a  b\"] {\n        let clean = text.trim();\n        assert_eq!(incoming_label(text), format!(\"IN:{}\", clean));\n        assert_eq!(outgoing_label(text), format!(\"OUT:{}\", clean));\n        assert_eq!(pair(text), format!(\"IN:{} | OUT:{}\", clean, clean));\n    }\n}",
+            "forbiddenPatterns": [
+              "pub mod incoming",
+              "pub mod outgoing",
+              "pub(crate) mod incoming",
+              "pub(crate) mod outgoing"
+            ]
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "imports-transfer",
+          "kind": "apply",
+          "title": "Zmień wnętrze, zachowaj prosty dostęp",
+          "prompt": "Zbuduj fasadę display. Prywatne short i long definiują funkcje label. Udostępnij je przez pub use jako short_label i long_label. W pair użyj lokalnych aliasów do obu label i zwróć krótki wynik, separator | otoczony pojedynczymi spacjami, a potem długi wynik. Zachowaj trim w istniejących funkcjach i prywatność obu modułów. Dla tekstu x wynik to [x] | Nazwa: x.",
+          "code": "mod display {\n    mod short {\n        pub fn label(text: &str) -> String { format!(\"[{}]\", text.trim()) }\n    }\n    mod long {\n        pub fn label(text: &str) -> String { format!(\"Nazwa: {}\", text.trim()) }\n    }\n    pub fn pair(text: &str) -> String { String::from(text) }\n}",
+          "solution": "mod display {\n    mod short {\n        pub fn label(text: &str) -> String { format!(\"[{}]\", text.trim()) }\n    }\n    mod long {\n        pub fn label(text: &str) -> String { format!(\"Nazwa: {}\", text.trim()) }\n    }\n    pub use self::short::label as short_label;\n    pub use self::long::label as long_label;\n    pub fn pair(text: &str) -> String {\n        use self::short::label as compact;\n        use self::long::label as descriptive;\n        format!(\"{} | {}\", compact(text), descriptive(text))\n    }\n}",
+          "hints": [
+            "Publiczne nazwy klienta mogą różnić się od nazw definicji.",
+            "Re-eksporty mają należeć do display, a aliasy wywołań mogą należeć tylko do pair."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn display_facade_keeps_both_formats() {\n    use crate::display::{short_label, long_label, pair};\n    for text in [\"\", \"  narzędzia  \", \"Łódź\", \"x  y\"] {\n        let clean = text.trim();\n        assert_eq!(short_label(text), format!(\"[{}]\", clean));\n        assert_eq!(long_label(text), format!(\"Nazwa: {}\", clean));\n        assert_eq!(pair(text), format!(\"[{}] | Nazwa: {}\", clean, clean));\n    }\n}",
+            "forbiddenPatterns": [
+              "pub mod short",
+              "pub mod long",
+              "pub(crate) mod short",
+              "pub(crate) mod long"
+            ]
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "imports-explain",
+          "kind": "explain",
+          "title": "Wyjaśnij trwałość API",
+          "prompt": "Zmieniasz nazwę prywatnego modułu incoming na received, ale chcesz zachować formats::incoming_label dla klientów. Co aktualizujesz?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Wszystkie wywołania klienta, bo alias nie może zostać"
+            },
+            {
+              "id": "1",
+              "label": "Nic, Rust sam odgadnie nową ścieżkę definicji"
+            },
+            {
+              "id": "2",
+              "label": "Ścieżkę w re-eksporcie, zachowując jego publiczny alias"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "2",
+            "explanations": {
+              "0": "Alias pozwala właśnie oddzielić publiczną nazwę od prywatnego położenia implementacji.",
+              "1": "Ścieżki muszą odpowiadać nowemu drzewu; zmieniasz je świadomie.",
+              "2": "Publiczna nazwa może pozostać stała, kiedy wskazana definicja przesuwa się wewnątrz modułu."
+            }
+          },
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "imports-recall",
+          "kind": "recall",
+          "title": "Odtwórz trzy narzędzia",
+          "prompt": "Które przypisanie jest poprawne?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "use — kopia kodu; as — uruchomienie; pub use — nowy crate"
+            },
+            {
+              "id": "1",
+              "label": "use — dostęp do każdego pola; as — zmiana typu; pub use — wyłączenie prywatności"
+            },
+            {
+              "id": "2",
+              "label": "use — nazwa w zakresie; as — alias; pub use — publiczny re-eksport"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "2",
+            "explanations": {
+              "0": "Żadne z tych poleceń nie tworzy kopii implementacji ani nowego crate.",
+              "1": "W tej składni as nadaje alias importu. Prywatne pola nadal pozostają prywatne.",
+              "2": "Te narzędzia organizują dostępne nazwy bez powielania implementacji."
+            }
+          },
+          "evidenceKind": "recall"
+        }
+      ],
+      "misconceptions": [
+        "use kopiuje implementację do nowego modułu.",
+        "Import rodzica automatycznie staje się krótką nazwą dziecka.",
+        "Publiczny re-eksport wymaga publicznego modułu implementacji."
+      ],
+      "transferTask": "Zbuduj drugą fasadę dla krótkiego i długiego formatu, bez ujawniania wewnętrznego drzewa.",
+      "evidenceGate": "Jedna z fasad udostępnia oba wymagane re-eksporty i składa poprawne wyniki przy zachowaniu prywatnych modułów.",
+      "sourceIds": [
+        "cargo-book-use",
+        "cargo-reference-visibility"
+      ]
+    },
+    {
+      "id": "cargo-package-integration",
+      "moduleId": "modules-cargo",
+      "conceptIds": [
+        "cargo-targets"
+      ],
+      "competencyIds": [
+        "integrate-cargo-targets"
+      ],
+      "prerequisites": [
+        "imports-and-reexports"
+      ],
+      "title": "Cargo: biblioteka i program mają osobne granice",
+      "subtitle": "Przygotowujesz API do prawdziwego pakietu, testów i klienta.",
+      "minutes": 40,
+      "outcomes": [
+        "Odróżnisz pakiet opisany w Cargo.toml od kompilowanego crate.",
+        "Wyjaśnisz role src/lib.rs, src/main.rs i tests/integration.rs.",
+        "Zbudujesz publiczną granicę API oraz klienta i wybierzesz właściwe polecenia Cargo."
+      ],
+      "steps": [
+        {
+          "id": "cargo-run",
+          "kind": "run",
+          "title": "Uruchom API i jego klienta",
+          "prompt": "Cargo zarządza pakietem: katalogiem z manifestem Cargo.toml opisującym m.in. nazwę, wersję, edycję i zależności. Target to wynik, który Cargo może zbudować, np. bibliotekę lub program. Konwencjonalnie src/lib.rs jest korzeniem crate biblioteki, a src/main.rs korzeniem osobnego crate programu. Pakiet może mieć jedną bibliotekę i wiele programów, np. z src/bin/, ale potrzebuje co najmniej jednego targetu biblioteki lub programu. Poniższy przykład nadal jest jednym źródłem i jednym crate. dispatch reprezentuje granicę API, a desk jest klientem używającym tylko jej publicznych nazw. To przygotowanie do rozdzielenia kodu, nie uruchomienie Cargo w przeglądarce. Metoda label(&self) -> &str pożycza tekst pola; Rust wiąże użyteczność tego widoku z pożyczką obiektu. Najpierw uruchom wyniki poprawnej etykiety i dwóch różnych błędów. Moduł dispatch udostępnia Parcel, ParcelError i register przez swoją granicę. Prywatny model przechowuje Parcel z prywatnym polem label typu String. Publiczna metoda label pożycza zapisany tekst jako &str. register przyjmuje pożyczony tekst, obcina brzegi przez trim, odrzuca pusty wynik jako ParcelError::Empty, a LF lub CR wewnątrz jako ParcelError::Multiline. Poprawny tekst zachowuje bez dalszych zmian i zwraca Parcel w Ok. Moduł desk udostępnia receipt, który przyjmuje tekst i korzysta wyłącznie z API dispatch: sukces daje String przyjęto: LABEL, Empty daje brak etykiety, Multiline daje jedna linia. Bez unwrap i expect.",
+          "code": "mod dispatch {\n    mod model {\n        #[derive(Debug, PartialEq, Eq)]\n        pub enum ParcelError { Empty, Multiline }\n        pub struct Parcel { label: String }\n        impl Parcel {\n            pub fn new(text: &str) -> Result<Parcel, ParcelError> {\n                let label = text.trim();\n                if label.is_empty() { return Err(ParcelError::Empty); }\n                if label.contains('\\n') || label.contains('\\r') {\n                    return Err(ParcelError::Multiline);\n                }\n                Ok(Parcel { label: String::from(label) })\n            }\n            pub fn label(&self) -> &str { &self.label }\n        }\n    }\n    pub use self::model::{Parcel, ParcelError};\n    pub fn register(text: &str) -> Result<Parcel, ParcelError> {\n        Parcel::new(text)\n    }\n}\nmod desk {\n    use crate::dispatch::{register, ParcelError};\n    pub fn receipt(text: &str) -> String {\n        match register(text) {\n            Ok(parcel) => format!(\"przyjęto: {}\", parcel.label()),\n            Err(ParcelError::Empty) => String::from(\"brak etykiety\"),\n            Err(ParcelError::Multiline) => String::from(\"jedna linia\"),\n        }\n    }\n}\nfn main() {\n    println!(\"{}\", crate::desk::receipt(\"  Szkło  \"));\n    println!(\"{}\", crate::desk::receipt(\" \"));\n    println!(\"{}\", crate::desk::receipt(\"a\\nb\"));\n}",
+          "solution": "mod dispatch {\n    mod model {\n        #[derive(Debug, PartialEq, Eq)]\n        pub enum ParcelError { Empty, Multiline }\n        pub struct Parcel { label: String }\n        impl Parcel {\n            pub fn new(text: &str) -> Result<Parcel, ParcelError> {\n                let label = text.trim();\n                if label.is_empty() { return Err(ParcelError::Empty); }\n                if label.contains('\\n') || label.contains('\\r') {\n                    return Err(ParcelError::Multiline);\n                }\n                Ok(Parcel { label: String::from(label) })\n            }\n            pub fn label(&self) -> &str { &self.label }\n        }\n    }\n    pub use self::model::{Parcel, ParcelError};\n    pub fn register(text: &str) -> Result<Parcel, ParcelError> {\n        Parcel::new(text)\n    }\n}\nmod desk {\n    use crate::dispatch::{register, ParcelError};\n    pub fn receipt(text: &str) -> String {\n        match register(text) {\n            Ok(parcel) => format!(\"przyjęto: {}\", parcel.label()),\n            Err(ParcelError::Empty) => String::from(\"brak etykiety\"),\n            Err(ParcelError::Multiline) => String::from(\"jedna linia\"),\n        }\n    }\n}\nfn main() {\n    println!(\"{}\", crate::desk::receipt(\"  Szkło  \"));\n    println!(\"{}\", crate::desk::receipt(\" \"));\n    println!(\"{}\", crate::desk::receipt(\"a\\nb\"));\n}",
+          "evaluator": {
+            "kind": "exact-output",
+            "expected": "przyjęto: Szkło\nbrak etykiety\njedna linia\n"
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "cargo-predict",
+          "kind": "predict",
+          "title": "Przewidź granicę prawdziwego pakietu",
+          "prompt": "Pakiet todo-cli-workshop ma src/lib.rs i src/main.rs. Domyślna nazwa crate biblioteki zastępuje myślniki podkreśleniami: todo_cli_workshop. Jak main.rs powinien użyć publicznego API biblioteki?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Przez crate::..., bo crate zawsze oznacza bibliotekę pakietu"
+            },
+            {
+              "id": "1",
+              "label": "Przez mod lib;, aby drugi raz dołączyć plik biblioteki"
+            },
+            {
+              "id": "2",
+              "label": "Przez todo_cli_workshop::..., bo main.rs jest osobnym crate"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "2",
+            "explanations": {
+              "0": "W main.rs crate wskazuje korzeń crate programu, a nie automatycznie bibliotekę.",
+              "1": "mod lib tworzyłoby moduł w programie, nie korzystanie z osobnego targetu biblioteki. To niepotrzebne dublowanie jej drzewa.",
+              "2": "Ścieżka od nazwy biblioteki przekracza prawdziwą granicę crate i wymaga publicznego API."
+            }
+          },
+          "evidenceKind": "prediction"
+        },
+        {
+          "id": "cargo-export-error",
+          "kind": "observe",
+          "title": "Odróżnij pomocnik od eksportu",
+          "prompt": "Spróbuj upublicznić ready, które ma pub(crate). E0364 odrzuca rozszerzenie jego widoczności przez pub use. To prawdziwy test reguł Rust nawet w jednym pliku: publiczna fasada nie może obiecać większego dostępu niż pozwala definicja elementu.",
+          "code": "mod status {\n    mod detail {\n        pub(crate) fn ready() -> bool { true }\n    }\n    pub use self::detail::ready;\n}\nfn main() { println!(\"{}\", crate::status::ready()); }",
+          "solution": "mod status {\n    mod detail {\n        pub fn ready() -> bool { true }\n    }\n    pub use self::detail::ready;\n}\nfn main() { println!(\"{}\", crate::status::ready()); }",
+          "evaluator": {
+            "kind": "expected-error",
+            "code": "E0364"
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0364",
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "cargo-debug",
+          "kind": "debug",
+          "title": "Napraw publiczną obietnicę",
+          "prompt": "status::ready ma być częścią publicznego API i zwracać true. Napraw widoczność definicji tak, aby istniejący publiczny re-eksport działał. Zachowaj prywatny detail; klient ma używać status::ready, nie wnętrza implementacji.",
+          "code": "mod status {\n    mod detail {\n        pub(crate) fn ready() -> bool { true }\n    }\n    pub use self::detail::ready;\n}\nfn main() { println!(\"{}\", crate::status::ready()); }",
+          "solution": "mod status {\n    mod detail {\n        pub fn ready() -> bool { true }\n    }\n    pub use self::detail::ready;\n}\nfn main() { println!(\"{}\", crate::status::ready()); }",
+          "hints": [
+            "Publiczny re-eksport nie może rozszerzyć pub(crate) na dostęp publiczny.",
+            "Publiczna ma być funkcja ready w detail. Sam moduł detail może pozostać prywatny."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn ready_is_available_through_public_facade() { assert!(crate::status::ready()); }",
+            "forbiddenPatterns": [
+              "pub mod detail",
+              "pub(crate) mod detail"
+            ]
+          },
+          "expectedStatus": "compile-error",
+          "expectedError": "E0364",
+          "evidenceKind": "fix",
+          "evidenceGate": false
+        },
+        {
+          "id": "cargo-modify",
+          "kind": "modify",
+          "title": "Dokończ API oraz klienta",
+          "prompt": "Napraw walidację bibliotecznego API i obsługę błędów w jego kliencie. Zachowaj prywatny model, prywatne pole label i publiczne re-eksporty. Moduł dispatch udostępnia Parcel, ParcelError i register przez swoją granicę. Prywatny model przechowuje Parcel z prywatnym polem label typu String. Publiczna metoda label pożycza zapisany tekst jako &str. register przyjmuje pożyczony tekst, obcina brzegi przez trim, odrzuca pusty wynik jako ParcelError::Empty, a LF lub CR wewnątrz jako ParcelError::Multiline. Poprawny tekst zachowuje bez dalszych zmian i zwraca Parcel w Ok. Moduł desk udostępnia receipt, który przyjmuje tekst i korzysta wyłącznie z API dispatch: sukces daje String przyjęto: LABEL, Empty daje brak etykiety, Multiline daje jedna linia. Bez unwrap i expect. Testy uruchamiają te moduły w jednym źródle: potwierdzają zachowanie API i klienta, lecz nie konfigurację Cargo ani dostęp z osobnego crate.",
+          "code": "mod dispatch {\n    mod model {\n        #[derive(Debug, PartialEq, Eq)]\n        pub enum ParcelError { Empty, Multiline }\n        pub struct Parcel { label: String }\n        impl Parcel {\n            pub fn new(text: &str) -> Result<Parcel, ParcelError> {\n                let label = text.trim();\n                \n                if false {\n                    return Err(ParcelError::Multiline);\n                }\n                Ok(Parcel { label: String::from(label) })\n            }\n            pub fn label(&self) -> &str { &self.label }\n        }\n    }\n    pub use self::model::{Parcel, ParcelError};\n    pub fn register(text: &str) -> Result<Parcel, ParcelError> {\n        Parcel::new(text)\n    }\n}\nmod desk {\n    use crate::dispatch::{register, ParcelError};\n    pub fn receipt(text: &str) -> String {\n        match register(text) {\n            Ok(parcel) => format!(\"przyjęto: {}\", parcel.label()),\n            Err(ParcelError::Empty) => String::from(\"brak etykiety\"),\n            Err(ParcelError::Multiline) => String::from(\"brak etykiety\"),\n        }\n    }\n}",
+          "solution": "mod dispatch {\n    mod model {\n        #[derive(Debug, PartialEq, Eq)]\n        pub enum ParcelError { Empty, Multiline }\n        pub struct Parcel { label: String }\n        impl Parcel {\n            pub fn new(text: &str) -> Result<Parcel, ParcelError> {\n                let label = text.trim();\n                if label.is_empty() { return Err(ParcelError::Empty); }\n                if label.contains('\\n') || label.contains('\\r') {\n                    return Err(ParcelError::Multiline);\n                }\n                Ok(Parcel { label: String::from(label) })\n            }\n            pub fn label(&self) -> &str { &self.label }\n        }\n    }\n    pub use self::model::{Parcel, ParcelError};\n    pub fn register(text: &str) -> Result<Parcel, ParcelError> {\n        Parcel::new(text)\n    }\n}\nmod desk {\n    use crate::dispatch::{register, ParcelError};\n    pub fn receipt(text: &str) -> String {\n        match register(text) {\n            Ok(parcel) => format!(\"przyjęto: {}\", parcel.label()),\n            Err(ParcelError::Empty) => String::from(\"brak etykiety\"),\n            Err(ParcelError::Multiline) => String::from(\"jedna linia\"),\n        }\n    }\n}",
+          "hints": [
+            "Waliduj obcięty tekst przed utworzeniem Parcel, a potem zachowaj wariant błędu aż do klienta.",
+            "Empty i Multiline są różnymi stanami. Fasada re-eksportuje typy, aby klient nie wchodził do model."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn public_api_and_client_keep_validation_results() {\n    use crate::dispatch::{Parcel, ParcelError, register};\n    for label in [\"Szkło\", \"a  b\", \"Łódź\", \"x:y\"] {\n        let input = format!(\"  {}  \", label);\n        let parcel: Result<Parcel, ParcelError> = register(&input);\n        match parcel {\n            Ok(value) => assert_eq!(value.label(), label),\n            Err(_) => panic!(\"valid label rejected\"),\n        }\n        assert_eq!(crate::desk::receipt(&input), format!(\"przyjęto: {}\", label));\n    }\n    for (input, expected, receipt) in [(\"\", ParcelError::Empty, \"brak etykiety\"), (\" \\t \", ParcelError::Empty, \"brak etykiety\"), (\"a\\nb\", ParcelError::Multiline, \"jedna linia\"), (\"a\\rb\", ParcelError::Multiline, \"jedna linia\")] {\n        match register(input) {\n            Ok(_) => panic!(\"invalid label accepted\"),\n            Err(error) => assert_eq!(error, expected),\n        }\n        assert_eq!(crate::desk::receipt(input), receipt);\n    }\n    assert_eq!(crate::desk::receipt(\"\\nKarton\\r\\n\"), \"przyjęto: Karton\");\n}",
+            "forbiddenPatterns": [
+              "pub mod model",
+              "pub(crate) mod model",
+              "pub label:",
+              "pub(crate) label:",
+              "pub(super) label:",
+              ".unwrap(",
+              ".expect("
+            ]
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "transfer",
+          "evidenceGate": true
+        },
+        {
+          "id": "cargo-blank",
+          "kind": "blank",
+          "title": "Pusta strona: zapisy do klubu",
+          "prompt": "Zaprojektuj API zapisów do klubu i jego klienta. Publiczne nazwy modułu club to Member, MemberError i enroll; szczegóły przechowuje prywatny moduł model. Member posiada prywatny String name i publiczną metodę name pożyczającą tę nazwę jako &str. enroll przyjmuje pożyczony tekst i zwraca Result z Member albo MemberError. Obcina białe znaki na brzegach; pusty wynik oznacza wariant Empty, dokładne admin oznacza wariant Reserved. Wielkość liter ma znaczenie: Admin jest dozwolone. Inne nazwy, także Unicode i spacje wewnętrzne, zachowuje dokładnie po obcięciu brzegów. Moduł welcome udostępnia message: dla tekstu wejściowego używa tylko API club i daje String Witaj, NAME! przy sukcesie, brak nazwy dla Empty albo nazwa zajęta dla Reserved. Udostępnij typy przez re-eksport z prywatnego modelu. Nie ujawniaj pola name, nie używaj unwrap ani expect. To jedno źródło Rust; testy sprawdzają API i klienta, a nie istnienie pakietu Cargo.",
+          "code": "",
+          "solution": "mod club {\n    mod model {\n        #[derive(Debug, PartialEq, Eq)]\n        pub enum MemberError { Empty, Reserved }\n        pub struct Member { name: String }\n        impl Member {\n            pub fn new(text: &str) -> Result<Member, MemberError> {\n                let name = text.trim();\n                if name.is_empty() { return Err(MemberError::Empty); }\n                if name == \"admin\" { return Err(MemberError::Reserved); }\n                Ok(Member { name: String::from(name) })\n            }\n            pub fn name(&self) -> &str { &self.name }\n        }\n    }\n    pub use self::model::{Member, MemberError};\n    pub fn enroll(text: &str) -> Result<Member, MemberError> { Member::new(text) }\n}\nmod welcome {\n    use crate::club::{enroll, MemberError};\n    pub fn message(text: &str) -> String {\n        match enroll(text) {\n            Ok(member) => format!(\"Witaj, {}!\", member.name()),\n            Err(MemberError::Empty) => String::from(\"brak nazwy\"),\n            Err(MemberError::Reserved) => String::from(\"nazwa zajęta\"),\n        }\n    }\n}",
+          "hints": [
+            "Oddziel reguły poprawnej wartości od tego, jak klient zamienia wynik na komunikat.",
+            "Prywatne pole wymaga kontrolowanej konstrukcji. Publiczna fasada udostępnia typ, błąd oraz operację, a klient rozpatruje oba warianty błędu."
+          ],
+          "evaluator": {
+            "kind": "tests",
+            "tests": "#[test]\nfn public_types_and_client_respect_membership_contract() {\n    use crate::club::{Member, MemberError, enroll};\n    for (input, name) in [(\"  Ada  \", \"Ada\"), (\"Żaneta\", \"Żaneta\"), (\"Admin\", \"Admin\"), (\"a  b\", \"a  b\"), (\"administrator\", \"administrator\")] {\n        let result: Result<Member, MemberError> = enroll(input);\n        match result {\n            Ok(member) => assert_eq!(member.name(), name),\n            Err(_) => panic!(\"valid member rejected\"),\n        }\n        assert_eq!(crate::welcome::message(input), format!(\"Witaj, {}!\", name));\n    }\n    for (input, error, message) in [(\"\", MemberError::Empty, \"brak nazwy\"), (\" \t \", MemberError::Empty, \"brak nazwy\"), (\"admin\", MemberError::Reserved, \"nazwa zajęta\"), (\"  admin  \", MemberError::Reserved, \"nazwa zajęta\")] {\n        match enroll(input) {\n            Ok(_) => panic!(\"invalid member accepted\"),\n            Err(actual) => assert_eq!(actual, error),\n        }\n        assert_eq!(crate::welcome::message(input), message);\n    }\n}",
+            "forbiddenPatterns": [
+              "pub mod model",
+              "pub(crate) mod model",
+              "pub name:",
+              "pub(crate) name:",
+              "pub(super) name:",
+              ".unwrap(",
+              ".expect("
+            ]
+          },
+          "expectedStatus": "success",
+          "evidenceKind": "assessment",
+          "evidenceGate": true
+        },
+        {
+          "id": "cargo-local-workflow",
+          "kind": "explain",
+          "title": "Przenieś strukturę na dysk",
+          "prompt": "Lokalnie cargo new --lib --edition 2024 parcel-workshop tworzy pakiet z biblioteką. Po dodaniu src/main.rs uzyskasz także program. Jeśli wyjmiesz zawartość mod dispatch do src/lib.rs, klient w main.rs użyje parcel_workshop::register; crate:: wewnątrz biblioteki nadal oznacza jej własny korzeń. Zamiast inline mod model { ... } możesz napisać mod model; w lib.rs i przenieść samą zawartość do src/model.rs. Nie powtarzasz wtedy otaczającego mod model w pliku. Samo utworzenie pliku go nie dołącza: potrzebna jest deklaracja mod. Test w tests/integration.rs jest osobnym crate, więc również importuje publiczne API przez nazwę biblioteki. #[test] oznacza funkcję testową uruchamianą przez cargo test; poznałeś takie asercje w ćwiczeniach. Pobierany w następnym etapie projekt Todo stosuje ten układ. Który opis poleceń uruchamianych w katalogu z Cargo.toml jest poprawny?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "cargo check sprawdza kod; cargo build buduje; cargo test uruchamia testy; cargo run uruchamia program"
+            },
+            {
+              "id": "1",
+              "label": "cargo check uruchamia main, a cargo test tylko sprawdza nazwy plików"
+            },
+            {
+              "id": "2",
+              "label": "Przycisk Uruchom w tej lekcji wykonuje Cargo.toml i wszystkie pliki projektu"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "0",
+            "explanations": {
+              "0": "check pomija końcowe generowanie kodu wynikowego. build buduje wybrane targety. test buduje i uruchamia testy. run buduje w razie potrzeby i uruchamia wybrany program; przy wielu programach użyj --bin nazwa. cargo check --all-targets obejmuje też m.in. kod testów i przykładów.",
+              "1": "check nie uruchamia main. test faktycznie uruchamia funkcje testowe i sprawdza ich asercje.",
+              "2": "Runner tej aplikacji kompiluje jedno źródło Rust. Manifest, fizyczne pliki i granice crate potwierdzisz lokalnymi poleceniami w pobranym projekcie."
+            }
+          },
+          "evidenceKind": "exposure"
+        },
+        {
+          "id": "cargo-recall",
+          "kind": "recall",
+          "title": "Odtwórz granicę dowodu",
+          "prompt": "Testy API w przeglądarce przeszły. Co jeszcze musi potwierdzić lokalny pakiet?",
+          "choices": [
+            {
+              "id": "0",
+              "label": "Nic: jeden plik dowodzi poprawności wszystkich ścieżek na dysku"
+            },
+            {
+              "id": "1",
+              "label": "Tylko to, że każda funkcja biblioteki jest publiczna"
+            },
+            {
+              "id": "2",
+              "label": "Cargo wykrywa targety i pliki, a osobny klient oraz test integracyjny używają publicznego API"
+            }
+          ],
+          "evaluator": {
+            "kind": "choice",
+            "correct": "2",
+            "explanations": {
+              "0": "Moduły inline nie testują istnienia Cargo.toml, układu plików ani zależności między targetami.",
+              "1": "Publiczne powinno być potrzebne API; pomocniki i chroniony stan mogą pozostać prywatne.",
+              "2": "To dodatkowe właściwości struktury projektu i granic crate. Sprawdź je przez cargo check --all-targets, cargo test i cargo run zgodnie z README projektu."
+            }
+          },
+          "evidenceKind": "recall"
+        }
+      ],
+      "misconceptions": [
+        "Pakiet i crate to zawsze to samo.",
+        "src/main.rs może używać pub(crate) biblioteki, bo leży w tym samym pakiecie.",
+        "Dodanie pliku model.rs automatycznie dołącza go do drzewa modułów.",
+        "Test jednego źródła w przeglądarce potwierdza działanie całego Cargo projektu."
+      ],
+      "transferTask": "Zbuduj od pustej strony API członkostwa i klienta, a następnie wyjaśnij, które fragmenty staną się biblioteką, programem i testem integracyjnym.",
+      "evidenceGate": "Jedno z dwóch zadań z kodem łączy publiczną fasadę, chroniony model i klienta zachowującego wszystkie wyniki. Dowód uruchomienia rzeczywistego Cargo należy do lokalnego projektu.",
+      "sourceIds": [
+        "cargo-book-packages",
+        "cargo-book-separate-files",
+        "cargo-guide-layout",
+        "cargo-reference-targets",
+        "cargo-reference-visibility",
+        "cargo-command-new",
+        "cargo-command-check",
+        "cargo-command-build",
+        "cargo-command-test",
+        "cargo-command-run"
+      ]
+    }
+  ],
+  "lessonQualifiedSteps": [
+    {
+      "lessonId": "first-program",
+      "stepIds": [
+        "entry-discover",
+        "entry-run",
+        "cargo-sequence",
+        "toolchain-check",
+        "entry-modify",
+        "entry-recall"
+      ]
+    },
+    {
+      "lessonId": "bindings-types",
+      "stepIds": [
+        "bindings-discover",
+        "scalar-predict",
+        "mut-error",
+        "mut-run",
+        "shadow-types",
+        "bindings-recall",
+        "numeric-discover",
+        "numeric-halves-transfer"
+      ]
+    },
+    {
+      "lessonId": "functions-expressions",
+      "stepIds": [
+        "function-discover",
+        "function-run",
+        "function-error",
+        "function-modify",
+        "function-recall",
+        "function-transfer",
+        "function-return-unit-discover",
+        "function-tuple-repair"
+      ]
+    },
+    {
+      "lessonId": "control-flow",
+      "stepIds": [
+        "flow-discover",
+        "flow-predict",
+        "flow-run",
+        "flow-modify",
+        "flow-boundary",
+        "flow-transfer",
+        "flow-recall",
+        "flow-range-transfer"
+      ]
+    },
+    {
+      "lessonId": "foundations-assessment",
+      "stepIds": [
+        "assessment-rules",
+        "assessment-predict",
+        "assessment-blank",
+        "assessment-adversarial",
+        "assessment-tests",
+        "assessment-transfer-tests",
+        "assessment-reason",
+        "assessment-transfer",
+        "foundations-local-parcel-program"
+      ]
+    },
+    {
+      "lessonId": "while-progress",
+      "stepIds": [
+        "while-predict",
+        "while-run",
+        "while-error",
+        "while-explain",
+        "while-modify",
+        "while-blank"
+      ]
+    },
+    {
+      "lessonId": "loop-values",
+      "stepIds": [
+        "values-predict",
+        "values-run",
+        "values-error",
+        "values-modify",
+        "values-explain",
+        "values-blank"
+      ]
+    },
+    {
+      "lessonId": "loop-control",
+      "stepIds": [
+        "control-predict",
+        "control-run",
+        "control-explain",
+        "control-modify",
+        "control-recall",
+        "control-blank"
+      ]
+    },
+    {
+      "lessonId": "memory-intro",
+      "stepIds": [
+        "memory-predict",
+        "memory-run",
+        "memory-trace",
+        "memory-explain",
+        "memory-modify",
+        "memory-transfer",
+        "memory-owner-out-of-block"
+      ]
+    },
+    {
+      "lessonId": "move-copy-discovery",
+      "stepIds": [
+        "move-predict",
+        "move-error",
+        "move-string-run",
+        "copy-int-run",
+        "copy-trace",
+        "copy-clone-trace",
+        "move-owned-transform",
+        "move-copy-return-predict",
+        "move-copy-own-words"
+      ]
+    },
+    {
+      "lessonId": "functions-and-ownership",
+      "stepIds": [
+        "function-call-run",
+        "function-error",
+        "return-ownership",
+        "function-expression-run",
+        "function-explain",
+        "function-transfer"
+      ]
+    },
+    {
+      "lessonId": "borrow-intro",
+      "stepIds": [
+        "borrow-read-run",
+        "borrow-trace",
+        "borrow-conflict",
+        "borrow-mutable-run",
+        "borrow-explain",
+        "borrow-transfer"
+      ]
+    },
+    {
+      "lessonId": "number-guessing-transfer",
+      "stepIds": [
+        "project-contract",
+        "project-result-run",
+        "project-blank",
+        "project-error",
+        "project-reasoning",
+        "project-check",
+        "project-own-boundary-test"
+      ]
+    },
+    {
+      "lessonId": "blank-page-repair",
+      "stepIds": [
+        "blank-plan",
+        "blank-code",
+        "blank-error",
+        "blank-test",
+        "blank-reason",
+        "blank-transfer",
+        "blank-own-boundary-test"
+      ]
+    },
+    {
+      "lessonId": "adversarial-no-clone",
+      "stepIds": [
+        "adversarial-diagnose",
+        "adversarial-code",
+        "adversarial-conflict",
+        "adversarial-reason",
+        "adversarial-trace",
+        "adversarial-transfer"
+      ]
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepIds": [
+        "assessment-unseen-copy",
+        "assessment-unseen-move",
+        "assessment-repair",
+        "assessment-reasoning",
+        "assessment-retrieval",
+        "assessment-transfer"
+      ]
+    },
+    {
+      "lessonId": "slices-and-views",
+      "stepIds": [
+        "slice-predict",
+        "slice-run",
+        "slice-boundary-explain",
+        "slice-repair",
+        "slice-gate",
+        "slice-edge-gate",
+        "slice-recall",
+        "slice-array-predict",
+        "slice-prefix-practice"
+      ]
+    },
+    {
+      "lessonId": "structs-and-fields",
+      "stepIds": [
+        "record-predict",
+        "record-run",
+        "record-explain",
+        "record-repair",
+        "record-gate",
+        "record-state-gate",
+        "record-recall"
+      ]
+    },
+    {
+      "lessonId": "methods-and-state",
+      "stepIds": [
+        "method-predict",
+        "method-run",
+        "method-explain",
+        "method-repair",
+        "method-gate",
+        "method-reset-gate",
+        "method-recall"
+      ]
+    },
+    {
+      "lessonId": "enums-and-match",
+      "stepIds": [
+        "enum-discover",
+        "enum-run",
+        "enum-error",
+        "enum-payload",
+        "enum-recall",
+        "enum-transfer"
+      ]
+    },
+    {
+      "lessonId": "option-and-absence",
+      "stepIds": [
+        "option-discover",
+        "option-run",
+        "option-error",
+        "option-match",
+        "option-recall",
+        "option-transfer",
+        "option-overflow-policy",
+        "option-checked-bonus"
+      ]
+    },
+    {
+      "lessonId": "modeling-assessment",
+      "stepIds": [
+        "assessment-plan",
+        "assessment-recall",
+        "modeling-blank",
+        "modeling-contract",
+        "modeling-fresh-retrieval",
+        "modeling-alt",
+        "modeling-open-checkpoint"
+      ]
+    },
+    {
+      "lessonId": "vec-and-borrowing",
+      "stepIds": [
+        "vec-predict",
+        "vec-run",
+        "vec-iteration-explain",
+        "vec-repair",
+        "vec-last-gate",
+        "vec-even-gate",
+        "vec-transfer",
+        "vec-recall"
+      ]
+    },
+    {
+      "lessonId": "string-and-utf8",
+      "stepIds": [
+        "string-predict",
+        "string-run",
+        "string-explain",
+        "string-repair",
+        "string-char-gate",
+        "string-push-gate",
+        "string-transfer",
+        "string-recall"
+      ]
+    },
+    {
+      "lessonId": "hashmap-and-entry",
+      "stepIds": [
+        "map-predict",
+        "map-run",
+        "map-explain",
+        "map-repair",
+        "map-points-gate",
+        "map-frequency-gate",
+        "map-transfer",
+        "map-recall"
+      ]
+    },
+    {
+      "lessonId": "result-and-recovery",
+      "stepIds": [
+        "result-predict",
+        "result-run",
+        "result-observe",
+        "result-explain",
+        "result-debug",
+        "result-modify",
+        "result-transfer",
+        "result-recall"
+      ]
+    },
+    {
+      "lessonId": "propagation-and-errors",
+      "stepIds": [
+        "propagate-predict",
+        "propagate-run",
+        "propagate-observe",
+        "propagate-explain",
+        "propagate-debug",
+        "propagate-modify",
+        "propagate-transfer",
+        "propagate-recall"
+      ]
+    },
+    {
+      "lessonId": "panic-and-contracts",
+      "stepIds": [
+        "panic-predict",
+        "panic-run",
+        "panic-observe",
+        "panic-explain",
+        "panic-debug",
+        "panic-modify",
+        "panic-transfer",
+        "panic-recall"
+      ]
+    },
+    {
+      "lessonId": "todo-command-parser",
+      "stepIds": [
+        "parser-predict",
+        "parser-run",
+        "parser-explain",
+        "parser-debug",
+        "parser-add-gate",
+        "parser-transfer",
+        "parser-recall"
+      ]
+    },
+    {
+      "lessonId": "todo-state-invariants",
+      "stepIds": [
+        "state-predict",
+        "state-run",
+        "state-explain",
+        "state-debug",
+        "state-add-done-gate",
+        "state-list-gate",
+        "state-transfer",
+        "state-recall"
+      ]
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepIds": [
+        "session-predict",
+        "session-run",
+        "session-explain",
+        "session-debug",
+        "session-run-gate",
+        "session-strict-gate",
+        "session-recall",
+        "session-blank"
+      ]
+    },
+    {
+      "lessonId": "module-tree-paths",
+      "stepIds": [
+        "paths-run",
+        "paths-predict",
+        "paths-error",
+        "paths-debug",
+        "paths-modify",
+        "paths-transfer",
+        "paths-explain",
+        "paths-recall"
+      ]
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepIds": [
+        "visibility-run",
+        "visibility-predict",
+        "visibility-error",
+        "visibility-debug",
+        "visibility-modify",
+        "visibility-transfer",
+        "visibility-explain",
+        "visibility-recall"
+      ]
+    },
+    {
+      "lessonId": "imports-and-reexports",
+      "stepIds": [
+        "imports-run",
+        "imports-predict",
+        "imports-error",
+        "imports-debug",
+        "imports-modify",
+        "imports-transfer",
+        "imports-explain",
+        "imports-recall"
+      ]
+    },
+    {
+      "lessonId": "cargo-package-integration",
+      "stepIds": [
+        "cargo-run",
+        "cargo-predict",
+        "cargo-export-error",
+        "cargo-debug",
+        "cargo-modify",
+        "cargo-blank",
+        "cargo-local-workflow",
+        "cargo-recall"
+      ]
+    },
+    {
+      "lessonId": "todo-storage-format",
+      "stepIds": [
+        "format-predict",
+        "format-run",
+        "format-explain",
+        "format-debug",
+        "format-gate",
+        "format-observe",
+        "format-recall"
+      ]
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "stepIds": [
+        "file-predict",
+        "file-run",
+        "file-explain",
+        "file-debug",
+        "file-gate",
+        "file-observe",
+        "file-recall"
+      ]
+    },
+    {
+      "lessonId": "todo-terminal-cli",
+      "stepIds": [
+        "cli-predict",
+        "cli-streams-run",
+        "cli-explain",
+        "cli-debug",
+        "cli-gate",
+        "cli-recall",
+        "cli-input-boundary",
+        "cli-local-practice"
+      ]
+    },
+    {
+      "lessonId": "generic-values",
+      "stepIds": [
+        "values-predict",
+        "values-run",
+        "values-discover",
+        "values-explain",
+        "values-debug",
+        "values-modify",
+        "values-transfer",
+        "values-recall"
+      ]
+    },
+    {
+      "lessonId": "generic-impl",
+      "stepIds": [
+        "impl-predict",
+        "impl-run",
+        "impl-discover",
+        "impl-explain",
+        "impl-debug",
+        "impl-modify",
+        "impl-transfer",
+        "impl-recall"
+      ]
+    },
+    {
+      "lessonId": "generic-bounds",
+      "stepIds": [
+        "bounds-predict",
+        "bounds-run",
+        "bounds-discover",
+        "bounds-explain",
+        "bounds-debug",
+        "bounds-modify",
+        "bounds-blank",
+        "bounds-recall"
+      ]
+    },
+    {
+      "lessonId": "trait-contracts",
+      "stepIds": [
+        "contracts-predict",
+        "contracts-run",
+        "contracts-explain",
+        "contracts-error",
+        "contracts-tags",
+        "contracts-scope",
+        "contracts-status",
+        "contracts-recall",
+        "contracts-derive-repair"
+      ]
+    },
+    {
+      "lessonId": "trait-consumers",
+      "stepIds": [
+        "consumers-run",
+        "consumers-predict",
+        "consumers-error",
+        "consumers-two-types",
+        "consumers-pair",
+        "consumers-slice",
+        "consumers-checks",
+        "consumers-recall"
+      ]
+    },
+    {
+      "lessonId": "associated-types",
+      "stepIds": [
+        "associated-run",
+        "associated-predict",
+        "associated-error",
+        "associated-owned",
+        "associated-take",
+        "associated-versus-generic",
+        "associated-measure",
+        "associated-recall"
+      ]
+    },
+    {
+      "lessonId": "trait-dispatch",
+      "stepIds": [
+        "dispatch-run",
+        "dispatch-explain",
+        "dispatch-error",
+        "dispatch-boundary",
+        "dispatch-readings",
+        "dispatch-tradeoff",
+        "dispatch-blank",
+        "dispatch-recall"
+      ]
+    },
+    {
+      "lessonId": "lifetime-relations",
+      "stepIds": [
+        "relations-predict",
+        "relations-discover",
+        "relations-explain",
+        "relations-run",
+        "relations-trim-gate",
+        "relations-pair-gate",
+        "relations-recall"
+      ]
+    },
+    {
+      "lessonId": "lifetime-structs",
+      "stepIds": [
+        "structs-predict",
+        "structs-missing-lifetime",
+        "structs-elision-run",
+        "structs-dropped-record",
+        "structs-explain",
+        "structs-record-gate",
+        "structs-excerpt-gate",
+        "structs-recall"
+      ]
+    },
+    {
+      "lessonId": "lifetime-api",
+      "stepIds": [
+        "api-predict",
+        "api-local-static",
+        "api-owned-run",
+        "api-explain",
+        "api-owned-gate",
+        "api-borrowed-gate",
+        "api-blank"
+      ]
+    },
+    {
+      "lessonId": "closure-captures",
+      "stepIds": [
+        "capture-predict",
+        "capture-run",
+        "capture-conflict",
+        "capture-mut-call",
+        "capture-gate",
+        "capture-shared-gate",
+        "capture-recall"
+      ]
+    },
+    {
+      "lessonId": "closure-ownership",
+      "stepIds": [
+        "ownership-predict",
+        "ownership-repeat-run",
+        "ownership-once-run",
+        "ownership-once-error",
+        "ownership-gate",
+        "ownership-once-gate",
+        "ownership-recall"
+      ]
+    },
+    {
+      "lessonId": "closure-contracts",
+      "stepIds": [
+        "contracts-predict",
+        "contracts-run",
+        "contracts-impl-explain",
+        "contracts-pipeline-gate",
+        "contracts-returned-gate",
+        "contracts-recall"
+      ]
+    },
+    {
+      "lessonId": "variance-shared-views",
+      "stepIds": [
+        "variance-shared-predict",
+        "variance-shared-run",
+        "variance-shared-explain",
+        "variance-shared-views-gate",
+        "variance-shared-views-blank",
+        "variance-shared-recall"
+      ]
+    },
+    {
+      "lessonId": "variance-mutable-slots",
+      "stepIds": [
+        "variance-mutable-predict",
+        "variance-mutable-discover",
+        "variance-mutable-run",
+        "variance-mutable-explain",
+        "variance-mutable-slots-gate",
+        "variance-mutable-slots-blank"
+      ]
+    },
+    {
+      "lessonId": "hrtb-local-visitors",
+      "stepIds": [
+        "visitors-predict",
+        "visitors-run",
+        "visitors-discover",
+        "hrtb-local-visitors-gate",
+        "hrtb-local-visitors-blank",
+        "visitors-transfer-preview",
+        "visitors-recall"
+      ]
+    },
+    {
+      "lessonId": "hrtb-borrowed-projections",
+      "stepIds": [
+        "projections-predict",
+        "projections-run",
+        "projections-explain",
+        "projections-discover",
+        "hrtb-borrowed-projections-gate",
+        "hrtb-borrowed-projections-blank",
+        "projections-transfer-preview",
+        "projections-recall"
+      ]
+    },
+    {
+      "lessonId": "iterator-ownership",
+      "stepIds": [
+        "ownership-predict",
+        "ownership-run",
+        "ownership-error",
+        "ownership-explain",
+        "ownership-modify",
+        "ownership-blank"
+      ]
+    },
+    {
+      "lessonId": "iterator-pipelines",
+      "stepIds": [
+        "pipelines-predict",
+        "pipelines-run",
+        "pipelines-fold-run",
+        "pipelines-explain",
+        "pipelines-modify",
+        "pipelines-apply"
+      ]
+    },
+    {
+      "lessonId": "iterator-laziness",
+      "stepIds": [
+        "laziness-predict",
+        "laziness-cell-explain",
+        "pipelines-lazy-counter",
+        "pipelines-deferred-gate",
+        "laziness-recall"
+      ]
+    },
+    {
+      "lessonId": "iterator-contracts",
+      "stepIds": [
+        "contracts-predict",
+        "contracts-run",
+        "contracts-explain",
+        "contracts-modify",
+        "contracts-blank",
+        "contracts-recall",
+        "contracts-open-checkpoint"
+      ]
+    },
+    {
+      "lessonId": "gat-receiver-borrows",
+      "stepIds": [
+        "receiver-predict",
+        "receiver-run",
+        "receiver-discover",
+        "receiver-explain",
+        "gat-receiver-borrows-gate",
+        "gat-receiver-borrows-blank",
+        "receiver-recall"
+      ]
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepIds": [
+        "windows-predict",
+        "windows-run",
+        "windows-discover",
+        "windows-explain",
+        "gat-overlapping-mutable-windows-gate",
+        "gat-overlapping-mutable-windows-blank",
+        "windows-recall"
+      ]
+    },
+    {
+      "lessonId": "gat-item-capabilities",
+      "stepIds": [
+        "gat-item-capabilities-predict",
+        "gat-item-capabilities-hrtb",
+        "gat-item-capabilities-observation",
+        "gat-item-capabilities-explain",
+        "gat-item-capabilities-gate",
+        "gat-item-capabilities-blank",
+        "gat-item-capabilities-recall"
+      ]
+    },
+    {
+      "lessonId": "gat-owned-iterator-adapters",
+      "stepIds": [
+        "gat-owned-iterator-adapters-predict",
+        "gat-owned-iterator-adapters-observation",
+        "gat-owned-iterator-adapters-dyn",
+        "gat-owned-iterator-adapters-explain",
+        "gat-owned-iterator-adapters-gate",
+        "gat-owned-iterator-adapters-blank",
+        "gat-owned-iterator-adapters-recall"
+      ]
+    },
+    {
+      "lessonId": "testing-contracts",
+      "stepIds": [
+        "contracts-discover",
+        "contracts-run",
+        "contracts-explain",
+        "contracts-modify-gate",
+        "contracts-apply-gate",
+        "contracts-recall"
+      ]
+    },
+    {
+      "lessonId": "testing-regressions",
+      "stepIds": [
+        "regressions-discover",
+        "regressions-run",
+        "regressions-explain",
+        "regressions-debug-gate",
+        "regressions-apply-gate",
+        "regressions-recall"
+      ]
+    },
+    {
+      "lessonId": "testing-quality-workflow",
+      "stepIds": [
+        "quality-discover",
+        "quality-run",
+        "quality-explain",
+        "quality-modify-gate",
+        "quality-blank-gate",
+        "quality-terminal-experiment",
+        "quality-recall"
+      ]
+    },
+    {
+      "lessonId": "guess-input-contract",
+      "stepIds": [
+        "guess-input-contract-predict",
+        "guess-input-contract-run",
+        "guess-input-contract-explain",
+        "guess-input-contract-gate",
+        "guess-input-contract-blank",
+        "guess-input-contract-recall"
+      ]
+    },
+    {
+      "lessonId": "guess-round-state",
+      "stepIds": [
+        "guess-round-state-predict",
+        "guess-round-state-run",
+        "guess-round-state-explain",
+        "guess-round-state-gate",
+        "guess-round-state-blank",
+        "guess-round-state-recall"
+      ]
+    },
+    {
+      "lessonId": "guess-session-io",
+      "stepIds": [
+        "guess-session-io-predict",
+        "guess-session-io-run",
+        "guess-session-io-explain",
+        "guess-session-io-gate",
+        "guess-session-io-blank"
+      ]
+    },
+    {
+      "lessonId": "guess-random-boundary",
+      "stepIds": [
+        "guess-random-boundary-predict",
+        "guess-random-boundary-run",
+        "guess-random-boundary-explain",
+        "guess-random-boundary-gate",
+        "guess-random-boundary-blank"
+      ]
+    },
+    {
+      "lessonId": "log-records",
+      "stepIds": [
+        "records-predict",
+        "records-run",
+        "records-observe",
+        "records-explain",
+        "records-transfer",
+        "records-debug",
+        "records-recall",
+        "records-apply"
+      ]
+    },
+    {
+      "lessonId": "log-streaming",
+      "stepIds": [
+        "stream-predict",
+        "stream-run",
+        "stream-observe",
+        "stream-explain",
+        "stream-transfer",
+        "stream-debug",
+        "stream-recall",
+        "stream-apply"
+      ]
+    },
+    {
+      "lessonId": "log-analyzer-project",
+      "stepIds": [
+        "report-predict",
+        "report-run",
+        "report-observe",
+        "report-explain",
+        "report-transfer",
+        "report-assembly",
+        "report-recall",
+        "report-blank"
+      ]
+    },
+    {
+      "lessonId": "box-recursive",
+      "stepIds": [
+        "box-predict",
+        "box-e0072",
+        "box-run",
+        "box-ownership-run",
+        "box-move-gate",
+        "box-list-gate",
+        "box-recall"
+      ]
+    },
+    {
+      "lessonId": "deref-contracts",
+      "stepIds": [
+        "deref-predict",
+        "deref-run",
+        "deref-explain",
+        "deref-text-gate",
+        "deref-slice-gate",
+        "deref-recall"
+      ]
+    },
+    {
+      "lessonId": "drop-resources",
+      "stepIds": [
+        "drop-predict",
+        "drop-e0040",
+        "drop-run",
+        "drop-explain",
+        "drop-release-gate",
+        "drop-blank",
+        "drop-recall"
+      ]
+    },
+    {
+      "lessonId": "rc-sharing",
+      "stepIds": [
+        "rc-predict",
+        "rc-run",
+        "rc-explain",
+        "rc-observe-move",
+        "rc-alias-gate",
+        "rc-lifetime-gate",
+        "rc-recall"
+      ]
+    },
+    {
+      "lessonId": "refcell-borrows",
+      "stepIds": [
+        "refcell-predict",
+        "refcell-run",
+        "refcell-explain",
+        "refcell-add-gate",
+        "refcell-add-blank",
+        "refcell-recall"
+      ]
+    },
+    {
+      "lessonId": "weak-links",
+      "stepIds": [
+        "weak-predict",
+        "weak-run",
+        "weak-trace",
+        "weak-explain",
+        "weak-link-gate",
+        "weak-inspect-blank",
+        "weak-recall"
+      ]
+    },
+    {
+      "lessonId": "thread-join",
+      "stepIds": [
+        "join-predict",
+        "join-run",
+        "join-panic-run",
+        "join-thread-id",
+        "join-all-gate",
+        "join-report-blank"
+      ]
+    },
+    {
+      "lessonId": "thread-move",
+      "stepIds": [
+        "move-e0373",
+        "move-predict",
+        "move-e0382",
+        "move-run",
+        "move-owned-gate",
+        "move-collection-blank"
+      ]
+    },
+    {
+      "lessonId": "scoped-threads",
+      "stepIds": [
+        "scoped-predict",
+        "scoped-run",
+        "scoped-spawn-error",
+        "scoped-recall",
+        "scoped-borrowed-gate",
+        "scoped-max-blank"
+      ]
+    },
+    {
+      "lessonId": "channel-ownership",
+      "stepIds": [
+        "ownership-predict",
+        "ownership-run",
+        "ownership-error",
+        "ownership-explain",
+        "ownership-modify",
+        "ownership-blank"
+      ]
+    },
+    {
+      "lessonId": "channel-lifecycle",
+      "stepIds": [
+        "lifecycle-predict",
+        "lifecycle-run",
+        "lifecycle-explain",
+        "lifecycle-recall",
+        "lifecycle-modify",
+        "lifecycle-blank"
+      ]
+    },
+    {
+      "lessonId": "channel-backpressure",
+      "stepIds": [
+        "backpressure-predict",
+        "backpressure-run",
+        "backpressure-explain",
+        "backpressure-recall",
+        "backpressure-modify",
+        "backpressure-blank"
+      ]
+    },
+    {
+      "lessonId": "send-sync",
+      "stepIds": [
+        "send-sync-predict",
+        "send-sync-rc-e0277",
+        "send-sync-arc-run",
+        "send-sync-arc-refcell-e0277",
+        "send-sync-distinguish",
+        "send-sync-transfer-gate",
+        "send-sync-thread-id-blank"
+      ]
+    },
+    {
+      "lessonId": "mutex-state",
+      "stepIds": [
+        "mutex-state-predict",
+        "mutex-state-run",
+        "mutex-state-explain",
+        "mutex-state-update-rule",
+        "mutex-state-callback-gate",
+        "mutex-state-aggregate-blank"
+      ]
+    },
+    {
+      "lessonId": "mutex-recovery",
+      "stepIds": [
+        "mutex-recovery-predict",
+        "mutex-recovery-run",
+        "mutex-recovery-explain",
+        "mutex-recovery-distinguish",
+        "mutex-recovery-propagate-gate",
+        "mutex-recovery-repair-blank"
+      ]
+    },
+    {
+      "lessonId": "atomic-rmw",
+      "stepIds": [
+        "atomic-rmw-predict",
+        "atomic-rmw-run",
+        "atomic-rmw-explain",
+        "atomic-rmw-overflow",
+        "atomic-rmw-fetch-gate",
+        "atomic-rmw-counter-blank"
+      ]
+    },
+    {
+      "lessonId": "atomic-cas",
+      "stepIds": [
+        "atomic-cas-predict",
+        "atomic-cas-run",
+        "atomic-cas-failure-value",
+        "atomic-cas-weak-strong",
+        "atomic-cas-retry-gate",
+        "atomic-cas-conditional-blank"
+      ]
+    },
+    {
+      "lessonId": "atomic-limits",
+      "stepIds": [
+        "atomic-limits-predict",
+        "atomic-limits-run",
+        "atomic-limits-aba",
+        "atomic-limits-progress",
+        "atomic-limits-counter-gate",
+        "atomic-limits-snapshot-blank"
+      ]
+    },
+    {
+      "lessonId": "release-acquire",
+      "stepIds": [
+        "release-acquire-predict",
+        "release-acquire-run",
+        "release-acquire-read-source",
+        "release-acquire-ordering",
+        "release-acquire-publication-gate",
+        "release-acquire-publication-blank"
+      ]
+    },
+    {
+      "lessonId": "ordering-contracts",
+      "stepIds": [
+        "ordering-contracts-run",
+        "ordering-contracts-predict",
+        "ordering-contracts-cas",
+        "ordering-contracts-rmw-halves",
+        "ordering-contracts-validation-gate",
+        "ordering-contracts-cas-blank"
+      ]
+    },
+    {
+      "lessonId": "loom-evidence",
+      "stepIds": [
+        "loom-evidence-predict",
+        "loom-evidence-replace",
+        "loom-evidence-limits",
+        "loom-evidence-schedule-run",
+        "loom-evidence-assertions-gate",
+        "loom-evidence-small-model-blank"
+      ]
+    },
+    {
+      "lessonId": "future-laziness",
+      "stepIds": [
+        "future-laziness-predict",
+        "future-laziness-run",
+        "future-laziness-arguments",
+        "future-laziness-deferred-gate",
+        "future-laziness-blank"
+      ]
+    },
+    {
+      "lessonId": "await-progress",
+      "stepIds": [
+        "await-progress-predict",
+        "await-progress-run",
+        "await-progress-spawn",
+        "await-progress-sequence-gate",
+        "await-progress-blank"
+      ]
+    },
+    {
+      "lessonId": "future-ownership",
+      "stepIds": [
+        "future-ownership-predict",
+        "future-ownership-run",
+        "future-ownership-moved-string",
+        "future-ownership-escaping-borrow",
+        "future-ownership-move-gate",
+        "future-ownership-blank"
+      ]
+    },
+    {
+      "lessonId": "future-cancellation",
+      "stepIds": [
+        "future-cancellation-predict",
+        "future-cancellation-run",
+        "future-cancellation-independent",
+        "future-cancellation-drop-gate",
+        "future-cancellation-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-runtime-entry",
+      "stepIds": [
+        "tokio-runtime-entry-predict",
+        "tokio-runtime-entry-run",
+        "tokio-runtime-entry-enter",
+        "tokio-runtime-entry-local-gate",
+        "tokio-runtime-entry-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-spawn-join",
+      "stepIds": [
+        "tokio-spawn-join-predict",
+        "tokio-spawn-join-run",
+        "tokio-spawn-join-factory",
+        "tokio-spawn-join-pair-gate",
+        "tokio-spawn-join-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-task-boundaries",
+      "stepIds": [
+        "tokio-task-boundaries-borrow-error",
+        "tokio-task-boundaries-send-error",
+        "tokio-task-boundaries-explain",
+        "tokio-task-boundaries-owned-gate",
+        "tokio-task-boundaries-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-join-outcomes",
+      "stepIds": [
+        "tokio-join-outcomes-predict",
+        "tokio-join-outcomes-run",
+        "tokio-join-outcomes-detach",
+        "tokio-join-outcomes-pair-gate",
+        "tokio-join-outcomes-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-bounded-channels",
+      "stepIds": [
+        "tokio-bounded-channels-predict",
+        "tokio-bounded-channels-run",
+        "tokio-bounded-channels-observe",
+        "tokio-bounded-channels-explain",
+        "tokio-bounded-channels-send-gate",
+        "tokio-bounded-channels-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-reservation-cancellation",
+      "stepIds": [
+        "tokio-reservation-cancellation-predict",
+        "tokio-reservation-cancellation-run",
+        "tokio-reservation-cancellation-observe",
+        "tokio-reservation-cancellation-explain",
+        "tokio-reservation-cancellation-retain-gate",
+        "tokio-reservation-cancellation-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-timeouts",
+      "stepIds": [
+        "tokio-timeouts-predict-owner",
+        "tokio-timeouts-owned-drop-run",
+        "tokio-timeouts-owned-gate",
+        "tokio-timeouts-owned-handle-run",
+        "tokio-timeouts-borrow-handle",
+        "tokio-timeouts-blank",
+        "tokio-timeouts-cleanup-policy"
+      ]
+    },
+    {
+      "lessonId": "tokio-select-cancellation",
+      "stepIds": [
+        "tokio-select-cancellation-fairness",
+        "tokio-select-cancellation-drop-run",
+        "tokio-select-cancellation-safety",
+        "tokio-select-cancellation-recv-gate",
+        "tokio-select-cancellation-blank",
+        "tokio-select-cancellation-priority-contract",
+        "tokio-select-cancellation-transfer"
+      ]
+    },
+    {
+      "lessonId": "tokio-graceful-shutdown",
+      "stepIds": [
+        "tokio-graceful-shutdown-predict",
+        "tokio-graceful-shutdown-run",
+        "tokio-graceful-shutdown-watch-policy",
+        "tokio-graceful-shutdown-drain-gate",
+        "tokio-graceful-shutdown-forced",
+        "tokio-graceful-shutdown-join-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-async-read-write",
+      "stepIds": [
+        "tokio-async-read-write-predict",
+        "tokio-async-read-write-run",
+        "tokio-async-read-write-explain",
+        "tokio-async-read-write-reply-gate",
+        "tokio-async-read-write-transfer-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-framing-eof",
+      "stepIds": [
+        "tokio-framing-eof-predict",
+        "tokio-framing-eof-run",
+        "tokio-framing-eof-explain",
+        "tokio-framing-eof-read-gate",
+        "tokio-framing-eof-write-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-retained-frame-progress",
+      "stepIds": [
+        "tokio-retained-frame-progress-predict",
+        "tokio-retained-frame-progress-explain",
+        "tokio-retained-frame-progress-run",
+        "tokio-retained-frame-progress-read-gate",
+        "tokio-retained-frame-progress-write-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-stream-next",
+      "stepIds": [
+        "tokio-stream-next-predict-pending",
+        "tokio-stream-next-pending-run",
+        "tokio-stream-next-pinning",
+        "tokio-stream-next-take-at-most-gate",
+        "tokio-stream-next-limit-contract",
+        "tokio-stream-next-first-matching-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-receiver-stream-drain",
+      "stepIds": [
+        "tokio-receiver-stream-drain-predict-close",
+        "tokio-receiver-stream-drain-run",
+        "tokio-receiver-stream-drain-permit",
+        "tokio-receiver-stream-drain-close-and-drain-gate",
+        "tokio-receiver-stream-drain-stop-contract",
+        "tokio-receiver-stream-drain-next-or-stop-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-spawn-blocking-boundary",
+      "stepIds": [
+        "tokio-spawn-blocking-boundary-predict",
+        "tokio-spawn-blocking-boundary-run",
+        "tokio-spawn-blocking-boundary-borrow-error",
+        "tokio-spawn-blocking-boundary-owned-gate",
+        "tokio-spawn-blocking-boundary-blank",
+        "tokio-spawn-blocking-boundary-result-review"
+      ]
+    },
+    {
+      "lessonId": "tokio-blocking-cooperative-stop",
+      "stepIds": [
+        "tokio-blocking-cooperative-stop-predict",
+        "tokio-blocking-cooperative-stop-run",
+        "tokio-blocking-cooperative-stop-permit",
+        "tokio-blocking-cooperative-stop-stop-gate",
+        "tokio-blocking-cooperative-stop-blank",
+        "tokio-blocking-cooperative-stop-abort-review"
+      ]
+    },
+    {
+      "lessonId": "tokio-tcp-connect",
+      "stepIds": [
+        "tokio-tcp-connect-predict",
+        "tokio-tcp-connect-run",
+        "tokio-tcp-connect-explain",
+        "tokio-tcp-connect-gate",
+        "tokio-tcp-connect-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-tcp-half-close",
+      "stepIds": [
+        "tokio-tcp-half-close-predict",
+        "tokio-tcp-half-close-run",
+        "tokio-tcp-half-close-explain",
+        "tokio-tcp-half-close-gate",
+        "tokio-tcp-half-close-blank"
+      ]
+    },
+    {
+      "lessonId": "tokio-frame-deadlines",
+      "stepIds": [
+        "tokio-frame-deadlines-predict",
+        "tokio-frame-deadlines-run",
+        "tokio-frame-deadlines-errors",
+        "tokio-frame-deadlines-gate",
+        "tokio-frame-deadlines-blank",
+        "tokio-frame-deadlines-discard"
+      ]
+    },
+    {
+      "lessonId": "tokio-admission-lifecycle",
+      "stepIds": [
+        "tokio-admission-lifecycle-predict",
+        "tokio-admission-lifecycle-run",
+        "tokio-admission-lifecycle-stop",
+        "tokio-admission-lifecycle-gate",
+        "tokio-admission-lifecycle-blank",
+        "tokio-admission-lifecycle-drain"
+      ]
+    },
+    {
+      "lessonId": "async-lending-receiver",
+      "stepIds": [
+        "async-lending-receiver-predict",
+        "async-lending-receiver-explain",
+        "async-lending-receiver-gate",
+        "async-lending-receiver-blank",
+        "async-lending-receiver-recall",
+        "async-lending-receiver-bounded-batch"
+      ]
+    },
+    {
+      "lessonId": "async-lending-callbacks",
+      "stepIds": [
+        "async-lending-callbacks-predict",
+        "async-lending-callbacks-explain",
+        "async-lending-callbacks-gate",
+        "async-lending-callbacks-blank",
+        "async-lending-callbacks-recall",
+        "async-lending-callbacks-bounded-transform"
+      ]
+    },
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepIds": [
+        "async-lending-cancel-commit-predict",
+        "async-lending-cancel-commit-explain",
+        "async-lending-cancel-commit-gate",
+        "async-lending-cancel-commit-blank",
+        "async-lending-cancel-commit-recall",
+        "async-lending-cancel-commit-reply-model",
+        "async-lending-cancel-commit-lost-reply"
+      ]
+    },
+    {
+      "lessonId": "async-lending-send-boundary",
+      "stepIds": [
+        "async-lending-send-boundary-predict",
+        "async-lending-send-boundary-explain",
+        "async-lending-send-boundary-gate",
+        "async-lending-send-boundary-blank",
+        "async-lending-send-boundary-recall",
+        "async-lending-send-boundary-handoff-model",
+        "async-lending-send-boundary-prepared-handoff"
+      ]
+    },
+    {
+      "lessonId": "async-lending-dyn-adapter",
+      "stepIds": [
+        "async-lending-dyn-adapter-predict",
+        "async-lending-dyn-adapter-explain",
+        "async-lending-dyn-adapter-gate",
+        "async-lending-dyn-adapter-blank",
+        "async-lending-dyn-adapter-recall",
+        "async-lending-dyn-adapter-borrowed-sources"
+      ]
+    },
+    {
+      "lessonId": "api-validated-construction",
+      "stepIds": [
+        "api-validated-construction-predict",
+        "api-validated-construction-run",
+        "api-validated-construction-accessor",
+        "api-validated-construction-gate",
+        "api-validated-construction-blank",
+        "api-validated-construction-recall"
+      ]
+    },
+    {
+      "lessonId": "api-error-source-chain",
+      "stepIds": [
+        "api-error-source-chain-predict",
+        "api-error-source-chain-run",
+        "api-error-source-chain-contract",
+        "api-error-source-chain-gate",
+        "api-error-source-chain-blank",
+        "api-error-source-chain-recall"
+      ]
+    },
+    {
+      "lessonId": "api-trait-compatibility",
+      "stepIds": [
+        "api-trait-compatibility-predict",
+        "api-trait-compatibility-old-client",
+        "api-trait-compatibility-dyn-break",
+        "api-trait-compatibility-gate",
+        "api-trait-compatibility-blank",
+        "api-trait-compatibility-recall"
+      ]
+    },
+    {
+      "lessonId": "api-compatible-surface",
+      "stepIds": [
+        "api-compatible-surface-predict",
+        "api-compatible-surface-old-client",
+        "api-compatible-surface-gate",
+        "api-compatible-surface-limit",
+        "api-compatible-surface-blank",
+        "api-compatible-surface-recall"
+      ]
+    },
+    {
+      "lessonId": "api-release-old-contracts",
+      "stepIds": [
+        "api-release-old-contracts-predict",
+        "api-release-old-contracts-run",
+        "api-release-old-contracts-explain",
+        "api-release-old-contracts-gate",
+        "api-release-old-contracts-debug",
+        "api-release-old-contracts-blank"
+      ]
+    },
+    {
+      "lessonId": "api-release-matrix-decision",
+      "stepIds": [
+        "api-release-matrix-decision-predict",
+        "api-release-matrix-decision-run",
+        "api-release-matrix-decision-explain",
+        "api-release-matrix-decision-gate",
+        "api-release-matrix-decision-debug",
+        "api-release-matrix-decision-blank"
+      ]
+    },
+    {
+      "lessonId": "macros-exactly-once",
+      "stepIds": [
+        "macros-exactly-once-predict",
+        "macros-exactly-once-run",
+        "macros-exactly-once-explain",
+        "macros-exactly-once-gate",
+        "macros-exactly-once-debug",
+        "macros-exactly-once-blank",
+        "macros-exactly-once-recall"
+      ]
+    },
+    {
+      "lessonId": "macros-repetition-grammar",
+      "stepIds": [
+        "macros-repetition-grammar-predict",
+        "macros-repetition-grammar-run",
+        "macros-repetition-grammar-explain",
+        "macros-repetition-grammar-gate",
+        "macros-repetition-grammar-debug",
+        "macros-repetition-grammar-blank",
+        "macros-repetition-grammar-recall"
+      ]
+    },
+    {
+      "lessonId": "macros-exported-paths-2024",
+      "stepIds": [
+        "macros-exported-paths-2024-predict",
+        "macros-exported-paths-2024-run",
+        "macros-exported-paths-2024-explain",
+        "macros-exported-paths-2024-gate",
+        "macros-exported-paths-2024-debug",
+        "macros-exported-paths-2024-blank",
+        "macros-exported-paths-2024-recall"
+      ]
+    },
+    {
+      "lessonId": "cargo-dependency-contract",
+      "stepIds": [
+        "cargo-dependency-contract-predict",
+        "cargo-dependency-contract-observe",
+        "cargo-dependency-contract-explain",
+        "cargo-dependency-contract-gate",
+        "cargo-dependency-contract-blank",
+        "cargo-dependency-contract-recall"
+      ]
+    },
+    {
+      "lessonId": "cargo-resolver-feature-unification",
+      "stepIds": [
+        "cargo-resolver-feature-unification-predict",
+        "cargo-resolver-feature-unification-observe",
+        "cargo-resolver-feature-unification-explain",
+        "cargo-resolver-feature-unification-gate",
+        "cargo-resolver-feature-unification-blank",
+        "cargo-resolver-feature-unification-recall"
+      ]
+    },
+    {
+      "lessonId": "cargo-lock-msrv-policy",
+      "stepIds": [
+        "cargo-lock-msrv-policy-predict",
+        "cargo-lock-msrv-policy-observe",
+        "cargo-lock-msrv-policy-explain",
+        "cargo-lock-msrv-policy-gate",
+        "cargo-lock-msrv-policy-blank",
+        "cargo-lock-msrv-policy-recall"
+      ]
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepIds": [
+        "cargo-package-rehearsal-predict",
+        "cargo-package-rehearsal-observe",
+        "cargo-package-rehearsal-explain",
+        "cargo-package-rehearsal-gate",
+        "cargo-package-rehearsal-blank",
+        "cargo-package-rehearsal-recall"
+      ]
+    },
+    {
+      "lessonId": "dependency-graph-diagnosis",
+      "stepIds": [
+        "dependency-graph-diagnosis-predict",
+        "dependency-graph-diagnosis-explain",
+        "dependency-graph-diagnosis-gate",
+        "dependency-graph-diagnosis-blank",
+        "dependency-graph-diagnosis-recall"
+      ]
+    },
+    {
+      "lessonId": "dependency-source-license-policy",
+      "stepIds": [
+        "dependency-source-license-policy-predict",
+        "dependency-source-license-policy-explain",
+        "dependency-source-license-policy-gate",
+        "dependency-source-license-policy-blank",
+        "dependency-source-license-policy-recall"
+      ]
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "stepIds": [
+        "dependency-advisory-exceptions-predict",
+        "dependency-advisory-exceptions-explain",
+        "dependency-advisory-exceptions-gate",
+        "dependency-advisory-exceptions-blank",
+        "dependency-advisory-exceptions-recall"
+      ]
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "stepIds": [
+        "dependency-release-dossier-predict",
+        "dependency-release-dossier-explain",
+        "dependency-release-dossier-gate",
+        "dependency-release-dossier-blank",
+        "dependency-release-dossier-recall"
+      ]
+    },
+    {
+      "lessonId": "grep-context-selection",
+      "stepIds": [
+        "grep-context-selection-predict",
+        "grep-context-selection-contrast",
+        "grep-context-selection-explain",
+        "grep-context-selection-gate",
+        "grep-context-selection-blank"
+      ]
+    },
+    {
+      "lessonId": "grep-bounded-input",
+      "stepIds": [
+        "grep-bounded-input-predict",
+        "grep-bounded-input-contrast",
+        "grep-bounded-input-explain",
+        "grep-bounded-input-gate",
+        "grep-bounded-input-blank"
+      ]
+    },
+    {
+      "lessonId": "grep-path-policy",
+      "stepIds": [
+        "grep-path-policy-predict",
+        "grep-path-policy-run",
+        "grep-path-policy-boundary",
+        "grep-path-policy-gate",
+        "grep-path-policy-blank",
+        "grep-path-policy-recall"
+      ]
+    },
+    {
+      "lessonId": "grep-cli-contract",
+      "stepIds": [
+        "grep-cli-contract-predict",
+        "grep-cli-contract-run",
+        "grep-cli-contract-os-boundary",
+        "grep-cli-contract-gate",
+        "grep-cli-contract-blank",
+        "grep-cli-contract-recall"
+      ]
+    },
+    {
+      "lessonId": "property-invariants",
+      "stepIds": [
+        "property-invariants-predict",
+        "property-invariants-run",
+        "property-invariants-observe",
+        "property-invariants-explain",
+        "property-invariants-gate",
+        "property-invariants-blank",
+        "property-invariants-recall"
+      ]
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepIds": [
+        "property-generated-inputs-predict",
+        "property-generated-inputs-run",
+        "property-generated-inputs-observe",
+        "property-generated-inputs-explain",
+        "property-generated-inputs-gate",
+        "property-generated-inputs-blank",
+        "property-generated-inputs-recall"
+      ]
+    },
+    {
+      "lessonId": "property-shrinking-replay",
+      "stepIds": [
+        "property-shrinking-replay-predict",
+        "property-shrinking-replay-run",
+        "property-shrinking-replay-observe",
+        "property-shrinking-replay-explain",
+        "property-shrinking-replay-gate",
+        "property-shrinking-replay-blank",
+        "property-shrinking-replay-recall"
+      ]
+    },
+    {
+      "lessonId": "property-metamorphic-transfer",
+      "stepIds": [
+        "property-metamorphic-transfer-predict",
+        "property-metamorphic-transfer-run",
+        "property-metamorphic-transfer-observe",
+        "property-metamorphic-transfer-explain",
+        "property-metamorphic-transfer-gate",
+        "property-metamorphic-transfer-blank",
+        "property-metamorphic-transfer-recall"
+      ]
+    },
+    {
+      "lessonId": "fuzz-input-domain",
+      "stepIds": [
+        "fuzz-input-domain-predict",
+        "fuzz-input-domain-observe",
+        "fuzz-input-domain-explain",
+        "fuzz-input-domain-gate",
+        "fuzz-input-domain-blank",
+        "fuzz-input-domain-recall"
+      ]
+    },
+    {
+      "lessonId": "fuzz-oracle-sensitivity",
+      "stepIds": [
+        "fuzz-oracle-sensitivity-predict",
+        "fuzz-oracle-sensitivity-observe",
+        "fuzz-oracle-sensitivity-explain",
+        "fuzz-oracle-sensitivity-gate",
+        "fuzz-oracle-sensitivity-blank",
+        "fuzz-oracle-sensitivity-recall"
+      ]
+    },
+    {
+      "lessonId": "fuzz-counterexample-regression",
+      "stepIds": [
+        "fuzz-counterexample-regression-predict",
+        "fuzz-counterexample-regression-observe",
+        "fuzz-counterexample-regression-explain",
+        "fuzz-counterexample-regression-gate",
+        "fuzz-counterexample-regression-blank",
+        "fuzz-counterexample-regression-recall"
+      ]
+    },
+    {
+      "lessonId": "fuzz-campaign-evidence",
+      "stepIds": [
+        "fuzz-campaign-evidence-predict",
+        "fuzz-campaign-evidence-observe",
+        "fuzz-campaign-evidence-explain",
+        "fuzz-campaign-evidence-gate",
+        "fuzz-campaign-evidence-blank",
+        "fuzz-campaign-evidence-recall"
+      ]
+    },
+    {
+      "lessonId": "performance-measured-workload",
+      "stepIds": [
+        "workload-predict",
+        "workload-run",
+        "workload-gate",
+        "workload-budget-gate",
+        "workload-blank",
+        "workload-recall"
+      ]
+    },
+    {
+      "lessonId": "performance-borrowed-stream",
+      "stepIds": [
+        "borrow-predict",
+        "borrow-run",
+        "borrow-gate",
+        "borrow-stream-gate",
+        "borrow-blank",
+        "borrow-recall"
+      ]
+    },
+    {
+      "lessonId": "performance-bounded-buffer",
+      "stepIds": [
+        "buffer-predict",
+        "buffer-run",
+        "buffer-gate",
+        "buffer-capacity-gate",
+        "buffer-blank",
+        "buffer-recall"
+      ]
+    },
+    {
+      "lessonId": "performance-evidence-decisions",
+      "stepIds": [
+        "decision-predict",
+        "decision-run",
+        "decision-gate",
+        "decision-evidence-gate",
+        "decision-blank",
+        "decision-recall"
+      ]
+    },
+    {
+      "lessonId": "profile-instruction-cost",
+      "stepIds": [
+        "instruction-predict",
+        "instruction-run",
+        "instruction-gate",
+        "instruction-budget-gate",
+        "instruction-blank",
+        "instruction-recall"
+      ]
+    },
+    {
+      "lessonId": "profile-allocation-events",
+      "stepIds": [
+        "allocation-predict",
+        "allocation-run",
+        "allocation-gate",
+        "allocation-count-gate",
+        "allocation-blank",
+        "allocation-recall"
+      ]
+    },
+    {
+      "lessonId": "profile-optimization-transfer",
+      "stepIds": [
+        "transfer-predict",
+        "transfer-run",
+        "transfer-gate",
+        "transfer-budget-gate",
+        "transfer-blank",
+        "transfer-recall"
+      ]
+    },
+    {
+      "lessonId": "profile-regression-decision",
+      "stepIds": [
+        "decision-predict",
+        "decision-run",
+        "decision-gate",
+        "decision-evidence-gate",
+        "decision-blank",
+        "decision-recall"
+      ]
+    },
+    {
+      "lessonId": "runtime-allocation-scope",
+      "stepIds": [
+        "allocation-scope-predict",
+        "allocation-scope-run",
+        "allocation-scope-gate",
+        "allocation-scope-error-gate",
+        "allocation-scope-blank",
+        "allocation-scope-recall"
+      ]
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepIds": [
+        "allocation-comparison-predict",
+        "allocation-comparison-run",
+        "allocation-comparison-gate",
+        "allocation-comparison-complete-gate",
+        "allocation-comparison-blank",
+        "allocation-comparison-recall"
+      ]
+    },
+    {
+      "lessonId": "unsafe-ffi-checked-view",
+      "stepIds": [
+        "checked-view-predict",
+        "checked-view-run",
+        "checked-view-explain",
+        "checked-view-gate",
+        "checked-view-contract-gate",
+        "checked-view-blank",
+        "checked-view-recall"
+      ]
+    },
+    {
+      "lessonId": "unsafe-ffi-split-regions",
+      "stepIds": [
+        "split-regions-predict",
+        "split-regions-run",
+        "split-regions-explain",
+        "split-regions-gate",
+        "split-regions-alias-gate",
+        "split-regions-blank",
+        "split-regions-recall"
+      ]
+    },
+    {
+      "lessonId": "unsafe-ffi-raw-record",
+      "stepIds": [
+        "raw-record-predict",
+        "raw-record-run",
+        "raw-record-explain",
+        "raw-record-gate",
+        "raw-record-flags-gate",
+        "raw-record-blank",
+        "raw-record-recall"
+      ]
+    },
+    {
+      "lessonId": "unsafe-ffi-owned-handle",
+      "stepIds": [
+        "owned-handle-predict",
+        "owned-handle-run",
+        "owned-handle-explain",
+        "owned-handle-gate",
+        "owned-handle-borrow-gate",
+        "owned-handle-blank",
+        "owned-handle-recall"
+      ]
+    },
+    {
+      "lessonId": "unsafe-miri-byte-view",
+      "stepIds": [
+        "byte-view-predict",
+        "byte-view-run",
+        "byte-view-explain",
+        "byte-view-gate",
+        "byte-view-contract-gate",
+        "byte-view-blank",
+        "byte-view-recall",
+        "byte-view-initialized-prefix-model",
+        "byte-view-initialized-prefix"
+      ]
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepIds": [
+        "disjoint-regions-predict",
+        "disjoint-regions-run",
+        "disjoint-regions-explain",
+        "disjoint-regions-gate",
+        "disjoint-regions-contract-gate",
+        "disjoint-regions-blank",
+        "disjoint-regions-recall",
+        "disjoint-regions-range-model",
+        "disjoint-regions-range-transfer"
+      ]
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "stepIds": [
+        "slot-state-predict",
+        "slot-state-run",
+        "slot-state-explain",
+        "slot-state-gate",
+        "slot-state-contract-gate",
+        "slot-state-blank",
+        "slot-state-recall",
+        "slot-state-lazy-init-model",
+        "slot-state-lazy-init-transfer"
+      ]
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepIds": [
+        "mut-slot-predict",
+        "mut-slot-run",
+        "mut-slot-explain",
+        "mut-slot-gate",
+        "mut-slot-contract-gate",
+        "mut-slot-variance-compile-fail",
+        "mut-slot-blank",
+        "mut-slot-recall",
+        "mut-slot-with-mut-model",
+        "mut-slot-with-mut-transfer"
+      ]
+    },
+    {
+      "lessonId": "unsafe-borrowed-provenance",
+      "stepIds": [
+        "unsafe-borrowed-provenance-predict",
+        "unsafe-borrowed-provenance-run",
+        "unsafe-borrowed-provenance-explain",
+        "unsafe-borrowed-provenance-boundary-gate",
+        "unsafe-borrowed-provenance-soundness-gate",
+        "unsafe-borrowed-provenance-blank",
+        "unsafe-borrowed-provenance-recall",
+        "unsafe-borrowed-provenance-soundness-transfer"
+      ]
+    },
+    {
+      "lessonId": "unsafe-borrowed-reborrow",
+      "stepIds": [
+        "unsafe-borrowed-reborrow-predict",
+        "unsafe-borrowed-reborrow-run",
+        "unsafe-borrowed-reborrow-explain",
+        "unsafe-borrowed-reborrow-boundary-gate",
+        "unsafe-borrowed-reborrow-soundness-gate",
+        "unsafe-borrowed-reborrow-blank",
+        "unsafe-borrowed-reborrow-recall",
+        "unsafe-borrowed-reborrow-soundness-transfer"
+      ]
+    },
+    {
+      "lessonId": "unsafe-borrowed-slot",
+      "stepIds": [
+        "unsafe-borrowed-slot-predict",
+        "unsafe-borrowed-slot-run",
+        "unsafe-borrowed-slot-explain",
+        "unsafe-borrowed-slot-boundary-gate",
+        "unsafe-borrowed-slot-soundness-gate",
+        "unsafe-borrowed-slot-blank",
+        "unsafe-borrowed-slot-recall",
+        "unsafe-borrowed-slot-soundness-transfer"
+      ]
+    },
+    {
+      "lessonId": "unsafe-borrowed-auto-traits",
+      "stepIds": [
+        "unsafe-borrowed-auto-traits-predict",
+        "unsafe-borrowed-auto-traits-run",
+        "unsafe-borrowed-auto-traits-explain",
+        "unsafe-borrowed-auto-traits-boundary-gate",
+        "unsafe-borrowed-auto-traits-soundness-gate",
+        "unsafe-borrowed-auto-traits-blank",
+        "unsafe-borrowed-auto-traits-recall",
+        "unsafe-borrowed-auto-traits-compile-fail",
+        "unsafe-borrowed-auto-traits-soundness-transfer"
+      ]
+    },
+    {
+      "lessonId": "service-trust-admission",
+      "stepIds": [
+        "trust-admission-predict",
+        "trust-admission-run",
+        "trust-admission-gate",
+        "trust-admission-budget-gate",
+        "trust-admission-blank",
+        "trust-admission-recall"
+      ]
+    },
+    {
+      "lessonId": "service-correlated-telemetry",
+      "stepIds": [
+        "telemetry-correlation-predict",
+        "telemetry-correlation-run",
+        "telemetry-correlation-gate",
+        "telemetry-correlation-allowlist-gate",
+        "telemetry-correlation-blank",
+        "telemetry-correlation-recall"
+      ]
+    },
+    {
+      "lessonId": "service-readiness-drain",
+      "stepIds": [
+        "readiness-drain-predict",
+        "readiness-drain-run",
+        "readiness-drain-gate",
+        "readiness-drain-accounting-gate",
+        "readiness-drain-blank",
+        "readiness-drain-recall"
+      ]
+    },
+    {
+      "lessonId": "service-incident-diagnosis",
+      "stepIds": [
+        "incident-diagnosis-predict",
+        "incident-diagnosis-run",
+        "incident-diagnosis-gate",
+        "incident-diagnosis-evidence-gate",
+        "incident-diagnosis-blank",
+        "incident-diagnosis-recall"
+      ]
+    },
+    {
+      "lessonId": "capstone-domain-boundary",
+      "stepIds": [
+        "capstone-domain-predict",
+        "capstone-domain-contrast",
+        "capstone-domain-validate",
+        "capstone-domain-explain",
+        "capstone-domain-errors",
+        "capstone-domain-recall",
+        "capstone-domain-blank"
+      ]
+    },
+    {
+      "lessonId": "capstone-idempotent-commit",
+      "stepIds": [
+        "capstone-commit-predict",
+        "capstone-commit-contrast",
+        "capstone-commit-replay",
+        "capstone-commit-explain",
+        "capstone-commit-atomicity",
+        "capstone-commit-recall",
+        "capstone-commit-blank"
+      ]
+    },
+    {
+      "lessonId": "capstone-bounded-lifecycle",
+      "stepIds": [
+        "capstone-lifecycle-predict",
+        "capstone-lifecycle-contrast",
+        "capstone-lifecycle-admit",
+        "capstone-lifecycle-explain",
+        "capstone-lifecycle-settle",
+        "capstone-lifecycle-recall",
+        "capstone-lifecycle-blank"
+      ]
+    },
+    {
+      "lessonId": "capstone-protocol-evolution",
+      "stepIds": [
+        "capstone-protocol-predict",
+        "capstone-protocol-contrast",
+        "capstone-protocol-decode",
+        "capstone-protocol-explain",
+        "capstone-protocol-migrate",
+        "capstone-protocol-recall",
+        "capstone-protocol-blank"
+      ]
+    },
+    {
+      "lessonId": "capstone-incident-recovery",
+      "stepIds": [
+        "capstone-incident-predict",
+        "capstone-incident-contrast",
+        "capstone-incident-correlate",
+        "capstone-incident-explain",
+        "capstone-incident-decide",
+        "capstone-incident-recall",
+        "capstone-incident-blank"
+      ]
+    },
+    {
+      "lessonId": "capstone-release-evidence",
+      "stepIds": [
+        "capstone-release-predict",
+        "capstone-release-contrast",
+        "capstone-release-bind",
+        "capstone-release-explain",
+        "capstone-release-decide",
+        "capstone-release-recall",
+        "capstone-release-blank"
+      ]
+    },
+    {
+      "lessonId": "conversion-ownership-views",
+      "stepIds": [
+        "conversions-predict",
+        "conversions-run",
+        "conversions-read-api",
+        "conversions-label-repair",
+        "conversions-samples-transfer",
+        "conversions-explain",
+        "conversions-recall"
+      ]
+    },
+    {
+      "lessonId": "checked-conversions",
+      "stepIds": [
+        "checked-predict",
+        "checked-run",
+        "checked-read-api",
+        "checked-level-repair",
+        "checked-percent-transfer",
+        "checked-explain",
+        "checked-recall"
+      ]
+    },
+    {
+      "lessonId": "nested-patterns-and-destructuring",
+      "stepIds": [
+        "nested-predict",
+        "nested-run",
+        "nested-repair",
+        "nested-transfer",
+        "nested-explain",
+        "nested-recall",
+        "patterns-if-let-predict",
+        "patterns-borrow-repair",
+        "patterns-let-else-repair",
+        "patterns-while-let-predict",
+        "patterns-delivery-transfer"
+      ]
+    },
+    {
+      "lessonId": "function-ownership-calibration",
+      "stepIds": [
+        "function-boundary-preview",
+        "function-return-predict",
+        "function-is-empty-text",
+        "function-add-mark",
+        "function-boundary-explain"
+      ]
+    },
+    {
+      "lessonId": "shared-borrow-calibration",
+      "stepIds": [
+        "shared-borrow-preview",
+        "shared-view-predict",
+        "shared-count-words",
+        "shared-has-suffix",
+        "shared-borrow-explain"
+      ]
+    },
+    {
+      "lessonId": "fallible-value-composition",
+      "stepIds": [
+        "fallible-match-discover",
+        "fallible-nested-predict",
+        "fallible-nested-observe",
+        "fallible-value-theory",
+        "fallible-owner-repair",
+        "fallible-config-contract",
+        "fallible-zero-counterexample",
+        "fallible-optional-transfer",
+        "fallible-value-rationale"
+      ]
+    },
+    {
+      "lessonId": "fallible-iterator-contracts",
+      "stepIds": [
+        "fallible-collect-predict",
+        "fallible-collect-observe",
+        "fallible-collect-theory",
+        "fallible-rows-contract",
+        "fallible-eager-counterexample",
+        "fallible-readings-transfer",
+        "fallible-readings-blank",
+        "fallible-policy-recall",
+        "fallible-pipeline-rationale"
+      ]
+    },
+    {
+      "lessonId": "documentation-guided-repair",
+      "stepIds": [
+        "docs-mismatch-predict",
+        "docs-type-observe",
+        "docs-owner-observe",
+        "docs-signature-decision",
+        "docs-prefix-repair",
+        "docs-split-transfer",
+        "docs-split-blank",
+        "docs-local-documentation",
+        "docs-hypothesis-rationale"
+      ]
+    }
+  ]
+}
