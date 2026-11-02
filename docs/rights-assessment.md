@@ -10,12 +10,16 @@ grant.
 ## Scope and evidence
 
 The reviewed source base is `2aecc24d238f74a5e89d759fe4090fde3468d221`. The
-finite ledger covers 294 tracked files under `src/content/` and five under
-`public/`. The three icons are assessed below; the manifest and service worker
-retain their software disposition. Private review receipts preserve file hashes,
-extracted-unit coverage, comparison results, manual dispositions and the
-relevant generation records. Private prompts, transcripts, account records and
-machine paths are not part of this public document.
+original bounded assessment covered 294 tracked files under `src/content/` and
+five under `public/`. The three icons are assessed below; the manifest and
+service worker retain their software disposition. The current C1 finite ledger
+has 321 course files and five public files; its bounded correction delta is
+described below with its completed bounded independent review. The historical
+assessment is not an exhaustive rights clearance of that current inventory.
+Private review receipts preserve file hashes, extracted-unit coverage,
+comparison results, manual dispositions and the relevant generation records.
+Private prompts, transcripts, account records and machine paths are not part of
+this public document.
 
 ## Generated material and applicable rights
 
@@ -66,8 +70,9 @@ Project credit does not create authorship or make a citation a permission grant.
 
 ## Course comparison and disposition
 
-All 294 tracked course files were inventoried by SHA256 and first-introduction
-Git metadata. The static comparison screened 27,883 extracted local units
+All 294 tracked course files in the original bounded assessment were inventoried
+by SHA256 and first-introduction Git metadata. The static comparison screened
+27,883 extracted local units
 against 7,492 public upstream units containing 4,671,689 tokens. It produced 244
 candidate records at 52 distinct local syntax anchors; these are comparison
 leads, not 244 copying findings. Sixteen contextual manual cases covered the
@@ -117,6 +122,36 @@ substantial copied-expression finding within this bounded scope**. The ledger's
 `course-source-review` is resolved as a record of this completed assessment, not
 exhaustive legal clearance or a warranty of originality. No course or
 public-asset bytes were changed.
+
+### Bounded existing-lesson-contract correction delta (C1)
+
+The bounded A6-to-C1 tracked comparison (`d62e7d7` to
+`b78b9942a0c3f265e9d661551c27c7125a173368`) contains 33 `src/content` paths:
+29 modified tracked files and these four additions:
+
+- `src/content/existing-contract-prose.test.ts`
+- `src/content/existing-contract-repair-compatibility-fixture.ts`
+- `src/content/existing-contract-repair-compatibility.test.ts`
+- `src/content/fixtures/existing-contract-pre-c1-projection.json`
+
+Within this bounded review, the affected material is maintainer-directed,
+AI-assisted repair, helper and test content, plus a compatibility snapshot that
+reproduces existing repository data for existing-lesson contract checks. No new
+external third-party, illustration, dependency or downloaded input was
+identified within this diff. The correction changes the finite inventory and
+its hashes; it does not establish a new rights disposition or clear any rights.
+
+The four additions are tests, helpers and projection data supporting the
+existing contract. Their presence does not establish a separate license or
+ownership status beyond the reviewed project records. Disposition for this
+correction delta is: **Bounded independent C1 provenance review completed.**
+No new external copied input was identified within this diff. The existing
+bounded rights, originality, publication, trademark, privacy and release
+limitations continue. This is a maintainer-directed factual provenance
+correction, not an exhaustive clearance,
+originality, publication, trademark, privacy or release claim. Private prompts,
+paths, receipts, logs, account records and generation history remain private
+and are not reproduced here.
 
 ### Coverage limits
 

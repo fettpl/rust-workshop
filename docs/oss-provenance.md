@@ -32,11 +32,17 @@ This records the bounded assessment and acceptance, not exhaustive rights cleara
 
 - The course group records the maintainer's report of generation using ChatGPT
   and Codex from prompts and direction, with no manual drafting of fragments.
-  The [bounded rights assessment](rights-assessment.md) inventories all 294
-  course files and documents extracted-unit screening and contextual manual
+  The original bounded [rights assessment](rights-assessment.md) inventories
+  294 course files and documents extracted-unit screening and contextual manual
   review. No actionable substantial copied-expression case was identified
-  within that scope; `course-source-review` is resolved as that assessment
-  record. Source citations remain leads, never automatic permission.
+  within that historical scope; `course-source-review` is resolved as that
+  assessment record. The current finite ledger has 321 course files and five
+  public files. The later existing-lesson-contract correction delta is
+  documented in the rights assessment. Bounded independent C1 provenance
+  review completed. No new external copied input was identified within this
+  diff. The existing bounded rights, originality, publication, trademark,
+  privacy and release limitations continue. Source citations remain leads,
+  never automatic permission.
 - The icon origin is traced assistant generation: private maintainer records
   show inline SVG construction with a successful receipt, followed by an
   assistant-reported palette change. Current PNGs reproduce byte-for-byte and

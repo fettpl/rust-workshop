@@ -77,7 +77,7 @@
     },
     {
       "path": "src/content/abstraction-integration.test.ts",
-      "sha256": "cb1b2224ed9b706fe4fccb9473c86ab1500ea97f6b0d733d8429fa5032f6b28f",
+      "sha256": "825525452e9d1ddea466ca5739c1dc0eefe7996e5fc5821f575f05a90688476a",
       "group": "course"
     },
     {
@@ -92,7 +92,7 @@
     },
     {
       "path": "src/content/api-frame-protocol-maintenance-compatibility.test.ts",
-      "sha256": "065e602759fe6a4ca984c105758040eda7a41e2158b358337e5be44e414a8ece",
+      "sha256": "8211b080c9cb8cc9aa474b6cf0d32564f4dd502a0beb191241ea002c1614cad2",
       "group": "course"
     },
     {
@@ -152,7 +152,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "0bd9f99c3791a277266600e5f53f30dba7f55199d543b87d1a1d9ce4bcaa1eaf",
+      "sha256": "93b74eb0f5a6c2a02653a4c8f4adda21ccb5bd4868d4dcc64e39ba1214f3d54b",
       "group": "course"
     },
     {
@@ -222,7 +222,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "d885801585974ba96aed6edaed17d9b59af9e604ea054f5cb8cc74100343cd30",
+      "sha256": "36aa5fbf1fe412114737aed3e929b9c84baf63db5cd237851b9c9402356e931d",
       "group": "course"
     },
     {
@@ -252,7 +252,7 @@
     },
     {
       "path": "src/content/async-lending-transfer-compatibility.test.ts",
-      "sha256": "9b9d2e5c7419ddab3fa0aa7248de021f66be28221d0a238592f72d4b82445828",
+      "sha256": "93f698b5e34f35b09df6733ce20b1a5736418780c62a093db23e05b9a365a494",
       "group": "course"
     },
     {
@@ -277,7 +277,7 @@
     },
     {
       "path": "src/content/baseline-correction-integration.test.ts",
-      "sha256": "2d975a5c16afb0d79f81d1c1c39098055f2f78920853a4cb9f7e6b8b458bd649",
+      "sha256": "9fab8febf020d14ce8a9e3383db2414ed59f0db94ae6ee7649201ada55d7ddc0",
       "group": "course"
     },
     {
@@ -467,7 +467,7 @@
     },
     {
       "path": "src/content/core-practice-integration.test.ts",
-      "sha256": "82928db49ec1278a8c3f9c3668e0beee7701c554d1e97419627b1a3a5d28c0d5",
+      "sha256": "ae4c351d95c9f006dd009fe029b49895d7431784ebe6e19dbb0321ae987cd976",
       "group": "course"
     },
     {
@@ -507,7 +507,7 @@
     },
     {
       "path": "src/content/dependency-maintenance-compatibility.test.ts",
-      "sha256": "1782dc8167bfb004f463491d96be1dd6e439f5a234c82efe3c4d32cfe51c6cbc",
+      "sha256": "c77f4d6ac168491b603346da799b9657a8bdf2c01cb09a8f75f2aca8cf26f365",
       "group": "course"
     },
     {
@@ -532,7 +532,7 @@
     },
     {
       "path": "src/content/documentation-guided-repair-integration.test.ts",
-      "sha256": "07c2375e4dc7e80c9dc8b45371c622d90e4ad9ca03fdef9214374141c03e35c1",
+      "sha256": "87ea76f6fe60a41d9e0bf4abb8fdc02371b9372c59d40d2d9d9bc02bff116ec7",
       "group": "course"
     },
     {
@@ -561,6 +561,21 @@
       "group": "course"
     },
     {
+      "path": "src/content/existing-contract-prose.test.ts",
+      "sha256": "5ebe2a2efb36d17d529464b95dc7cf5fed2721720b218bfd06ea5132ed3c9a74",
+      "group": "course"
+    },
+    {
+      "path": "src/content/existing-contract-repair-compatibility-fixture.ts",
+      "sha256": "fefb46a657faf78cc2f54ab092aa102f47be434da59683505e5b3291c6c7b98b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/existing-contract-repair-compatibility.test.ts",
+      "sha256": "7e1a281c831c6a3c7ac713b9eea568b8e555f24330e5877a94558a55ebb0a392",
+      "group": "course"
+    },
+    {
       "path": "src/content/expansion.test.ts",
       "sha256": "d14d81cde7500abe149e93c2be426a0f34bc1809c0954d8c6be000f94f05d014",
       "group": "course"
@@ -582,7 +597,7 @@
     },
     {
       "path": "src/content/fallible-composition-integration.test.ts",
-      "sha256": "9a8c6e8c6b4f9303685f817707be2c087b5713c7751792a5ab2c3c0af96e6130",
+      "sha256": "909bd61a36923bdc58c1304b136a46d0832c6b1a47eceec7084ba7d1779b0109",
       "group": "course"
     },
     {
@@ -603,6 +618,11 @@
     {
       "path": "src/content/fixtures/async-send-pre-handoff.json",
       "sha256": "6d4e410f8752934b4ccc308f6982e67b1f2d39d1e6abd628109bda52232a304f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/existing-contract-pre-c1-projection.json",
+      "sha256": "d49d21164e4c1d1d9c325423cc5051785f9aa181163bb44ca53f26d567b1002b",
       "group": "course"
     },
     {
@@ -662,7 +682,7 @@
     },
     {
       "path": "src/content/foundations.ts",
-      "sha256": "bf5df3763f7dedd4d3e1871a5f9ac52dd78857762afe41a28f3af68a0d543b18",
+      "sha256": "71fba74fb522b51bc13ffb8841604cf4d50aeb1a43b7df0f6e9dcda93ac10c57",
       "group": "course"
     },
     {
@@ -682,17 +702,17 @@
     },
     {
       "path": "src/content/fuzz-evidence-assessment-fixtures.ts",
-      "sha256": "74113e983048fdef54a626bdf447ed87f87f223bd098756f59911bb633b1b674",
+      "sha256": "baa0a0741bba871800b8dd7a6bbecf020ac869f79988a00e3d8d7447751565c0",
       "group": "course"
     },
     {
       "path": "src/content/fuzz-evidence-assessment.test.ts",
-      "sha256": "782e377b72be5b222c7adb5d08ecf5529cc4132599208ab6054d2b44dab0af6e",
+      "sha256": "e6f4106a94ffb4d2d774b04f58871b15c0667be1df140e6dc265b8869829f77f",
       "group": "course"
     },
     {
       "path": "src/content/fuzz-evidence-integration.test.ts",
-      "sha256": "168eb483dd5101bfa3e0671047d77daaab56c1d9724a8c4341e905033a4da6b2",
+      "sha256": "46f2bf0f4d89b7c65d002a0780f71ba71113c1a52f780f51e6a8c402fbfd6034",
       "group": "course"
     },
     {
@@ -707,7 +727,7 @@
     },
     {
       "path": "src/content/fuzz-evidence.ts",
-      "sha256": "0c3a5f4bf39378bd104cdcd1ea0038b18785bfacbfbbe00aa9f3b6750c3d29e6",
+      "sha256": "7d01ea57dd3fe58e78000c4675e4fd12df321d02fd97dafa3b51e62097a453f6",
       "group": "course"
     },
     {
@@ -762,7 +782,7 @@
     },
     {
       "path": "src/content/generics.ts",
-      "sha256": "61656cc5ffd91e41ba71b122ff6d3f89d5c47dea6bf27d9aebe674be93a53be9",
+      "sha256": "162851a5eb99853988352c4047adcf8e32e1bcf3a1a1679d7260e58ee7da9090",
       "group": "course"
     },
     {
@@ -972,7 +992,7 @@
     },
     {
       "path": "src/content/ownership-foundation-transfer.test.ts",
-      "sha256": "f391ed46301f7d02f501b22f6435735e0244cd4bfffa74b8688d361c41b045bf",
+      "sha256": "f618acb89c261e39bb5e51291b7dbc9a8a79841e417aad1d6a01b41741653bb3",
       "group": "course"
     },
     {
@@ -1262,22 +1282,22 @@
     },
     {
       "path": "src/content/runtime-allocation-assessment-fixtures.ts",
-      "sha256": "84a152ad839dc61f42f2cbb72206f14c5a43dd3467b596e8086c6a2b8faec980",
+      "sha256": "0e6660262b7ca755181418f294916d1e18c547c79d875859c6945086245a3bff",
       "group": "course"
     },
     {
       "path": "src/content/runtime-allocation-assessment.test.ts",
-      "sha256": "7d2c3fa38c6295f89218445700169910dbc5796c6977ac08254d8384c80cb3dc",
+      "sha256": "948ce49dc0b106b417be762324ed2dad1d10b634da6d5e01d022de78e39e42b3",
       "group": "course"
     },
     {
       "path": "src/content/runtime-allocation-evidence.ts",
-      "sha256": "4768cec8f8e3d3ad5333983a55a7cffae9f203569d0e819ce14a3e4fa7bfb33c",
+      "sha256": "2d9c85e0bd69aef639540ec2549a7534c075a7fabc984ad4b615be6ca9916ed7",
       "group": "course"
     },
     {
       "path": "src/content/runtime-allocation-integration.test.ts",
-      "sha256": "bb97b3c210bf4967f4e409381138307178f9afe34bb2cdffac17d0f266f81077",
+      "sha256": "9c60bcb4f774a9ca3987f4aec468085d1e2a3eba70723ec164d98eb66402cdc8",
       "group": "course"
     },
     {
@@ -1332,7 +1352,7 @@
     },
     {
       "path": "src/content/shared-borrow-calibration.test.ts",
-      "sha256": "872080bb6459f6a437e064b37eab7e0bf9e9bb6f64c55ce08136f920d19de613",
+      "sha256": "62f1fe11a3fd637b052acf1872f757cc9caed2dbeb7e8ae45831211cb47942fc",
       "group": "course"
     },
     {
@@ -1502,7 +1522,7 @@
     },
     {
       "path": "src/content/unsafe-ffi-integration.test.ts",
-      "sha256": "1bd1510fe10cddb50684affdd57acf3ac0d75ba605d5f42f97be8c5be7748d4d",
+      "sha256": "a5e8576ba861326f2e37524f4258fd7b31636e843e977a5634323031072bcd83",
       "group": "course"
     },
     {
@@ -1522,7 +1542,7 @@
     },
     {
       "path": "src/content/unsafe-miri-disjoint-ranges-compatibility.test.ts",
-      "sha256": "4aea492ff3b52657954318da7042e10301898d35c3323163246301754b259beb",
+      "sha256": "7febad1732f7a836c668e2979571458ca58555e7a813c12c64873ff3b271402b",
       "group": "course"
     },
     {
@@ -1582,7 +1602,7 @@
     },
     {
       "path": "src/content/unsafe-miri-initialized-prefix.test.ts",
-      "sha256": "20665f8adfd8445d9650586909d12c287a4eaaa3bd1a9ab4e1903e431ed796f1",
+      "sha256": "69a613c80b9f060af2f3d9a89dff281202119db72ac6776eb1cc498c43ffcfc7",
       "group": "course"
     },
     {
@@ -1602,7 +1622,7 @@
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility.test.ts",
-      "sha256": "12ca912912f64d266b70b9ccb23100aa646fbce1ebe59222ba929e7aa215dcf9",
+      "sha256": "cc0bf4ab760e38c52f8b5bebd0c72f7ff0bf35bbc1b5c98e390ae92915e18bba",
       "group": "course"
     },
     {
@@ -1622,7 +1642,7 @@
     },
     {
       "path": "src/content/unsafe-miri-prefix-compatibility.test.ts",
-      "sha256": "689e66e1cd5dc9b61b04b3e3ec2774c9a5512e556b20236c5b9c324796659c9f",
+      "sha256": "c3c79be06f86684317ed17e9fa121d9067610cc6cb27dbcefdb8067c2bac81f8",
       "group": "course"
     },
     {
@@ -1632,7 +1652,7 @@
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init-compatibility.test.ts",
-      "sha256": "26fff06065aa4d7d3c6a561982d354433ca2f153b4440d42cff568a04d4ca5d5",
+      "sha256": "2f16c328e5431d9cc82815f1512ea179afddaacf7fa67aaaff6ea9d59f6ccd60",
       "group": "course"
     },
     {
@@ -1647,7 +1667,7 @@
     },
     {
       "path": "src/content/unsafe-miri.ts",
-      "sha256": "95e3a47ced66adb72ceb460b841db24f0b05f2e098bdfe2ee74148631a9cc993",
+      "sha256": "ad65fb234c9d1caa3acddfa1f4dee21061269da6cdd071dca632f3c1127d28af",
       "group": "course"
     },
     {
