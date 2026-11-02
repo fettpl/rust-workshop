@@ -56,7 +56,7 @@ const canonicalA6Files: Record<string, CanonicalFile> = {
   },
   "RELEASE-EVIDENCE.json": {
     successorStarterSha256:
-      "a1d94590da8045337cc865ef1fc1159b4b52e1af7196b743efb778e783274526",
+      "2b55469faa07ffd34bf788b69f8cd23c992f25719d93a9834550e43c86afc940",
   },
   "evidence/actual-cargo-tree.txt": {
     successorStarterSha256:
@@ -64,11 +64,11 @@ const canonicalA6Files: Record<string, CanonicalFile> = {
   },
   "evidence/release-evidence.json": {
     successorStarterSha256:
-      "a1d94590da8045337cc865ef1fc1159b4b52e1af7196b743efb778e783274526",
+      "2b55469faa07ffd34bf788b69f8cd23c992f25719d93a9834550e43c86afc940",
   },
   "evidence/package-list.txt": {
     successorStarterSha256:
-      "fe3aa03bd1ce2641e3366cef772535883030daee30c357db0de51e9012836518",
+      "9e75992fddde647d74749db7097d64b40d382e4fab98e0f85fd3e64e61dde36d",
   },
   "crates/frame-protocol/src/lib.rs": {
     successorStarterSha256:
@@ -219,18 +219,40 @@ function restoreExistingLessonFields(lesson: (typeof Course.lessons)[number]) {
   };
 }
 
+function sameSerializableValue(left: unknown, right: unknown) {
+  if (typeof left === "function" || typeof right === "function")
+    return left === right;
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 function projectDefaultAlias(
   projected: Record<string, unknown>,
   current: Record<string, unknown>,
 ) {
   const defaultAlias = current.default;
+  const hasDefaultAlias =
+    defaultAlias !== null && typeof defaultAlias === "object";
+  const aliasSource = hasDefaultAlias
+    ? defaultAlias
+    : Object.fromEntries(
+        baseline.registryKeys
+          .filter((key) => key !== "default" && key in current)
+          .map((key) => [key, current[key]]),
+      );
   const projectedAlias =
-    defaultAlias && typeof defaultAlias === "object"
-      ? { ...(defaultAlias as Record<string, unknown>) }
+    aliasSource && typeof aliasSource === "object"
+      ? { ...(aliasSource as Record<string, unknown>) }
       : {};
   for (const key of baseline.registryKeys) {
     if (key === "default") continue;
-    if (key in projected) projectedAlias[key] = projected[key];
+    if (
+      Object.prototype.hasOwnProperty.call(projectedAlias, key) &&
+      Object.prototype.hasOwnProperty.call(current, key) &&
+      (!hasDefaultAlias ||
+        sameSerializableValue(projectedAlias[key], current[key]))
+    ) {
+      projectedAlias[key] = projected[key];
+    }
   }
   projected.default = projectedAlias;
 }

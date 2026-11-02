@@ -41,6 +41,16 @@ export function assertRestrictedFrameLockDelta(
   before: string,
   after: string,
 ): void {
+  const firstPackage = (source: string) => source.indexOf("[[package]]");
+  const beforeFirstPackage = firstPackage(before);
+  const afterFirstPackage = firstPackage(after);
+  assert(beforeFirstPackage >= 0, "predecessor lockfile must contain package records");
+  assert(afterFirstPackage >= 0, "candidate lockfile must contain package records");
+  assert.equal(
+    after.slice(0, afterFirstPackage),
+    before.slice(0, beforeFirstPackage),
+    "lockfile preamble changed",
+  );
   const blocks = (source: string) =>
     [...source.matchAll(/\[\[package\]\][\s\S]*?(?=\n\[\[package\]\]|\s*$)/g)].map(
       (match) => match[0],

@@ -13,9 +13,32 @@ const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
 const registryKeys = baseline.registryKeys;
+type RegistryAlias = Record<string, unknown> & {
+  lessons: typeof currentCourse.lessons;
+  project: typeof currentCourse.project;
+  projects: typeof currentCourse.projects;
+};
+const currentRecord = currentCourse as unknown as Record<string, unknown>;
+const currentDefaultAlias = (currentRecord.default ??
+  currentRecord) as RegistryAlias;
+const serializableRegistryKeys = (course: typeof currentCourse) =>
+  Object.keys(course as unknown as Record<string, unknown>)
+    .filter(
+      (key) =>
+        JSON.stringify((course as unknown as Record<string, unknown>)[key]) !==
+        undefined,
+    )
+    .sort((left, right) => {
+      const leftIndex = registryKeys.indexOf(left);
+      const rightIndex = registryKeys.indexOf(right);
+      if (leftIndex < 0 && rightIndex < 0) return 0;
+      if (leftIndex < 0) return 1;
+      if (rightIndex < 0) return -1;
+      return leftIndex - rightIndex;
+    });
 const serializedRegistry = (course: typeof currentCourse) =>
   Object.fromEntries(
-    registryKeys.map((key) => [
+    serializableRegistryKeys(course).map((key) => [
       key,
       (course as unknown as Record<string, unknown>)[key],
     ]),
@@ -25,6 +48,7 @@ describe("Frame Protocol A6 historical compatibility", () => {
   it("projects the genuine complete pre-A6 registry and preserves counts", () => {
     const projected = historicalBeforeFrameProtocolMaintenance(currentCourse);
 
+    expect(serializableRegistryKeys(projected)).toEqual(registryKeys);
     expect(hashJson(serializedRegistry(projected))).toBe(
       baseline.wholeCourseSha256,
     );
@@ -113,6 +137,47 @@ describe("Frame Protocol A6 historical compatibility", () => {
         (file) => file.path === "evidence/release-evidence.json",
       )!.starter,
     ).toContain("near-miss");
+    expect(hashJson(serializedRegistry(projected))).not.toBe(
+      baseline.wholeCourseSha256,
+    );
+  });
+
+  it("does not hide mismatched default aliases or unknown serializable exports", () => {
+    const mutated = {
+      ...currentCourse,
+      default: {
+        ...currentDefaultAlias,
+        project: {
+          ...currentDefaultAlias.project,
+          title: "UNEXPECTED_ALIAS_METADATA",
+        },
+        projects: [...currentDefaultAlias.projects, { unknown: true }],
+        lessons: currentDefaultAlias.lessons.map((lesson, index) =>
+          index === 0
+            ? { ...lesson, title: "UNEXPECTED_ALIAS_LESSON" }
+            : lesson,
+        ),
+        unknownAliasMetadata: { keep: true },
+      },
+      unknownTopLevelAlias: { keep: true },
+    } as typeof currentCourse;
+
+    const projected = historicalBeforeFrameProtocolMaintenance(mutated);
+    const projectedDefault = (projected as unknown as Record<string, unknown>)
+      .default as RegistryAlias;
+    expect(projectedDefault.project.title).toBe("UNEXPECTED_ALIAS_METADATA");
+    expect(projectedDefault.projects).toHaveLength(
+      currentDefaultAlias.projects.length + 1,
+    );
+    expect(projectedDefault.lessons[0].title).toBe("UNEXPECTED_ALIAS_LESSON");
+    expect(projectedDefault.unknownAliasMetadata).toEqual({ keep: true });
+    expect(
+      (projected as typeof projected & { unknownTopLevelAlias?: unknown })
+        .unknownTopLevelAlias,
+    ).toEqual({ keep: true });
+    expect(serializableRegistryKeys(projected)).toContain(
+      "unknownTopLevelAlias",
+    );
     expect(hashJson(serializedRegistry(projected))).not.toBe(
       baseline.wholeCourseSha256,
     );

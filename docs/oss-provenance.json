@@ -92,7 +92,7 @@
     },
     {
       "path": "src/content/api-frame-protocol-maintenance-compatibility.test.ts",
-      "sha256": "3376efd473f787a75fadc037216161f8b699f1909d81cdeb30726fddc3e38904",
+      "sha256": "065e602759fe6a4ca984c105758040eda7a41e2158b358337e5be44e414a8ece",
       "group": "course"
     },
     {
@@ -667,7 +667,7 @@
     },
     {
       "path": "src/content/frame-maintenance-compatibility-fixture.ts",
-      "sha256": "8ac176acd41cb84d017044370b04104da95c3b3904faf9875360573cd4ceef75",
+      "sha256": "43d69849976e814588031cbd300d5ad18ff11797aa898a6672342640cb658d59",
       "group": "course"
     },
     {
@@ -1082,7 +1082,7 @@
     },
     {
       "path": "src/content/projects/frame-protocol.ts",
-      "sha256": "3ffbf47cb52c73b7311612b7ae546054c31a0e32884892ed87758a381b2423f5",
+      "sha256": "03e44feb6ea1d18e02f21dd7687dc9a0de8e912e0e3814aca876aaf2c6a61113",
       "group": "course"
     },
     {
@@ -1657,7 +1657,7 @@
     },
     {
       "path": "src/content/workspace-verification.test.ts",
-      "sha256": "9eb118f5732b12c013195006ff8eb1ad654d92efc15bcc0e93cae9bcb487cab6",
+      "sha256": "85b647a19b14f078d2f4ebff0704a3f0e1c469abff49d3d2636feb3a7a51df0d",
       "group": "course"
     }
   ],

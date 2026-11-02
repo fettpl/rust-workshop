@@ -18,8 +18,16 @@ import {
   assertNormalizedFramePackageManifest,
   assertRestrictedFrameLockDelta,
 } from "../../scripts/workspace-package";
+import {
+  assertExactDossierFileCoverage,
+  assertExactWorkspaceArchivePartition,
+  assertExactWorkspaceFileDelta,
+  frameDossierSelfPaths,
+  normalizedPredecessorFrameProjectHash,
+} from "../../scripts/workspace-evidence";
 import { frameProtocolPackage } from "./projects/frame-protocol";
 import { projectFiles } from "../domain/project-package";
+import predecessor from "./fixtures/frame-protocol-pre-a6-projection.json";
 
 // A fixed repository-authored fixture. Cargo reads metadata; no learner code runs.
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-metadata-test-"));
@@ -256,4 +264,97 @@ checksum = "fixed"
   expect(() =>
     assertRestrictedFrameLockDelta(before, after.replace('checksum = "fixed"', 'checksum = "drift"')),
   ).toThrow("external lock package changed");
+  expect(() =>
+    assertRestrictedFrameLockDelta(
+      before,
+      after.replace("version = 4", "version = 3"),
+    ),
+  ).toThrow("lockfile preamble changed");
+});
+
+it("binds exact starter and solution dossier coverage, including changed member sources", () => {
+  const files = projectFiles(frameProtocolPackage, "solution");
+  const starter = projectFiles(frameProtocolPackage, "starter");
+  const dossier = JSON.parse(files["evidence/release-evidence.json"]!);
+  expect(Object.keys(dossier.file_sha256)).toEqual(["starter", "solution"]);
+  expect(Object.keys(dossier.file_sha256.solution)).toContain(
+    "crates/frame-protocol/src/lib.rs",
+  );
+  expect(Object.keys(dossier.file_sha256.solution)).toContain(
+    "crates/frame-probe/Cargo.toml",
+  );
+  expect(frameDossierSelfPaths.has("evidence/release-evidence.json")).toBe(true);
+  expect(normalizedPredecessorFrameProjectHash(
+    join(process.cwd(), "src/content/fixtures/frame-protocol-pre-a6-projection.json"),
+  )).toBe("sha256:fb62cec17adef1f4ea1780da4a53bbc3c60b3f4a4f82e935107c92dfb35b1f26");
+  expect(() => assertExactDossierFileCoverage(dossier.file_sha256, { starter, solution: files })).not.toThrow();
+
+  for (const mutate of [
+    () => ({}),
+    (value: typeof dossier.file_sha256) => ({ ...value, solution: { ...value.solution, "missing.txt": "sha256:" + "0".repeat(64) } }),
+    (value: typeof dossier.file_sha256) => ({ ...value, solution: { ...value.solution, "../escape": "sha256:" + "0".repeat(64) } }),
+    (value: typeof dossier.file_sha256) => ({ ...value, solution: { ...value.solution, "evidence/release-evidence.json": "sha256:" + "0".repeat(64) } }),
+    (value: typeof dossier.file_sha256) => ({ ...value, solution: { ...value.solution, README: "sha256:" + "0".repeat(64) } }),
+    (value: typeof dossier.file_sha256) => ({ ...value, solution: { ...value.solution, README: "sha256:" + "1".repeat(64) } }),
+  ]) {
+    expect(() => assertExactDossierFileCoverage(mutate(dossier.file_sha256), { starter, solution: files })).toThrow();
+  }
+});
+
+it("requires a complete authored archive partition and rejects omitted or extra entries", () => {
+  const authored = { "Cargo.toml": "root", "crates/frame-protocol/src/lib.rs": "lib" };
+  const notices = ["LICENSE", "LICENSE-APACHE"];
+  const prefix = "frame-protocol-workspace/";
+  const archive = [
+    `${prefix}Cargo.toml`,
+    `${prefix}crates/frame-protocol/src/lib.rs`,
+    `${prefix}LICENSE`,
+    `${prefix}LICENSE-APACHE`,
+  ];
+  const reviewed = Object.keys(authored);
+  const listing = archive.filter(
+    (path) => !path.endsWith("LICENSE") && !path.endsWith("LICENSE-APACHE"),
+  );
+  expect(() =>
+    assertExactWorkspaceArchivePartition(
+      archive,
+      authored,
+      "frame-protocol-workspace",
+      notices,
+      listing,
+      reviewed,
+    ),
+  ).not.toThrow();
+  expect(() =>
+    assertExactWorkspaceArchivePartition(
+      archive.slice(1),
+      authored,
+      "frame-protocol-workspace",
+      notices,
+      listing,
+      reviewed,
+    ),
+  ).toThrow("complete reviewed listing");
+  expect(() =>
+    assertExactWorkspaceArchivePartition(
+      [...archive, `${prefix}UNREVIEWED.md`],
+      { ...authored, "UNREVIEWED.md": "extra" },
+      "frame-protocol-workspace",
+      notices,
+      listing,
+      reviewed,
+    ),
+  ).toThrow("complete reviewed listing");
+});
+
+it("keeps the authored virtual-workspace delta to the two new packet files", () => {
+  const predecessorPaths = new Set(predecessor.frameProject.package.files.map((file) => file.path));
+  const currentPaths = new Set(frameProtocolPackage.files.map((file) => file.path));
+  expect(() => assertExactWorkspaceFileDelta([...currentPaths], [...predecessorPaths])).not.toThrow();
+  expect(() =>
+    assertExactWorkspaceFileDelta(
+      [...currentPaths, "UNREVIEWED.md"],
+      [...predecessorPaths],
+    ),
+  ).toThrow("exactly the two A6 packet files");
 });

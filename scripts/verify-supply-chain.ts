@@ -21,7 +21,13 @@ import { dirname, join } from "node:path";
 import { unzipSync } from "fflate";
 import { frameProtocolPackage } from "../src/content/projects/frame-protocol";
 import { projectFiles } from "../src/domain/project-package";
-import { buildProjectArchive } from "./project-archive";
+import { archiveNoticeSources, buildProjectArchive } from "./project-archive";
+import {
+  assertExactDossierFileCoverage,
+  assertExactWorkspaceArchivePartition,
+  assertExactWorkspaceFileDelta,
+  normalizedPredecessorFrameProjectHash,
+} from "./workspace-evidence";
 
 const args = process.argv.slice(2);
 assert(
@@ -96,6 +102,16 @@ function extract(directory: string, bytes: Uint8Array) {
 try {
   assert.equal(frameProtocolPackage.id, "frame-protocol-workspace");
   const expected = projectFiles(frameProtocolPackage, "solution");
+  const predecessorProjection = JSON.parse(
+    readFileSync(
+      join(process.cwd(), "src/content/fixtures/frame-protocol-pre-a6-projection.json"),
+      "utf8",
+    ),
+  ) as { frameProject?: { package?: { files?: { path: string }[] } } };
+  assertExactWorkspaceFileDelta(
+    Object.keys(expected),
+    predecessorProjection.frameProject?.package?.files?.map((file) => file.path) ?? [],
+  );
   const archive = buildProjectArchive(frameProtocolPackage, "solution");
   const servedPath = join(
     process.cwd(),
@@ -215,7 +231,10 @@ try {
     manifest_sha256?: string;
     lock_sha256?: string;
     normalized_fixture_sha256?: string;
-    file_sha256?: Record<string, string>;
+    file_sha256?: {
+      starter?: Record<string, string>;
+      solution?: Record<string, string>;
+    };
     external_consumer?: string;
     archive_kind?: string;
     decision?: string;
@@ -231,18 +250,19 @@ try {
   assert.equal(dossier.archive_sha256, undefined);
   assert.equal(
     dossier.normalized_fixture_sha256,
-    "sha256:b19872e49a2984d0c23ff763b75758f6cb0d7510244f8119e31738d75ac775e0",
+    normalizedPredecessorFrameProjectHash(
+      join(process.cwd(), "src/content/fixtures/frame-protocol-pre-a6-projection.json"),
+    ),
     "normalized Frame predecessor fixture hash",
   );
-  for (const [path, hash] of Object.entries(dossier.file_sha256 ?? {})) {
-    assert.notEqual(path, "evidence/release-evidence.json");
-    assert(
-      existsSync(join(packageRoot, path)),
-      `normalized file hash points outside authored archive: ${path}`,
-    );
-    assert.match(hash, /^sha256:[0-9a-f]{64}$/, `normalized file hash: ${path}`);
-    assert.equal(hash, sha256File(join(packageRoot, path)), `file hash: ${path}`);
-  }
+  assertExactDossierFileCoverage(
+    dossier.file_sha256,
+    {
+      starter: projectFiles(frameProtocolPackage, "starter"),
+      solution: expected,
+    },
+    packageRoot,
+  );
   assert.equal(dossier.publish, false, "publish = false is required");
   assert.equal(
     dossier.manifest_sha256,
@@ -285,26 +305,10 @@ try {
     .filter(Boolean);
   assert.deepEqual(
     [...packageListing].sort(),
-    [
-      "frame-protocol-workspace/Cargo.lock",
-      "frame-protocol-workspace/Cargo.toml",
-      "frame-protocol-workspace/CHANGE-REVIEW.md",
-      "frame-protocol-workspace/DEPENDENCY-POLICY.md",
-      "frame-protocol-workspace/MAINTENANCE-CHALLENGE.md",
-      "frame-protocol-workspace/README.md",
-      "frame-protocol-workspace/RELEASE-CHECKLIST.md",
-      "frame-protocol-workspace/RELEASE-EVIDENCE.json",
-      "frame-protocol-workspace/deny.toml",
-      "frame-protocol-workspace/evidence/actual-cargo-tree.txt",
-      "frame-protocol-workspace/evidence/cargo-deny-snapshot.json",
-      "frame-protocol-workspace/evidence/duplicate-dependencies.toml",
-      "frame-protocol-workspace/evidence/package-list.txt",
-      "frame-protocol-workspace/evidence/release-evidence.json",
-      "frame-protocol-workspace/exceptions/advisories.toml",
-      "frame-protocol-workspace/fixtures/external-consumer/Cargo.toml",
-      "frame-protocol-workspace/fixtures/external-consumer/src/main.rs",
-    ].sort(),
-    "virtual workspace package listing must contain only the reviewed files",
+    Object.keys(expected)
+      .map((path) => `${frameProtocolPackage.id}/${path}`)
+      .sort(),
+    "virtual workspace package listing must contain every authored file exactly once",
   );
   for (const path of packageListing) {
     assert(
@@ -312,6 +316,13 @@ try {
       `authored ZIP is missing listed path: ${path}`,
     );
   }
+  assertExactWorkspaceArchivePartition(
+    [...archivePaths],
+    expected,
+    frameProtocolPackage.id,
+    [...Object.keys(archiveNoticeSources), "LICENSE-APACHE"],
+    packageListing,
+  );
 
   if (args.includes("--fetch")) run(packageRoot, ["fetch", "--locked"]);
   const metadata = JSON.parse(

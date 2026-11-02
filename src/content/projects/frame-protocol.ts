@@ -345,12 +345,60 @@ const releaseEvidenceManifest = `{
   "archive_digest": "outer-coordinator-report",
   "manifest_sha256": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
   "lock_sha256": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
-  "normalized_fixture_sha256": "sha256:b19872e49a2984d0c23ff763b75758f6cb0d7510244f8119e31738d75ac775e0",
+  "normalized_fixture_sha256": "sha256:fb62cec17adef1f4ea1780da4a53bbc3c60b3f4a4f82e935107c92dfb35b1f26",
   "file_sha256": {
-    "README.md": "sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f",
-    "MAINTENANCE-CHALLENGE.md": "sha256:26939bf26b0548961d1e43c102e4d952ef8eedac7c7ef6494b562e13dcb89185",
-    "CHANGE-REVIEW.md": "sha256:ba590cd96bbd327ef82e27c15180c1c66d256cfc10f2cc899cf3053a9456d069",
-    "evidence/package-list.txt": "sha256:18be1aa921d9d2e26a6ceb45c573accb69496a39454226007966954c44579569"
+    "starter": {
+      "Cargo.toml": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
+      "Cargo.lock": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
+      "README.md": "sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f",
+      "ADR.md": "sha256:2bd41e62f69fb242b2791d5698b8055516eb8672162e152fe6c05e0890f394a4",
+      "CHANGELOG.md": "sha256:cc80f217b2e08036afd54145e063c9718c156ad3a4c7c2091c76e91d858416fd",
+      "deny.toml": "sha256:450be14930e6d6992144ce2a473ec57b478570a3a8fcd7c259d34a889c0634ca",
+      "DEPENDENCY-POLICY.md": "sha256:36e2014b387cda4e5cb01f5cae17e2a4f7d327de54805149c8dd8674801ae7e8",
+      "RELEASE-CHECKLIST.md": "sha256:ec0396a240916337caf5ab110634b82a5c9b28d6040a5d8bb6594ac3366cc310",
+      "MAINTENANCE-CHALLENGE.md": "sha256:26939bf26b0548961d1e43c102e4d952ef8eedac7c7ef6494b562e13dcb89185",
+      "CHANGE-REVIEW.md": "sha256:ba590cd96bbd327ef82e27c15180c1c66d256cfc10f2cc899cf3053a9456d069",
+      "exceptions/advisories.toml": "sha256:f29d3938df68d8dae2a8da54be47769ae1077076be18764858c495417a3af55a",
+      "evidence/duplicate-dependencies.toml": "sha256:04318aa0d7c0b0df133ca33bbbddec0ddeae9fb4bc2db6f323587237194b70ce",
+      "evidence/actual-cargo-tree.txt": "sha256:8101b639cfa5f9cc01825ee700136a505086022179ec72f18dc3e5bc37bc350d",
+      "evidence/cargo-deny-snapshot.json": "sha256:5fb6d4547bc843d6ba33c8ebe9ac17a3d384fd973b8fe936db67d40128cea718",
+      "evidence/package-list.txt": "sha256:8d509ae8a3c10554d3b1c9f3bc7bd4511ae77dfd5b5276a016a071904eb7e5b7",
+      "fixtures/external-consumer/Cargo.toml": "sha256:e79eec1d02783b0f1a342437d8bd9b803fefc2aa6ea822e2b1f3bf04aeec3893",
+      "fixtures/external-consumer/src/main.rs": "sha256:8d8856d2c6a52dea90b018a8b8621ab47bdef8870dd107dad0456b1843d85110",
+      ".gitignore": "sha256:44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+      "crates/frame-protocol/Cargo.toml": "sha256:fc4055d786ffe509f9c1107e8849be3d598febecf73ec57fac5e381c6ccb3db8",
+      "crates/frame-protocol/src/lib.rs": "sha256:3e3341e2502c4b4f063ab5fff517b2eaf9e822caf76d677f8cecbb8eeb1861ee",
+      "crates/frame-protocol/tests/public_consumer.rs": "sha256:df75ddb4f503aebe76c7f7e2a14d59aa3ef84a04c02c41442429c782c224cf49",
+      "crates/frame-probe/Cargo.toml": "sha256:3f6b1d5388bcd4dc34b220b24e76b26996b688c8feea4a23b450ea5f3ed7d14f",
+      "crates/frame-probe/src/main.rs": "sha256:440d465cbb3ffdc6ea1c4f87d3ac398c9fd582ee8590abd6c31d7226dc273b10",
+      "crates/frame-probe/tests/cli.rs": "sha256:e729b1929ced24275f242a9337eb0db8ea873933c36f6cfc450c8e6aadb6d333"
+    },
+    "solution": {
+      "Cargo.toml": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
+      "Cargo.lock": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
+      "README.md": "sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f",
+      "ADR.md": "sha256:2bd41e62f69fb242b2791d5698b8055516eb8672162e152fe6c05e0890f394a4",
+      "CHANGELOG.md": "sha256:cc80f217b2e08036afd54145e063c9718c156ad3a4c7c2091c76e91d858416fd",
+      "deny.toml": "sha256:450be14930e6d6992144ce2a473ec57b478570a3a8fcd7c259d34a889c0634ca",
+      "DEPENDENCY-POLICY.md": "sha256:36e2014b387cda4e5cb01f5cae17e2a4f7d327de54805149c8dd8674801ae7e8",
+      "RELEASE-CHECKLIST.md": "sha256:ec0396a240916337caf5ab110634b82a5c9b28d6040a5d8bb6594ac3366cc310",
+      "MAINTENANCE-CHALLENGE.md": "sha256:26939bf26b0548961d1e43c102e4d952ef8eedac7c7ef6494b562e13dcb89185",
+      "CHANGE-REVIEW.md": "sha256:ba590cd96bbd327ef82e27c15180c1c66d256cfc10f2cc899cf3053a9456d069",
+      "exceptions/advisories.toml": "sha256:f29d3938df68d8dae2a8da54be47769ae1077076be18764858c495417a3af55a",
+      "evidence/duplicate-dependencies.toml": "sha256:04318aa0d7c0b0df133ca33bbbddec0ddeae9fb4bc2db6f323587237194b70ce",
+      "evidence/actual-cargo-tree.txt": "sha256:8101b639cfa5f9cc01825ee700136a505086022179ec72f18dc3e5bc37bc350d",
+      "evidence/cargo-deny-snapshot.json": "sha256:5fb6d4547bc843d6ba33c8ebe9ac17a3d384fd973b8fe936db67d40128cea718",
+      "evidence/package-list.txt": "sha256:8d509ae8a3c10554d3b1c9f3bc7bd4511ae77dfd5b5276a016a071904eb7e5b7",
+      "fixtures/external-consumer/Cargo.toml": "sha256:e79eec1d02783b0f1a342437d8bd9b803fefc2aa6ea822e2b1f3bf04aeec3893",
+      "fixtures/external-consumer/src/main.rs": "sha256:8d8856d2c6a52dea90b018a8b8621ab47bdef8870dd107dad0456b1843d85110",
+      ".gitignore": "sha256:44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb",
+      "crates/frame-protocol/Cargo.toml": "sha256:fc4055d786ffe509f9c1107e8849be3d598febecf73ec57fac5e381c6ccb3db8",
+      "crates/frame-protocol/src/lib.rs": "sha256:e9ae6d1e2392bec30b15589a1d50246d598e99db1eb0cc45475d12f01ff72e6a",
+      "crates/frame-protocol/tests/public_consumer.rs": "sha256:df75ddb4f503aebe76c7f7e2a14d59aa3ef84a04c02c41442429c782c224cf49",
+      "crates/frame-probe/Cargo.toml": "sha256:3f6b1d5388bcd4dc34b220b24e76b26996b688c8feea4a23b450ea5f3ed7d14f",
+      "crates/frame-probe/src/main.rs": "sha256:440d465cbb3ffdc6ea1c4f87d3ac398c9fd582ee8590abd6c31d7226dc273b10",
+      "crates/frame-probe/tests/cli.rs": "sha256:e729b1929ced24275f242a9337eb0db8ea873933c36f6cfc450c8e6aadb6d333"
+    }
   },
   "fixed_commands": [
     "cargo metadata --offline --locked",
@@ -380,20 +428,29 @@ const releaseEvidenceManifest = `{
 const packageListEvidence = `frame-protocol-workspace/Cargo.toml
 frame-protocol-workspace/Cargo.lock
 frame-protocol-workspace/README.md
+frame-protocol-workspace/ADR.md
+frame-protocol-workspace/CHANGELOG.md
+frame-protocol-workspace/deny.toml
 frame-protocol-workspace/DEPENDENCY-POLICY.md
 frame-protocol-workspace/RELEASE-CHECKLIST.md
 frame-protocol-workspace/RELEASE-EVIDENCE.json
-frame-protocol-workspace/deny.toml
 frame-protocol-workspace/exceptions/advisories.toml
 frame-protocol-workspace/evidence/cargo-deny-snapshot.json
 frame-protocol-workspace/evidence/duplicate-dependencies.toml
 frame-protocol-workspace/evidence/actual-cargo-tree.txt
-frame-protocol-workspace/evidence/package-list.txt
 frame-protocol-workspace/evidence/release-evidence.json
+frame-protocol-workspace/evidence/package-list.txt
 frame-protocol-workspace/MAINTENANCE-CHALLENGE.md
 frame-protocol-workspace/CHANGE-REVIEW.md
 frame-protocol-workspace/fixtures/external-consumer/Cargo.toml
 frame-protocol-workspace/fixtures/external-consumer/src/main.rs
+frame-protocol-workspace/.gitignore
+frame-protocol-workspace/crates/frame-protocol/Cargo.toml
+frame-protocol-workspace/crates/frame-protocol/src/lib.rs
+frame-protocol-workspace/crates/frame-protocol/tests/public_consumer.rs
+frame-protocol-workspace/crates/frame-probe/Cargo.toml
+frame-protocol-workspace/crates/frame-probe/src/main.rs
+frame-protocol-workspace/crates/frame-probe/tests/cli.rs
 `;
 
 const externalConsumerManifest = String.raw`[package]
