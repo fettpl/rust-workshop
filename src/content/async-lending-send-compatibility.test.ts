@@ -13,7 +13,7 @@ import { asyncLendingAssessmentFixtures } from "./async-lending-assessment-fixtu
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
 
 const sha = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");

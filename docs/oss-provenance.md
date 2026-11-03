@@ -100,3 +100,20 @@ source bytes and raw filesystem errors are not printed. Run against a stable
 local checkout; concurrent hostile filesystem replacement is outside this local
 review tool's contract. A successful synthetic reviewed test fixture demonstrates
 only the exit contract, never clearance of actual project material.
+
+## Local performance investigation delta
+
+The A7 delta adds assistant-authored Polish investigation prompts and worksheet
+prose, a literal replay recipe, fixed Rust package fixtures, and test-only
+historical projections derived from the genuine predecessor registry. Existing
+Cargo manifest and lock bytes, archive notices and license assignments remain
+unchanged. Criterion API usage is constrained to the existing dev-only 0.5.1
+dependency; its maintained reference is linked from the investigation guide and
+package material. No measured output is embedded in the learner worksheet.
+
+The refreshed ledger records these source bytes and their reported generation
+origin. The bounded source and technical reviews do not establish human
+authorship, general originality, trademark clearance, learning efficacy, or
+permission to publish. Concrete new external-source evidence still requires
+assessment under the existing licensing guide. Private generation and execution
+receipts remain outside the public source tree.

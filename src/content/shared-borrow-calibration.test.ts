@@ -4,7 +4,7 @@ import { historicalBeforeDocumentationRepair } from "./documentation-guided-repa
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
 const historicalLessons = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(

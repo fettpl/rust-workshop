@@ -11,19 +11,19 @@ the app or select a hosting provider.
 The workflow has seven job definitions and eleven checks after matrix expansion.
 The configured job timeouts are part of the current contract:
 
-| Check | Runner and scope | Timeout |
-| --- | --- | ---: |
-| `verify` | Ubuntu stable Node/Rust; app, content, trusted fixtures, build, production browser, and offline checks | 45 min |
-| `workspace-msrv` | Ubuntu exact Rust 1.85.0 workspace and MSRV verifiers | 30 min |
-| `mini-grep-fuzz` | Ubuntu nightly campaign plus stable/MSRV replay | 20 min |
-| `profile-evidence` | Ubuntu stable Callgrind and DHAT evidence | 25 min |
-| `allocation-evidence` (stable Ubuntu) | Ubuntu stable allocation evidence | 25 min |
-| `allocation-evidence` (MSRV Ubuntu) | Ubuntu Rust 1.85.0 allocation evidence | 25 min |
-| `allocation-evidence` (stable macOS) | macOS stable allocation evidence | 25 min |
-| `miri-safety` | Ubuntu stable, MSRV, and pinned nightly native proof | 60 min |
-| `unsafe-borrowed-memory` (stable) | Repository-authored fixture on stable Rust | 30 min |
-| `unsafe-borrowed-memory` (MSRV) | Repository-authored fixture on Rust 1.85.0 | 30 min |
-| `unsafe-borrowed-memory` (Miri) | Repository-authored fixture on nightly Miri | 30 min |
+| Check                                 | Runner and scope                                                                                       | Timeout |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------: |
+| `verify`                              | Ubuntu stable Node/Rust; app, content, trusted fixtures, build, production browser, and offline checks |  45 min |
+| `workspace-msrv`                      | Ubuntu exact Rust 1.85.0 workspace and MSRV verifiers                                                  |  30 min |
+| `mini-grep-fuzz`                      | Ubuntu nightly campaign plus stable/MSRV replay                                                        |  20 min |
+| `profile-evidence`                    | Ubuntu stable Callgrind and DHAT evidence                                                              |  25 min |
+| `allocation-evidence` (stable Ubuntu) | Ubuntu stable allocation evidence                                                                      |  25 min |
+| `allocation-evidence` (MSRV Ubuntu)   | Ubuntu Rust 1.85.0 allocation evidence                                                                 |  25 min |
+| `allocation-evidence` (stable macOS)  | macOS stable allocation evidence                                                                       |  25 min |
+| `miri-safety`                         | Ubuntu stable, MSRV, and pinned nightly native proof                                                   |  60 min |
+| `unsafe-borrowed-memory` (stable)     | Repository-authored fixture on stable Rust                                                             |  30 min |
+| `unsafe-borrowed-memory` (MSRV)       | Repository-authored fixture on Rust 1.85.0                                                             |  30 min |
+| `unsafe-borrowed-memory` (Miri)       | Repository-authored fixture on nightly Miri                                                            |  30 min |
 
 `verify` installs the latest available Node 22 release (`check-latest: true`)
 with npm caching, the current stable Rust toolchain with rustfmt and Clippy,
@@ -205,6 +205,16 @@ verifier's documented prerequisites and keep its fixed repository inputs;
 missing cached crates are infrastructure failures, not failed learner behavior.
 CI performs these preparation phases explicitly. Do not make an offline
 behavioral check silently retry online or substitute an arbitrary manifest.
+
+The closed Log Analyzer investigation uses `npm run content:performance -- --a7`
+and `npm run content:performance -- --a7 --msrv` after the existing Criterion
+cache preparation. These modes remain offline and locked. Each invocation
+preserves a unique `test-results/performance-a7/a7-<mode>-<id>/` report directory,
+including raw command output and Criterion triplets. The result distinguishes
+correctness, run completeness, the named negative control, and confidence-interval
+comparison; overlap is a valid inconclusive measurement. CI uploads only those
+run directories, excluding reusable target caches. See the
+[investigation contract](performance-investigation.md).
 
 Use `--msrv` only with the verifier that documents it, after installing and
 qualifying exact Rust `1.85.0`. Specialized commands reject arbitrary paths,

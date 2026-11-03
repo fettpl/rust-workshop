@@ -7,6 +7,7 @@ export default defineConfig({
       "src/**/*.test.ts",
       "scripts/verify-api-release.test.ts",
       "scripts/verify-macro-contracts.test.ts",
+      "scripts/verify-performance.test.ts",
       "scripts/miri-disjoint-ranges-diagnostics.test.ts",
       "scripts/project-archive.test.ts",
       "scripts/setup-assets.test.ts",

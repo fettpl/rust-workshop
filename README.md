@@ -48,6 +48,12 @@ an existing downstream client while adding typed error categories, then write
 your own regression tests, architecture decision, and review response in the
 downloaded workspace.
 
+Log Analyzer also offers an optional [performance investigation](docs/performance-investigation.md):
+compare an independently checked workload, inspect uncertainty, retain a small
+replay, and write your own hypothesis, alternatives, and review response. Its
+worksheet starts empty; reading the reference does not award independent coding
+credit or establish a general speedup.
+
 The workspace includes an ownership visualizer, progressive Compiler Coach
 hints, focus mode, keyboard controls, and light and dark themes alongside its
 lessons, projects, review history, and local export/import.
@@ -122,14 +128,14 @@ validation changes.
 
 The main source map is:
 
-| Area | Location |
-| --- | --- |
+| Area                                                       | Location                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------- |
 | Lessons, modules, concepts, reviews, sources, and projects | `src/content/`, assembled in `src/content/course.ts` |
-| Domain and persistence contracts | `src/domain/`, `src/persistence/` |
-| Evaluation, progression, and review | `src/engine/` |
-| Learner interface | `src/components/` |
-| Remote runner and API route | `src/runner/`, `src/app/api/run/` |
-| Trusted fixtures, package generation, and verification | `scripts/`, `tests/`, `scripts/fixtures/` |
+| Domain and persistence contracts                           | `src/domain/`, `src/persistence/`                    |
+| Evaluation, progression, and review                        | `src/engine/`                                        |
+| Learner interface                                          | `src/components/`                                    |
+| Remote runner and API route                                | `src/runner/`, `src/app/api/run/`                    |
+| Trusted fixtures, package generation, and verification     | `scripts/`, `tests/`, `scripts/fixtures/`            |
 
 Useful first contributions include clearer Polish explanations, repair and
 transfer exercises, source-reference maintenance, project tests, and focused

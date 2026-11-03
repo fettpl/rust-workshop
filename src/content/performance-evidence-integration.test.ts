@@ -11,6 +11,15 @@ const lessonIds = [
   "performance-bounded-buffer",
   "performance-evidence-decisions",
 ];
+const optionalLessonId = "performance-evidence-investigation";
+const optionalStepIds = [
+  "performance-investigation-predict",
+  "performance-investigation-tool-choice",
+  "performance-investigation-reference-exposure",
+  "performance-investigation-run-model",
+  "performance-investigation-own-packet",
+  "performance-investigation-recall",
+];
 
 it("wires the authored performance verifier into package scripts and CI", () => {
   const packageJson = JSON.parse(
@@ -38,7 +47,7 @@ it("wires the authored performance verifier into package scripts and CI", () => 
 it("connects Performance Evidence to eight gates and independent retrievals", () => {
   const stage = modules.find((entry) => entry.id === "performance-evidence");
   expect(stage).toBeDefined();
-  expect(stage!.lessonIds).toEqual(lessonIds);
+  expect(stage!.lessonIds).toEqual([...lessonIds, optionalLessonId]);
   expect(stage!.prerequisites).toEqual(["property-contracts"]);
   expect(stage!.gateCriteria).toHaveLength(8);
 
@@ -192,6 +201,52 @@ it("connects Performance Evidence to eight gates and independent retrievals", ()
   expect(decisionBlank.prompt).toMatch(
     /budget[\s\S]*(?:priority|priorytet)|(?:priority|priorytet)[\s\S]*budget/i,
   );
+});
+
+it("keeps the optional investigation outside historical gates and coding credit", () => {
+  const stage = modules.find((entry) => entry.id === "performance-evidence")!;
+  const lesson = lessons.find((entry) => entry.id === optionalLessonId)!;
+  expect(lesson.practiceOnly).toBe(true);
+  expect(lesson.prerequisites).toEqual(["performance-evidence-decisions"]);
+  expect(lesson.conceptIds).toEqual(["conditional-performance-decision"]);
+  expect(lesson.competencyIds).toEqual(["interpret-performance-evidence"]);
+  expect(lesson.sourceIds).toEqual([
+    "performance-benchmarking-book",
+    "profile-criterion",
+  ]);
+  expect(lesson.steps.map((step) => step.id)).toEqual(optionalStepIds);
+  expect(lesson.steps).toHaveLength(6);
+  expect(lesson.steps.every((step) => step.evidenceGate !== true)).toBe(true);
+  expect(lesson.steps.every((step) => step.code === undefined)).toBe(true);
+  expect(
+    lesson.steps.every(
+      (step) =>
+        step.evaluator?.kind !== "tests" &&
+        step.evidence?.codingTaskId === undefined,
+    ),
+  ).toBe(true);
+  expect(lesson.steps[0].kind).toBe("predict");
+  expect(lesson.steps[1].kind).toBe("explain");
+  expect(lesson.steps[2].kind).toBe("observe");
+  expect(lesson.steps[3].kind).toBe("explain");
+  expect(lesson.steps[4].kind).toBe("assessment");
+  expect(lesson.steps[5].kind).toBe("recall");
+  expect(lesson.steps[4].evaluator?.kind).toBe("rubric");
+  expect(lesson.steps[4].prompt).toMatch(
+    /nieuzupełniony plan własnego badania/i,
+  );
+  expect(lesson.steps[4].prompt).toMatch(/Cargo ani narzędzia pomiarowego/i);
+  expect(lesson.steps[4].prompt).toMatch(
+    /keep \/ investigate-performance \/ inconclusive/,
+  );
+  expect(
+    lesson.steps.flatMap((step) => [step.prompt, step.title]).join(" "),
+  ).not.toMatch(/Instant|SystemTime|elapsed|sleep|sekundach/i);
+  expect(stage.gateCriteria).toHaveLength(8);
+  expect(
+    stage.gateCriteria!.flatMap((criterion) => criterion.taskRefs),
+  ).not.toContainEqual(expect.objectContaining({ lessonId: optionalLessonId }));
+  expect(lesson.sourceIds).not.toContain("profile-criterion-new");
 });
 
 it("keeps the module's coding evidence deterministic and mutation sensitive", () => {

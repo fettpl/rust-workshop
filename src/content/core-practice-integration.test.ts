@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(

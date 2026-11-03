@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
-import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
 const course = historicalBeforeDocumentationRepair(
   historicalBeforeSendHandoff(
     historicalBeforeCancellationTransfer(

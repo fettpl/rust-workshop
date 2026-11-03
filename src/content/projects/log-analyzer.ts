@@ -1193,9 +1193,315 @@ fn cli_reports_missing_file_or_unknown_filter_on_stderr_without_stdout() {
 }
 `;
 
+const a7Fixture = `//! Closed A7 workload fixture. The oracle lives in the contract test, not here.
+#![allow(
+    dead_code,
+    reason = "Shared fixture used by separate benchmark and test binaries"
+)]
+pub const FIXTURE_ID: &str = "filtered-mixed-2048-v1";
+pub const RECORDS: usize = 2048;
+
+pub fn filtered_mixed_2048() -> Vec<u8> {
+    let mut input = Vec::with_capacity(RECORDS * 25);
+    for i in 0..2048 {
+        if i % 37 == 0 {
+            input.extend_from_slice(format!("{i} DEBUG malformed\\n").as_bytes());
+        } else if i % 53 == 0 {
+            input.extend_from_slice(format!("{i} ERROR invalid-").as_bytes());
+            input.push(0xff);
+            input.extend_from_slice(b"-message\\n");
+        } else {
+            let level = if i % 10 == 0 {
+                "ERROR"
+            } else if (1..=3).contains(&(i % 10)) {
+                "WARN"
+            } else {
+                "INFO"
+            };
+            input.extend_from_slice(format!("{i} {level} message-{i}").as_bytes());
+            if i % 29 == 0 {
+                input.extend_from_slice(b"\\r\\n");
+            } else {
+                input.push(b'\\n');
+            }
+        }
+    }
+    input
+}
+
+pub fn replay() -> Vec<u8> {
+    let mut input =
+        b"7 INFO ignored-info\\n8 WARN ignored-warn\\r\\n9 ERROR kept-one\\n10 ERROR invalid-".to_vec();
+    input.push(0xff);
+    input.extend_from_slice(b"\\n11 DEBUG malformed\\n12 ERROR kept-two");
+    input
+}
+`;
+
+const a7PerformanceContract = `#[path = "support/a7_filtered_mixed_2048.rs"]
+mod a7_fixture;
+use log_analyzer_workshop::{Level, Summary, analyze_reader, parse_record};
+use std::io::{BufRead, Cursor};
+
+fn literal_2048_oracle(filter: Option<Level>) -> Summary {
+    match filter {
+        None => Summary {
+            info: 1171,
+            warn: 588,
+            error: 196,
+            malformed: 93,
+        },
+        Some(Level::Error) => Summary {
+            info: 0,
+            warn: 0,
+            error: 196,
+            malformed: 93,
+        },
+        Some(Level::Info | Level::Warn) => {
+            panic!("A7 contract only selects the approved Error filter")
+        }
+    }
+}
+
+fn literal_replay_oracle(filter: Option<Level>) -> Summary {
+    match filter {
+        None => Summary {
+            info: 1,
+            warn: 1,
+            error: 2,
+            malformed: 2,
+        },
+        Some(Level::Error) => Summary {
+            info: 0,
+            warn: 0,
+            error: 2,
+            malformed: 2,
+        },
+        Some(Level::Info | Level::Warn) => {
+            panic!("A7 contract only selects the approved Error filter")
+        }
+    }
+}
+
+fn literal_partition() -> (usize, usize, usize) {
+    (56, 37, 68)
+}
+
+fn literal_replay_input() -> Vec<u8> {
+    let mut input =
+        b"7 INFO ignored-info\\n8 WARN ignored-warn\\r\\n9 ERROR kept-one\\n10 ERROR invalid-".to_vec();
+    input.push(0xff);
+    input.extend_from_slice(b"\\n11 DEBUG malformed\\n12 ERROR kept-two");
+    input
+}
+
+fn baseline(input: &[u8], filter: Option<Level>) -> Summary {
+    let mut reader = Cursor::new(input);
+    let mut summary = Summary::default();
+    let mut line = Vec::new();
+    loop {
+        line.clear();
+        let read = reader.read_until(b'\\n', &mut line).unwrap();
+        if read == 0 {
+            break;
+        }
+        if line.last() == Some(&b'\\n') {
+            line.pop();
+        }
+        match parse_record(&line) {
+            Ok(record) if filter.is_none_or(|wanted| wanted == record.level) => {
+                match record.level {
+                    Level::Info => summary.info += 1,
+                    Level::Warn => summary.warn += 1,
+                    Level::Error => summary.error += 1,
+                }
+            }
+            Ok(_) => {}
+            Err(_) => summary.malformed += 1,
+        }
+    }
+    summary
+}
+
+fn candidate(input: &[u8], filter: Option<Level>) -> Summary {
+    analyze_reader(Cursor::new(input), filter).unwrap()
+}
+
+#[test]
+fn filtered_summary_is_literal_and_independent() {
+    let input = a7_fixture::filtered_mixed_2048();
+    assert_eq!(literal_partition(), (56, 37, 68));
+    for filter in [None, Some(Level::Error)] {
+        let expected = literal_2048_oracle(filter);
+        let baseline_observed = baseline(&input, filter);
+        let candidate_observed = candidate(&input, filter);
+        let filter_name = if filter.is_some() { "error" } else { "none" };
+        for (implementation, observed) in [
+            ("baseline", baseline_observed),
+            ("candidate", candidate_observed),
+        ] {
+            assert_eq!(observed, expected);
+            println!(
+                "A7_SUMMARY {{\\"implementation\\":\\"{}\\",\\"filter\\":\\"{}\\",\\"info\\":{},\\"warn\\":{},\\"error\\":{},\\"malformed\\":{}}}",
+                implementation,
+                filter_name,
+                observed.info,
+                observed.warn,
+                observed.error,
+                observed.malformed
+            );
+        }
+    }
+}
+
+#[test]
+fn six_record_replay_has_literal_filtered_and_unfiltered_outcomes() {
+    let input = literal_replay_input();
+    assert_eq!(baseline(&input, None), literal_replay_oracle(None));
+    assert_eq!(candidate(&input, None), literal_replay_oracle(None));
+    assert_eq!(
+        baseline(&input, Some(Level::Error)),
+        literal_replay_oracle(Some(Level::Error))
+    );
+    assert_eq!(
+        candidate(&input, Some(Level::Error)),
+        literal_replay_oracle(Some(Level::Error))
+    );
+}
+`;
+
+const a7FilterIgnoredMutant = `#[path = "support/a7_filtered_mixed_2048.rs"]
+mod a7_fixture;
+use log_analyzer_workshop::{Level, Summary, analyze_reader};
+use std::io::Cursor;
+
+fn literal_error_filtered() -> Summary {
+    Summary {
+        info: 0,
+        warn: 0,
+        error: 2,
+        malformed: 2,
+    }
+}
+
+#[test]
+#[ignore]
+fn a7_filter_ignored_v1_named_oracle() {
+    println!("A7_FILTER_IGNORED_ORACLE");
+    let replay = a7_fixture::replay();
+    let actual = analyze_reader(Cursor::new(replay), None).expect("fixed replay is readable");
+    assert_eq!(actual, literal_error_filtered(), "A7_FILTER_IGNORED_ORACLE");
+    let _ = Level::Error;
+}
+`;
+
+const a7PerformanceManifest = `{
+  "schema": "rust-workshop.a7-performance-manifest.v1",
+  "package": "log-analyzer-workshop",
+  "fixture": {
+    "id": "filtered-mixed-2048-v1",
+    "source": "tests/support/a7_filtered_mixed_2048.rs",
+    "benchmarkInclude": "benches/log_analyzer.rs",
+    "contractInclude": ["tests/a7_performance_contract.rs", "tests/a7_filter_ignored_mutant.rs"]
+  },
+  "benchmark": {
+    "group": "log_analyzer_a7",
+    "ids": [
+      "log_analyzer_a7/baseline/filtered-mixed-2048-v1",
+      "log_analyzer_a7/candidate/filtered-mixed-2048-v1"
+    ],
+    "sampleSize": 30,
+    "warmupSeconds": 1,
+    "measurementSeconds": 3,
+    "throughput": "bytes",
+    "batching": "iter_batched_ref"
+  },
+  "replay": {
+    "source": "A7-REPLAY.md",
+    "filtered": {"info": 0, "warn": 0, "error": 2, "malformed": 2},
+    "unfiltered": {"info": 1, "warn": 1, "error": 2, "malformed": 2}
+  },
+  "members": [
+    "tests/support/a7_filtered_mixed_2048.rs",
+    "tests/a7_performance_contract.rs",
+    "tests/a7_filter_ignored_mutant.rs",
+    "A7-PERFORMANCE-MANIFEST.json",
+    "A7-REPLAY.md",
+    "A7-INVESTIGATION.md"
+  ],
+  "status": "content-only-unmeasured"
+}`;
+
+const a7Replay = `# A7: przypadek do odtworzenia filtered-mixed-2048-v1
+
+## Stały przykład z sześciu rekordów
+
+Sekwencja bajtów ma następującą postać:
+
+    7 INFO ignored-info\\n
+    8 WARN ignored-warn\\r\\n
+    9 ERROR kept-one\\n
+    10 ERROR invalid-[one literal byte 0xff]\\n
+    11 DEBUG malformed\\n
+    12 ERROR kept-two
+
+Oczekiwane wyniki wynikają bezpośrednio z przepisu, niezależnie od parsera:
+
+- bez filtra (None): {info: 1, warn: 1, error: 2, malformed: 2}
+- z filtrem ERROR (Some(ERROR)): {info: 0, warn: 0, error: 2, malformed: 2}
+
+W wierszu oznaczonym jako invalid-[one literal byte 0xff] podstaw jeden bajt
+0xff; ten wiersz nie jest poprawnym UTF-8. INFO i WARN znikają po zastosowaniu
+filtra ERROR. Oba niepoprawne wiersze nadal zwiększają licznik malformed.
+
+To wzorzec oczekiwanego wyniku dla stałego przykładu z pakietu. Nie jest
+rozwiązaniem Twojego zadania ani raportem z uruchomienia lub pomiaru.
+`;
+
+const a7Investigation = `# Własny pakiet dochodzenia wydajności
+
+## Status
+
+Ten formularz pozostaje pusty do samodzielnego wypełnienia. Nie jest
+automatycznym zaliczeniem ani raportem z gotowego wyniku.
+
+## 1. Własne obciążenie i selektywność
+
+- Opisz inne obciążenie niż filtered-mixed-2048-v1 i podaj regułę jego wyboru.
+- Wyjaśnij, które rekordy mają być odfiltrowane oraz jak zmiana selektywności
+  może zmienić zachowanie parsera.
+
+## 2. Falsyfikowalna hipoteza i wybór narzędzia
+
+- Hipoteza musi przewidywać konkretną różnicę, którą można obalić.
+- Wybierz narzędzie, opisz jego ryzyko interpretacji i granicę wniosku.
+
+## 3. Niezależna oracle i kontrprzykład
+
+- Zbuduj literalną oracle z przepisu, niezależną od parsera produkcyjnego.
+- Zachowaj replay, kontrprzykład i wynik ręcznej kontroli zgodności.
+
+## 4. Alternatywy i odpowiedź na przegląd
+
+- Zapisz co najmniej dwie alternatywy oraz powód odrzucenia każdej.
+- Odpowiedz na uwagi przeglądu, wskazując zmienione założenie albo brak zmiany.
+
+## 5. Samoprzegląd i decyzja
+
+- Wymień granice oracle, obciążenia i wybranego narzędzia.
+- Zakończ decyzją: keep, investigate-performance albo inconclusive,
+  z uzasadnieniem ograniczonym do własnego obciążenia.
+
+Nie wpisuj tutaj obietnic czasu nauki, danych z gotowego środowiska, ścieżek
+maszyny ani instrukcji uruchamiania narzędzi build.
+`;
+
 const performanceBenchmark = `use criterion::{BatchSize, BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use log_analyzer_workshop::{Level, Summary, analyze_reader, parse_record};
 use std::io::{BufRead, Cursor};
+use std::time::Duration;
+#[path = "../tests/support/a7_filtered_mixed_2048.rs"]
+mod a7_fixture;
 
 fn classify(summary: &mut Summary, line: &[u8], filter: Option<Level>) {
     match parse_record(line) {
@@ -1283,7 +1589,67 @@ fn benchmark_analyzer(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, benchmark_analyzer);
+fn a7_literal_summary(filter: Option<Level>) -> Summary {
+    match filter {
+        None => Summary {
+            info: 1171,
+            warn: 588,
+            error: 196,
+            malformed: 93,
+        },
+        Some(Level::Error) => Summary {
+            info: 0,
+            warn: 0,
+            error: 196,
+            malformed: 93,
+        },
+        Some(Level::Info | Level::Warn) => panic!("unsupported A7 filter"),
+    }
+}
+
+fn benchmark_a7(c: &mut Criterion) {
+    let input = a7_fixture::filtered_mixed_2048();
+    let mut group = c.benchmark_group("log_analyzer_a7");
+    group.sample_size(30);
+    group.warm_up_time(Duration::from_secs(1));
+    group.measurement_time(Duration::from_secs(3));
+    group.throughput(criterion::Throughput::Bytes(input.len() as u64));
+    for filter in [None, Some(Level::Error)] {
+        assert_eq!(
+            baseline(Cursor::new(input.as_slice()), filter),
+            a7_literal_summary(filter)
+        );
+        assert_eq!(
+            candidate(Cursor::new(input.as_slice()), filter),
+            a7_literal_summary(filter)
+        );
+    }
+    group.bench_with_input(
+        BenchmarkId::new("baseline", "filtered-mixed-2048-v1"),
+        &input,
+        |b, input| {
+            b.iter_batched_ref(
+                || Cursor::new(input.as_slice()),
+                |reader| black_box(baseline(reader, Some(Level::Error))),
+                BatchSize::SmallInput,
+            );
+        },
+    );
+    group.bench_with_input(
+        BenchmarkId::new("candidate", "filtered-mixed-2048-v1"),
+        &input,
+        |b, input| {
+            b.iter_batched_ref(
+                || Cursor::new(input.as_slice()),
+                |reader| black_box(candidate(reader, Some(Level::Error))),
+                BatchSize::SmallInput,
+            );
+        },
+    );
+    group.finish();
+}
+
+criterion_group!(benches, benchmark_analyzer, benchmark_a7);
 criterion_main!(benches);
 `;
 
@@ -1991,5 +2357,31 @@ export const logAnalyzerPackage: ProjectPackage = {
     { path: "fixtures/mixed.log", starter: fixture },
     { path: "README.md", starter: readme },
     { path: ".gitignore", starter: gitignore },
+    {
+      path: "tests/support/a7_filtered_mixed_2048.rs",
+      starter: a7Fixture,
+      solution: a7Fixture,
+    },
+    {
+      path: "tests/a7_performance_contract.rs",
+      starter: a7PerformanceContract,
+      solution: a7PerformanceContract,
+    },
+    {
+      path: "tests/a7_filter_ignored_mutant.rs",
+      starter: a7FilterIgnoredMutant,
+      solution: a7FilterIgnoredMutant,
+    },
+    {
+      path: "A7-PERFORMANCE-MANIFEST.json",
+      starter: a7PerformanceManifest,
+      solution: a7PerformanceManifest,
+    },
+    { path: "A7-REPLAY.md", starter: a7Replay, solution: a7Replay },
+    {
+      path: "A7-INVESTIGATION.md",
+      starter: a7Investigation,
+      solution: a7Investigation,
+    },
   ],
 };

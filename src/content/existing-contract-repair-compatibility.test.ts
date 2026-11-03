@@ -5,6 +5,7 @@ import {
   acceptedPreC1Projection,
   historicalBeforeExistingContractRepair,
 } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforePerformanceInvestigation } from "./performance-investigation-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -13,6 +14,11 @@ const registryKeys = acceptedPreC1Projection.predecessor
   .registryKeys as string[];
 const predecessorRegistryHashes = acceptedPreC1Projection.predecessor
   .registrySha256ByKey as Record<string, string>;
+
+const historicalBeforeC1 = (course: typeof currentCourse) =>
+  historicalBeforeExistingContractRepair(
+    historicalBeforePerformanceInvestigation(course),
+  );
 
 function captureRegistry(course: typeof currentCourse) {
   const namespace = course as typeof currentCourse & {
@@ -60,7 +66,7 @@ function predecessorValue(
 }
 
 it("projects the complete predecessor registry and preserves aliases/counts", () => {
-  const projected = historicalBeforeExistingContractRepair(currentCourse);
+  const projected = historicalBeforeC1(currentCourse);
   const registry = captureRegistry(projected);
 
   expect(hashJson(registry)).toBe(
@@ -99,12 +105,12 @@ it("projects the complete predecessor registry and preserves aliases/counts", ()
 
 it("is idempotent and does not mutate its input namespace", () => {
   const before = captureRegistry(currentCourse);
-  const projected = historicalBeforeExistingContractRepair(currentCourse);
+  const projected = historicalBeforeC1(currentCourse);
 
   expect(captureRegistry(currentCourse)).toEqual(before);
-  expect(historicalBeforeExistingContractRepair(projected)).toEqual(projected);
-  expect(historicalBeforeExistingContractRepair(projected)).toEqual(
-    historicalBeforeExistingContractRepair(currentCourse),
+  expect(historicalBeforeC1(projected)).toEqual(projected);
+  expect(historicalBeforeC1(projected)).toEqual(
+    historicalBeforeC1(currentCourse),
   );
 });
 
@@ -124,7 +130,7 @@ it("keeps unrelated lesson metadata and unknown registry aliases observable", ()
       unknownRegistryAlias: { marker: "keep" },
     },
   } as unknown as typeof currentCourse;
-  const projected = historicalBeforeExistingContractRepair(mutated);
+  const projected = historicalBeforeC1(mutated);
 
   expect(
     projected.lessons.find((lesson) => lesson.id === unrelated.id),
@@ -157,7 +163,7 @@ it("preserves unknown nested metadata while restoring an exact canonical field",
         : lesson,
     ),
   } as typeof currentCourse;
-  const projected = historicalBeforeExistingContractRepair(mutated);
+  const projected = historicalBeforeC1(mutated);
   const restored = lessonStep(
     projected,
     "fuzz-campaign-evidence",
@@ -197,7 +203,7 @@ it("leaves a near-miss canonical field unchanged instead of applying a broad les
 
   expect(
     lessonStep(
-      historicalBeforeExistingContractRepair(mutated),
+      historicalBeforeC1(mutated),
       "fuzz-campaign-evidence",
       "fuzz-campaign-evidence-gate",
     )!.prompt,
@@ -218,7 +224,7 @@ it("keeps alias-specific mutations observable", () => {
       },
     },
   } as typeof currentCourse;
-  const projected = historicalBeforeExistingContractRepair(mutated);
+  const projected = historicalBeforeC1(mutated);
 
   expect(
     projected.reviewExercisesById["fuzz-campaign-evidence-review"].prompt,
@@ -229,7 +235,7 @@ it("keeps alias-specific mutations observable", () => {
 });
 
 it("does not alter ordinary fuzz choice recall or allocation review/recall surfaces", () => {
-  const projected = historicalBeforeExistingContractRepair(currentCourse);
+  const projected = historicalBeforeC1(currentCourse);
 
   expect(
     lessonStep(
@@ -253,12 +259,13 @@ it("does not alter ordinary fuzz choice recall or allocation review/recall surfa
 });
 
 it("introduces no IDs, families, credits, gates, calibrations, or learner labels", () => {
-  const projected = historicalBeforeExistingContractRepair(currentCourse);
+  const projected = historicalBeforeC1(currentCourse);
+  const preC1 = historicalBeforePerformanceInvestigation(currentCourse);
   expect(projected.lessons.map((lesson) => lesson.id)).toEqual(
-    currentCourse.lessons.map((lesson) => lesson.id),
+    preC1.lessons.map((lesson) => lesson.id),
   );
   expect(projected.modules.map((module) => module.id)).toEqual(
-    currentCourse.modules.map((module) => module.id),
+    preC1.modules.map((module) => module.id),
   );
   expect(projected.concepts.map((concept) => concept.id)).toEqual(
     currentCourse.concepts.map((concept) => concept.id),

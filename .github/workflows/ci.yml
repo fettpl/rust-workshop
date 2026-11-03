@@ -119,6 +119,17 @@ jobs:
       - run: npm run content:property -- --fetch
       # Fetch Criterion before the generic archive verifier runs offline.
       - run: npm run content:performance -- --fetch
+      - name: Verify closed performance investigation on stable Rust
+        run: npm run content:performance -- --a7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: performance-investigation-stable-report
+          path: |
+            test-results/performance-a7/a7-stable-*/
+            !test-results/performance-a7/**/target/**
+          if-no-files-found: warn
+          retention-days: 7
       - run: npm run content:profiles
       - run: npm run content:ffi
       # Fetch and run the restricted capstone archive verifier before the generic offline archive pass.
@@ -226,6 +237,17 @@ jobs:
       - run: npm run content:models -- --fetch --msrv
       # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
       - run: npm run content:performance -- --fetch --msrv
+      - name: Verify closed performance investigation on msrv Rust
+        run: npm run content:performance -- --a7 --msrv
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: performance-investigation-msrv-report
+          path: |
+            test-results/performance-a7/a7-msrv-*/
+            !test-results/performance-a7/**/target/**
+          if-no-files-found: warn
+          retention-days: 7
       - run: npm run content:profiles -- --fetch --msrv
       - run: npm run content:ffi -- --msrv
       # Fetch and run the restricted capstone archive verifier before the generic offline archive pass.

@@ -160,6 +160,48 @@ function choice(
   };
 }
 
+function practiceChoice(options: {
+  id: string;
+  kind: "predict" | "explain" | "observe" | "recall";
+  title: string;
+  prompt: string;
+  choices: { id: string; label: string }[];
+  correct: string;
+  explanations: Record<string, string>;
+  evidenceKind: "prediction" | "exposure" | "recall";
+}): LessonStep {
+  return {
+    id: options.id,
+    kind: options.kind,
+    title: options.title,
+    prompt: options.prompt,
+    choices: options.choices,
+    evaluator: {
+      kind: "choice",
+      correct: options.correct,
+      explanations: options.explanations,
+    },
+    evidenceKind: options.evidenceKind,
+  };
+}
+
+function practicePacket(options: {
+  id: string;
+  title: string;
+  prompt: string;
+  criteria: string[];
+}): LessonStep {
+  return {
+    id: options.id,
+    kind: "assessment",
+    title: options.title,
+    prompt: options.prompt,
+    evaluator: { kind: "rubric", criteria: options.criteria },
+    rubric: options.criteria,
+    evidenceKind: "self-rating",
+  };
+}
+
 function run(
   id: string,
   title: string,
@@ -857,6 +899,224 @@ fn main() { println!("{} {}", keep(10, 10, 10), keep(10, 11, 10)); }`,
     evidenceGate:
       "Bramki wymagają rozróżnienia budget/regression, obsługi równości i sprawdzenia pełnego rekordu. Interpretacja pozostaje warunkowa dla zdefiniowanego workloadu.",
     sourceIds: ["performance-benchmarking-book"],
+  },
+  {
+    id: "performance-evidence-investigation",
+    practiceOnly: true,
+    moduleId: "performance-evidence",
+    conceptIds: ["conditional-performance-decision"],
+    competencyIds: ["interpret-performance-evidence"],
+    prerequisites: ["performance-evidence-decisions"],
+    title: "Zaplanuj własne badanie wydajności",
+    subtitle:
+      "Ułożysz własny, nieuzupełniony plan badania: workload, hipotezę, wybór narzędzia i ostrożną decyzję; opis nie obiecuje czasu nauki ani czasu wykonania.",
+    minutes: 18,
+    outcomes: [
+      "Przewidzisz, jaki wynik i ryzyko chcesz rozstrzygnąć przed obserwacją.",
+      "Dobierzesz narzędzie do pytania, rozdzielając poprawność od kosztu obserwacji.",
+      "Odczytasz przygotowany model jako zakres dowodu, a nie obietnicę dla każdej maszyny.",
+      "Zostawisz własny plan z hipotezą, kontrprzykładem i decyzją do dalszej weryfikacji.",
+    ],
+    steps: [
+      practiceChoice({
+        id: "performance-investigation-predict",
+        kind: "predict",
+        title: "Najpierw przewidź wynik",
+        prompt:
+          "Masz podstawy programowania i chcesz porównać dwa warianty tej samej operacji. Co zapisujesz przed wybraniem narzędzia?",
+        choices: [
+          {
+            id: "same-workload",
+            label:
+              "Wejście, operację, obserwowalny wynik, hipotezę i granicę tego, czego wynik nie rozstrzyga.",
+          },
+          {
+            id: "clock-first",
+            label:
+              "Jedną liczbę sekund z mojego komputera, a workload dopiero po obserwacji.",
+          },
+          {
+            id: "tool-first",
+            label:
+              "Nazwę narzędzia bez opisu danych, wyniku i możliwego kontrprzykładu.",
+          },
+        ],
+        correct: "same-workload",
+        explanations: {
+          "same-workload":
+            "Hipoteza i granice przed obserwacją chronią przed dopasowaniem opisu do pojedynczej liczby.",
+          "clock-first":
+            "Czas z jednej maszyny nie definiuje workloadu ani zakresu wniosku.",
+          "tool-first":
+            "Narzędzie odpowiada na pytanie dopiero wtedy, gdy pytanie i wynik są jawne.",
+        },
+        evidenceKind: "prediction",
+      }),
+      practiceChoice({
+        id: "performance-investigation-tool-choice",
+        kind: "explain",
+        title: "Dobierz narzędzie do ryzyka",
+        prompt:
+          "Który wybór najlepiej łączy pytanie z ryzykiem, które chcesz rozstrzygnąć?",
+        choices: [
+          {
+            id: "risk-tool",
+            label:
+              "Najpierw test poprawności dla kontraktu, potem narzędzie obserwacji kosztu; każde ma osobny wynik.",
+          },
+          {
+            id: "benchmark-proof",
+            label:
+              "Benchmark sam zastępuje test poprawności, bo szybszy wariant musi być prawidłowy.",
+          },
+          {
+            id: "random-tool",
+            label:
+              "Wybieram najgłośniejsze narzędzie i zmieniam workload, aż wynik będzie interesujący.",
+          },
+        ],
+        correct: "risk-tool",
+        explanations: {
+          "risk-tool":
+            "Poprawność i koszt są różnymi pytaniami; narzędzie nie zastępuje kontraktu funkcji.",
+          "benchmark-proof":
+            "Równość wyników i pomiar kosztu wymagają osobnych obserwacji.",
+          "random-tool":
+            "Zmiana workloadu po fakcie niszczy porównywalność i selektywność wniosku.",
+        },
+        evidenceKind: "exposure",
+      }),
+      practiceChoice({
+        id: "performance-investigation-reference-exposure",
+        kind: "observe",
+        title: "Obejrzyj model referencyjny",
+        prompt:
+          "Przygotowany przykład ma 2048 rekordów. Z przepisu, a nie z pomiaru, wynikają literalne oczekiwania: bez filtra INFO 1171, WARN 588, ERROR 196, malformed 93; z filtrem ERROR INFO 0, WARN 0, ERROR 196, malformed 93. W sześciu rekordach replay bez filtra to INFO 1, WARN 1, ERROR 2, malformed 2, a z filtrem ERROR INFO 0, WARN 0, ERROR 2, malformed 2. To oczekiwania statyczne, nie czasy ani wynik mojego programu. Co jest właściwą obserwacją?",
+        choices: [
+          {
+            id: "scope",
+            label:
+              "To literalne oczekiwania z przepisu i sposób zawężenia pytania; nie są obserwowanym czasem ani dowodem poprawności mojego programu.",
+          },
+          {
+            id: "measurement",
+            label:
+              "Sama ekspozycja na przykład dowodzi, że mój wariant jest szybszy.",
+          },
+          {
+            id: "universal",
+            label:
+              "Wynik modelu jest uniwersalny, więc nie potrzebuję własnego workloadu ani alternatywy.",
+          },
+        ],
+        correct: "scope",
+        explanations: {
+          scope:
+            "Przykład uczy struktury dowodu; własny plan musi zachować własny workload i kontrprzykład.",
+          measurement:
+            "Ekspozycja nie tworzy pomiaru ani niezależnego dowodu własnego kodu.",
+          universal:
+            "Każdy wniosek pozostaje związany z zadeklarowanym workloadem i narzędziem.",
+        },
+        evidenceKind: "exposure",
+      }),
+      practiceChoice({
+        id: "performance-investigation-run-model",
+        kind: "explain",
+        title: "Wyjaśnij statyczny model",
+        prompt:
+          "Baseline to istniejąca implementacja, a candidate to badany wariant; oba porównuje się na tym samym workloadzie, a niezależne literalne oracle sprawdza wynik. Które zdanie poprawnie opisuje trzy decyzje: keep, investigate-performance i inconclusive, bez wymyślania czasów?",
+        choices: [
+          {
+            id: "bounded",
+            label:
+              "Oracle sprawdza wynik; keep wymaga pełnego dowodu, investigate-performance sygnalizuje problem, a inconclusive zostaje przy niepełnym lub nierozdzielonym dowodzie.",
+          },
+          {
+            id: "speed",
+            label:
+              "Niższa liczba w jednej obserwacji wystarcza do keep bez sprawdzania wyniku i zakresu.",
+          },
+          {
+            id: "timed",
+            label:
+              "Model obiecuje czas działania w sekundach dla każdego komputera i wejścia.",
+          },
+        ],
+        correct: "bounded",
+        explanations: {
+          bounded:
+            "Baseline, candidate i oddzielne oracle porządkują dowód; trzy decyzje opisują zakres bez wymyślania czasów.",
+          speed:
+            "Pojedyncza liczba nie zastępuje poprawności, porównywalności ani przedziału dowodu.",
+          timed:
+            "Model nie jest obietnicą czasu ani przenośności wyniku poza zadeklarowany kontrakt.",
+        },
+        evidenceKind: "exposure",
+      }),
+      practicePacket({
+        id: "performance-investigation-own-packet",
+        title: "Zostaw własny plan badania",
+        prompt: [
+          "Zostaw nieuzupełniony plan własnego badania. Nie uruchamiaj w nim Cargo ani narzędzia pomiarowego i nie wpisuj zmyślonych liczb.",
+          "",
+          "Zapisz inny niż referencyjny workload i jego selektywność, falsyfikowalną hipotezę, ryzyko stojące za wyborem narzędzia, niezależne literalne oracle, krótki replay lub kontrprzykład, alternatywę, miejsce na odpowiedź recenzenta, samoocenę oraz decyzję keep / investigate-performance / inconclusive z zakresem.",
+          "",
+          "Czytanie modelu i planowanie własnego doświadczenia nie sprawdza mojego programu, nie jest automatyczną oceną i nie daje samodzielnego zaliczenia.",
+        ].join("\n"),
+        criteria: [
+          "workload jest inny niż referencyjny i ma jawne granice oraz selektywność",
+          "hipoteza jest falsyfikowalna, a ryzyko wyjaśnia wybór narzędzia",
+          "oracle jest niezależny od badanej implementacji i zawiera replay lub kontrprzykład",
+          "plan zachowuje alternatywę, miejsce na odpowiedź recenzenta i samoocenę",
+          "decyzja ma jedną z trzech nazw i nie obiecuje wyniku poza workloadem",
+        ],
+      }),
+      practiceChoice({
+        id: "performance-investigation-recall",
+        kind: "recall",
+        title: "Przypomnij granicę dowodu",
+        prompt:
+          "Które zdanie zachowuje sens całego badania po zakończeniu tej samej sesji?",
+        choices: [
+          {
+            id: "bounded-recall",
+            label:
+              "Wynik opisuje konkretny workload i narzędzie; przy braku rozdzielenia poprawności od kosztu zostawiam decyzję do investigate albo inconclusive.",
+          },
+          {
+            id: "keep-recall",
+            label:
+              "Każdy interesujący wynik należy nazwać keep, nawet jeśli oracle i workload są niepełne.",
+          },
+          {
+            id: "duration-recall",
+            label:
+              "Plan powinien obiecywać czas wykonania w sekundach i zastąpić test poprawności.",
+          },
+        ],
+        correct: "bounded-recall",
+        explanations: {
+          "bounded-recall":
+            "Zakres, oracle i ostrożna decyzja są ważniejsze niż atrakcyjna pojedyncza liczba.",
+          "keep-recall":
+            "keep wymaga kompletnego, poprawnego dowodu w zadeklarowanym zakresie.",
+          "duration-recall":
+            "Plan nie jest obietnicą czasu i nie zastępuje sprawdzenia poprawności.",
+        },
+        evidenceKind: "recall",
+      }),
+    ],
+    misconceptions: [
+      "Benchmark lub pojedynczy wynik pomiaru zastępuje niezależny oracle poprawności.",
+      "Przykład referencyjny dowodzi własnego programu i nie wymaga własnego workloadu.",
+      "Decyzja keep jest właściwa zawsze, gdy liczba wygląda korzystnie.",
+    ],
+    transferTask:
+      "Uzupełnij własny plan innym workloadem, literalnym oracle i decyzją ograniczoną do tego workloadu; nie wpisuj pomiarów bez rzeczywistej obserwacji.",
+    evidenceGate:
+      "To opcjonalna praktyka planowania i samooceny; nie tworzy nowej bramki ani samodzielnego zaliczenia.",
+    sourceIds: ["performance-benchmarking-book", "profile-criterion"],
   },
 ];
 

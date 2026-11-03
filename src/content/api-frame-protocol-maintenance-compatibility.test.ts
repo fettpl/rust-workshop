@@ -8,7 +8,7 @@ import {
   historicalBeforeFrameProtocolMaintenance,
 } from "./frame-maintenance-compatibility-fixture";
 import { historicalBeforeOwnershipFoundation } from "./ownership-foundation-compatibility-fixture";
-import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");

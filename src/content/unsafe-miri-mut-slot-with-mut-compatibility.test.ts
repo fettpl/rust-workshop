@@ -15,7 +15,7 @@ import {
   expectedPreSlotMiriProjectSha256,
   historicalBeforeSlotLazyInit,
 } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
-import { historicalBeforeExistingContractRepair } from "./existing-contract-repair-compatibility-fixture";
+import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,

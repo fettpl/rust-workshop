@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import * as currentCourse from "./course";
 import {
   competencies,
   concepts,
@@ -7,6 +8,7 @@ import {
   reviewExercises,
   sources,
 } from "./course";
+import { historicalBeforePerformanceInvestigation } from "./performance-investigation-compatibility-fixture";
 
 const lessonId = "api-frame-protocol-maintenance";
 const stepIds = [
@@ -87,9 +89,14 @@ it("preserves the existing public API module gate while appending the checkpoint
   ]);
 });
 
-it("keeps the A6 curriculum delta limited to one lesson and six steps", () => {
-  expect(lessons).toHaveLength(194);
+it("keeps the historical A6 catalog count limited to one lesson and six steps", () => {
+  const historicalA6 = historicalBeforePerformanceInvestigation(currentCourse);
+
+  expect(historicalA6.lessons).toHaveLength(194);
   expect(
-    lessons.reduce((total, lesson) => total + lesson.steps.length, 0),
+    historicalA6.lessons.reduce(
+      (total, lesson) => total + lesson.steps.length,
+      0,
+    ),
   ).toBe(1293);
 });
