@@ -695,6 +695,372 @@ const documentationFiles: ProjectPackage["files"] = [
   },
 ];
 
+const maintenanceRecoveryStarter = String.raw`#![forbid(unsafe_code)]
+
+// To zadanie wymaga własnej implementacji i własnego dowodu. Nie uruchamiaj
+// kodu uczącego się ani nie kopiuj referencyjnych nazw poza tym szkieletem.
+#[test]
+fn maintenance_reconfiguration_recovery_trace() {
+    todo!("zaprojektuj własny zamknięty dowód zmiany limitu K");
+}
+
+#[test]
+fn maintenance_recovery_compile_boundary() {
+    let _ = std::mem::size_of::<ingest_store::Store>();
+}
+`;
+
+const maintenanceRecoverySolution = String.raw`#![forbid(unsafe_code)]
+
+use std::fs;
+use std::num::NonZeroUsize;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use ingest_core::{Disposition, Event, Level, Receipt};
+use ingest_store::{Store, StoreError};
+
+static NEXT_DATABASE: AtomicU64 = AtomicU64::new(0);
+
+struct Database {
+    directory: PathBuf,
+    path: PathBuf,
+}
+
+impl Database {
+    fn new() -> Self {
+        let nonce = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock after epoch")
+            .as_nanos();
+        let directory = std::env::temp_dir().join(format!(
+            "a8-maintenance-{}-{nonce}-{}",
+            std::process::id(),
+            NEXT_DATABASE.fetch_add(1, Ordering::Relaxed)
+        ));
+        fs::create_dir_all(&directory).expect("temporary database directory");
+        let path = directory.join("events.sqlite");
+        Self { directory, path }
+    }
+}
+
+impl Drop for Database {
+    fn drop(&mut self) {
+        fs::remove_dir_all(&self.directory).expect("temporary database cleanup");
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Projection {
+    source: &'static str,
+    correlation: &'static str,
+    phase: &'static str,
+    outcome: &'static str,
+}
+
+struct ProjectionInput {
+    source: &'static str,
+    correlation: &'static str,
+    payload: &'static str,
+    path: &'static str,
+    sql: &'static str,
+}
+
+fn projection(input: &ProjectionInput, phase: &'static str, outcome: &'static str) -> Projection {
+    let _ = (
+        input.source,
+        input.correlation,
+        input.payload,
+        input.path,
+        input.sql,
+    );
+    Projection {
+        source: "maintenance-reference",
+        correlation: "a8-maintenance-1",
+        phase,
+        outcome,
+    }
+}
+
+fn event(source: &str, key: &str, message: &str, correlation: &str) -> Event {
+    Event::new(
+        source.to_owned(),
+        key.to_owned(),
+        Level::Info,
+        message.to_owned(),
+    )
+    .expect("valid authored event")
+    .with_correlation(Some(correlation.to_owned()))
+    .expect("valid authored correlation")
+}
+
+fn open(path: &Path, limit: usize) -> Store {
+    Store::open_with_stream_limit(path, 5, NonZeroUsize::new(limit).expect("positive limit"))
+        .expect("open authored store")
+}
+
+#[test]
+fn maintenance_recovery_compile_boundary() {
+    let _ = Store::open_with_stream_limit;
+    let _ = StoreError::Full;
+    let _ = std::mem::size_of::<Receipt>();
+}
+
+// A8 named mutant: a8-reopen-limit-ignores-k3
+#[test]
+fn maintenance_reconfiguration_recovery_trace() {
+    let database = Database::new();
+    let a = event("alpha", "a", "first", "a8-1");
+    let b = event("alpha", "b", "second", "a8-2");
+    let z = event("beta", "z", "other", "a8-z");
+    let c = event("alpha", "c", "third", "a8-3");
+    let d = event("alpha", "d", "fourth", "a8-4");
+    let y = event("beta", "y", "other-two", "a8-y");
+    let q = event("beta", "q", "other-three", "a8-q");
+
+    let (a_sequence, b_sequence, z_sequence);
+    {
+        let mut store = open(&database.path, 2);
+        let a_receipt = store.ingest(&a).expect("A inserted");
+        let b_receipt = store.ingest(&b).expect("B inserted");
+        let z_receipt = store.ingest(&z).expect("Z inserted");
+        assert_eq!(a_receipt.disposition, Disposition::Inserted);
+        assert_eq!(b_receipt.disposition, Disposition::Inserted);
+        assert_eq!(z_receipt.disposition, Disposition::Inserted);
+        a_sequence = a_receipt.sequence;
+        b_sequence = b_receipt.sequence;
+        z_sequence = z_receipt.sequence;
+        assert_eq!((a_sequence, b_sequence, z_sequence), (1, 2, 3));
+        assert_eq!(store.count().expect("initial count"), 3);
+    }
+
+    // The harness admits U while Ready, closes admission, and never calls Store for U.
+    let mut harness_phase = "Ready";
+    let mut admission_open = true;
+    let u_admitted = admission_open;
+    admission_open = false;
+    assert_eq!(harness_phase, "Ready");
+    assert!(u_admitted && !admission_open);
+    harness_phase = "Draining";
+    assert_eq!(harness_phase, "Draining");
+    let unrelated_input = ProjectionInput {
+        source: "unrelated-source",
+        correlation: "unrelated-correlation",
+        payload: "SECRET_PAYLOAD",
+        path: "/private/authored/path",
+        sql: "SELECT secret FROM events",
+    };
+    assert_ne!(unrelated_input.source, "maintenance-reference");
+    assert_ne!(unrelated_input.correlation, "a8-maintenance-1");
+    let unknown = projection(&unrelated_input, "admission", "unknown");
+    assert_eq!(unknown.outcome, "unknown");
+    {
+        let store = open(&database.path, 2);
+        assert_eq!(store.count().expect("U did not reach Store"), 3);
+    }
+
+    // C is a new attempt after closure: maintenance-closed, with no Store call.
+    let closed_c = projection(&unrelated_input, "drain", "maintenance-closed");
+    assert_eq!(closed_c.outcome, "maintenance-closed");
+    {
+        let store = open(&database.path, 2);
+        assert_eq!(store.count().expect("closed C count"), 3);
+    }
+
+    {
+        let mut store = open(&database.path, 1);
+        assert_eq!(
+            store.ingest(&a).expect("A duplicate"),
+            Receipt {
+                sequence: a_sequence,
+                disposition: Disposition::Duplicate,
+            }
+        );
+        assert_eq!(
+            store
+                .ingest(&a)
+                .expect("A duplicate after same retry")
+                .sequence,
+            a_sequence
+        );
+        let changed_correlation = event("alpha", "a", "first", "changed-correlation");
+        assert!(matches!(
+            store.ingest(&changed_correlation),
+            Err(StoreError::Conflict)
+        ));
+        assert!(matches!(store.ingest(&c), Err(StoreError::Full)));
+        assert_eq!(store.count().expect("lower-limit count"), 3);
+    }
+
+    let c_sequence;
+    {
+        let mut store = open(&database.path, 3);
+        let c_receipt = store.ingest(&c).expect("C inserted after raising limit");
+        assert_eq!(c_receipt.disposition, Disposition::Inserted);
+        c_sequence = c_receipt.sequence;
+        assert_eq!(c_sequence, 4);
+        assert_eq!(store.count().expect("C committed count"), 4);
+    }
+    let committed_undelivered = projection(&unrelated_input, "delivery", "committed-undelivered");
+    assert_eq!(committed_undelivered.outcome, "committed-undelivered");
+
+    {
+        let mut store = open(&database.path, 3);
+        let retry = store.ingest(&c).expect("C duplicate after reopen");
+        assert_eq!(
+            retry,
+            Receipt {
+                sequence: c_sequence,
+                disposition: Disposition::Duplicate
+            }
+        );
+        assert_eq!(
+            projection(&unrelated_input, "delivery", "delivered").outcome,
+            "delivered"
+        );
+        assert!(matches!(
+            store.ingest(&event("alpha", "c", "changed", "a8-3")),
+            Err(StoreError::Conflict)
+        ));
+        assert!(matches!(
+            store.ingest(&event("alpha", "c", "third", "changed-correlation")),
+            Err(StoreError::Conflict)
+        ));
+        assert!(matches!(store.ingest(&d), Err(StoreError::Full)));
+        assert_eq!(
+            store
+                .ingest(&y)
+                .expect("Y global-bound control")
+                .disposition,
+            Disposition::Inserted
+        );
+        assert_eq!(store.count().expect("five-row count"), 5);
+        assert!(matches!(store.ingest(&q), Err(StoreError::Full)));
+    }
+
+    {
+        let store = open(&database.path, 3);
+        assert_eq!(store.count().expect("final durable count"), 5);
+    }
+
+    let projected = [
+        unknown,
+        closed_c,
+        projection(&unrelated_input, "commit", "committed"),
+        committed_undelivered,
+        projection(&unrelated_input, "delivery", "delivered"),
+    ];
+    for record in projected {
+        assert_eq!(
+            record,
+            Projection {
+                source: "maintenance-reference",
+                correlation: "a8-maintenance-1",
+                phase: record.phase,
+                outcome: record.outcome,
+            }
+        );
+        let projected_text = format!("{record:?}");
+        for sentinel in [
+            unrelated_input.source,
+            unrelated_input.correlation,
+            unrelated_input.payload,
+            unrelated_input.path,
+            unrelated_input.sql,
+        ] {
+            assert!(!projected_text.contains(sentinel));
+        }
+    }
+}
+`;
+
+const maintenanceManifest = String.raw`{
+  "schema": "a8-maintenance-reference-v1",
+  "status": "authored-reference-not-learner-api",
+  "maxEvents": 5,
+  "perStreamLimits": [2, 1, 3],
+  "requestIds": ["A", "B", "Z", "C", "D", "Y", "Q"],
+  "directRequests": [
+    {"id":"A","source":"alpha","key":"a","correlation":"a8-1","role":"Inserted-at-K2"},
+    {"id":"B","source":"alpha","key":"b","correlation":"a8-2","role":"Inserted-at-K2"},
+    {"id":"Z","source":"beta","key":"z","correlation":"a8-z","role":"Inserted-at-K2"},
+    {"id":"C","source":"alpha","key":"c","correlation":"a8-3","role":"withheld-Inserted-then-Duplicate"},
+    {"id":"D","source":"alpha","key":"d","correlation":"a8-4","role":"per-stream-Full"},
+    {"id":"Y","source":"beta","key":"y","correlation":"a8-y","role":"global-bound-control"},
+    {"id":"Q","source":"beta","key":"q","correlation":"a8-q","role":"global-Full"}
+  ],
+  "provenance": {
+    "directStore": ["Inserted", "Duplicate", "Conflict", "Full", "returned sequence", "durable count"],
+    "harnessProjection": ["accepted", "maintenance-closed", "committed", "committed-undelivered", "delivered", "Unknown"]
+  },
+  "unknown": {"acceptedBeforeClosure": true, "storeIngestCalled": false, "meaning": "harness projection only"},
+  "observability": {
+    "fields": ["source", "correlation", "phase", "outcome"],
+    "source": "maintenance-reference",
+    "correlation": "a8-maintenance-1",
+    "excludes": ["payload", "path", "sql"]
+  },
+  "commands": {
+    "positive": "cargo test -p ingest-store --test maintenance_recovery --offline --locked --no-fail-fast maintenance_reconfiguration_recovery_trace -- --exact",
+    "compileBoundary": "cargo test -p ingest-store --test maintenance_recovery --offline --locked maintenance_recovery_compile_boundary --no-run"
+  },
+  "mutant": {
+    "id": "a8-reopen-limit-ignores-k3",
+    "path": "crates/ingest-store/src/store.rs",
+    "mutation": "replace the reopened per-stream limit with fixed K=2",
+    "compileExit": 0,
+    "namedTestExit": 101,
+    "marker": "A8 named mutant: a8-reopen-limit-ignores-k3"
+  },
+  "failureClasses": ["passed", "compile-error", "test-failure", "missing-test", "timeout", "signal", "empty-output", "infrastructure-error"],
+  "packageDelta": {"preservedPrefix": 37, "appendedPaths": ["crates/ingest-store/tests/maintenance_recovery.rs", "A8-MAINTENANCE-MANIFEST.json", "A8-MAINTENANCE.md"]}
+}`;
+
+const maintenanceWorksheet = String.raw`# A8 — utrzymanie i odzyskiwanie
+
+To jest niewypełniony arkusz do własnego projektu. Stały Store-plus-harness z
+pakietu autora jest referencją kontraktu, a nie jest wymaganym API, architekturą,
+układem plików ani graderem. Wybierz inną zmianę wymagania i własny sposób
+implementacji. Nie obiecuj czasu nauki; opisz cel, artefakty i następny krok.
+
+## Wymaganie i dwie alternatywy
+
+- Zmienione wymaganie: [uzupełnij]
+- Alternatywa A i jej koszt: [uzupełnij]
+- Alternatywa B i jej koszt: [uzupełnij]
+
+## Etap A: kontrakt
+
+- Granica admission, drain i zakończenia: [uzupełnij]
+- Klucze, receipt, konflikt i limit: [uzupełnij]
+- Założona granica współbieżności: [uzupełnij]
+
+## Dowód operacyjny
+
+Opisz własne polecenia, rzeczywistą nieudaną próbę, wynik poprawki oraz
+rozróżnienie accepted, completed, committed, delivered i Unknown. Jeśli
+zmieniasz pojemność, pokaż własny wariant K=2 → K=1 → K=3, bez kopiowania
+referencyjnego API. [uzupełnij]
+
+## Granica zaufania i zagrożenia
+
+Wskaż granice klient–serwis–magazyn, payload-free obserwację, dane wrażliwe,
+ścieżki stop/escalation i to, czego dowód nie stwierdza. [uzupełnij]
+
+## Awaria i odpowiedź na przegląd
+
+Zapisz feedback, jedną decyzję po przeglądzie, klasę błędu (semanticzna,
+kompilacji, timeout, signal, infrastructure lub incomplete) i otwarte ryzyko.
+[uzupełnij]
+
+## Etap B: regresja
+
+- Zmienione zachowanie i test regresji: [uzupełnij]
+- Nowy świeży wynik oraz nierozstrzygnięte komórki: [uzupełnij]
+- Pomoc, samoocena i przegląd człowieka pozostają osobno od dowodu Cargo.
+`;
+
 export const durableLogServicePackage: ProjectPackage = {
   id: "durable-log-service-workspace",
   title: "Projekt: trwały dziennik zdarzeń",
@@ -763,5 +1129,20 @@ export const durableLogServicePackage: ProjectPackage = {
     ...ingestCoreFiles,
     ...ingestStoreFiles,
     ...ingestServiceFiles,
+    {
+      path: "crates/ingest-store/tests/maintenance_recovery.rs",
+      starter: maintenanceRecoveryStarter,
+      solution: maintenanceRecoverySolution,
+    },
+    {
+      path: "A8-MAINTENANCE-MANIFEST.json",
+      starter: maintenanceManifest,
+      solution: maintenanceManifest,
+    },
+    {
+      path: "A8-MAINTENANCE.md",
+      starter: maintenanceWorksheet,
+      solution: maintenanceWorksheet,
+    },
   ],
 };

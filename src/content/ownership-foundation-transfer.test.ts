@@ -8,7 +8,7 @@ import {
   ownershipFoundationLessonId,
   ownershipFoundationStepIds,
 } from "./ownership-foundation-compatibility-fixture";
-import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
+import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
 import {
   ownershipFoundationModel,
   ownershipFoundationTransferLesson,

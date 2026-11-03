@@ -17,8 +17,20 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
       "crates/ingest-service",
     ]);
     expect(
-      Object.keys(projectFiles(durableLogServicePackage, "solution")).sort(),
+      Object.keys(projectFiles(durableLogServicePackage, "solution"))
+        .slice(0, durableLogServiceWorkspacePaths.length)
+        .sort(),
     ).toEqual([...durableLogServiceWorkspacePaths].sort());
+    expect(projectFiles(durableLogServicePackage, "solution")).toHaveProperty(
+      "A8-MAINTENANCE-MANIFEST.json",
+    );
+    expect(projectFiles(durableLogServicePackage, "solution")).toHaveProperty(
+      "A8-MAINTENANCE.md",
+    );
+    expect(projectFiles(durableLogServicePackage, "solution")).toHaveProperty(
+      "crates/ingest-store/tests/maintenance_recovery.rs",
+    );
+    expect(Object.keys(projectFiles(durableLogServicePackage, "solution"))).toHaveLength(40);
     expect(durableLogServiceWorkspacePaths).toHaveLength(37);
   });
 
@@ -116,10 +128,10 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
 
   it("wiąże ekspozycję z ujawnionymi bramkami i zostawia blank/review niezależne", () => {
     const starterFiles = projectFiles(durableLogServicePackage, "starter");
-    expect(Object.keys(starterFiles)).toHaveLength(37);
+    expect(Object.keys(starterFiles)).toHaveLength(40);
     expect(
       Object.keys(starterFiles).filter((path) => path.endsWith(".md")),
-    ).toHaveLength(10);
+    ).toHaveLength(11);
     for (const [path, content] of Object.entries(starterFiles)) {
       expect(content.length, `starter file is empty: ${path}`).toBeGreaterThan(
         0,
@@ -316,5 +328,76 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
     expect(solution["crates/ingest-service/tests/process.rs"]).toContain(
       "kill_reap",
     );
+  });
+
+  it("appends exactly the bounded A8 maintenance package delta", () => {
+    const paths = durableLogServicePackage.files.map((file) => file.path);
+    expect(paths.slice(0, durableLogServiceWorkspacePaths.length)).toEqual([
+      ...durableLogServiceWorkspacePaths,
+    ]);
+    expect(paths.slice(durableLogServiceWorkspacePaths.length)).toEqual([
+      "crates/ingest-store/tests/maintenance_recovery.rs",
+      "A8-MAINTENANCE-MANIFEST.json",
+      "A8-MAINTENANCE.md",
+    ]);
+    expect(paths).toHaveLength(40);
+  });
+
+  it("publishes the closed maintenance protocol without turning the worksheet into an answer", () => {
+    const starter = projectFiles(durableLogServicePackage, "starter");
+    const solution = projectFiles(durableLogServicePackage, "solution");
+    const manifest = JSON.parse(starter["A8-MAINTENANCE-MANIFEST.json"]);
+    expect(manifest.schema).toBe("a8-maintenance-reference-v1");
+    expect(manifest.requestIds).toEqual(["A", "B", "Z", "C", "D", "Y", "Q"]);
+    expect(manifest.perStreamLimits).toEqual([2, 1, 3]);
+    expect(manifest.maxEvents).toBe(5);
+    expect(manifest.provenance.directStore).toEqual(expect.any(Array));
+    expect(manifest.provenance.harnessProjection).toEqual(expect.any(Array));
+    expect(manifest.observability).toEqual({
+      fields: ["source", "correlation", "phase", "outcome"],
+      source: "maintenance-reference",
+      correlation: "a8-maintenance-1",
+      excludes: ["payload", "path", "sql"],
+    });
+    expect(manifest.mutant).toEqual(
+      expect.objectContaining({
+        id: "a8-reopen-limit-ignores-k3",
+        compileExit: 0,
+        namedTestExit: 101,
+      }),
+    );
+    expect(starter["crates/ingest-store/tests/maintenance_recovery.rs"]).toContain(
+      "maintenance_reconfiguration_recovery_trace",
+    );
+    expect(solution["crates/ingest-store/tests/maintenance_recovery.rs"]).toContain(
+      "open_with_stream_limit",
+    );
+    expect(solution["crates/ingest-store/tests/maintenance_recovery.rs"]).toContain(
+      "struct ProjectionInput",
+    );
+    expect(solution["crates/ingest-store/tests/maintenance_recovery.rs"]).toContain(
+      "input: &ProjectionInput",
+    );
+    expect(solution["crates/ingest-store/tests/maintenance_recovery.rs"]).toContain(
+      "Projection {",
+    );
+    expect(solution["crates/ingest-store/tests/maintenance_recovery.rs"]).toContain(
+      "unrelated_input.payload",
+    );
+    expect(starter["crates/ingest-store/tests/maintenance_recovery.rs"]).not.toContain(
+      "SECRET_PAYLOAD",
+    );
+    for (const variant of [starter, solution]) {
+      const worksheet = variant["A8-MAINTENANCE.md"];
+      expect(worksheet).toContain("Wymaganie i dwie alternatywy");
+      expect(worksheet).toContain("Etap A: kontrakt");
+      expect(worksheet).toContain("Dowód operacyjny");
+      expect(worksheet).toContain("Granica zaufania i zagrożenia");
+      expect(worksheet).toContain("Awaria i odpowiedź na przegląd");
+      expect(worksheet).toContain("Etap B: regresja");
+      expect(worksheet).toContain("K=2 → K=1 → K=3");
+      expect(worksheet).toContain("nie jest wymaganym API");
+      expect(worksheet).toContain("[uzupełnij]");
+    }
   });
 });

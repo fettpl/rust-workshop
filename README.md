@@ -48,6 +48,13 @@ an existing downstream client while adding typed error categories, then write
 your own regression tests, architecture decision, and review response in the
 downloaded workspace.
 
+The durable log service also includes an optional Polish maintenance-and-recovery
+practice. It is a six-step prediction, exposure, and self-rating exercise around
+admission, durable identity, delivery, and `Unknown`; it adds no independent
+credit, new gate, or learner-code execution. Its reference package keeps the
+37-path authored workspace prefix and appends three bounded maintenance files;
+the worksheet remains an unfilled plan for the learner's own design.
+
 Log Analyzer also offers an optional [performance investigation](docs/performance-investigation.md):
 compare an independently checked workload, inspect uncertainty, retain a small
 replay, and write your own hypothesis, alternatives, and review response. Its

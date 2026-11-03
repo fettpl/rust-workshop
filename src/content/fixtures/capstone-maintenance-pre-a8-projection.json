@@ -1,0 +1,121 @@
+{
+  "schema": "capstone-maintenance-pre-a8-projection-v1",
+  "genuineCaptureSha256": "a3e86fa438c6fc3ba4053bbdbd16ace827975366b5c4b6a1f20840d04f833092",
+  "genuineCaptureSource": "private-capture://authentic-pre-a8-registry.json",
+  "genuineProjectionSha256": "e8a84ff912a999cb42b5a422779bfadeb04cef0bab83040b71e72bfaf5c36bf6",
+  "head": "eaaee0b2398ebffffb2c666e0c932389671158d4",
+  "tree": "9bd1490800de24f4d30a06d56845cf90620e16d4",
+  "predecessor": {
+    "wholeCourseSha256": "8b085ef116b1faa010940f8b09c2d86d99b79355178b93f7e99b823249edcc04",
+    "registryKeys": [
+      "competencies",
+      "concepts",
+      "default",
+      "delayedReviewExercises",
+      "lessons",
+      "modules",
+      "ownershipModule",
+      "project",
+      "projects",
+      "reviewExercises",
+      "reviewExercisesById",
+      "roadmap",
+      "shortReviewExercises",
+      "sources",
+      "traces"
+    ],
+    "registrySha256ByKey": {
+      "competencies": "4e3a94355c196b6276e2aec7f1c6188f8c534ee806333bcb31a996cfb4fa1851",
+      "concepts": "5c8c7c63490fe024c47b6dab628e0c804c8e1f32b7be54123d8898c5482df358",
+      "default": "f91f5fe80c928182f3abdfacf3b92b2a1a6a3b940a46e38d9f97b09527d05ba7",
+      "delayedReviewExercises": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c",
+      "lessons": "9bd7525bee22ff5885beba2ab35639d2f788034cff8bd3a9da955a54563cc857",
+      "modules": "28236d6252049f62e922d83287ec5fe764adb4872bfb87604440185a4680e8b0",
+      "ownershipModule": "a49b89d28c14ca64c42429ac0d946ee13b6f5d638cd55ea311c1e6746b44cec1",
+      "project": "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+      "projects": "dc139f240dc567574a9b64bc29fd72cf6c07b96c91dc96f8d43c32ba93b86364",
+      "reviewExercises": "7cea35a71e381a39be8fc48555421b1d99b6c255bd1a88c1a9e47a3585d3e388",
+      "reviewExercisesById": "b18e4b1a3f2a17dbc317f27a20772a213f43b8b8150435bc8237fe32e86c0a2e",
+      "roadmap": "63c94381759dcb101770b8f8f56e3d66aebdcf27e19e6fccfaa21c1d8971792a",
+      "shortReviewExercises": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+      "sources": "e9ae605cb3b4accd0483bef877e991c113a53ae4b069838bcde34d3c52ff194a",
+      "traces": "f501901ba89841109381b3f99e858606cb6cebd888b595518f556504efcaa263"
+    },
+    "counts": {
+      "modules": 48,
+      "lessons": 195,
+      "steps": 1299,
+      "concepts": 194,
+      "competencies": 195,
+      "sources": 349,
+      "projects": 13
+    }
+  },
+  "restorations": [
+    {
+      "registry": "lessons",
+      "selector": "capstone-maintenance-recovery",
+      "operation": "remove-exact-item",
+      "successorSha256": "3e95295c9d5240bf5dcfdabf0108989370b4bded0a62f0d6d522c73f9c500fc7",
+      "successorIndex": 186
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["lessonIds"],
+      "operation": "remove-exact-appended-id",
+      "removeValue": "capstone-maintenance-recovery",
+      "prefixSha256": "37929cf085b2d77b991adbfd0babceba3c87fdf6a8f8baeb286c3c2e08ec8a77",
+      "successorSha256": "4c4aec3b76b26fcc6962c14420d6b6b4811f1db9015bdc9e30eb31f27772493a"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["exitGate"],
+      "operation": "remove-exact-appended-id",
+      "removeValue": "Opcjonalna praktyka utrzymania nie jest nową bramką ani niezależnym zaliczeniem.",
+      "prefixSha256": "45e3c4713c71303bbca5d117ce7218525f606ee1bcc6b7a560b59de835cf2864",
+      "successorSha256": "3815a3bdced7ed0c6bab1f841957eec33f1299a5e0004aedcf5571eb17bd2f22"
+    },
+    {
+      "registry": "projects",
+      "selector": "durable-log-service",
+      "path": ["lessonIds"],
+      "operation": "remove-exact-appended-id",
+      "removeValue": "capstone-maintenance-recovery",
+      "prefixSha256": "37929cf085b2d77b991adbfd0babceba3c87fdf6a8f8baeb286c3c2e08ec8a77",
+      "successorSha256": "4c4aec3b76b26fcc6962c14420d6b6b4811f1db9015bdc9e30eb31f27772493a"
+    },
+    {
+      "registry": "projects",
+      "selector": "durable-log-service",
+      "path": ["requiredEvidence"],
+      "operation": "remove-exact-appended-id",
+      "removeValue": "Wypełniony pakiet A8-MAINTENANCE.md i własny plan przeglądu utrzymania.",
+      "prefixSha256": "59fe2bd4b5217c0d38f39435aca24a1f7d5b8feb67396f41eb0c98a3bf33768d",
+      "successorSha256": "4fc6cb1c77ddc808e7a7033830f7e2ea19bc5bf6c9ec72585e9439f7a98ed6b9"
+    },
+    {
+      "registry": "projects",
+      "selector": "durable-log-service",
+      "path": ["package", "files"],
+      "operation": "remove-exact-appended-files",
+      "removeCount": 3,
+      "removePaths": [
+        "crates/ingest-store/tests/maintenance_recovery.rs",
+        "A8-MAINTENANCE-MANIFEST.json",
+        "A8-MAINTENANCE.md"
+      ],
+      "prefixSha256": "dd610e1e18201ad8a0a8769ddeeb2be28053e199b4bfb3405b33140474faf24c",
+      "successorSha256": "fbb6fa159076446c81799116d716e8ff0581bd924914a9cf7de584aa226a15eb"
+    }
+  ],
+  "unknownRegistryKeys": [],
+  "aliasChecks": {
+    "delayedReviewExercisesDefault": true,
+    "shortReviewExercisesDefault": true,
+    "reviewExerciseForIdFunction": true,
+    "projectAlias": true,
+    "ownershipModuleAlias": true
+  }
+}

@@ -3,9 +3,12 @@ import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import {
   acceptedPreA7Projection,
-  historicalBeforeA7ThenExistingContractRepair,
-  historicalBeforePerformanceInvestigation,
+  historicalBeforePerformanceInvestigation as historicalBeforeA7Source,
 } from "./performance-investigation-compatibility-fixture";
+import {
+  historicalBeforeA8ThenA7ThenExistingContractRepair,
+  historicalBeforeCapstoneMaintenance,
+} from "./capstone-maintenance-compatibility-fixture";
 import { acceptedPreC1Projection } from "./existing-contract-repair-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
@@ -35,7 +38,10 @@ function captureRegistry(course: typeof currentCourse) {
 }
 
 const projectA7ThenC1 = (course: typeof currentCourse) =>
-  historicalBeforeA7ThenExistingContractRepair(course);
+  historicalBeforeA8ThenA7ThenExistingContractRepair(course);
+
+const historicalBeforePerformanceInvestigation = (course: typeof currentCourse) =>
+  historicalBeforeA7Source(historicalBeforeCapstoneMaintenance(course));
 
 it("restores the genuine pre-A7 registry without masking unrelated state", () => {
   const projected = historicalBeforePerformanceInvestigation(currentCourse);
@@ -102,7 +108,9 @@ it("projects a real synthetic default namespace independently", () => {
     default: Record<string, unknown>;
   };
   const projected = historicalBeforePerformanceInvestigation(synthetic);
-  const projectedDefault = projected.default as Record<string, unknown>;
+  const projectedDefault = (
+    projected as typeof currentCourse & { default: Record<string, unknown> }
+  ).default;
 
   expect(projectedDefault.unknownDefaultAlias).toEqual({ marker: "keep" });
   expect(
@@ -306,7 +314,7 @@ it("composes an independent real default registry through A7 and C1", () => {
   } as typeof currentCourse & {
     default: Record<string, unknown>;
   };
-  const projected = historicalBeforeA7ThenExistingContractRepair(synthetic);
+  const projected = historicalBeforeA8ThenA7ThenExistingContractRepair(synthetic);
   const projectedDefault = projected.default as Record<string, unknown>;
   const knownDefault = Object.fromEntries(
     registryKeys.map((key) => [key, projectedDefault[key]]),
@@ -355,7 +363,7 @@ it("keeps top-level and default-only mutations independent", () => {
   } as typeof currentCourse & {
     default: Record<string, unknown>;
   };
-  const projected = historicalBeforeA7ThenExistingContractRepair(synthetic);
+  const projected = historicalBeforeA8ThenA7ThenExistingContractRepair(synthetic);
   const defaultLessons = (projected.default as Record<string, unknown>)
     .lessons as typeof currentCourse.lessons;
 

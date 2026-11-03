@@ -11,7 +11,7 @@ import {
   slotLazyInitStepIds,
 } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
 import { historicalBeforeMutSlotWithMut } from "./unsafe-miri-mut-slot-with-mut-compatibility-fixture";
-import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
+import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,

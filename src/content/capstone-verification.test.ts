@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { createHash } from "node:crypto";
 import { capstoneMutants, capstoneMutantTestArgs } from "../../scripts/capstone-mutants";
 import {
   classifyCommandResult,
@@ -8,8 +9,123 @@ import {
   serializeToolchainMetadata,
   servedArchiveMatches,
 } from "../../scripts/verify-capstone";
+import * as currentCourse from "./course";
+import preA6 from "./fixtures/frame-protocol-pre-a6-projection.json";
+import preA7 from "./fixtures/performance-investigation-pre-a7-projection.json";
+import preA8 from "./fixtures/capstone-maintenance-pre-a8-projection.json";
+import {
+  historicalBeforeFrameProtocolMaintenance,
+} from "./frame-maintenance-compatibility-fixture";
+import {
+  historicalBeforePerformanceInvestigation,
+} from "./performance-investigation-compatibility-fixture";
+import {
+  historicalBeforeA8ThenA7ThenExistingContractRepair,
+  historicalBeforeCapstoneMaintenance,
+} from "./capstone-maintenance-compatibility-fixture";
+
+const hashJson = (value: unknown) =>
+  createHash("sha256").update(JSON.stringify(value)).digest("hex");
+
+const serializedRegistry = (
+  course: typeof currentCourse,
+  keys: readonly string[],
+) => {
+  const namespace = course as typeof currentCourse & {
+    default?: Record<string, unknown>;
+  };
+  const values = course as unknown as Record<string, unknown>;
+  const defaultRegistry =
+    namespace.default ??
+    Object.fromEntries(
+      keys
+        .filter((key) => key !== "default")
+        .map((key) => [key, values[key]]),
+    );
+  return Object.fromEntries(
+    keys.map((key) => [
+      key,
+      key === "default" ? defaultRegistry : values[key],
+    ]),
+  );
+};
+
+const lessonIds = (course: typeof currentCourse) =>
+  course.lessons.map((lesson) => lesson.id);
 
 describe("capstone verifier boundaries", () => {
+  it("records authored snapshot chronology separately from runtime acceptance", () => {
+    // These are immutable authored-availability snapshots. They do not claim
+    // that a private runtime admission or execution was accepted.
+    const preA8Course = historicalBeforeCapstoneMaintenance(currentCourse);
+    const preA7Course = historicalBeforePerformanceInvestigation(preA8Course);
+    const preA6Course = historicalBeforeFrameProtocolMaintenance(
+      historicalBeforeA8ThenA7ThenExistingContractRepair(currentCourse),
+    );
+
+    expect(preA6.predecessor.head).toBe("16356613b729f5a456e506fc7508424994ab369b");
+    expect(preA6.predecessor.tree).toBe("e68b5123d83ac456c59d4e5c4125c9f94ac698fc");
+    expect(preA7.head).toBe("da97ed42bfb3e2bf341195545c32489dacbf0bdc");
+    expect(preA7.tree).toBe("721f026c962eb15580ecdb19db34dfc7b8a8b059");
+    expect(preA8.head).toBe("eaaee0b2398ebffffb2c666e0c932389671158d4");
+    expect(preA8.tree).toBe("9bd1490800de24f4d30a06d56845cf90620e16d4");
+
+    expect(
+      hashJson(serializedRegistry(preA6Course, preA6.registryKeys)),
+    ).toBe(preA6.wholeCourseSha256);
+    expect(
+      hashJson(serializedRegistry(preA7Course, preA7.predecessor.registryKeys)),
+    ).toBe(preA7.predecessor.wholeCourseSha256);
+    expect(
+      hashJson(serializedRegistry(preA8Course, preA8.predecessor.registryKeys)),
+    ).toBe(preA8.predecessor.wholeCourseSha256);
+
+    const preA8Registry = serializedRegistry(
+      preA8Course,
+      preA8.predecessor.registryKeys,
+    );
+    for (const [key, expectedHash] of Object.entries(
+      preA8.predecessor.registrySha256ByKey,
+    )) {
+      expect(hashJson(preA8Registry[key]), key).toBe(expectedHash);
+    }
+
+    expect(preA6Course.lessons).toHaveLength(preA6.counts.lessons);
+    expect(preA7Course.lessons).toHaveLength(preA7.predecessor.counts.lessons);
+    expect(preA8Course.lessons).toHaveLength(preA8.predecessor.counts.lessons);
+
+    expect(lessonIds(preA6Course)).not.toEqual(
+      expect.arrayContaining([
+        "api-frame-protocol-maintenance",
+        "performance-evidence-investigation",
+        "capstone-maintenance-recovery",
+      ]),
+    );
+    expect(lessonIds(preA7Course)).toEqual(
+      expect.arrayContaining(["api-frame-protocol-maintenance"]),
+    );
+    expect(lessonIds(preA7Course)).not.toEqual(
+      expect.arrayContaining([
+        "performance-evidence-investigation",
+        "capstone-maintenance-recovery",
+      ]),
+    );
+    expect(lessonIds(preA8Course)).toEqual(
+      expect.arrayContaining([
+        "api-frame-protocol-maintenance",
+        "performance-evidence-investigation",
+      ]),
+    );
+    expect(lessonIds(preA8Course)).not.toContain("capstone-maintenance-recovery");
+    expect(lessonIds(currentCourse)).toEqual(
+      expect.arrayContaining([
+        "api-frame-protocol-maintenance",
+        "performance-evidence-investigation",
+        "capstone-maintenance-recovery",
+      ]),
+    );
+  });
+
   it("accepts only unique fetch and msrv flags", () => {
     expect(parseCapstoneArgs([])).toEqual({ fetch: false, msrv: false });
     expect(parseCapstoneArgs(["--fetch", "--msrv"])).toEqual({
@@ -215,14 +331,36 @@ describe("capstone verifier boundaries", () => {
       ],
     ];
     expect(
-      capstoneMutants.slice(8).map(({ id, namedTest }) => [id, namedTest]),
+      capstoneMutants.slice(8, 13).map(({ id, namedTest }) => [id, namedTest]),
     ).toEqual(expected);
-    for (const mutant of capstoneMutants.slice(8)) {
+    for (const mutant of capstoneMutants.slice(8, 13)) {
       expect(mutant.testTarget).toEqual({
         crate: "ingest-store",
         integration: "stream_capacity",
       });
     }
+  });
+
+  it("routes the A8 reopen-limit mutant through its exact maintenance selector", () => {
+    const mutant = capstoneMutants.at(-1)!;
+    expect(mutant.id).toBe("a8-reopen-limit-ignores-k3");
+    expect(mutant.namedTest).toBe("maintenance_reconfiguration_recovery_trace");
+    expect(mutant.testTarget).toEqual({
+      crate: "ingest-store",
+      integration: "maintenance_recovery",
+    });
+    expect(capstoneMutantTestArgs(mutant)).toEqual([
+      "test",
+      "-p",
+      "ingest-store",
+      "--test",
+      "maintenance_recovery",
+      "--offline",
+      "--locked",
+      "maintenance_reconfiguration_recovery_trace",
+      "--",
+      "--exact",
+    ]);
   });
 
   it("does not serialize environment secrets into toolchain metadata", () => {

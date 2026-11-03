@@ -8,7 +8,7 @@ import {
   reviewExercises,
   sources,
 } from "./course";
-import { historicalBeforePerformanceInvestigation } from "./performance-investigation-compatibility-fixture";
+import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
 
 const lessonId = "api-frame-protocol-maintenance";
 const stepIds = [
@@ -90,7 +90,7 @@ it("preserves the existing public API module gate while appending the checkpoint
 });
 
 it("keeps the historical A6 catalog count limited to one lesson and six steps", () => {
-  const historicalA6 = historicalBeforePerformanceInvestigation(currentCourse);
+  const historicalA6 = historicalBeforeExistingContractRepair(currentCourse);
 
   expect(historicalA6.lessons).toHaveLength(194);
   expect(

@@ -4,7 +4,11 @@ export type CapstoneTestTarget =
   | { crate: "ingest-store"; library: true }
   | {
       crate: "ingest-store";
-      integration: "transactions" | "migrations" | "stream_capacity";
+      integration:
+        | "transactions"
+        | "migrations"
+        | "stream_capacity"
+        | "maintenance_recovery";
     }
   | { crate: "ingest-core"; integration: "public_api" }
   | { crate: "ingest-service"; integration: "lifecycle" };
@@ -235,6 +239,19 @@ export const capstoneMutants: readonly CapstoneMutant[] = [
         "stream-full-returns-success",
       ),
   },
+  {
+    id: "a8-reopen-limit-ignores-k3",
+    path: "crates/ingest-store/src/store.rs",
+    testTarget: { crate: "ingest-store", integration: "maintenance_recovery" },
+    namedTest: "maintenance_reconfiguration_recovery_trace",
+    mutate: (source) =>
+      replaceOnce(
+        source,
+        "store.per_stream_limit = Some(per_stream_limit);",
+        "store.per_stream_limit = Some(NonZeroUsize::new(2).unwrap());",
+        "a8-reopen-limit-ignores-k3",
+      ),
+  },
 ];
 
 export function getCapstoneMutant(id: string): CapstoneMutant {
@@ -254,5 +271,6 @@ export function capstoneMutantTestArgs(mutant: CapstoneMutant): string[] {
     "--offline",
     "--locked",
     mutant.namedTest,
+    ...(mutant.id === "a8-reopen-limit-ignores-k3" ? ["--", "--exact"] : []),
   ];
 }

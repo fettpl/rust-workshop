@@ -259,6 +259,8 @@ interface MutantRecord {
 interface VariantEvidence {
   externalConsumer?: RecordedCommand;
   workload?: RecordedCommand;
+  maintenanceCompile?: RecordedCommand;
+  maintenanceTrace?: RecordedCommand;
 }
 
 function toolVersion(executable: string): string {
@@ -560,6 +562,50 @@ function verifyVariant(
     evidence.externalConsumer = consumerTest;
     expectTestOutput(consumerTest, "external consumer");
     evidence.workload = runWorkload(toolchain, packageRoot, commands);
+    const maintenanceCompile = recordCommand(
+      commands,
+      runCommand(
+        toolchain,
+        packageRoot,
+        [
+          "test",
+          "-p",
+          "ingest-store",
+          "--test",
+          "maintenance_recovery",
+          "--offline",
+          "--locked",
+          "maintenance_recovery_compile_boundary",
+          "--no-run",
+        ],
+      ),
+    );
+    evidence.maintenanceCompile = maintenanceCompile;
+    expectSuccess(maintenanceCompile, "A8 maintenance compile boundary");
+    const maintenanceTrace = recordCommand(
+      commands,
+      runCommand(
+        toolchain,
+        packageRoot,
+        [
+          "test",
+          "-p",
+          "ingest-store",
+          "--test",
+          "maintenance_recovery",
+          "--offline",
+          "--locked",
+          "--no-fail-fast",
+          "maintenance_reconfiguration_recovery_trace",
+          "--",
+          "--exact",
+        ],
+        60_000,
+        "maintenance_reconfiguration_recovery_trace",
+      ),
+    );
+    evidence.maintenanceTrace = maintenanceTrace;
+    expectTestOutput(maintenanceTrace, "A8 maintenance trace");
   }
   return {
     archiveSha256: createHash("sha256").update(served).digest("hex"),
@@ -626,6 +672,10 @@ export function runCapstoneVerification(options: CapstoneArgs): unknown {
           },
       recovery: { mutants: mutantRecords },
       workload: { events: 512, expectedInserted: 256, expectedDuplicates: 256, deterministicDuplicateSchedule: "key = floor(index / 2)", result: evidence.workload ?? null },
+      maintenance: {
+        compileBoundary: evidence.maintenanceCompile ?? null,
+        positiveTrace: evidence.maintenanceTrace ?? null,
+      },
       release: { status: "Hold", advisoryAndLicenseReview: "incomplete" },
       failure,
     };

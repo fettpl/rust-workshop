@@ -528,6 +528,19 @@ import { tsImport } from "tsx/esm/api";
     expect(capstoneAuthoredPaths).toHaveLength(
       capstoneOriginalAuthoredEntryCount,
     );
+    const capstoneA8AuthoredPaths = [
+      "A8-MAINTENANCE-MANIFEST.json",
+      "A8-MAINTENANCE.md",
+      "crates/ingest-store/tests/maintenance_recovery.rs",
+    ];
+    const capstoneCurrentAuthoredPaths = [
+      ...capstoneAuthoredPaths,
+      ...capstoneA8AuthoredPaths,
+    ];
+    const capstoneCurrentAuthoredEntryCount = 40;
+    expect(capstoneCurrentAuthoredPaths).toHaveLength(
+      capstoneCurrentAuthoredEntryCount,
+    );
     const readArchiveNoticeBytes = async (projectId) => {
       const includesApacheNotice = archiveApacheExceptionPackageIds.has(projectId);
       const scope = (await readFile("docs/licensing.md", "utf8"))
@@ -566,7 +579,7 @@ import { tsImport } from "tsx/esm/api";
       const relativePaths = Object.keys(files).map((path) =>
         path.startsWith(root) ? path.slice(root.length) : path,
       );
-      const expectedPaths = [...capstoneAuthoredPaths, ...noticePaths].sort();
+      const expectedPaths = [...capstoneCurrentAuthoredPaths, ...noticePaths].sort();
       expect(relativePaths, `${projectId} archive entry names`).toEqual(
         expectedPaths,
       );
@@ -577,9 +590,9 @@ import { tsImport } from "tsx/esm/api";
       expect(
         relativePaths.filter((path) => !noticePaths.includes(path)),
         `${projectId} authored payload names`,
-      ).toEqual([...capstoneAuthoredPaths].sort());
+      ).toEqual([...capstoneCurrentAuthoredPaths].sort());
       expect(Object.keys(files), `${projectId} archive entry count`).toHaveLength(
-        capstoneOriginalAuthoredEntryCount + noticePaths.length,
+        capstoneCurrentAuthoredEntryCount + noticePaths.length,
       );
       for (const [noticePath, expectedBytes] of Object.entries(notices)) {
         const actualBytes = files[root + noticePath];

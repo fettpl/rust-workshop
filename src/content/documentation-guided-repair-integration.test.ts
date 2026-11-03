@@ -9,7 +9,7 @@ import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-co
 import { expect, it } from "vitest";
 import * as course from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
+import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
 
 it("appends one documentation lesson after the testing workflow with executable recall and counted families", () => {
   const stage = course.modules.find((m) => m.id === "testing-quality")!;

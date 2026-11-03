@@ -3,9 +3,8 @@ import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import {
   acceptedPreC1Projection,
-  historicalBeforeExistingContractRepair,
 } from "./existing-contract-repair-compatibility-fixture";
-import { historicalBeforePerformanceInvestigation } from "./performance-investigation-compatibility-fixture";
+import { historicalBeforeA8ThenA7ThenExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -16,9 +15,7 @@ const predecessorRegistryHashes = acceptedPreC1Projection.predecessor
   .registrySha256ByKey as Record<string, string>;
 
 const historicalBeforeC1 = (course: typeof currentCourse) =>
-  historicalBeforeExistingContractRepair(
-    historicalBeforePerformanceInvestigation(course),
-  );
+  historicalBeforeA8ThenA7ThenExistingContractRepair(course);
 
 function captureRegistry(course: typeof currentCourse) {
   const namespace = course as typeof currentCourse & {
@@ -260,7 +257,9 @@ it("does not alter ordinary fuzz choice recall or allocation review/recall surfa
 
 it("introduces no IDs, families, credits, gates, calibrations, or learner labels", () => {
   const projected = historicalBeforeC1(currentCourse);
-  const preC1 = historicalBeforePerformanceInvestigation(currentCourse);
+  const preC1 = historicalBeforeA8ThenA7ThenExistingContractRepair(
+    currentCourse,
+  );
   expect(projected.lessons.map((lesson) => lesson.id)).toEqual(
     preC1.lessons.map((lesson) => lesson.id),
   );

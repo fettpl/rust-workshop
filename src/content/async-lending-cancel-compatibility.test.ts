@@ -19,7 +19,7 @@ import {
   historicalBeforeCancellationTransfer,
 } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
-import { historicalBeforeA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./performance-investigation-compatibility-fixture";
+import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
 import baseline from "./fixtures/async-cancel-pre-transfer.json";
 import savedFixtures from "./fixtures/baseline-correction-saves.json";
 import {

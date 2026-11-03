@@ -14,6 +14,7 @@ export const durableLogServiceProject = {
     "Testy publicznego API i protokołu.",
     "Testy transakcji i migracji.",
     "Testy loopback, restartu i procesu.",
+    "Wypełniony pakiet A8-MAINTENANCE.md i własny plan przeglądu utrzymania.",
   ],
   constraints: [
     "Tylko loopback i bounded zasoby.",
@@ -63,6 +64,7 @@ export const durableLogServiceProject = {
     "capstone-protocol-evolution",
     "capstone-incident-recovery",
     "capstone-release-evidence",
+    "capstone-maintenance-recovery",
   ],
   reviewConceptIds: [
     "capstone-domain-boundary-contract",

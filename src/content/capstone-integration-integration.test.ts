@@ -8,6 +8,7 @@ import {
   capstoneIntegrationReviewExercises,
   capstoneIntegrationSources,
 } from "./capstone-integration";
+import { capstoneMaintenanceModuleExtension } from "./capstone-maintenance-lesson";
 import { lessons, modules, projects } from "./course";
 import { createInitialState } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
@@ -95,7 +96,10 @@ describe("Capstone: trwały serwis logów", () => {
     expect(body).toMatch(/współbież|jednoproces|concurr/i);
     expect(body).toMatch(/uzasadn|decyzj.*gran|miejsce/);
 
-    expect(project!.lessonIds).toEqual(lessonIds);
+    expect(project!.lessonIds).toEqual([
+      ...lessonIds,
+      "capstone-maintenance-recovery",
+    ]);
     expect(project!.reviewConceptIds).toEqual(
       lessonIds.map((id) => `${id}-contract`),
     );
@@ -199,11 +203,14 @@ describe("Capstone: trwały serwis logów", () => {
     expect(capstoneIntegrationModule.assessmentId).toBe(
       "capstone-release-blank",
     );
-    expect(modules).toContainEqual(capstoneIntegrationModule);
+    expect(modules).toContainEqual(capstoneMaintenanceModuleExtension);
     const project = projects.find(
       (candidate) => candidate.id === "durable-log-service",
     );
-    expect(project?.lessonIds).toEqual(lessonIds);
+    expect(project?.lessonIds).toEqual([
+      ...lessonIds,
+      "capstone-maintenance-recovery",
+    ]);
     expect(project?.reviewConceptIds).toEqual(
       lessonIds.map((id) => `${id}-contract`),
     );

@@ -232,6 +232,8 @@ Proptest 1.11.0 wyłącznie jako dev-dependency; biblioteka jest std-only.
 
 W repozytorium ten zakres jest dostarczony jako bounded milestone `capstone-integration`: sześć polskich lekcji, dwanaście bramek, sześć blank-page i sześć niezależnych retrieval reviews. `durable-log-service-workspace` ma trzy crate'y i 37 autorskich plików (10 Markdown); maintainer verifier uruchamia wyłącznie ten zaufany archive na stable oraz exact Rust 1.85.0. Browserowe bramki nie wykonują SQLite ani TCP i nie uruchamiają kodu ucznia. Stable/MSRV archive results pozostają blokadą wydania, dopóki oba przebiegi nie wytworzą przejrzanych raportów JSON, a advisory/license review pozostaje nieukończony.
 
+Dodana praktyka `capstone-maintenance-recovery` pozostaje opcjonalnym, sześciostopniowym ćwiczeniem poza tymi dwunastoma bramkami i sześcioma retrieval reviews. Używa istniejących wyborów oraz rubryki wyłącznie do predykcji, ekspozycji i samooceny: nie tworzy nowego zaliczenia, fixture, rodziny ani niezależnego dowodu. Pakiet utrzymania ma trzy dopisane pliki po zachowanym prefiksie 37 ścieżek; arkusz, manifest i odpowiedź uczącego się pozostają niewypełnione, a autor referencji nie uruchamia kodu uczącego się.
+
 ## Senior scope jako osobne dowody
 
 Lista tematów sama w sobie nie świadczy o kompetencji. Każdy obszar powinien mieć zadanie, wynik i artefakt:

@@ -475,8 +475,11 @@ import {
   capstoneIntegrationCompetencies,
   capstoneIntegrationSources,
   capstoneIntegrationReviewExercises,
-  capstoneIntegrationModule,
 } from "./capstone-integration";
+import {
+  capstoneMaintenanceModuleExtension,
+  capstoneMaintenanceRecoveryLesson,
+} from "./capstone-maintenance-lesson";
 import { durableLogServiceProject } from "./projects/durable-log-service";
 import {
   asyncLendingCoreLessons,
@@ -629,7 +632,7 @@ export const modules = [
   unsafeMiriModule,
   unsafeBorrowedMemoryModule,
   serviceOperationsModule,
-  capstoneIntegrationModule,
+  capstoneMaintenanceModuleExtension,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -698,6 +701,7 @@ export const lessons = [
   ...unsafeBorrowedMemoryLessons,
   ...serviceOperationsLessons,
   ...capstoneIntegrationLessons,
+  capstoneMaintenanceRecoveryLesson,
   ...coreConversionsLessons,
   ...coreCheckedConversionsLessons,
   ...nestedPatternLessons,
