@@ -8,7 +8,7 @@ import {
   reviewExercises,
   sources,
 } from "./course";
-import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
+import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
 
 const lessonId = "api-frame-protocol-maintenance";
 const stepIds = [

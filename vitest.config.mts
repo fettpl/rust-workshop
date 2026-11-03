@@ -13,6 +13,7 @@ export default defineConfig({
       "scripts/setup-assets.test.ts",
       "scripts/monaco-sanitizer.test.ts",
       "scripts/service-worker.test.ts",
+      "scripts/offline-exposure-contract.test.ts",
     ],
     environment: "node",
   },

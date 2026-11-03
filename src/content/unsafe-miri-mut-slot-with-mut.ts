@@ -341,7 +341,7 @@ export const mutSlotWithMutSteps: LessonStep[] = [
     kind: "run",
     title: "Zobacz callback z krótkim reborrow",
     prompt:
-      "Prześledź jawny krótki reborrow i lokalny callback. Wcześniejsza lekcja „Callback odwiedza lokalne pożyczki” jest tu mostem: docelowe `with_mut` dopiero uogólni tę operację przez HRTB `F: for<'short> FnOnce(&'short mut T) -> R`, aby przy każdym wywołaniu dać świeżą pożyczkę, wywołać callback raz i oddać R. R może być niezależne od chwilowej pożyczki, ale może pożyczać z zewnętrznego właściciela albo ze wspólnych danych niesionych przez T; zwykły unwind zachowuje wcześniejsze mutacje bez obietnicy rollbacku.",
+      "Prześledź jawny krótki reborrow i lokalny callback. Wcześniejsza lekcja „Callback odwiedza lokalne pożyczki” jest tu mostem: docelowe `with_mut` dopiero uogólni tę operację przez HRTB `F: for<'short> FnOnce(&'short mut T) -> R`, aby przy każdym wywołaniu dać świeżą pożyczkę, wywołać callback raz i oddać R. R jest niezależne od chwilowej pożyczki, ale może pożyczać z zewnętrznego właściciela albo ze wspólnych danych niesionych przez T; zwykły unwind zachowuje wcześniejsze mutacje bez obietnicy rollbacku.",
     code: mutSlotWithMutModel,
     solution: mutSlotWithMutModel,
     evaluator: {

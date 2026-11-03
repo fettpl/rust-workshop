@@ -6,9 +6,9 @@ import {
   historicalBeforePerformanceInvestigation as historicalBeforeA7Source,
 } from "./performance-investigation-compatibility-fixture";
 import {
-  historicalBeforeA8ThenA7ThenExistingContractRepair,
-  historicalBeforeCapstoneMaintenance,
-} from "./capstone-maintenance-compatibility-fixture";
+  historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeA8ThenA7ThenExistingContractRepair,
+  historicalBeforeA9ThenCapstoneMaintenance as historicalBeforeCapstoneMaintenance,
+} from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
 import { acceptedPreC1Projection } from "./existing-contract-repair-compatibility-fixture";
 
 const hashJson = (value: unknown) =>

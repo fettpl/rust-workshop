@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
+import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
 const { concepts, lessons, modules, reviewExercises } =
   historicalBeforeFallibleComposition(
     historicalBeforeDocumentationRepair(

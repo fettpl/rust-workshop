@@ -11,6 +11,10 @@ import { tsImport } from "tsx/esm/api";
     "../src/content/learning-context.ts",
     import.meta.url,
   );
+  const { findFreshNeutralExposure, hasFreshNeutralExposureSuffix } = await tsImport(
+    "./offline-exposure-contract.ts",
+    import.meta.url,
+  );
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
@@ -1755,6 +1759,55 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.locator(".task-pane")).toContainText(
       "samodzielne zadania kodowe 0/2",
     );
+    await expect(page.locator(".save-status")).toHaveText(
+      "Zapisano na tym urządzeniu",
+    );
+    await expect
+      .poll(
+        async () => {
+          const state = await readLearningState();
+          return (
+            findFreshNeutralExposure(
+              state.events,
+              ownershipBefore.events.length,
+              "borrow-intro",
+              "borrow-conflict",
+            ) !== undefined
+          );
+        },
+        {
+          message:
+            "fresh borrow-intro:borrow-conflict neutral exposure must persist after offline reload",
+        },
+      )
+      .toBe(true);
+    const ownershipAfterReload = await readLearningState();
+    expect(
+      ownershipAfterReload.events.slice(0, ownershipBefore.events.length),
+    ).toEqual(ownershipBefore.events);
+    const ownershipReloadAppended = ownershipAfterReload.events.slice(
+      ownershipBefore.events.length,
+    );
+    expect(
+      ownershipReloadAppended.length,
+      "offline reload must append at least one fresh neutral exposure",
+    ).toBeGreaterThan(0);
+    expect(
+      hasFreshNeutralExposureSuffix(
+        ownershipAfterReload.events,
+        ownershipBefore.events.length,
+        "borrow-intro",
+        "borrow-conflict",
+      ),
+    ).toBe(true);
+    expect(
+      findFreshNeutralExposure(
+        ownershipAfterReload.events,
+        ownershipBefore.events.length,
+        "borrow-intro",
+        "borrow-conflict",
+      ),
+    ).toBeDefined();
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
@@ -1769,14 +1822,24 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     expect(
       ownershipAfter.events
         .slice(ownershipBefore.events.length)
-        .every(
-          (event) =>
-            event.kind === "exposure" &&
-            event.passed &&
-            !event.gate &&
-            event.evidenceVersion === undefined,
-        ),
+        .length,
+    ).toBeGreaterThan(0);
+    expect(
+      hasFreshNeutralExposureSuffix(
+        ownershipAfter.events,
+        ownershipBefore.events.length,
+        "borrow-intro",
+        "borrow-conflict",
+      ),
     ).toBe(true);
+    expect(
+      findFreshNeutralExposure(
+        ownershipAfter.events,
+        ownershipBefore.events.length,
+        "borrow-intro",
+        "borrow-conflict",
+      ),
+    ).toBeDefined();
     expect(
       ownershipAfter.events.filter(
         (event) =>

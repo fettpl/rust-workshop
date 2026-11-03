@@ -3,9 +3,9 @@ import { capstoneMaintenanceRecoveryLesson } from "./capstone-maintenance-lesson
 import { capstoneMaintenanceModuleExtension } from "./capstone-maintenance-lesson";
 import { lessons, modules, projects } from "./course";
 import {
-  historicalBeforeCapstoneMaintenance,
   acceptedPreA8Projection,
 } from "./capstone-maintenance-compatibility-fixture";
+import { historicalBeforeA9ThenCapstoneMaintenance as historicalBeforeCapstoneMaintenance } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
 import * as currentCourse from "./course";
 import { createHash } from "node:crypto";
 

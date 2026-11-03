@@ -10,7 +10,7 @@ import {
   disjointRangesPrimaryStepId,
   disjointRangesStepIds,
 } from "./unsafe-miri-disjoint-ranges-compatibility-fixture";
-import { historicalBeforeA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./capstone-maintenance-compatibility-fixture";
+import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
 import {
   assistanceForLessonStep,
   evidenceForLessonStep,
