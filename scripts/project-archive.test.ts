@@ -59,6 +59,7 @@ describe("project archive distribution notices", () => {
       "mini-grep-workshop",
       "frame-protocol-workspace",
       "durable-log-service-workspace",
+      "durable-log-retry-workspace",
     ]);
     const packages = projects.flatMap((project) =>
       project.package ? [project.package] : [],
@@ -264,7 +265,7 @@ describe("project archive distribution notices", () => {
     ).toThrow(/missing archive notice input.*LICENSE-CONTENT/i);
   });
 
-  it("requires Apache text only for the three declared package exceptions", () => {
+  it("requires Apache text only for the four declared package exceptions", () => {
     const repositoryRoot = repositoryWithNotices();
     rmSync(join(repositoryRoot, "LICENSE-APACHE"));
     expect(() =>

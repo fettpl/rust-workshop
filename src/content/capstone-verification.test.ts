@@ -20,9 +20,9 @@ import {
   historicalBeforePerformanceInvestigation,
 } from "./performance-investigation-compatibility-fixture";
 import {
-  historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeA8ThenA7ThenExistingContractRepair,
-  historicalBeforeA9ThenCapstoneMaintenance as historicalBeforeCapstoneMaintenance,
-} from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+  historicalBeforeA10ThenA9ThenCapstoneMaintenance,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair,
+} from "./service-client-retry-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -57,10 +57,10 @@ describe("capstone verifier boundaries", () => {
   it("records authored snapshot chronology separately from runtime acceptance", () => {
     // These are immutable authored-availability snapshots. They do not claim
     // that a private runtime admission or execution was accepted.
-    const preA8Course = historicalBeforeCapstoneMaintenance(currentCourse);
+    const preA8Course = historicalBeforeA10ThenA9ThenCapstoneMaintenance(currentCourse);
     const preA7Course = historicalBeforePerformanceInvestigation(preA8Course);
     const preA6Course = historicalBeforeFrameProtocolMaintenance(
-      historicalBeforeA8ThenA7ThenExistingContractRepair(currentCourse),
+      historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(currentCourse),
     );
 
     expect(preA6.predecessor.head).toBe("16356613b729f5a456e506fc7508424994ab369b");

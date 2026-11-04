@@ -401,7 +401,8 @@ export function validateContent(content: ContentBundle): string[] {
       !lesson.conceptIds.length ||
       !lesson.competencyIds.length ||
       !lesson.sourceIds.length ||
-      lesson.minutes <= 0
+      (lesson.minutes !== undefined &&
+        (!Number.isFinite(lesson.minutes) || lesson.minutes <= 0))
     )
       errors.push(`lesson ${lesson.id} is missing required learning metadata`);
     if (!moduleIds.has(lesson.moduleId))

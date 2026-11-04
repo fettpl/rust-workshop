@@ -7,7 +7,7 @@ import { expect, it } from "vitest";
 import * as currentCourse from "./course";
 import { historicalBeforeFallibleComposition } from "./fallible-composition-compatibility-fixture";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-client-retry-compatibility-fixture";
 const course = historicalBeforeFallibleComposition(
   historicalBeforeDocumentationRepair(
     historicalBeforeSendHandoff(

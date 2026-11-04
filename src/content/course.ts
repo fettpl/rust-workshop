@@ -477,10 +477,18 @@ import {
   capstoneIntegrationReviewExercises,
 } from "./capstone-integration";
 import {
+  serviceClientRetryLessons,
+  serviceClientRetryConcepts,
+  serviceClientRetryCompetencies,
+  serviceClientRetryReviewExercises,
+  serviceClientRetryModule,
+} from "./service-client-retry";
+import {
   capstoneMaintenanceModuleExtension,
   capstoneMaintenanceRecoveryLesson,
 } from "./capstone-maintenance-lesson";
 import { durableLogServiceProject } from "./projects/durable-log-service";
+import { durableLogRetryProject } from "./projects/durable-log-retry";
 import {
   asyncLendingCoreLessons,
   asyncLendingCoreConcepts,
@@ -633,6 +641,7 @@ export const modules = [
   unsafeBorrowedMemoryModule,
   serviceOperationsModule,
   capstoneMaintenanceModuleExtension,
+  serviceClientRetryModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -702,6 +711,7 @@ export const lessons = [
   ...serviceOperationsLessons,
   ...capstoneIntegrationLessons,
   capstoneMaintenanceRecoveryLesson,
+  ...serviceClientRetryLessons,
   ...coreConversionsLessons,
   ...coreCheckedConversionsLessons,
   ...nestedPatternLessons,
@@ -773,6 +783,7 @@ export const concepts = [
   ...unsafeBorrowedMemoryConcepts,
   ...serviceOperationsConcepts,
   ...capstoneIntegrationConcepts,
+  ...serviceClientRetryConcepts,
   ...coreConversionsConcepts,
   ...coreCheckedConversionsConcepts,
   ...nestedPatternConcepts,
@@ -840,6 +851,7 @@ export const competencies = [
   ...unsafeBorrowedMemoryCompetencies,
   ...serviceOperationsCompetencies,
   ...capstoneIntegrationCompetencies,
+  ...serviceClientRetryCompetencies,
   ...coreConversionsCompetencies,
   ...coreCheckedConversionsCompetencies,
   ...nestedPatternCompetencies,
@@ -973,6 +985,7 @@ export const reviewExercises = {
   ...unsafeBorrowedMemoryReviewExercises,
   ...serviceOperationsReviewExercises,
   ...capstoneIntegrationReviewExercises,
+  ...serviceClientRetryReviewExercises,
   ...coreConversionsReviewExercises,
   ...coreCheckedConversionsReviewExercises,
   ...nestedPatternReviewExercises,
@@ -1056,6 +1069,7 @@ export const projects = [
   ffiBufferProject,
   miriSafetyProject,
   durableLogServiceProject,
+  durableLogRetryProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },

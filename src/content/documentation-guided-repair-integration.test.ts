@@ -7,9 +7,14 @@ import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeFrameProtocolMaintenance } from "./frame-maintenance-compatibility-fixture";
 import { expect, it } from "vitest";
-import * as course from "./course";
+import * as actualCurrentCourse from "./course";
 import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import {
+  historicalBeforeA10,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair,
+} from "./service-client-retry-compatibility-fixture";
+
+const course = historicalBeforeA10(actualCurrentCourse);
 
 it("appends one documentation lesson after the testing workflow with executable recall and counted families", () => {
   const stage = course.modules.find((m) => m.id === "testing-quality")!;

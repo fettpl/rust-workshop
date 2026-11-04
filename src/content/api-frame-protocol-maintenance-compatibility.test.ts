@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import * as currentCourse from "./course";
+import * as actualCurrentCourse from "./course";
 import baseline from "./fixtures/frame-protocol-pre-a6-projection.json";
 import {
   frameProtocolMaintenanceLessonId,
@@ -8,7 +8,12 @@ import {
   historicalBeforeFrameProtocolMaintenance,
 } from "./frame-maintenance-compatibility-fixture";
 import { historicalBeforeOwnershipFoundation } from "./ownership-foundation-compatibility-fixture";
-import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import {
+  historicalBeforeA10,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair,
+} from "./service-client-retry-compatibility-fixture";
+
+const currentCourse = historicalBeforeA10(actualCurrentCourse);
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");

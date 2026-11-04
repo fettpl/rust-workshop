@@ -49,6 +49,7 @@ export const EXTENSION_GROUPS = [
       "tokio-network-service",
       "service-operations",
       "capstone-integration",
+      "service-client-retry",
     ],
   },
   {

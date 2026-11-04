@@ -11,7 +11,7 @@ import {
 } from "./course-route";
 
 describe("course route", () => {
-  it("covers the reviewed 48-module catalog once, with the exact core order", () => {
+  it("covers the current 49-module catalog once, with the exact core order", () => {
     const core = CORE_MODULE_IDS as readonly string[];
     const extensionGroups = EXTENSION_GROUPS.flatMap(
       (group) => group.moduleIds,
@@ -59,6 +59,7 @@ describe("course route", () => {
         "tokio-network-service",
         "service-operations",
         "capstone-integration",
+        "service-client-retry",
       ],
       [
         "public-api-workspaces",
@@ -78,8 +79,8 @@ describe("course route", () => {
         "unsafe-borrowed-memory-soundness",
       ],
     ]);
-    expect(all).toHaveLength(48);
-    expect(new Set(all).size).toBe(48);
+    expect(all).toHaveLength(49);
+    expect(new Set(all).size).toBe(49);
     expect(modules.map((module) => module.id).sort()).toEqual([...all].sort());
   });
 
@@ -87,7 +88,7 @@ describe("course route", () => {
     expect(modulesForMode("core", modules).map((module) => module.id)).toEqual(
       CORE_MODULE_IDS,
     );
-    expect(modulesForMode("extensions", modules)).toHaveLength(31);
+    expect(modulesForMode("extensions", modules)).toHaveLength(32);
     expect(modulesForMode("all", modules)).toEqual(modules);
     expect(mapModeForModule("shared-ownership")).toBe("extensions");
     expect(mapModeForModule("log-analyzer")).toBe("core");

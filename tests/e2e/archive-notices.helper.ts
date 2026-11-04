@@ -8,6 +8,7 @@ const apacheExceptionPackageIds = new Set([
   "mini-grep-workshop",
   "frame-protocol-workspace",
   "durable-log-service-workspace",
+  "durable-log-retry-workspace",
 ]);
 
 function expectedNoticeNames(archive: ProjectPackage): string[] {

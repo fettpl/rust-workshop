@@ -24,6 +24,7 @@ export const archiveApacheExceptionPackageIds = [
   "mini-grep-workshop",
   "frame-protocol-workspace",
   "durable-log-service-workspace",
+  "durable-log-retry-workspace",
 ] as const;
 
 const archiveApacheExceptionIds = new Set<string>(

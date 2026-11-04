@@ -153,8 +153,13 @@ export function Dashboard() {
           <h2>{lesson.title}</h2>
           <p>{lesson.subtitle}</p>
           <div className="continue-meta">
-            <Clock size={15} />
-            {lesson.minutes} min<span>·</span>Krok{" "}
+            {lesson.minutes !== undefined ? (
+              <>
+                <Clock size={15} />
+                {lesson.minutes} min<span>·</span>
+              </>
+            ) : null}
+            Krok{" "}
             {Math.min(state.resume.stepIndex + 1, lesson.steps.length)} z{" "}
             {lesson.steps.length}
           </div>
@@ -560,10 +565,12 @@ export function CourseMap() {
                 <span className="lesson-completion">
                   {completed}/{lesson.steps.length} kroków
                 </span>
-                <span className="time">
-                  <Clock size={14} />
-                  {lesson.minutes} min
-                </span>
+                {lesson.minutes !== undefined ? (
+                  <span className="time">
+                    <Clock size={14} />
+                    {lesson.minutes} min
+                  </span>
+                ) : null}
                 <ArrowRight size={19} />
               </button>
             );

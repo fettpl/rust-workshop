@@ -11,9 +11,12 @@ import {
   a9ModelStepId,
   a9PreAuthoringRegistrySha256ByKey,
   historicalBeforeA9,
-  historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair,
-  historicalBeforeA9ThenCapstoneMaintenance,
 } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import {
+  historicalBeforeA10ThenA9,
+  historicalBeforeA10ThenA9ThenCapstoneMaintenance,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair,
+} from "./service-client-retry-compatibility-fixture";
 import { mutSlotWithMutSteps } from "./unsafe-miri-mut-slot-with-mut";
 
 const hashJson = (value: unknown) =>
@@ -77,7 +80,7 @@ it("requires the fixed independent-result wording in the model prompt", () => {
 
 it("restores the A9 prompt across all 15 registries without mutating input", () => {
   const input = withCapturedDefault();
-  const projected = historicalBeforeA9(input);
+  const projected = historicalBeforeA10ThenA9(input);
 
   expect(
     (
@@ -99,7 +102,7 @@ it("restores the A9 prompt across all 15 registries without mutating input", () 
     const value = key === "default" ? projected.default : projected[key];
     expect(hashJson(value)).toBe(a9PreAuthoringRegistrySha256ByKey[key]);
   }
-  expect(historicalBeforeA9(projected)).toEqual(projected);
+  expect(historicalBeforeA10ThenA9(projected)).toEqual(projected);
 });
 
 it("fails closed for an old, near-miss, missing, or unrelated model step", () => {
@@ -161,11 +164,11 @@ it("fails closed for an old, near-miss, missing, or unrelated model step", () =>
 
 it("composes A9 newest-first with both accepted historical projections", () => {
   const input = withCapturedDefault();
-  const beforeA9 = historicalBeforeA9(input);
-  expect(historicalBeforeA9ThenCapstoneMaintenance(input)).toEqual(
+  const beforeA9 = historicalBeforeA10ThenA9(input);
+  expect(historicalBeforeA10ThenA9ThenCapstoneMaintenance(input)).toEqual(
     historicalBeforeCapstoneMaintenance(beforeA9),
   );
   expect(
-    historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair(input),
+    historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(input),
   ).toEqual(historicalBeforeA8ThenA7ThenExistingContractRepair(beforeA9));
 });

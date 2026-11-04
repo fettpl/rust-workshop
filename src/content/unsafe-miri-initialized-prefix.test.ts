@@ -19,7 +19,7 @@ import {
 } from "./unsafe-miri-initialized-prefix";
 import { unsafeMiriLessons, unsafeMiriModule } from "./unsafe-miri";
 import { historicalBeforeDisjointRanges } from "./unsafe-miri-disjoint-ranges-compatibility-fixture";
-import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-client-retry-compatibility-fixture";
 import baseline from "./fixtures/unsafe-miri-pre-prefix.json";
 import { unsafeMiriAssessmentSourceFor } from "./unsafe-miri-assessment-fixtures";
 

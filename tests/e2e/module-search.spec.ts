@@ -26,7 +26,7 @@ test("searches lesson topics, keeps module identity and selection, and clears wi
   await browser
     .getByRole("button", { name: "Rozszerzenia", exact: true })
     .click();
-  await expect(browser.locator(".module-picker > button")).toHaveCount(31);
+  await expect(browser.locator(".module-picker > button")).toHaveCount(32);
   await expect(browser.locator(".module-group-heading")).toHaveCount(4);
   await browser.getByRole("button", { name: "Cały kurs", exact: true }).click();
   await expect(browser.locator(".module-picker > button")).toHaveCount(
@@ -76,7 +76,9 @@ test("searches lesson topics, keeps module identity and selection, and clears wi
   await page.keyboard.press("Enter");
   await expect(coreMode).toHaveAttribute("aria-pressed", "true");
   await search.fill("rust");
-  await expect(browser.getByRole("status")).toContainText("Moduły: 6 z 48");
+  await expect(browser.getByRole("status")).toContainText(
+    `Moduły: 6 z ${modules.length}`,
+  );
   await expect(browser.getByRole("status")).toContainText(
     "zakres: cały kurs (Podstawy: 1, Rozszerzenia: 5)",
   );

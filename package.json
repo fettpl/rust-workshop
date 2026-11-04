@@ -21,6 +21,7 @@
     "content:audit": "node --import tsx scripts/audit-sources.ts",
     "format": "prettier --write src scripts tests *.ts *.mjs",
     "content:packages": "node --import tsx scripts/build-project-assets.ts",
+    "content:client-retry": "node --import tsx scripts/verify-client-retry.ts",
     "audit:production": "node scripts/audit-production.mjs",
     "test:audit-production": "node --test scripts/audit-production.test.mjs",
     "test:sharp-runtime": "node --test scripts/verify-sharp-runtime.test.mjs",

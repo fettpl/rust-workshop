@@ -158,7 +158,8 @@ export interface Lesson {
   prerequisites: string[];
   title: string;
   subtitle: string;
-  minutes: number;
+  /** Optional author estimate; new lessons may omit duration rather than invent one. */
+  minutes?: number;
   outcomes: string[];
   steps: LessonStep[];
   misconceptions: string[];

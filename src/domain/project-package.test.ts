@@ -86,14 +86,14 @@ describe("downloadable project packages", () => {
     const packages = projects.flatMap((project) =>
       project.package ? [project.package] : [],
     );
-    expect(packages).toHaveLength(13);
+    expect(packages).toHaveLength(14);
     expect(
       packages.filter((project) =>
         archiveApacheExceptionPackageIds.includes(
           project.id as (typeof archiveApacheExceptionPackageIds)[number],
         ),
       ),
-    ).toHaveLength(3);
+    ).toHaveLength(4);
 
     for (const project of packages) {
       for (const variant of ["starter", "solution"] as const) {

@@ -15,7 +15,8 @@
           "docs/licensing.md",
           "docs/oss-provenance.md",
           "docs/rights-assessment.md",
-          "docs/slot-lazy-init-transfer-evidence.md"
+          "docs/slot-lazy-init-transfer-evidence.md",
+          "docs/client-retry.md"
         ]
       }
     },
@@ -77,7 +78,7 @@
     },
     {
       "path": "src/content/abstraction-integration.test.ts",
-      "sha256": "4774294366b9a8d6ab7afc2d8922d8310066f0ee2a01d618459a2ad093374b39",
+      "sha256": "d5c6e4e729c1497677417052c74e395c50e192778ec63d856a27217bc01dfecb",
       "group": "course"
     },
     {
@@ -92,12 +93,12 @@
     },
     {
       "path": "src/content/api-frame-protocol-maintenance-compatibility.test.ts",
-      "sha256": "f8a720868e21843bacd2cbb4c8ac17bed75abe92962b1d03dae1bc673223d8d5",
+      "sha256": "8704eaddafc7c6a353e9e8a7443af746afde3b858b85a55fd1bde22d0ed54127",
       "group": "course"
     },
     {
       "path": "src/content/api-frame-protocol-maintenance.test.ts",
-      "sha256": "fa099c8af1a8b66b64b3a2519877171d46dabcef3eb987fe5a1daca8111b4718",
+      "sha256": "22c4b147e9210998bd04a2a904c6a65fb3ddb049859c9d1c0b000c373b14dea2",
       "group": "course"
     },
     {
@@ -152,7 +153,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "da65e3157b6d2aa32d1248172b1c9fd661434db440ea32dda60da94d6b78660e",
+      "sha256": "c0e1c71b5965be5e4abf300ff1058d3ac06870d21e7cd5e6646bd198f02e05f4",
       "group": "course"
     },
     {
@@ -222,7 +223,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "839228982d97eb11ed08330e9762ec688813541e4fc9ddf8617de839b8471662",
+      "sha256": "1e79e98f396b9bcb5a2b83b2a83f9ea7df94f68f48eb32c75445eb335fcfb706",
       "group": "course"
     },
     {
@@ -252,7 +253,7 @@
     },
     {
       "path": "src/content/async-lending-transfer-compatibility.test.ts",
-      "sha256": "bcbd925bc74607b166e464d17b9b562add3ea4b1828a0e1e7fc7cdec41ddaaee",
+      "sha256": "6da04bd87d8c7af67c153fa6d8473f672e269781ffde2cd87588e272fb01727c",
       "group": "course"
     },
     {
@@ -277,7 +278,7 @@
     },
     {
       "path": "src/content/baseline-correction-integration.test.ts",
-      "sha256": "e42e31ec3c21b0a367474bfa7259e0c95a34c31953229167e2931fca2699688b",
+      "sha256": "7f58bec5d97d1a61f2ebd5501d2578c897d7c79b2727708f40d1bcf389e3e76b",
       "group": "course"
     },
     {
@@ -378,7 +379,7 @@
     {
       "path": "src/content/capstone-maintenance-compatibility.test.ts",
       "group": "course",
-      "sha256": "1f64ab5e3684808c91c47da6b25aab01aa0158507a4e12bc21817db143c159f3"
+      "sha256": "ce4a5c7936eb91649d8c0fadd0a1199fb980047677019bc727285d621a732db1"
     },
     {
       "path": "src/content/capstone-maintenance-lesson.ts",
@@ -387,7 +388,7 @@
     },
     {
       "path": "src/content/capstone-verification.test.ts",
-      "sha256": "4e23fc4e8af724d24d8356b5debba5a96b8beaff16d94d84e2b10aa17a62c26f",
+      "sha256": "edfe517cddc90b81f4a1e14b03c4fe50f1c23e8623530b4b9227f1a2643fa197",
       "group": "course"
     },
     {
@@ -482,7 +483,7 @@
     },
     {
       "path": "src/content/core-practice-integration.test.ts",
-      "sha256": "c3bc92b7dcd856dd45b2ea9261a6bf4d0a945a745d93e412d07fab88626991df",
+      "sha256": "5f4d65dfea14f97c1ba3ab83a7a0972ebbb2bbbe56d5011cd18b5244c06c4c46",
       "group": "course"
     },
     {
@@ -492,7 +493,7 @@
     },
     {
       "path": "src/content/course.ts",
-      "sha256": "bc1b0aff51ad23f620b826f780de76bce0d41ee385276c27d5af83c4d623a3fa",
+      "sha256": "20d341499230fd44c8e5d6a3d776846e514b67fe39686a6a29906c0b5f150044",
       "group": "course"
     },
     {
@@ -522,7 +523,7 @@
     },
     {
       "path": "src/content/dependency-maintenance-compatibility.test.ts",
-      "sha256": "2655599250a1a5d3265b95e9e181ce20e78989f3b2bc881085be033dffa05c9a",
+      "sha256": "467f04715fc273700b7289c83d36bf28edb2b555adaa7f55f460ccc03c67aa13",
       "group": "course"
     },
     {
@@ -547,7 +548,7 @@
     },
     {
       "path": "src/content/documentation-guided-repair-integration.test.ts",
-      "sha256": "89093eabffd0a4d5f6c78ea91fcb4bbfbaeaa1df16145ebf5f93d1fada32df53",
+      "sha256": "1e867a7ebe4552ba282d9a11f9e164febe453b74908d309db3ca29b48cabf362",
       "group": "course"
     },
     {
@@ -587,7 +588,7 @@
     },
     {
       "path": "src/content/existing-contract-repair-compatibility.test.ts",
-      "sha256": "9c26c332ed3b7698208da1334ca62409b0cd3db0bb3c1ac7475eeaf8a54ab5d8",
+      "sha256": "181f8e764a57002237867cd580c70bbb4a36c6cd49aa884891db9478a615e7fc",
       "group": "course"
     },
     {
@@ -612,7 +613,7 @@
     },
     {
       "path": "src/content/fallible-composition-integration.test.ts",
-      "sha256": "db9dc95eb582e87feae313da468e7966e3a6548f0c1678066e23886f48389092",
+      "sha256": "f22337f2b51a0e626b5109bbe322341cbf8d31da26ef8935a10e124abfec7074",
       "group": "course"
     },
     {
@@ -737,7 +738,7 @@
     },
     {
       "path": "src/content/fuzz-evidence-integration.test.ts",
-      "sha256": "76816da49824c889a3234be85fe093ed4ffc502a2a94d847b1a363d4b7e1ba9b",
+      "sha256": "b6b6341a19dc765fe206f534551a55d8685cb96db0cbc46c5188ef2d3a70210a",
       "group": "course"
     },
     {
@@ -1017,7 +1018,7 @@
     },
     {
       "path": "src/content/ownership-foundation-transfer.test.ts",
-      "sha256": "b36fafe8e3495dc59d4d08f2379694be79f9eea6ff63bcb9e9cefcf6caee6f99",
+      "sha256": "0d36c9c7cced7452c0de55f03a458bf202538930b16c6feab9bf3107e65085f5",
       "group": "course"
     },
     {
@@ -1063,11 +1064,11 @@
     {
       "path": "src/content/performance-investigation-compatibility.test.ts",
       "group": "course",
-      "sha256": "c0e7bfaa901fc0c42aa55ceca4c7303cf46f1959899d420dbdbc84099af21dec"
+      "sha256": "33d2db6ad673b8a40f7be04ccf8a5a845f97247e64ae47375b73052d6c1e385a"
     },
     {
       "path": "src/content/prerequisite-entries.test.ts",
-      "sha256": "40d16afefc054da2ee2d4ca779ef33e95c9da5f00148c310b90a7f539b8f6fa9",
+      "sha256": "398b8d4ca1ad38351ab6d9f75b1e4155f68759eca689695cf1f1edcf6fb93ed0",
       "group": "course"
     },
     {
@@ -1332,7 +1333,7 @@
     },
     {
       "path": "src/content/runtime-allocation-integration.test.ts",
-      "sha256": "7a84077fff88a6359b1b33719aedf3ac3e269db85b8252c6ac533d1434b08c39",
+      "sha256": "adc8772f0ce416adfb4d9b47cbc150bef7ba8e40a9d571fb32d253f7d74d6624",
       "group": "course"
     },
     {
@@ -1387,7 +1388,7 @@
     },
     {
       "path": "src/content/shared-borrow-calibration.test.ts",
-      "sha256": "ae9e6b5e8d0967101109a02d2e2b2889f04d7e7ac68220d686a9444becd8df74",
+      "sha256": "8be73e460287b5dd5807a114f72afe7dcaa9f2f3dd30f1b242e5de97e0d6edee",
       "group": "course"
     },
     {
@@ -1557,7 +1558,7 @@
     },
     {
       "path": "src/content/unsafe-ffi-integration.test.ts",
-      "sha256": "fc290eb7bcd789ce1f1e6fd8af76425bd9c3db5242f1a2c591069769c16c8fc6",
+      "sha256": "98ccdb10341b2b44515ce7533c6675b5bd1517d4ba37b8c969625c032bc13fae",
       "group": "course"
     },
     {
@@ -1577,7 +1578,7 @@
     },
     {
       "path": "src/content/unsafe-miri-disjoint-ranges-compatibility.test.ts",
-      "sha256": "ff0d3b83fa95dff38fe9a5630cc268ee6d9014a444025ee7bd4cc3f20c808df6",
+      "sha256": "dfa30bc47c316aacd1b8dd7cf32ba2f4f337c8d7e95a6f2dec575f70816d90bc",
       "group": "course"
     },
     {
@@ -1637,7 +1638,7 @@
     },
     {
       "path": "src/content/unsafe-miri-initialized-prefix.test.ts",
-      "sha256": "bc709f39aa4e426ce8638bf0d6e6e21540b27a4593391b0ce40dc779bec7b916",
+      "sha256": "683091092c7979f14170ea9fce17a39f0b0df2b25b234cd2d305e02640a8b571",
       "group": "course"
     },
     {
@@ -1658,7 +1659,7 @@
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-a9-compatibility.test.ts",
       "group": "course",
-      "sha256": "53d4ce0b3257ea0c8f36d53f02f74db0540645154eedd948fb6369753f24e8af"
+      "sha256": "1e3478dd72624961118d79260bc44f86d32bd9ccbd7ca1424a908deb19735f0d"
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility-fixture.ts",
@@ -1667,7 +1668,7 @@
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility.test.ts",
-      "sha256": "9027ccf0b794fc614e13fc596c9fde20339b574856c6408dd62fe8f37d879666",
+      "sha256": "e45a0a65df28d75425400d4224b152a43b33bec1c2bb329a9466f08119b8e1c0",
       "group": "course"
     },
     {
@@ -1687,7 +1688,7 @@
     },
     {
       "path": "src/content/unsafe-miri-prefix-compatibility.test.ts",
-      "sha256": "ca94d04ef0a7edc7b97994605ad62e7c6cffd74a3faaee7b6af4b46aca522164",
+      "sha256": "6dd9f23bc535aff10dfd959c0d735e3fb90c6851e027819c738c7f699e504d49",
       "group": "course"
     },
     {
@@ -1697,7 +1698,7 @@
     },
     {
       "path": "src/content/unsafe-miri-slot-lazy-init-compatibility.test.ts",
-      "sha256": "018de2d51849a07bfe29d7fe75cf68cfbb00c31d45e22573632e5c996d611a53",
+      "sha256": "79015dd7923d6e41ea9398271d8391efa1de953c1017202fe32aba38d3ad220f",
       "group": "course"
     },
     {
@@ -1717,12 +1718,52 @@
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "fa9ad22f800d909bda86d3ac9b67cfcaac03cb72a7ca34bd70c0eec985b19b4d",
+      "sha256": "307d83ffb2bddafeac49dcf35e7cbba3aed1b3d04a2a1423e370ec3c03bd541b",
       "group": "course"
     },
     {
       "path": "src/content/workspace-verification.test.ts",
       "sha256": "85b647a19b14f078d2f4ebff0704a3f0e1c469abff49d3d2636feb3a7a51df0d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-retry.ts",
+      "sha256": "32bc9cb0b34f9144055c1f7872f24c3ea9abb8223083922822000285766e9f4d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/projects/durable-log-retry/package.test.ts",
+      "sha256": "4033dcfd9c4894cc28cc00b0e887c5a726dd7cfaad52c56170c0f838e9345193",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-client-retry-assessment.test.ts",
+      "sha256": "6fcab0019d08d5df2def6a1cffbc9af89c1e1ed94aef9cf23b8726c141d3a70b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-client-retry-compatibility-fixture.ts",
+      "sha256": "b6547c89e794e67b40b9b8baf9fef077d6dee580ac1b233783a906f383589cb4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-client-retry-compatibility.test.ts",
+      "sha256": "14d91a1d7690f5f5fa67abdee8d62376ac886dbedcffed7b86238fcdbe7a2dae",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-client-retry-integration.test.ts",
+      "sha256": "53cdbc174db639cc2a7f9cc488f8dbea49f0f59793c0edda91878fc4786490fe",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-client-retry-metadata.test.ts",
+      "sha256": "12841da0d153dfb902c3b915a5328e33ea10147dc9c33c6664fdbefcdf2b533b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/service-client-retry.ts",
+      "sha256": "5589483dc24d5262185f28baa3a9cf5917d5840a12cf8db1905dbbeb7a4bfb09",
       "group": "course"
     }
   ],

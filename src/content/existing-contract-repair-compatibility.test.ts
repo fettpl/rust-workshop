@@ -4,7 +4,7 @@ import * as currentCourse from "./course";
 import {
   acceptedPreC1Projection,
 } from "./existing-contract-repair-compatibility-fixture";
-import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeA8ThenA7ThenExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeA8ThenA7ThenExistingContractRepair, historicalBeforeA10 } from "./service-client-retry-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -15,7 +15,7 @@ const predecessorRegistryHashes = acceptedPreC1Projection.predecessor
   .registrySha256ByKey as Record<string, string>;
 
 const historicalBeforeC1 = (course: typeof currentCourse) =>
-  historicalBeforeA8ThenA7ThenExistingContractRepair(course);
+  historicalBeforeA8ThenA7ThenExistingContractRepair(historicalBeforeA10(course));
 
 function captureRegistry(course: typeof currentCourse) {
   const namespace = course as typeof currentCourse & {
@@ -267,7 +267,7 @@ it("introduces no IDs, families, credits, gates, calibrations, or learner labels
     preC1.modules.map((module) => module.id),
   );
   expect(projected.concepts.map((concept) => concept.id)).toEqual(
-    currentCourse.concepts.map((concept) => concept.id),
+    historicalBeforeA10(currentCourse).concepts.map((concept) => concept.id),
   );
   expect(JSON.stringify(captureRegistry(projected))).not.toContain("c1-v1");
   expect(JSON.stringify(captureRegistry(projected))).not.toContain(

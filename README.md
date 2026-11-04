@@ -42,6 +42,13 @@ archive gives you files to work on locally; the web app does not run those
 archives on your computer. A separate Study Session CLI brief asks you to build
 your own project from scratch, with your own tests and CLI evidence.
 
+The durable log service also has an optional bounded retry client laboratory.
+It teaches fixed-frame replay, bounded budgets, terminal refusals, and
+preserved uncertainty through a separate authored Cargo fixture. Its scoped
+source, archive, and licensing boundary is recorded in
+[docs/client-retry.md](docs/client-retry.md); the fixture is not a production
+reliability claim and does not execute learner code locally.
+
 Frame Protocol also includes an optional
 [library maintenance checkpoint](docs/frame-protocol-maintenance.md): preserve
 an existing downstream client while adding typed error categories, then write

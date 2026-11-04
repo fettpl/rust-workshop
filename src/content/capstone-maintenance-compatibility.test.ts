@@ -5,7 +5,7 @@ import { lessons, modules, projects } from "./course";
 import {
   acceptedPreA8Projection,
 } from "./capstone-maintenance-compatibility-fixture";
-import { historicalBeforeA9ThenCapstoneMaintenance as historicalBeforeCapstoneMaintenance } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenCapstoneMaintenance as historicalBeforeCapstoneMaintenance } from "./service-client-retry-compatibility-fixture";
 import * as currentCourse from "./course";
 import { createHash } from "node:crypto";
 

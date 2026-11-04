@@ -11,7 +11,7 @@ import {
   initializedPrefixLessonId,
   initializedPrefixStepIds,
 } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./unsafe-miri-mut-slot-with-mut-a9-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-client-retry-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,

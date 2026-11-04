@@ -36,11 +36,14 @@ This records the bounded assessment and acceptance, not exhaustive rights cleara
   294 course files and documents extracted-unit screening and contextual manual
   review. No actionable substantial copied-expression case was identified
   within that historical scope; `course-source-review` is resolved as that
-  assessment record. The current finite ledger has 321 course files and five
-  public files. The later existing-lesson-contract correction delta is
+  assessment record. The current finite ledger has 338 course files and five
+  public files. This is a finite scoped inventory, not exhaustive clearance of
+  all 338 course files. The later existing-lesson-contract correction delta is
   documented in the rights assessment. Bounded independent C1 provenance
-  review completed. No new external copied input was identified within this
-  diff. The existing bounded rights, originality, publication, trademark,
+  review completed. The bounded A10 retry delta is documented in
+  [client-retry.md](client-retry.md); it records internal reference reuse and
+  no identified external code payload in the scoped review, not legal
+  clearance. The existing bounded rights, originality, publication, trademark,
   privacy and release limitations continue. Source citations remain leads,
   never automatic permission.
 - The icon origin is traced assistant generation: private maintainer records
