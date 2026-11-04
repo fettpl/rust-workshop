@@ -1,3 +1,23 @@
+# Typed authorization source checkpoint — 4 November 2026
+
+The current authored catalog contains **50 modules, 202 lessons, 1,347 steps,
+198 concepts, 199 competencies, 349 sources and 15 projects**. Core retains
+17 modules; extensions now contain 33. The optional
+[typed authorization extension](service-authorization.md) adds four lessons,
+24 steps, two concepts and four primary coding families after service operations.
+It teaches exact-scope decision, attenuation, request-bound ownership and
+consuming admission. Two ordinary reviews and empty-editor blank aliases
+preserve the existing evidence rules. No duration estimates are added.
+
+The browser binding dependency is a labeled deterministic test double; its
+admission witness is fixed test input. The separate native package supplies
+the real private composed API. Synthetic principals are not authentication;
+there is no TLS, credential, global replay, distributed revocation or measured
+resource-bound claim. Source availability does not establish learner transfer,
+security, efficacy or readiness. Final local qualification is a separate record;
+publication, Actions and remote integration holds remain. All dated checkpoints
+below retain their original dates, counts and evidence attribution.
+
 # Curriculum reconciliation — 3 November 2026
 
 This review reconciles the original Core 0–18 topics, fourteen advanced areas and the eighteen priorities from the October curriculum review. The audience has basic programming knowledge and starts Rust from zero.

@@ -112,3 +112,19 @@ This continuation changes no external gate: no push, project remote/main
 changes, hosted Actions, visibility, publication, paid infrastructure or
 deployment. Public release and future exact-head integration checks remain
 deferred. Previous sealed local milestones and their evidence are preserved.
+
+
+## A11 local source continuation — 4 November 2026
+
+The scoped [typed authorization source](service-authorization.md) adds four
+operation-isolated lessons and a separate native package, with synthetic
+principals and finite accepted-work accounting. T1/T2 source handoffs and their
+bounded local reviews precede browser/documentation work. The six production
+browser scenarios are source-authored; discovery is not execution. Final
+qualification must use an owned production build, exact source/archive hashes,
+zero-retry browser runs, native and lesson-model checks, and independent review.
+No existing browser/server session or sealed predecessor stage is reused as a
+qualification target. Finite provenance closure follows coordinated staging.
+No push, main update, publication, deployment, dependency fetch or hosted Actions
+run is authorized by this local continuation. Older queue scheduling and billing
+observations above remain dated historical reports, not current service status.

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { lessons, concepts, competencies, modules, reviewExercises, delayedReviewExercises, sources, traces, project, projects, roadmap } from "./course";
+import * as rawCurrentCourse from "./course";
+import { historicalBeforeA11 } from "./service-authorization-compatibility-fixture";
+const { lessons, concepts, competencies, modules, reviewExercises, delayedReviewExercises, sources, traces, project, projects, roadmap } = historicalBeforeA11(rawCurrentCourse);
 import { validateContent } from "./validate";
 
 const bundle = { lessons, concepts, competencies, modules, reviewExercises, delayedReviewExercises, sources, traces, project, projects, roadmap };

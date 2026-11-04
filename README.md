@@ -13,6 +13,14 @@ read a real compiler diagnostic, repair the code, and transfer the idea to a
 new task. Spaced review brings concepts back after time away, and project
 work connects individual exercises into programs you can continue locally.
 
+The optional [typed authorization extension](docs/service-authorization.md)
+adds exact-scope policy decisions, monotone attenuation, request-bound authority
+borrows and consuming admission accounting. Its synthetic lesson models and
+separate native Rust package have distinct verification boundaries. The
+4 November 2026 authored catalog contains 50 modules, 202 lessons, 1,347 steps,
+198 concepts, 199 competencies, 349 sources and 15 projects. These counts record
+availability; local qualification and remote acceptance are separate records.
+
 ## What you can learn
 
 The **core route** ends at Log Analyzer. It starts with the first Rust program,

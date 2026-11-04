@@ -1,3 +1,23 @@
+# Typed authorization source checkpoint — 4 November 2026
+
+The current authored catalog contains **50 modules, 202 lessons, 1,347 steps,
+198 concepts, 199 competencies, 349 sources and 15 projects**. Core retains
+17 modules; extensions now contain 33. The optional
+[typed authorization extension](service-authorization.md) adds four lessons,
+24 steps, two concepts and four primary coding families after service operations.
+It teaches exact-scope decision, attenuation, request-bound ownership and
+consuming admission. Two ordinary reviews and empty-editor blank aliases
+preserve the existing evidence rules. No duration estimates are added.
+
+The browser binding dependency is a labeled deterministic test double; its
+admission witness is fixed test input. The separate native package supplies
+the real private composed API. Synthetic principals are not authentication;
+there is no TLS, credential, global replay, distributed revocation or measured
+resource-bound claim. Source availability does not establish learner transfer,
+security, efficacy or readiness. Final local qualification is a separate record;
+publication, Actions and remote integration holds remain. All dated checkpoints
+below retain their original dates, counts and evidence attribution.
+
 # Foundation practice source checkpoint — 2 November 2026
 
 The authored catalog now contains 48 modules, 194 lessons, 194 concepts, 1,293 steps and 349 sources. The optional [Frame Protocol maintenance checkpoint](frame-protocol-maintenance.md) adds a learner-owned changed-client/regression/ADR/review packet inside Public API Workspaces, without adding coding families or changing its four module criteria. One later checkpoint in Data Modeling supplies ownership restoration, observable nested/conditional Drop and concrete Copy contracts. The [contract and evidence note](ownership-foundation-transfer-evidence.md) separates task availability from earned coding evidence and explains the preserved route, history and Cargo stops. Exact hosted CI and integration remain separate gates. The earlier Slot and dated curriculum sections below remain historical source checkpoints.

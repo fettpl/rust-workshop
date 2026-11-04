@@ -7,6 +7,7 @@ import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { homedir } from "node:os";
 import { strFromU8, unzipSync } from "fflate";
+import { serviceAuthorizationPackage } from "../src/content/projects/service-authorization";
 import { durableLogRetryPackage } from "../src/content/projects/durable-log-retry";
 import { buildProjectArchive, projectArchiveFiles } from "./project-archive";
 
@@ -258,12 +259,17 @@ export const legacyRetryArchiveProjectIds = [
   "tokio-service-workshop",
 ] as const;
 
-export type RetryArchiveTopology = "empty" | "pre-generation" | "post-generation";
+export type RetryArchiveTopology = "empty" | "pre-generation" | "post-generation" | "post-authorization-generation";
 export type GeneratedRetryArchiveHashes = { starter: string; solution: string };
 
 const retryArchiveNames = {
   starter: `${durableLogRetryPackage.id}/starter.zip`,
   solution: `${durableLogRetryPackage.id}/solution.zip`,
+} as const;
+
+const authorizationArchiveNames = {
+  starter: `${serviceAuthorizationPackage.id}/starter.zip`,
+  solution: `${serviceAuthorizationPackage.id}/solution.zip`,
 } as const;
 
 function legacyRetryArchiveNames(): string[] {
@@ -273,22 +279,31 @@ function legacyRetryArchiveNames(): string[] {
 export function classifyRetryArchiveTopology(snapshot: Record<string, string>): RetryArchiveTopology {
   const names = Object.keys(snapshot).sort();
   const legacyNames = legacyRetryArchiveNames();
-  const allowed = new Set([...legacyNames, retryArchiveNames.starter, retryArchiveNames.solution]);
+  const allowed = new Set([...legacyNames, retryArchiveNames.starter, retryArchiveNames.solution, authorizationArchiveNames.starter, authorizationArchiveNames.solution]);
   assert(names.every((name) => allowed.has(name)), "archive topology contains an unknown project archive");
   const legacyPresent = names.filter((name) => legacyNames.includes(name));
   const retryPresent = names.filter((name) => name === retryArchiveNames.starter || name === retryArchiveNames.solution);
+  const authorizationPresent = names.filter((name) => name === authorizationArchiveNames.starter || name === authorizationArchiveNames.solution);
   if (names.length === 0) return "empty";
   assert.equal(legacyPresent.length, legacyNames.length, "archive topology has a partial legacy archive set");
   assert.equal(retryPresent.length === 0 || retryPresent.length === 2, true, "archive topology has a partial generated retry pair");
+  assert(authorizationPresent.length === 0 || authorizationPresent.length === 2, "archive topology has a partial authorization pair");
+  assert(authorizationPresent.length === 0 || retryPresent.length === 2, "authorization archives require the retry pair");
+  if (authorizationPresent.length === 2) return "post-authorization-generation";
   return retryPresent.length === 0 ? "pre-generation" : "post-generation";
 }
 
-export function assertRetryArchiveTopology(snapshot: Record<string, string>, generated?: GeneratedRetryArchiveHashes): RetryArchiveTopology {
+export function assertRetryArchiveTopology(snapshot: Record<string, string>, generated?: GeneratedRetryArchiveHashes, generatedAuthorization?: GeneratedRetryArchiveHashes): RetryArchiveTopology {
   const topology = classifyRetryArchiveTopology(snapshot);
-  if (topology === "post-generation") {
+  if (topology === "post-generation" || topology === "post-authorization-generation") {
     assert(generated, "post-generation archive topology requires generated retry hashes");
     assert.equal(snapshot[retryArchiveNames.starter], generated.starter, "generated starter archive differs from authored bytes");
     assert.equal(snapshot[retryArchiveNames.solution], generated.solution, "generated solution archive differs from authored bytes");
+  }
+  if (topology === "post-authorization-generation") {
+    assert(generatedAuthorization, "authorization archive topology requires authored authorization hashes");
+    assert.equal(snapshot[authorizationArchiveNames.starter], generatedAuthorization.starter, "authorization starter archive differs from authored bytes");
+    assert.equal(snapshot[authorizationArchiveNames.solution], generatedAuthorization.solution, "authorization solution archive differs from authored bytes");
   }
   return topology;
 }
@@ -411,8 +426,14 @@ export function runClientRetryVerification(options: RetryVerifierArgs): unknown 
     starter: sha256(archives.starter),
     solution: sha256(archives.solution),
   };
-  const beforeTopology = assertRetryArchiveTopology(beforeArchives, generatedHashes);
-  const results: Record<string, unknown> = { schema: "rust-workshop.client-retry.v1", variant: options.msrv ? "msrv" : "stable", archive: {}, commands };
+  const authorizationArchive = Object.fromEntries((["starter", "solution"] as const).map((variant) => {
+    const bytes = buildProjectArchive(serviceAuthorizationPackage, variant, { repositoryRoot: root });
+    const members = projectArchiveFiles(serviceAuthorizationPackage, variant, { repositoryRoot: root });
+    return [variant, { sha256: sha256(bytes), bytes: bytes.byteLength, members: Object.fromEntries(Object.entries(members).map(([path, content]) => [path, sha256(content)])) }];
+  })) as Record<"starter" | "solution", { sha256: string; bytes: number; members: Record<string, string> }>;
+  const generatedAuthorization = { starter: authorizationArchive.starter.sha256, solution: authorizationArchive.solution.sha256 };
+  const beforeTopology = assertRetryArchiveTopology(beforeArchives, generatedHashes, generatedAuthorization);
+  const results: Record<string, unknown> = { schema: "rust-workshop.client-retry.v1", variant: options.msrv ? "msrv" : "stable", archive: {}, authorizationArchive, commands };
   for (const variant of ["starter", "solution"] as const) {
     const packageRoot = extractExact(archives[variant], join(runRoot, variant), variant);
     const target = join(runRoot, variant, "target");
@@ -428,7 +449,7 @@ export function runClientRetryVerification(options: RetryVerifierArgs): unknown 
   const mutantCommands = mutantCheck(profile, archives.solution, runRoot);
   for (const mutant of mutantCommands) commands.push(mutant.compile, mutant.rejected, mutant.restored);
   const afterArchives = archiveSnapshot(root);
-  const afterTopology = assertRetryArchiveTopology(afterArchives, generatedHashes);
+  const afterTopology = assertRetryArchiveTopology(afterArchives, generatedHashes, generatedAuthorization);
   assert.equal(afterTopology, beforeTopology, "public archive topology changed during standalone verification");
   assert.deepEqual(afterArchives, beforeArchives, "public project archives changed");
   results.commands = commands;

@@ -86,7 +86,7 @@ describe("downloadable project packages", () => {
     const packages = projects.flatMap((project) =>
       project.package ? [project.package] : [],
     );
-    expect(packages).toHaveLength(14);
+    expect(packages).toHaveLength(15);
     expect(
       packages.filter((project) =>
         archiveApacheExceptionPackageIds.includes(

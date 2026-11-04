@@ -1,5 +1,7 @@
 import { expect, it } from "vitest";
-import * as currentCourse from "./course";
+import * as rawCurrentCourse from "./course";
+import { historicalBeforeA11 } from "./service-authorization-compatibility-fixture";
+const currentCourse = historicalBeforeA11(rawCurrentCourse);
 import {
   a10PreAuthoringRegistrySha256ByKey,
   hashJson,

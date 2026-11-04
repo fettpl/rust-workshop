@@ -22,7 +22,7 @@ import {
 import {
   historicalBeforeA10ThenA9ThenCapstoneMaintenance,
   historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair,
-} from "./service-client-retry-compatibility-fixture";
+} from "./service-authorization-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");

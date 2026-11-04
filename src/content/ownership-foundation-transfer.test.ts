@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import * as currentCourse from "./course";
+import * as rawCurrentCourse from "./course";
+import { historicalBeforeA11 } from "./service-authorization-compatibility-fixture";
+const currentCourse = historicalBeforeA11(rawCurrentCourse);
 import {
   acceptedPreFoundationRegistry,
   acceptedPreFoundationCourseSha256,
@@ -8,7 +10,7 @@ import {
   ownershipFoundationLessonId,
   ownershipFoundationStepIds,
 } from "./ownership-foundation-compatibility-fixture";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-client-retry-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-authorization-compatibility-fixture";
 import {
   ownershipFoundationModel,
   ownershipFoundationTransferLesson,

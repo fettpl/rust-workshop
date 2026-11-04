@@ -50,6 +50,7 @@ export const EXTENSION_GROUPS = [
       "service-operations",
       "capstone-integration",
       "service-client-retry",
+      "service-authorization",
     ],
   },
   {

@@ -8,7 +8,7 @@ import {
   reviewExercises,
   sources,
 } from "./course";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-client-retry-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-authorization-compatibility-fixture";
 
 const lessonId = "api-frame-protocol-maintenance";
 const stepIds = [

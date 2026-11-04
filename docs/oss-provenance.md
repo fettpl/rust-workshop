@@ -120,3 +120,23 @@ authorship, general originality, trademark clearance, learning efficacy, or
 permission to publish. Concrete new external-source evidence still requires
 assessment under the existing licensing guide. Private generation and execution
 receipts remain outside the public source tree.
+
+
+## Typed authorization finite delta — 4 November 2026
+
+The 338 course-file / five public-file (343 total) inventory described in the
+historical facts above is the predecessor checkpoint. The A11 candidate ledger has 349 course files and five public files (354 total),
+including eleven newly authored content files. It adds the exact new content paths and refreshes the changed content bytes for
+this local source cut; it does not broaden the meaning of that old review.
+The [authorization material record](service-authorization.md) separates
+MIT-associated executable/operational material from CC BY 4.0 teaching prose,
+records AI-assisted origin and existing owner credit, and limits its internal
+reference/no-new-vendored-payload observation to this delta. No new license,
+Apache exception, legal clearance or publication permission is introduced.
+
+The candidate entries include newly authored files that remain untracked until
+coordinated staging. The checker intentionally compares Git-tracked coverage;
+its final tracked-coverage result is pending administrator staging and a fresh
+hash check. A private finite classification report lists every changed/new
+covered path and its actual hash. This source-authoring checkpoint is not a
+claim that `--check` or `--release` has passed on an unstaged inventory.

@@ -16,7 +16,7 @@ import {
   historicalBeforeA10ThenA9,
   historicalBeforeA10ThenA9ThenCapstoneMaintenance,
   historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair,
-} from "./service-client-retry-compatibility-fixture";
+} from "./service-authorization-compatibility-fixture";
 import { mutSlotWithMutSteps } from "./unsafe-miri-mut-slot-with-mut";
 
 const hashJson = (value: unknown) =>

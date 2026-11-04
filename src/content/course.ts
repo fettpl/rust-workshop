@@ -1,3 +1,5 @@
+import { serviceAuthorizationLessons, serviceAuthorizationConcepts, serviceAuthorizationCompetencies, serviceAuthorizationReviewExercises, serviceAuthorizationModule } from "./service-authorization";
+import { serviceAuthorizationProject } from "./projects/service-authorization";
 import {
   documentationRepairLessons,
   documentationRepairConcepts,
@@ -642,6 +644,7 @@ export const modules = [
   serviceOperationsModule,
   capstoneMaintenanceModuleExtension,
   serviceClientRetryModule,
+  serviceAuthorizationModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -720,6 +723,7 @@ export const lessons = [
   ...fallibleCompositionLessons,
   ...documentationRepairLessons,
   ownershipFoundationTransferLesson,
+  ...serviceAuthorizationLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -789,6 +793,7 @@ export const concepts = [
   ...nestedPatternConcepts,
   ...fallibleCompositionConcepts,
   ...documentationRepairConcepts,
+  ...serviceAuthorizationConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -855,6 +860,7 @@ export const competencies = [
   ...coreConversionsCompetencies,
   ...coreCheckedConversionsCompetencies,
   ...nestedPatternCompetencies,
+  ...serviceAuthorizationCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -991,6 +997,7 @@ export const reviewExercises = {
   ...nestedPatternReviewExercises,
   ...fallibleCompositionReviewExercises,
   ...documentationRepairReviewExercises,
+  ...serviceAuthorizationReviewExercises,
 };
 export const delayedReviewExercises = {
   ...functionOwnershipDelayedReviewExercises,
@@ -1070,6 +1077,7 @@ export const projects = [
   miriSafetyProject,
   durableLogServiceProject,
   durableLogRetryProject,
+  serviceAuthorizationProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },

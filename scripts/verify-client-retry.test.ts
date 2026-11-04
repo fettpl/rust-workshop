@@ -141,3 +141,31 @@ describe("bounded retry verifier controls", () => {
     }
   });
 });
+
+// A11 fixed successor topology controls. Unknown future projects are rejected.
+function authorizationSnapshot(): Record<string,string> {return {...syntheticArchiveSnapshot({retry:"both"}),"service-authorization-workshop/starter.zip":"auth-starter","service-authorization-workshop/solution.zip":"auth-solution"};}
+const retryHashes={starter:"generated-starter",solution:"generated-solution"};
+const authHashes={starter:"auth-starter",solution:"auth-solution"};
+it("accepts_fixed_authorization_successor_pair",()=>{expect(assertRetryArchiveTopology(authorizationSnapshot(),retryHashes,authHashes)).toBe("post-authorization-generation");});
+it("preserves_pre_authorization_28_state",()=>{expect(assertRetryArchiveTopology(syntheticArchiveSnapshot({retry:"both"}),retryHashes,authHashes)).toBe("post-generation");});
+it("rejects_partial_authorization_pair",()=>{for(const variant of ["starter","solution"]){const snapshot=authorizationSnapshot();delete snapshot[`service-authorization-workshop/${variant}.zip` as keyof typeof snapshot];expect(()=>assertRetryArchiveTopology(snapshot,retryHashes,authHashes)).toThrow();}});
+it("rejects_authorization_without_retry",()=>{const snapshot=authorizationSnapshot();delete snapshot["durable-log-retry-workspace/starter.zip"];delete snapshot["durable-log-retry-workspace/solution.zip"];expect(()=>assertRetryArchiveTopology(snapshot,retryHashes,authHashes)).toThrow();});
+it("rejects_unknown_successor_even_with_valid_authorization",()=>{expect(()=>assertRetryArchiveTopology({...authorizationSnapshot(),"arbitrary/starter.zip":"unknown"},retryHashes,authHashes)).toThrow();});
+it("rejects_tampered_authorization_starter",()=>{expect(()=>assertRetryArchiveTopology({...authorizationSnapshot(),"service-authorization-workshop/starter.zip":"tamper"},retryHashes,authHashes)).toThrow();});
+it("rejects_tampered_authorization_solution",()=>{expect(()=>assertRetryArchiveTopology({...authorizationSnapshot(),"service-authorization-workshop/solution.zip":"tamper"},retryHashes,authHashes)).toThrow();});
+it("requires_authored_authorization_hashes",()=>{expect(()=>assertRetryArchiveTopology(authorizationSnapshot(),retryHashes)).toThrow();});
+it("binds_real_30_archive_bytes_and_detects_change",async()=>{
+ const {projects}=await import("../src/content/course");const {serviceAuthorizationPackage}=await import("../src/content/projects/service-authorization");
+ const root=mkdtempSync(join(tmpdir(),"a11-actual-30-"));
+ try {
+ const oldIds=new Set<string>([...legacyRetryArchiveProjectIds,durableLogRetryPackage.id]);
+ for(const p of projects){if(p.package && oldIds.has(p.package.id)){for(const variant of ["starter","solution"] as const){const base=join(root,"public/projects",p.package.id);mkdirSync(base,{recursive:true});writeFileSync(join(base,variant+".zip"),buildProjectArchive(p.package,variant));}}}
+ const before=archiveSnapshot(root);expect(Object.keys(before)).toHaveLength(28);
+ const auth={starter:"",solution:""};const retry={starter:"",solution:""};
+ for(const variant of ["starter","solution"] as const){retry[variant]=digest(buildProjectArchive(durableLogRetryPackage,variant));const bytes=buildProjectArchive(serviceAuthorizationPackage,variant);auth[variant]=digest(bytes);const base=join(root,"public/projects",serviceAuthorizationPackage.id);mkdirSync(base,{recursive:true});writeFileSync(join(base,variant+".zip"),bytes);}
+ expect(assertRetryArchiveTopology(archiveSnapshot(root),retry,auth)).toBe("post-authorization-generation");
+ writeFileSync(join(root,"public/projects",serviceAuthorizationPackage.id,"solution.zip"),"changed");
+ expect(()=>assertRetryArchiveTopology(archiveSnapshot(root),retry,auth)).toThrow();
+ const after=archiveSnapshot(root);for(const [path,hash] of Object.entries(before))expect(after[path]).toBe(hash);
+ }finally{rmSync(root,{recursive:true,force:true});}
+});
