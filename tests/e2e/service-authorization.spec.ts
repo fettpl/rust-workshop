@@ -2,11 +2,18 @@ import { expect, test, type Page } from "@playwright/test";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
-import { lessons, projects, reviewExercises } from "../../src/content/course";
+import {
+  lessons,
+  modules,
+  projects,
+  reviewExercises,
+} from "../../src/content/course";
 import type { LessonStep, UserState } from "../../src/domain/types";
 import {
   assistanceForLessonStep,
   courseEvidencePolicy,
+  evidenceForLessonStep,
+  recordCourseEvidence,
   resolveReviewExercise,
   reviewExerciseIdForSelection,
 } from "../../src/content/learning-context";
@@ -879,4 +886,205 @@ test("authorization_out_of_order_browsing_does_not_expose_other_family_solutions
   state = await savedState(page);
   expectHelp(state, [...operations]);
   expectNoIndependent(state);
+});
+
+test("ordinary authorization review reveal exhausts same-family gate recovery", async ({
+  page,
+}, testInfo) => {
+  const runnerRequests: string[] = [];
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname === "/api/run")
+      runnerRequests.push(request.url());
+  });
+  const target = courseLesson("attenuation");
+  const courseModule = modules.find((item) => item.id === target.moduleId)!;
+  const criterion = courseModule.gateCriteria!.find(
+    (item) => item.id === "authorization-attenuation-gate",
+  )!;
+  const concept = "service-scoped-authority";
+  const ordinary = reviewExercises[concept];
+  let initial = readyState("attenuation");
+  // Controlled prerequisite evidence for the other three operations. The target
+  // family and review have no seeded events or saved help.
+  for (const [index, operation] of operations.entries()) {
+    if (operation === "attenuation") continue;
+    const lesson = courseLesson(operation);
+    const step = courseStep(operation, "apply");
+    initial = recordCourseEvidence(initial, {
+      id: `controlled-browser-prerequisite:${operation}`,
+      lessonId: lesson.id,
+      stepId: step.id,
+      ...evidenceForLessonStep(lesson, step),
+      kind: step.evidenceKind,
+      evaluator: "tests",
+      gate: true,
+      passed: true,
+      hints: 0,
+      revealed: false,
+      at: 100 + index,
+    });
+  }
+  const navigate = async (name: string | RegExp) => {
+    const menu = page.getByRole("button", {
+      name: "Otwórz nawigację",
+      exact: true,
+    });
+    if (await menu.isVisible()) await menu.click();
+    await page.getByRole("button", { name, exact: true }).click();
+  };
+  const assertCleanTarget = (state: UserState) => {
+    for (const alias of ["apply", "blank"] as const) {
+      expect(
+        assistanceForLessonStep(
+          state,
+          target,
+          courseStep("attenuation", alias),
+        ),
+      ).toEqual({ hints: 0, revealed: false });
+    }
+    expect(
+      state.events.filter(
+        (event) =>
+          event.lessonId === target.id &&
+          event.passed &&
+          event.kind !== "exposure",
+      ),
+    ).toEqual([]);
+  };
+  const assertRecovery = async () => {
+    const gate = page.locator(".gate-panel");
+    const row = gate.locator("li").filter({ hasText: criterion.label });
+    await expect(row).toHaveCount(1);
+    await expect(row.getByLabel("Do sprawdzenia")).toBeVisible();
+    await expect(row).toContainText("Brak świeżego samodzielnego wariantu");
+    await expect(
+      row.getByRole("button", { name: "Sprawdź w zadaniu", exact: true }),
+    ).toHaveCount(0);
+    await expect(gate.getByLabel("Potwierdzone")).toHaveCount(3);
+    await expect(
+      gate.getByRole("heading", { name: "Co pokaże, że rozumiesz?" }),
+    ).toBeVisible();
+    await page.getByLabel("Znajdź moduł lub temat").fill(courseModule.title);
+    const picker = page
+      .locator(".module-picker")
+      .getByRole("button")
+      .filter({ has: page.getByText(courseModule.title, { exact: true }) });
+    await expect(picker).toHaveCount(1);
+    await expect(picker).toContainText("Dostępny");
+    await expect(picker).not.toContainText("Samodzielność potwierdzona");
+  };
+  try {
+    await page.goto("/");
+    await seedState(page, initial);
+    await navigate(/^Powtórki(?: \d+)?$/);
+    await page
+      .locator(".review-concept")
+      .filter({ hasText: "Zakres i osłabianie uprawnień" })
+      .click();
+    await expect(page.locator(".review-session h3")).toHaveText(ordinary.title);
+    const started = (await savedState(page)).reviewSession!;
+    expect(started).toMatchObject({
+      conceptId: concept,
+      mode: "challenge",
+      wasDue: false,
+    });
+    expect(started.exerciseId).toBeUndefined();
+    expect(started.sessionId).toEqual(expect.any(String));
+    const review = page.locator(".review-session");
+    await review
+      .getByRole("button", { name: "Karta przypomnienia", exact: true })
+      .click();
+    await review
+      .getByLabel("Przypomnij własnymi słowami", { exact: true })
+      .fill("Granice zakresu pozostają ważne.");
+    await review
+      .getByRole("button", { name: "Odsłoń odpowiedź", exact: true })
+      .click();
+    const isReviewReveal = (event: UserState["events"][number]) =>
+      event.lessonId === "review" &&
+      event.kind === "exposure" &&
+      event.revealed;
+    await expect
+      .poll(
+        async () =>
+          (await savedState(page)).events.filter(isReviewReveal).length,
+      )
+      .toBe(1);
+    const revealed = await savedState(page);
+    const exposure = revealed.events.find(isReviewReveal)!;
+    const expectedStepId = `${ordinary.id}:${started.sessionId}`;
+    await testInfo.attach("review-exposure", {
+      body: JSON.stringify({
+        observedStepId: exposure.stepId,
+        expectedStepId,
+        runnerRequests,
+      }),
+      contentType: "application/json",
+    });
+    expect(exposure.stepId).toBe(expectedStepId);
+    expect(revealed.reviewSession).toMatchObject({
+      sessionId: started.sessionId,
+      mode: "card",
+    });
+    expect(revealed.reviewSession?.exerciseId).toBeUndefined();
+    assertCleanTarget(revealed);
+
+    // The selected lesson ID is retained while the review view is open.
+    // Navigate through the sidebar before using the lesson-step helper.
+    const menu = page.getByRole("button", {
+      name: "Otwórz nawigację",
+      exact: true,
+    });
+    if (await menu.isVisible()) await menu.click();
+    await page
+      .locator(".sidebar-trail")
+      .getByRole("button")
+      .filter({ hasText: target.title })
+      .click();
+    await openStep(page, "attenuation", "apply");
+    await expect(page.locator(".compiler-coach")).toBeVisible();
+    await navigate("Mapa nauki");
+    await assertRecovery();
+    await page.reload();
+    const reloaded = await savedState(page);
+    expect(reloaded.events.filter(isReviewReveal)).toEqual([exposure]);
+    expect(reloaded.reviewSession).toEqual(revealed.reviewSession);
+    assertCleanTarget(reloaded);
+    await assertRecovery();
+
+    // Practice stays available. Inspect the coach's warning only after the
+    // review-only recovery assertions, since opening it requires lesson hints.
+    await page
+      .locator(".lesson-list-item")
+      .filter({
+        has: page.getByRole("heading", { name: target.title, exact: true }),
+      })
+      .click();
+    await openStep(page, "attenuation", "apply");
+    const coach = page.locator(".compiler-coach");
+    await coach
+      .getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true })
+      .click();
+    await coach
+      .getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true })
+      .click();
+    await coach
+      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+      .click();
+    await expect(coach).toContainText(
+      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+    );
+    const practiced = await savedState(page);
+    expect(practiced.events.filter(isReviewReveal)).toEqual([exposure]);
+    expect(
+      practiced.events.filter(
+        (event) =>
+          event.lessonId === target.id &&
+          event.passed &&
+          event.kind !== "exposure",
+      ),
+    ).toEqual([]);
+  } finally {
+    expect(runnerRequests).toEqual([]);
+  }
 });

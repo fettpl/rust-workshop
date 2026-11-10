@@ -899,6 +899,7 @@ function creditedGateTasks(
   state: UserState,
   criterion: ModuleGateCriterion,
   lessons: readonly Lesson[],
+  definitionForTask?: EvidencePolicy["definitionForTask"],
 ): Set<string> {
   const ids = new Set<string>();
   for (const ref of criterion.taskRefs) {
@@ -910,8 +911,9 @@ function creditedGateTasks(
           event,
           definitionForStep(event, step),
           state.events.slice(0, index),
-          (lessonId, stepId) =>
-            stepForRef(lessons, { lessonId, stepId })?.evidence,
+          definitionForTask ??
+            ((lessonId, stepId) =>
+              stepForRef(lessons, { lessonId, stepId })?.evidence),
         );
         if (id) ids.add(id);
       } else if (
@@ -946,8 +948,14 @@ export function gateRecovery(
   state: UserState,
   criterion: ModuleGateCriterion,
   lessons: readonly Lesson[],
+  definitionForTask?: EvidencePolicy["definitionForTask"],
 ): GateRecovery {
-  const credited = creditedGateTasks(state, criterion, lessons);
+  const credited = creditedGateTasks(
+    state,
+    criterion,
+    lessons,
+    definitionForTask,
+  );
   const required = criterion.requiredIndependentCodingTasks ?? 1;
   if (credited.size >= required) {
     if (supplementaryPassed(state, criterion)) return { status: "complete" };
@@ -976,8 +984,9 @@ export function gateRecovery(
           { ...ref, at: Infinity },
           step.evidence,
           state.events,
-          (lessonId, stepId) =>
-            stepForRef(lessons, { lessonId, stepId })?.evidence,
+          definitionForTask ??
+            ((lessonId, stepId) =>
+              stepForRef(lessons, { lessonId, stepId })?.evidence),
         )
       );
     }
@@ -1000,12 +1009,13 @@ export function moduleGate(
   state: UserState,
   lessons: Lesson[],
   courseModule?: CourseModule,
+  definitionForTask?: EvidencePolicy["definitionForTask"],
 ): { passed: boolean; criteria: { label: string; passed: boolean }[] } {
   if (courseModule?.gateCriteria) {
     const criteria = courseModule.gateCriteria.map((criterion) => ({
       label: criterion.label,
       passed:
-        creditedGateTasks(state, criterion, lessons).size >=
+        creditedGateTasks(state, criterion, lessons, definitionForTask).size >=
           (criterion.requiredIndependentCodingTasks ?? 1) &&
         supplementaryPassed(state, criterion),
     }));

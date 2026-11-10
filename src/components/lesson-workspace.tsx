@@ -23,6 +23,7 @@ import {
   assistanceForLessonStep,
   courseEvidenceSummary,
   recordCourseLessonExposure,
+  courseGateRecovery,
 } from "@/content/learning-context";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
 import { LearningText } from "./learning-text";
@@ -31,7 +32,6 @@ import { CompilerOutput } from "./compiler-output";
 import { OwnershipVisualizer } from "./ownership-visualizer";
 import { Eyebrow, ProgressLine } from "./ui";
 import { nextLessonForNavigation } from "@/engine/course-route";
-import { gateRecovery } from "@/engine/learning";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 const kindLabels = {
   predict: "Przewidź",
@@ -72,7 +72,7 @@ export function LessonWorkspace() {
       ),
   );
   const matchingRecoveryStatuses = matchingPrimaryCriteria.map((criterion) =>
-    gateRecovery(state, criterion, lessons),
+    courseGateRecovery(state, criterion, lessons),
   );
   const freshIndependentTaskAvailable = matchingRecoveryStatuses.some(
     (recovery, index) => {

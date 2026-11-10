@@ -1257,6 +1257,13 @@ describe("learning engine", () => {
     expect(result.criteria).toEqual([{ label: "Move/Copy", passed: true }]);
     expect(result.passed).toBe(true);
     expect(
+      moduleGate(state, lessons, courseModule, () => {
+        throw new Error(
+          "Uncounted criteria must not consult the assistance resolver",
+        );
+      }),
+    ).toEqual(result);
+    expect(
       state.events.find((candidate) => candidate.id === "revealed-primary"),
     ).toMatchObject({ hints: 2, revealed: true });
   });

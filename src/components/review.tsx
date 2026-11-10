@@ -210,7 +210,7 @@ export function ReviewView() {
       return values.revealed
         ? recordCourseLessonExposure(next, {
             lessonId: "review",
-            stepId: session.exerciseId ? reviewEventStepId(session) : key,
+            stepId: step ? `${step.id}:${session.sessionId}` : key,
             conceptIds: [session.conceptId],
             at: Date.now(),
             revealed: true,

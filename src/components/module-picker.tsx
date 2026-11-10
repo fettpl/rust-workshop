@@ -2,7 +2,7 @@
 
 import { Fragment, useId, useRef, useState } from "react";
 import { lessons, modules } from "@/content/course";
-import { moduleGate } from "@/engine/learning";
+import { courseModuleGate } from "@/content/learning-context";
 import { searchModules } from "@/engine/module-search";
 import {
   COURSE_MAP_MODES,
@@ -122,7 +122,7 @@ export function ModulePicker({
                   <strong>{module.title}</strong>
                   <small>
                     Lekcje: {module.lessonIds.length} ·{" "}
-                    {moduleGate(state, lessons, module).passed
+                    {courseModuleGate(state, lessons, module).passed
                       ? "Samodzielność potwierdzona"
                       : "Dostępny"}
                   </small>

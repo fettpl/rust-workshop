@@ -421,3 +421,74 @@ it("does not offer a family with timeless saved assistance on another authored r
     task: countedCriterion.taskRefs[2],
   });
 });
+
+it("forwards an authoritative counted-gate assistance resolver through recovery and next task", () => {
+  const criterion: ModuleGateCriterion = {
+    id: "one-family",
+    label: "One family",
+    requiredIndependentCodingTasks: 1,
+    taskRefs: countedCriterion.taskRefs.slice(0, 2),
+  };
+  const definition = gateLessons[0].steps[0].evidence!;
+  const resolveReview: EvidencePolicy["definitionForTask"] = (
+    lessonId,
+    stepId,
+  ) =>
+    lessonId === "review" && stepId === "family-a:session"
+      ? definition
+      : undefined;
+  const gate = { ...gateModule, gateCriteria: [criterion] };
+  const state = createInitialState();
+  state.events = [
+    gateEvent("family-a:session", {
+      lessonId: "review",
+      kind: "exposure",
+      revealed: true,
+      at: 90,
+    }),
+  ];
+  expect(gateRecovery(state, criterion, gateLessons)).toEqual({
+    status: "available",
+    task: criterion.taskRefs[0],
+  });
+  expect(nextGateTask(state, criterion, gateLessons)).toEqual(
+    criterion.taskRefs[0],
+  );
+  expect(gateRecovery(state, criterion, gateLessons, resolveReview)).toEqual({
+    status: "exhausted",
+  });
+  expect(
+    nextGateTask(state, criterion, gateLessons, resolveReview),
+  ).toBeUndefined();
+  state.events.push(gateEvent("a"));
+  expect(moduleGate(state, gateLessons, gate).passed).toBe(true);
+  expect(moduleGate(state, gateLessons, gate, resolveReview).passed).toBe(
+    false,
+  );
+  expect(gateRecovery(state, criterion, gateLessons, resolveReview)).toEqual({
+    status: "exhausted",
+  });
+
+  // An explicit resolver may leave a reference unknown. The lesson-only default
+  // must not be applied to an undefined result from that resolver.
+  state.events = [gateEvent("duplicate", { hints: 1, at: 90 }), gateEvent("a")];
+  expect(moduleGate(state, gateLessons, gate).passed).toBe(false);
+  expect(moduleGate(state, gateLessons, gate, resolveReview).passed).toBe(true);
+  expect(gateRecovery(state, criterion, gateLessons, resolveReview)).toEqual({
+    status: "complete",
+  });
+  expect(moduleGate(state, [], gate, () => definition).passed).toBe(false);
+
+  const uncounted = {
+    id: criterion.id,
+    label: criterion.label,
+    taskRefs: criterion.taskRefs,
+  };
+  expect(
+    nextGateTask(createInitialState(), uncounted, [], () => {
+      throw new Error(
+        "Legacy no-lesson selection must not consult an assistance resolver",
+      );
+    }),
+  ).toEqual(uncounted.taskRefs[0]);
+});

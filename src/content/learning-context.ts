@@ -5,13 +5,17 @@ import {
   deriveConceptMastery,
   independentCodingTaskIds,
   delayedReviewEligibility,
+  gateRecovery,
+  moduleGate,
 } from "@/engine/learning";
 import {
   revealProjectPackageVariant,
   type PackageVariant,
 } from "@/domain/project-package";
 import type {
+  CourseModule,
   EvidenceEvent,
+  ModuleGateCriterion,
   LessonExposure,
   Lesson,
   LessonStep,
@@ -19,7 +23,7 @@ import type {
   UserState,
 } from "@/domain/types";
 import { stepKey } from "@/persistence/state";
-import { competencyProgress } from "@/engine/progress";
+import { competencyProgress, nextGateTask } from "@/engine/progress";
 import {
   concepts,
   delayedReviewExercises,
@@ -235,6 +239,45 @@ export function courseCompetencyProgress(
     concepts,
     competencyId,
     courseEvidencePolicy,
+  );
+}
+
+export function courseModuleGate(
+  state: UserState,
+  scopedLessons: Lesson[],
+  module?: CourseModule,
+) {
+  return moduleGate(
+    state,
+    scopedLessons,
+    module,
+    courseEvidencePolicy.definitionForTask,
+  );
+}
+
+export function courseGateRecovery(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+  scopedLessons: readonly Lesson[] = lessons,
+) {
+  return gateRecovery(
+    state,
+    criterion,
+    scopedLessons,
+    courseEvidencePolicy.definitionForTask,
+  );
+}
+
+export function courseNextGateTask(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+  scopedLessons: readonly Lesson[] = lessons,
+) {
+  return nextGateTask(
+    state,
+    criterion,
+    scopedLessons,
+    courseEvidencePolicy.definitionForTask,
   );
 }
 

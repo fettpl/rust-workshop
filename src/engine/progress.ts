@@ -82,12 +82,13 @@ export function nextGateTask(
   state: UserState,
   criterion: ModuleGateCriterion,
   lessons: readonly Lesson[] = [],
+  definitionForTask?: EvidencePolicy["definitionForTask"],
 ) {
   if (
     criterion.requiredIndependentCodingTasks !== undefined ||
     lessons.length > 0
   ) {
-    const recovery = gateRecovery(state, criterion, lessons);
+    const recovery = gateRecovery(state, criterion, lessons, definitionForTask);
     return recovery.status === "available" ? recovery.task : undefined;
   }
   const taskPassed = criterion.taskRefs.some((ref) =>

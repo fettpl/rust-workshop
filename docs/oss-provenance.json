@@ -879,7 +879,7 @@
     },
     {
       "path": "src/content/learning-context.ts",
-      "sha256": "c7555582c1f70b94808f86706c9cfed0ce0d1b2c1377db8d788810c625d35109",
+      "sha256": "c5bd55cf932ef5c0ac5351cf24ac2331cc50cce4d24489c0c069669cf996c930",
       "group": "course"
     },
     {
@@ -1335,6 +1335,11 @@
     {
       "path": "src/content/rc-trace.ts",
       "sha256": "c28b1e87a4e1034fa658906b3cbafbe3c98aef475ba03a7e811de7aad30e7902",
+      "group": "course"
+    },
+    {
+      "path": "src/content/review-assistance-gate.test.ts",
+      "sha256": "110d63fcee4973a390e62055bd64dbb025304926f9518bd07aa6ed17ed9638bf",
       "group": "course"
     },
     {

@@ -21,13 +21,15 @@ import {
   projects,
   roadmap,
 } from "@/content/course";
-import { nextGateTask, gateRecovery } from "@/engine/progress";
 import {
   courseMastery,
   courseEvidenceSummary,
   courseCompetencyProgress,
+  courseGateRecovery,
+  courseModuleGate,
+  courseNextGateTask,
 } from "@/content/learning-context";
-import { dueReviews, moduleGate } from "@/engine/learning";
+import { dueReviews } from "@/engine/learning";
 import { stepKey } from "@/persistence/state";
 import {
   Eyebrow,
@@ -364,7 +366,7 @@ export function CourseMap() {
   const moduleLessons = lessons.filter(
     (lesson) => lesson.moduleId === selectedModule.id,
   );
-  const gate = moduleGate(state, moduleLessons, selectedModule);
+  const gate = courseModuleGate(state, moduleLessons, selectedModule);
   const prerequisiteModules = selectedModule.prerequisites
     .map((id) => modules.find((module) => module.id === id))
     .filter((module): module is (typeof modules)[number] => Boolean(module));
@@ -373,7 +375,7 @@ export function CourseMap() {
     .filter((module): module is (typeof modules)[number] => Boolean(module));
   const recoveryTargets = (selectedModule.gateCriteria ?? []).flatMap(
     (criterion, index) => {
-      const target = nextGateTask(state, criterion, lessons);
+      const target = courseNextGateTask(state, criterion, lessons);
       const targetLesson = lessons.find(
         (lesson) => lesson.id === target?.lessonId,
       );
@@ -393,7 +395,7 @@ export function CourseMap() {
   const exhaustedCriteria = (selectedModule.gateCriteria ?? []).filter(
     (criterion) =>
       criterion.requiredIndependentCodingTasks !== undefined &&
-      gateRecovery(state, criterion, lessons).status === "exhausted",
+      courseGateRecovery(state, criterion, lessons).status === "exhausted",
   );
   const fallbackRecoveryLesson =
     moduleLessons.find(
@@ -587,11 +589,13 @@ export function CourseMap() {
         <ul className="check-list">
           {gate.criteria.map((criterion, index) => {
             const contract = selectedModule.gateCriteria?.[index];
-            const target = contract && nextGateTask(state, contract, lessons);
+            const target =
+              contract && courseNextGateTask(state, contract, lessons);
             const exhausted =
               contract &&
               contract.requiredIndependentCodingTasks !== undefined &&
-              gateRecovery(state, contract, lessons).status === "exhausted";
+              courseGateRecovery(state, contract, lessons).status ===
+                "exhausted";
             const targetLesson =
               target && lessons.find((lesson) => lesson.id === target.lessonId);
             return (
