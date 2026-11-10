@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as rawCurrentCourse from "./course";
-import { historicalBeforeA11 } from "./service-authorization-compatibility-fixture";
+import { historicalBeforeA11 } from "./file-schema-evolution-compatibility-fixture";
 const { lessons, concepts, competencies, modules, reviewExercises, delayedReviewExercises, sources, traces, project, projects, roadmap } = historicalBeforeA11(rawCurrentCourse);
 import { validateContent } from "./validate";
 

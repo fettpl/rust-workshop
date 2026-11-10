@@ -9,6 +9,7 @@ import {homedir} from "node:os";
 import {strFromU8,unzipSync} from "fflate";
 import {serviceAuthorizationPackage} from "../src/content/projects/service-authorization";
 import {libSource,compilerProbes,semanticMutations} from "../src/content/projects/service-authorization/fixtures";
+import { fileSchemaEvolutionPackage } from "../src/content/projects/file-schema-evolution/package";
 import {durableLogRetryPackage} from "../src/content/projects/durable-log-retry";
 import {buildProjectArchive,projectArchiveFiles} from "./project-archive";
 import {archiveSnapshot,assertRetryArchiveTopology,classifyRetryCommand,type RecordedCommand as RetryRecordedCommand} from "./verify-client-retry";
@@ -184,7 +185,7 @@ export function assertProbeDiagnostic(stderr:string,code:string,line:number,symb
  for(const error of errors){assert.equal(error.code?.code,code,"unrelated compiler diagnostic cannot prove rejection");assert(error.spans?.some(span=>span.is_primary && span.line_start===line && span.text.some(t=>t.text.includes(symbol))),"expected operation span/symbol missing");}
 }
 // Closed predecessor producer list: this guard never derives its allowlist from course registries.
-const fixedArchivePackages = [numberGuessingPackage,propertyContractsPackage,ffiBufferPackage,miriSafetyPackage,miniGrepPackage,frameProtocolPackage,tokioServicePackage,serviceOperationsPackage,tokioPipelinePackage,concurrencyLabPackage,logAnalyzerPackage,todoCliPackage,durableLogServicePackage,durableLogRetryPackage,serviceAuthorizationPackage] as const;
+const fixedArchivePackages = [numberGuessingPackage,propertyContractsPackage,ffiBufferPackage,miriSafetyPackage,miniGrepPackage,frameProtocolPackage,tokioServicePackage,serviceOperationsPackage,tokioPipelinePackage,concurrencyLabPackage,logAnalyzerPackage,todoCliPackage,durableLogServicePackage,durableLogRetryPackage,serviceAuthorizationPackage,fileSchemaEvolutionPackage] as const;
 let cachedAuthoredArchiveHashes:Record<string,string>|undefined;
 function authoredArchiveHashes():Record<string,string> {
  if(!cachedAuthoredArchiveHashes)cachedAuthoredArchiveHashes=Object.fromEntries(fixedArchivePackages.flatMap(p=>(["starter","solution"] as const).map(variant=>[`${p.id}/${variant}.zip`,sha256(buildProjectArchive(p,variant))])));
@@ -194,7 +195,8 @@ export function assertAuthorizationArchiveSnapshot(snapshot:Record<string,string
  const expected=authoredArchiveHashes();
  const hashes={starter:expected[serviceAuthorizationPackage.id+"/starter.zip"],solution:expected[serviceAuthorizationPackage.id+"/solution.zip"]};
  const retry={starter:expected[durableLogRetryPackage.id+"/starter.zip"],solution:expected[durableLogRetryPackage.id+"/solution.zip"]};
- const topology=assertRetryArchiveTopology(snapshot,retry,hashes);
+ const fileSchema={starter:expected[fileSchemaEvolutionPackage.id+"/starter.zip"],solution:expected[fileSchemaEvolutionPackage.id+"/solution.zip"]};
+ const topology=assertRetryArchiveTopology(snapshot,retry,hashes,fileSchema);
  for(const [path,hash] of Object.entries(snapshot))assert.equal(hash,expected[path],`public archive differs from fixed authored bytes: ${path}`);
  return topology;
 }

@@ -62,6 +62,7 @@ export const EXTENSION_GROUPS = [
       "dependency-assurance",
       "api-release-matrix",
       "macros-as-api",
+      "file-schema-evolution",
     ],
   },
   {

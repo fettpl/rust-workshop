@@ -11,7 +11,7 @@ import {
   initializedPrefixLessonId,
   initializedPrefixStepIds,
 } from "./unsafe-miri-prefix-compatibility-fixture";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-authorization-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./file-schema-evolution-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,

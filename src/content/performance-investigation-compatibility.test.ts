@@ -9,7 +9,7 @@ import { acceptedPreC1Projection } from "./existing-contract-repair-compatibilit
 import {
   historicalBeforeA10ThenA9ThenCapstoneMaintenance,
   historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair,
-} from "./service-authorization-compatibility-fixture";
+} from "./file-schema-evolution-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");

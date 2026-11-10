@@ -636,7 +636,10 @@ export function deriveConceptMastery(
   if (tasks.length >= calibration.minimumCodingTasks)
     return {
       level: "understood",
-      reason: "Potwierdzone w różnych zadaniach kodowych bez podpowiedzi.",
+      reason:
+        calibration.minimumCodingTasks === 1 && tasks.length === 1
+          ? "Potwierdzone w jednym samodzielnym zadaniu kodowym bez podpowiedzi."
+          : "Potwierdzone w różnych zadaniach kodowych bez podpowiedzi.",
       updatedAt,
     };
   const current = relevant.filter((event) =>

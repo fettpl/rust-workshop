@@ -169,3 +169,43 @@ it("binds_real_30_archive_bytes_and_detects_change",async()=>{
  const after=archiveSnapshot(root);for(const [path,hash] of Object.entries(before))expect(after[path]).toBe(hash);
  }finally{rmSync(root,{recursive:true,force:true});}
 });
+
+// The successor extends only generated-pair checks at the retry boundary.
+it("A12 accepts the exact 32-archive topology and checks all three generated pairs", () => {
+  const pair = { starter: "schema-starter", solution: "schema-solution" };
+  const snapshot = {
+    ...authorizationSnapshot(),
+    "file-schema-evolution-workshop/starter.zip": pair.starter,
+    "file-schema-evolution-workshop/solution.zip": pair.solution,
+  };
+  expect(assertRetryArchiveTopology(snapshot, retryHashes, authHashes, pair)).toBe("post-file-schema-generation");
+  for (const path of Object.keys(snapshot).filter((name) =>
+    /^(?:durable-log-retry-workspace|service-authorization-workshop|file-schema-evolution-workshop)\//.test(name),
+  )) {
+    expect(() => assertRetryArchiveTopology({ ...snapshot, [path]: "tampered" }, retryHashes, authHashes, pair), path).toThrow();
+  }
+  const legacy = "todo-cli-workshop/starter.zip";
+  expect(assertRetryArchiveTopology({ ...snapshot, [legacy]: "name-only" }, retryHashes, authHashes, pair)).toBe("post-file-schema-generation");
+});
+
+it("A12 rejects an unbound, partial, misplaced or unknown successor archive", () => {
+  const pair = { starter: "schema-starter", solution: "schema-solution" };
+  const snapshot: Record<string, string> = {
+    ...authorizationSnapshot(),
+    "file-schema-evolution-workshop/starter.zip": pair.starter,
+    "file-schema-evolution-workshop/solution.zip": pair.solution,
+  };
+  expect(() => assertRetryArchiveTopology(snapshot, retryHashes, authHashes)).toThrow();
+  for (const removed of [
+    ["file-schema-evolution-workshop/starter.zip"],
+    ["file-schema-evolution-workshop/solution.zip"],
+    ["service-authorization-workshop/starter.zip", "service-authorization-workshop/solution.zip"],
+    ["durable-log-retry-workspace/starter.zip", "durable-log-retry-workspace/solution.zip"],
+    ["todo-cli-workshop/solution.zip"],
+  ]) {
+    const partial = { ...snapshot };
+    for (const name of removed) delete partial[name];
+    expect(() => assertRetryArchiveTopology(partial, retryHashes, authHashes, pair)).toThrow();
+  }
+  expect(() => assertRetryArchiveTopology({ ...snapshot, "arbitrary/solution.zip": "unknown" }, retryHashes, authHashes, pair)).toThrow();
+});

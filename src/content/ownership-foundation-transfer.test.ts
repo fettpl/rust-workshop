@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import * as rawCurrentCourse from "./course";
-import { historicalBeforeA11 } from "./service-authorization-compatibility-fixture";
+import { historicalBeforeA11 } from "./file-schema-evolution-compatibility-fixture";
 const currentCourse = historicalBeforeA11(rawCurrentCourse);
 import {
   acceptedPreFoundationRegistry,
@@ -10,7 +10,7 @@ import {
   ownershipFoundationLessonId,
   ownershipFoundationStepIds,
 } from "./ownership-foundation-compatibility-fixture";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./service-authorization-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./file-schema-evolution-compatibility-fixture";
 import {
   ownershipFoundationModel,
   ownershipFoundationTransferLesson,

@@ -12,6 +12,7 @@ import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { projects } from "../src/content/course";
 import { buildProjectArchive } from "./project-archive";
+import { generateFileSchemaPackageLock } from "./file-schema-package-commands";
 import { verifyMiniGrepMutants } from "./mini-grep-mutants";
 
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-authored-cargo-"));
@@ -23,23 +24,29 @@ function command(directory: string, args: string[], expectFailure = false) {
     timeout: 60_000,
     maxBuffer: 2 * 1024 * 1024,
   });
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
   const passedTests = [
-    ...result.stdout.matchAll(/test result: ok\. (\d+) passed/g),
+    ...stdout.matchAll(/test result: ok\. (\d+) passed/g),
   ].reduce((sum, match) => sum + Number(match[1]), 0);
   const passed =
     !result.error &&
     (expectFailure
       ? result.status !== 0 &&
-        /test result: FAILED/.test(result.stdout) &&
-        /not yet implemented/.test(result.stderr + result.stdout)
+        /test result: FAILED/.test(stdout) &&
+        /not yet implemented/.test(stderr + stdout)
       : result.status === 0 && (args[0] !== "test" || passedTests > 0));
   console.log(
     `${passed ? "ok" : "FAIL"} ${directory.split("/").slice(-2).join("/")}: cargo ${args.join(" ")}${expectFailure ? " (starter fails unfinished behavior)" : ""}`,
   );
   if (!passed) {
     failures++;
-    console.error(result.error?.message ?? result.stdout + result.stderr);
+    console.error(result.error?.message ?? stdout + stderr);
   }
+  if (args[0] === "generate-lockfile") {
+    console.log(JSON.stringify({ argv: ["cargo", ...args], cwd: directory, status: result.status, signal: result.signal, error: result.error?.message ?? null, stdout, stderr }));
+  }
+  return passed;
 }
 try {
   const packages = projects.flatMap((project) =>
@@ -61,7 +68,10 @@ try {
         writeFileSync(target, contents);
       }
       const packageRoot = join(directory, project.id);
+      const lock = generateFileSchemaPackageLock(project.id, packageRoot, (args) => command(packageRoot, args));
+      if (lock) console.log(JSON.stringify({ generatedLock: lock.binding }));
       command(packageRoot, ["fmt", "--all", "--", "--check"]);
+      lock?.assertUnchanged();
       command(packageRoot, [
         "check",
         "--workspace",
@@ -69,6 +79,7 @@ try {
         "--locked",
         "--all-targets",
       ]);
+      lock?.assertUnchanged();
       command(
         packageRoot,
         [
@@ -80,6 +91,7 @@ try {
         ],
         variant === "starter",
       );
+      lock?.assertUnchanged();
       if (variant === "solution")
         command(packageRoot, [
           "clippy",
@@ -91,6 +103,7 @@ try {
           "-D",
           "warnings",
         ]);
+      lock?.assertUnchanged();
       if (variant === "solution" && project.id === "mini-grep-workshop")
         verifyMiniGrepMutants(packageRoot);
     }

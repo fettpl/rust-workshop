@@ -128,3 +128,22 @@ qualification target. Finite provenance closure follows coordinated staging.
 No push, main update, publication, deployment, dependency fetch or hosted Actions
 run is authorized by this local continuation. Older queue scheduling and billing
 observations above remain dated historical reports, not current service status.
+
+
+## A12 file schema evolution source | 10 November 2026
+
+[Plan 004](../plans/004-file-schema-evolution.md) starts from the accepted
+post-maintenance baseline and its fresh registry, state and archive observations.
+The [extension](file-schema-evolution.md) adds two lessons and a standard-library
+package. Browser exercises assess one normalization family. The package checks
+explicit file upgrades on trusted fixtures with one writer. The current source
+adds one module and project while preserving 17 Core modules and the 30
+predecessor archives.
+
+Focused package diagnostics precede the dedicated native verifier and full
+source qualification. Bind the installed tools, exact source and archive bytes,
+and owned temporary paths before running the stable and MSRV native profiles.
+Fresh static, unit, authored Rust, production browser and formal offline checks,
+independent review and complete local history recovery are the closure gates.
+Hosted Actions, remote and main integration, deployment and publication remain
+outside this local milestone.

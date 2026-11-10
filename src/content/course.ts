@@ -1,3 +1,11 @@
+import {
+  fileSchemaEvolutionLessons,
+  fileSchemaEvolutionConcepts,
+  fileSchemaEvolutionCompetencies,
+  fileSchemaEvolutionReviewExercises,
+  fileSchemaEvolutionModule,
+} from "./file-schema-evolution";
+import { fileSchemaEvolutionProject } from "./projects/file-schema-evolution";
 import { serviceAuthorizationLessons, serviceAuthorizationConcepts, serviceAuthorizationCompetencies, serviceAuthorizationReviewExercises, serviceAuthorizationModule } from "./service-authorization";
 import { serviceAuthorizationProject } from "./projects/service-authorization";
 import {
@@ -645,6 +653,7 @@ export const modules = [
   capstoneMaintenanceModuleExtension,
   serviceClientRetryModule,
   serviceAuthorizationModule,
+  fileSchemaEvolutionModule,
 ];
 export const lessons = [
   ...foundationsLessons,
@@ -724,6 +733,7 @@ export const lessons = [
   ...documentationRepairLessons,
   ownershipFoundationTransferLesson,
   ...serviceAuthorizationLessons,
+  ...fileSchemaEvolutionLessons,
 ];
 export const concepts = [
   ...foundationsConcepts,
@@ -794,6 +804,7 @@ export const concepts = [
   ...fallibleCompositionConcepts,
   ...documentationRepairConcepts,
   ...serviceAuthorizationConcepts,
+  ...fileSchemaEvolutionConcepts,
 ];
 export const competencies = [
   ...foundationsCompetencies,
@@ -861,6 +872,7 @@ export const competencies = [
   ...coreCheckedConversionsCompetencies,
   ...nestedPatternCompetencies,
   ...serviceAuthorizationCompetencies,
+  ...fileSchemaEvolutionCompetencies,
 ];
 export const sources = [
   ...foundationsSources,
@@ -998,6 +1010,7 @@ export const reviewExercises = {
   ...fallibleCompositionReviewExercises,
   ...documentationRepairReviewExercises,
   ...serviceAuthorizationReviewExercises,
+  ...fileSchemaEvolutionReviewExercises,
 };
 export const delayedReviewExercises = {
   ...functionOwnershipDelayedReviewExercises,
@@ -1078,6 +1091,7 @@ export const projects = [
   durableLogServiceProject,
   durableLogRetryProject,
   serviceAuthorizationProject,
+  fileSchemaEvolutionProject,
 ];
 export const roadmap = [
   { title: "Setup, Cargo i pierwszy program", status: "available" },

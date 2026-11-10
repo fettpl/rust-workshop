@@ -167,7 +167,7 @@ describe("extension entry prerequisite graph", () => {
     }
   });
 
-  it("preserves the Core17/Extensions33 catalog and a historical advanced resume", () => {
+  it("preserves the Core17/Extensions34 catalog and a historical advanced resume", () => {
     expect(CORE_MODULE_IDS).toEqual([
       "rust-foundations",
       "loops-control",
@@ -188,10 +188,14 @@ describe("extension entry prerequisite graph", () => {
       "log-analyzer",
     ]);
     expect(modulesForMode("core", modules)).toHaveLength(17);
-    expect(modulesForMode("extensions", modules)).toHaveLength(33);
+    const extensions = modulesForMode("extensions", modules);
+    expect(extensions).toHaveLength(34);
+    expect(
+      extensions.filter(({ id }) => id !== "file-schema-evolution"),
+    ).toHaveLength(33);
     expect(
       new Set(EXTENSION_GROUPS.flatMap((group) => group.moduleIds)),
-    ).toHaveLength(33);
+    ).toHaveLength(34);
 
     const state = createInitialState();
     const resumeLesson = lessons.find(

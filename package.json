@@ -23,6 +23,7 @@
     "content:packages": "node --import tsx scripts/build-project-assets.ts",
     "content:client-retry": "node --import tsx scripts/verify-client-retry.ts",
     "content:authorization": "node --import tsx scripts/verify-authorization.ts",
+    "content:file-schema-evolution": "node --import tsx scripts/verify-file-schema-evolution.ts",
     "test:authorization": "node node_modules/vitest/vitest.mjs run scripts/verify-authorization.test.ts scripts/verify-client-retry.test.ts src/content/projects/service-authorization/package.test.ts",
     "audit:production": "node scripts/audit-production.mjs",
     "test:audit-production": "node --test scripts/audit-production.test.mjs",

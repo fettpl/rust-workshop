@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import * as course from "./course";
+import * as rawCourse from "./course";
+import { historicalBeforeA12 } from "./file-schema-evolution-compatibility-fixture";
+const course = historicalBeforeA12(rawCourse);
 
 const lessonIds = [
   "service-authorization-policy",

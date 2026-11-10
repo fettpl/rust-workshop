@@ -1,3 +1,21 @@
+# File schema evolution source checkpoint | 10 November 2026
+
+The authored catalog contains **51 modules, 204 lessons, 1,359 steps,
+199 concepts, 200 competencies, 349 sources and 16 projects**. Navigation retains
+17 Core modules and offers 34 extensions. The [file schema evolution extension](file-schema-evolution.md)
+adds two lessons, 12 steps, one concept, one competency, one coding task family
+and one native project. It follows Todo I/O and preserves the existing Todo and
+SQLite teaching surfaces. Both new lessons omit duration metadata.
+
+The coverage addition is preservation of record meaning and allocation history
+across supported V1 and V2 files, followed by explicit replacement under a
+single-writer assumption. Browser normalization checks use already decoded
+values. The package separately covers byte parsing and owned filesystem cases.
+Apply and blank count toward one gate family, ordinary review is retrieval, and
+the second lesson is practice. Existing review-family assistance remains in
+scope for counted gates. Learner transfer and final local qualification are
+separate observations. The checkpoints below retain their original attribution.
+
 # Typed authorization source checkpoint — 4 November 2026
 
 The current authored catalog contains **50 modules, 202 lessons, 1,347 steps,

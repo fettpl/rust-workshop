@@ -123,6 +123,8 @@ jobs:
         run: npm run content:client-retry
       - name: Verify typed authorization on stable Rust
         run: npm run content:authorization
+      - name: Verify file schema evolution on stable Rust
+        run: npm run content:file-schema-evolution -- --mode stable
       - name: Verify closed performance investigation on stable Rust
         run: npm run content:performance -- --a7
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -245,6 +247,8 @@ jobs:
         run: npm run content:client-retry -- --msrv
       - name: Verify typed authorization on Rust 1.85.0
         run: npm run content:authorization -- --msrv
+      - name: Verify file schema evolution on Rust 1.85.0
+        run: npm run content:file-schema-evolution -- --mode msrv
       - name: Verify closed performance investigation on msrv Rust
         run: npm run content:performance -- --a7 --msrv
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

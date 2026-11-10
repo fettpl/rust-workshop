@@ -11,7 +11,7 @@ import {
 } from "./course-route";
 
 describe("course route", () => {
-  it("covers the current 50-module catalog once, with the exact core order", () => {
+  it("covers the current 51-module catalog once, with the exact core order", () => {
     const core = CORE_MODULE_IDS as readonly string[];
     const extensionGroups = EXTENSION_GROUPS.flatMap(
       (group) => group.moduleIds,
@@ -68,6 +68,7 @@ describe("course route", () => {
         "dependency-assurance",
         "api-release-matrix",
         "macros-as-api",
+        "file-schema-evolution",
       ],
       [
         "mini-grep",
@@ -80,8 +81,11 @@ describe("course route", () => {
         "unsafe-borrowed-memory-soundness",
       ],
     ]);
-    expect(all).toHaveLength(50);
-    expect(new Set(all).size).toBe(50);
+    expect(all).toHaveLength(51);
+    expect(new Set(all).size).toBe(51);
+    expect(all.filter((id) => id !== "file-schema-evolution")).toHaveLength(
+      50,
+    );
     expect(modules.map((module) => module.id).sort()).toEqual([...all].sort());
   });
 
@@ -89,7 +93,11 @@ describe("course route", () => {
     expect(modulesForMode("core", modules).map((module) => module.id)).toEqual(
       CORE_MODULE_IDS,
     );
-    expect(modulesForMode("extensions", modules)).toHaveLength(33);
+    const extensions = modulesForMode("extensions", modules);
+    expect(extensions).toHaveLength(34);
+    expect(
+      extensions.filter(({ id }) => id !== "file-schema-evolution"),
+    ).toHaveLength(33);
     expect(modulesForMode("all", modules)).toEqual(modules);
     expect(mapModeForModule("shared-ownership")).toBe("extensions");
     expect(mapModeForModule("log-analyzer")).toBe("core");

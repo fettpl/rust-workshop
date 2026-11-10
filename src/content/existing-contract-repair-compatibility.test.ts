@@ -4,7 +4,7 @@ import * as currentCourse from "./course";
 import {
   acceptedPreC1Projection,
 } from "./existing-contract-repair-compatibility-fixture";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeA8ThenA7ThenExistingContractRepair, historicalBeforeA10 } from "./service-authorization-compatibility-fixture";
+import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeA8ThenA7ThenExistingContractRepair, historicalBeforeA10 } from "./file-schema-evolution-compatibility-fixture";
 
 const hashJson = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");

@@ -12,7 +12,7 @@ import { historicalBeforeInitializedPrefix } from "./unsafe-miri-prefix-compatib
 import {
   historicalBeforeA10,
   historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair,
-} from "./service-authorization-compatibility-fixture";
+} from "./file-schema-evolution-compatibility-fixture";
 
 const course = historicalBeforeA10(actualCurrentCourse);
 

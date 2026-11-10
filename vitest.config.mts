@@ -12,6 +12,8 @@ export default defineConfig({
       "scripts/project-archive.test.ts",
       "scripts/verify-client-retry.test.ts",
       "scripts/verify-authorization.test.ts",
+      "scripts/verify-file-schema-evolution.test.ts",
+      "scripts/file-schema-package-commands.test.ts",
       "scripts/setup-assets.test.ts",
       "scripts/monaco-sanitizer.test.ts",
       "scripts/service-worker.test.ts",

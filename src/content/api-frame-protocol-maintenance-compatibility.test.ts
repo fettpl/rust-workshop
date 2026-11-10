@@ -11,7 +11,7 @@ import { historicalBeforeOwnershipFoundation } from "./ownership-foundation-comp
 import {
   historicalBeforeA10,
   historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair,
-} from "./service-authorization-compatibility-fixture";
+} from "./file-schema-evolution-compatibility-fixture";
 
 const currentCourse = historicalBeforeA10(actualCurrentCourse);
 

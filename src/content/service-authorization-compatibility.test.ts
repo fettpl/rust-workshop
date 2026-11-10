@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
-import * as actualCourse from "./course";
+import * as rawCourse from "./course";
+import {
+  historicalBeforeA11,
+  historicalBeforeA12,
+} from "./file-schema-evolution-compatibility-fixture";
+const actualCourse = historicalBeforeA12(rawCourse);
 // Vitest ESM has no default; exercise a labeled synthetic namespace matching the captured loader shape.
 const course = {
   ...actualCourse,
@@ -11,7 +16,6 @@ const course = {
       .map((key) => [key, (actualCourse as Record<string, unknown>)[key]]),
   ),
 } as typeof actualCourse & { default: typeof actualCourse };
-import { historicalBeforeA11 } from "./service-authorization-compatibility-fixture";
 const hashes = {
   competencies:
     "e75915964efa40f735c8f9fc6b3492261fe3c4594f30fa1347f5d40d8469c03e",

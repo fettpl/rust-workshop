@@ -403,3 +403,20 @@ implement that redesign. Existing required duration metadata remains a legacy
 compatibility field; the proposed navigation is based on learning goals and
 next actions. A8 service maintenance and A9 final curriculum reconciliation
 remain subsequent local stages; no hosted release is claimed here.
+
+
+## 10 November 2026 file schema evolution source
+
+The optional [file schema evolution extension](file-schema-evolution.md) follows
+Todo I/O in the Libraries and APIs group. Two lessons and 12 steps distinguish
+normalizing supported records from explicitly replacing a file. Normalization
+preserves title bytes, completion status, order and allocation history. Apply,
+blank and ordinary review use one shared family. The explicit upgrade lesson
+uses practice evidence, and its real filesystem checks belong to a separate
+native package. The two lessons omit duration metadata.
+
+The authored catalog contains 51 modules, 204 lessons, 1,359 steps, 199 concepts,
+200 competencies, 349 sources and 16 projects. Core retains 17 modules. These
+figures describe availability. Final local qualification and any remote
+integration are separate records. The earlier dated sections retain their own
+scope and counts.
