@@ -640,12 +640,12 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "8840e03f07bc7d18a225075c415add160f0b1a921622a2cc38fad29ec2482947",
+      "sha256": "900144c463106a790f64b9c580c5a544854fd4c6c42b30744ec366ffab70c8a2",
       "group": "course"
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "325f84a2ba85e5d37711660476e99c0e11de5b3e00dd9e6f460e2f8588c833e1",
+      "sha256": "e725ab21501d0d9811c6e76e16bf81a2716800ebe0e762f31ea28b8c24f270a4",
       "group": "course"
     },
     {
@@ -660,7 +660,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "61ea35f11074561231673b28ac38bbaff70f37e4ddab2af78d2d7292f909d861",
+      "sha256": "6ea6941b105ce4bd8f69ae01d60ddf7df19003d23c8c34edc3486bb54dc02c0b",
       "group": "course"
     },
     {
@@ -1130,7 +1130,7 @@
     },
     {
       "path": "src/content/projects/durable-log-retry.ts",
-      "sha256": "32bc9cb0b34f9144055c1f7872f24c3ea9abb8223083922822000285766e9f4d",
+      "sha256": "43e34fb7b67067ff8838446c56f86b23921c028d17df242bb7ee78ed014b677b",
       "group": "course"
     },
     {

@@ -59,6 +59,29 @@ const reviewIndex = 198;
 const reviewHash =
   "3135a1ab6abf8a0c21aed342ee5fa6bb4e369baa349e794de136338f589137d8";
 
+// The retry starter formatting follow-up changes two virtual Rust files.
+const retryProjectFormat = {
+  index: 13,
+  liveHash: "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5",
+  historicalHash:
+    "e364d16da0b15fba65f1acc67cfc5cd885265bbb96c0ed1d5a968f8c2be090f3",
+  members: [
+    {
+      path: "crates/ingest-service/src/bin/ingest-retry-client.rs",
+      historical: String.raw`#![forbid(unsafe_code)]
+fn main() { eprintln!("uzupełnij zamknięty klient retry"); }
+`,
+    },
+    {
+      path: "crates/ingest-service/tests/retry_client.rs",
+      historical: String.raw`#![forbid(unsafe_code)]
+#[test]
+fn retry_contract_is_your_work() { todo!("zapisz parser, budżet i agregację Unknown"); }
+`,
+    },
+  ],
+} as const;
+
 export const hashRegistryValue = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
@@ -165,6 +188,57 @@ function copyRegistry(input: Registry, replacements: Map<unknown, unknown>) {
   }
 }
 
+function withValue<T extends object, Key extends keyof T>(
+  value: T,
+  key: Key,
+  replacement: T[Key],
+): T {
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  descriptors[key] = { ...descriptors[key], value: replacement };
+  return Object.create(Object.getPrototypeOf(value), descriptors);
+}
+
+function restoreRetryStarter(projects: typeof Course.projects) {
+  const { index, liveHash, historicalHash, members } = retryProjectFormat;
+  const project = projects[index];
+  if (
+    !matches(project, liveHash) ||
+    project.id !== "durable-log-retry" ||
+    projects.some(
+      (item, other) =>
+        other !== index &&
+        objectRecord(item) &&
+        Object.getOwnPropertyDescriptor(item, "id")?.value === project.id,
+    ) ||
+    project.package?.id !== "durable-log-retry-workspace"
+  )
+    return;
+
+  const files = project.package.files;
+  const descriptors = Object.fromEntries(
+    Object.entries(Object.getOwnPropertyDescriptors(files)),
+  );
+  for (const member of members) {
+    const index = files.findIndex((file) => file.path === member.path);
+    const file = files[index];
+    if (!file) return;
+    descriptors[index] = {
+      ...descriptors[index],
+      value: withValue(file, "starter", member.historical),
+    };
+  }
+  const historical = withValue(
+    project,
+    "package",
+    withValue(
+      project.package,
+      "files",
+      Object.defineProperties([], descriptors),
+    ),
+  );
+  if (matches(historical, historicalHash)) return { project, historical };
+}
+
 function collectAdditions(
   registry: Registry,
   replacements: Map<unknown, unknown>,
@@ -174,6 +248,14 @@ function collectAdditions(
     if (replacements.has(items)) continue;
     const indices = new Set(additions.map(({ index }) => index));
     const projected = items.filter((_, index) => !indices.has(index));
+    if (key === "projects") {
+      const retry = restoreRetryStarter(items as typeof Course.projects);
+      if (retry) {
+        if (!replacements.has(retry.project))
+          replacements.set(retry.project, retry.historical);
+        projected[retryProjectFormat.index] = replacements.get(retry.project);
+      }
+    }
     for (const key of Reflect.ownKeys(items)) {
       if (
         key === "length" ||

@@ -84,14 +84,13 @@ it("preserves original references, aliases, unknown properties and explicit unde
   expect(result.sources).toBe(input.sources);
   expect(result.project).toBe(input.project);
   expect(result.reviewExerciseForId).toBe(input.reviewExerciseForId);
-  for (const key of [
-    "lessons",
-    "concepts",
-    "competencies",
-    "modules",
-    "projects",
-  ] as const)
+  for (const key of ["lessons", "concepts", "competencies", "modules"] as const)
     result[key].forEach((item, index) => expect(item).toBe(input[key][index]));
+  result.projects.forEach((item, index) => {
+    if (item.id !== "durable-log-retry")
+      expect(item).toBe(input.projects[index]);
+  });
+  expect(result.default.projects).toBe(result.projects);
   expect(hashRegistryValue(input)).toBe(before);
   expect(input.lessons).toHaveLength(204);
 });
@@ -166,4 +165,49 @@ it("does not read unknown accessors and preserves the default back-reference", (
   expect(Object.getOwnPropertyDescriptor(input.default, "back")?.value).toBe(
     input,
   );
+});
+
+it("reverses only the exact formatted retry project in historical views", () => {
+  const retryIndex = 13;
+  const live = course.projects[retryIndex];
+  expect(live.id).toBe("durable-log-retry");
+  expect(hashRegistryValue(live)).toBe(
+    "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5",
+  );
+  const projected = historicalBeforeA12({ ...course, retryAlias: live });
+  const previous = projected.projects[retryIndex];
+  expect(projected.retryAlias).toBe(previous);
+  expect(projected.default.projects).toBe(projected.projects);
+  expect(hashRegistryValue(previous)).toBe(
+    "e364d16da0b15fba65f1acc67cfc5cd885265bbb96c0ed1d5a968f8c2be090f3",
+  );
+  expect(
+    live
+      .package!.files.filter(
+        (file, index) => file !== previous.package!.files[index],
+      )
+      .map((file) => file.path),
+  ).toEqual([
+    "crates/ingest-service/src/bin/ingest-retry-client.rs",
+    "crates/ingest-service/tests/retry_client.rs",
+  ]);
+  expect(course.projects[retryIndex]).toBe(live);
+
+  const nearMiss = { ...live, title: "Unrelated change" };
+  const hiddenProperty = { ...live };
+  Object.defineProperty(hiddenProperty, "unknown", { value: undefined });
+  for (const candidate of [nearMiss, hiddenProperty]) {
+    const projects = course.projects.map((project, index) =>
+      index === retryIndex ? candidate : project,
+    );
+    const input = {
+      ...course,
+      projects,
+      default: { ...course.default, projects },
+    };
+    const projected = historicalBeforeA12(input);
+    expect(projected.projects[retryIndex]).toBe(candidate);
+    expect(projected.default.projects).toBe(projected.projects);
+    expect(input.projects[retryIndex]).toBe(candidate);
+  }
 });

@@ -370,7 +370,9 @@ pub async fn send_with_retry(addr: SocketAddr, event: Event, policy: RetryPolicy
 // MIT-associated executable Rust region: binary starter/solution payloads
 // remain programming examples covered by the software scope.
 const retryBinaryStarter = String.raw`#![forbid(unsafe_code)]
-fn main() { eprintln!("uzupełnij zamknięty klient retry"); }
+fn main() {
+    eprintln!("uzupełnij zamknięty klient retry");
+}
 `;
 const retryBinarySolution = String.raw`#![forbid(unsafe_code)]
 #[path = "../retry_client.rs"]
@@ -418,7 +420,9 @@ async fn main() {
 // fixtures, not learner-facing prose.
 const retryTestStarter = String.raw`#![forbid(unsafe_code)]
 #[test]
-fn retry_contract_is_your_work() { todo!("zapisz parser, budżet i agregację Unknown"); }
+fn retry_contract_is_your_work() {
+    todo!("zapisz parser, budżet i agregację Unknown");
+}
 `;
 const retryTestSolution = String.raw`#![forbid(unsafe_code)]
 #[path = "../src/retry_client.rs"]
