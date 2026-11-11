@@ -15,7 +15,10 @@ import {
   expectedPreSlotMiriProjectSha256,
   historicalBeforeSlotLazyInit,
 } from "./unsafe-miri-slot-lazy-init-compatibility-fixture";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./file-schema-evolution-compatibility-fixture";
+import {
+  historicalBeforeA12,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair,
+} from "./file-schema-evolution-compatibility-fixture";
 import {
   createInitialState,
   createStepProgress,
@@ -53,7 +56,7 @@ describe("MutSlot with_mut historical compatibility", () => {
     expect(baseline.primaryStepId).toBe("mut-slot-gate");
     expect(
       hashJson(
-        currentCourse.projects.find(
+        historicalBeforeA12(currentCourse).projects.find(
           (candidate) => candidate.id === "miri-safety",
         ),
       ),

@@ -504,7 +504,7 @@ test("authorization_downloads_exact_starter_and_solution", async ({ page }) => {
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(
       variant === "starter"
         ? "f4956e900500dc0e294884379cf0285b7aa83abf7a7635b7bdb8f91765bf8620"
-        : "4970324a2ae117a171cc53a05511dc37a84739ed508d8e33cb21ffe4bb65b825",
+        : "bf823a6f4660c6a820f0daea9288e03a9c9e6ed2b646dbf161188fa18c94cfe0",
     );
     const files = unzipSync(bytes);
     expect(Object.keys(files)).toHaveLength(14);

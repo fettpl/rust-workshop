@@ -67,7 +67,16 @@ describe("Miri safety authored package contract", () => {
     expect(solution["tests/slot_lazy_init.rs"]).toContain(
       "full_suppresses_initializer_and_drops_captured_closure",
     );
-    expect(solution["tests/mut_slot_with_mut.rs"]).toBe(
+    const mutSlotSolution = solution["tests/mut_slot_with_mut.rs"];
+    expect(
+      mutSlotSolution.split("    fn reborrow(&mut self) -> MutSlot<'_, T> {"),
+    ).toHaveLength(2);
+    expect(
+      mutSlotSolution.replace(
+        "    fn reborrow(&mut self) -> MutSlot<'_, T> {",
+        "    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {",
+      ),
+    ).toBe(
       `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutSolution}${mutSlotWithMutTests}`,
     );
   });

@@ -114,11 +114,11 @@ mod boundary {
                 Err(Denial::NoMatchingGrant)
             }
         }
-        pub fn authorize<'a>(
-            &'a self,
+        pub fn authorize(
+            &self,
             principal: Principal,
             request: Request,
-        ) -> Result<Authorized<'a>, Denial> {
+        ) -> Result<Authorized<'_>, Denial> {
             self.decide(principal, &request)?;
             Ok(Authorized {
                 authority: self,
@@ -4763,11 +4763,11 @@ pub use boundary::{
     },
     {
       "name": "binding",
-      "marker": String.raw`        pub fn authorize<'a>(
-            &'a self,
+      "marker": String.raw`        pub fn authorize(
+            &self,
             principal: Principal,
             request: Request,
-        ) -> Result<Authorized<'a>, Denial> {
+        ) -> Result<Authorized<'_>, Denial> {
             self.decide(principal, &request)?;
             Ok(Authorized {
                 authority: self,
@@ -4777,11 +4777,11 @@ pub use boundary::{
                 request,
             })
         }`,
-      "replacement": String.raw`        pub fn authorize<'a>(
-            &'a self,
+      "replacement": String.raw`        pub fn authorize(
+            &self,
             principal: Principal,
             request: Request,
-        ) -> Result<Authorized<'a>, Denial> {
+        ) -> Result<Authorized<'_>, Denial> {
             match self.decide(principal, &request) {
                 Ok(()) => Ok(Authorized {
                     authority: self,

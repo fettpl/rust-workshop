@@ -640,12 +640,12 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "900144c463106a790f64b9c580c5a544854fd4c6c42b30744ec366ffab70c8a2",
+      "sha256": "c0f1bd8beebeb66b4806198941b11e7f1e8c39d97d14cc5261f53630f3d94fe8",
       "group": "course"
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "e725ab21501d0d9811c6e76e16bf81a2716800ebe0e762f31ea28b8c24f270a4",
+      "sha256": "0a7c374ebfb71a2320a8c23d2df5751e5715e2eccfc766b7f8f72aa586ccce37",
       "group": "course"
     },
     {
@@ -660,7 +660,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "6ea6941b105ce4bd8f69ae01d60ddf7df19003d23c8c34edc3486bb54dc02c0b",
+      "sha256": "8473d59ec299ff5a581937d455f79e4a6ceb0f35560a800507410a55f2e46938",
       "group": "course"
     },
     {
@@ -1270,12 +1270,12 @@
     },
     {
       "path": "src/content/projects/miri-safety.ts",
-      "sha256": "0f0b68b6dc79d391986449a8736cbc3972c2bb3265b8c91413baac140eca4905",
+      "sha256": "bbcebadc7515c66d6c8887c42a8eb4710f6c6e269a6b4d1e7ae0e6e6573137f6",
       "group": "course"
     },
     {
       "path": "src/content/projects/miri-safety/package.test.ts",
-      "sha256": "916fd3de5579e89ca6894991e3d19d46cd251f140b025e639d55035078abc66b",
+      "sha256": "25258a52fe78d8bac6eceeb24ab4c929c5d4757fb283cc37afe191eeed7a516a",
       "group": "course"
     },
     {
@@ -1315,7 +1315,7 @@
     },
     {
       "path": "src/content/projects/service-authorization/fixtures.ts",
-      "sha256": "9e13a66daa52739c31e3c0683db1af60238631df188718b7621feabb1a3fa61d",
+      "sha256": "315dc3cf6ed111497d94fd44d36d4b386476667899ea4bd1b9fc9fb0631f3585",
       "group": "course"
     },
     {
@@ -1850,7 +1850,7 @@
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility.test.ts",
-      "sha256": "c96e2a3ddfc1eff9673de11dcc759bbda8294ab4488d4a847884704f704642d1",
+      "sha256": "b31039fcf5f25a8b7babce784b0d2b647935b836ec2d1e3f3c186075c9b55a27",
       "group": "course"
     },
     {

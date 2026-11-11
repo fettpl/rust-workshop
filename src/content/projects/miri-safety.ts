@@ -677,7 +677,11 @@ ${slotLazyInitStarter}${slotLazyInitTests}`;
 const slotLazyInitArchiveSolution = `#![allow(unsafe_code)]
 ${slotLazyInitSolution}${slotLazyInitTests}`;
 const mutSlotWithMutArchiveStarter = `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutStarter}${mutSlotWithMutTests}`;
-const mutSlotWithMutArchiveSolution = `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutSolution}${mutSlotWithMutTests}`;
+// Keep the lesson's explicit lifetime while using idiomatic elision in Cargo.
+const mutSlotWithMutArchiveSolution = `${mutSlotWithMutStandaloneWitness}${mutSlotWithMutSolution.replace(
+  "    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {",
+  "    fn reborrow(&mut self) -> MutSlot<'_, T> {",
+)}${mutSlotWithMutTests}`;
 
 const commonFiles = [
   { path: "Cargo.toml", starter: manifest, solution: manifest },

@@ -87,7 +87,11 @@ it("preserves original references, aliases, unknown properties and explicit unde
   for (const key of ["lessons", "concepts", "competencies", "modules"] as const)
     result[key].forEach((item, index) => expect(item).toBe(input[key][index]));
   result.projects.forEach((item, index) => {
-    if (item.id !== "durable-log-retry")
+    if (
+      item.id !== "durable-log-retry" &&
+      item.id !== "miri-safety" &&
+      item.id !== "service-authorization"
+    )
       expect(item).toBe(input.projects[index]);
   });
   expect(result.default.projects).toBe(result.projects);
@@ -211,3 +215,62 @@ it("reverses only the exact formatted retry project in historical views", () => 
     expect(input.projects[retryIndex]).toBe(candidate);
   }
 });
+
+it.each([
+  {
+    index: 11,
+    id: "miri-safety",
+    liveHash:
+      "983152a95721ceca060f55c7d9f854431254689a0013af4dbcc6d05e0481ef91",
+    historicalHash:
+      "bac8d3f35d3a3abf93d9ae4f7ab583b3057f7b695284a489975124db1c190109",
+    path: "tests/mut_slot_with_mut.rs",
+  },
+  {
+    index: 14,
+    id: "service-authorization",
+    liveHash:
+      "ce2042b890db806eab63108681a14db213c240a30dfedc345ddfd872659262ea",
+    historicalHash:
+      "b0c2b9fd0aced454ad04eff90c150332f72c56357f1d5da60c22cb1c197a338e",
+    path: "src/lib.rs",
+  },
+])(
+  "reverses only the exact packaged $id solution signature in historical views",
+  ({ index, id, liveHash, historicalHash, path }) => {
+    const live = course.projects[index];
+    expect(live.id).toBe(id);
+    expect(hashRegistryValue(live)).toBe(liveHash);
+    const projected = historicalBeforeA12({
+      ...course,
+      packageProjectAlias: live,
+    });
+    const restored = projected.projects[index];
+    expect(projected.packageProjectAlias).toBe(restored);
+    expect(projected.default.projects).toBe(projected.projects);
+    expect(hashRegistryValue(restored)).toBe(historicalHash);
+    expect(
+      restored
+        .package!.files.filter((file, i) => file !== live.package!.files[i])
+        .map((file) => file.path),
+    ).toEqual([path]);
+    expect(course.projects[index]).toBe(live);
+
+    const packageWithNearMiss = {
+      ...live.package!,
+      files: live.package!.files.map((file) =>
+        file.path === path ? { ...file, solution: file.solution + "\n" } : file,
+      ),
+    };
+    const nearMiss = { ...live, package: packageWithNearMiss };
+    const projects = course.projects.map((item, i) =>
+      i === index ? nearMiss : item,
+    );
+    const input = {
+      ...course,
+      projects,
+      default: { ...course.default, projects },
+    };
+    expect(historicalBeforeA12(input).projects[index]).toBe(nearMiss);
+  },
+);

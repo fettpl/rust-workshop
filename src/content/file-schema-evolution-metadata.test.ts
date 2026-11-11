@@ -331,6 +331,20 @@ it("reports the current catalog and pins all fifteen inherited project objects",
     sources: 349,
     projects: 16,
   });
+  const maintainedProjectHashes = new Map([
+    [
+      "durable-log-retry",
+      "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5",
+    ],
+    [
+      "miri-safety",
+      "983152a95721ceca060f55c7d9f854431254689a0013af4dbcc6d05e0481ef91",
+    ],
+    [
+      "service-authorization",
+      "ce2042b890db806eab63108681a14db213c240a30dfedc345ddfd872659262ea",
+    ],
+  ]);
   expect(
     course.projects
       .slice(0, 15)
@@ -338,9 +352,7 @@ it("reports the current catalog and pins all fifteen inherited project objects",
   ).toEqual(
     predecessorProjectHashes.map(([id, hash]) => [
       id,
-      id === "durable-log-retry"
-        ? "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5"
-        : hash,
+      maintainedProjectHashes.get(id) ?? hash,
     ]),
   );
 });

@@ -59,28 +59,96 @@ const reviewIndex = 198;
 const reviewHash =
   "3135a1ab6abf8a0c21aed342ee5fa6bb4e369baa349e794de136338f589137d8";
 
+type ProjectFormat = {
+  index: number;
+  projectId: string;
+  packageId: string;
+  liveHash: string;
+  historicalHash: string;
+  members: readonly {
+    path: string;
+    variant: "starter" | "solution";
+    historical: string;
+    formatted?: string;
+  }[];
+};
+
+// Restore only known package maintenance edits before comparing captured course data.
 // The retry starter formatting follow-up changes two virtual Rust files.
 const retryProjectFormat = {
   index: 13,
+  projectId: "durable-log-retry",
+  packageId: "durable-log-retry-workspace",
   liveHash: "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5",
   historicalHash:
     "e364d16da0b15fba65f1acc67cfc5cd885265bbb96c0ed1d5a968f8c2be090f3",
   members: [
     {
       path: "crates/ingest-service/src/bin/ingest-retry-client.rs",
+      variant: "starter",
       historical: String.raw`#![forbid(unsafe_code)]
 fn main() { eprintln!("uzupełnij zamknięty klient retry"); }
 `,
     },
     {
       path: "crates/ingest-service/tests/retry_client.rs",
+      variant: "starter",
       historical: String.raw`#![forbid(unsafe_code)]
 #[test]
 fn retry_contract_is_your_work() { todo!("zapisz parser, budżet i agregację Unknown"); }
 `,
     },
   ],
-} as const;
+} satisfies ProjectFormat;
+
+const miriProjectFormat = {
+  index: 11,
+  projectId: "miri-safety",
+  packageId: "miri-safety-workshop",
+  liveHash: "983152a95721ceca060f55c7d9f854431254689a0013af4dbcc6d05e0481ef91",
+  historicalHash:
+    "bac8d3f35d3a3abf93d9ae4f7ab583b3057f7b695284a489975124db1c190109",
+  members: [
+    {
+      path: "tests/mut_slot_with_mut.rs",
+      variant: "solution",
+      formatted: "    fn reborrow(&mut self) -> MutSlot<'_, T> {",
+      historical:
+        "    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {",
+    },
+  ],
+} satisfies ProjectFormat;
+
+const authorizationProjectFormat = {
+  index: 14,
+  projectId: "service-authorization",
+  packageId: "service-authorization-workshop",
+  liveHash: "ce2042b890db806eab63108681a14db213c240a30dfedc345ddfd872659262ea",
+  historicalHash:
+    "b0c2b9fd0aced454ad04eff90c150332f72c56357f1d5da60c22cb1c197a338e",
+  members: [
+    {
+      path: "src/lib.rs",
+      variant: "solution",
+      formatted: String.raw`        pub fn authorize(
+            &self,
+            principal: Principal,
+            request: Request,
+        ) -> Result<Authorized<'_>, Denial> {`,
+      historical: String.raw`        pub fn authorize<'a>(
+            &'a self,
+            principal: Principal,
+            request: Request,
+        ) -> Result<Authorized<'a>, Denial> {`,
+    },
+  ],
+} satisfies ProjectFormat;
+
+const projectFormats = [
+  retryProjectFormat,
+  miriProjectFormat,
+  authorizationProjectFormat,
+];
 
 export const hashRegistryValue = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -198,19 +266,23 @@ function withValue<T extends object, Key extends keyof T>(
   return Object.create(Object.getPrototypeOf(value), descriptors);
 }
 
-function restoreRetryStarter(projects: typeof Course.projects) {
-  const { index, liveHash, historicalHash, members } = retryProjectFormat;
+function restoreProjectFormat(
+  projects: typeof Course.projects,
+  format: ProjectFormat,
+) {
+  const { index, projectId, packageId, liveHash, historicalHash, members } =
+    format;
   const project = projects[index];
   if (
     !matches(project, liveHash) ||
-    project.id !== "durable-log-retry" ||
+    project.id !== projectId ||
     projects.some(
       (item, other) =>
         other !== index &&
         objectRecord(item) &&
         Object.getOwnPropertyDescriptor(item, "id")?.value === project.id,
     ) ||
-    project.package?.id !== "durable-log-retry-workspace"
+    project.package?.id !== packageId
   )
     return;
 
@@ -220,11 +292,19 @@ function restoreRetryStarter(projects: typeof Course.projects) {
   );
   for (const member of members) {
     const index = files.findIndex((file) => file.path === member.path);
-    const file = files[index];
-    if (!file) return;
+    const descriptor = descriptors[index];
+    if (!descriptor) return;
+    const file: (typeof files)[number] = descriptor.value;
+    const current = file[member.variant];
+    if (current === undefined) return;
+    if (member.formatted && current.split(member.formatted).length !== 2)
+      return;
+    const historical = member.formatted
+      ? current.replace(member.formatted, () => member.historical)
+      : member.historical;
     descriptors[index] = {
-      ...descriptors[index],
-      value: withValue(file, "starter", member.historical),
+      ...descriptor,
+      value: withValue(file, member.variant, historical),
     };
   }
   const historical = withValue(
@@ -249,11 +329,15 @@ function collectAdditions(
     const indices = new Set(additions.map(({ index }) => index));
     const projected = items.filter((_, index) => !indices.has(index));
     if (key === "projects") {
-      const retry = restoreRetryStarter(items as typeof Course.projects);
-      if (retry) {
-        if (!replacements.has(retry.project))
-          replacements.set(retry.project, retry.historical);
-        projected[retryProjectFormat.index] = replacements.get(retry.project);
+      for (const format of projectFormats) {
+        const restored = restoreProjectFormat(
+          items as typeof Course.projects,
+          format,
+        );
+        if (!restored) continue;
+        if (!replacements.has(restored.project))
+          replacements.set(restored.project, restored.historical);
+        projected[format.index] = replacements.get(restored.project);
       }
     }
     for (const key of Reflect.ownKeys(items)) {
