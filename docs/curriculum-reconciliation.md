@@ -1,3 +1,34 @@
+# Curriculum closure | 11 November 2026
+
+The original brief, October findings, advanced continuation requirements and
+Plans 001–004 are reconciled for the locally authored curriculum. The audience
+starts Rust from zero with basic programming knowledge. The 19 original topic
+rows map to 17 Core modules and their extensions. The current catalog has 51
+modules, 204 lessons, 1,359 steps, 199 concepts, 200 competencies, 349 sources
+and 16 projects. The Core route and all predecessor lesson identities,
+duration fields and saved-state behavior were checked against the accepted
+baseline. Both file schema evolution lessons omit duration metadata.
+
+| Requirement | Current anchor and check |
+| --- | --- |
+| Original topics 0–18 | The [Core coverage matrix](#original-core-coverage) maps foundations, ownership and borrowing through testing, concurrency, async and final projects to the authored modules. [Route and prerequisite tests](../src/content/prerequisite-entries.test.ts) distinguish Core from optional modules. [Testing and tooling](../src/content/testing.ts) separates Rust tests, rustfmt and Clippy and provides a terminal exercise. |
+| Discovery, compiler feedback and retrieval | [Lesson workspace](../src/components/lesson-workspace.tsx), [Compiler Coach](../src/components/compiler-coach.tsx), [learning engine](../src/engine/learning.ts) and [review](../src/components/review.tsx) retain predict/run/observe, explanation, repair, transfer and delayed recall. The counted-gate maintenance checks assistance before awarding independent family credit. |
+| Independent transfer and open projects | Authored blank-editor tasks retain their testable contracts. [Study Session](../src/content/log-analyzer.ts) supplies a problem, observable criteria and retrospective while leaving architecture and decomposition to the learner. [Capstone maintenance](capstone-change-review.md) adds changed requirements, diagnosis and review. |
+| Advanced sequence and October findings | The [advanced coverage](#advanced-coverage) and [October follow-through](#october-review-follow-through) matrices retain the A1–A9 anchors. [Client retry](client-retry.md), [typed authorization](service-authorization.md) and [file schema evolution](file-schema-evolution.md) close Plans 001, 002 and 004. [Plan 003](../plans/003-review-assistance-gates.md) records the separate assistance correction. |
+| Local continuity and verification | [Persistence](../src/persistence/state.ts) and the fresh A12 compatibility checks cover existing save envelopes, raw history and exact resume. The production browser checks exercise UI/state, offline continuity and downloads. The [A12 acceptance](../plans/004-file-schema-evolution.md) records the separate native fixture and full-history recovery checks. |
+
+The audit found no additional required authored topic in the maintained
+curriculum sequence. The post-A6 UI redesign remains a proposal. Existing
+lesson duration fields and current onboarding presentation remain compatible.
+The development inspector reports mastery and review reasons, but still has
+no separate migration trace, as recorded in the [product requirements audit](requirements-audit.md).
+That is an app observability item outside the authored curriculum.
+
+Human learning, unseen transfer, retention and assistive-technology outcomes
+require separate observation. Hosted CI, live external execution smoke tests,
+publication and deployment have separate acceptance gates. Historical
+checkpoints below retain their original dates and attribution.
+
 # File schema evolution source checkpoint | 10 November 2026
 
 The authored catalog contains **51 modules, 204 lessons, 1,359 steps,
