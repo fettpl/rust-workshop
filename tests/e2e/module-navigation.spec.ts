@@ -1,14 +1,16 @@
 import { test, expect, type Page } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
 import {
   createInitialState,
   createStepProgress,
+  importState,
   stepKey,
 } from "../../src/persistence/state";
 import type { Lesson } from "../../src/domain/types";
 
-async function resumeAtLastStep(page: Page, lesson: Lesson) {
+async function resumeAtLastStep(page: Page, lesson: Lesson, completed = true) {
   const state = createInitialState();
   state.onboarding.completed = true;
   state.diagnostic.completed = true;
@@ -21,7 +23,7 @@ async function resumeAtLastStep(page: Page, lesson: Lesson) {
   };
   state.steps[stepKey(lesson.id, lesson.steps.at(-1)!.id)] = {
     ...createStepProgress(),
-    completed: true,
+    completed,
   };
   await page.goto("/");
   await page.evaluate(async (value) => {
@@ -483,4 +485,113 @@ test("opens modeling, repairs a slice and retains the work across a module switc
     path: testInfo.outputPath("modeling-map-mobile.png"),
     fullPage: true,
   });
+});
+
+test("opens the learner-owned Study Session from the last core step and preserves its work", async ({
+  page,
+}) => {
+  const coreEnd = modules
+    .find((item) => item.id === "log-analyzer")!
+    .lessonIds.at(-1);
+  const lesson = lessons.find((item) => item.id === coreEnd)!;
+  await resumeAtLastStep(page, lesson);
+  await expect(
+    page.getByRole("heading", {
+      name: lesson.steps.at(-1)!.title,
+      exact: true,
+    }),
+  ).toBeVisible();
+
+  const entry = page.getByText("Otwórz własny Study Session CLI", {
+    exact: true,
+  });
+  await entry.focus();
+  await entry.press("Enter");
+  const brief = page.getByRole("region", { name: /Study Session CLI od zera/ });
+  await expect(brief).toBeVisible();
+  const first = [
+    [
+      "Pierwsza wersja — decyzja projektowa",
+      "Po parserze zachowuję własną nazwę, bo bufor wejścia wykorzystam ponownie.",
+    ],
+    [
+      "Pierwsza wersja — własny test",
+      "Dwie nazwy różniące się spacją dają jeden wpis w raporcie.",
+    ],
+    [
+      "Pierwsza wersja — rzeczywiste wyniki CLI",
+      "Ada;5, Basia;45; kod 0. Plik mieszany: komunikat dla linii 2, kod 2.",
+    ],
+  ] as const;
+  const changed = [
+    [
+      "Po przeglądzie — test regresji zmiany",
+      "Stare wywołanie pokazuje Adę; próg 10 ją ukrywa.",
+    ],
+    [
+      "Po przeglądzie — pozostała granica",
+      "Nie sprawdziłam jeszcze przepełnienia sumy.",
+    ],
+  ] as const;
+  const evidence = await readStoredLearningSnapshot(page);
+  const resume = await readStoredResume(page);
+  for (const [label, value] of first)
+    await brief.getByLabel(label, { exact: true }).fill(value);
+  await expect(brief.getByLabel(changed[0][0], { exact: true })).toBeHidden();
+  const followUp = brief.locator("summary").filter({ hasText: "--min-total" });
+  await followUp.click();
+  for (const [label, value] of changed)
+    await brief.getByLabel(label, { exact: true }).fill(value);
+  await expect(page.locator(".save-status")).toContainText(
+    "Zapisano na tym urządzeniu",
+  );
+  expect(await readStoredLearningSnapshot(page)).toEqual(evidence);
+  expect(await readStoredResume(page)).toEqual(resume);
+
+  await page.reload();
+  await entry.click();
+  await followUp.click();
+  for (const [label, value] of [...first, ...changed])
+    await expect(brief.getByLabel(label, { exact: true })).toHaveValue(value);
+  await page.getByRole("button", { name: "Projekt", exact: true }).click();
+  await expect(brief).toBeVisible();
+  await expect(
+    page.getByLabel("Twoje obserwacje", { exact: true }),
+  ).toHaveValue("");
+  await followUp.click();
+  for (const [label, value] of [...first, ...changed])
+    await expect(brief.getByLabel(label, { exact: true })).toHaveValue(value);
+  await page.getByRole("button", { name: "Notatnik", exact: true }).click();
+  for (const [label, value] of [...first, ...changed]) {
+    const row = page
+      .locator(".journal-entry")
+      .filter({ has: page.getByRole("heading", { name: new RegExp(label) }) });
+    await expect(row.getByRole("textbox")).toHaveValue(value);
+  }
+  await page
+    .getByRole("button", { name: "Ustawienia i postęp" })
+    .dispatchEvent("click");
+  const downloaded = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Eksportuj postęp" }).click();
+  const backup = await downloaded;
+  const restored = importState(await readFile((await backup.path())!, "utf8"));
+  for (const [, value] of [...first, ...changed])
+    expect(Object.values(restored.notes)).toContain(value);
+  const { steps, events, mastery, review } = restored;
+  expect({ steps, events, mastery, review }).toEqual(
+    await readStoredLearningSnapshot(page),
+  );
+});
+
+test("offers Study Session at the unfinished endpoint on a narrow screen", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const lesson = lessons.find((item) => item.id === "log-analyzer-project")!;
+  await resumeAtLastStep(page, lesson, false);
+  await page.getByRole("tab", { name: "Output", exact: true }).click();
+  const entry = page.getByText("Otwórz własny Study Session CLI", { exact: true });
+  await entry.click();
+  await expect(page.getByLabel("Pierwsza wersja — decyzja projektowa", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Wróć do mapy" })).toBeDisabled();
+  await page.getByRole("button", { name: "Poprzedni krok" }).click();
+  await expect(entry).toHaveCount(0);
 });

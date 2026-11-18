@@ -52,8 +52,11 @@ operations, public API workspaces, Mini grep, property contracts, an FFI
 buffer wrapper, Miri safety, and a durable log service. Project pages provide
 starter and solution archives where a Cargo package exists. Downloading an
 archive gives you files to work on locally; the web app does not run those
-archives on your computer. A separate Study Session CLI brief asks you to build
-your own project from scratch, with your own tests and CLI evidence.
+archives on your computer. From the final Log Analyzer step or its project page,
+open the Study Session CLI brief and build your own Cargo project from scratch.
+Save your design decision, your test and the actual CLI output in the workshop
+journal. After reviewing that version, add a filter and record which regression
+test protects the original behavior.
 
 The durable log service also has an optional bounded retry client laboratory.
 It teaches fixed-frame replay, bounded budgets, terminal refusals, and

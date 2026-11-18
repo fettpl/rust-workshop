@@ -18,6 +18,7 @@ import {
   MAX_IMPORT_BYTES,
 } from "@/persistence/state";
 import { lessons, concepts, sources, projects } from "@/content/course";
+import { studySessionNoteTitle } from "@/domain/study-session-practice";
 import { courseMastery } from "@/content/learning-context";
 import { useOpenLesson } from "./overview";
 import { Eyebrow, MasteryBadge } from "./ui";
@@ -77,12 +78,13 @@ export function Journal() {
           entries.map(([id, note]) => (
             <div className="journal-entry" key={id}>
               <h3>
-                {lessons.find((l) => l.id === id)?.title ??
+                {studySessionNoteTitle(id) ??
+                  lessons.find((l) => l.id === id)?.title ??
                   projects.find((project) => project.id === id)?.title ??
                   (id === "personal" ? "Luźne myśli" : id)}
               </h3>
               <label className="sr-only" htmlFor={`note-${id}`}>
-                Notatka {id}
+                Notatka {studySessionNoteTitle(id) ?? id}
               </label>
               <textarea
                 id={`note-${id}`}

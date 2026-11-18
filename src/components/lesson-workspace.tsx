@@ -13,7 +13,20 @@ import {
   TestTube2,
 } from "lucide-react";
 import { useLearning } from "./learning-provider";
-import { concepts, lessons, traces, sources, modules } from "@/content/course";
+import {
+  concepts,
+  lessons,
+  traces,
+  sources,
+  modules,
+  projects,
+} from "@/content/course";
+import {
+  STUDY_SESSION_PROJECT_ID,
+  STUDY_SESSION_ENDPOINT_STEP_ID,
+  STUDY_SESSION_ENTRY_LABEL,
+} from "@/domain/study-session-practice";
+import { LearnerInstruction } from "./learner-instruction";
 import { createStepProgress, stepKey } from "@/persistence/state";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
@@ -115,6 +128,11 @@ export function LessonWorkspace() {
         ? "exhausted"
         : "none";
   const nextLesson = nextLessonForNavigation(lesson.id, lessons, modules);
+  const learnerProject =
+    lesson.id === STUDY_SESSION_PROJECT_ID &&
+    step.id === STUDY_SESSION_ENDPOINT_STEP_ID
+      ? projects.find((project) => project.id === STUDY_SESSION_PROJECT_ID)
+      : undefined;
   const nextLabel =
     index < lesson.steps.length - 1
       ? "Dalej"
@@ -909,6 +927,12 @@ export function LessonWorkspace() {
           </section>
         )}
       </div>
+      {learnerProject && (
+        <details className="study-session-entry">
+          <summary>{STUDY_SESSION_ENTRY_LABEL}</summary>
+          <LearnerInstruction project={learnerProject} />
+        </details>
+      )}
       <footer className="lesson-footer">
         <button
           className="text-button"

@@ -166,3 +166,24 @@ This document records a proposal, not a production redesign. Observation with le
 ## Local acceptance boundary
 
 The local A9 validation packet binds the accepted source to genuine pre-edit registry and V1/V2/V3 state captures, current compatibility/unit checks, a fresh production build, browser suite and formal offline run. Unchanged Rust/native results retain their original accepted A8 input and tool bindings; they are not represented as freshly executed A9 checks. Local backup restoration and independent review close the milestone. Hosted Actions, deployment and public release remain separate future operations.
+
+## Independent practice after the November assessment repairs
+
+A fresh inventory at `ca9f08a` found 51 modules, 204 lessons, 1,360 steps and 16 downloadable projects. Of those steps, 506 run tests and 73 use a rubric. These counts locate practice opportunities. To assess learner independence, the review also examined what the prompt supplies, which decisions the learner makes, which artifact they produce, and how they can revisit it.
+
+| Checkpoint | Work the learner owns | How to interpret it |
+| --- | --- | --- |
+| Parcel pricing in Foundations | Choose the return representation, write boundary tests and observe a real failing assertion in a local Cargo project. | The learner records the local observation. |
+| Reservations in data modeling | Choose types and an API, then change the cancellation rule. | The rubric asks for the design and examples. |
+| Report in iterators | Decide representation, borrowing, errors and tie behavior, then accommodate a changed requirement. | Multiple designs can satisfy the brief. |
+| Study Session CLI at the end of the core | Choose types, decomposition and data structures, supply real CLI output and implement a follow-up filter with regression coverage. | The code and its execution belong to the learner. An independent reviewer can examine the artifact. |
+
+**Selected repair.** The final Log Analyzer step previously offered a return to the map. Its separate Projects view contained the Study Session assignment, and the project retrospective shared space with Log Analyzer observations. A Chromium regression on the pre-change production build confirmed the endpoint had no Study Session entry. This affected the transition from the entire core to its independent assignment. The endpoint and Projects now expose the same brief and preserve the learner's design, test, run results, follow-up regression and remaining limitation as distinct notes. The notebook and progress export carry those notes. Writing them records neither a compiler run nor mastery.
+
+**Remaining gaps, in suggested order**
+
+1. In the ownership assessment, the recall prompt asks when borrowing is preferable to cloning. The current evaluator rejected the Polish paraphrase “Gdy chcę czytać dane i zachować właściciela bez kopiowania.” Check a borrow-or-clone decision in a concrete scenario and reserve free-form rationale for self-assessment. The Log Analyzer recall prompts also warrant checking for the same exact-wording assumption.
+2. The Tokio criteria `tokio-close-drain-join` and `tokio-stream-shutdown-policy` each describe two different behaviors. For each criterion, a simulated independent success on either referenced task satisfied its full label. Split the criteria or give each label a single accurately tested behavior. Use one-sided successes and combined success in the regression tests.
+3. Between collections and the first I/O projects, most exercises supply a representation or API. An intermediate assignment could ask learners to select a representation for duplicate events, then preserve first-seen order under a changed reporting requirement. An authored test that distinguishes the two orders would make the design tradeoff observable.
+
+This review used catalog inspection, sampling of authored prompts, the application evaluators and browser navigation. Learner retention and the quality of an individual's submitted design require observation of actual work.

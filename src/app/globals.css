@@ -2993,3 +2993,7 @@ button svg {
   .package-variants > button { flex: 1 1 100%; }
   .package-file-content { padding: 14px; }
 }
+
+.study-session-note { margin: 24px 0; }
+.study-session-note .footnote { margin: 8px 0; }
+.study-session-entry { margin: 24px 0; }
