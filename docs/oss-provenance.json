@@ -650,12 +650,12 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "96ed12be18b2c4d92ce62187380ff9ec52f6305e82cdeac3133765df16d965c3",
+      "sha256": "9b340eae441d3aade6010887c2b610d058039c337f82624d228750b3e85df11d",
       "group": "course"
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "c7da8b484d980aa96fcf1a8bcecf63dddaf2827cd73a9003194cd8459a59c2b4",
+      "sha256": "906d686bf2f5fa9eb28e6f54a837be936153ca024c86f57af04e5f267ad8e64d",
       "group": "course"
     },
     {
@@ -670,7 +670,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "ee9715a99a293c6164c3b1b3cb946ccbf43205aec2b60d9ffe9f9bed5a465d38",
+      "sha256": "9d3540b3768737a9419946bc8bd5deec4388aa94365ec10365e2acc9cce4e3a9",
       "group": "course"
     },
     {
@@ -737,6 +737,11 @@
       "path": "src/content/fixtures/performance-investigation-pre-a7-projection.json",
       "group": "course",
       "sha256": "43351e38cedb2034af1fe4737162de4c3fe636ab2a9aed19aa63c26aa0fa71fe"
+    },
+    {
+      "path": "src/content/fixtures/tokio-shutdown-gates-delta.json",
+      "sha256": "ad55e9e696814bd564f4e6c56d74beb096ef9aa65fda9c0dd6ac2c34c3c0baf0",
+      "group": "course"
     },
     {
       "path": "src/content/fixtures/unsafe-miri-pre-disjoint-ranges.json",
@@ -1050,7 +1055,7 @@
     },
     {
       "path": "src/content/ownership-borrow-decision-compatibility.test.ts",
-      "sha256": "2038e6ba65435131a7737112d020124e788bfeae1c1969b5eb20eda4d94539a2",
+      "sha256": "55891294cc321935c3b0582993b3ab96731f9d0de1d1640d486cd4399b7c8043",
       "group": "course"
     },
     {
@@ -1650,7 +1655,7 @@
     },
     {
       "path": "src/content/tokio-flow-control.ts",
-      "sha256": "80a063773872b38eae650f143ce9a68d76eaa4237c3377cecb472ceebc2ec6ac",
+      "sha256": "1508fb19ec8458f398cebf12d03e1236c20d4aad40d74aa2ef0083c2cb0878bf",
       "group": "course"
     },
     {
@@ -1660,7 +1665,7 @@
     },
     {
       "path": "src/content/tokio-io-modules.ts",
-      "sha256": "26bb958d0ed1f4f2e98a948d52711f3789faedc58562d3b50e7aab5aba412adb",
+      "sha256": "4ee3e663055b566aa8765fe0d2048b0abc5170258b811eedcd5ba89ce6321595",
       "group": "course"
     },
     {
@@ -1680,7 +1685,7 @@
     },
     {
       "path": "src/content/tokio-project-integration.test.ts",
-      "sha256": "aedef196731f41a53abf5b98f89f4455b935061ee2b99252f736b389c3743b73",
+      "sha256": "0420cf23fef14ab38a0dfb5ddab5bdf9b438c46bed0196b81caae6a241fcac34",
       "group": "course"
     },
     {
@@ -1699,8 +1704,23 @@
       "group": "course"
     },
     {
+      "path": "src/content/tokio-shutdown-gates-compatibility-fixture.ts",
+      "sha256": "54ca80788e94d1caa9243d2b4828791a3fc69c368eb5dda48b09ac70a197a6af",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-shutdown-gates-compatibility.test.ts",
+      "sha256": "19cba70df417baae8349498d39f79b6f576cd156ae7a074bf4ea82621f54132c",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-shutdown-gates.test.ts",
+      "sha256": "534061073053333b918f913a83c1ccb34541ee951d111d24129ef9ae2b515f1b",
+      "group": "course"
+    },
+    {
       "path": "src/content/tokio-shutdown.ts",
-      "sha256": "66416190af24268c0c77097b54c2b63ffc2eaaf90acc7ee2a4d06610a267e756",
+      "sha256": "17c8795bbdec3923b333b27b65a7894ef831c409f738c9630a44bcb3d469205d",
       "group": "course"
     },
     {
@@ -1930,12 +1950,12 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "faa9867531e4aa8d6a1cd6623e2c74c12ccbc9032b7a8e357cdc9308497db1f1",
+      "sha256": "bdddddca31c46e56f93689eb7b50b043e19473a80bc12efc9412494970e76ecd",
       "group": "course"
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility.test.ts",
-      "sha256": "b335601075d309d1c2191cf562111d6947b93663994b0574cea2e7304d502b7d",
+      "sha256": "e5860e00e2718092c16ca8df312f9c97fac9c9b10596339541b934162b53d8e1",
       "group": "course"
     },
     {

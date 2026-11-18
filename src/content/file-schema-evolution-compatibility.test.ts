@@ -92,7 +92,14 @@ it("preserves original references, aliases, unknown properties and explicit unde
   ]);
   for (const key of ["lessons", "concepts", "competencies", "modules"] as const)
     result[key].forEach((item, index) => {
-      if (key === "lessons" && repairedLessons.has(item.id)) return;
+      if (
+        (key === "lessons" &&
+          (repairedLessons.has(item.id) ||
+            item.id === "tokio-graceful-shutdown")) ||
+        (key === "modules" &&
+          ["tokio-flow-control", "tokio-io-streams"].includes(item.id))
+      )
+        return;
       expect(item).toBe(input[key][index]);
     });
   result.projects.forEach((item, index) => {

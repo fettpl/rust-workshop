@@ -1,3 +1,4 @@
+import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
 import { restoreWorkshopAssessmentLessons } from "./workshop-assessment-repair-compatibility-fixture";
 import { createHash } from "node:crypto";
 import type * as Course from "./course";
@@ -338,7 +339,13 @@ function collectAdditions(
             replacements,
             matches,
           )
-        : items;
+        : key === "modules"
+          ? restoreTokioShutdownModules(
+              items as typeof Course.modules,
+              replacements,
+              matches,
+            )
+          : items;
     const projected = restored.filter((_, index) => !indices.has(index));
     if (key === "projects") {
       for (const format of projectFormats) {

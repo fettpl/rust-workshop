@@ -547,6 +547,97 @@ async fn no_signal_recipient_still_does_not_skip_a_direct_handle() {
     assert_eq!(outcomes.into_iter().next().unwrap().0, "child");
 }`;
 
+const joinPairStarter = `use tokio::sync::watch;
+use tokio::task::{Id, JoinError, JoinHandle};
+
+type Outcome<T> = (Id, Result<T, JoinError>);
+
+async fn finish_pair<A, B>(
+    stop: &watch::Sender<bool>,
+    writer: JoinHandle<A>,
+    reporter: JoinHandle<B>,
+) -> (bool, Outcome<A>, Outcome<B>) {
+    todo!()
+}`;
+
+const joinPairSolution = joinPairStarter.replace(
+  "    todo!()",
+  `    let delivered = stop.send(true).is_ok();
+    let writer_id = writer.id();
+    let reporter_id = reporter.id();
+    let written = writer.await;
+    let reported = reporter.await;
+    (delivered, (writer_id, written), (reporter_id, reported))`,
+);
+
+const joinPairTests = `#[tokio::test(start_paused = true)]
+async fn stops_both_workers_and_preserves_outputs_by_role() {
+    use tokio::sync::watch;
+    use tokio::time::{timeout, Duration};
+
+    let (stop, mut writer_signal) = watch::channel(false);
+    let mut reporter_signal = stop.subscribe();
+    let writer = tokio::spawn(async move {
+        writer_signal.wait_for(|stop| *stop).await.unwrap();
+        String::from("zapisano")
+    });
+    let reporter = tokio::spawn(async move {
+        reporter_signal.wait_for(|stop| *stop).await.unwrap();
+        vec![3u8, 5]
+    });
+    let ids = (writer.id(), reporter.id());
+    let (delivered, (wid, written), (rid, reported)) =
+        timeout(Duration::from_secs(1), finish_pair(&stop, writer, reporter))
+            .await.expect("wyślij stop przed oczekiwaniem na dzieci");
+    assert!(delivered);
+    assert_eq!((wid, rid), ids);
+    assert_eq!(written.unwrap(), "zapisano");
+    assert_eq!(reported.unwrap(), [3, 5]);
+}
+
+#[tokio::test]
+async fn retains_both_join_errors_even_without_a_signal_recipient() {
+    use tokio::{sync::watch, task::JoinHandle};
+
+    let (stop, rx) = watch::channel(false);
+    drop(rx);
+    let writer: JoinHandle<String> = tokio::spawn(async {
+        std::panic::panic_any(String::from("awaria zapisu"))
+    });
+    let reporter = tokio::spawn(std::future::pending::<Vec<u8>>());
+    let ids = (writer.id(), reporter.id());
+    reporter.abort();
+    let (delivered, (wid, written), (rid, reported)) = finish_pair(&stop, writer, reporter).await;
+    assert!(!delivered);
+    assert_eq!((wid, rid), ids);
+    let panic = written.unwrap_err();
+    assert_eq!(panic.id(), wid);
+    assert_eq!(*panic.into_panic().downcast::<String>().unwrap(), "awaria zapisu");
+    let cancelled = reported.unwrap_err();
+    assert_eq!(cancelled.id(), rid);
+    assert!(cancelled.is_cancelled());
+}
+
+#[tokio::test(start_paused = true)]
+async fn writer_panic_still_allows_the_reporter_to_finish_after_stop() {
+    use tokio::{sync::watch, task::JoinHandle, time::{timeout, Duration}};
+
+    let (stop, mut rx) = watch::channel(false);
+    let writer: JoinHandle<String> = tokio::spawn(async { panic!("writer") });
+    let reporter = tokio::spawn(async move {
+        rx.wait_for(|stop| *stop).await.unwrap();
+        String::from("raport gotowy")
+    });
+    let ids = (writer.id(), reporter.id());
+    let (delivered, (wid, written), (rid, reported)) =
+        timeout(Duration::from_secs(1), finish_pair(&stop, writer, reporter))
+            .await.expect("zadanie raportujące musi dostać sygnał stop");
+    assert!(delivered);
+    assert_eq!((wid, rid), ids);
+    assert!(written.unwrap_err().is_panic());
+    assert_eq!(reported.unwrap(), "raport gotowy");
+}`;
+
 export const tokioShutdownLessons: Lesson[] = [
   {
     id: "tokio-graceful-shutdown",
@@ -660,6 +751,22 @@ export const tokioShutdownLessons: Lesson[] = [
           ".join_all(",
           "std::mem::forget",
         ],
+        gate: true,
+      }),
+      tokioExercise({
+        id: "tokio-graceful-shutdown-join-transfer",
+        kind: "apply",
+        title: "Odbierz wyniki zapisu i raportu",
+        prompt:
+          "Koordynator kończy pracę dwóch zadań: jedno zapisuje dane, drugie tworzy raport. Mogą zwracać różne typy. Uzupełnij `finish_pair`. Najpierw spróbuj wysłać `true` przez watch. Zwróć informację, czy sygnał miał odbiorcę, oraz po jednej parze (Id, Result) dla zapisu i raportu, w tej kolejności. Odbierz oba wyniki także wtedy, gdy wysłanie sygnału się nie uda albo jedno zadanie zakończy się paniką lub zostanie anulowane. Zachowaj oryginalny JoinError z jego identyfikatorem i przyczyną. Dzieci kończą pracę samodzielnie po sygnale.",
+        code: joinPairStarter,
+        solution: joinPairSolution,
+        tests: joinPairTests,
+        hints: [
+          "Sprawdź wynik wysłania sygnału. Brak odbiorcy nie mówi jeszcze, jaki wynik ma każde zadanie.",
+          "Odczytaj id z uchwytu przed await. Zachowaj oba Result, żeby błąd pierwszego dziecka nie zakończył zbierania wyników.",
+        ],
+        forbiddenPatterns: [".abort(", "std::mem::forget"],
         gate: true,
       }),
     ],

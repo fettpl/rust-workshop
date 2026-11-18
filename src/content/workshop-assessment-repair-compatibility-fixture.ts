@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import tokioShutdownDelta from "./fixtures/tokio-shutdown-gates-delta.json";
 import delta from "./fixtures/workshop-assessment-repair-delta.json";
 import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
 
@@ -189,6 +190,20 @@ function restoreReviewedLessons(
   return result;
 }
 
+/** Removes only the exact authored Tokio transfer practice at its appended position. */
+export function restoreTokioShutdownLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(
+    lessons,
+    replacements,
+    matches,
+    tokioShutdownDelta,
+  );
+}
+
 /** Reverses only the exact reviewed ownership decision repair for historical tests. */
 export function restoreOwnershipBorrowDecisionLessons(
   lessons: Lesson[],
@@ -196,7 +211,12 @@ export function restoreOwnershipBorrowDecisionLessons(
   matches: (value: unknown, expected: string) => boolean,
   projection: Projection = ownershipDecisionDelta,
 ): Lesson[] {
-  return restoreReviewedLessons(lessons, replacements, matches, projection);
+  return restoreReviewedLessons(
+    restoreTokioShutdownLessons(lessons, replacements, matches),
+    replacements,
+    matches,
+    projection,
+  );
 }
 
 /** Compose the newer reviewed repair before the unchanged historical workshop delta. */

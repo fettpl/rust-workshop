@@ -21,7 +21,7 @@ export const tokioIoModule: CourseModule = {
     "tokio-receiver-stream-drain",
   ],
   exitGate: [
-    "Rozwiążesz nowy kontrakt z każdej z pięciu umiejętności bez pełnego rozwiązania.",
+    "Samodzielnie potwierdzisz sześć kontraktów: pełne I/O, granice ramek, zachowanie postępu, odbiór Stream, zamknięcie z drainem i stop bez utraty elementu.",
     "Testy sprawdzą bajty, niepełne operacje, błędy, anulowanie i własność elementów.",
   ],
   projectConnection:
@@ -90,14 +90,21 @@ export const tokioIoModule: CourseModule = {
       ],
     },
     {
-      id: "tokio-stream-shutdown-policy",
+      id: "tokio-receiver-close-and-drain",
       label:
-        "Zamknięcie opróżnia dane i wcześniejsze rezerwacje; sygnał stop zachowuje kolejny element.",
+        "Zamknięcie ReceiverStream odrzuca nowe send i opróżnia bufor oraz wcześniejsze rezerwacje.",
       taskRefs: [
         {
           lessonId: "tokio-receiver-stream-drain",
           stepId: "tokio-receiver-stream-drain-close-and-drain-gate",
         },
+      ],
+    },
+    {
+      id: "tokio-receiver-stop-preserves-next",
+      label:
+        "Stop ma pierwszeństwo przed odczytem i zachowuje kolejny element ReceiverStream.",
+      taskRefs: [
         {
           lessonId: "tokio-receiver-stream-drain",
           stepId: "tokio-receiver-stream-drain-next-or-stop-blank",

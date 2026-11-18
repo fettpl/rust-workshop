@@ -21,7 +21,7 @@ export const tokioFlowModule: CourseModule = {
     "tokio-graceful-shutdown",
   ],
   exitGate: [
-    "Samodzielnie rozwiążesz po jednym nowym zadaniu o pojemności, rezerwacji, czasie, select i zamknięciu.",
+    "Samodzielnie potwierdzisz sześć kontraktów: pojemność, rezerwację, czas, select, zamknięcie z drainem i pełny raport dzieci.",
     "Testy obserwują dane i zasoby, także poza happy path.",
   ],
   projectConnection:
@@ -83,17 +83,28 @@ export const tokioFlowModule: CourseModule = {
       ],
     },
     {
-      id: "tokio-close-drain-join",
+      id: "tokio-close-and-drain",
       label:
-        "Zamknięcie rozlicza zaakceptowane wiadomości oraz sukcesy i JoinError wszystkich dzieci.",
+        "Sygnał true zamyka wejście, a drain rozlicza bufor i wcześniejsze rezerwacje zgodnie z polityką watch.",
       taskRefs: [
         {
           lessonId: "tokio-graceful-shutdown",
           stepId: "tokio-graceful-shutdown-drain-gate",
         },
+      ],
+    },
+    {
+      id: "tokio-signal-and-join",
+      label:
+        "Sygnał stop i pełny raport zachowują tożsamość, wyniki oraz JoinError wszystkich dzieci.",
+      taskRefs: [
         {
           lessonId: "tokio-graceful-shutdown",
           stepId: "tokio-graceful-shutdown-join-blank",
+        },
+        {
+          lessonId: "tokio-graceful-shutdown",
+          stepId: "tokio-graceful-shutdown-join-transfer",
         },
       ],
     },
