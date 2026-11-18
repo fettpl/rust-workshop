@@ -97,11 +97,17 @@ it("preserves original references, aliases, unknown properties and explicit unde
       if (
         (key === "lessons" &&
           (repairedLessons.has(item.id) ||
-            ["tokio-graceful-shutdown", "hashmap-and-entry"].includes(
-              item.id,
-            ))) ||
+            [
+              "tokio-graceful-shutdown",
+              "hashmap-and-entry",
+              "control-flow",
+            ].includes(item.id))) ||
         (key === "modules" &&
-          ["tokio-flow-control", "tokio-io-streams"].includes(item.id))
+          [
+            "tokio-flow-control",
+            "tokio-io-streams",
+            "rust-foundations",
+          ].includes(item.id))
       )
         return;
       expect(item).toBe(input[key][index]);

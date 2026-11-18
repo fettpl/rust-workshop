@@ -17,7 +17,7 @@ The optional [typed authorization extension](docs/service-authorization.md)
 adds exact-scope policy decisions, monotone attenuation, request-bound authority
 borrows and consuming admission accounting. Its synthetic lesson models and
 separate native Rust package have distinct verification boundaries. The
-18 November 2026 authored catalog contains 51 modules, 204 lessons, 1,363 steps,
+18 November 2026 authored catalog contains 51 modules, 204 lessons, 1,364 steps,
 199 concepts, 200 competencies, 349 sources and 16 projects. These counts record
 availability. Local qualification and remote acceptance are separate records.
 

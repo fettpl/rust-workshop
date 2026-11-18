@@ -869,7 +869,7 @@ export const foundationsLessons: Lesson[] = [
           requiredPatterns: ["for", "1..=4"],
         },
         evidenceKind: "fix",
-        evidenceGate: true,
+        evidenceGate: false,
         expectedStatus: "success",
         hints: [
           "Operator `..=` oznacza granicę włączoną.",
@@ -958,6 +958,50 @@ export const foundationsLessons: Lesson[] = [
           "Sprawdź osobno start = end oraz przypadek, gdy jedyna parzysta liczba jest równa end.",
         ],
       },
+      {
+        id: "flow-range-cost",
+        kind: "blank",
+        title: "Oblicz koszt trasy",
+        prompt:
+          "Na trasie są ponumerowane odcinki. Za odcinek o numerze mniejszym niż `remont_od` płacisz 2 zł. Od numeru `remont_od` włącznie każdy odcinek kosztuje 3 zł. Napisz od zera funkcję `fn koszt_trasy(pierwszy: u32, ostatni: u32, remont_od: u32) -> u32`. Uwzględnij oba końce trasy. Jeśli pierwszy numer jest większy od ostatniego, koszt wynosi 0. Każdy argument mieści się w zakresie od 0 do 1000. Dla trasy od 4 do 6 przy remoncie od 5 koszt wynosi 2 + 3 + 3. Sam wybierz sposób obliczenia wyniku. Przed uruchomieniem przewidź koszt pojedynczego odcinka na granicy remontu.",
+        solution: `fn koszt_trasy(pierwszy: u32, ostatni: u32, remont_od: u32) -> u32 {
+    let mut koszt = 0;
+    for odcinek in pierwszy..=ostatni {
+        koszt += if odcinek < remont_od { 2 } else { 3 };
+    }
+    koszt
+}`,
+        evaluator: {
+          kind: "tests",
+          tests: `#[test]
+fn granice_trasy() {
+    assert_eq!(koszt_trasy(8, 4, 6), 0);
+    assert_eq!(koszt_trasy(0, 0, 0), 3);
+    assert_eq!(koszt_trasy(7, 7, 8), 2);
+    assert_eq!(koszt_trasy(1000, 1000, 1000), 3);
+}
+
+#[test]
+fn zmiana_stawki() {
+    assert_eq!(koszt_trasy(2, 4, 5), 6);
+    assert_eq!(koszt_trasy(2, 4, 1), 9);
+    assert_eq!(koszt_trasy(2, 4, 3), 8);
+    assert_eq!(koszt_trasy(2, 4, 4), 7);
+    assert_eq!(koszt_trasy(0, 1000, 1000), 2003);
+}`,
+        },
+        evidence: {
+          version: 1,
+          conceptIds: ["control-flow"],
+          codingTaskId: "foundations/range-cost",
+        },
+        evidenceKind: "transfer",
+        evidenceGate: true,
+        hints: [
+          "Rozpisz numery odwiedzanych odcinków dla trasy z jednym odcinkiem oraz dla trasy pustej.",
+          "Dla każdego odwiedzonego numeru porównaj go z remont_od, a potem dodaj właściwą stawkę do sumy.",
+        ],
+      },
     ],
     misconceptions: [
       "Liczba całkowita jest automatycznie prawdą lub fałszem.",
@@ -965,15 +1009,15 @@ export const foundationsLessons: Lesson[] = [
       "Zakres z `..` zawiera koniec.",
     ],
     transferTask:
-      "Dla nowego progu wybierz warunek bool, przewidź etykietę i zmień zakres tak, aby liczba iteracji była widoczna w wyniku.",
+      "Wybierz jedno zadanie. Policz parzyste liczby spełniające warunek progu albo oblicz koszt trasy ze zmianą stawki. Sprawdź obie granice i pusty zakres.",
     evidenceGate:
-      "Zmiana zakresu i osobny transfer if + for dają oczekiwany wynik, a granica zakresu jest sprawdzona niezależnym wyborem.",
+      "Do zaliczenia rozwiąż jedno z dwóch zadań o zakresie bez podpowiedzi i bez odsłaniania rozwiązania. Testy sprawdzą wynik dla różnych granic i progów. Jeśli skorzystasz z pomocy, możesz spróbować drugiego zadania samodzielnie.",
     sessionStops: [
       {
         afterStepId: "flow-recall",
         title: "Opcjonalna przerwa przed dodatkową praktyką",
         nextGoal:
-          "Napisz samodzielnie wybór liczb w zakresie. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+          "Wybierz zadanie o liczbach parzystych albo o koszcie trasy i zapisz własne rozwiązanie.",
       },
     ],
     sourceIds: ["foundations-control-flow"],
@@ -1248,11 +1292,11 @@ export const foundationsModule: CourseModule = {
     },
     {
       id: "control-flow-gate",
-      label: "Zakres i warunek dają sprawdzalny wynik",
+      label: "Samodzielnie obliczasz wynik dla zakresu z warunkiem, także na jego granicach",
+      requiredIndependentCodingTasks: 1,
       taskRefs: [
-        { lessonId: "control-flow", stepId: "flow-modify" },
-        { lessonId: "control-flow", stepId: "flow-transfer" },
         { lessonId: "control-flow", stepId: "flow-range-transfer" },
+        { lessonId: "control-flow", stepId: "flow-range-cost" },
       ],
     },
     {

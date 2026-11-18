@@ -665,7 +665,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "e68a2ab6d39a28fac77c998271fabfc2f3fb2d5fae27358890107605af00e5e7",
+      "sha256": "ed2f107503b55474aa8c1fc274ec4183580e3e4fcb17916dedd131b882da7b8c",
       "group": "course"
     },
     {
@@ -680,7 +680,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "631079f98eb6118f16cda809ba38e4b36bb1801ccd335cfd4fc8acac50968d11",
+      "sha256": "44027a44911b4ad08297331c93f90970d7b02a872c77f2b878ad2eee3c110446",
       "group": "course"
     },
     {
@@ -716,6 +716,11 @@
     {
       "path": "src/content/fixtures/existing-contract-pre-c1-projection.json",
       "sha256": "d49d21164e4c1d1d9c325423cc5051785f9aa181163bb44ca53f26d567b1002b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/foundations-range-gate-delta.json",
+      "sha256": "c5152cfb68a7f99ee9cc89037edf4dc3a7debe43b765207891d8167221203453",
       "group": "course"
     },
     {
@@ -794,8 +799,13 @@
       "group": "course"
     },
     {
+      "path": "src/content/foundations-range-gate.test.ts",
+      "sha256": "233a0864c4923db5a08b14aac6ad78b09774439d6e521facd2bd6802eae86f65",
+      "group": "course"
+    },
+    {
       "path": "src/content/foundations.ts",
-      "sha256": "71fba74fb522b51bc13ffb8841604cf4d50aeb1a43b7df0f6e9dcda93ac10c57",
+      "sha256": "e88867e08c86a7c9bd931b3d7f1940d2aa50eaae0bfec0628912107134ead48d",
       "group": "course"
     },
     {
@@ -975,7 +985,7 @@
     },
     {
       "path": "src/content/log-analyzer-recall.test.ts",
-      "sha256": "15f30e6d367ea72b4ee274fee75ecc9c10a1ceca973e22ca6589784b206317ae",
+      "sha256": "5ae087b1b887c1e09b68416458041e62bc69908d6596dd6aae4e5340450cefe1",
       "group": "course"
     },
     {
@@ -1730,12 +1740,12 @@
     },
     {
       "path": "src/content/tokio-shutdown-gates-compatibility-fixture.ts",
-      "sha256": "54ca80788e94d1caa9243d2b4828791a3fc69c368eb5dda48b09ac70a197a6af",
+      "sha256": "d38dd127ee8b641967bfde86bde8c9faff8038361f2b6e70c2a6700d46560c93",
       "group": "course"
     },
     {
       "path": "src/content/tokio-shutdown-gates-compatibility.test.ts",
-      "sha256": "19cba70df417baae8349498d39f79b6f576cd156ae7a074bf4ea82621f54132c",
+      "sha256": "0f42afa35e15901a47ea1731d323b02e6c1e018108f82e1accde880a5bfe9b57",
       "group": "course"
     },
     {
@@ -1975,7 +1985,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "973fc5a5fcba0601dda1133c79df7f7897f8330b0f25cc0c8daed8290ca8a322",
+      "sha256": "99fe1313f2afdd2d60561fde8cafbdcfba5857628657fd7e7bf8ff9ea6304ab7",
       "group": "course"
     },
     {

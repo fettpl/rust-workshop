@@ -6,7 +6,10 @@ import {
   historicalBeforeA12,
   matchesRegistryValue,
 } from "./file-schema-evolution-compatibility-fixture";
-import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
+import {
+  restoreFoundationsRangeModules,
+  restoreTokioShutdownModules,
+} from "./tokio-shutdown-gates-compatibility-fixture";
 import { restoreTokioShutdownLessons } from "./workshop-assessment-repair-compatibility-fixture";
 
 const restore = (modules: typeof course.modules) =>
@@ -15,7 +18,12 @@ const restore = (modules: typeof course.modules) =>
 it("restores genuine pre-split modules and lessons without changing captured fingerprints", () => {
   expect(delta.baseline.sha).toBe("5824b7e3966fc241e1cff72005e1947c1b3a0372");
   const before = hashRegistryValue(course.modules);
-  const restored = restore(course.modules);
+  const previous = restoreFoundationsRangeModules(
+    course.modules,
+    new Map(),
+    matchesRegistryValue,
+  );
+  const restored = restore(previous);
   expect(hashRegistryValue(restored)).toBe(delta.baseline.modulesSha256);
   expect(hashRegistryValue(course.modules)).toBe(before);
   expect(restore(restored)).toBe(restored);
@@ -32,7 +40,7 @@ it("restores genuine pre-split modules and lessons without changing captured fin
   }
   restored.forEach((module, index) => {
     if (!delta.modules.some((entry) => entry.index === index))
-      expect(module).toBe(course.modules[index]);
+      expect(module).toBe(previous[index]);
   });
   const lessons = restoreTokioShutdownLessons(
     course.lessons,

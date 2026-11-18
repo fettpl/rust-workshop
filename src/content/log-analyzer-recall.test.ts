@@ -16,7 +16,10 @@ import {
   hashRegistryValue,
   matchesRegistryValue,
 } from "./file-schema-evolution-compatibility-fixture";
-import { restoreLogAnalyzerRecallLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import {
+  restoreFoundationsRangeLessons,
+  restoreLogAnalyzerRecallLessons,
+} from "./workshop-assessment-repair-compatibility-fixture";
 
 const examples = [
   {
@@ -59,7 +62,12 @@ const examples = [
 
 const restore = (catalog: typeof lessons) =>
   restoreLogAnalyzerRecallLessons(catalog, new Map(), matchesRegistryValue);
-const previous = restore(lessons);
+const input = restoreFoundationsRangeLessons(
+  lessons,
+  new Map(),
+  matchesRegistryValue,
+);
+const previous = restore(input);
 
 it.each(examples)(
   "accepts paraphrases for $stepId after criterion-by-criterion self-assessment",
@@ -179,7 +187,7 @@ it("restores the genuine 28eeca0 catalog while preserving neighboring steps, pos
     "1e8d7d7438fd10e319ead0ed5b00f90bf89f5f438f2efb792e10f2f6699015f1",
   );
   expect(restore(previous)).toBe(previous);
-  lessons.forEach((lesson, index) => {
+  input.forEach((lesson, index) => {
     const target = examples.find((item) => item.lessonId === lesson.id);
     if (!target) {
       expect(previous[index]).toBe(lesson);

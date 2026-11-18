@@ -133,3 +133,88 @@ for (const [lessonId, stepId, stdout] of [
     expect(errors).toEqual([]);
   });
 }
+
+test("the foundations gate opens a fresh range task after help on the original", async ({
+  page,
+}) => {
+  const lesson = lessons.find((l) => l.id === "control-flow")!;
+  const original = lesson.steps.find((s) => s.id === "flow-range-transfer")!;
+  const guided = lesson.steps.find((s) => s.id === "flow-modify")!;
+  const alternate = lesson.steps.find((s) => s.id === "flow-range-cost")!;
+  const state = createInitialState();
+  state.onboarding.completed = true;
+  state.diagnostic.completed = true;
+  state.settings.accessibleEditor = true;
+  state.resume = {
+    ...state.resume,
+    view: "lesson",
+    lessonId: lesson.id,
+    stepIndex: lesson.steps.indexOf(original),
+  };
+  state.steps[stepKey(lesson.id, original.id)] = {
+    ...createStepProgress(),
+    revealed: true,
+  };
+  state.steps[stepKey(lesson.id, guided.id)] = {
+    ...createStepProgress(),
+    completed: true,
+  };
+  state.events.push({
+    id: "previous-guided-success",
+    lessonId: lesson.id,
+    stepId: guided.id,
+    conceptIds: ["control-flow"],
+    evidenceVersion: 1,
+    kind: guided.evidenceKind,
+    evaluator: "exact-output",
+    gate: true,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    at: 1,
+  });
+  await seed(page, state);
+  const map = page.getByRole("button", { name: "Mapa nauki", exact: true });
+  await map.click();
+  const row = page
+    .locator(".gate-panel li")
+    .filter({ hasText: "Samodzielnie obliczasz wynik dla zakresu" });
+  await expect(row.getByLabel("Do sprawdzenia")).toBeVisible();
+  await row.getByRole("button").click();
+  await expect(page.locator(".task-pane h1")).toHaveText(alternate.title);
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await expect(editor).toHaveValue("");
+  await editor.fill(alternate.solution!);
+  // This checks UI submission and persistence. The native controls execute the authored Rust.
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toMatchObject({
+      mode: "test",
+      code: alternate.solution,
+      tests:
+        alternate.evaluator?.kind === "tests"
+          ? alternate.evaluator.tests
+          : undefined,
+    });
+    await route.fulfill({
+      json: {
+        status: "success",
+        stdout: "",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: 2, failed: 0 },
+      },
+    });
+  });
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect(page.locator(".feedback.passed")).toBeVisible();
+  await expect(page.locator(".save-status")).toContainText(
+    "Zapisano na tym urządzeniu",
+  );
+  await page.reload();
+  await expect(editor).toHaveValue(alternate.solution!);
+  await map.click();
+  await expect(row.getByLabel("Potwierdzone")).toBeVisible();
+});

@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed Tokio shutdown gate splits. */
 import type { CourseModule } from "../domain/types";
+import rangeDelta from "./fixtures/foundations-range-gate-delta.json";
 import delta from "./fixtures/tokio-shutdown-gates-delta.json";
 
 const ownValue = (object: unknown, key: PropertyKey): unknown =>
@@ -19,13 +20,52 @@ function replaceField<T extends object>(
     : Object.create(Object.getPrototypeOf(object), descriptors);
 }
 
+/** Project the single replaced criterion before applying older historical deltas. */
+export function restoreFoundationsRangeModules(
+  modules: CourseModule[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): CourseModule[] {
+  const entry = rangeDelta.module;
+  const current = modules[entry.index];
+  if (
+    !matches(current, entry.successorSha256) ||
+    modules.filter((m) => ownValue(m, "id") === entry.id).length !== 1
+  )
+    return modules;
+  const cached = replacements.get(current);
+  if (matches(cached, entry.beforeSha256)) {
+    const result = replaceField(modules, String(entry.index), cached);
+    replacements.set(modules, result);
+    return result;
+  }
+  const criteria = current.gateCriteria!;
+  const restored = replaceField(
+    criteria,
+    String(entry.criterionIndex),
+    entry.beforeCriterion,
+  );
+  const historical = replaceField(current, "gateCriteria", restored);
+  if (!matches(historical, entry.beforeSha256)) return modules;
+  replacements.set(criteria[entry.criterionIndex], entry.beforeCriterion);
+  replacements.set(
+    criteria[entry.criterionIndex].taskRefs,
+    entry.beforeCriterion.taskRefs,
+  );
+  replacements.set(criteria, restored);
+  replacements.set(current, historical);
+  const result = replaceField(modules, String(entry.index), historical);
+  replacements.set(modules, result);
+  return result;
+}
+
 /** Complete module hashes keep all edits outside the reviewed split observable. */
 export function restoreTokioShutdownModules(
   modules: CourseModule[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): CourseModule[] {
-  let result = modules;
+  let result = restoreFoundationsRangeModules(modules, replacements, matches);
   for (const entry of delta.modules) {
     const current = modules[entry.index];
     if (
