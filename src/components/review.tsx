@@ -26,6 +26,7 @@ import {
 } from "@/engine/review-session";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
+import { stepInteraction } from "@/engine/step-interaction";
 import { createStepProgress } from "@/persistence/state";
 import type { RunResult, StepProgress } from "@/domain/types";
 import type { ReviewSession } from "@/domain/types";
@@ -104,12 +105,7 @@ export function ReviewView() {
   const unavailable = resolution?.status === "unavailable";
   const evaluator = step?.evaluator;
   const isManifest = evaluator?.kind === "manifest-contract";
-  const executable =
-    step?.code !== undefined &&
-    evaluator !== undefined &&
-    ["exact-output", "compilation", "expected-error", "tests"].includes(
-      evaluator.kind,
-    );
+  const { executable, editable } = stepInteraction(step);
   const code = progress.code ?? step?.code ?? "";
   const lastAttempt = progress.attempts.at(-1);
   const lastRun = [...progress.attempts]
@@ -570,7 +566,7 @@ export function ReviewView() {
                           language={step.editorMode}
                           code={code}
                           onChange={(nextCode) => patch({ code: nextCode })}
-                          readOnly={pending || completed}
+                          readOnly={!editable || pending || completed}
                           fontSize={state.settings.editorFontSize}
                           theme={state.settings.theme}
                           accessible={state.settings.accessibleEditor}
@@ -586,7 +582,7 @@ export function ReviewView() {
                             ? "Sprawdź manifest"
                             : pending
                               ? "Kompilowanie…"
-                              : evaluator.kind === "tests"
+                              : evaluator?.kind === "tests"
                                 ? "Uruchom testy"
                                 : "Uruchom kod"}
                           <ArrowRight size={16} />

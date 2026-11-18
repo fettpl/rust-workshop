@@ -351,6 +351,26 @@ fn the_error_does_not_short_circuit_later_joins() {
     assert_eq!(total, 50);
     assert_eq!(ids.len(), 3);
     assert_eq!(failures, 1);
+}
+
+#[test]
+fn all_jobs_report_ids_in_input_order_even_for_panicking_jobs() {
+    let (sender, receiver) = std::sync::mpsc::channel();
+    let jobs = (0..3).map(|position| {
+        let sender = sender.clone();
+        (position, Box::new(move |value, id| {
+            assert_eq!(id, thread::current().id());
+            sender.send((value, id)).unwrap();
+            if value == 1_u32 { panic!("controlled panic"); }
+            Ok(value + 1_u32)
+        }) as Box<dyn FnOnce(u32, thread::ThreadId) -> Result<u32, &'static str> + Send>)
+    }).collect();
+    let (total, ids, failures) = join_all_jobs(jobs);
+    let mut observed: Vec<_> = receiver.try_iter().collect();
+    observed.sort_by_key(|(position, _)| *position);
+    assert_eq!(observed.len(), 3);
+    assert_eq!(ids, observed.into_iter().map(|(_, id)| id).collect::<Vec<_>>());
+    assert_eq!((total, failures), (4, 1));
 }`;
 
 const joinAllBlankSolution = `use std::thread;
@@ -401,6 +421,63 @@ fn blank_api_is_repeatable_for_bounded_work() {
     let (total, ids) = run_jobs(jobs);
     assert_eq!(total, 34);
     assert_eq!(ids.len(), 2);
+}
+
+#[test]
+fn blank_api_reports_callback_ids_in_input_order_and_accepts_empty_jobs() {
+    let (sender, receiver) = std::sync::mpsc::channel();
+    let jobs = (0..3).map(|position| {
+        let sender = sender.clone();
+        (position, Box::new(move |value, id| {
+            assert_eq!(id, thread::current().id());
+            sender.send((value, id)).unwrap();
+            value + 7_u32
+        }) as Box<dyn FnOnce(u32, thread::ThreadId) -> u32 + Send>)
+    }).collect();
+    let (total, ids) = run_jobs(jobs);
+    let mut observed: Vec<_> = receiver.try_iter().collect();
+    observed.sort_by_key(|(position, _)| *position);
+    assert_eq!(observed.len(), 3);
+    assert_eq!(ids, observed.into_iter().map(|(_, id)| id).collect::<Vec<_>>());
+    assert_eq!(total, 24);
+    assert_eq!(run_jobs(Vec::new()), (0, Vec::new()));
+}
+
+#[test]
+fn blank_api_joins_blocked_sibling_before_propagating_panic() {
+    use std::sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc};
+    use std::time::Duration;
+    let completed = Arc::new(AtomicBool::new(false));
+    let child_completed = Arc::clone(&completed);
+    let (panicking_tx, panicking_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let (returned_tx, returned_rx) = mpsc::channel();
+    let coordinator = thread::spawn(move || {
+        let jobs = vec![
+            (0, Box::new(move |_, _| -> u32 {
+                panicking_tx.send(()).unwrap();
+                panic!("controlled panic");
+            }) as Box<dyn FnOnce(u32, thread::ThreadId) -> u32 + Send>),
+            (1, Box::new(move |_, _| {
+                release_rx.recv().unwrap();
+                child_completed.store(true, Ordering::SeqCst);
+                9
+            })),
+        ];
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| run_jobs(jobs)));
+        returned_tx.send((result.is_err(), completed.load(Ordering::SeqCst))).unwrap();
+    });
+    panicking_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+    // The sibling is held at an explicit gate. A return before release violates join.
+    let early = returned_rx.recv_timeout(Duration::from_millis(100));
+    release_tx.send(()).unwrap();
+    let outcome = match early {
+        Ok(value) => value,
+        Err(mpsc::RecvTimeoutError::Timeout) => returned_rx.recv_timeout(Duration::from_secs(2)).unwrap(),
+        Err(error) => panic!("coordinator channel: {error}"),
+    };
+    coordinator.join().unwrap();
+    assert_eq!(outcome, (true, true), "panic must propagate after sibling completion");
 }`;
 
 const moveRunCode = `use std::thread;

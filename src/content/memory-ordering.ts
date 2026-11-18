@@ -614,6 +614,19 @@ fn model_evidence_rejects_empty_inconclusive_and_inconsistent_runs() {
         let result = std::panic::catch_unwind(|| assert_model_evidence(&observations, 7));
         assert!(result.is_err());
     }
+}
+
+#[test]
+fn one_valid_publication_cannot_hide_a_contradictory_observation() {
+    for contradictory in [Observation::Published(8), Observation::Inconsistent] {
+        for observations in [
+            vec![Observation::Published(7), contradictory],
+            vec![contradictory, Observation::Published(7)],
+        ] {
+            assert!(std::panic::catch_unwind(|| assert_model_evidence(&observations, 7)).is_err());
+        }
+    }
+    assert_model_evidence(&[Observation::Published(7), Observation::NotReady, Observation::Published(7)], 7);
 }`;
 
 const boundedModelSolution = `#[derive(Clone, Copy, Debug, PartialEq, Eq)]

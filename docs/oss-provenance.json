@@ -119,6 +119,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/assessment-boundaries.test.ts",
+      "sha256": "f5bc353be4b409819b229ebd181a2beea0a68b203b0472cf2386e969887914b2",
+      "group": "course"
+    },
+    {
       "path": "src/content/async-cancellation.ts",
       "sha256": "2bee6dc46b42846fef43c8a06361e581dd3790f2a2a118ce9a6f9614a6419caa",
       "group": "course"
@@ -345,7 +350,7 @@
     },
     {
       "path": "src/content/boxed-values.ts",
-      "sha256": "affa81d3a9c0c0052c3324be609d6a8f6065dc160f24c334017cc4930a29b6c3",
+      "sha256": "c40c996ff2e16958c9465981d779427f67627691fc9dc619f3b4aafa1f553d9c",
       "group": "course"
     },
     {
@@ -435,7 +440,7 @@
     },
     {
       "path": "src/content/closures.ts",
-      "sha256": "3ee2405dad8c60797174e9d16f0b1f9f5f1970ef2f6c8a26c3d801ffbe49a762",
+      "sha256": "cb51cd7d2425b66b60d9e726e57d390cde8635389be7e6f39ac6ec6302eda706",
       "group": "course"
     },
     {
@@ -496,6 +501,11 @@
     {
       "path": "src/content/course.ts",
       "sha256": "4af356cfcb3674c47960db10a9ef8c79ec7f892e67a52ca71e843a8afbdfe392",
+      "group": "course"
+    },
+    {
+      "path": "src/content/curriculum-contract-repairs.test.ts",
+      "sha256": "80889ea194f45790814f9bf7ef0d4b2953109b4be4ae45356d03cf65525636c6",
       "group": "course"
     },
     {
@@ -640,12 +650,12 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "c0f1bd8beebeb66b4806198941b11e7f1e8c39d97d14cc5261f53630f3d94fe8",
+      "sha256": "96ed12be18b2c4d92ce62187380ff9ec52f6305e82cdeac3133765df16d965c3",
       "group": "course"
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "0a7c374ebfb71a2320a8c23d2df5751e5715e2eccfc766b7f8f72aa586ccce37",
+      "sha256": "638ae8ad66f552d4131afd52bb117b837758de7a7fad7a88e669cb8af016c0a5",
       "group": "course"
     },
     {
@@ -660,7 +670,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "8473d59ec299ff5a581937d455f79e4a6ceb0f35560a800507410a55f2e46938",
+      "sha256": "74a11a978db6776e6e13f19e2c79e53174d41f92dfd46c509d0cbfce85a2dbe3",
       "group": "course"
     },
     {
@@ -741,6 +751,11 @@
     {
       "path": "src/content/fixtures/unsafe-miri-pre-slot-lazy-init.json",
       "sha256": "1d38e4b6e941c018bd2a32921e76eeb3f42bf30d72041952942bac8596666609",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/workshop-assessment-repair-delta.json",
+      "sha256": "adb7ee8adf99e12d1fc6300070a0250f1705e5b665e50441b672882ecbdd1752",
       "group": "course"
     },
     {
@@ -850,7 +865,7 @@
     },
     {
       "path": "src/content/generics.ts",
-      "sha256": "162851a5eb99853988352c4047adcf8e32e1bcf3a1a1679d7260e58ee7da9090",
+      "sha256": "ad3d5184ba7b5075a2ff848ba0165cf227cfe8f8862d775d9e295a91877ea32f",
       "group": "course"
     },
     {
@@ -865,7 +880,7 @@
     },
     {
       "path": "src/content/guessing-io.ts",
-      "sha256": "b72823aba997b75eb676603a76c67ef0370cc0cc8bb03652f625ccd712f8612a",
+      "sha256": "ba18a358053a3674796d69b43a3a336880fe4837343604941587ddebb41d7483",
       "group": "course"
     },
     {
@@ -955,7 +970,7 @@
     },
     {
       "path": "src/content/memory-ordering.ts",
-      "sha256": "74fe04544a823f3b6bd6a43eca1521a7108487e7808ccdf7309ef5f673b45675",
+      "sha256": "2d9dad307d4a09750217fa9fbc5dc022805519a4e97155a7cd613ad15eb6d9a1",
       "group": "course"
     },
     {
@@ -1390,7 +1405,7 @@
     },
     {
       "path": "src/content/property-foundations.ts",
-      "sha256": "b256c7838b8ccddff4bedb4fb850982707b0709a9287ceffc8681ca05bf64e67",
+      "sha256": "cc5140c3fa07d4bbd316364b0fc87ee920e329a9727a9a12dc59812217983c40",
       "group": "course"
     },
     {
@@ -1590,7 +1605,7 @@
     },
     {
       "path": "src/content/shared-ownership.ts",
-      "sha256": "95f1906cd9822565198d54c6dd6cf64406f6145c6a0075567c08378e0dd9a9f8",
+      "sha256": "ac5c6275ca6c6461f06a28a124dd98f3c1acbedda7798ec79f3dafc533f3bfe1",
       "group": "course"
     },
     {
@@ -1605,7 +1620,7 @@
     },
     {
       "path": "src/content/threads.ts",
-      "sha256": "c4b7f8c8ec65da7b6b11cfb0f1db537c9fc91ba285a5976ad96c2f92a9699ccc",
+      "sha256": "640e06ea05f6aee22976824674c6a25717cb4316fba72fd03f9909708363a4ec",
       "group": "course"
     },
     {
@@ -1645,7 +1660,7 @@
     },
     {
       "path": "src/content/tokio-network-lifecycle.ts",
-      "sha256": "58cd0d519e26a45ace7f1f541e0f6576f93ac03c4f24b55bde44f66e362da1fc",
+      "sha256": "85318547af2dc3e0af02898f44b27d0d95ff35f32c57960937d2604675b367c8",
       "group": "course"
     },
     {
@@ -1901,6 +1916,16 @@
     {
       "path": "src/content/validate.ts",
       "sha256": "307d83ffb2bddafeac49dcf35e7cbba3aed1b3d04a2a1423e370ec3c03bd541b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
+      "sha256": "4a904c9594172fc346f2f34380c1ddc1fa81c845abe43d19dc826e2373d5630b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/workshop-assessment-repair-compatibility.test.ts",
+      "sha256": "9f94c245d8915329322dcc19847e054ce5c6412fa405413077dfe610021f3c0c",
       "group": "course"
     },
     {

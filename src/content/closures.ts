@@ -308,6 +308,17 @@ fn mutable_capture_records_all_lengths_and_order() {
     let mut no_lengths = Vec::new();
     record_lengths(&empty, 9, &mut no_lengths);
     assert!(no_lengths.is_empty());
+}
+
+#[test]
+fn recorder_appends_across_repeated_and_empty_calls() {
+    let mut output = vec![91, 17];
+    record_lengths(&["Rust", "żółć"], 2, &mut output);
+    assert_eq!(output, vec![91, 17, 6, 10]);
+    record_lengths(&[], 9, &mut output);
+    assert_eq!(output, vec![91, 17, 6, 10]);
+    record_lengths(&["", "🙂"], 1, &mut output);
+    assert_eq!(output, vec![91, 17, 6, 10, 1, 5]);
 }`;
 
 const captureSharedSolution = `fn save_view<'a>(text: &'a str, output: &mut Vec<&'a str>) -> usize {
@@ -573,7 +584,7 @@ export const closuresLessons: Lesson[] = [
       compilerError(
         "capture-mut-call",
         "Zobacz E0596 przy mutacji capture",
-        "Closure zmienia total, więc jej wywołanie wymaga mutowalnego wiązania. Potwierdź E0596, a potem dodaj mut tylko do właściwej nazwy.",
+        "Closure zmienia total, więc jej wywołanie wymaga mutowalnego wiązania. Ten krok zalicza obserwacja E0596. W następnym, edytowalnym zadaniu „Napraw recorder” (capture-gate) naprawisz to samo wymaganie mutowalnego wiązania i sprawdzisz poprawkę testami.",
         mutCaptureError,
         mutCaptureRepair,
         "E0596",
@@ -583,7 +594,7 @@ export const closuresLessons: Lesson[] = [
         kind: "debug",
         title: "Napraw recorder",
         prompt:
-          "Napraw starter. `record_lengths` ma przejść po pożyczonym wycinku i dopisać do output długość każdego tekstu powiększoną o offset, w tej samej kolejności; działa także dla pustego wejścia. Nie zmieniaj API ani nie klonuj tekstów.",
+          "Napraw starter. `record_lengths` ma przejść po pożyczonym wycinku i dopisać do output długość każdego tekstu powiększoną o offset, w tej samej kolejności; działa także dla pustego wejścia. Długość oznacza liczbę bajtów UTF-8 (`str::len`). Dziedzina obejmuje wejścia, dla których każda suma długości i offset mieści się w usize. Nie zmieniaj API ani nie klonuj tekstów.",
         code: captureGateStarter,
         solution: captureGateSolution,
         tests: captureGateTests,
@@ -841,7 +852,7 @@ export const closuresLessons: Lesson[] = [
         kind: "modify",
         title: "Zwróć closure przez impl Fn",
         prompt:
-          "Dokończ multiplier. Funkcja ma przejąć factor do zwracanego closure, ale wynik ma być powtarzalny i działać dla liczb ujemnych, zera oraz kolejnych wywołań. Użyj jawnego `impl Fn(i32) -> i32`; nie zmieniaj API.",
+          "Dokończ multiplier. Funkcja ma przejąć factor do zwracanego closure, ale wynik ma być powtarzalny i działać dla liczb ujemnych, zera oraz kolejnych wywołań. Dziedzina obejmuje argumenty, dla których iloczyn factor * value mieści się w i32; przepełnienie jest poza kontraktem tego ćwiczenia. Użyj jawnego `impl Fn(i32) -> i32`; nie zmieniaj API.",
         code: returnedStarter,
         solution: returnedSolution,
         tests: returnedTests,

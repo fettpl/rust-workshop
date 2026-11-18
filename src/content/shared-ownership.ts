@@ -844,7 +844,7 @@ export const sharedOwnershipLessons: Lesson[] = [
         kind: "blank",
         title: "Zaprojektuj bezpieczne odpytywanie",
         prompt:
-          "Od pustej kartki zdefiniuj Node z polem name typu String oraz polem parent przechowującym Weak<Node>. Następnie napisz funkcję `parent_name`, która przyjmuje dziecko wskazane przez Rc<Node> i zwraca opcjonalny, własnościowy tekst. Zwróć nazwę tylko po udanym upgrade, a po zniszczeniu rodzica None. Nie przechowuj Rc rodzica w dziecku.",
+          "Od pustej kartki zdefiniuj Node z polem `name: String` oraz polem `parent: RefCell<Weak<Node>>`. RefCell pozwala później zmieniać słaby link rodzica przez współdzielone Rc, tak jak w poprzednim zadaniu linkowania. Następnie napisz funkcję `parent_name(child: &Rc<Node>) -> Option<String>`, która zwraca opcjonalny, własnościowy tekst. Zwróć nazwę tylko po udanym upgrade, a po zniszczeniu rodzica None. Nie przechowuj Rc rodzica w dziecku.",
         solution: weakInspectSolution,
         tests: weakInspectTests,
         hints: [

@@ -17,6 +17,7 @@ import { concepts, lessons, traces, sources, modules } from "@/content/course";
 import { createStepProgress, stepKey } from "@/persistence/state";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
+import { stepInteraction } from "@/engine/step-interaction";
 import {
   recordCourseEvidence,
   evidenceForLessonStep,
@@ -141,22 +142,12 @@ export function LessonWorkspace() {
   const lastAttempt = progress.attempts.at(-1);
   const lastRun = [...progress.attempts].reverse().find((a) => a.result);
   const result = lastRun?.result;
-  const hasCode = step.code !== undefined || step.kind === "blank";
+  const { hasCode, editable, executable: usesRun } = stepInteraction(step);
   const isManifest = step.evaluator?.kind === "manifest-contract";
   const isToml = step.editorMode === "toml";
   const panels = isToml
     ? (["lesson", "code"] as const)
     : (["lesson", "code", "output"] as const);
-  const usesRun =
-    step.evaluator &&
-    ["exact-output", "compilation", "expected-error", "tests"].includes(
-      step.evaluator.kind,
-    );
-  const editable =
-    !["predict", "observe", "explain", "trace", "recall"].includes(step.kind) ||
-    (step.kind === "recall" &&
-      step.code !== undefined &&
-      step.evaluator?.kind === "tests");
   const panel = !hasCode
     ? "lesson"
     : isToml && state.resume.panel === "output"

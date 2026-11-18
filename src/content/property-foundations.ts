@@ -243,6 +243,38 @@ fn oracle_accepts_reference_across_boundaries() {
 fn oracle_rejects_sequence_and_index_mutants() {
     assert!(std::panic::catch_unwind(|| assert_selection_property(drops_adjacent_match)).is_err());
     assert!(std::panic::catch_unwind(|| assert_selection_property(shifts_line_number)).is_err());
+}
+
+fn wrong_empty_selection(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {
+    if lines.is_empty() { vec![(0, String::new(), false)] } else { select_lines(lines, query, context) }
+}
+fn wrong_no_match_selection(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {
+    if !lines.is_empty() && !lines.iter().any(|line| line.contains(query)) { vec![(0, lines[0].to_owned(), false)] } else { select_lines(lines, query, context) }
+}
+fn wrong_unicode_selection(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {
+    if lines.iter().any(|line| !line.is_ascii()) { Vec::new() } else { select_lines(lines, query, context) }
+}
+fn ignores_positive_context(lines: &[&str], query: &str, _: usize) -> Vec<(usize, String, bool)> {
+    select_lines(lines, query, 0)
+}
+fn reverses_selection(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {
+    let mut result = select_lines(lines, query, context); result.reverse(); result
+}
+fn changes_selection_text(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {
+    select_lines(lines, query, context).into_iter().map(|(index, _, matched)| (index, String::new(), matched)).collect()
+}
+fn marks_context_as_match(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {
+    select_lines(lines, query, context).into_iter().map(|(index, text, _)| (index, text, true)).collect()
+}
+#[test]
+fn oracle_exercises_each_declared_boundary_and_every_output_field() {
+    let mutants: &[fn(&[&str], &str, usize) -> Vec<(usize, String, bool)>] = &[
+        wrong_empty_selection, wrong_no_match_selection, wrong_unicode_selection,
+        ignores_positive_context, reverses_selection, changes_selection_text, marks_context_as_match,
+    ];
+    for (index, mutant) in mutants.iter().enumerate() {
+        assert!(std::panic::catch_unwind(|| assert_selection_property(*mutant)).is_err(), "unchecked selection contract {index}");
+    }
 }`;
 
 const invariantObserveCode = `fn select_lines(lines: &[&str], query: &str) -> Vec<usize> {
@@ -377,11 +409,57 @@ fn summary_property_accepts_valid_and_invalid_mixture() {
 #[test]
 fn summary_property_rejects_filter_mutant() {
     assert!(std::panic::catch_unwind(|| assert_log_summary_property(loses_filtered_malformed)).is_err());
+}
+
+fn wrong_empty_summary(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    if records.is_empty() { (1, 0, 0, 0) } else { summarize(records, filter) }
+}
+fn loses_info(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter); result.0 = 0; result
+}
+fn loses_warn(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter); result.1 = 0; result
+}
+fn loses_error(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter); result.2 = 0; result
+}
+fn ignores_level_filter(records: &[&str], _: Option<&str>) -> (usize, usize, usize, usize) {
+    summarize(records, None)
+}
+fn rejects_unicode_message(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter);
+    if records.iter().any(|line| !line.is_ascii()) { result.3 += 1; }
+    result
+}
+fn accepts_unknown_level(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter);
+    if records.iter().any(|line| line.split(' ').nth(1).is_some_and(|level| !matches!(level, "INFO" | "WARN" | "ERROR"))) { result.3 = 0; }
+    result
+}
+fn accepts_bad_timestamp(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter);
+    if records.iter().any(|line| line.split(' ').next().is_some_and(|at| at.is_empty() || !at.bytes().all(|byte| byte.is_ascii_digit()))) { result.3 = 0; }
+    result
+}
+fn accepts_empty_message(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {
+    let mut result = summarize(records, filter);
+    if records.iter().any(|line| line.splitn(3, ' ').nth(2).is_none_or(|message| message.trim().is_empty())) { result.3 = 0; }
+    result
+}
+#[test]
+fn summary_property_exercises_valid_levels_filters_and_malformed_classes() {
+    let mutants: &[fn(&[&str], Option<&str>) -> (usize, usize, usize, usize)] = &[
+        wrong_empty_summary, loses_info, loses_warn, loses_error, ignores_level_filter,
+        rejects_unicode_message, accepts_unknown_level, accepts_bad_timestamp, accepts_empty_message,
+    ];
+    for (index, mutant) in mutants.iter().enumerate() {
+        assert!(std::panic::catch_unwind(|| assert_log_summary_property(*mutant)).is_err(), "unchecked summary contract {index}");
+    }
 }`;
 
 const generatedObserveCode = `fn classify_record(line: &str) -> &'static str {
     let fields: Vec<_> = line.splitn(3, ' ').collect();
-    if fields.len() == 3 && fields[0].bytes().all(|byte| byte.is_ascii_digit()) && matches!(fields[1], "INFO" | "WARN" | "ERROR") && !fields[2].trim().is_empty() { "valid" } else { "malformed" }
+    if fields.len() == 3 && !fields[0].is_empty() && fields[0].bytes().all(|byte| byte.is_ascii_digit()) && matches!(fields[1], "INFO" | "WARN" | "ERROR") && !fields[2].trim().is_empty() { "valid" } else { "malformed" }
 }
 
 fn main() {
@@ -704,7 +782,7 @@ fn main() {
         kind: "observe",
         title: "Odczytaj bias valid-only",
         prompt:
-          "Rozważ generator, który odrzuca każdy rekord, jeśli parser zwróci błąd. Wyjaśnij w następnym kroku, dlaczego zielona własność nie obejmuje malformed.",
+          "Uruchom generator valid-only: odrzuca uszkodzony rekord i wypisuje 2. Ten krok zalicza obserwacja utraty klasy malformed. W następnym kroku wyjaśnij jej skutek, a w końcowym edytowalnym zadaniu „Przywróć malformed w generatorze” (property-generated-inputs-repair) napraw generator i sprawdź, że zachowuje wszystkie 3 rekordy.",
         code: `fn generated() -> Vec<&'static str> {
     ["0 INFO ok", "bad INFO broken", "1 WARN retry"]
         .into_iter()
@@ -713,12 +791,15 @@ fn main() {
 }
 fn main() { println!("wygenerowano: {} rekordy", generated().len()); }`,
         solution: `fn generated() -> Vec<&'static str> {
-    ["0 INFO ok", "bad INFO broken", "1 WARN retry"].to_vec()
+    ["0 INFO ok", "bad INFO broken", "1 WARN retry"]
+        .into_iter()
+        .filter(|line| line.bytes().next().is_some_and(|byte| byte.is_ascii_digit()))
+        .collect()
 }
 fn main() { println!("wygenerowano: {} rekordy", generated().len()); }`,
         evaluator: {
           kind: "exact-output",
-          expected: "wygenerowano: 3 rekordy\n",
+          expected: "wygenerowano: 2 rekordy\n",
         },
         expectedStatus: "success",
         evidenceKind: "exposure",
@@ -777,6 +858,37 @@ fn main() { println!("wygenerowano: {} rekordy", generated().len()); }`,
           "Limit przypadków opisuje budżet, a nie pełną dziedzinę.",
         ],
       ),
+      {
+        id: "property-generated-inputs-repair",
+        kind: "debug",
+        title: "Przywróć malformed w generatorze",
+        prompt:
+          "Napraw generator z obserwacji valid-only. `generated() -> Vec<&'static str>` ma zwracać wszystkie trzy wejściowe rekordy w tej samej kolejności: 0 INFO ok, bad INFO broken oraz 1 WARN retry. Zachowaj także uszkodzony timestamp; klasyfikacja jest zadaniem badanego parsera, a generator ma udostępniać obie klasy danych. Testy sprawdzą liczbę 3 i obecność niepoprawnego rekordu, a nie tylko napis z main.",
+        code: `fn generated() -> Vec<&'static str> {
+    ["0 INFO ok", "bad INFO broken", "1 WARN retry"]
+        .into_iter()
+        .filter(|line| line.bytes().next().is_some_and(|byte| byte.is_ascii_digit()))
+        .collect()
+}
+fn main() { println!("wygenerowano: {} rekordy", generated().len()); }`,
+        solution: `fn generated() -> Vec<&'static str> {
+    ["0 INFO ok", "bad INFO broken", "1 WARN retry"].to_vec()
+}
+fn main() { println!("wygenerowano: {} rekordy", generated().len()); }`,
+        evaluator: {
+          kind: "tests",
+          tests: `#[test]
+fn preserves_valid_and_malformed_records_in_order() {
+    let cases = generated();
+    assert_eq!(cases.len(), 3);
+    assert_eq!(cases, vec!["0 INFO ok", "bad INFO broken", "1 WARN retry"]);
+    assert!(cases.contains(&"bad INFO broken"));
+}`,
+        },
+        expectedStatus: "success",
+        evidenceKind: "fix",
+        evidenceGate: false,
+      },
     ],
     misconceptions: [
       "Filtr poziomu nie powinien usuwać malformed z licznika błędów.",

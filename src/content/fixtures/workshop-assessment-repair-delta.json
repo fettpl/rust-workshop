@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "sha": "7d803e4f19432064c73d2d460843a3e2255c5c8d",
+    "lessonsSha256": "0b4ad4a2b4da1a34adf85968c37568fa9129d6330cf9d31ae7342c6160c48530"
+  },
+  "restorations": [
+    {
+      "lessonId": "generic-values",
+      "stepId": "values-discover",
+      "path": ["prompt"],
+      "before": "Uruchom duo. Pierwszy argument ustala tutaj typ liczbowy, a drugi jest String: otrzymasz E0308. Dwa wystąpienia T muszą pasować do tego samego konkretnego typu. Gdy kontrakt pozwala na różne typy, zadeklaruj <T, U>, użyj U przy drugim argumencie i przy drugiej pozycji wyniku. Krotka (T, U) zachowuje oba typy, a pola .0 i .1 odczytują jej pozycje. Popraw podpis i sprawdź ponownie komunikaty kompilatora.",
+      "beforeSha256": "3c85a2212458082334b3249d7871d7e555a4814d8c65201b743198f1955d8c66",
+      "successorSha256": "3227a8497035b6919a0809821b6e29d9d61b61a304423e22bf8299897067b4bc"
+    },
+    {
+      "lessonId": "generic-impl",
+      "stepId": "impl-discover",
+      "path": ["prompt"],
+      "before": "Uruchom extract. E0507 wskazuje próbę przeniesienia self.value z pożyczonego obiektu. Nie znamy T, więc nie możemy założyć Copy. Wymaganie tego API brzmi: oddać posiadaną wartość i zużyć Holder. Zmień odbiorcę metody na self. W alternatywnym API służącym wyłącznie do podglądu pasowałby wynik &T oraz &self, ale taki wynik nie realizuje kontraktu extract.",
+      "beforeSha256": "06c8eadd263906f130d32e72b066b3d028102ecbb44db2110480d4495152fb69",
+      "successorSha256": "23d9837818640e800bf3976d6ab693415a7b51922b017ce3aa8961cbf26b740d"
+    },
+    {
+      "lessonId": "generic-bounds",
+      "stepId": "bounds-discover",
+      "path": ["prompt"],
+      "before": "Uruchom same i odczytaj E0369 przy ==. Trait to nazwana umowa opisująca zachowanie typu. Standardowy PartialEq udostępnia porównanie == i !=; dodanie <T: PartialEq> ogranicza funkcję do typów, które tę umowę spełniają. To ograniczenie nazywa się bound. Popraw podpis i uruchom ponownie. Nie tworzysz teraz własnego traitu. PartialEq nie obiecuje, że każda wartość jest równa samej sobie: na przykład f64::NAN == f64::NAN daje false. Nasz kod stosuje wynik ==, a nie założenie o każdej parze danych.",
+      "beforeSha256": "3bb1e271e7aa5dac36069a050b722a8be0a28495c319a7c83d41f6709ded4ca5",
+      "successorSha256": "7f6a78adfb57a4e9838ebc47a4ea96eaba4c476321d0702337b8652aa5798084"
+    },
+    {
+      "lessonId": "closure-captures",
+      "stepId": "capture-mut-call",
+      "path": ["prompt"],
+      "before": "Closure zmienia total, więc jej wywołanie wymaga mutowalnego wiązania. Potwierdź E0596, a potem dodaj mut tylko do właściwej nazwy.",
+      "beforeSha256": "3502356389feda37fd02a2da91732ef07d278563c02e31ff2259c2e107b82b06",
+      "successorSha256": "901879a400a29aea2f4521e2162cb9849f354500301b6a99d89022b0cde64724"
+    },
+    {
+      "lessonId": "closure-captures",
+      "stepId": "capture-gate",
+      "path": ["prompt"],
+      "before": "Napraw starter. `record_lengths` ma przejść po pożyczonym wycinku i dopisać do output długość każdego tekstu powiększoną o offset, w tej samej kolejności; działa także dla pustego wejścia. Nie zmieniaj API ani nie klonuj tekstów.",
+      "beforeSha256": "2e11d5ee9ef7ae62438f072162ab72efbe32363bb1079ad5821794c8829b586a",
+      "successorSha256": "19d24831fdf2c1bad0d10b900b813b45888f0c1e3a6e58fa6fa74c643b096f5b"
+    },
+    {
+      "lessonId": "closure-captures",
+      "stepId": "capture-gate",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn mutable_capture_records_all_lengths_and_order() {\n    let refs = [\"\", \"żółć\", \"Rust\"];\n    let mut lengths = Vec::new();\n    record_lengths(&refs, 0, &mut lengths);\n    assert_eq!(lengths, vec![0, 8, 4]);\n    assert_eq!(refs, [\"\", \"żółć\", \"Rust\"]);\n    let mut shifted = Vec::new();\n    record_lengths(&refs, 2, &mut shifted);\n    assert_eq!(shifted, vec![2, 10, 6]);\n    let empty: [&str; 0] = [];\n    let mut no_lengths = Vec::new();\n    record_lengths(&empty, 9, &mut no_lengths);\n    assert!(no_lengths.is_empty());\n}",
+      "beforeSha256": "c46d9869cede3fe888e4748db706c77c674082ff299002b05d2bafdff69e86c6",
+      "successorSha256": "7b3470234131f664b6fb0eca6a2ae0b484a5e6cda50d6f5b0368d54274feef65"
+    },
+    {
+      "lessonId": "closure-contracts",
+      "stepId": "contracts-returned-gate",
+      "path": ["prompt"],
+      "before": "Dokończ multiplier. Funkcja ma przejąć factor do zwracanego closure, ale wynik ma być powtarzalny i działać dla liczb ujemnych, zera oraz kolejnych wywołań. Użyj jawnego `impl Fn(i32) -> i32`; nie zmieniaj API.",
+      "beforeSha256": "60dea13b92f748176d419a235940dff1404c2bb56b2c13072c9e13d7175bb38b",
+      "successorSha256": "6d8bc6c629aec1ae07fe14617255d2c57b575d933c1839fefc5cc39d1b7c6ce6"
+    },
+    {
+      "lessonId": "guess-session-io",
+      "stepId": "guess-session-io-gate",
+      "path": ["solution"],
+      "before": "use std::io::{self, BufRead, Write};\n\n#[derive(Debug, PartialEq, Eq)]\npub enum Input {\n    Guess(u32),\n    Quit,\n}\n#[derive(Debug, PartialEq, Eq)]\npub enum InputError {\n    Empty,\n    Syntax,\n    OutOfRange,\n}\npub fn parse_input(line: &str) -> Result<Input, InputError> {\n    let line = line.trim();\n    if line.is_empty() {\n        return Err(InputError::Empty);\n    }\n    if line == \"q\" {\n        return Ok(Input::Quit);\n    }\n    if !line.bytes().all(|byte| byte.is_ascii_digit()) {\n        return Err(InputError::Syntax);\n    }\n    match line.parse::<u32>() {\n        Ok(number @ 1..=100) => Ok(Input::Guess(number)),\n        _ => Err(InputError::OutOfRange),\n    }\n}\n#[derive(Debug, PartialEq, Eq)]\npub enum Status {\n    Active,\n    Won,\n    Lost,\n}\n#[derive(Debug, PartialEq, Eq)]\npub enum Feedback {\n    Low { remaining: u8 },\n    High { remaining: u8 },\n    Won { attempts: u8 },\n    Lost { secret: u32 },\n}\n#[derive(Debug, PartialEq, Eq)]\npub enum GameError {\n    Finished,\n    OutOfRange,\n}\n#[derive(Debug, PartialEq, Eq)]\npub enum ConfigError {\n    Secret,\n    Attempts,\n}\npub struct Game {\n    secret: u32,\n    remaining: u8,\n    used: u8,\n    status: Status,\n}\nimpl Game {\n    pub fn new(secret: u32, attempts: u8) -> Result<Self, ConfigError> {\n        if !(1..=100).contains(&secret) {\n            return Err(ConfigError::Secret);\n        }\n        if !(1..=20).contains(&attempts) {\n            return Err(ConfigError::Attempts);\n        }\n        Ok(Self {\n            secret,\n            remaining: attempts,\n            used: 0,\n            status: Status::Active,\n        })\n    }\n    pub fn remaining(&self) -> u8 {\n        self.remaining\n    }\n    pub fn status(&self) -> Status {\n        match self.status {\n            Status::Active => Status::Active,\n            Status::Won => Status::Won,\n            Status::Lost => Status::Lost,\n        }\n    }\n    pub fn submit(&mut self, guess: u32) -> Result<Feedback, GameError> {\n        if self.status != Status::Active {\n            return Err(GameError::Finished);\n        }\n        if !(1..=100).contains(&guess) {\n            return Err(GameError::OutOfRange);\n        }\n        self.remaining -= 1;\n        self.used += 1;\n        if guess == self.secret {\n            self.status = Status::Won;\n            Ok(Feedback::Won {\n                attempts: self.used,\n            })\n        } else if self.remaining == 0 {\n            self.status = Status::Lost;\n            Ok(Feedback::Lost {\n                secret: self.secret,\n            })\n        } else if guess < self.secret {\n            Ok(Feedback::Low {\n                remaining: self.remaining,\n            })\n        } else {\n            Ok(Feedback::High {\n                remaining: self.remaining,\n            })\n        }\n    }\n}\n#[derive(Debug, PartialEq, Eq)]\npub enum SessionOutcome {\n    Won,\n    Lost,\n    Quit,\n    Eof,\n}\nconst MAX_LINE: usize = 128;\nfn next_line<R: BufRead>(reader: &mut R) -> io::Result<Option<String>> {\n    let mut bytes = Vec::new();\n    let mut terminated = false;\n    loop {\n        let (take, newline, over) = {\n            let available = reader.fill_buf()?;\n            if available.is_empty() {\n                (0, false, false)\n            } else if let Some(index) = available.iter().position(|byte| *byte == b'\\n') {\n                if bytes.len() + index > MAX_LINE {\n                    (1, false, true)\n                } else {\n                    (index + 1, true, false)\n                }\n            } else if bytes.len() + available.len() <= MAX_LINE {\n                (available.len(), false, false)\n            } else {\n                (MAX_LINE + 1 - bytes.len(), false, true)\n            }\n        };\n        if take == 0 {\n            break;\n        }\n        let available = reader.fill_buf()?;\n        if !over {\n            bytes.extend_from_slice(&available[..take - usize::from(newline)]);\n        }\n        reader.consume(take);\n        if over {\n            return Err(io::Error::new(\n                io::ErrorKind::InvalidData,\n                \"input line exceeds 128 bytes\",\n            ));\n        }\n        if newline {\n            terminated = true;\n            break;\n        }\n    }\n    if bytes.is_empty() && !terminated {\n        return Ok(None);\n    }\n    if bytes.last() == Some(&b'\\r') {\n        bytes.pop();\n    }\n    String::from_utf8(bytes)\n        .map(Some)\n        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, \"input is not UTF-8\"))\n}\npub fn play<R: BufRead, W: Write>(\n    reader: &mut R,\n    writer: &mut W,\n    mut game: Game,\n) -> io::Result<SessionOutcome> {\n    if game.status() != Status::Active {\n        return Err(io::Error::new(\n            io::ErrorKind::InvalidInput,\n            \"game already finished\",\n        ));\n    }\n    writeln!(\n        writer,\n        \"Number Guessing+: 1..100; attempts={}. Enter q to quit.\",\n        game.remaining()\n    )?;\n    loop {\n        writer.write_all(b\"guess> \")?;\n        writer.flush()?;\n        let Some(line) = next_line(reader)? else {\n            writeln!(writer, \"End of input.\")?;\n            writer.flush()?;\n            return Ok(SessionOutcome::Eof);\n        };\n        match parse_input(&line) {\n            Err(_) => writeln!(writer, \"Invalid input. Enter a number from 1 to 100 or q.\")?,\n            Ok(Input::Quit) => {\n                writeln!(writer, \"Quit.\")?;\n                writer.flush()?;\n                return Ok(SessionOutcome::Quit);\n            }\n            Ok(Input::Guess(guess)) => match game.submit(guess).expect(\"validated active guess\") {\n                Feedback::Low { remaining } => writeln!(writer, \"Too low; remaining={remaining}.\")?,\n                Feedback::High { remaining } => {\n                    writeln!(writer, \"Too high; remaining={remaining}.\")?\n                }\n                Feedback::Won { attempts } => {\n                    writeln!(writer, \"Won in {attempts} attempts.\")?;\n                    writer.flush()?;\n                    return Ok(SessionOutcome::Won);\n                }\n                Feedback::Lost { secret } => {\n                    writeln!(writer, \"Lost; secret={secret}.\")?;\n                    writer.flush()?;\n                    return Ok(SessionOutcome::Lost);\n                }\n            },\n        }\n    }\n}\n",
+      "beforeSha256": "77f73ebf3e5a4e8f93ec40269ec434e6fa9ffee5192d8a1f4e414ecd34336fca",
+      "successorSha256": "976514c9c8661827459f9b2dba822cfafbc4fb60be45e5c532a4d2977941df84"
+    },
+    {
+      "lessonId": "guess-session-io",
+      "stepId": "guess-session-io-blank",
+      "path": ["prompt"],
+      "before": "Od pustej kartki napisz odbiornik `receive_notice`. Protokół ma w nagłówku napisać `NOTICE READY\n`, przed każdym odczytem `notice> ` i flush. Odczytaj jedną linię o limicie 64 bajtów przed LF, zwróć `Ok(Some(String))` dla poprawnego UTF-8, `Ok(None)` tylko dla EOF bez danych; CRLF normalizuj. W przeciwieństwie do gry nie ma parsowania poleceń ani pętli: pojedynczy komunikat bez LF jest prawidłowy, a każdy błąd I/O zostaje błędem.",
+      "beforeSha256": "8308966b41b704298c0908850b1729c89f0cd5f7173556db8110794756d437b2",
+      "successorSha256": "6298c762eff96ce1e1d9db4e307476cd9cc24832c93a885da4417562a6ef7281"
+    },
+    {
+      "lessonId": "guess-session-io",
+      "stepId": "guess-session-io-blank",
+      "path": ["solution"],
+      "before": "use std::io::{self, BufRead, Write};\npub fn receive_notice<R: BufRead, W: Write>(\n    reader: &mut R,\n    writer: &mut W,\n) -> io::Result<Option<String>> {\n    writer.write_all(b\"NOTICE READY\\nnotice> \")?;\n    writer.flush()?;\n    let mut bytes = Vec::new();\n    let mut terminated = false;\n    loop {\n        let (n, nl, over) = {\n            let b = reader.fill_buf()?;\n            if b.is_empty() {\n                (0, false, false)\n            } else if let Some(i) = b.iter().position(|x| *x == b'\\n') {\n                if bytes.len() + i > 64 {\n                    (1, false, true)\n                } else {\n                    (i + 1, true, false)\n                }\n            } else if bytes.len() + b.len() <= 64 {\n                (b.len(), false, false)\n            } else {\n                (65 - bytes.len(), false, true)\n            }\n        };\n        if n == 0 {\n            break;\n        };\n        let b = reader.fill_buf()?;\n        if !over {\n            bytes.extend_from_slice(&b[..n - usize::from(nl)])\n        };\n        reader.consume(n);\n        if over {\n            return Err(io::Error::new(\n                io::ErrorKind::InvalidData,\n                \"notice too long\",\n            ));\n        };\n        if nl {\n            terminated = true;\n            break;\n        }\n    }\n    if bytes.is_empty() && !terminated {\n        return Ok(None);\n    };\n    if bytes.last() == Some(&b'\\r') {\n        bytes.pop();\n    }\n    String::from_utf8(bytes)\n        .map(Some)\n        .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, \"notice is not UTF-8\"))\n}\n",
+      "beforeSha256": "b338a4ab1b774b0df48453ae400a2881e0f8d07c516c8dd601dc0fa40ceda85a",
+      "successorSha256": "f2dac25e456f668c9aa35dcff70e597e394e969ad403997b3046f0d267992cfa"
+    },
+    {
+      "lessonId": "guess-session-io",
+      "stepId": "guess-session-io-blank",
+      "path": ["evaluator", "tests"],
+      "before": "use std::io::Cursor;\n#[test]\nfn header_prompt_and_final_notice_are_observable() {\n    let mut input = Cursor::new(b\"alarm\".to_vec());\n    let mut output = Vec::new();\n    assert_eq!(\n        receive_notice(&mut input, &mut output).unwrap(),\n        Some(String::from(\"alarm\"))\n    );\n    assert_eq!(output, b\"NOTICE READY\\nnotice> \");\n}\n#[test]\nfn blank_lf_and_crlf_are_messages_but_empty_eof_is_none() {\n    for data in [b\"\\n\".to_vec(), b\"\\r\\n\".to_vec()] {\n        let mut input = Cursor::new(data);\n        let mut output = Vec::new();\n        assert_eq!(\n            receive_notice(&mut input, &mut output).unwrap(),\n            Some(String::new())\n        );\n    }\n    let mut input = Cursor::new(Vec::<u8>::new());\n    let mut output = Vec::new();\n    assert_eq!(receive_notice(&mut input, &mut output).unwrap(), None);\n}\n#[test]\nfn over_limit_is_invalid_data() {\n    let mut input = Cursor::new(vec![b'x'; 65]);\n    let mut output = Vec::new();\n    assert_eq!(\n        receive_notice(&mut input, &mut output).unwrap_err().kind(),\n        std::io::ErrorKind::InvalidData\n    );\n}\n",
+      "beforeSha256": "cb73bbc26091c58b2e8b1bcffe46622ca9932b6f4e0db3494848746aa80aa57a",
+      "successorSha256": "ec8f2d818caa07d08533dfd63d73aa9c4d551327db2daf472d3257ba31bb83b3"
+    },
+    {
+      "lessonId": "drop-resources",
+      "stepId": "drop-release-gate",
+      "path": ["prompt"],
+      "before": "Uzupełnij `release_one`, aby `Lease` został oddany przed odczytem licznika i funkcja zwróciła 1. Zachowaj `Cell` jako obserwowany stan, nie wywołuj `Drop::drop` bezpośrednio i nie używaj wartości po przeniesieniu.",
+      "beforeSha256": "aabfd812ce7d1b2038524e2a0ecba12e0e27675f8ee0f3f0a52afc579233eb08",
+      "successorSha256": "e1fbe061fae2f3cdacee397ff8e8c2b2f66d688570bd974ed42d5a296b4a9007"
+    },
+    {
+      "lessonId": "drop-resources",
+      "stepId": "drop-release-gate",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn automatic_drop_runs_once_at_the_end_of_a_block() {\n    let released = Cell::new(0);\n    {\n        let _lease = Lease { released: &released };\n        assert_eq!(released.get(), 0);\n    }\n    assert_eq!(released.get(), 1);\n}\n\n#[test]\nfn mem_drop_runs_once_before_release_one_reads_the_tracker() {\n    let released = Cell::new(10);\n    let lease = Lease { released: &released };\n    assert_eq!(released.get(), 10);\n    std::mem::drop(lease);\n    assert_eq!(released.get(), 11);\n    assert_eq!(release_one(&released), 12);\n    assert_eq!(released.get(), 12);\n}",
+      "beforeSha256": "a688de2c98f0cdf397140077dfcdb7c6fbdeaa5c87e0aa912ed20837aee282ac",
+      "successorSha256": "8603bb19a891df41dbd1260d90c7f9f167297aaed32bcc8a6f605017e09dd118"
+    },
+    {
+      "lessonId": "weak-links",
+      "stepId": "weak-inspect-blank",
+      "path": ["prompt"],
+      "before": "Od pustej kartki zdefiniuj Node z polem name typu String oraz polem parent przechowującym Weak<Node>. Następnie napisz funkcję `parent_name`, która przyjmuje dziecko wskazane przez Rc<Node> i zwraca opcjonalny, własnościowy tekst. Zwróć nazwę tylko po udanym upgrade, a po zniszczeniu rodzica None. Nie przechowuj Rc rodzica w dziecku.",
+      "beforeSha256": "0a74c6942fcbf3affe3e07ae4c1a88c579d123c5beda625955bfdcd2836f1519",
+      "successorSha256": "d941d04ec0c63929645ac3d77e8ecff120366945976b21017daf1b9d6f6e6bb4"
+    },
+    {
+      "lessonId": "thread-join",
+      "stepId": "join-all-gate",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn panic_keeps_identity_and_does_not_discard_later_results() {\n    let jobs = vec![\n        (0, Box::new(|_, _| -> Result<u32, &'static str> { panic!(\"celowy błąd\") }) as Box<dyn FnOnce(u32, thread::ThreadId) -> Result<u32, &'static str> + Send>),\n        (7, Box::new(|value, _| Ok(value))),\n        (9, Box::new(|value, _| Ok(value))),\n    ];\n    let (total, ids, failures) = join_all_jobs(jobs);\n    assert_eq!(total, 16);\n    assert_eq!(failures, 1);\n    assert_eq!(ids.len(), 3);\n    assert_eq!(ids.iter().collect::<std::collections::HashSet<_>>().len(), 3);\n    assert_eq!(join_all_jobs(Vec::new()), (0, Vec::new(), 0));\n}\n\n#[test]\nfn joins_every_bounded_child_and_keeps_successes() {\n    let parent = thread::current().id();\n    let jobs = vec![\n        (1, Box::new(move |value, id| { assert_eq!(id, thread::current().id()); assert_ne!(id, parent); Ok(value * 10_u32) }) as Box<dyn FnOnce(u32, thread::ThreadId) -> Result<u32, &'static str> + Send>),\n        (2, Box::new(move |_, id| { assert_eq!(id, thread::current().id()); assert_ne!(id, parent); Err(\"wadliwe zadanie\") })),\n        (3, Box::new(move |value, id| { assert_eq!(id, thread::current().id()); assert_ne!(id, parent); Ok(value * 10) })),\n    ];\n    let (total, ids, failures) = join_all_jobs(jobs);\n    assert_eq!(total, 40);\n    assert_eq!(ids.len(), 3);\n    assert_eq!(failures, 1);\n    assert_eq!(ids.iter().collect::<std::collections::HashSet<_>>().len(), 3);\n}\n\n#[test]\nfn the_error_does_not_short_circuit_later_joins() {\n    let jobs = vec![\n        (10, Box::new(|_, id| { assert_eq!(id, thread::current().id()); Err(\"pierwszy błąd\") }) as Box<dyn FnOnce(u32, thread::ThreadId) -> Result<u32, &'static str> + Send>),\n        (20, Box::new(|value, id| { assert_eq!(id, thread::current().id()); Ok(value) })),\n        (30, Box::new(|value, id| { assert_eq!(id, thread::current().id()); Ok(value) })),\n    ];\n    let (total, ids, failures) = join_all_jobs(jobs);\n    assert_eq!(total, 50);\n    assert_eq!(ids.len(), 3);\n    assert_eq!(failures, 1);\n}",
+      "beforeSha256": "53fa84963c594ef813ef31754ce8eca1d86a362f444f907a30685a65344e4b9a",
+      "successorSha256": "3fc781cc5cc98c2535bcc8ddee88ccc83240e54f6a700dce55f92f9b0f9fffa6"
+    },
+    {
+      "lessonId": "thread-join",
+      "stepId": "join-report-blank",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn blank_api_joins_three_known_jobs() {\n    let parent = thread::current().id();\n    let jobs = vec![\n        (2, Box::new(move |value, id| { assert_eq!(id, thread::current().id()); assert_ne!(id, parent); value * value }) as Box<dyn FnOnce(u32, thread::ThreadId) -> u32 + Send>),\n        (4, Box::new(move |value, id| { assert_eq!(id, thread::current().id()); assert_ne!(id, parent); value * value })),\n        (6, Box::new(move |value, id| { assert_eq!(id, thread::current().id()); assert_ne!(id, parent); value * value })),\n    ];\n    let (total, ids) = run_jobs(jobs);\n    assert_eq!(total, 56);\n    assert_eq!(ids.len(), 3);\n    assert_eq!(ids.iter().collect::<std::collections::HashSet<_>>().len(), 3);\n}\n\n#[test]\nfn blank_api_is_repeatable_for_bounded_work() {\n    let jobs = vec![\n        (3, Box::new(|value, _| value * value) as Box<dyn FnOnce(u32, thread::ThreadId) -> u32 + Send>),\n        (5, Box::new(|value, _| value * value)),\n    ];\n    let (total, ids) = run_jobs(jobs);\n    assert_eq!(total, 34);\n    assert_eq!(ids.len(), 2);\n}",
+      "beforeSha256": "0bdd577ae6b570049b347749e1c10963651510ad3bc98e29c49b76052ecd5504",
+      "successorSha256": "eba161cc3acc7fabdf7e0d2958032eb462095b63db7d2e34ef9e7796a603ec8c"
+    },
+    {
+      "lessonId": "loom-evidence",
+      "stepId": "loom-evidence-assertions-gate",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn model_evidence_accepts_only_expected_outcomes() {\n    assert_model_evidence(\n        &[Observation::NotReady, Observation::Published(7)],\n        7,\n    );\n    assert_model_evidence(&[Observation::Published(0)], 0);\n}\n\n#[test]\nfn model_evidence_rejects_empty_inconclusive_and_inconsistent_runs() {\n    for observations in [\n        vec![],\n        vec![Observation::NotReady],\n        vec![Observation::Published(8)],\n        vec![Observation::Inconsistent],\n    ] {\n        let result = std::panic::catch_unwind(|| assert_model_evidence(&observations, 7));\n        assert!(result.is_err());\n    }\n}",
+      "beforeSha256": "d3136f284a9846c4fed8737e5e16a16a55fba8f3ab54d66c8ff61108cc8b788d",
+      "successorSha256": "04ce701964cd63d1e704d98116ca72bd376ab093ec586e46214bc55e7bbc5945"
+    },
+    {
+      "lessonId": "tokio-frame-deadlines",
+      "stepId": "tokio-frame-deadlines-gate",
+      "path": ["prompt"],
+      "before": "Uzupełnij `read_frame_before`. Protokół to `[u16 big-endian][body]`; funkcja ma być generyczna dla `AsyncRead`. Caller przekazuje już wybrany absolutny `Instant`, a jeden `timeout_at` ma objąć wszystkie odczyty headera i body. Zwróć None wyłącznie dla EOF przed pierwszym bajtem headera; częściowy header lub body to `UnexpectedEof`; długość ponad limit odrzuć przed Vec i pozostaw body nieprzeczytane. `FrameReadError::Timeout` musi pozostać inny niż własny `FrameReadError::Io`. Test zatrzymuje zegar i ręcznie przesuwa go przez porcje co 4 s: każda jest krótsza niż 10 s, lecz cała ramka kończy się dokładnie po 10 s. Po `Timeout` caller ma upuścić TCP connection — nie obiecuj retry tej niedokończonej ramki na tym samym streamie.",
+      "beforeSha256": "021391a6d43fd081398a526fb7f62a1df8686954deac3ae91157a5e4434be5e0",
+      "successorSha256": "4b28f07c5babac03674a225f97662c9c98fdfed5c7778ac7ae875941f0a5fd4c"
+    },
+    {
+      "lessonId": "property-invariants",
+      "stepId": "property-invariants-gate",
+      "path": ["evaluator", "tests"],
+      "before": "\nfn select_lines(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {\n    let mut result = Vec::new();\n    for (index, line) in lines.iter().enumerate() {\n        if lines.iter().enumerate().any(|(match_index, value)| value.contains(query) && index.abs_diff(match_index) <= context) {\n            result.push((index, (*line).to_owned(), line.contains(query)));\n        }\n    }\n    result\n}\nfn drops_adjacent_match(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {\n    select_lines(lines, query, context).into_iter().enumerate().filter_map(|(position, item)| if position > 0 && item.2 { None } else { Some(item) }).collect()\n}\nfn shifts_line_number(lines: &[&str], query: &str, context: usize) -> Vec<(usize, String, bool)> {\n    select_lines(lines, query, context).into_iter().map(|(index, text, matched)| (index + 1, text, matched)).collect()\n}\n#[test]\nfn oracle_accepts_reference_across_boundaries() {\n    assert!(std::panic::catch_unwind(|| assert_selection_property(select_lines)).is_ok());\n}\n#[test]\nfn oracle_rejects_sequence_and_index_mutants() {\n    assert!(std::panic::catch_unwind(|| assert_selection_property(drops_adjacent_match)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_selection_property(shifts_line_number)).is_err());\n}",
+      "beforeSha256": "c99c6f79b5ce7eaf2323276bf702ad50631c326cd29cdb2a3d847ef74a4e5993",
+      "successorSha256": "749fd0aad0f21dec369d6ee3b8dd177ddb10209b3ed963f1768aa8a3e63b4150"
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepId": "property-generated-inputs-run",
+      "path": ["code"],
+      "before": "fn classify_record(line: &str) -> &'static str {\n    let fields: Vec<_> = line.splitn(3, ' ').collect();\n    if fields.len() == 3 && fields[0].bytes().all(|byte| byte.is_ascii_digit()) && matches!(fields[1], \"INFO\" | \"WARN\" | \"ERROR\") && !fields[2].trim().is_empty() { \"valid\" } else { \"malformed\" }\n}\n\nfn main() {\n    let cases = [\"0 INFO start\", \"bad INFO broken\", \"1 WARN retry\"];\n    let valid = cases.iter().filter(|line| classify_record(line) == \"valid\").count();\n    let malformed = cases.len() - valid;\n    println!(\"valid={valid}, malformed={malformed}\");\n}",
+      "beforeSha256": "ce2a34ef6756eb3dcc0d4068674fb1918897b4f8768c8bb2e778ab857660f7e5",
+      "successorSha256": "ff3d1fbd6da768dee48ae9ef26f46cbd1c2e059a2f2ffca0e357c52a0e2abe5f"
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepId": "property-generated-inputs-run",
+      "path": ["solution"],
+      "before": "fn classify_record(line: &str) -> &'static str {\n    let fields: Vec<_> = line.splitn(3, ' ').collect();\n    if fields.len() == 3 && fields[0].bytes().all(|byte| byte.is_ascii_digit()) && matches!(fields[1], \"INFO\" | \"WARN\" | \"ERROR\") && !fields[2].trim().is_empty() { \"valid\" } else { \"malformed\" }\n}\n\nfn main() {\n    let cases = [\"0 INFO start\", \"bad INFO broken\", \"1 WARN retry\"];\n    let valid = cases.iter().filter(|line| classify_record(line) == \"valid\").count();\n    let malformed = cases.len() - valid;\n    println!(\"valid={valid}, malformed={malformed}\");\n}",
+      "beforeSha256": "ce2a34ef6756eb3dcc0d4068674fb1918897b4f8768c8bb2e778ab857660f7e5",
+      "successorSha256": "ff3d1fbd6da768dee48ae9ef26f46cbd1c2e059a2f2ffca0e357c52a0e2abe5f"
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepId": "property-generated-inputs-observe",
+      "path": ["prompt"],
+      "before": "Rozważ generator, który odrzuca każdy rekord, jeśli parser zwróci błąd. Wyjaśnij w następnym kroku, dlaczego zielona własność nie obejmuje malformed.",
+      "beforeSha256": "3bbcd4996effd670d672d2a4109582cbb92c6f8c2d726acfc04d018f29110261",
+      "successorSha256": "96adad6201999edb11d237c3e7daacc61fa79df4f199ecb8cd5ebb197c94972c"
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepId": "property-generated-inputs-observe",
+      "path": ["solution"],
+      "before": "fn generated() -> Vec<&'static str> {\n    [\"0 INFO ok\", \"bad INFO broken\", \"1 WARN retry\"].to_vec()\n}\nfn main() { println!(\"wygenerowano: {} rekordy\", generated().len()); }",
+      "beforeSha256": "d9114e99740c0d1f583a2b6c1ee506ad6cd0b0683f80c5c3b6ee37600fdeaf27",
+      "successorSha256": "ecc8ece211b05a0f1a320731b0c82bf780f920d2c4a664546a2f3b60019cdf53"
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepId": "property-generated-inputs-observe",
+      "path": ["evaluator", "expected"],
+      "before": "wygenerowano: 3 rekordy\n",
+      "beforeSha256": "f6658fdf3c28943776b384690a473833ed0a5541dd0b5538dd0bf05f9add90de",
+      "successorSha256": "0cf64ae4152c7e566d2acabf7dfe58cf1706f9ac9119dffee2800ae2ba5288f1"
+    },
+    {
+      "lessonId": "property-generated-inputs",
+      "stepId": "property-generated-inputs-gate",
+      "path": ["evaluator", "tests"],
+      "before": "\nfn summarize(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {\n    let mut counts = (0, 0, 0, 0);\n    for record in records {\n        let mut fields = record.splitn(3, ' ');\n        let timestamp = fields.next();\n        let level = fields.next();\n        let message = fields.next();\n        let valid_timestamp = timestamp.is_some_and(|value| !value.is_empty() && value.bytes().all(|byte| byte.is_ascii_digit()));\n        let valid_level = matches!(level, Some(\"INFO\" | \"WARN\" | \"ERROR\"));\n        if !valid_timestamp || !valid_level || message.is_none_or(|value| value.trim().is_empty()) { counts.3 += 1; continue; }\n        if filter.is_some_and(|wanted| level != Some(wanted)) { continue; }\n        match level.unwrap() { \"INFO\" => counts.0 += 1, \"WARN\" => counts.1 += 1, \"ERROR\" => counts.2 += 1, _ => unreachable!() }\n    }\n    counts\n}\nfn loses_filtered_malformed(records: &[&str], filter: Option<&str>) -> (usize, usize, usize, usize) {\n    let mut result = summarize(records, filter);\n    if filter.is_some() { result.3 = 0; }\n    result\n}\n#[test]\nfn summary_property_accepts_valid_and_invalid_mixture() {\n    assert!(std::panic::catch_unwind(|| assert_log_summary_property(summarize)).is_ok());\n}\n#[test]\nfn summary_property_rejects_filter_mutant() {\n    assert!(std::panic::catch_unwind(|| assert_log_summary_property(loses_filtered_malformed)).is_err());\n}",
+      "beforeSha256": "dfbebee2e198a30126700d35f939bb9b203ab3cac16d88a34eb317cfae9d6405",
+      "successorSha256": "c5957eeb68ff3655643ac2fd50bb3669d1d69d2b1cf0c32a612b9e22580987a6"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "property-generated-inputs",
+      "index": 7,
+      "id": "property-generated-inputs-repair",
+      "successorSha256": "5bb8049569e4610f2d06861b9fc0191dbc29a0c8e9356dbec9f3b1f046e8ee06"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { restoreWorkshopAssessmentLessons } from "./workshop-assessment-repair-compatibility-fixture";
 import { createHash } from "node:crypto";
 import type * as Course from "./course";
 import {
@@ -201,6 +202,9 @@ function matches(value: unknown, hash: string): boolean {
   return isCompleteJson(value) && hashRegistryValue(value) === hash;
 }
 
+// Shared only by test projections; avoids a dependency from the lesson delta back here.
+export const matchesRegistryValue = matches;
+
 function recognized(registry: Registry): boolean {
   for (const [key, additions] of Object.entries(arrayAdditions)) {
     const records = registry[key];
@@ -327,7 +331,15 @@ function collectAdditions(
     const items = registry[key] as unknown[];
     if (replacements.has(items)) continue;
     const indices = new Set(additions.map(({ index }) => index));
-    const projected = items.filter((_, index) => !indices.has(index));
+    const restored =
+      key === "lessons"
+        ? restoreWorkshopAssessmentLessons(
+            items as typeof Course.lessons,
+            replacements,
+            matches,
+          )
+        : items;
+    const projected = restored.filter((_, index) => !indices.has(index));
     if (key === "projects") {
       for (const format of projectFormats) {
         const restored = restoreProjectFormat(

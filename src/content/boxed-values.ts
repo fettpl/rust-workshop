@@ -563,13 +563,13 @@ fn automatic_drop_runs_once_at_the_end_of_a_block() {
 
 #[test]
 fn mem_drop_runs_once_before_release_one_reads_the_tracker() {
-    let released = Cell::new(10);
-    let lease = Lease { released: &released };
-    assert_eq!(released.get(), 10);
-    std::mem::drop(lease);
-    assert_eq!(released.get(), 11);
-    assert_eq!(release_one(&released), 12);
-    assert_eq!(released.get(), 12);
+    for initial in [0, 10] {
+        let released = Cell::new(initial);
+        assert_eq!(release_one(&released), initial + 1);
+        assert_eq!(released.get(), initial + 1);
+        assert_eq!(release_one(&released), initial + 2);
+        assert_eq!(released.get(), initial + 2);
+    }
 }`;
 
 const dropBlankSolution = String.raw`use std::cell::Cell;
@@ -912,7 +912,7 @@ export const boxedValuesLessons: Lesson[] = [
         kind: "debug",
         title: "Napraw wcześniejsze oddanie Lease",
         prompt:
-          "Uzupełnij `release_one`, aby `Lease` został oddany przed odczytem licznika i funkcja zwróciła 1. Zachowaj `Cell` jako obserwowany stan, nie wywołuj `Drop::drop` bezpośrednio i nie używaj wartości po przeniesieniu.",
+          "Uzupełnij `release_one`, aby utworzony `Lease` został oddany dokładnie raz przed odczytem licznika. Jego Drop zwiększa dostarczony licznik o jeden, a funkcja zwraca nowy stan: dla początkowego 0 wynik to 1, a dla 10 to 11. Zachowaj `Cell` jako obserwowany stan, nie wywołuj `Drop::drop` bezpośrednio i nie używaj wartości po przeniesieniu.",
         code: dropStarter,
         solution: dropSolution,
         tests: dropTests,

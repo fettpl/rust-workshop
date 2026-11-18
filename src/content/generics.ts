@@ -650,7 +650,7 @@ export const genericsLessons: Lesson[] = [
       discover(
         "values-discover",
         "Odkryj, co znaczy ten sam T",
-        "Uruchom duo. Pierwszy argument ustala tutaj typ liczbowy, a drugi jest String: otrzymasz E0308. Dwa wystąpienia T muszą pasować do tego samego konkretnego typu. Gdy kontrakt pozwala na różne typy, zadeklaruj <T, U>, użyj U przy drugim argumencie i przy drugiej pozycji wyniku. Krotka (T, U) zachowuje oba typy, a pola .0 i .1 odczytują jej pozycje. Popraw podpis i sprawdź ponownie komunikaty kompilatora.",
+        "Uruchom duo. Pierwszy argument ustala tutaj typ liczbowy, a drugi jest String: otrzymasz E0308. Dwa wystąpienia T muszą pasować do tego samego konkretnego typu. Gdy kontrakt pozwala na różne typy, zadeklaruj <T, U>, użyj U przy drugim argumencie i przy drugiej pozycji wyniku. Krotka (T, U) zachowuje oba typy, a pola .0 i .1 odczytują jej pozycje. Ten krok jest obserwacją błędu: zalicza go E0308. W edytowalnym zadaniu „Napraw mieszany rekord” (values-debug) samodzielnie zastosujesz rozdzielenie T i U i sprawdzisz poprawkę testami.",
         duoBroken,
         duoSolution,
         "E0308",
@@ -788,7 +788,7 @@ export const genericsLessons: Lesson[] = [
       discover(
         "impl-discover",
         "Odkryj granicę pożyczki",
-        "Uruchom extract. E0507 wskazuje próbę przeniesienia self.value z pożyczonego obiektu. Nie znamy T, więc nie możemy założyć Copy. Wymaganie tego API brzmi: oddać posiadaną wartość i zużyć Holder. Zmień odbiorcę metody na self. W alternatywnym API służącym wyłącznie do podglądu pasowałby wynik &T oraz &self, ale taki wynik nie realizuje kontraktu extract.",
+        "Uruchom extract. E0507 wskazuje próbę przeniesienia self.value z pożyczonego obiektu. Nie znamy T, więc nie możemy założyć Copy. Wymaganie tego API brzmi: oddać posiadaną wartość i zużyć Holder. Odbiorca self pozwala przejąć strukturę. Ten krok zalicza obserwacja E0507. W edytowalnym zadaniu „Napraw konsumującą metodę” (impl-debug) zmienisz odbiorcę i sprawdzisz poprawkę testami. W alternatywnym API służącym wyłącznie do podglądu pasowałby wynik &T oraz &self, ale taki wynik nie realizuje kontraktu extract.",
         holderBroken,
         holderSolution,
         "E0507",
@@ -931,7 +931,7 @@ export const genericsLessons: Lesson[] = [
       discover(
         "bounds-discover",
         "Odczytaj E0369 i nazwij wymaganie",
-        "Uruchom same i odczytaj E0369 przy ==. Trait to nazwana umowa opisująca zachowanie typu. Standardowy PartialEq udostępnia porównanie == i !=; dodanie <T: PartialEq> ogranicza funkcję do typów, które tę umowę spełniają. To ograniczenie nazywa się bound. Popraw podpis i uruchom ponownie. Nie tworzysz teraz własnego traitu. PartialEq nie obiecuje, że każda wartość jest równa samej sobie: na przykład f64::NAN == f64::NAN daje false. Nasz kod stosuje wynik ==, a nie założenie o każdej parze danych.",
+        "Uruchom same i odczytaj E0369 przy ==. Trait to nazwana umowa opisująca zachowanie typu. Standardowy PartialEq udostępnia porównanie == i !=; dodanie <T: PartialEq> ogranicza funkcję do typów, które tę umowę spełniają. To ograniczenie nazywa się bound. Ten krok zalicza obserwacja E0369. Podpis poprawisz w edytowalnym zadaniu „Napraw porównanie bez zwężania API” (bounds-debug), które sprawdzi poprawkę testami. Nie tworzysz teraz własnego traitu. PartialEq nie obiecuje, że każda wartość jest równa samej sobie: na przykład f64::NAN == f64::NAN daje false. Nasz kod stosuje wynik ==, a nie założenie o każdej parze danych.",
         equalityBroken,
         equalitySolution,
         "E0369",

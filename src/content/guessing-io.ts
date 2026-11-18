@@ -374,7 +374,7 @@ const sessionSolution =
     if bytes.is_empty() && !terminated {
         return Ok(None);
     }
-    if bytes.last() == Some(&b'\r') {
+    if terminated && bytes.last() == Some(&b'\r') {
         bytes.pop();
     }
     String::from_utf8(bytes)
@@ -1107,7 +1107,7 @@ export const guessingIoLessons: Lesson[] = [
         kind: "blank",
         title: "Odbiór komunikatu dyspozytora",
         prompt:
-          "Od pustej kartki napisz odbiornik `receive_notice`. Protokół ma w nagłówku napisać `NOTICE READY\n`, przed każdym odczytem `notice> ` i flush. Odczytaj jedną linię o limicie 64 bajtów przed LF, zwróć `Ok(Some(String))` dla poprawnego UTF-8, `Ok(None)` tylko dla EOF bez danych; CRLF normalizuj. W przeciwieństwie do gry nie ma parsowania poleceń ani pętli: pojedynczy komunikat bez LF jest prawidłowy, a każdy błąd I/O zostaje błędem.",
+          "Od pustej kartki napisz odbiornik `receive_notice`. Protokół ma w nagłówku napisać `NOTICE READY\n`, przed każdym odczytem `notice> ` i flush. Odczytaj jedną linię o limicie 64 bajtów przed LF, zwróć `Ok(Some(String))` dla poprawnego UTF-8, `Ok(None)` tylko dla EOF bez danych; CRLF normalizuj, usuwając CR wyłącznie wtedy, gdy nastąpiło po nim LF. Samotny CR przed EOF jest częścią tekstu komunikatu. W przeciwieństwie do gry nie ma parsowania poleceń ani pętli: pojedynczy komunikat bez LF jest prawidłowy, a każdy błąd I/O zostaje błędem.",
         solution: String.raw`use std::io::{self, BufRead, Write};
 pub fn receive_notice<R: BufRead, W: Write>(
     reader: &mut R,
@@ -1156,7 +1156,7 @@ pub fn receive_notice<R: BufRead, W: Write>(
     if bytes.is_empty() && !terminated {
         return Ok(None);
     };
-    if bytes.last() == Some(&b'\r') {
+    if terminated && bytes.last() == Some(&b'\r') {
         bytes.pop();
     }
     String::from_utf8(bytes)
@@ -1188,6 +1188,20 @@ fn blank_lf_and_crlf_are_messages_but_empty_eof_is_none() {
     let mut input = Cursor::new(Vec::<u8>::new());
     let mut output = Vec::new();
     assert_eq!(receive_notice(&mut input, &mut output).unwrap(), None);
+}
+#[test]
+fn lone_cr_at_eof_is_payload_and_lf_only_removes_the_terminator() {
+    for (bytes, expected) in [
+        (b"alarm\n".as_slice(), "alarm"),
+        (b"alarm\r\n".as_slice(), "alarm"),
+        (b"alarm\r".as_slice(), "alarm\r"),
+        (b"\r".as_slice(), "\r"),
+        (b"alarm".as_slice(), "alarm"),
+    ] {
+        let mut input = Cursor::new(bytes);
+        let mut output = Vec::new();
+        assert_eq!(receive_notice(&mut input, &mut output).unwrap().as_deref(), Some(expected));
+    }
 }
 #[test]
 fn over_limit_is_invalid_data() {

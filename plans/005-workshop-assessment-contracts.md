@@ -15,3 +15,11 @@ Start from local release candidate `7d803e4`. Address the four findings from the
 2. Check immutable historical fixtures and distinguish intentional current-content changes from regressions. Preserve ordered resume positions. Update the finite source inventory only for reviewed content.
 3. Run catalog validation, lint, TypeScript, the relevant Rust tests, the unit suite, the production build and browser regressions. Record actual failures or skips.
 4. Have a separate GPT-6.1-Sol high reviewer inspect the combined diff, acceptance coverage and compatibility. Commit the locally verified repair in English.
+
+## Local qualification
+
+The full unit suite passed all 2,028 tests with the local Rust toolchain qualification enabled. The two focused Rust assessment suites also passed all 22 tests with the minimum supported Rust version, 1.85.0. The assessment regressions reject seven incorrect implementations accepted by the predecessor.
+
+All 49 focused Chromium scenarios passed against the production build. The browser tests use a runner transport double for submissions. Separate native Rust tests check the authored programs, compiler diagnostics and assessment outcomes. TypeScript, the production build and the offline verification passed. ESLint reported 31 warnings and zero errors. The release provenance check covered 376 inventory entries.
+
+An independent GPT-6.1-Sol (high) reviewer identified a symbol-property preservation issue in the historical catalog test fixture. The correction and its regression test passed re-review. Existing lesson and step positions are preserved. The editable generator repair is appended to its lesson.
