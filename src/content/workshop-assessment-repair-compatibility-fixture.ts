@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import eventReportDelta from "./fixtures/collections-event-report-delta.json";
 import tokioShutdownDelta from "./fixtures/tokio-shutdown-gates-delta.json";
 import delta from "./fixtures/workshop-assessment-repair-delta.json";
 import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
@@ -190,6 +191,15 @@ function restoreReviewedLessons(
   return result;
 }
 
+/** Projects the reviewed event-report addition back to its predecessor catalog. */
+export function restoreCollectionsEventLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, eventReportDelta);
+}
+
 /** Removes only the exact authored Tokio transfer practice at its appended position. */
 export function restoreTokioShutdownLessons(
   lessons: Lesson[],
@@ -197,7 +207,7 @@ export function restoreTokioShutdownLessons(
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
   return restoreReviewedLessons(
-    lessons,
+    restoreCollectionsEventLessons(lessons, replacements, matches),
     replacements,
     matches,
     tokioShutdownDelta,

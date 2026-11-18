@@ -95,7 +95,9 @@ it("preserves original references, aliases, unknown properties and explicit unde
       if (
         (key === "lessons" &&
           (repairedLessons.has(item.id) ||
-            item.id === "tokio-graceful-shutdown")) ||
+            ["tokio-graceful-shutdown", "hashmap-and-entry"].includes(
+              item.id,
+            ))) ||
         (key === "modules" &&
           ["tokio-flow-control", "tokio-io-streams"].includes(item.id))
       )

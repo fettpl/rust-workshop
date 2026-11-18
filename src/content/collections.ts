@@ -7,6 +7,8 @@ import type {
   Source,
 } from "@/domain/types";
 
+import { eventReport } from "./collections-event-report";
+
 const reviewedAt = "2026-09-12";
 
 export const collectionsSources: Source[] = [
@@ -1050,6 +1052,7 @@ fn frequency(text: &str) -> HashMap<char, i32> {
         },
         evidenceKind: "recall",
       },
+      eventReport,
     ],
     misconceptions: [
       "HashMap ma przewidywalną kolejność, więc można porównywać cały wydruk mapy.",

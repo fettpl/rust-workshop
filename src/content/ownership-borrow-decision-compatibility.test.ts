@@ -40,7 +40,11 @@ it("restores the captured 9bb12fe lessons without mutating the live catalog", ()
     lesson.steps.slice(0, 6).map((step) => step.id),
   );
   restored.forEach((item, index) => {
-    if (item.id !== lesson.id && item.id !== "tokio-graceful-shutdown")
+    if (
+      ![lesson.id, "tokio-graceful-shutdown", "hashmap-and-entry"].includes(
+        item.id,
+      )
+    )
       expect(item).toBe(course.lessons[index]);
   });
 });

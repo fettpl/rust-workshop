@@ -1,0 +1,15 @@
+{
+  "baseline": {
+    "sha": "86d262a1ac606da16eb3a9f8bd1ccd811f4cd7d5",
+    "lessonsSha256": "4c2917681583247dc05680516b2cde81e24937521d94cec127e4d86e1fd4d145"
+  },
+  "restorations": [],
+  "appendedSteps": [
+    {
+      "lessonId": "hashmap-and-entry",
+      "index": 8,
+      "id": "events-report-regression",
+      "successorSha256": "3e13d834f42ac11fa483d0238bfce17d0e4451fe78cbea6a4e75dd89b413f372"
+    }
+  ]
+}

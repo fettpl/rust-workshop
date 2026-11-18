@@ -29,7 +29,10 @@ it("restores the immutable audited predecessor using only reviewed field deltas"
   ]);
   expect(changed.size).toBe(14);
   restored.forEach((lesson, index) => {
-    if (!changed.has(lesson.id) && lesson.id !== "tokio-graceful-shutdown")
+    if (
+      !changed.has(lesson.id) &&
+      !["tokio-graceful-shutdown", "hashmap-and-entry"].includes(lesson.id)
+    )
       expect(lesson).toBe(course.lessons[index]);
   });
 });
