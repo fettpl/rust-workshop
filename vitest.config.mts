@@ -10,6 +10,7 @@ export default defineConfig({
       "scripts/verify-performance.test.ts",
       "scripts/miri-disjoint-ranges-diagnostics.test.ts",
       "scripts/project-archive.test.ts",
+      "scripts/profile-test-executable.test.ts",
       "scripts/verify-client-retry.test.ts",
       "scripts/verify-authorization.test.ts",
       "scripts/verify-file-schema-evolution.test.ts",

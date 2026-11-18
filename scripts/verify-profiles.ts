@@ -7,8 +7,8 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from "node:fs";
 import { delimiter, dirname, join } from "node:path";
@@ -18,6 +18,7 @@ import { unzipSync } from "fflate";
 import { projectFiles } from "../src/domain/project-package";
 import { logAnalyzerPackage } from "../src/content/projects/log-analyzer";
 import { buildProjectArchive } from "./project-archive";
+import { selectProfileTestExecutable } from "./profile-test-executable";
 
 const args = process.argv.slice(2);
 const profileArgument = args.find((argument) =>
@@ -97,9 +98,12 @@ assert.equal(manifest.profile_boundary.attributes_parser_exclusively, false);
 assert.equal(manifest.comparison.metric, "summary equality only");
 assert.equal(manifest.comparison.same_workload, true);
 
-const root = mkdtempSync(
-  join(tmpdir(), "rust-workshop-log-analyzer-profiles-"),
+const root = realpathSync(
+  mkdtempSync(join(tmpdir(), "rust-workshop-log-analyzer-profiles-")),
 );
+
+const targetRoot = join(root, "cargo-target");
+env.CARGO_TARGET_DIR = targetRoot;
 
 function extractArchive(bytes: Uint8Array, directory: string) {
   for (const [path, contents] of Object.entries(unzipSync(bytes))) {
@@ -187,26 +191,6 @@ function rejectSourceModelMutant(directory: string) {
   } finally {
     writeFileSync(sourcePath, source);
   }
-}
-
-function locateTestBinary(directory: string) {
-  const deps = join(directory, "target", "debug", "deps");
-  const binary = readdirSync(deps)
-    .filter((name) => name.startsWith("source_model_contract-"))
-    .map((name) => join(deps, name))
-    .filter((path) => statSync(path).isFile() && !path.endsWith(".d"))
-    .find((path) => {
-      try {
-        return (statSync(path).mode & 0o111) !== 0;
-      } catch {
-        return false;
-      }
-    });
-  assert(
-    binary,
-    "Cargo did not produce the authored source model test binary",
-  );
-  return binary;
 }
 
 function runExternalProfile(directory: string, binary: string) {
@@ -311,14 +295,20 @@ try {
   rejectSourceModelMutant(packageRoot);
 
   if (profile) {
-    run(packageRoot, cargo, [
+    const canonicalBuild = run(packageRoot, cargo, [
       "test",
       ...offline,
       "--test",
       "source_model_contract",
       "--no-run",
+      "--message-format=json",
     ]);
-    runExternalProfile(packageRoot, locateTestBinary(packageRoot));
+    const binary = selectProfileTestExecutable(
+      canonicalBuild.stdout,
+      packageRoot,
+      targetRoot,
+    );
+    runExternalProfile(packageRoot, binary);
   }
 } finally {
   rmSync(root, { recursive: true, force: true });
