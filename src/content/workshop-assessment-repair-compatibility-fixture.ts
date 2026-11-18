@@ -1,8 +1,26 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
 import delta from "./fixtures/workshop-assessment-repair-delta.json";
+import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
 
-type Projection = typeof delta;
+type FieldRestoration = {
+  lessonId: string;
+  path: string[];
+  before: unknown;
+  beforeSha256: string;
+  successorSha256: string;
+};
+type Projection = {
+  baseline: { sha: string; lessonsSha256: string };
+  restorations: Array<FieldRestoration & { stepId: string }>;
+  lessonRestorations?: FieldRestoration[];
+  appendedSteps: Array<{
+    lessonId: string;
+    index: number;
+    id: string;
+    successorSha256: string;
+  }>;
+};
 const ownValue = (object: unknown, key: PropertyKey): unknown =>
   object !== null && typeof object === "object"
     ? Object.getOwnPropertyDescriptor(object, key)?.value
@@ -70,7 +88,7 @@ function removeIndex<T>(array: T[], index: number): T[] {
 }
 
 /** Restores individual known fields; independent edits remain observable. */
-export function restoreWorkshopAssessmentLessons(
+function restoreReviewedLessons(
   lessons: Lesson[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
@@ -78,6 +96,7 @@ export function restoreWorkshopAssessmentLessons(
 ): Lesson[] {
   let result = lessons;
   for (const lessonId of new Set([
+    ...(projection.lessonRestorations ?? []).map((entry) => entry.lessonId),
     ...projection.restorations.map((entry) => entry.lessonId),
     ...projection.appendedSteps.map((entry) => entry.lessonId),
   ])) {
@@ -87,6 +106,20 @@ export function restoreWorkshopAssessmentLessons(
     if (indices.length !== 1) continue;
     const index = indices[0];
     const original = result[index];
+    let restoredLesson = original;
+    for (const entry of (projection.lessonRestorations ?? []).filter(
+      (entry) => entry.lessonId === lessonId,
+    )) {
+      restoredLesson = restorePath(
+        restoredLesson,
+        entry.path,
+        entry.before,
+        entry.successorSha256,
+        entry.beforeSha256,
+        replacements,
+        matches,
+      ) as Lesson;
+    }
     const originalSteps = ownValue(original, "steps");
     if (!Array.isArray(originalSteps)) continue;
     let steps = originalSteps;
@@ -129,13 +162,16 @@ export function restoreWorkshopAssessmentLessons(
       replacements.set(steps, removed);
       steps = removed;
     }
-    if (steps === originalSteps) continue;
-    const restored = replaceField(
-      original,
-      "steps",
-      steps,
-      replacements,
-    ) as Lesson;
+    if (steps === originalSteps && restoredLesson === original) continue;
+    const restored =
+      steps === originalSteps
+        ? restoredLesson
+        : (replaceField(
+            restoredLesson,
+            "steps",
+            steps,
+            replacements,
+          ) as Lesson);
     result = replaceField(
       result,
       String(index),
@@ -151,4 +187,29 @@ export function restoreWorkshopAssessmentLessons(
     replacements.set(original, final);
   }
   return result;
+}
+
+/** Reverses only the exact reviewed ownership decision repair for historical tests. */
+export function restoreOwnershipBorrowDecisionLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+  projection: Projection = ownershipDecisionDelta,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, projection);
+}
+
+/** Compose the newer reviewed repair before the unchanged historical workshop delta. */
+export function restoreWorkshopAssessmentLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+  projection: Projection = delta,
+): Lesson[] {
+  return restoreReviewedLessons(
+    restoreOwnershipBorrowDecisionLessons(lessons, replacements, matches),
+    replacements,
+    matches,
+    projection,
+  );
 }

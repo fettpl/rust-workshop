@@ -53,6 +53,7 @@ it("preserves all 48 old ownership indices and their attribution before explicit
     ],
     "number-guessing-transfer": ["project-own-boundary-test"],
     "blank-page-repair": ["blank-own-boundary-test"],
+    "scenario-assessment": ["assessment-preview-borrow"],
   };
   for (const lesson of lessons) {
     const original = expectedAttribution
@@ -80,6 +81,104 @@ it("preserves all 48 old ownership indices and their attribution before explicit
       stepId,
     ).toBe(true);
   }
+});
+it("accepts ownership explanations in the learner's own words as self-rating only", () => {
+  const step = stepAt("scenario-assessment", "assessment-retrieval");
+  expect(step.kind).toBe("explain");
+  expect(step.evidenceKind).toBe("self-rating");
+  expect(step.evidenceGate).toBe(false);
+  expect(step.evidence?.codingTaskId).toBeUndefined();
+  expect(step.evaluator?.kind).toBe("rubric");
+  if (step.evaluator?.kind !== "rubric")
+    throw new Error("Expected explanation rubric");
+  const rubricChecks = step.evaluator.criteria;
+  expect(rubricChecks.length).toBeGreaterThan(0);
+  // Questions guide reflection without giving the following decisions away.
+  for (const criterion of rubricChecks)
+    expect(criterion.endsWith("?")).toBe(true);
+  for (const answer of [
+    "Pożyczka wystarczy do obejrzenia etykiety. Osobna zapisana wersja musi mieć własne dane, jeśli pierwotny napis ma być nadal używany.",
+    "Jeżeli wyświetlam napis tylko podczas wywołania, nie potrzebuję go powielać. Dla niezależnego zapisu zachowanego po zmianie oryginału potrzebuję oddzielnego właściciela.",
+    // Existing drafts remain readable; their exact wording is not an answer key.
+    "gdy funkcja tylko czyta",
+  ]) {
+    expect(evaluate(step.evaluator, { answer, rubricChecks }).passed).toBe(
+      true,
+    );
+    expect(evaluate(step.evaluator, { answer }).passed).toBe(false);
+  }
+  for (const answer of [undefined, "", "   "]) {
+    expect(evaluate(step.evaluator, { answer, rubricChecks }).passed).toBe(
+      false,
+    );
+  }
+  expect(
+    evaluate(step.evaluator, {
+      answer: "Mój opis granicy funkcji.",
+      rubricChecks: rubricChecks.slice(1),
+    }).passed,
+  ).toBe(false);
+  // A rubric records the learner's checks; it makes no semantic correctness claim.
+  expect(
+    evaluate(step.evaluator, {
+      answer: "Każde String implementuje Copy.",
+      rubricChecks,
+    }).passed,
+  ).toBe(true);
+});
+it("keeps the owned snapshot decision and appends the complementary borrowed preview", () => {
+  const lesson = lessons.find((lesson) => lesson.id === "scenario-assessment")!;
+  expect(lesson.steps.slice(-3).map((step) => step.id)).toEqual([
+    "assessment-retrieval",
+    "assessment-transfer",
+    "assessment-preview-borrow",
+  ]);
+  const snapshot = stepAt("scenario-assessment", "assessment-transfer");
+  const preview = stepAt("scenario-assessment", "assessment-preview-borrow");
+  expect(snapshot.choices?.map((choice) => choice.id)).toEqual([
+    "owned",
+    "borrow",
+  ]);
+  expect(preview.choices?.map((choice) => choice.id)).toEqual([
+    "borrow",
+    "clone",
+    "move",
+  ]);
+  for (const [step, correct, incorrect] of [
+    [snapshot, "owned", ["borrow"]],
+    [preview, "borrow", ["clone", "move"]],
+  ] as const) {
+    expect(step.evaluator?.kind).toBe("choice");
+    if (step.evaluator?.kind !== "choice")
+      throw new Error("Expected decision choice");
+    for (const answer of [undefined, "", "unknown-choice"]) {
+      expect(evaluate(step.evaluator, { answer }).passed).toBe(false);
+    }
+    const accepted = evaluate(step.evaluator, { answer: correct });
+    expect(accepted.passed).toBe(true);
+    expect(accepted.feedback).toContain(step.evaluator.explanations[correct]);
+    for (const answer of incorrect) {
+      const rejected = evaluate(step.evaluator, { answer });
+      expect(rejected.passed).toBe(false);
+      expect(rejected.feedback).toBe(step.evaluator.explanations[answer]);
+      expect(rejected.feedback.length).toBeGreaterThan(40);
+    }
+    expect(step.evidenceKind).toBe("transfer");
+    expect(step.evidence?.codingTaskId).toBeUndefined();
+  }
+  if (snapshot.evaluator?.kind !== "choice")
+    throw new Error("Expected snapshot choice");
+  for (const feedback of Object.values(snapshot.evaluator.explanations)) {
+    expect(feedback).not.toMatch(/preview|podgląd|podglądu/);
+  }
+  expect(preview.evidenceGate).not.toBe(true);
+  const primaryRefs = ownershipModule.gateCriteria?.flatMap(
+    (criterion) => criterion.taskRefs,
+  );
+  expect(primaryRefs).not.toContainEqual({
+    lessonId: lesson.id,
+    stepId: preview.id,
+  });
 });
 it("calibrates exactly eight ownership concepts and gives reviews singleton attribution", () => {
   expect(

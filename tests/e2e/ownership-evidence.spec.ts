@@ -1630,3 +1630,154 @@ test("ownership mobile tabs preserve keyboard focus, raw failure and exact draft
     courseEvidenceSummary(recorded, "mutable-borrow").qualifyingCodingTasks,
   ).toBe(0);
 });
+
+test("assesses borrow and clone decisions separately from an explanation in the learner's own words", async ({
+  page,
+}) => {
+  const state = readyState();
+  const { lesson, step } = authored(
+    "scenario-assessment",
+    "assessment-retrieval",
+  );
+  state.resume.lessonId = lesson.id;
+  state.resume.stepIndex = lesson.steps.indexOf(step);
+  const key = stepKey(lesson.id, step.id);
+  const draft =
+    "Podgląd tylko odczytuje nazwę; do historii potrzebuję kopii, bo potem nazwę zmienię.";
+  // A draft and rejection from the old exact-wording task survive the change.
+  const previous = {
+    at: 1,
+    answer: draft,
+    passed: false,
+    feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
+  };
+  state.steps[key] = {
+    ...createStepProgress(),
+    answer: draft,
+    attempts: [previous],
+  };
+  await seedState(page, state);
+  const rationale = page.getByRole("textbox", { name: "Twoje wyjaśnienie" });
+  await expect(rationale).toHaveValue(draft);
+  const submit = page.getByRole("button", {
+    name: "Sprawdź odpowiedź",
+    exact: true,
+  });
+  await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+  for (const item of await page.locator(".rubric").getByRole("checkbox").all())
+    await item.check();
+  await submit.click();
+  await expect
+    .poll(async () => (await savedState(page)).steps[key]?.completed)
+    .toBe(true);
+  const passed = await savedState(page);
+  expect(passed.steps[key].attempts[0]).toEqual(previous);
+  expect(passed.steps[key].attempts.at(-1)).toMatchObject({
+    answer: draft,
+    passed: true,
+  });
+  expect(
+    passed.events.filter(
+      (event) =>
+        event.stepId === step.id && event.passed && event.kind !== "exposure",
+    ),
+  ).toMatchObject([{ evaluator: "rubric", kind: "self-rating", gate: false }]);
+  await page.reload();
+  await expect(rationale).toHaveValue(draft);
+
+  for (const [id, wrong, right] of [
+    ["assessment-transfer", "borrow", "owned"],
+    ["assessment-preview-borrow", "clone", "borrow"],
+  ]) {
+    await page.getByRole("button", { name: "Dalej", exact: true }).click();
+    const current = stepKey(lesson.id, id);
+    await page.locator(`input[type="radio"][value="${wrong}"]`).check();
+    await submit.click();
+    await expect
+      .poll(
+        async () =>
+          (await savedState(page)).steps[current]?.attempts.at(-1)?.passed,
+      )
+      .toBe(false);
+    await page.locator(`input[type="radio"][value="${right}"]`).check();
+    await submit.click();
+    await expect
+      .poll(async () => (await savedState(page)).steps[current]?.completed)
+      .toBe(true);
+    const final = await savedState(page);
+    expect(
+      final.steps[current].attempts.map((item) => [item.answer, item.passed]),
+    ).toEqual([
+      [wrong, false],
+      [right, true],
+    ]);
+    expect(
+      final.events.filter(
+        (event) =>
+          event.stepId === id && event.evaluator === "choice" && event.passed,
+      ),
+    ).toHaveLength(1);
+  }
+});
+
+test("opening a completed legacy recall keeps the old answer and leaves the new decision unattempted", async ({
+  page,
+}) => {
+  const state = readyState();
+  const { lesson, step } = authored(
+    "scenario-assessment",
+    "assessment-retrieval",
+  );
+  const key = stepKey(lesson.id, step.id);
+  const previousAnswer = "gdy funkcja tylko czyta";
+  state.resume = {
+    ...state.resume,
+    lessonId: lesson.id,
+    stepIndex: lesson.steps.indexOf(step),
+  };
+  state.steps[key] = {
+    ...createStepProgress(),
+    completed: true,
+    answer: previousAnswer,
+    attempts: [
+      {
+        at: 1,
+        answer: previousAnswer,
+        passed: true,
+        feedback: "Ta odpowiedź jest zaakceptowana.",
+      },
+    ],
+  };
+  const past: EvidenceEvent = {
+    id: "prior-ownership-recall",
+    lessonId: lesson.id,
+    stepId: step.id,
+    kind: "recall",
+    evaluator: "answer",
+    at: 1,
+    passed: true,
+    hints: 0,
+    revealed: false,
+    gate: true,
+    conceptIds: ["shared-borrow", "ownership-repair"],
+    evidenceVersion: 2,
+  };
+  state.events.push(past);
+  await seedState(page, state);
+  await expect(page.getByLabel("Twoje wyjaśnienie")).toHaveValue(
+    previousAnswer,
+  );
+  const saved = await savedState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events.filter((event) => event.id === past.id)).toEqual([past]);
+  expect(
+    saved.events.some(
+      (event) =>
+        event.evaluator === "rubric" ||
+        event.stepId === "assessment-preview-borrow",
+    ),
+  ).toBe(false);
+  expect(
+    saved.steps[stepKey(lesson.id, "assessment-preview-borrow")],
+  ).toBeUndefined();
+});

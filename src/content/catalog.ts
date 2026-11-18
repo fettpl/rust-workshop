@@ -2229,24 +2229,21 @@ export const lessons: Lesson[] = [
           version: 2,
           conceptIds: ["shared-borrow", "ownership-repair"],
         },
-        kind: "recall",
-        title: "Odroczone przypomnienie",
+        kind: "explain",
+        title: "Najpierw wyjaśnij własnymi słowami",
         prompt:
-          "Bez otwierania poprzednich lekcji: kiedy należy wybrać pożyczkę zamiast clone?",
+          "Masz etykietę w String. Jedna funkcja ma zachować niezależną wersję etykiety po wywołaniu, a druga tylko pokazać ją podczas wywołania. W obu przypadkach oryginał ma pozostać dostępny. Wyjaśnij własnymi słowami, jak zdecydujesz między pożyczką a clone i dlaczego. Potem sprawdź swoją wypowiedź pytaniami z rubryki. To samoocena: aplikacja nie ocenia automatycznie sensu wypowiedzi. W dwóch kolejnych krokach sprawdzisz konkretne decyzje.",
         evaluator: {
-          kind: "answer",
-          accepted: [
-            "when the callee only needs read access",
-            "when only read access is needed",
-            "if the callee only reads",
-            "gdy wywołana funkcja potrzebuje tylko odczytu",
-            "gdy funkcja tylko czyta",
-            "kiedy potrzebny jest tylko odczyt",
+          kind: "rubric",
+          criteria: [
+            "Kto ma być właścicielem danych po zakończeniu każdego wywołania?",
+            "Jak długo każda funkcja potrzebuje danych i czy potrzebuje niezależnej wersji?",
+            "Co stanie się z oryginałem i jaki koszt ma proponowana operacja?",
+            "Które wymaganie musiałoby się zmienić, aby wybrać inne rozwiązanie?",
           ],
-          feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
         },
-        evidenceKind: "recall",
-        evidenceGate: true,
+        evidenceKind: "self-rating",
+        evidenceGate: false,
       },
       {
         id: "assessment-transfer",
@@ -2255,17 +2252,19 @@ export const lessons: Lesson[] = [
           conceptIds: ["function-ownership", "ownership-repair"],
         },
         kind: "apply",
-        title: "Końcowy transfer",
+        title: "Zapisz niezależną etykietę",
         prompt:
-          "Wybierz API funkcji, która po wywołaniu przechowuje własną kopię etykiety.",
+          'Masz let label = String::from("Raport"). Funkcja save(value: String) zapisuje własną etykietę, która ma pozostać niezmienna nawet po zmianie lub usunięciu label. Po wywołaniu nadal chcesz używać oryginalnego label. Która decyzja spełnia oba wymagania?',
         choices: [
           {
             id: "owned",
-            label: "Przejmij albo zbuduj własny String",
+            label:
+              "Zbuduj własny String przez label.clone() i przekaż go do save",
           },
           {
             id: "borrow",
-            label: "Tylko pożycz i przechowuj referencję na zawsze",
+            label:
+              "Przekaż &label i przechowuj samą pożyczkę zamiast własnego String",
           },
         ],
         evaluator: {
@@ -2273,12 +2272,50 @@ export const lessons: Lesson[] = [
           correct: "owned",
           explanations: {
             owned:
-              "Poprawnie: przejęcie albo zbudowanie String daje API, które może przechowywać własną etykietę.",
+              "Poprawnie: save(label.clone()) daje zapisowi osobny String, a label pozostaje dostępne. Późniejsza zmiana lub usunięcie label nie zmieni zapisanej etykiety. Tu koszt powielenia danych spełnia wymaganie niezależnej wersji.",
             borrow:
-              "Przechowywanie samej referencji wymagałoby żywotności danych wykraczającej poza wywołującego.",
+              "Samo &label nie tworzy niezależnej wersji: pożyczka odwołuje się do danych label, ogranicza ich zmianę lub usunięcie i nie pasuje do save(value: String). Zbuduj osobny String, zachowując oryginał.",
           },
         },
         evidenceKind: "transfer",
+      },
+      {
+        id: "assessment-preview-borrow",
+        evidence: {
+          version: 2,
+          conceptIds: ["shared-borrow", "ownership-repair"],
+        },
+        kind: "apply",
+        title: "Pokaż tę samą etykietę",
+        prompt:
+          "Teraz ten sam label ma trafić do preview(value: &str). Funkcja tylko wyświetla tekst podczas wywołania; niczego nie zapisuje ani nie zmienia. Po podglądzie nadal używasz label. Wybierz wywołanie, które spełnia wymagania bez zbędnego powielania danych.",
+        choices: [
+          {
+            id: "borrow",
+            label: "preview(&label) — pożycz dane do odczytu",
+          },
+          {
+            id: "clone",
+            label: "preview(&label.clone()) — najpierw powiel dane",
+          },
+          {
+            id: "move",
+            label: "preview(label) — przekaż String przez wartość",
+          },
+        ],
+        evaluator: {
+          kind: "choice",
+          correct: "borrow",
+          explanations: {
+            borrow:
+              "Poprawnie: preview(&label) udostępnia dane do odczytu na czas podglądu: &String jest automatycznie dopasowywane do parametru &str. Nie tworzy drugiego String, a label pozostaje dostępne po wywołaniu. W odróżnieniu od zapisu niezależnej etykiety podgląd nie potrzebuje własnej wersji.",
+            clone:
+              "preview(&label.clone()) zadziała, ale utworzy zbędny String tylko na czas podglądu. Funkcja nie zachowuje niezależnej wersji, więc wystarczy preview(&label). Koszt clone był uzasadniony w poprzednim kroku przez wymaganie osobnego zapisu.",
+            move: "preview(label) nie pasuje do parametru &str: funkcja oczekuje pożyczki. Gdyby przyjmowała String przez wartość, wywołanie przeniosłoby label i uniemożliwiło jego dalsze użycie. Tu wystarczy preview(&label), bez przenoszenia i bez powielania danych.",
+          },
+        },
+        evidenceKind: "transfer",
+        evidenceGate: false,
       },
     ],
     misconceptions: [
@@ -2288,7 +2325,7 @@ export const lessons: Lesson[] = [
     transferTask:
       "Rozwiąż nowy scenariusz move/Copy i wybierz API z uzasadnieniem opartym na dowodach.",
     evidenceGate:
-      "Bez podpowiedzi sklasyfikuj przypadki, napraw błąd i przejdź odroczone przypomnienie.",
+      "Bez podpowiedzi sklasyfikuj przypadki i napraw błąd. Własne wyjaśnienie porównaj z rubryką samooceny; decyzje o zapisie i podglądzie sprawdź osobno.",
     sourceIds: [
       "rust-book-ownership",
       "rust-copy-trait",

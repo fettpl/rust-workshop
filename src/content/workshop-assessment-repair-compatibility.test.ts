@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import * as course from "./course";
 import delta from "./fixtures/workshop-assessment-repair-delta.json";
+import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
 import { restoreWorkshopAssessmentLessons } from "./workshop-assessment-repair-compatibility-fixture";
 import {
   historicalBeforeA12,
@@ -22,8 +23,11 @@ it("restores the immutable audited predecessor using only reviewed field deltas"
   expect(
     restoreWorkshopAssessmentLessons(restored, new Map(), matchesRegistryValue),
   ).toBe(restored);
-  const changed = new Set(delta.restorations.map((entry) => entry.lessonId));
-  expect(changed.size).toBe(13);
+  const changed = new Set([
+    ...delta.restorations.map((entry) => entry.lessonId),
+    ...ownershipDecisionDelta.restorations.map((entry) => entry.lessonId),
+  ]);
+  expect(changed.size).toBe(14);
   restored.forEach((lesson, index) => {
     if (!changed.has(lesson.id)) expect(lesson).toBe(course.lessons[index]);
   });

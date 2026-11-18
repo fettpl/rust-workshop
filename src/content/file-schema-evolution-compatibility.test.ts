@@ -1,4 +1,5 @@
 import assessmentDelta from "./fixtures/workshop-assessment-repair-delta.json";
+import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
 import { expect, it } from "vitest";
 import * as actualCourse from "./course";
 import {
@@ -85,9 +86,10 @@ it("preserves original references, aliases, unknown properties and explicit unde
   expect(result.sources).toBe(input.sources);
   expect(result.project).toBe(input.project);
   expect(result.reviewExerciseForId).toBe(input.reviewExerciseForId);
-  const repairedLessons = new Set(
-    assessmentDelta.restorations.map((entry) => entry.lessonId),
-  );
+  const repairedLessons = new Set([
+    ...assessmentDelta.restorations.map((entry) => entry.lessonId),
+    ...ownershipDecisionDelta.restorations.map((entry) => entry.lessonId),
+  ]);
   for (const key of ["lessons", "concepts", "competencies", "modules"] as const)
     result[key].forEach((item, index) => {
       if (key === "lessons" && repairedLessons.has(item.id)) return;
