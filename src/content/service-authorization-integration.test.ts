@@ -517,7 +517,7 @@ it("keeps_exact_prerequisites_four_gate_alias_pairs_and_ordinary_review_identity
     expect(course.shortReviewExercises[concept.id]).toBeUndefined();
     expect(review.reviewPurpose).toBeUndefined();
   }
-  const project = course.projects.find(
+  const project = rawCourse.projects.find(
     (project) => project.id === "service-authorization",
   )!;
   expect(project.lessonIds).toEqual(lessonIds);
