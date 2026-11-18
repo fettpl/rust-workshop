@@ -357,3 +357,40 @@ test("keeps the appended parcel self-rating separate from independent coding and
   expect(observed.mastery).not.toContain("understood");
   expect(observed.mastery).not.toContain("retained");
 });
+
+for (const [lessonId, stepId, explanation] of [
+  ["log-records", "records-recall", "Po nagłówku zachowuję tekst w oryginale. Pustą wiadomość i samą biel odrzucam."],
+  ["log-streaming", "stream-recall", "Odcinam separator, o ile jest. Sprawdzam każdy wpis, błędny zliczam osobno. Z poprawnych liczę tylko ostrzeżenie."],
+  ["log-analyzer-project", "report-recall", "Nagłówek, filtr i pola wypisuję zawsze tak samo, również z zerem. Każdą linię kończę znakiem nowej linii."],
+]) {
+  test(`${stepId} accepts a learner explanation and resumes its self-check`, async ({ page }) => {
+    const lesson = lessons.find((item) => item.id === lessonId)!;
+    const index = lesson.steps.findIndex((step) => step.id === stepId);
+    await page.goto("/");
+    await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+    await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page.locator(".module-picker").getByRole("button", { name: /Log Analyzer: rekord, strumień, raport/ }).click();
+    await page.locator(".lesson-list-item").filter({ hasText: lesson.title }).click();
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(index).click();
+
+    const answer = page.getByRole("textbox", { name: "Twoje wyjaśnienie" });
+    await answer.fill(explanation);
+    await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+    await expect(page.locator("details.rubric")).toContainText("To samoocena wyjaśnienia");
+    const checks = page.locator("details.rubric").getByRole("checkbox");
+    const submit = page.getByRole("button", { name: "Sprawdź odpowiedź", exact: true });
+    await checks.first().check();
+    await submit.click();
+    await expect(page.locator(".feedback")).toContainText("zaznacz każde kryterium");
+    for (const box of await checks.all()) await box.check();
+    await submit.click();
+    await expect(page.locator(".feedback.passed")).toContainText("Sprawdziłeś każde kryterium");
+    await expect(page.locator(".save-status")).toContainText("Zapisano na tym urządzeniu");
+    await page.reload();
+    await expect(answer).toHaveValue(explanation);
+    await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+    for (const box of await checks.all()) await expect(box).toBeChecked();
+    await expect(page.locator(".feedback.passed")).toBeVisible();
+  });
+}

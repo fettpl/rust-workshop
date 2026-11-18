@@ -7,7 +7,10 @@ import {
   historicalBeforeA12,
   matchesRegistryValue,
 } from "./file-schema-evolution-compatibility-fixture";
-import { restoreOwnershipBorrowDecisionLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import {
+  restoreOwnershipBorrowDecisionLessons,
+  restoreLogAnalyzerRecallLessons,
+} from "./workshop-assessment-repair-compatibility-fixture";
 
 const hash = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -27,7 +30,12 @@ const assessment = (lessons: Lesson[]) =>
 
 it("restores the captured 9bb12fe lessons without mutating the live catalog", () => {
   const before = hash(course.lessons);
-  const restored = restore(course.lessons);
+  const previous = restoreLogAnalyzerRecallLessons(
+    course.lessons,
+    new Map(),
+    matchesRegistryValue,
+  );
+  const restored = restore(previous);
   expect(delta.baseline).toEqual({
     sha: "9bb12fee1dbeacb8b8349314e4b0119acbed9ad0",
     lessonsSha256:
@@ -45,7 +53,7 @@ it("restores the captured 9bb12fe lessons without mutating the live catalog", ()
         item.id,
       )
     )
-      expect(item).toBe(course.lessons[index]);
+      expect(item).toBe(previous[index]);
   });
 });
 

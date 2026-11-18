@@ -445,7 +445,7 @@
     },
     {
       "path": "src/content/collections-event-report.test.ts",
-      "sha256": "346c7c5ebeb55269792e7b9574d6da7c73f3ad3ac3e3349ae5d9896cb0060558",
+      "sha256": "1b3a96c440993faf2ad22c02e5d6b6fb25377d765334e8e858288f6016f9d819",
       "group": "course"
     },
     {
@@ -665,7 +665,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "36a18bedfcf1c1665158e4000b4a4fd44588e1c47fa030683f30eaa046b38746",
+      "sha256": "e68a2ab6d39a28fac77c998271fabfc2f3fb2d5fae27358890107605af00e5e7",
       "group": "course"
     },
     {
@@ -731,6 +731,11 @@
     {
       "path": "src/content/fixtures/initialized-prefix-observations.json",
       "sha256": "b3cc91ea1b4589047e456095cba412b785314fbd513b49eaa964bfa115bece69",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/log-analyzer-recall-delta.json",
+      "sha256": "36f61eedc7f5df44fd738b558f33863204e2e740199defbbac11269064270ccc",
       "group": "course"
     },
     {
@@ -969,8 +974,13 @@
       "group": "course"
     },
     {
+      "path": "src/content/log-analyzer-recall.test.ts",
+      "sha256": "15f30e6d367ea72b4ee274fee75ecc9c10a1ceca973e22ca6589784b206317ae",
+      "group": "course"
+    },
+    {
       "path": "src/content/log-analyzer.ts",
-      "sha256": "86f46a21bdd95d387508ac6e596685c541a513f04ba0b193f2c0fb74e3dbdcd7",
+      "sha256": "fe7280d54cb95421660ee63627cbd7db21f8609b6c6a4fb45deae586d0f88170",
       "group": "course"
     },
     {
@@ -1070,7 +1080,7 @@
     },
     {
       "path": "src/content/ownership-borrow-decision-compatibility.test.ts",
-      "sha256": "3d145a63bf92c077f1752e0f16d6f45937e0b4a15a3ad3f12c6cff0c27c2b675",
+      "sha256": "1cf0cf8a7e5e46900953f6a5abeee1e9037af9fc27e7620b2958ff61b5218578",
       "group": "course"
     },
     {
@@ -1965,12 +1975,12 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "bebb97d0ff2e0defda03863dbadfa723d930587237ddf252be0be7e8626a5be7",
+      "sha256": "973fc5a5fcba0601dda1133c79df7f7897f8330b0f25cc0c8daed8290ca8a322",
       "group": "course"
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility.test.ts",
-      "sha256": "1cc366b4272886cb6afce725f7d0d00aa9846486148aef21e6d602663e7c03c4",
+      "sha256": "8a5a31fbb2cc1f2cd33c3e87d5768efed9fafe12b2cbda00ad0106d99e20535b",
       "group": "course"
     },
     {

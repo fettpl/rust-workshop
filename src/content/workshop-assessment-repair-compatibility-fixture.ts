@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import logRecallDelta from "./fixtures/log-analyzer-recall-delta.json";
 import eventReportDelta from "./fixtures/collections-event-report-delta.json";
 import tokioShutdownDelta from "./fixtures/tokio-shutdown-gates-delta.json";
 import delta from "./fixtures/workshop-assessment-repair-delta.json";
@@ -191,13 +192,27 @@ function restoreReviewedLessons(
   return result;
 }
 
+/** Reverses only the reviewed fields of the three Log Analyzer recall questions. */
+export function restoreLogAnalyzerRecallLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, logRecallDelta);
+}
+
 /** Projects the reviewed event-report addition back to its predecessor catalog. */
 export function restoreCollectionsEventLessons(
   lessons: Lesson[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  return restoreReviewedLessons(lessons, replacements, matches, eventReportDelta);
+  return restoreReviewedLessons(
+    restoreLogAnalyzerRecallLessons(lessons, replacements, matches),
+    replacements,
+    matches,
+    eventReportDelta,
+  );
 }
 
 /** Removes only the exact authored Tokio transfer practice at its appended position. */

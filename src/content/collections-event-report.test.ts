@@ -9,7 +9,10 @@ import {
   hashRegistryValue,
   matchesRegistryValue,
 } from "./file-schema-evolution-compatibility-fixture";
-import { restoreCollectionsEventLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import {
+  restoreCollectionsEventLessons,
+  restoreLogAnalyzerRecallLessons,
+} from "./workshop-assessment-repair-compatibility-fixture";
 
 const lesson = lessons.find((item) => item.id === "hashmap-and-entry")!;
 const exercise = lesson.steps.at(-1)!;
@@ -128,7 +131,12 @@ it("appends the exercise without shifting historical steps or hiding other edits
   expect(exercise.id).toBe("events-report-regression");
   const restore = (catalog: typeof lessons) =>
     restoreCollectionsEventLessons(catalog, new Map(), matchesRegistryValue);
-  const restored = restore(lessons);
+  const previous = restoreLogAnalyzerRecallLessons(
+    lessons,
+    new Map(),
+    matchesRegistryValue,
+  );
+  const restored = restore(previous);
   expect(hashRegistryValue(restored)).toBe(
     "4c2917681583247dc05680516b2cde81e24937521d94cec127e4d86e1fd4d145",
   );
@@ -138,7 +146,7 @@ it("appends the exercise without shifting historical steps or hiding other edits
       expect(item).toEqual({ ...lesson, steps: lesson.steps.slice(0, 8) });
       item.steps.forEach((step, i) => expect(step).toBe(lesson.steps[i]));
     } else {
-      expect(item).toBe(lessons[index]);
+      expect(item).toBe(previous[index]);
     }
   });
   for (const steps of [
@@ -146,7 +154,7 @@ it("appends the exercise without shifting historical steps or hiding other edits
     [exercise, ...lesson.steps.slice(0, -1)],
     [...lesson.steps, exercise],
   ]) {
-    const changed = lessons.map((item) =>
+    const changed = previous.map((item) =>
       item === lesson ? { ...lesson, steps } : item,
     );
     expect(restore(changed)).toBe(changed);

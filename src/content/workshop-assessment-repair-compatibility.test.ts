@@ -3,7 +3,10 @@ import { expect, it } from "vitest";
 import * as course from "./course";
 import delta from "./fixtures/workshop-assessment-repair-delta.json";
 import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
-import { restoreWorkshopAssessmentLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import {
+  restoreWorkshopAssessmentLessons,
+  restoreLogAnalyzerRecallLessons,
+} from "./workshop-assessment-repair-compatibility-fixture";
 import {
   historicalBeforeA12,
   matchesRegistryValue,
@@ -13,8 +16,13 @@ const hash = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 it("restores the immutable audited predecessor using only reviewed field deltas", () => {
   const before = hash(course.lessons);
-  const restored = restoreWorkshopAssessmentLessons(
+  const previous = restoreLogAnalyzerRecallLessons(
     course.lessons,
+    new Map(),
+    matchesRegistryValue,
+  );
+  const restored = restoreWorkshopAssessmentLessons(
+    previous,
     new Map(),
     matchesRegistryValue,
   );
@@ -33,7 +41,7 @@ it("restores the immutable audited predecessor using only reviewed field deltas"
       !changed.has(lesson.id) &&
       !["tokio-graceful-shutdown", "hashmap-and-entry"].includes(lesson.id)
     )
-      expect(lesson).toBe(course.lessons[index]);
+      expect(lesson).toBe(previous[index]);
   });
 });
 it("preserves unrelated descriptors and reverses only the exact known fields", () => {

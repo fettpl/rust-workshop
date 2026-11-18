@@ -42,27 +42,21 @@ function choice(
   };
 }
 
-function answer(
+function recall(
   id: string,
-  kind: LessonStep["kind"],
   title: string,
   prompt: string,
-  accepted: string[],
+  criteria: string[],
   solution: string,
-  evidenceKind: LessonStep["evidenceKind"] = "recall",
 ): LessonStep {
   return {
     id,
-    kind,
+    kind: "recall",
     title,
     prompt,
     solution,
-    evaluator: {
-      kind: "answer",
-      accepted,
-      feedback: "Porównaj odpowiedź z kontraktem i uzasadnij wybór granicy.",
-    },
-    evidenceKind,
+    evaluator: { kind: "rubric", criteria },
+    evidenceKind: "self-rating",
   };
 }
 
@@ -878,14 +872,15 @@ export const logAnalyzerLessons: Lesson[] = [
         recordTests,
         "fix",
       ),
-      answer(
+      recall(
         "records-recall",
-        "recall",
         "Przypomnij granicę parsera",
-        "Co należy zachować, a co zwalidować w komunikacie?",
-        ["Zachować dokładną prawą część, ale odrzucić pustą po trim"],
+        "Poziom logu i komunikat rozdziela jedna spacja. Co parser powinien zwrócić, gdy sam komunikat zaczyna się lub kończy spacjami? Co zrobi, gdy po separatorze są wyłącznie białe znaki? Uzasadnij oba przypadki własnymi słowami.",
+        [
+          "Wyjaśniam, że poprawny komunikat obejmuje całą treść po separatorze, razem ze spacjami na brzegach.",
+          "Rozróżniam sprawdzenie pustki od zmiany treści. Brak treści lub same białe znaki oznaczają błąd.",
+        ],
         "Zachowaj dokładną prawą część po separatorze, sprawdzając tylko, czy nie jest pusta po trim.",
-        "recall",
       ),
       choice(
         "records-apply",
@@ -1025,16 +1020,16 @@ export const logAnalyzerLessons: Lesson[] = [
         streamTests,
         "fix",
       ),
-      answer(
+      recall(
         "stream-recall",
-        "recall",
         "Przypomnij kolejność decyzji",
-        "W jakiej kolejności obsłużyć pojedynczy wiersz?",
+        "Włączono filtr WARN. Czytnik otrzymał kolejno uszkodzony wiersz, poprawny INFO i poprawny WARN. Opisz własnymi słowami drogę od odczytu wiersza do zmiany liczników. Uwzględnij też ostatni wiersz pliku bez znaku nowej linii.",
         [
-          "Odetnij zakończenie, zwaliduj, zwiększ malformed przy błędzie, potem zastosuj filtr i licznik",
+          "Usuwam zakończenie wiersza LF lub CRLF, jeśli występuje. Ostatni wiersz bez zakończenia również przekazuję do walidacji.",
+          "Sprawdzam poprawność całego rekordu przed filtrowaniem. Uszkodzony wiersz zwiększa licznik malformed także przy aktywnym filtrze.",
+          "Filtr stosuję do poprawnych rekordów. W tym przykładzie INFO pomijam, a WARN zwiększa swój licznik.",
         ],
         "Najpierw odetnij zakończenie linii i zwaliduj; błąd zwiększa malformed, a poprawny rekord dopiero potem przechodzi przez filtr i licznik.",
-        "recall",
       ),
       choice(
         "stream-apply",
@@ -1174,14 +1169,16 @@ export const logAnalyzerLessons: Lesson[] = [
         metricsTests,
         "fix",
       ),
-      answer(
+      recall(
         "report-recall",
-        "recall",
         "Przypomnij raport",
-        "Jaką własność musi mieć końcowy raport, aby test porównujący cały String był wiarygodny?",
-        ["Stały format: kolejność, nazwy, wartości zerowe i końcowy LF"],
+        "Dwa uruchomienia mają te same liczniki i ten sam filtr. Jeden raport pomija wiersz z zerem, a drugi ma wszystkie wiersze, ale urywa się tuż po ostatniej cyfrze. Wyjaśnij własnymi słowami, dlaczego test porównujący cały tekst może odrzucić oba wyniki. Jakie reguły zapewniają powtarzalność raportu?",
+        [
+          "Uwzględniam ustalony nagłówek, etykietę filtra oraz nazwy i kolejność pól.",
+          "Wyjaśniam, dlaczego wiersz z licznikiem równym zero także należy do raportu.",
+          "Uwzględniam znak nowej linii LF na końcu każdego wiersza, również ostatniego.",
+        ],
         "Cały String jest wiarygodnym wynikiem, gdy format ma stałą kolejność, zachowuje nazwy i zera oraz kończy się umówionym LF.",
-        "recall",
       ),
       {
         id: "report-blank",

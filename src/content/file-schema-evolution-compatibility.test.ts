@@ -1,3 +1,4 @@
+import logRecallDelta from "./fixtures/log-analyzer-recall-delta.json";
 import assessmentDelta from "./fixtures/workshop-assessment-repair-delta.json";
 import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
 import { expect, it } from "vitest";
@@ -87,6 +88,7 @@ it("preserves original references, aliases, unknown properties and explicit unde
   expect(result.project).toBe(input.project);
   expect(result.reviewExerciseForId).toBe(input.reviewExerciseForId);
   const repairedLessons = new Set([
+    ...logRecallDelta.restorations.map((entry) => entry.lessonId),
     ...assessmentDelta.restorations.map((entry) => entry.lessonId),
     ...ownershipDecisionDelta.restorations.map((entry) => entry.lessonId),
   ]);
