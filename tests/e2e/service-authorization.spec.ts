@@ -540,7 +540,7 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
   state.settings.accessibleEditor = false;
   await page.goto("/");
   await seedState(page, state);
-  // Exercise both overview duration branches in the actual 390px DOM.
+  // The mobile dashboard and lesson cards use authored steps instead of time estimates.
   await page
     .getByRole("button", { name: "Otwórz nawigację", exact: true })
     .click();
@@ -553,7 +553,10 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
   );
   const continuationMeta = continuation.locator(".continue-meta");
   await expect(continuationMeta).toBeVisible();
-  await expect(continuationMeta).toHaveText("Krok 1 z 6");
+  await expect(continuationMeta.locator("span")).toHaveText("Krok 1 z 6");
+  await expect(continuationMeta.locator("strong")).toHaveText(
+    courseLesson("binding").steps[0].title,
+  );
   await expect(continuationMeta).not.toContainText(/\bmin\b|[·•]/);
   await expect(continuationMeta.locator("svg")).toHaveCount(0);
   await page
@@ -644,6 +647,7 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+  await expect.poll(async () => (await savedState(page)).resume.panel).toBe("output");
   await page.reload();
   await expect(output).toHaveAttribute("aria-selected", "true");
   expectNoIndependent(await savedState(page));

@@ -57,7 +57,6 @@ export function Onboarding({ onStart }: { onStart: () => void }) {
           </div>
         </section>
         <section className="welcome-panel">
-          <span className="section-number">01 / PUNKT WYJŚCIA</span>
           <h2>Urządź swój warsztat</h2>
           <p>
             Bez konta. Kod i postęp zostają na tym urządzeniu. Wykonanie kodu
@@ -78,26 +77,6 @@ export function Onboarding({ onStart }: { onStart: () => void }) {
               }
             />
           </label>
-          <fieldset>
-            <legend>Ile czasu masz na jedną sesję?</legend>
-            <div className="segmented">
-              {[10, 15, 20].map((v) => (
-                <button
-                  key={v}
-                  aria-pressed={state.onboarding.minutes === v}
-                  className={state.onboarding.minutes === v ? "selected" : ""}
-                  onClick={() =>
-                    update((s) => ({
-                      ...s,
-                      onboarding: { ...s.onboarding, minutes: v },
-                    }))
-                  }
-                >
-                  {v} min
-                </button>
-              ))}
-            </div>
-          </fieldset>
           <button
             className="primary wide"
             onClick={() => {
@@ -111,7 +90,8 @@ export function Onboarding({ onStart }: { onStart: () => void }) {
             Sprawdź punkt startowy <ArrowRight size={18} />
           </button>
           <p className="micro">
-            4 krótkie działania · bez ocen i blokowania lekcji
+            Sprawdzisz podstawy przed pierwszą lekcją. Wszystkie lekcje są
+            dostępne.
           </p>
         </section>
       </div>

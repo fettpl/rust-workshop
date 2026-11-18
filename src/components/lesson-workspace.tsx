@@ -416,7 +416,7 @@ export function LessonWorkspace() {
           <Bookmark size={18} />
         </button>
       </div>
-      <div className="step-navigation" aria-label="Kroki lekcji">
+      <nav className="step-navigation" aria-label="Kroki lekcji">
         {lesson.steps.map((item, i) => (
           <button
             key={item.id}
@@ -425,17 +425,19 @@ export function LessonWorkspace() {
             disabled={pending}
             onClick={() => navigateStep(i)}
           >
-            <span>
+            <span
+              aria-hidden={lesson.id === "first-program" ? true : undefined}
+            >
               {state.steps[stepKey(lesson.id, item.id)]?.completed ? (
                 <Check size={13} />
               ) : (
                 String(i + 1).padStart(2, "0")
               )}
             </span>
-            {kindLabels[item.kind]}
+            {lesson.id === "first-program" ? item.title : kindLabels[item.kind]}
           </button>
         ))}
-      </div>
+      </nav>
       <ProgressLine
         value={(100 * (index + 1)) / lesson.steps.length}
         label="Pozycja w lekcji"
@@ -517,7 +519,9 @@ export function LessonWorkspace() {
                     (candidate) => candidate.id === stop.afterStepId,
                   );
                   const boundaryStep =
-                    boundaryIndex >= 0 ? lesson.steps[boundaryIndex] : undefined;
+                    boundaryIndex >= 0
+                      ? lesson.steps[boundaryIndex]
+                      : undefined;
                   return (
                     <li key={stop.afterStepId}>
                       <strong>{stop.title}</strong>{" "}

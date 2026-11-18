@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
-  Clock,
   Check,
   GitBranch,
   Terminal,
@@ -43,6 +42,7 @@ import { ProjectPackage } from "./project-package";
 import { LearningText } from "./learning-text";
 import { ModulePicker } from "./module-picker";
 import {
+  mapModeForModule,
   normalizeMapPreference,
   recommendedModuleIds,
   type CourseMapMode,
@@ -96,6 +96,13 @@ export function Dashboard() {
     )
     .slice(0, 3);
   const progress = lessonProgress(lesson, state.steps);
+  const stepIndex = Math.min(state.resume.stepIndex, lesson.steps.length - 1);
+  const currentStep = lesson.steps[stepIndex];
+  const isResuming =
+    progress > 0 ||
+    stepIndex > 0 ||
+    state.resume.panel !== "lesson" ||
+    Boolean(state.steps[stepKey(lesson.id, currentStep.id)]);
   const activeModule = modules.find((module) => module.id === lesson.moduleId)!;
   const open = useOpenLesson();
   const moduleConcepts = concepts.filter((concept) =>
@@ -138,41 +145,29 @@ export function Dashboard() {
               : "Dobrze Cię widzieć."}
           </h1>
         </div>
-        <span className="session-chip">
-          <Clock size={15} />
-          {state.onboarding.minutes} min dla siebie
-        </span>
       </div>
-      <p className="lede">
-        {Object.keys(state.steps).length
-          ? "Wracamy dokładnie do miejsca, w którym przerwano naukę."
-          : "Zacznij od małego programu. Każdy kolejny krok sprawdzisz w praktyce."}
-      </p>
-      <section className="continue-panel">
+      <section className="continue-panel" aria-labelledby="continue-title">
         <div className="continue-copy">
-          <Eyebrow>KOLEJNY MAŁY KROK</Eyebrow>
-          <span className="lesson-index">{activeModule.title}</span>
-          <h2>{lesson.title}</h2>
-          <p>{lesson.subtitle}</p>
+          <span className="lesson-index">
+            {mapModeForModule(activeModule.id) === "core"
+              ? "Ścieżka główna"
+              : "Rozszerzenie"}
+            {" · "}
+            {activeModule.title}
+          </span>
+          <h2 id="continue-title">{lesson.title}</h2>
+          <p>
+            <LearningText>{lesson.outcomes[0] ?? lesson.subtitle}</LearningText>
+          </p>
           <div className="continue-meta">
-            {lesson.minutes !== undefined ? (
-              <>
-                <Clock size={15} />
-                {lesson.minutes} min<span>·</span>
-              </>
-            ) : null}
-            Krok{" "}
-            {Math.min(state.resume.stepIndex + 1, lesson.steps.length)} z{" "}
-            {lesson.steps.length}
+            <span>
+              Krok {stepIndex + 1} z {lesson.steps.length}
+            </span>
+            <strong>{currentStep.title}</strong>
           </div>
-          <button
-            className="primary"
-            onClick={() =>
-              update((s) => ({ ...s, resume: { ...s.resume, view: "lesson" } }))
-            }
-          >
-            {progress ? "Kontynuuj naukę" : "Wejdź do lekcji"}
-            <ArrowRight size={18} />
+          <button className="primary" onClick={() => open(lesson.id)}>
+            {isResuming ? "Kontynuuj naukę" : "Wejdź do lekcji"}
+            <ArrowRight size={18} aria-hidden="true" />
           </button>
         </div>
         <div className="session-outline">
@@ -186,10 +181,8 @@ export function Dashboard() {
             {lesson.steps.map((step, i) => (
               <li key={step.id}>
                 <button
-                  className={`session-step ${i === state.resume.stepIndex ? "current" : ""}`}
-                  aria-current={
-                    i === state.resume.stepIndex ? "step" : undefined
-                  }
+                  className={`session-step ${i === stepIndex ? "current" : ""}`}
+                  aria-current={i === stepIndex ? "step" : undefined}
                   onClick={() => open(lesson.id, i)}
                 >
                   <span className="session-step-number">
@@ -200,7 +193,7 @@ export function Dashboard() {
                     )}
                   </span>
                   <span>{step.title}</span>
-                  {i === state.resume.stepIndex && <ArrowRight size={16} />}
+                  {i === stepIndex && <ArrowRight size={16} />}
                 </button>
               </li>
             ))}
@@ -567,12 +560,6 @@ export function CourseMap() {
                 <span className="lesson-completion">
                   {completed}/{lesson.steps.length} kroków
                 </span>
-                {lesson.minutes !== undefined ? (
-                  <span className="time">
-                    <Clock size={14} />
-                    {lesson.minutes} min
-                  </span>
-                ) : null}
                 <ArrowRight size={19} />
               </button>
             );
@@ -816,7 +803,9 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
           {project.learnerInstruction.followUp && (
             <details className="learner-instruction-followup">
               <summary>
-                <LearningText>{project.learnerInstruction.followUp.title}</LearningText>
+                <LearningText>
+                  {project.learnerInstruction.followUp.title}
+                </LearningText>
               </summary>
               {project.learnerInstruction.followUp.summary && (
                 <p>

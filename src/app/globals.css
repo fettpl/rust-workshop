@@ -803,10 +803,6 @@ button svg {
 .continue-copy {
   padding: 30px 32px;
 }
-.continue-copy .eyebrow {
-  font-size: 0.74rem;
-  margin-bottom: 26px;
-}
 .lesson-index {
   font-size: 0.74rem;
   color: var(--muted);
@@ -825,12 +821,15 @@ button svg {
   line-height: 1.75;
 }
 .continue-meta {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  display: grid;
+  gap: 4px;
   font-size: 0.8rem;
   color: var(--muted);
-  margin: 25px 0 18px;
+  margin: 20px 0 18px;
+}
+.continue-meta strong {
+  color: var(--text);
+  font-size: 1rem;
 }
 .ownership-preview {
   padding: 33px 26px;
@@ -1390,14 +1389,6 @@ button svg {
   font-size: 0.78rem;
   white-space: nowrap;
   color: var(--muted);
-}
-.time {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--muted);
-  font-size: 0.78rem;
-  white-space: nowrap;
 }
 .gate-panel {
   margin-top: 35px;
@@ -2734,9 +2725,6 @@ button svg {
   .lesson-list-item > div {
     flex: 1;
     min-width: 180px;
-  }
-  .lesson-list-item .time {
-    display: none;
   }
   .lesson-list-item .lesson-completion {
     display: none;
