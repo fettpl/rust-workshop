@@ -446,6 +446,25 @@ fn zero_for_none(values: &[i32]) -> Option<i32> {
     Some(values.iter().copied().find(|value| value % 2 == 0).unwrap_or(0))
 }
 
+fn zero_for_empty(values: &[i32]) -> Option<i32> {
+    if values.is_empty() { Some(0) } else { first_even(values) }
+}
+fn only_checks_head(values: &[i32]) -> Option<i32> {
+    values.first().copied().filter(|value| value % 2 == 0)
+}
+
+#[test]
+fn rejects_wrong_result_for_empty_input() {
+    assert!(std::panic::catch_unwind(|| assert_first_even_contract(zero_for_empty)).is_err(),
+        "Sprawdź, czy funkcja dla pustej listy zwraca None.");
+}
+
+#[test]
+fn rejects_stopping_at_the_first_odd_value() {
+    assert!(std::panic::catch_unwind(|| assert_first_even_contract(only_checks_head)).is_err(),
+        "Sprawdź wynik dla listy, w której pierwsza parzysta liczba pojawia się po nieparzystej.");
+}
+
 #[test]
 fn first_even_contract_accepts_real_implementation() {
     assert!(std::panic::catch_unwind(|| assert_first_even_contract(first_even)).is_ok());
@@ -810,7 +829,7 @@ fn main() {
         kind: "blank",
         title: "Od zera: kontrakt pierwszego parzystego",
         prompt:
-          "Napisz od pustej kartki funkcję assert_first_even_contract, która otrzymuje funkcję przyjmującą pożyczoną listę i32 i zwracającą Option<i32> z pierwszą parzystą wartością. Twój helper ma zwracać () i zgłaszać niezgodności asercjami. Musi sprawdzić pustkę, pierwsze dopasowanie, dopasowanie na początku i brak dopasowania. Testy odrzucają wybranie ostatniego elementu oraz zamianę None na Some(0).",
+          "Napisz od pustej kartki funkcję assert_first_even_contract, która otrzymuje funkcję przyjmującą pożyczoną listę i32 i zwracającą Option<i32> z pierwszą parzystą wartością. Twój helper ma zwracać () i zgłaszać niezgodności asercjami. Samodzielnie dobierz dane i oczekiwany wynik dla czterech sytuacji: pusta lista, pierwsza liczba parzysta po jednej lub kilku nieparzystych, liczba parzysta na początku oraz niepusta lista samych nieparzystych. Gdy lista zawiera kilka różnych liczb parzystych, sprawdź, którą funkcja zwraca.",
         solution: qualityGateTwoSolution,
         tests: qualityGateTwoTests,
         hints: [

@@ -1,0 +1,30 @@
+{
+  "baseline": {
+    "sha": "ea471076c0169ff6221387aebac248d0a83abe0e",
+    "lessonsSha256": "20ac4becc3359a4a4951a843b32e247df5810badb28b4cdc6e89e214e6054d89"
+  },
+  "restorations": [
+    {
+      "lessonId": "testing-quality-workflow",
+      "stepId": "quality-blank-gate",
+      "path": [
+        "prompt"
+      ],
+      "before": "Napisz od pustej kartki funkcję assert_first_even_contract, która otrzymuje funkcję przyjmującą pożyczoną listę i32 i zwracającą Option<i32> z pierwszą parzystą wartością. Twój helper ma zwracać () i zgłaszać niezgodności asercjami. Musi sprawdzić pustkę, pierwsze dopasowanie, dopasowanie na początku i brak dopasowania. Testy odrzucają wybranie ostatniego elementu oraz zamianę None na Some(0).",
+      "beforeSha256": "be7e598462088e7ada350596f21279ef2fb6afee5208e42dbb8cd5f304e424f5",
+      "successorSha256": "3581b0cedbd933b432f8a05835dc956ba9035ebcacac8e6eb781a0a0ed939f8f"
+    },
+    {
+      "lessonId": "testing-quality-workflow",
+      "stepId": "quality-blank-gate",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "\nfn first_even(values: &[i32]) -> Option<i32> {\n    values.iter().copied().find(|value| value % 2 == 0)\n}\nfn last_even(values: &[i32]) -> Option<i32> {\n    values.iter().rev().copied().find(|value| value % 2 == 0)\n}\nfn skips_first(values: &[i32]) -> Option<i32> {\n    values.iter().skip(1).copied().find(|value| value % 2 == 0)\n}\nfn odd_fallback(values: &[i32]) -> Option<i32> {\n    first_even(values).or_else(|| values.first().copied())\n}\nfn zero_for_none(values: &[i32]) -> Option<i32> {\n    Some(values.iter().copied().find(|value| value % 2 == 0).unwrap_or(0))\n}\n\n#[test]\nfn first_even_contract_accepts_real_implementation() {\n    assert!(std::panic::catch_unwind(|| assert_first_even_contract(first_even)).is_ok());\n}\n\n#[test]\nfn first_even_contract_rejects_order_and_empty_mutants() {\n    assert!(std::panic::catch_unwind(|| assert_first_even_contract(last_even)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_first_even_contract(zero_for_none)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_first_even_contract(skips_first)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_first_even_contract(odd_fallback)).is_err());\n}",
+      "beforeSha256": "a4a3dc97cfc0095a45f0c50efb92534b25700805afdfbde4cc5725d0bf2ab3e9",
+      "successorSha256": "fbcafdaaca807249129bb857db4420cec36f0c4720b0d5a042bdb3a900bc8c1b"
+    }
+  ],
+  "appendedSteps": []
+}

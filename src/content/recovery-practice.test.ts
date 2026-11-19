@@ -272,3 +272,33 @@ it("restores the original iterator review through both registry aliases", () => 
   expect(historical.reviewAlias).toBe(historical.reviewExercisesById[live.id]);
   expect(hashRegistryValue(historical.reviewAlias)).toBe(exerciseDelta.review.beforeSha256);
 });
+
+const firstEvenExercise = step("quality-blank-gate");
+const firstEvenCases = {
+  empty: "assert_eq!(candidate(&[]), None);",
+  delayed: "assert_eq!(candidate(&[7, -3, -8, 6]), Some(-8));",
+  initial: "assert_eq!(candidate(&[2, 4]), Some(2));",
+  absent: "assert_eq!(candidate(&[1, -3]), None);",
+};
+
+function firstEvenHelper(assertions: string[]) {
+  return `fn assert_first_even_contract(candidate: fn(&[i32]) -> Option<i32>) {
+    ${assertions.join("\n    ")}
+}`;
+}
+
+it.each(Object.keys(firstEvenCases))(
+  "first-even assessment rejects a learner suite missing the %s case",
+  (omitted) => {
+    const remaining = Object.entries(firstEvenCases)
+      .filter(([name]) => name !== omitted)
+      .map(([, assertion]) => assertion);
+    checkRust(firstEvenHelper(remaining), testsOf(firstEvenExercise), false);
+  },
+);
+
+it("first-even assessment accepts independent cases and the published solution", () => {
+  const tests = testsOf(firstEvenExercise);
+  checkRust(firstEvenHelper(Object.values(firstEvenCases)), tests, true);
+  checkRust(firstEvenExercise.solution!, tests, true);
+});

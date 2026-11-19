@@ -665,7 +665,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "71c0a9111ad1ede5005af460a03a531b691749458053e72d0871413c7786bef6",
+      "sha256": "5292e0418b42b688d184cc9199d2901cbceb4bc1a177527e4c3f1dd251bf940c",
       "group": "course"
     },
     {
@@ -721,6 +721,11 @@
     {
       "path": "src/content/fixtures/existing-contract-pre-c1-projection.json",
       "sha256": "d49d21164e4c1d1d9c325423cc5051785f9aa181163bb44ca53f26d567b1002b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/first-even-assessment-delta.json",
+      "sha256": "9de242257eabe44be70aa88d129da4e02e070d9e5841b3d84575c12ce74df6db",
       "group": "course"
     },
     {
@@ -1495,7 +1500,7 @@
     },
     {
       "path": "src/content/recovery-practice.test.ts",
-      "sha256": "967bd84e94a12addf023ed7d2e94356f89b1141ed9cffa3d750703612d703391",
+      "sha256": "80a8ccf4a1a0fb75fdb02c4f4691ba36c3c240921a9a455d463c77f2e94bfb3c",
       "group": "course"
     },
     {
@@ -1680,7 +1685,7 @@
     },
     {
       "path": "src/content/testing.ts",
-      "sha256": "44a56eefdfde3213159962166fdc34d09075efeb9987f347dea6a958ea83b6b7",
+      "sha256": "9485a11ef9864125fbbb6f485ebba478b063d4c1a51e53cb94c218ffb1a79ed0",
       "group": "course"
     },
     {
@@ -2000,7 +2005,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "25260d910e5fd83697f8fd938a222a61066f8f87e32b53949b69c068be0f4ec2",
+      "sha256": "7ff9683649c174a73563428d559456d2fe6468830e20f3a1364107b9096dd19d",
       "group": "course"
     },
     {

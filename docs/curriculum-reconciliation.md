@@ -213,3 +213,9 @@ The three contracts now include repeated values and check reference identity at 
 The percentage exercise now accepts every integer in the inclusive range from 0 to 100 in its Rust tests. The iterator pipeline must preserve a nonmonotonic sequence of UTF-8 byte lengths. The log-filter exercise and the scheduled parcel review compare every returned view with its specific input occurrence, including equal text stored in different strings. The even-count exercise calls the function with an interior slice of an array.
 
 Regression tests run each previously accepted incorrect implementation and its reference solution against the registered exercise. Four incorrect programs fail a behavioral assertion. A function restricted to a borrowed Vec fails to type-check at the slice call. The lesson and review IDs stay stable, and earlier learner attempts retain their original meaning.
+
+## Learner-authored tests for the first even value, 19 November 2026
+
+A follow-up inspection compared the testing module's guided exercises, scheduled practice and final blank assessment. The final assessment asks learners to write a test suite for finding the first even number. We prioritized it because learners could receive credit for their test design while omitting empty input entirely or while never searching past an odd first element. Both incomplete suites passed the previous Rust evaluator.
+
+The learner now chooses concrete values for four explicit situations. The evaluator runs the learner's suite against a correct implementation and includes separate incorrect implementations for returning zero on empty input and looking only at the first element. Existing checks still distinguish first from last, a match at the start, and a nonempty list with no match. Regression tests omit each required situation individually and accept a complete suite with different data from the published solution. Existing progress IDs and the historical lesson projection are preserved.

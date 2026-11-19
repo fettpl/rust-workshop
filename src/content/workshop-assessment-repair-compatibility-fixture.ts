@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import firstEvenDelta from "./fixtures/first-even-assessment-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryPracticeDelta from "./fixtures/recovery-practice-delta.json";
 import foundationsRangeDelta from "./fixtures/foundations-range-gate-delta.json";
@@ -200,8 +201,9 @@ export function restoreRecoveryPracticeLessons(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
+  const beforeFirstEven = restoreReviewedLessons(lessons, replacements, matches, firstEvenDelta);
   return restoreReviewedLessons(
-    restoreReviewedLessons(lessons, replacements, matches, exerciseDelta),
+    restoreReviewedLessons(beforeFirstEven, replacements, matches, exerciseDelta),
     replacements,
     matches,
     recoveryPracticeDelta,
