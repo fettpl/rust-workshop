@@ -42,7 +42,7 @@ const conceptId = "file-version-meaning";
 const competencyId = "file-identity-evolution";
 const family = "file-schema-evolution/normalize-v1";
 
-it("appends the two six-step lessons and the one-family gate", () => {
+it("preserves both lesson prefixes and adds a distinct current-snapshot gate alternative", () => {
   const courseModule = course.modules.find(({ id }) => id === moduleId);
   expect(courseModule?.lessonIds).toEqual([normalizeId, upgradeId]);
   expect(courseModule?.prerequisites).toEqual(["todo-io"]);
@@ -61,6 +61,7 @@ it("appends the two six-step lessons and the one-family gate", () => {
       taskRefs: [
         { lessonId: normalizeId, stepId: "schema-normalize-apply" },
         { lessonId: normalizeId, stepId: "schema-normalize-blank" },
+        { lessonId: normalizeId, stepId: "schema-validate-current-snapshot" },
       ],
       requiredIndependentCodingTasks: 1,
     },
@@ -79,6 +80,7 @@ it("appends the two six-step lessons and the one-family gate", () => {
         "schema-normalize-apply",
         "schema-normalize-blank",
         "schema-normalize-recall",
+        "schema-validate-current-snapshot",
       ],
     ],
     [
@@ -254,7 +256,11 @@ it.each([
     expectFamily(switched, false);
     expect(courseMastery(switched, conceptId).level).not.toBe("understood");
     expect(courseGateRecovery(switched, criterion, scopedLessons)).toEqual({
-      status: "exhausted",
+      status: "available",
+      task: {
+        lessonId: normalizeId,
+        stepId: "schema-validate-current-snapshot",
+      },
     });
   },
 );
@@ -282,11 +288,16 @@ it("keeps ordinary review apart from primary credit and resolves its revealed se
     });
     expectFamily(attempted, false);
     expect(courseGateRecovery(attempted, criterion, scopedLessons)).toEqual({
-      status: "exhausted",
+      status: "available",
+      task: {
+        lessonId: normalizeId,
+        stepId: "schema-validate-current-snapshot",
+      },
     });
-    expect(
-      courseNextGateTask(attempted, criterion, scopedLessons),
-    ).toBeUndefined();
+    expect(courseNextGateTask(attempted, criterion, scopedLessons)).toEqual({
+      lessonId: normalizeId,
+      stepId: "schema-validate-current-snapshot",
+    });
   }
   const applied = submit(initial, normalization, apply, at);
   const later = submit(
@@ -375,7 +386,7 @@ it("records only the real solution refs and round trips controlled history, date
   expect(project.reviewConceptIds).toEqual([conceptId]);
   const workshop = project.package!;
   expect(workshop.id).toBe("file-schema-evolution-workshop");
-  expect(workshop.revealStepRefs).toEqual(criterion.taskRefs);
+  expect(workshop.revealStepRefs).toEqual(criterion.taskRefs.slice(0, 2));
   expect(workshop.starterRevealStepRefs).toEqual([]);
   const initial = createInitialState();
   const previous = course.lessons.find(
@@ -436,7 +447,7 @@ it("records only the real solution refs and round trips controlled history, date
   const additions = exposed.events.slice(history.events.length);
   expect(
     additions.map(({ lessonId, stepId }) => ({ lessonId, stepId })),
-  ).toEqual(criterion.taskRefs);
+  ).toEqual(workshop.revealStepRefs);
   for (const event of additions)
     expect(event).toMatchObject({
       revealed: true,
@@ -553,7 +564,10 @@ it("keeps the displayed Rust limited to the normalization API and tracks all ass
     ...scopedLessons.flatMap((lesson) => lesson.steps),
     review,
   ]) {
-    if (![apply, blank, review].includes(step)) {
+    if (
+      ![apply, blank, review].includes(step) &&
+      step.id !== "schema-validate-current-snapshot"
+    ) {
       expect(step.code).toBeUndefined();
       expect(step.solution).toBeUndefined();
       expect(step.prompt).not.toContain("fn normalize");

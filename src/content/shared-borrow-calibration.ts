@@ -1,3 +1,4 @@
+import { sharedCharacterCountRecovery } from "./counted-family-recovery";
 import type { Lesson, LessonStep } from "../domain/types";
 import {
   delayedSharedCountLinesContract,
@@ -145,6 +146,7 @@ export const sharedBorrowCalibrationLesson: Lesson = {
       },
       evidenceKind: "self-rating",
     },
+    sharedCharacterCountRecovery,
   ],
   misconceptions: [
     "Przekazanie &String do funkcji oczekującej &str przenosi właściciela.",

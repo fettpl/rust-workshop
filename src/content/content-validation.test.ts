@@ -332,22 +332,6 @@ describe("curriculum content contract", () => {
     expect(lessons.length).toBeGreaterThanOrEqual(6);
     expect(ownershipModule.lessonIds.length).toBeLessThanOrEqual(10);
     expect(
-      lessons.every(
-        (lesson) =>
-          (lesson.steps.length >= 5 && lesson.steps.length <= 9) ||
-          (lesson.id === "nested-patterns-and-destructuring" &&
-            lesson.steps.length === 11 &&
-            lesson.sessionStops?.length === 2) ||
-          (lesson.id === "unsafe-miri-mut-slot" &&
-            lesson.steps.length === 11 &&
-            lesson.steps[10]?.id === "mut-slot-pair-reborrow-transfer" &&
-            lesson.steps[8]?.id === "mut-slot-with-mut-model" &&
-            lesson.steps[9]?.id === "mut-slot-with-mut-transfer" &&
-            lesson.sessionStops?.length === 1 &&
-            lesson.sessionStops[0]?.afterStepId === "mut-slot-recall"),
-      ),
-    ).toBe(true);
-    expect(
       lessons.some((lesson) =>
         lesson.steps.some((step) => step.evidenceKind === "recall"),
       ),
@@ -356,6 +340,20 @@ describe("curriculum content contract", () => {
       true,
     );
     expect(project.adversarialInject.toLowerCase()).toContain("clone");
+  });
+
+  it("keeps long recovery lessons bound to their reviewed suffix and session break", () => {
+    for (const id of ["service-client-bounded-retry", "service-client-ambiguous-driver", "documentation-guided-repair"]) {
+      const lesson = lessons.find(item => item.id === id)!;
+      const invalid = [
+        { ...lesson, sessionStops: [] },
+        { ...lesson, steps: [...lesson.steps.slice(0, -1), { ...lesson.steps.at(-1)!, id: "unreviewed-extension" }] },
+      ];
+      for (const change of invalid) {
+        expect(validateContent({ ...bundle, lessons: lessons.map(item => item.id === id ? change : item) }))
+          .toContainEqual(expect.stringContaining(`lesson ${id} must have 5-9 steps`));
+      }
+    }
   });
 
   it("admits the historical and current authored MutSlot append shapes", () => {

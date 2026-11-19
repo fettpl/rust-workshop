@@ -87,6 +87,7 @@ it("exports the exact lesson and delayed review shape", () => {
     "function-is-empty-text",
     "function-add-mark",
     "function-boundary-explain",
+    "function-split-owned",
   ]);
   expect(functionOwnershipCalibrationLesson.steps[1].evidence).toEqual({
     version: 2,

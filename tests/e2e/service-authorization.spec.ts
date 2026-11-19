@@ -12,6 +12,8 @@ import type { LessonStep, UserState } from "../../src/domain/types";
 import {
   assistanceForLessonStep,
   courseEvidencePolicy,
+  courseGateRecovery,
+  courseModuleGate,
   evidenceForLessonStep,
   recordCourseEvidence,
   resolveReviewExercise,
@@ -553,7 +555,9 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
   );
   const continuationMeta = continuation.locator(".continue-meta");
   await expect(continuationMeta).toBeVisible();
-  await expect(continuationMeta.locator("span")).toHaveText("Krok 1 z 6");
+  await expect(continuationMeta.locator("span")).toHaveText(
+    `Krok 1 z ${courseLesson("binding").steps.length}`,
+  );
   await expect(continuationMeta.locator("strong")).toHaveText(
     courseLesson("binding").steps[0].title,
   );
@@ -575,7 +579,7 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
     await expect(card).toHaveCount(1);
     await card.scrollIntoViewIfNeeded();
     await expect(card).toBeInViewport();
-    await expect(card.locator(".lesson-completion")).toHaveText("0/6 kroków");
+    await expect(card.locator(".lesson-completion")).toHaveText(`0/${courseLesson(operation).steps.length} kroków`);
     await expect(card.locator(".time")).toHaveCount(0);
     await expect(card).not.toContainText(/\b\d+\s*min\b|[·•]/);
   }
@@ -647,7 +651,9 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await expect.poll(async () => (await savedState(page)).resume.panel).toBe("output");
+  await expect
+    .poll(async () => (await savedState(page)).resume.panel)
+    .toBe("output");
   await page.reload();
   await expect(output).toHaveAttribute("aria-selected", "true");
   expectNoIndependent(await savedState(page));
@@ -892,7 +898,7 @@ test("authorization_out_of_order_browsing_does_not_expose_other_family_solutions
   expectNoIndependent(state);
 });
 
-test("ordinary authorization review reveal exhausts same-family gate recovery", async ({
+test("ordinary authorization review reveal preserves an independent intersection recovery", async ({
   page,
 }, testInfo) => {
   const runnerRequests: string[] = [];
@@ -960,10 +966,10 @@ test("ordinary authorization review reveal exhausts same-family gate recovery", 
     const row = gate.locator("li").filter({ hasText: criterion.label });
     await expect(row).toHaveCount(1);
     await expect(row.getByLabel("Do sprawdzenia")).toBeVisible();
-    await expect(row).toContainText("Brak świeżego samodzielnego wariantu");
+    await expect(row).not.toContainText("Brak świeżego samodzielnego wariantu");
     await expect(
       row.getByRole("button", { name: "Sprawdź w zadaniu", exact: true }),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
     await expect(gate.getByLabel("Potwierdzone")).toHaveCount(3);
     await expect(
       gate.getByRole("heading", { name: "Co pokaże, że rozumiesz?" }),
@@ -977,118 +983,167 @@ test("ordinary authorization review reveal exhausts same-family gate recovery", 
     await expect(picker).toContainText("Dostępny");
     await expect(picker).not.toContainText("Samodzielność potwierdzona");
   };
-  try {
-    await page.goto("/");
-    await seedState(page, initial);
-    await navigate(/^Powtórki(?: \d+)?$/);
-    await page
-      .locator(".review-concept")
-      .filter({ hasText: "Zakres i osłabianie uprawnień" })
-      .click();
-    await expect(page.locator(".review-session h3")).toHaveText(ordinary.title);
-    const started = (await savedState(page)).reviewSession!;
-    expect(started).toMatchObject({
-      conceptId: concept,
-      mode: "challenge",
-      wasDue: false,
-    });
-    expect(started.exerciseId).toBeUndefined();
-    expect(started.sessionId).toEqual(expect.any(String));
-    const review = page.locator(".review-session");
-    await review
-      .getByRole("button", { name: "Karta przypomnienia", exact: true })
-      .click();
-    await review
-      .getByLabel("Przypomnij własnymi słowami", { exact: true })
-      .fill("Granice zakresu pozostają ważne.");
-    await review
-      .getByRole("button", { name: "Odsłoń odpowiedź", exact: true })
-      .click();
-    const isReviewReveal = (event: UserState["events"][number]) =>
-      event.lessonId === "review" &&
-      event.kind === "exposure" &&
-      event.revealed;
-    await expect
-      .poll(
-        async () =>
-          (await savedState(page)).events.filter(isReviewReveal).length,
-      )
-      .toBe(1);
-    const revealed = await savedState(page);
-    const exposure = revealed.events.find(isReviewReveal)!;
-    const expectedStepId = `${ordinary.id}:${started.sessionId}`;
-    await testInfo.attach("review-exposure", {
-      body: JSON.stringify({
-        observedStepId: exposure.stepId,
-        expectedStepId,
-        runnerRequests,
-      }),
-      contentType: "application/json",
-    });
-    expect(exposure.stepId).toBe(expectedStepId);
-    expect(revealed.reviewSession).toMatchObject({
-      sessionId: started.sessionId,
-      mode: "card",
-    });
-    expect(revealed.reviewSession?.exerciseId).toBeUndefined();
-    assertCleanTarget(revealed);
+  await page.goto("/");
+  await seedState(page, initial);
+  await navigate(/^Powtórki(?: \d+)?$/);
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Zakres i osłabianie uprawnień" })
+    .click();
+  await expect(page.locator(".review-session h3")).toHaveText(ordinary.title);
+  const started = (await savedState(page)).reviewSession!;
+  expect(started).toMatchObject({
+    conceptId: concept,
+    mode: "challenge",
+    wasDue: false,
+  });
+  expect(started.exerciseId).toBeUndefined();
+  expect(started.sessionId).toEqual(expect.any(String));
+  const review = page.locator(".review-session");
+  await review
+    .getByRole("button", { name: "Karta przypomnienia", exact: true })
+    .click();
+  await review
+    .getByLabel("Przypomnij własnymi słowami", { exact: true })
+    .fill("Granice zakresu pozostają ważne.");
+  await review
+    .getByRole("button", { name: "Odsłoń odpowiedź", exact: true })
+    .click();
+  const isReviewReveal = (event: UserState["events"][number]) =>
+    event.lessonId === "review" &&
+    event.kind === "exposure" &&
+    event.revealed;
+  await expect
+    .poll(
+      async () =>
+        (await savedState(page)).events.filter(isReviewReveal).length,
+    )
+    .toBe(1);
+  const revealed = await savedState(page);
+  const exposure = revealed.events.find(isReviewReveal)!;
+  const expectedStepId = `${ordinary.id}:${started.sessionId}`;
+  await testInfo.attach("review-exposure", {
+    body: JSON.stringify({
+      observedStepId: exposure.stepId,
+      expectedStepId,
+      runnerRequests,
+    }),
+    contentType: "application/json",
+  });
+  expect(exposure.stepId).toBe(expectedStepId);
+  expect(revealed.reviewSession).toMatchObject({
+    sessionId: started.sessionId,
+    mode: "card",
+  });
+  expect(revealed.reviewSession?.exerciseId).toBeUndefined();
+  assertCleanTarget(revealed);
 
-    // The selected lesson ID is retained while the review view is open.
-    // Navigate through the sidebar before using the lesson-step helper.
-    const menu = page.getByRole("button", {
-      name: "Otwórz nawigację",
-      exact: true,
-    });
-    if (await menu.isVisible()) await menu.click();
-    await page
-      .locator(".sidebar-trail")
-      .getByRole("button")
-      .filter({ hasText: target.title })
-      .click();
-    await openStep(page, "attenuation", "apply");
-    await expect(page.locator(".compiler-coach")).toBeVisible();
-    await navigate("Mapa nauki");
-    await assertRecovery();
-    await page.reload();
-    const reloaded = await savedState(page);
-    expect(reloaded.events.filter(isReviewReveal)).toEqual([exposure]);
-    expect(reloaded.reviewSession).toEqual(revealed.reviewSession);
-    assertCleanTarget(reloaded);
-    await assertRecovery();
+  // The selected lesson ID is retained while the review view is open.
+  // Navigate through the sidebar before using the lesson-step helper.
+  const menu = page.getByRole("button", {
+    name: "Otwórz nawigację",
+    exact: true,
+  });
+  if (await menu.isVisible()) await menu.click();
+  await page
+    .locator(".sidebar-trail")
+    .getByRole("button")
+    .filter({ hasText: target.title })
+    .click();
+  await openStep(page, "attenuation", "apply");
+  await expect(page.locator(".compiler-coach")).toBeVisible();
+  await navigate("Mapa nauki");
+  await assertRecovery();
+  await page.reload();
+  const reloaded = await savedState(page);
+  expect(reloaded.events.filter(isReviewReveal)).toEqual([exposure]);
+  expect(reloaded.reviewSession).toEqual(revealed.reviewSession);
+  assertCleanTarget(reloaded);
+  await assertRecovery();
 
-    // Practice stays available. Inspect the coach's warning only after the
-    // review-only recovery assertions, since opening it requires lesson hints.
-    await page
-      .locator(".lesson-list-item")
-      .filter({
-        has: page.getByRole("heading", { name: target.title, exact: true }),
-      })
-      .click();
-    await openStep(page, "attenuation", "apply");
-    const coach = page.locator(".compiler-coach");
-    await coach
-      .getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true })
-      .click();
-    await coach
-      .getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true })
-      .click();
-    await coach
-      .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
-      .click();
-    await expect(coach).toContainText(
-      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
-    );
-    const practiced = await savedState(page);
-    expect(practiced.events.filter(isReviewReveal)).toEqual([exposure]);
+  // Practice stays available. Inspect the coach's warning only after the
+  // review-only recovery assertions, since opening it requires lesson hints.
+  await page
+    .locator(".lesson-list-item")
+    .filter({
+      has: page.getByRole("heading", { name: target.title, exact: true }),
+    })
+    .click();
+  await openStep(page, "attenuation", "apply");
+  const coach = page.locator(".compiler-coach");
+  await coach
+    .getByRole("button", { name: "Pomóż mi to zrozumieć", exact: true })
+    .click();
+  await coach
+    .getByRole("button", { name: "Pokaż drugą wskazówkę", exact: true })
+    .click();
+  await coach
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await expect(coach).toContainText(
+    "dostępnego świeżego zadania",
+  );
+  const practiced = await savedState(page);
+  expect(practiced.events.filter(isReviewReveal)).toEqual([exposure]);
+  expect(
+    practiced.events.filter(
+      (event) =>
+        event.lessonId === target.id &&
+        event.passed &&
+        event.kind !== "exposure",
+    ),
+  ).toEqual([]);
+  expect(runnerRequests).toEqual([]);
+  const fresh = target.steps.find(
+    (step) => step.id === "authorization-attenuation-intersection",
+  )!;
+  expect(courseGateRecovery(practiced, criterion, lessons)).toEqual({
+    status: "available",
+    task: { lessonId: target.id, stepId: fresh.id },
+  });
+  await navigate("Mapa nauki");
+  await assertRecovery();
+  await page
+    .locator(".gate-panel li")
+    .filter({ hasText: criterion.label })
+    .getByRole("button", { name: "Sprawdź w zadaniu", exact: true })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+  await expect(editor(page)).toHaveValue(fresh.code!);
+  // This explicit intercepted success verifies routing/state, not native Rust.
+  await mockedRun(page, fresh);
+  const recovered = await savedState(page);
+  expect(recovered.events.filter(isReviewReveal)).toEqual([exposure]);
+  expect(recovered.events.slice(0, practiced.events.length)).toEqual(
+    practiced.events,
+  );
+  expect(
+    recovered.events.find(
+      (event) => event.stepId === fresh.id && event.evaluator === "tests",
+    ),
+  ).toMatchObject({ passed: true, hints: 0, revealed: false, gate: true });
+  expect(courseModuleGate(recovered, lessons, courseModule).passed).toBe(
+    true,
+  );
+  for (const alias of ["apply", "blank"] as const)
     expect(
-      practiced.events.filter(
-        (event) =>
-          event.lessonId === target.id &&
-          event.passed &&
-          event.kind !== "exposure",
-      ),
-    ).toEqual([]);
-  } finally {
-    expect(runnerRequests).toEqual([]);
-  }
+      recovered.steps[
+        stepKey(target.id, courseStep("attenuation", alias).id)
+      ],
+    ).toEqual(
+      practiced.steps[
+        stepKey(target.id, courseStep("attenuation", alias).id)
+      ],
+    );
+  await page.reload();
+  const persisted = await savedState(page);
+  expect(persisted.resume.lessonId).toBe(target.id);
+  expect(persisted.resume.stepIndex).toBe(target.steps.indexOf(fresh));
+  expect(persisted.steps[stepKey(target.id, fresh.id)]).toEqual(
+    recovered.steps[stepKey(target.id, fresh.id)],
+  );
+  expect(courseModuleGate(persisted, lessons, courseModule).passed).toBe(
+    true,
+  );
+  expect(runnerRequests).toHaveLength(1);
 });

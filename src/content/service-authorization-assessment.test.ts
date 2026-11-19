@@ -141,16 +141,31 @@ function saveChild(
   });
 }
 
-it("maps_exactly_fourteen_executable_lesson_and_ordinary_review_assessments", () => {
+it("maps the fourteen original assessments and four distinct recovery contracts", () => {
   const steps = [
     ...serviceAuthorizationLessons.flatMap((lesson) => lesson.steps),
     ...Object.values(serviceAuthorizationReviewExercises),
   ].filter((step) => step.evaluator?.kind === "tests");
-  expect(steps).toHaveLength(14);
+  const recoveryIds = new Set([
+    "authorization-policy-matching-indexes",
+    "authorization-attenuation-intersection",
+    "authorization-binding-atomic-batch",
+    "authorization-admission-atomic-batch",
+  ]);
+  const originals = steps.filter((step) => !recoveryIds.has(step.id));
+  expect(steps).toHaveLength(18);
+  expect(
+    steps
+      .filter((step) => recoveryIds.has(step.id))
+      .map((step) => step.id)
+      .sort(),
+  ).toEqual([...recoveryIds].sort());
+  expect(originals).toHaveLength(14);
   expect(Object.keys(fixtures).sort()).toEqual(
-    steps.map((step) => step.id).sort(),
+    originals.map((step) => step.id).sort(),
   );
-  for (const step of steps) {
+  // Distinct recovery contracts execute their own fixed controls in counted-policy-recovery.test.ts.
+  for (const step of originals) {
     expect(step.solution, step.id).toBe(fixtures[step.id].canonical);
     if (step.evaluator?.kind === "tests")
       expect(step.evaluator.tests, step.id).toBe(fixtures[step.id].tests);

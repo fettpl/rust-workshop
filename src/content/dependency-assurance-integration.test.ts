@@ -27,7 +27,7 @@ it("connects Dependency Assurance to eight gates and four coding retrievals", ()
     dependencyAssuranceLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(8);
+  ).toHaveLength(16);
   for (const lesson of dependencyAssuranceLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
       1,
@@ -51,7 +51,7 @@ it("compiles and runs every independent reference fixture", () => {
   ];
   const reviewSteps = Object.values(dependencyAssuranceReviewExercises);
   const fixtures = [...steps, ...reviewSteps];
-  expect(fixtures).toHaveLength(16);
+  expect(fixtures).toHaveLength(23);
 
   for (const step of fixtures) {
     if (!step.solution || step.evaluator?.kind !== "tests") {

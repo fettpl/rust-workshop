@@ -39,6 +39,9 @@ const signatureDecision = lesson.steps.find(
 const splitTransfer = lesson.steps.find(
   (item) => item.id === "docs-split-transfer",
 )!;
+const keyedSetting = lesson.steps.find(
+  (item) => item.id === "docs-keyed-setting",
+)!;
 const splitBlank = lesson.steps.find((item) => item.id === "docs-split-blank")!;
 const rationale = lesson.steps.find(
   (item) => item.id === "docs-hypothesis-rationale",
@@ -591,10 +594,12 @@ test("preserves assisted prefix history while clean split transfer cannot launde
       tests?: string;
     };
     expect(request.mode).toBe("test");
-    expect(request.code).toBe(splitTransfer.solution);
+    const submitted =
+      request.code === keyedSetting.solution ? keyedSetting : splitTransfer;
+    expect(request.code).toBe(submitted.solution);
     expect(request.tests).toBe(
-      splitTransfer.evaluator?.kind === "tests"
-        ? splitTransfer.evaluator.tests
+      submitted.evaluator?.kind === "tests"
+        ? submitted.evaluator.tests
         : undefined,
     );
     await route.fulfill({
@@ -629,20 +634,69 @@ test("preserves assisted prefix history while clean split transfer cannot launde
   expect(
     courseEvidenceSummary(after, lesson.conceptIds[0]).qualifyingCodingTasks,
   ).toBe(1);
-  expect(gateRecovery(after, criterion, lessons).status).toBe("exhausted");
+  expect(gateRecovery(after, criterion, lessons)).toEqual({
+    status: "available",
+    task: { lessonId: lesson.id, stepId: keyedSetting.id },
+  });
   await openMap(page);
-  await expect(page.locator(".module-connections")).toContainText(
-    "Brak świeżego samodzielnego wariantu",
-  );
   const criterionRow = page
     .locator(".gate-panel li")
     .filter({ hasText: criterion.label });
-  await expect(criterionRow).toContainText(
+  await expect(criterionRow).not.toContainText(
     "Brak świeżego samodzielnego wariantu",
   );
-  await expect(
-    criterionRow.getByRole("button", { name: "Sprawdź w zadaniu" }),
-  ).toHaveCount(0);
+  await criterionRow
+    .getByRole("button", { name: "Sprawdź w zadaniu", exact: true })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(keyedSetting.title);
+  await page
+    .getByRole("textbox", { name: "Kod Rust", exact: true })
+    .fill(keyedSetting.solution!);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect
+    .poll(async () =>
+      (await readState(page)).events.some(
+        (event) =>
+          event.stepId === keyedSetting.id &&
+          event.evaluator === "tests" &&
+          event.passed,
+      ),
+    )
+    .toBe(true);
+  const recovered = await readState(page);
+  expect(recovered.steps[assistedKey]).toEqual(seeded);
+  expect(recovered.events.slice(0, after.events.length)).toEqual(after.events);
+  expect(
+    recovered.events.find(
+      (event) =>
+        event.stepId === keyedSetting.id && event.evaluator === "tests",
+    ),
+  ).toMatchObject({ passed: true, hints: 0, revealed: false, gate: true });
+  expect(
+    courseEvidenceSummary(recovered, lesson.conceptIds[0])
+      .qualifyingCodingTasks,
+  ).toBe(2);
+  // The separate rationale is still required after two clean coding families.
+  expect(gateRecovery(recovered, criterion, lessons)).toEqual({
+    status: "available",
+    task: { lessonId: lesson.id, stepId: rationale.id },
+  });
+  await completeRationale(page);
+  const complete = await readState(page);
+  expect(gateRecovery(complete, criterion, lessons)).toEqual({
+    status: "complete",
+  });
+  await page.reload();
+  const persisted = await readState(page);
+  expect(persisted.steps[assistedKey]).toEqual(seeded);
+  expect(persisted.steps[stepKey(lesson.id, keyedSetting.id)]).toEqual(
+    complete.steps[stepKey(lesson.id, keyedSetting.id)],
+  );
+  expect(gateRecovery(persisted, criterion, lessons)).toEqual({
+    status: "complete",
+  });
 });
 
 test("executes ordinary documentation recall with a persisted concept session identity and no primary credit", async ({

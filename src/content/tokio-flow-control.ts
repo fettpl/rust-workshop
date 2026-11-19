@@ -91,6 +91,10 @@ export const tokioFlowModule: CourseModule = {
           lessonId: "tokio-graceful-shutdown",
           stepId: "tokio-graceful-shutdown-drain-gate",
         },
+        {
+          lessonId: "tokio-graceful-shutdown",
+          stepId: "tokio-graceful-shutdown-fallible-drain-transfer",
+        },
       ],
     },
     {

@@ -5,6 +5,7 @@ import type {
   LessonStep,
   Source,
 } from "../domain/types";
+import { dependencyRecoverySteps } from "./dependency-assurance-recovery";
 import { dependencyAssuranceModule } from "./dependency-assurance-module";
 
 const reviewedAt = "2026-09-18";
@@ -640,6 +641,7 @@ export const dependencyAssuranceLessons: Lesson[] = [
           "Zaimplementuj samodzielnie `#[derive(Debug, PartialEq, Eq)] struct CrateRef { package: &'static str, version: &'static str, source: &'static str, selected: bool }`, `#[derive(Debug, PartialEq, Eq)] enum GraphStatus { Stable, Conflict(&'static str) }` oraz `fn find_conflict(items: &[CrateRef]) -> GraphStatus`. Porównuj tylko rekordy z `selected == true`; konflikt oznacza inną wersję lub source tego samego package. Identyczne wpisy nie są konfliktem. Dla dwóch selected wpisów `bytes` w wersjach 1.5 i 1.4 zwróć `Conflict(\"bytes\")`, a gdy 1.4 ma `selected: false`, zwróć `Stable`.",
         solution: graphRecallSolution,
         tests: graphRecallTests,
+        evidenceGate: true,
         kind: "recall",
       }),
     ],
@@ -922,6 +924,10 @@ export const dependencyAssuranceLessons: Lesson[] = [
     sourceIds: ["cargo-package-dossier-reference", "cargo-deny-reference"],
   },
 ];
+
+for (const lesson of dependencyAssuranceLessons) {
+  lesson.steps.push(...(dependencyRecoverySteps[lesson.id] ?? []));
+}
 
 export const dependencyAssuranceReviewExercises: Record<string, LessonStep> = {
   "dependency-graph-diagnosis": testsStep({

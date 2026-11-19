@@ -61,7 +61,7 @@ describe("bounded client retry policy", () => {
       expect(reviewExercises[id]?.evidenceGate).not.toBe(true);
   });
 
-  it("appends exactly the two lessons and four families", () => {
+  it("appends exactly the two lessons with four primary and four recovery families", () => {
     const added = lessons.filter((lesson) => lesson.moduleId === "service-client-retry");
     expect(added.map((lesson) => lesson.id)).toEqual([
       "service-client-bounded-retry",
@@ -77,10 +77,14 @@ describe("bounded client retry policy", () => {
       "service-client/retry-budget-reservation-v1",
       "service-client/retry-next-action-v1",
       "service-client/retry-budget-reservation-v1",
+      "service-client/retry-ready-queue-v1",
+      "service-client/retry-time-windows-v1",
       "service-client/immutable-frame-replay-v1",
       "service-client/aggregate-uncertainty-v1",
       "service-client/immutable-frame-replay-v1",
       "service-client/aggregate-uncertainty-v1",
+      "service-client/retry-replica-frame-v1",
+      "service-client/retry-receipt-ledger-v1",
     ]);
     const primarySteps = added.flatMap((lesson) => lesson.steps).filter((step) => step.evidence?.codingTaskId && step.kind !== "recall");
     expect(primarySteps.every((step) => step.code && step.solution && step.code !== step.solution)).toBe(true);
@@ -90,7 +94,7 @@ describe("bounded client retry policy", () => {
       expect.stringContaining("FnMut"),
       expect.stringContaining("Final::Unknown"),
     ]));
-    expect(new Set(primarySteps.map((step) => step.evidence?.codingTaskId)).size).toBe(4);
+    expect(new Set(primarySteps.map((step) => step.evidence?.codingTaskId)).size).toBe(8);
     expect(added.every((lesson) => lesson.steps.some((step) => step.kind === "predict" && step.evidenceKind === "prediction"))).toBe(true);
     expect(added.every((lesson) => lesson.steps.some((step) => step.kind === "recall" && step.evaluator?.kind === "rubric" && step.evidenceKind === "self-rating"))).toBe(true);
     const byFamily = new Map(primarySteps.map((step) => [step.evidence?.codingTaskId, step.solution ?? ""]));

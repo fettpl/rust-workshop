@@ -60,7 +60,7 @@ const bundle = {
   roadmap,
 };
 
-it("authors the shared borrow lesson as the exact five step pair", () => {
+it("preserves the five-step shared borrow prefix and appends a distinct repair", () => {
   expect(sharedBorrowCalibrationLesson).toMatchObject({
     id: "shared-borrow-calibration",
     moduleId: "ownership",
@@ -80,6 +80,7 @@ it("authors the shared borrow lesson as the exact five step pair", () => {
     "shared-count-words",
     "shared-has-suffix",
     "shared-borrow-explain",
+    "shared-character-count",
   ]);
   expect(
     sharedBorrowCalibrationLesson.steps.map((step) => step.evidence),
@@ -97,10 +98,15 @@ it("authors the shared borrow lesson as the exact five step pair", () => {
       codingTaskId: "ownership/shared-has-suffix-v1",
     },
     { version: 2, conceptIds: ["shared-borrow"] },
+    {
+      version: 2,
+      conceptIds: ["shared-borrow"],
+      codingTaskId: "ownership/shared-character-count-v1",
+    },
   ]);
   expect(
     sharedBorrowCalibrationLesson.steps.filter((step) => step.evidenceGate),
-  ).toHaveLength(2);
+  ).toHaveLength(3);
   expect(sharedBorrowCalibrationLesson.steps[2].evaluator).toEqual({
     kind: "tests",
     tests: expect.any(String),
@@ -123,7 +129,10 @@ it("authors the shared borrow lesson as the exact five step pair", () => {
 
 it("registers the lesson, exact pair criterion, and both delayed reviews", () => {
   expect(ownershipModule.lessonIds.at(-1)).toBe("shared-borrow-calibration");
-  expect(historicalLessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
+  expect(historicalLessons.at(-1)).toEqual({
+    ...sharedBorrowCalibrationLesson,
+    steps: sharedBorrowCalibrationLesson.steps.slice(0, 5),
+  });
   expect(ownershipModule.gateCriteria?.at(-1)).toEqual({
     id: "shared-borrow-pair-v1",
     label: "Dwie różne naprawy pożyczonego odczytu bez podpowiedzi",
@@ -136,6 +145,10 @@ it("registers the lesson, exact pair criterion, and both delayed reviews", () =>
       {
         lessonId: "shared-borrow-calibration",
         stepId: "shared-has-suffix",
+      },
+      {
+        lessonId: "shared-borrow-calibration",
+        stepId: "shared-character-count",
       },
     ],
   });

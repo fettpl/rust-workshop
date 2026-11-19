@@ -1,3 +1,4 @@
+import { schemaSnapshotRecovery } from "./counted-policy-recovery";
 // Original Polish learning material: CC BY 4.0. Executable model data: MIT.
 import type {
   Competency,
@@ -239,6 +240,7 @@ export const fileSchemaEvolutionLessons: Lesson[] = [
         evidenceGate: false,
         evidence: normalizationEvidence,
       },
+      schemaSnapshotRecovery,
     ],
   },
   {
@@ -400,6 +402,7 @@ export const fileSchemaEvolutionModule: CourseModule = {
       taskRefs: [
         { lessonId: normalizeId, stepId: "schema-normalize-apply" },
         { lessonId: normalizeId, stepId: "schema-normalize-blank" },
+        { lessonId: normalizeId, stepId: "schema-validate-current-snapshot" },
       ],
     },
   ],

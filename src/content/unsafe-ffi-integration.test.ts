@@ -33,8 +33,7 @@ import {
   nestedPatternLessons,
   nestedPatternSources,
 } from "./nested-patterns";
-import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
-import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
+import { historicalFunctionOwnershipCalibration, historicalSharedBorrowCalibration } from "./file-schema-evolution-compatibility-fixture";
 
 const lessonIds = [
   "unsafe-ffi-checked-view",
@@ -173,8 +172,8 @@ it("keeps Unsafe/FFI registered after Profile Evidence and before Service Operat
   expect(modules).toHaveLength(48);
   // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
   expect(lessons).toHaveLength(186 + nestedPatternLessons.length + 2);
-  expect(lessons.at(-2)).toEqual(functionOwnershipCalibrationLesson);
-  expect(lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
+  expect(lessons.at(-2)).toEqual(historicalFunctionOwnershipCalibration);
+  expect(lessons.at(-1)).toEqual(historicalSharedBorrowCalibration);
   expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
   // Preserve the historical 332-source base. The nested export now includes
   // two approved pattern references; baseline correction adds five elsewhere.

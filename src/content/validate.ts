@@ -118,6 +118,12 @@ function checkAcyclic(
   for (const id of graph.keys()) visit(id, []);
 }
 
+const recoveryExtensions: Partial<Record<string, [string, string[]]>> = {
+  "documentation-guided-repair": ["docs-split-transfer", ["docs-keyed-setting"]],
+  "service-client-bounded-retry": ["bounded-retry-transfer", ["retry-ready-queue", "retry-time-windows"]],
+  "service-client-ambiguous-driver": ["ambiguous-driver-transfer", ["retry-replica-frame", "retry-receipt-ledger"]],
+};
+
 export function validateContent(content: ContentBundle): string[] {
   const errors: string[] = [];
   errors.push(
@@ -409,9 +415,13 @@ export function validateContent(content: ContentBundle): string[] {
       errors.push(
         `lesson ${lesson.id} belongs to unknown module: ${lesson.moduleId}`,
       );
-    // Preserve the original six saved indices while appending the approved
-    // ordinary-pattern bridge. Two optional boundaries keep this one eleven-step
-    // lesson navigable; other lessons retain the global 5–9 guard.
+    // Keep saved indices and limit the extra session to these reviewed alternatives.
+    const extension = Object.hasOwn(recoveryExtensions, lesson.id) ? recoveryExtensions[lesson.id] : undefined;
+    const reviewedExtension = extension &&
+      lesson.steps.length === 9 + extension[1].length &&
+      extension[1].every((id, index) => lesson.steps[9 + index].id === id) &&
+      Array.isArray(lesson.sessionStops) &&
+      lesson.sessionStops.some(stop => stop?.afterStepId === extension[0]);
     const appendedPatternBridge =
       lesson.id === "nested-patterns-and-destructuring" &&
       lesson.steps.length === 11 &&
@@ -429,10 +439,11 @@ export function validateContent(content: ContentBundle): string[] {
     if (
       (lesson.steps.length < 5 || lesson.steps.length > 9) &&
       !appendedPatternBridge &&
-      !mutSlotWithMutBridge
+      !mutSlotWithMutBridge &&
+      !reviewedExtension
     )
       errors.push(
-        `lesson ${lesson.id} must have 5-9 steps (approved append bridges permit only the authored MutSlot and pattern extensions)`,
+        `lesson ${lesson.id} must have 5-9 steps (only reviewed extensions with their session boundaries may exceed this limit)`,
       );
     if (!lesson.transferTask.trim())
       errors.push(`lesson ${lesson.id} is missing transferTask`);

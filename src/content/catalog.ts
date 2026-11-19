@@ -2459,6 +2459,7 @@ export const ownershipModule: CourseModule = {
           lessonId: "function-ownership-calibration",
           stepId: "function-add-mark",
         },
+        { lessonId: "function-ownership-calibration", stepId: "function-split-owned" },
       ],
     },
     {
@@ -2474,6 +2475,7 @@ export const ownershipModule: CourseModule = {
           lessonId: "shared-borrow-calibration",
           stepId: "shared-has-suffix",
         },
+        { lessonId: "shared-borrow-calibration", stepId: "shared-character-count" },
       ],
     },
   ],

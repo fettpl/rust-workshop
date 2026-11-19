@@ -12,6 +12,7 @@ import {
   assistanceForLessonStep,
   courseEvidencePolicy,
   courseGateRecovery,
+  courseModuleGate,
   recordCourseLessonExposure,
 } from "../../src/content/learning-context";
 import { packageDownloadPath } from "../../src/domain/project-package";
@@ -40,6 +41,9 @@ const archive = project.package!;
 const concept = concepts.find(({ id }) => id === "file-version-meaning")!;
 const review = reviewExercises[concept.id];
 const [prediction, model, debug, apply, blank] = normalization.steps;
+const snapshot = normalization.steps.find(
+  (step) => step.id === "schema-validate-current-snapshot",
+)!;
 const editor = (page: Page) =>
   page.locator('textarea.code-textarea[aria-label="Kod Rust"]');
 
@@ -276,7 +280,10 @@ test("out-of-order lessons and ordinary review expose only scoped source and rec
   expectNoCredit(beforePackage);
   expect(
     courseGateRecovery(beforePackage, criterion, [normalization, upgrade]),
-  ).toEqual({ status: "exhausted" });
+  ).toEqual({
+    status: "available",
+    task: { lessonId: normalization.id, stepId: snapshot.id },
+  });
 
   const packagePanel = await openPackage(page);
   await downloadPackage(page, "starter");
@@ -300,10 +307,10 @@ test("out-of-order lessons and ordinary review expose only scoped source and rec
   );
   const reveals = afterSolution.events.slice(afterStarter.events.length);
   expect(reveals.map(({ lessonId, stepId }) => ({ lessonId, stepId }))).toEqual(
-    criterion.taskRefs,
+    archive.revealStepRefs,
   );
   expect(reveals).toEqual(
-    criterion.taskRefs.map((ref) =>
+    archive.revealStepRefs.map((ref) =>
       expect.objectContaining({
         ...ref,
         kind: "exposure",
@@ -380,6 +387,85 @@ test("out-of-order lessons and ordinary review expose only scoped source and rec
   );
   expectSavedHelp(afterMock, true);
   expectNoCredit(afterMock);
+  expect(courseGateRecovery(afterMock, criterion, lessons)).toEqual({
+    status: "available",
+    task: { lessonId: normalization.id, stepId: snapshot.id },
+  });
+  await page.unroute("**/api/run");
+  await openNavigation(page);
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page.getByLabel("Znajdź moduł lub temat").fill(courseModule.title);
+  await page
+    .locator(".module-picker > button")
+    .filter({ hasText: courseModule.title })
+    .click();
+  await page
+    .locator(".gate-panel li")
+    .filter({ hasText: criterion.label })
+    .getByRole("button", { name: "Sprawdź w zadaniu", exact: true })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(snapshot.title);
+  await expect(editor(page)).toHaveValue(snapshot.code!);
+  if (snapshot.evaluator?.kind !== "tests")
+    throw new Error("Expected snapshot tests");
+  const snapshotTests = snapshot.evaluator.tests;
+  await page.route("**/api/run", async (route) => {
+    expect(route.request().postDataJSON()).toEqual({
+      code: snapshot.solution,
+      mode: "test",
+      tests: snapshotTests,
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "success",
+        stdout: "controlled browser state response",
+        stderr: "",
+        diagnostics: [],
+        durationMs: 1,
+        tests: { passed: 1, failed: 0 },
+      }),
+    });
+  });
+  await editor(page).fill(snapshot.solution!);
+  await page
+    .getByRole("button", { name: "Uruchom testy", exact: true })
+    .click();
+  await expect
+    .poll(async () =>
+      (await savedState(page)).events.some(
+        (event) =>
+          event.stepId === snapshot.id &&
+          event.evaluator === "tests" &&
+          event.passed,
+      ),
+    )
+    .toBe(true);
+  const recovered = await savedState(page);
+  expect(recovered.events.slice(0, afterMock.events.length)).toEqual(
+    afterMock.events,
+  );
+  expectSavedHelp(recovered, true);
+  expect(
+    recovered.events.find(
+      (event) => event.stepId === snapshot.id && event.evaluator === "tests",
+    ),
+  ).toMatchObject({ passed: true, hints: 0, revealed: false, gate: true });
+  expect(
+    courseModuleGate(recovered, lessons, courseModule).criteria[0].passed,
+  ).toBe(true);
+  await page.reload();
+  const persisted = await savedState(page);
+  expect(persisted.resume.stepIndex).toBe(
+    normalization.steps.indexOf(snapshot),
+  );
+  expect(persisted.steps[stepKey(normalization.id, snapshot.id)]).toEqual(
+    recovered.steps[stepKey(normalization.id, snapshot.id)],
+  );
+  expect(
+    courseModuleGate(persisted, lessons, courseModule).criteria[0].passed,
+  ).toBe(true);
   expect(pageErrors).toEqual([]);
 });
 

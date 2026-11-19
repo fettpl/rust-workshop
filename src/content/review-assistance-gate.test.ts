@@ -127,36 +127,97 @@ it("rejects counted attenuation credit after ordinary review assistance", () => 
     true,
   ]);
   expect(gate.passed).toBe(false);
-  expect(recovery).toEqual({ status: "exhausted" });
-  expect(next).toBeUndefined();
+  expect(recovery).toEqual({ status: "available", task: recoveryRef(family) });
+  expect(next).toEqual(recoveryRef(family));
 });
+
+function recoveryRef(family: ReviewFamily) {
+  return {
+    lessonId: `service-authorization-${family.operation}`,
+    stepId:
+      family.operation === "attenuation"
+        ? "authorization-attenuation-intersection"
+        : "authorization-admission-atomic-batch",
+  };
+}
 
 function expectFamilySelectors(
   state: UserState,
   family: ReviewFamily,
   credited: boolean,
-  recoveryStatus: "complete" | "exhausted",
+  recoveryStatus: "complete" | "available" | "exhausted",
 ) {
   const before = JSON.stringify(state);
   const index = operations.indexOf(family.operation);
   const criterion = stage.gateCriteria![index];
+  const expectedRecovery =
+    recoveryStatus === "available"
+      ? { status: recoveryStatus, task: recoveryRef(family) }
+      : { status: recoveryStatus };
+  const expectedTask =
+    recoveryStatus === "available" ? recoveryRef(family) : undefined;
   for (const scope of [scopedLessons, lessons]) {
     expect(courseModuleGate(state, scope, stage).criteria[index].passed).toBe(
       credited,
     );
-    expect(courseGateRecovery(state, criterion, scope)).toEqual({
-      status: recoveryStatus,
-    });
-    expect(courseNextGateTask(state, criterion, scope)).toBeUndefined();
+    expect(courseGateRecovery(state, criterion, scope)).toEqual(
+      expectedRecovery,
+    );
+    expect(courseNextGateTask(state, criterion, scope)).toEqual(expectedTask);
   }
-  expect(courseGateRecovery(state, criterion)).toEqual({
-    status: recoveryStatus,
-  });
-  expect(courseNextGateTask(state, criterion)).toBeUndefined();
+  expect(courseGateRecovery(state, criterion)).toEqual(expectedRecovery);
+  expect(courseNextGateTask(state, criterion)).toEqual(expectedTask);
   expect(JSON.stringify(state)).toBe(before);
 }
 
 for (const family of reviewFamilies) {
+  it(`${family.operation}: a fresh distinct contract completes the gate without laundering review or alias help`, () => {
+    let state = reviewReveal(createInitialState(), family, 100);
+    state = primaryPass(state, family.operation, "apply", 200);
+    state = primaryPass(state, family.operation, "blank", 201);
+    expect(
+      courseEvidenceSummary(state, family.concept).qualifyingCodingTasks,
+    ).toBe(0);
+    expectFamilySelectors(state, family, false, "available");
+    const raw = structuredClone(state.events);
+    const ref = recoveryRef(family);
+    const lesson = scopedLessons.find((lesson) => lesson.id === ref.lessonId)!;
+    const step = lesson.steps.find((step) => step.id === ref.stepId)!;
+    const clean = recordCourseEvidence(state, {
+      id: `controlled-maintenance-recovery:${ref.stepId}`,
+      ...ref,
+      ...evidenceForLessonStep(lesson, step),
+      ...assistanceForLessonStep(state, lesson, step),
+      kind: step.evidenceKind,
+      evaluator: step.evaluator!.kind,
+      gate: true,
+      passed: true,
+      at: 300,
+    });
+    expect(clean.events.slice(0, raw.length)).toEqual(raw);
+    expect(
+      courseEvidenceSummary(clean, family.concept).qualifyingCodingTasks,
+    ).toBe(1);
+    expectFamilySelectors(clean, family, true, "complete");
+  });
+
+  it(`${family.operation}: assistance to every eligible family still exhausts recovery`, () => {
+    const state = reviewReveal(createInitialState(), family, 100);
+    const ref = recoveryRef(family);
+    state.steps[stepKey(ref.lessonId, ref.stepId)] = {
+      ...createStepProgress(),
+      hints: 1,
+    };
+    expect(
+      courseEvidenceSummary(state, family.concept).qualifyingCodingTasks,
+    ).toBe(0);
+    expectFamilySelectors(state, family, false, "exhausted");
+    const restored = importState(exportState(state));
+    expect(restored.events).toEqual(state.events);
+    expect(restored.steps).toEqual(state.steps);
+    expectFamilySelectors(restored, family, false, "exhausted");
+  });
+
   it.each(["apply", "blank"] as const)(
     `${family.operation}: counts clean %s once and completes recovery`,
     (alias) => {
@@ -192,16 +253,16 @@ for (const family of reviewFamilies) {
       expect(
         courseEvidenceSummary(state, family.concept).qualifyingCodingTasks,
       ).toBe(0);
-      expectFamilySelectors(state, family, false, "exhausted");
+      expectFamilySelectors(state, family, false, "available");
     },
   );
 
-  it(`${family.operation}: reveal alone exhausts both primary aliases`, () => {
+  it(`${family.operation}: reveal alone excludes both primary aliases and offers a distinct contract`, () => {
     const state = reviewReveal(createInitialState(), family, 100);
     expect(
       courseEvidenceSummary(state, family.concept).qualifyingCodingTasks,
     ).toBe(0);
-    expectFamilySelectors(state, family, false, "exhausted");
+    expectFamilySelectors(state, family, false, "available");
   });
 
   it(`${family.operation}: earlier review leaves the other three criteria intact`, () => {
@@ -225,7 +286,7 @@ for (const family of reviewFamilies) {
       courseEvidenceSummary(state, "service-bound-authorization-use")
         .qualifyingCodingTasks,
     ).toBe(family.operation === "admission" ? 1 : 2);
-    expectFamilySelectors(state, family, false, "exhausted");
+    expectFamilySelectors(state, family, false, "available");
     const exported = JSON.parse(exportState(state));
     const imported = importState(JSON.stringify(exported));
     expect(imported).toEqual(state);
@@ -233,7 +294,7 @@ for (const family of reviewFamilies) {
       ...JSON.parse(exportState(imported)),
       exportedAt: exported.exportedAt,
     }).toEqual(exported);
-    expectFamilySelectors(imported, family, false, "exhausted");
+    expectFamilySelectors(imported, family, false, "available");
   });
 
   it.each([
@@ -288,7 +349,7 @@ for (const family of reviewFamilies) {
         state,
         family,
         credited,
-        credited ? "complete" : "exhausted",
+        credited ? "complete" : "available",
       );
     },
   );
@@ -309,7 +370,7 @@ for (const family of reviewFamilies) {
       expect(
         courseEvidenceSummary(recorded, family.concept).qualifyingCodingTasks,
       ).toBe(0);
-      expectFamilySelectors(recorded, family, false, "exhausted");
+      expectFamilySelectors(recorded, family, false, "available");
     },
   );
 

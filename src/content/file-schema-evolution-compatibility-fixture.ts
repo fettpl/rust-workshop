@@ -1,8 +1,12 @@
+import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
+import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
 import testingRecallDelta from "./fixtures/testing-recall-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
 import {
+  restoreRemainingCriteriaLessons,
+  restoreRemainingCriteriaRegistry,
   restoreIndependentPracticeLessons,
   restoreIndependentPracticeRegistry,
   restoreWorkshopAssessmentLessons,
@@ -468,6 +472,7 @@ function projectMaintenanceBatch<T extends typeof Course>(
       if (
         current === null ||
         typeof current !== "object" ||
+        (key === "lessons" && !Array.isArray(current)) ||
         replacements.has(current)
       )
         continue;
@@ -494,6 +499,10 @@ function projectMaintenanceBatch<T extends typeof Course>(
   return replacements.get(input) as T;
 }
 
+export function historicalBeforeRemainingCriteria<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreRemainingCriteriaLessons, restoreRemainingCriteriaRegistry);
+}
+
 export function historicalBeforeIndependentPractice<T extends typeof Course>(course: T): T {
   return projectMaintenanceBatch(course, restoreIndependentPracticeLessons, restoreIndependentPracticeRegistry);
 }
@@ -504,7 +513,9 @@ export function historicalBeforeCurriculumRecovery<T extends typeof Course>(cour
 
 /** Removes the complete authored A12 successor or returns the input unchanged. */
 export function historicalBeforeA12<T extends typeof Course>(course: T): T {
-  const input = course as unknown as Registry;
+  // The A12 recognizer hashes its entire normalization lesson and module.
+  // Remove the reviewed recovery additions before checking those original hashes.
+  const input = historicalBeforeRemainingCriteria(course) as unknown as Registry;
   const defaultRegistry = input.default;
   if (
     !recognized(input) ||
@@ -553,3 +564,9 @@ export function historicalBeforeA10ThenExistingContractRepair<
 >(course: T): T {
   return beforeExistingContractRepair(historicalBeforeA12(course));
 }
+
+// The archived integrations compare whole lesson definitions from before the recovery tasks.
+export const [historicalFunctionOwnershipCalibration, historicalSharedBorrowCalibration] =
+  restoreRemainingCriteriaLessons(
+    [functionOwnershipCalibrationLesson, sharedBorrowCalibrationLesson], new Map(), matches,
+  );

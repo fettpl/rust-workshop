@@ -1623,6 +1623,7 @@ export const unsafeMiriModule: CourseModule = {
           lessonId: "unsafe-miri-mut-slot",
           stepId: mutSlotWithMutPrimaryStepId,
         },
+        { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-pair-reborrow-transfer" },
       ],
     },
     {

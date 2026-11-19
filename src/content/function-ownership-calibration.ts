@@ -1,3 +1,4 @@
+import { functionOwnedCountRecovery } from "./counted-family-recovery";
 import type { Lesson, LessonStep } from "../domain/types";
 import {
   addMarkContract,
@@ -144,6 +145,7 @@ export const functionOwnershipCalibrationLesson: Lesson = {
       },
       evidenceKind: "self-rating",
     },
+    functionOwnedCountRecovery,
   ],
   misconceptions: [
     "Każdy parametr String zachowuje wiązanie wywołującego po wywołaniu.",

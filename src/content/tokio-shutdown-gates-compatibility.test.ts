@@ -1,9 +1,10 @@
 import { expect, it } from "vitest";
-import * as course from "./course";
+import * as currentCourse from "./course";
 import delta from "./fixtures/tokio-shutdown-gates-delta.json";
 import {
   hashRegistryValue,
   historicalBeforeA12,
+  historicalBeforeRemainingCriteria,
   matchesRegistryValue,
 } from "./file-schema-evolution-compatibility-fixture";
 import {
@@ -12,6 +13,8 @@ import {
 } from "./tokio-shutdown-gates-compatibility-fixture";
 import { restoreTokioShutdownLessons } from "./workshop-assessment-repair-compatibility-fixture";
 
+// Exercise the historical split against its input before the later alternatives.
+const course = historicalBeforeRemainingCriteria(currentCourse);
 const restore = (modules: typeof course.modules) =>
   restoreTokioShutdownModules(modules, new Map(), matchesRegistryValue);
 

@@ -99,7 +99,8 @@ it("registers exactly four Miri lessons with eight rubric gates, seventeen evide
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(24);
+  expect(refs).toHaveLength(25);
+  expect(refs.filter(ref => ref === "unsafe-miri-mut-slot/mut-slot-pair-reborrow-transfer")).toHaveLength(2);
   expect(new Set(refs).size).toBe(21);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,

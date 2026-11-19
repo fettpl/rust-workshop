@@ -1,3 +1,5 @@
+import { capstoneTransfers } from "./transfers";
+
 export interface CapstoneContract {
   id: string;
   solution: string;
@@ -416,5 +418,8 @@ fn migration_candidate_review_requires_current_bound_evidence() {
     assert!(!release_ready(true, true, 20, 24));
     assert!(!release_ready(true, true, 21, 20));
 }`,
+  ),
+  ...Object.fromEntries(
+    capstoneTransfers.map(({ contract }) => [contract.id, contract]),
   ),
 };

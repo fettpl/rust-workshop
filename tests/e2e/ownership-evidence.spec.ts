@@ -9,6 +9,8 @@ import {
 import {
   recordCourseEvidence,
   courseEvidenceSummary,
+  courseGateRecovery,
+  courseModuleGate,
 } from "../../src/content/learning-context";
 import {
   createInitialState,
@@ -180,6 +182,7 @@ async function mockTests(page: Page) {
       replace.step,
       sharedCountWords.step,
       sharedHasSuffix.step,
+      authored("shared-borrow-calibration", "shared-character-count").step,
       authored("scenario-assessment", "assessment-repair").step,
       reviewExercises["mutable-borrow"],
       delayedReviewExercises["function-ownership"],
@@ -199,6 +202,7 @@ async function mockTests(page: Page) {
       "borrow-mutable-run": "test-failure",
       "shared-count-words": "compile-error",
       "shared-has-suffix": "compile-error",
+      "shared-character-count": "test-failure",
       "assessment-repair": "compile-error",
       "review-mutable-borrow": "test-failure",
       "review-function-ownership-delayed-v1": "test-failure",
@@ -736,11 +740,14 @@ function sharedCoachState(
     completed: true,
   };
   if (status === "exhausted") {
-    state.steps[stepKey(sharedHasSuffix.lesson.id, sharedHasSuffix.step.id)] = {
-      ...createStepProgress(sharedHasSuffix.step.code),
-      hints: 2,
-      completed: true,
-    };
+    for (const stepId of ["shared-has-suffix", "shared-character-count"]) {
+      const { lesson, step } = authored("shared-borrow-calibration", stepId);
+      state.steps[stepKey(lesson.id, step.id)] = {
+        ...createStepProgress(step.code),
+        hints: 2,
+        completed: true,
+      };
+    }
   }
   if (status === "complete") {
     state.events = [
@@ -1355,7 +1362,11 @@ test("function calibration flows into shared borrowing and then modeling", async
   await expect(page.locator(".lesson-top")).toContainText(
     sharedCountWords.lesson.title,
   );
-  await page.getByLabel("Kroki lekcji").getByRole("button").nth(4).click();
+  await page
+    .getByLabel("Kroki lekcji")
+    .getByRole("button")
+    .nth(sharedCountWords.lesson.steps.length - 1)
+    .click();
   await page
     .getByRole("button", { name: "Kolejny moduł", exact: true })
     .click();
@@ -1780,4 +1791,68 @@ test("opening a completed legacy recall keeps the old answer and leaves the new 
   expect(
     saved.steps[stepKey(lesson.id, "assessment-preview-borrow")],
   ).toBeUndefined();
+});
+
+test("shared-borrow gate opens its third family after one hinted family and one clean result", async ({
+  page,
+}) => {
+  const state = sharedCoachState("available");
+  state.events = [sharedPrimaryEvent("shared-has-suffix", NOW - 1)];
+  const assistedKey = stepKey(
+    sharedCountWords.lesson.id,
+    sharedCountWords.step.id,
+  );
+  const fresh = authored("shared-borrow-calibration", "shared-character-count");
+  const criterion = ownership.gateCriteria!.find(
+    (criterion) => criterion.id === "shared-borrow-pair-v1",
+  )!;
+  await mockTests(page);
+  await seedState(page, state);
+  expect(
+    courseGateRecovery(await savedState(page), criterion, lessons),
+  ).toEqual({
+    status: "available",
+    task: { lessonId: fresh.lesson.id, stepId: fresh.step.id },
+  });
+  await overview(page);
+  await page
+    .locator(".gate-panel li")
+    .filter({ hasText: criterion.label })
+    .getByRole("button", { name: "Sprawdź w zadaniu", exact: true })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(fresh.step.title);
+  await expect(editor(page)).toHaveValue(fresh.step.code!);
+  await editor(page).fill(fresh.step.solution!);
+  await runTests(page);
+  const recovered = await savedState(page);
+  expect(recovered.steps[assistedKey]).toEqual(state.steps[assistedKey]);
+  expect(recovered.events.slice(0, state.events.length)).toEqual(state.events);
+  expect(
+    recovered.events.find(
+      (event) => event.stepId === fresh.step.id && event.evaluator === "tests",
+    ),
+  ).toMatchObject({ passed: true, hints: 0, revealed: false, gate: true });
+  expect(
+    courseEvidenceSummary(recovered, "shared-borrow").qualifyingCodingTasks,
+  ).toBe(2);
+  expect(courseGateRecovery(recovered, criterion, lessons)).toEqual({
+    status: "complete",
+  });
+  const index = ownership.gateCriteria!.indexOf(criterion);
+  expect(
+    courseModuleGate(recovered, lessons, ownership).criteria[index].passed,
+  ).toBe(true);
+  await page.reload();
+  const persisted = await savedState(page);
+  expect(persisted.resume.lessonId).toBe(fresh.lesson.id);
+  expect(persisted.resume.stepIndex).toBe(
+    fresh.lesson.steps.indexOf(fresh.step),
+  );
+  expect(persisted.steps[assistedKey]).toEqual(state.steps[assistedKey]);
+  expect(persisted.steps[stepKey(fresh.lesson.id, fresh.step.id)]).toEqual(
+    recovered.steps[stepKey(fresh.lesson.id, fresh.step.id)],
+  );
+  expect(courseGateRecovery(persisted, criterion, lessons)).toEqual({
+    status: "complete",
+  });
 });

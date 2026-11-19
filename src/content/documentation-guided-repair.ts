@@ -1,3 +1,4 @@
+import { documentationKeyedSettingRecovery } from "./counted-family-recovery";
 import type { Concept, Lesson, LessonStep, Source } from "@/domain/types";
 import {
   documentationPrefixContract,
@@ -323,6 +324,7 @@ export const documentationRepairLessons: Lesson[] = (
           evidenceKind: "self-rating",
           evidenceGate: false,
         },
+        documentationKeyedSettingRecovery,
       ],
       misconceptions: [
         "Zielony test dowodzi, że samodzielnie znalazłem i przeczytałem dokumentację.",

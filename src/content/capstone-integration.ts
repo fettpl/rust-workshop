@@ -7,6 +7,7 @@ import type {
   Source,
 } from "../domain/types";
 import { capstoneContracts } from "./capstone-integration/contracts";
+import { capstoneTransfers } from "./capstone-integration/transfers";
 
 const reviewedAt = "2026-09-18";
 const moduleId = "capstone-integration";
@@ -341,7 +342,11 @@ function codingStep(options: {
       "Odrzuć pustą listę, niekompletny check, przyszłą obserwację i wiek 8 dni.",
     ],
   };
-  const hints = hintsByContract[options.contractId];
+  const hints =
+    hintsByContract[options.contractId] ??
+    capstoneTransfers.find(
+      (transfer) => transfer.contract.id === options.contractId,
+    )?.hints;
   if (!hints)
     throw new Error(`Brak wskazówek dla kontraktu ${options.contractId}`);
   return {
@@ -924,7 +929,20 @@ export const capstoneIntegrationLessons: Lesson[] = lessonData.map(
     subtitle: data.subtitle,
     minutes: 16,
     outcomes: [...data.outcomes],
-    steps: [...data.steps],
+    steps: [
+      ...data.steps,
+      ...capstoneTransfers
+        .filter((transfer) => transfer.lessonId === data.id)
+        .map((transfer) =>
+          codingStep({
+            id: transfer.contract.id,
+            kind: "apply",
+            title: transfer.title,
+            prompt: transfer.prompt,
+            contractId: transfer.contract.id,
+          }),
+        ),
+    ],
     misconceptions: [...data.misconceptions],
     transferTask: data.transfer,
     evidenceGate:
@@ -1038,7 +1056,18 @@ export const capstoneIntegrationModule: CourseModule = {
       .map((step) => ({
         id: `${step.id}-criterion`,
         label: `${lesson.title}: ${step.title}`,
-        taskRefs: [{ lessonId: lesson.id, stepId: step.id }],
+        taskRefs: [
+          { lessonId: lesson.id, stepId: step.id },
+          {
+            lessonId: lesson.id,
+            stepId:
+              step.id === "capstone-lifecycle-settle"
+                ? "capstone-lifecycle-recall"
+                : capstoneTransfers.find(
+                    (transfer) => transfer.primaryId === step.id,
+                  )!.contract.id,
+          },
+        ],
       })),
   ),
 };

@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import * as rawCourse from "./course";
 import delta from "./fixtures/curriculum-recovery-nov19-delta.json";
 import {
+  historicalBeforeRemainingCriteria,
   historicalBeforeIndependentPractice,
   historicalBeforeA12,
   historicalBeforeCurriculumRecovery,
@@ -221,4 +222,21 @@ it("restores all six catalog registries to the audited 02b6126 predecessor", asy
   }
   expect(course.ownershipModule).toBe(course.modules.find((module) => module.id === "ownership"));
   expect(historicalBeforeIndependentPractice(course)).toBe(course);
+});
+
+it("restores all six ea82ec2 registries and preserves independent edits to appended alternatives", async () => {
+  const { baseline } = await import("./fixtures/remaining-criteria-delta.json");
+  const preceding = historicalBeforeRemainingCriteria(rawCourse);
+  for (const name of ["lessons","modules","projects","reviewExercises","shortReviewExercises","delayedReviewExercises"] as const) {
+    expect(hashRegistryValue(preceding[name]), name).toBe(baseline[`${name}Sha256`]);
+  }
+  expect(historicalBeforeRemainingCriteria(preceding)).toBe(preceding);
+  const lessonId = "service-client-bounded-retry";
+  const edited = rawCourse.lessons.map(lesson => lesson.id === lessonId ? {
+    ...lesson,
+    steps: lesson.steps.map(step => step.id === "retry-time-windows" ? { ...step, title: "Independent revision" } : step),
+  } : lesson);
+  const steps = historicalBeforeRemainingCriteria({ ...rawCourse, lessons: edited }).lessons.find(lesson => lesson.id === lessonId)!.steps;
+  expect(steps.at(-1)?.title).toBe("Independent revision");
+  expect(steps.some(step => step.id === "retry-ready-queue")).toBe(false);
 });

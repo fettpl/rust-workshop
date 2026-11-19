@@ -98,6 +98,10 @@ export const tokioIoModule: CourseModule = {
           lessonId: "tokio-receiver-stream-drain",
           stepId: "tokio-receiver-stream-drain-close-and-drain-gate",
         },
+        {
+          lessonId: "tokio-receiver-stream-drain",
+          stepId: "tokio-receiver-stream-drain-partition-transfer",
+        },
       ],
     },
     {
@@ -108,6 +112,10 @@ export const tokioIoModule: CourseModule = {
         {
           lessonId: "tokio-receiver-stream-drain",
           stepId: "tokio-receiver-stream-drain-next-or-stop-blank",
+        },
+        {
+          lessonId: "tokio-receiver-stream-drain",
+          stepId: "tokio-receiver-stream-drain-batch-or-stop-transfer",
         },
       ],
     },

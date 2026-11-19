@@ -1,3 +1,4 @@
+import remainingDelta from "./fixtures/remaining-criteria-delta.json";
 import practiceDelta from "./fixtures/independent-practice-delta.json";
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
@@ -179,7 +180,7 @@ function restoreReviewedLessons(
     }
     for (const entry of projection.appendedSteps.filter(
       (entry) => entry.lessonId === lessonId,
-    )) {
+    ).sort((a, b) => b.index - a.index)) {
       const current = steps[entry.index];
       if (
         steps.filter((step) => ownValue(step, "id") === entry.id).length !==
@@ -219,7 +220,7 @@ function restoreReviewedLessons(
 }
 
 // Repeated worked examples share their predecessor value in the fixture.
-const beforeValues: Record<string, unknown> = practiceDelta.beforeValues;
+const beforeValues: Record<string, unknown> = { ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
 function withPredecessor<T extends { beforeSha256: string | null }>(entry: T) {
   return { ...entry, before: entry.beforeSha256 === null ? null : beforeValues[entry.beforeSha256] };
 }
@@ -230,12 +231,36 @@ const practiceLessons = {
 };
 const practiceRegistries = practiceDelta.registries.map(withPredecessor);
 
+const remainingLessons = {
+  ...remainingDelta,
+  restorations: remainingDelta.restorations.map(withPredecessor),
+  lessonRestorations: remainingDelta.lessonRestorations.map(withPredecessor),
+};
+const remainingRegistries = remainingDelta.registries.map(withPredecessor);
+
+export function restoreRemainingCriteriaLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, remainingLessons);
+}
+
+export function restoreRemainingCriteriaRegistry<T extends object>(
+  registry: T,
+  name: string,
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): T {
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, remainingRegistries);
+}
+
 export function restoreIndependentPracticeLessons(
   lessons: Lesson[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  return restoreReviewedLessons(lessons, replacements, matches, practiceLessons);
+  return restoreReviewedLessons(restoreRemainingCriteriaLessons(lessons, replacements, matches), replacements, matches, practiceLessons);
 }
 
 export function restoreIndependentPracticeRegistry<T extends object>(
@@ -244,7 +269,7 @@ export function restoreIndependentPracticeRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, practiceRegistries);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...remainingRegistries, ...practiceRegistries]);
 }
 
 /** Restores this batch first, so all older projections still see their authored successors. */
@@ -277,7 +302,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   name: string,
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
-  entries: readonly RegistryRestoration[] = [...practiceRegistries, ...curriculumRecoveryDelta.registries],
+  entries: readonly RegistryRestoration[] = [...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
   for (const entry of entries.filter(

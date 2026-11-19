@@ -1,3 +1,4 @@
+import { authorizationRecoverySteps } from "./counted-policy-recovery";
 // Mixed scope: Rust operational data is MIT; original Polish teaching prose is CC BY 4.0.
 import type {
   Competency,
@@ -252,6 +253,7 @@ export const serviceAuthorizationLessons: Lesson[] = specs.map((spec) => {
         evidenceKind: "self-rating",
         evidence: { version: 2, conceptIds: [conceptId] },
       },
+      authorizationRecoverySteps[spec.operation],
     ],
     misconceptions: [
       "Syntetyczny principal dowodzi tożsamości.",
@@ -320,10 +322,16 @@ export const serviceAuthorizationModule: CourseModule = {
   gateCriteria: specs.map((spec) => ({
     id: spec.gate,
     label: spec.criteria[0],
-    taskRefs: ["apply", "blank"].map((suffix) => ({
-      lessonId: `service-authorization-${spec.operation}`,
-      stepId: `authorization-${spec.operation}-${suffix}`,
-    })),
+    taskRefs: [
+      ...["apply", "blank"].map((suffix) => ({
+        lessonId: `service-authorization-${spec.operation}`,
+        stepId: `authorization-${spec.operation}-${suffix}`,
+      })),
+      {
+        lessonId: `service-authorization-${spec.operation}`,
+        stepId: authorizationRecoverySteps[spec.operation].id,
+      },
+    ],
     requiredIndependentCodingTasks: 1,
   })),
 };

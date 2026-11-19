@@ -17,8 +17,8 @@ const assessments = [
   ...Object.values(capstoneIntegrationReviewExercises),
 ];
 
-it("pokrywa dokładnie 24 stałe kontrakty i odrzuca każdy kompilujący mutant", () => {
-  expect(capstoneIntegrationAssessmentFixtures).toHaveLength(24);
+it("pokrywa dokładnie 35 stałe kontrakty i odrzuca każdy kompilujący mutant", () => {
+  expect(capstoneIntegrationAssessmentFixtures).toHaveLength(35);
   expect(
     capstoneIntegrationAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());

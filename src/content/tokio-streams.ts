@@ -1,3 +1,7 @@
+import {
+  receiverBatchTransfer,
+  receiverPartitionTransfer,
+} from "./tokio-shutdown-recovery";
 import { choose, tokioExercise, tokioRun } from "./tokio-helpers";
 import type {
   Competency,
@@ -939,6 +943,8 @@ export const tokioStreamLessons: Lesson[] = [
         ],
         gate: true,
       }),
+      receiverPartitionTransfer,
+      receiverBatchTransfer,
     ],
     misconceptions: [
       "close ReceiverStream usuwa wartości już zbuforowane przez kanał.",

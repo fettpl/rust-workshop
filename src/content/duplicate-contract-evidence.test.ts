@@ -929,7 +929,7 @@ describe("duplicate contract evidence families", () => {
     }
   });
 
-  it("recovers the MutSlot transfer family until its assisted attempt exhausts recovery", () => {
+  it("offers PairSlot after help on the two MutSlot families and exhausts only after all three", () => {
     const { lesson, step: gate } = lessonStep(
       "unsafe-miri-mut-slot",
       "mut-slot-gate",
@@ -983,6 +983,11 @@ describe("duplicate contract evidence families", () => {
         courseEvidencePolicy,
       ),
     ).toEqual([]);
+    const { step: pair } = lessonStep(lesson.id, "mut-slot-pair-reborrow-transfer");
+    expect(gateRecovery(state, criterion, lessons)).toEqual({
+      status: "available", task: { lessonId: lesson.id, stepId: pair.id },
+    });
+    state.steps[stepKey(lesson.id, pair.id)] = { ...createStepProgress(), revealed: true };
     expect(gateRecovery(state, criterion, lessons)).toEqual({
       status: "exhausted",
     });

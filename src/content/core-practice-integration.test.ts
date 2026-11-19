@@ -41,8 +41,7 @@ import {
   nestedPatternReviewExercises,
   nestedPatternSources,
 } from "./nested-patterns";
-import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
-import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
+import { historicalFunctionOwnershipCalibration, historicalSharedBorrowCalibration } from "./file-schema-evolution-compatibility-fixture";
 import { nextLessonForNavigation } from "../engine/course-route";
 import { gateRecovery, moduleGate } from "../engine/learning";
 import {
@@ -201,8 +200,8 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
     ...coreConversionsLessons,
     ...coreCheckedConversionsLessons,
     ...restoreIndependentPracticeLessons(nestedPatternLessons, new Map(), matchesRegistryValue),
-    functionOwnershipCalibrationLesson,
-    sharedBorrowCalibrationLesson,
+    historicalFunctionOwnershipCalibration,
+    historicalSharedBorrowCalibration,
   ]);
   expect(course.concepts.slice(legacy.conceptIds.length)).toEqual([
     ...coreConversionsConcepts,
@@ -220,7 +219,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
       (source) => !correctionDelta.addedSourceIds.includes(source.id),
     ),
   ]);
-  expect(course.lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
+  expect(course.lessons.at(-1)).toEqual(historicalSharedBorrowCalibration);
   expect(nestedPatternLessons[0].prerequisites).toEqual([
     "modeling-assessment",
   ]);

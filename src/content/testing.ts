@@ -1187,6 +1187,7 @@ export const testingModule: CourseModule = {
           stepId: "docs-split-transfer",
         },
         { lessonId: "documentation-guided-repair", stepId: "docs-split-blank" },
+        { lessonId: "documentation-guided-repair", stepId: "docs-keyed-setting" },
       ],
       supplementaryStepRefs: [
         {

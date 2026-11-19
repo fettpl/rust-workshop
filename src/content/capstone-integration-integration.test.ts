@@ -194,10 +194,10 @@ describe("Capstone: trwały serwis logów", () => {
       capstoneIntegrationModule.gateCriteria?.flatMap(
         (criterion) => criterion.taskRefs,
       ),
-    ).toHaveLength(12);
+    ).toHaveLength(24);
     expect(
       capstoneIntegrationModule.gateCriteria?.every(
-        (criterion) => criterion.taskRefs.length === 1,
+        (criterion) => criterion.taskRefs.length === 2,
       ),
     ).toBe(true);
     expect(capstoneIntegrationModule.assessmentId).toBe(
@@ -223,7 +223,13 @@ describe("Capstone: trwały serwis logów", () => {
     let at = 1;
     for (const lesson of capstoneIntegrationLessons) {
       for (const step of lesson.steps.filter(
-        (candidate) => !candidate.evidenceGate && candidate.kind !== "blank",
+        (candidate) =>
+          !capstoneIntegrationModule.gateCriteria!.some((criterion) =>
+            criterion.taskRefs.some(
+              (ref) =>
+                ref.lessonId === lesson.id && ref.stepId === candidate.id,
+            ),
+          ) && candidate.kind !== "blank",
       )) {
         state = recordEvidence(state, {
           id: `completion/${step.id}`,
@@ -381,7 +387,7 @@ describe("Capstone: trwały serwis logów", () => {
     expect(state.mastery[concept.id]?.level).toBe("retained");
   });
 
-  it("utrzymuje 24 dokładne kontrakty bez blanków", () => {
+  it("utrzymuje 35 dokładnych kontraktów bez blanków", () => {
     const testedIds = [
       ...capstoneIntegrationLessons.flatMap((lesson) =>
         lesson.steps
@@ -392,11 +398,11 @@ describe("Capstone: trwały serwis logów", () => {
         (step) => step.id,
       ),
     ];
-    expect(testedIds).toHaveLength(24);
+    expect(testedIds).toHaveLength(35);
     expect(
       capstoneIntegrationAssessmentFixtures.map((fixture) => fixture.id).sort(),
     ).toEqual(testedIds.sort());
-    expect(capstoneIntegrationAssessmentFixtures).toHaveLength(24);
+    expect(capstoneIntegrationAssessmentFixtures).toHaveLength(35);
     expect(
       capstoneIntegrationAssessmentFixtures.every(
         (fixture) => fixture.equivalent && fixture.mutant,

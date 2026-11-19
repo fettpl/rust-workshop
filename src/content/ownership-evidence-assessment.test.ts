@@ -245,6 +245,10 @@ it("registers the fresh function boundary criterion and gates on both authored t
         lessonId: "function-ownership-calibration",
         stepId: "function-add-mark",
       },
+      {
+        lessonId: "function-ownership-calibration",
+        stepId: "function-split-owned",
+      },
     ],
   });
   const eventFor = (
@@ -314,9 +318,15 @@ it("registers the fresh function boundary criterion and gates on both authored t
   expect(
     gateRecovery(bothFresh, boundaryCriterion!, courseLessons).status,
   ).toBe("complete");
-  expect(
-    gateRecovery(revealedFresh, boundaryCriterion!, courseLessons).status,
-  ).toBe("exhausted");
+  expect(gateRecovery(revealedFresh, boundaryCriterion!, courseLessons)).toEqual({
+    status: "available",
+    task: { lessonId: "function-ownership-calibration", stepId: "function-split-owned" },
+  });
+  const withTransfer = {
+    ...revealedFresh,
+    events: [...revealedFresh.events, eventFor("function-split-owned", "fresh-transfer")],
+  };
+  expect(passed(withTransfer)).toBe(true);
   expect(gateRecovery(oldOnly, boundaryCriterion!, courseLessons).status).toBe(
     "available",
   );

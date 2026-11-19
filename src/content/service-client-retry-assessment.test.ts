@@ -45,7 +45,7 @@ function compileAndRun(id: string, source: string, tests: string, expectation: R
     };
     if (expectation === "passed") {
       expect(executed.status, `${id}: ${output}`).toBe(0);
-      expect(output, `${id}: exact named test count`).toMatch(/test result: ok\. 1 passed/);
+      expect(execution.tests?.passed).toBe(tests.match(/#\[test\]/g)?.length);
     } else {
       expect(executed.status, `${id}: ${output}`).toBe(101);
       expect(output, `${id}: semantic mutant must fail the hidden assertion`).toMatch(
@@ -185,10 +185,56 @@ fn aggregate(observations: &[Observation], stopped: StopReason) -> Final {
 }`;
 const aggregateMutant = aggregateEquivalent.replace("if let Some(receipt) = observations.iter().find_map(|item| match item { Observation::Receipt(receipt) if receipt.sequence > 0 => Some(*receipt), _ => None }) { return Final::Delivered { receipt, attempts }; }", "if let Some(_receipt) = observations.iter().find_map(|item| match item { Observation::Receipt(receipt) => Some(*receipt), _ => None }) { return Final::Delivered { receipt: Receipt { sequence: 0, disposition: ReceiptDisposition::Inserted }, attempts }; }");
 
+function transferControls(id: string, equivalentBody: string, from: string, to: string) {
+  const step = serviceClientRetryLessons.flatMap((lesson) => lesson.steps).find((entry) => entry.id === id)!;
+  expect(step.code).toContain("todo!()");
+  const equivalent = step.code!.replace("todo!()", equivalentBody);
+  expect(equivalent).toContain(from);
+  return [id, step, equivalent, equivalent.replace(from, to)] as const;
+}
+
 it("runs canonical, equivalent, and compiling semantic-mutant controls for all four A10 families", () => {
   const stepById = new Map(serviceClientRetryLessons.flatMap((lesson) => lesson.steps).map((step) => [step.id, step]));
   const reviewById = new Map(Object.values(serviceClientRetryReviewExercises).map((step) => [step.id, step]));
   const cases = [
+    transferControls("retry-ready-queue", `let mut ready = Vec::new();
+    for p in queue {
+        if p.attempts == 0 || p.attempts >= p.limit || now >= p.deadline { continue; }
+        if p.status != "QUEUE_FULL" && p.status != "BUSY" { continue; }
+        if let Some(due) = p.last.checked_add(p.backoff) { if now >= due { ready.push(p.id); } }
+    }
+    ready`, "now >= due", "now > due"),
+    transferControls("retry-time-windows", `if [u64::from(limit), width, backoff].contains(&0) { return Err(PlanError::Invalid); }
+    let mut intervals = Vec::new();
+    let mut cursor = now;
+    while cursor < deadline {
+        let end = cursor.checked_add(width).ok_or(PlanError::Overflow)?.min(deadline);
+        intervals.push((cursor, end));
+        if intervals.len() == usize::from(limit) || end == deadline { break; }
+        cursor = (intervals.len() as u64).checked_mul(backoff).and_then(|gap| end.checked_add(gap)).ok_or(PlanError::Overflow)?;
+    }
+    Ok(intervals)`, "(intervals.len() as u64)", "1u64"),
+    transferControls("retry-replica-frame", `let mut destinations = replicas.iter();
+    loop {
+        let name = destinations.next()?;
+        match send(name, frame) {
+            Reply::Lost => {},
+            Reply::Refused => return None,
+            Reply::Receipt(n) => return (n != 0).then_some(n),
+        }
+    }`, "send(name, frame)", "send(replicas[0], frame)"),
+    transferControls("retry-receipt-ledger", `let mut found = false;
+    let mut uncertain = false;
+    for (_, obs) in ledger.iter().filter(|(key, _)| *key == id) {
+        found = true;
+        match obs {
+            Seen::Receipt(n) if *n != 0 => return Outcome::Delivered(*n),
+            Seen::Busy | Seen::Refused => {},
+            _ => uncertain = true,
+        }
+    }
+    if uncertain { Outcome::Unknown } else if found { Outcome::Rejected } else { Outcome::Missing }`,
+    "Seen::Busy | Seen::Refused => {}", "Seen::Busy | Seen::Refused => uncertain = false"),
     ["next-action", stepById.get("service-client-retry-next-action"), nextActionEquivalent, nextActionMutant],
     ["budget", stepById.get("service-client-retry-budget-reservation"), budgetEquivalent, budgetMutant],
     ["next-action-blank", stepById.get("bounded-retry-blank"), nextActionEquivalent, nextActionMutant],
@@ -203,16 +249,16 @@ it("runs canonical, equivalent, and compiling semantic-mutant controls for all f
   for (const [id, step, equivalent, mutant] of cases) {
     expect(step?.evaluator?.kind, id).toBe("tests");
     if (!step || step.evaluator?.kind !== "tests" || !step.solution) continue;
-    expect(step.evaluator.tests.match(/#\[test\]/g)?.length, id).toBe(1);
+    const total = step.evaluator.tests.match(/#\[test\]/g)?.length ?? 0;
+    expect(total, id).toBeGreaterThan(0);
     for (const [variant, source, expected] of [
       ["canonical", step.solution, true],
       ["equivalent", equivalent, true],
       ["mutant", mutant, false],
     ] as const) {
       const execution = compileAndRun(`${id}-${variant}`, source, step.evaluator.tests, expected ? "passed" : "semantic-failure");
-      expect(execution.tests, `${id}/${variant}: nonempty evaluator count`).toEqual(
-        expected ? { passed: 1, failed: 0 } : { passed: 0, failed: 1 },
-      );
+      expect(execution.tests!.passed + execution.tests!.failed).toBe(total);
+      expect(execution.tests!.failed === 0).toBe(expected);
       const evaluation = evaluate(step.evaluator, {
         code: source,
         result: {
@@ -231,7 +277,7 @@ it("runs canonical, equivalent, and compiling semantic-mutant controls for all f
     ...serviceClientRetryLessons.flatMap((lesson) => lesson.steps),
     ...Object.values(serviceClientRetryReviewExercises),
   ].filter((step) => step.evaluator?.kind === "tests");
-  expect(codingSteps, "lesson and review starter coverage").toHaveLength(10);
+  expect(codingSteps, "lesson and review starter coverage").toHaveLength(14);
   for (const step of codingSteps) {
     expect(step.code, `${step.id}: bounded starter`).toBeTruthy();
     expect(step.solution, `${step.id}: authored solution`).toBeTruthy();

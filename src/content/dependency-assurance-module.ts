@@ -32,12 +32,27 @@ export const dependencyAssuranceModule: CourseModule = {
     {
       id: `${lessonId}-primary-contract`,
       label: `Główna bramka kontraktu ${lessonId}.`,
-      taskRefs: [{ lessonId, stepId: `${lessonId}-gate` }],
+      taskRefs: [
+        { lessonId, stepId: `${lessonId}-gate` },
+        {
+          lessonId,
+          stepId:
+            lessonId === "dependency-graph-diagnosis"
+              ? `${lessonId}-recall`
+              : `${lessonId}-${{ "dependency-source-license-policy": "batch", "dependency-advisory-exceptions": "scope", "dependency-release-dossier": "missing" }[lessonId]}-transfer`,
+        },
+      ],
     },
     {
       id: `${lessonId}-blank-contract`,
       label: `Niezależna bramka blank-page ${lessonId}.`,
-      taskRefs: [{ lessonId, stepId: `${lessonId}-blank` }],
+      taskRefs: [
+        { lessonId, stepId: `${lessonId}-blank` },
+        {
+          lessonId,
+          stepId: `${lessonId}-${{ "dependency-graph-diagnosis": "edge-audit", "dependency-source-license-policy": "reason", "dependency-advisory-exceptions": "ledger", "dependency-release-dossier": "batch" }[lessonId]}-transfer`,
+        },
+      ],
     },
   ]),
 };

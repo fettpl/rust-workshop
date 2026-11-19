@@ -21,8 +21,7 @@ const { concepts, lessons, modules, reviewExercises } =
   );
 import { runtimeAllocationEvidenceLessons } from "./runtime-allocation-evidence";
 import { nestedPatternConcepts, nestedPatternLessons } from "./nested-patterns";
-import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
-import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
+import { historicalFunctionOwnershipCalibration, historicalSharedBorrowCalibration } from "./file-schema-evolution-compatibility-fixture";
 
 it("registers the two runtime allocation lessons with four gates and six authored assessments", () => {
   expect(runtimeAllocationEvidenceLessons.map((lesson) => lesson.id)).toEqual([
@@ -31,8 +30,8 @@ it("registers the two runtime allocation lessons with four gates and six authore
   ]);
   // Frozen post-PR40/PR41 pre-nested catalog cut plus the accepted nested exports.
   expect(lessons).toHaveLength(186 + nestedPatternLessons.length + 2);
-  expect(lessons.at(-2)).toEqual(functionOwnershipCalibrationLesson);
-  expect(lessons.at(-1)).toEqual(sharedBorrowCalibrationLesson);
+  expect(lessons.at(-2)).toEqual(historicalFunctionOwnershipCalibration);
+  expect(lessons.at(-1)).toEqual(historicalSharedBorrowCalibration);
   expect(concepts).toHaveLength(190 + nestedPatternConcepts.length);
   const stage = modules.find((module) => module.id === "profile-evidence")!;
   expect(stage.lessonIds).toEqual(

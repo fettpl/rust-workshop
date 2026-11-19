@@ -1,3 +1,4 @@
+import { fallibleDrainTransfer } from "./tokio-shutdown-recovery";
 import { choose, tokioExercise, tokioRun } from "./tokio-helpers";
 import type {
   Competency,
@@ -769,6 +770,7 @@ export const tokioShutdownLessons: Lesson[] = [
         forbiddenPatterns: [".abort(", "std::mem::forget"],
         gate: true,
       }),
+      fallibleDrainTransfer,
     ],
     misconceptions: [
       "close Receiver nie oznacza, że wcześniej wydany Permit nie może już wysłać wartości.",
