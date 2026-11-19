@@ -23,7 +23,7 @@ import {
   matchesRegistryValue,
 } from "./file-schema-evolution-compatibility-fixture";
 import { restoreFoundationsRangeLessons } from "./workshop-assessment-repair-compatibility-fixture";
-import { restoreFoundationsRangeModules } from "./tokio-shutdown-gates-compatibility-fixture";
+import { restoreFoundationsRangeModules, restoreRegressionSkillsModules } from "./tokio-shutdown-gates-compatibility-fixture";
 
 const lesson = lessons.find((l) => l.id === "control-flow")!;
 const foundations = modules.find((m) => m.id === lesson.moduleId)!;
@@ -143,7 +143,8 @@ it("projects the new catalog back to the unmodified local predecessor", () => {
   expect(
     oldLessons.find((l) => l.id === lesson.id)!.steps.map((s) => s.id),
   ).toEqual(lesson.steps.slice(0, -1).map((s) => s.id));
-  const drift = modules.map((m) =>
+  const beforeSplit = restoreRegressionSkillsModules(modules, new Map(), matchesRegistryValue);
+  const drift = beforeSplit.map((m) =>
     m === foundations ? { ...m, title: "unreviewed" } : m,
   );
   expect(

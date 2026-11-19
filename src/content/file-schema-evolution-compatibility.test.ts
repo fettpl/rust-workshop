@@ -1,3 +1,4 @@
+import regressionDelta from "./fixtures/regression-skills-delta.json";
 import firstEvenDelta from "./fixtures/first-even-assessment-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
@@ -91,6 +92,7 @@ it("preserves original references, aliases, unknown properties and explicit unde
   expect(result.project).toBe(input.project);
   expect(result.reviewExerciseForId).toBe(input.reviewExerciseForId);
   const repairedLessons = new Set([
+    ...regressionDelta.restorations.map((entry) => entry.lessonId),
     ...firstEvenDelta.restorations.map((entry) => entry.lessonId),
     ...exerciseDelta.restorations.map((entry) => entry.lessonId),
     ...recoveryDelta.restorations.map((entry) => entry.lessonId),
@@ -114,6 +116,7 @@ it("preserves original references, aliases, unknown properties and explicit unde
             "tokio-flow-control",
             "tokio-io-streams",
             "rust-foundations",
+            "testing-quality",
           ].includes(item.id))
       )
         return;

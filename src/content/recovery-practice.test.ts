@@ -302,3 +302,36 @@ it("first-even assessment accepts independent cases and the published solution",
   checkRust(firstEvenHelper(Object.values(firstEvenCases)), tests, true);
   checkRust(firstEvenExercise.solution!, tests, true);
 });
+
+it("requires a Unicode regression suite to detect trimming and internal whitespace regressions", () => {
+  const s = step("regressions-apply-gate");
+  const incomplete = `fn assert_normalize_contract(f: fn(&str) -> String) {
+    assert_eq!(f(""), "");
+    assert_eq!(f("ĆMA A"), "ćma a");
+  }`;
+  checkRust(incomplete, testsOf(s), false);
+  checkRust(s.solution!, testsOf(s), true);
+});
+
+it("requires each edge in the booking-window transfer", () => {
+  const s = step("regressions-window-blank");
+  const cases = [[2, false], [3, true], [8, true], [9, false]] as const;
+  for (const omitted of [undefined, 2, 3, 8, 9]) {
+    const assertions = cases.filter(([day]) => day !== omitted)
+      .map(([day, allowed]) => `assert_eq!(f(${day}), ${allowed});`).join("\n");
+    checkRust(`fn sprawdz_okno(f: fn(u32) -> bool) { ${assertions} }`, testsOf(s), omitted === undefined);
+  }
+});
+
+it("requires non-ASCII casing, separators and whitespace-only labels", () => {
+  const s = step("regressions-tag-blank");
+  const cases = [
+    'assert_eq!(f("żuk"), "ŻUK");',
+    'assert_eq!(f("a\\tb"), "A-B");',
+    'assert_eq!(f("  "), "");',
+  ];
+  for (const omitted of [-1, 0, 1, 2]) {
+    const assertions = cases.filter((_, index) => index !== omitted).join("\n");
+    checkRust(`fn sprawdz_etykiete(f: fn(&str) -> String) { ${assertions} }`, testsOf(s), omitted === -1);
+  }
+});

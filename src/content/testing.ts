@@ -227,6 +227,13 @@ function tested(options: {
   };
 }
 
+function regressionExercise(options: Parameters<typeof tested>[0]): LessonStep {
+  return {
+    ...tested(options),
+    evidence: { version: 1, conceptIds: ["testing-regressions"] },
+  };
+}
+
 const contractsGateOneStarter = `fn assert_increment_contract(_candidate: fn(i32) -> i32) {
     // Zbuduj tabelę (wejście, oczekiwany wynik) i sprawdź każdy wiersz.
 }`;
@@ -376,6 +383,10 @@ fn normalization_contract_rejects_shortcuts() {
     assert!(std::panic::catch_unwind(|| assert_normalize_contract(first_word)).is_err());
     assert!(std::panic::catch_unwind(|| assert_normalize_contract(ascii_only)).is_err());
     assert!(std::panic::catch_unwind(|| assert_normalize_contract(empty_wrong)).is_err());
+    assert!(std::panic::catch_unwind(|| assert_normalize_contract(|s| s.trim_start().to_lowercase())).is_err());
+    assert!(std::panic::catch_unwind(|| assert_normalize_contract(|s| s.trim_end().to_lowercase())).is_err());
+    assert!(std::panic::catch_unwind(|| assert_normalize_contract(|s| s.split_whitespace()
+        .collect::<Vec<_>>().join(" ").to_lowercase())).is_err());
 }`;
 
 const qualityGateOneStarter = `fn assert_sum_contract(_sum: fn(&[i32]) -> i32) {
@@ -695,7 +706,7 @@ fn main() {
           "Przypadek regresyjny opisuje obserwowalny wynik, a nie prywatny warunek implementacji.",
         ],
       ),
-      tested({
+      regressionExercise({
         id: "regressions-debug-gate",
         kind: "debug",
         title: "Napraw: granice temperatury",
@@ -709,7 +720,7 @@ fn main() {
           "Porównaj wynik classify(input) z expected dla każdego wiersza, nie tylko dla środka.",
         ],
       }),
-      tested({
+      regressionExercise({
         id: "regressions-apply-gate",
         kind: "apply",
         title: "Zastosuj: tekst, spacje i znaki",
@@ -736,6 +747,72 @@ fn main() {
           "-1 nie dotyka zmienionej górnej granicy.",
         ],
       ),
+      regressionExercise({
+        id: "regressions-window-blank",
+        kind: "blank",
+        title: "Sprawdź okno rezerwacji",
+        prompt:
+          "System przyjmuje rezerwacje od 3 do 8 dni przed wizytą, włącznie. Napisz od zera funkcję `fn sprawdz_okno(przyjmuje: fn(u32) -> bool)`. Dobierz wejścia i oczekiwane wyniki tak, żeby Twój test wykrył przesunięcie dowolnej granicy o jeden dzień w każdą stronę.",
+        solution: `fn sprawdz_okno(przyjmuje: fn(u32) -> bool) {
+    for (dni, wynik) in [(2, false), (3, true), (8, true), (9, false)] {
+        assert_eq!(przyjmuje(dni), wynik);
+    }
+}`,
+        tests: `#[test]
+fn accepts_the_booking_rule() {
+    sprawdz_okno(|days| (3..=8).contains(&days));
+}
+#[test]
+fn notices_each_shifted_endpoint() {
+    let shifted: [fn(u32) -> bool; 4] = [
+        |d| (2..=8).contains(&d), |d| (4..=8).contains(&d),
+        |d| (3..=7).contains(&d), |d| (3..=9).contains(&d),
+    ];
+    for rule in shifted {
+        assert!(std::panic::catch_unwind(|| sprawdz_okno(rule)).is_err(),
+            "Sprawdź obie strony każdego końca zakresu.");
+    }
+}`,
+        hints: [
+          "Co oczekujesz uzyskać ostatniego niedozwolonego dnia przed oknem i pierwszego dozwolonego?",
+          "Powtórz tę parę obserwacji na drugim końcu okna.",
+        ],
+      }),
+      regressionExercise({
+        id: "regressions-tag-blank",
+        kind: "blank",
+        title: "Sprawdź przekształcanie etykiet",
+        prompt:
+          "Etykieta powstaje przez podział tekstu metodą split_whitespace, zamianę słów na wielkie litery Unicode i połączenie ich pojedynczym łącznikiem. Bez słów wynik jest pusty. Napisz `fn sprawdz_etykiete(formatuj: fn(&str) -> String)`. Dobierz własne dane i sprawdź wynik dla samych białych znaków, dla kilku słów oddzielonych różnymi białymi znakami oraz dla litery spoza ASCII, której wielkość się zmienia.",
+        solution: `fn sprawdz_etykiete(formatuj: fn(&str) -> String) {
+    assert_eq!(formatuj("   "), "");
+    assert_eq!(formatuj("  ćma\t las  "), "ĆMA-LAS");
+}`,
+        tests: `fn tag(text: &str) -> String {
+    text.split_whitespace().map(str::to_uppercase).collect::<Vec<_>>().join("-")
+}
+#[test]
+fn accepts_the_label_contract() {
+    sprawdz_etykiete(tag);
+}
+#[test]
+fn catches_incomplete_labels() {
+    let incorrect: [fn(&str) -> String; 4] = [
+        |s| s.split_whitespace().map(str::to_uppercase).collect::<Vec<_>>().join(""),
+        |s| s.split_whitespace().map(str::to_ascii_uppercase).collect::<Vec<_>>().join("-"),
+        |s| s.split(' ').filter(|w| !w.is_empty()).map(str::to_uppercase).collect::<Vec<_>>().join("-"),
+        |s| if !s.is_empty() && s.trim().is_empty() { String::from("-") } else { tag(s) },
+    ];
+    for format in incorrect {
+        assert!(std::panic::catch_unwind(|| sprawdz_etykiete(format)).is_err(),
+            "Porównaj wynik dla Unicode, separatorów i wejścia z samych białych znaków.");
+    }
+}`,
+        hints: [
+          "Porównaj etykietę z oczekiwanym napisem. Sama długość może zostać poprawna mimo błędu.",
+          "Spacja i tabulator rozdzielają słowa. Wybierz także małą literę, dla której metoda ASCII nie wykona zamiany.",
+        ],
+      }),
     ],
     misconceptions: [
       "Więcej losowych przykładów nie zastępuje wejścia dokładnie na granicy.",
@@ -1045,10 +1122,18 @@ export const testingModule: CourseModule = {
     {
       id: "testing-regressions-gate",
       label:
-        "Testy regresyjne trafiają w granice liczb oraz Unicode i nie akceptują skrótów.",
+        "Własne testy wykrywają błędne granice przedziału liczbowego.",
       taskRefs: [
         { lessonId: "testing-regressions", stepId: "regressions-debug-gate" },
+        { lessonId: "testing-regressions", stepId: "regressions-window-blank" },
+      ],
+    },
+    {
+      id: "testing-unicode-regressions-gate",
+      label: "Własne testy wykrywają błędy przetwarzania tekstu Unicode i białych znaków.",
+      taskRefs: [
         { lessonId: "testing-regressions", stepId: "regressions-apply-gate" },
+        { lessonId: "testing-regressions", stepId: "regressions-tag-blank" },
       ],
     },
     {

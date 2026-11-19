@@ -665,7 +665,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "5292e0418b42b688d184cc9199d2901cbceb4bc1a177527e4c3f1dd251bf940c",
+      "sha256": "24dbbc3f33910ce4c57eaf4953b42f636d45b5dc0d5b0c80000de404832b6db5",
       "group": "course"
     },
     {
@@ -680,7 +680,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "035c3e1836a028605f2ecc4d07b6f296e67d9a0faaab79e4eaf653509d73c0ab",
+      "sha256": "4e80cf0d7f1e4299d71882be04515198565d1b9fa08ee28c19a17d35ca482ebf",
       "group": "course"
     },
     {
@@ -779,6 +779,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/fixtures/regression-skills-delta.json",
+      "sha256": "4f3022c6830ca00e7f28560148d6415cea806124bc998744b7a9d12c082966d8",
+      "group": "course"
+    },
+    {
       "path": "src/content/fixtures/tokio-shutdown-gates-delta.json",
       "sha256": "ad55e9e696814bd564f4e6c56d74beb096ef9aa65fda9c0dd6ac2c34c3c0baf0",
       "group": "course"
@@ -815,7 +820,7 @@
     },
     {
       "path": "src/content/foundations-range-gate.test.ts",
-      "sha256": "233a0864c4923db5a08b14aac6ad78b09774439d6e521facd2bd6802eae86f65",
+      "sha256": "8bc41c566d7b5cb1bf976e9455f344b9c82d12216d83c2dccb937caae58d1a84",
       "group": "course"
     },
     {
@@ -1500,7 +1505,12 @@
     },
     {
       "path": "src/content/recovery-practice.test.ts",
-      "sha256": "80a8ccf4a1a0fb75fdb02c4f4691ba36c3c240921a9a455d463c77f2e94bfb3c",
+      "sha256": "e34f697f7ce073af37e0ed2bd0631574f164a1802d58dddd2d299c2d8cc334e0",
+      "group": "course"
+    },
+    {
+      "path": "src/content/regression-skills.test.ts",
+      "sha256": "a3885e9efae0de2ef77deda87cad0ff28311ac5dbc0696980f3b20c8e92fcb56",
       "group": "course"
     },
     {
@@ -1685,7 +1695,7 @@
     },
     {
       "path": "src/content/testing.ts",
-      "sha256": "9485a11ef9864125fbbb6f485ebba478b063d4c1a51e53cb94c218ffb1a79ed0",
+      "sha256": "3bec7274f012e835a90369c702960a71ee07fcfff51f66a1420658c7365c9bfd",
       "group": "course"
     },
     {
@@ -1760,7 +1770,7 @@
     },
     {
       "path": "src/content/tokio-shutdown-gates-compatibility-fixture.ts",
-      "sha256": "d38dd127ee8b641967bfde86bde8c9faff8038361f2b6e70c2a6700d46560c93",
+      "sha256": "2b8b8f2bccc9a2187116531b59c38568a92ec93ed095866dae7f61f69f0b630f",
       "group": "course"
     },
     {
@@ -2005,7 +2015,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "7ff9683649c174a73563428d559456d2fe6468830e20f3a1364107b9096dd19d",
+      "sha256": "f319ff52a8b3193f026d6fa42912d1a66ec2e42781f720e151a93fe7b8d348f1",
       "group": "course"
     },
     {

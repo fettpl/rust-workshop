@@ -325,7 +325,7 @@ it("reports the current catalog and pins all fifteen inherited project objects",
   }).toEqual({
     modules: 51,
     lessons: 204,
-    steps: 1365,
+    steps: 1367,
     concepts: 199,
     competencies: 200,
     sources: 349,

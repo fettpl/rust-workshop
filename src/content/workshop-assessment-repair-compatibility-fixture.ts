@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import regressionDelta from "./fixtures/regression-skills-delta.json";
 import firstEvenDelta from "./fixtures/first-even-assessment-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryPracticeDelta from "./fixtures/recovery-practice-delta.json";
@@ -14,7 +15,7 @@ type FieldRestoration = {
   lessonId: string;
   path: string[];
   before: unknown;
-  beforeSha256: string;
+  beforeSha256: string | null;
   successorSha256: string;
 };
 type Projection = {
@@ -55,7 +56,7 @@ function restorePath(
   path: string[],
   before: unknown,
   successor: string,
-  predecessor: string,
+  predecessor: string | null,
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): object {
@@ -76,6 +77,15 @@ function restorePath(
     return restored === current
       ? object
       : replaceField(object, key, restored, replacements);
+  }
+  // A null predecessor hash records a field absent from the previous object.
+  if (predecessor === null) {
+    if (before !== null || !matches(current, successor)) return object;
+    const descriptors = Object.getOwnPropertyDescriptors(object);
+    delete descriptors[key];
+    const copy = Object.create(Object.getPrototypeOf(object), descriptors);
+    replacements.set(object, copy);
+    return copy;
   }
   if (!matches(current, successor) || !matches(before, predecessor))
     return object;
@@ -201,7 +211,8 @@ export function restoreRecoveryPracticeLessons(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  const beforeFirstEven = restoreReviewedLessons(lessons, replacements, matches, firstEvenDelta);
+  const beforeSplit = restoreReviewedLessons(lessons, replacements, matches, regressionDelta);
+  const beforeFirstEven = restoreReviewedLessons(beforeSplit, replacements, matches, firstEvenDelta);
   return restoreReviewedLessons(
     restoreReviewedLessons(beforeFirstEven, replacements, matches, exerciseDelta),
     replacements,
