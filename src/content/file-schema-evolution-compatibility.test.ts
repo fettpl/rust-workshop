@@ -1,3 +1,4 @@
+import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import logRecallDelta from "./fixtures/log-analyzer-recall-delta.json";
 import assessmentDelta from "./fixtures/workshop-assessment-repair-delta.json";
@@ -89,6 +90,7 @@ it("preserves original references, aliases, unknown properties and explicit unde
   expect(result.project).toBe(input.project);
   expect(result.reviewExerciseForId).toBe(input.reviewExerciseForId);
   const repairedLessons = new Set([
+    ...exerciseDelta.restorations.map((entry) => entry.lessonId),
     ...recoveryDelta.restorations.map((entry) => entry.lessonId),
     ...recoveryDelta.appendedSteps.map((entry) => entry.lessonId),
     ...logRecallDelta.restorations.map((entry) => entry.lessonId),

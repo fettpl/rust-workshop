@@ -1,3 +1,4 @@
+import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -25,7 +26,7 @@ const step = (id: string, catalog = lessons) =>
   catalog.flatMap((l) => l.steps).find((s) => s.id === id)!;
 
 // Invoke only the fixed repository-authored controls below.
-function checkRust(source: string, tests: string, passes: boolean) {
+function checkRust(source: string, tests: string, passes: boolean | "E0308") {
   const dir = mkdtempSync(join(tmpdir(), "recovery-curriculum-"));
   try {
     const file = join(dir, "exercise.rs"),
@@ -37,6 +38,11 @@ function checkRust(source: string, tests: string, passes: boolean) {
       { encoding: "utf8", timeout: 60_000 },
     );
     if (compiled.error) throw compiled.error;
+    if (passes === "E0308") {
+      expect(compiled.status, compiled.stderr).toBe(1);
+      expect(compiled.stderr).toContain("error[E0308]");
+      return;
+    }
     expect(compiled.status, compiled.stderr).toBe(0);
     const run = spawnSync(binary, [], { encoding: "utf8", timeout: 10_000 });
     if (run.error) throw run.error;
@@ -197,4 +203,72 @@ it("preserves the captured previous lessons and the historical Vec review aliase
   expect(hashRegistryValue(historical.reviewAlias)).toBe(
     snapshot.review.beforeSha256,
   );
+});
+
+const iteratorViewsStep = lessons
+  .find((lesson) => lesson.id === "iterator-ownership")!
+  .steps.find((exercise) => exercise.id === "ownership-blank")!;
+
+const gradingControls = [
+  {
+    exercise: step("panic-modify"),
+    incorrect: `fn percentage(text: &str) -> Result<i32, &str> {
+    use std::num::IntErrorKind::*;
+    match text.parse::<i32>() {
+        Ok(n @ (0 | 100)) => Ok(n),
+        Ok(_) => Err("outside"),
+        Err(e) if matches!(e.kind(), PosOverflow | NegOverflow) => Err("outside"),
+        Err(_) => Err("invalid"),
+    }
+}`,
+  },
+  {
+    exercise: step("pipelines-modify"),
+    incorrect: `fn selected_lengths(words: &[String], minimum: usize) -> Vec<usize> {
+    let mut lengths: Vec<_> = words.iter().map(String::len).filter(|n| *n >= minimum).collect();
+    lengths.sort_by(|a, b| b.cmp(a));
+    lengths
+}`,
+  },
+  {
+    exercise: iteratorViewsStep,
+    incorrect: `fn views<'a>(log: &'a [String], prefix: &str) -> Vec<&'a str> {
+    log.iter().filter(|line| line.starts_with(prefix))
+        .map(|line| log.iter().find(|other| *other == line).unwrap().as_str()).collect()
+}`,
+  },
+  {
+    exercise: reviewExercises["iterator-item-ownership"],
+    incorrect: `struct Parcel { label: String, priority: bool }
+fn urgent_labels(parcels: &[Parcel]) -> Vec<&str> {
+    parcels.iter().filter(|parcel| parcel.priority)
+        .map(|parcel| parcels.iter().find(|other| other.label == parcel.label).unwrap().label.as_str())
+        .collect()
+}`,
+  },
+];
+
+it.each(gradingControls)(
+  "$exercise.id rejects the audited incorrect implementation and accepts the reference",
+  ({ exercise, incorrect }) => {
+    checkRust(incorrect, testsOf(exercise), false);
+    checkRust(exercise.solution!, testsOf(exercise), true);
+  },
+);
+
+it("vec-even-gate requires a slice-compatible API", () => {
+  const exercise = step("vec-even-gate");
+  const narrowed = `fn count_even(values: &Vec<i32>) -> usize {
+    values.iter().filter(|n| *n % 2 == 0).count()
+}`;
+  checkRust(narrowed, testsOf(exercise), "E0308");
+  checkRust(exercise.solution!, testsOf(exercise), true);
+});
+
+it("restores the original iterator review through both registry aliases", () => {
+  const live = reviewExercises["iterator-item-ownership"];
+  const historical = historicalBeforeA12({ ...course, reviewAlias: live });
+  expect(historical.reviewAlias).toBe(historical.reviewExercises["iterator-item-ownership"]);
+  expect(historical.reviewAlias).toBe(historical.reviewExercisesById[live.id]);
+  expect(hashRegistryValue(historical.reviewAlias)).toBe(exerciseDelta.review.beforeSha256);
 });

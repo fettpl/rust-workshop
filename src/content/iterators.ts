@@ -315,7 +315,9 @@ fn views_borrow_unicode_in_order_and_keep_the_log_owned() {
     ];
     let viewed = views(&log, "INFO:");
     assert_eq!(viewed, ["INFO: żółć", "INFO: pusty", "INFO: żółć"]);
-    assert!(std::ptr::eq(viewed[0].as_ptr(), log[0].as_ptr()));
+    for (view, index) in viewed.iter().zip([0, 2, 3]) {
+        assert!(std::ptr::eq(*view, log[index].as_str()), "widok linii o indeksie {index}");
+    }
     assert_eq!(views(&log, "ERROR:"), Vec::<&str>::new());
     assert_eq!(log[1], "WARN: Łódź");
 }`;
@@ -357,6 +359,7 @@ fn map_filter_collect_keep_order_and_unicode_byte_lengths() {
         String::from(""),
     ];
     assert_eq!(selected_lengths(&words, 4), vec![8, 4]);
+    assert_eq!(selected_lengths(&words, 1), vec![1, 8, 4]);
     assert_eq!(selected_lengths(&words, 99), Vec::<usize>::new());
     assert_eq!(selected_lengths(&words, usize::MAX), Vec::<usize>::new());
     assert_eq!(selected_lengths(&[], 0), Vec::<usize>::new());
@@ -646,7 +649,7 @@ export const iteratorsLessons: Lesson[] = [
         kind: "apply",
         title: "Napraw pożyczane widoki logu",
         prompt:
-          "Napraw views. Ma przyjąć pożyczony wycinek napisów oraz pożyczony prefiks, przejść po liniach w kolejności, zatrzymać te zaczynające się od prefiksu i oddać Vec pożyczonych widoków. Widoki muszą wskazywać na napisy z wejścia: nie przenoś ich, nie alokuj nowych Stringów i zachowaj znaki Unicode. Dla braku dopasowań wynik jest pusty.",
+          "Napraw views. Ma przyjąć pożyczony wycinek napisów oraz pożyczony prefiks, przejść po liniach w kolejności, zatrzymać te zaczynające się od prefiksu i oddać Vec pożyczonych widoków. Każdy widok ma wskazywać dokładnie tę linię wejścia, z której pochodzi, także gdy kilka linii ma identyczną treść: nie przenoś ich, nie alokuj nowych Stringów i zachowaj znaki Unicode. Dla braku dopasowań wynik jest pusty.",
         code: borrowedViewsStarter,
         solution: borrowedViewsSolution,
         tests: borrowedViewsTests,
@@ -742,7 +745,7 @@ export const iteratorsLessons: Lesson[] = [
         kind: "modify",
         title: "Zachowaj kolejność długości",
         prompt:
-          "Uzupełnij selected_lengths. Przejdź pożyczająco po words, zostaw słowa o długości co najmniej minimum, zamień je na długość i zbierz wynik. Nie sortuj, nie zmieniaj wejścia i nie wymagaj własności String.",
+          "Uzupełnij selected_lengths. Przejdź pożyczająco po words, zostaw słowa o długości co najmniej minimum bajtów UTF-8, zamień je na liczbę bajtów i zbierz wynik. Nie sortuj, nie zmieniaj wejścia i nie wymagaj własności String.",
         code: pipelineModifyStarter,
         solution: pipelineModifySolution,
         tests: pipelineModifyTests,
@@ -1080,13 +1083,18 @@ fn urgent_labels(parcels: &[Parcel]) -> Vec<&str> {
 const reviewOwnershipTests = `#[test]
 fn review_views_borrow_and_filter_without_consuming_parcels() {
     let parcels = [
-        Parcel { label: String::from("A"), priority: false },
+        Parcel { label: String::from("żółć"), priority: false },
         Parcel { label: String::from("żółć"), priority: true },
         Parcel { label: String::from("Łódź"), priority: true },
+        Parcel { label: String::from("żółć"), priority: true },
     ];
-    assert_eq!(urgent_labels(&parcels), ["żółć", "Łódź"]);
+    let labels = urgent_labels(&parcels);
+    assert_eq!(labels, ["żółć", "Łódź", "żółć"]);
+    for (label, index) in labels.iter().zip([1, 2, 3]) {
+        assert!(std::ptr::eq(*label, parcels[index].label.as_str()), "etykieta przesyłki o indeksie {index}");
+    }
     assert_eq!(urgent_labels(&[]), Vec::<&str>::new());
-    assert_eq!(parcels[0].label, "A");
+    assert_eq!(parcels[0].label, "żółć");
 }`;
 
 const reviewPipelineSolution = `fn first_large<F>(values: &[i32], mut seen: F) -> Option<i32>
@@ -1151,7 +1159,7 @@ export const iteratorsReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: pilne widoki przesyłek",
     prompt:
-      "Uzupełnij urgent_labels tak, aby pożyczyć etykiety pilnych Parcel w kolejności wejścia. Funkcja nie może skonsumować tablicy, klonować String ani zwracać własnych napisów. Puste wejście daje pusty Vec; test dodaje nieznane wcześniej znaki Unicode.",
+      "Uzupełnij urgent_labels tak, aby pożyczyć etykiety pilnych Parcel w kolejności wejścia. Każdy widok ma pochodzić z etykiety konkretnej pilnej przesyłki, również gdy inna przesyłka ma identyczną etykietę. Funkcja nie może skonsumować tablicy, klonować String ani zwracać własnych napisów. Puste wejście daje pusty Vec; test dodaje nieznane wcześniej znaki Unicode.",
     code: reviewOwnershipStarter,
     solution: reviewOwnershipSolution,
     tests: reviewOwnershipTests,

@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryPracticeDelta from "./fixtures/recovery-practice-delta.json";
 import foundationsRangeDelta from "./fixtures/foundations-range-gate-delta.json";
 import logRecallDelta from "./fixtures/log-analyzer-recall-delta.json";
@@ -200,7 +201,7 @@ export function restoreRecoveryPracticeLessons(
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
   return restoreReviewedLessons(
-    lessons,
+    restoreReviewedLessons(lessons, replacements, matches, exerciseDelta),
     replacements,
     matches,
     recoveryPracticeDelta,

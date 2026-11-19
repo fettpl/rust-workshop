@@ -162,8 +162,9 @@ fn keeps_both_failure_modes_and_composes_value() {
 
 const boundaryTests = `#[test]
 fn validates_input_at_the_boundary() {
-    assert_eq!(percentage("0"), Ok(0));
-    assert_eq!(percentage("100"), Ok(100));
+    for value in 0..=100 {
+        assert_eq!(percentage(&value.to_string()), Ok(value), "procent {value}");
+    }
     assert_eq!(percentage("2147483647"), Err("outside"));
     assert_eq!(percentage("-2147483648"), Err("outside"));
     assert_eq!(percentage("-1"), Err("outside"));
@@ -1006,7 +1007,7 @@ fn invalid_input_does_not_panic() {
         kind: "modify",
         title: "Waliduj zakres na wejściu",
         prompt:
-          'Zmień percentage tak, aby tekst 0..100 był Ok, tekst z błędną składnią dawał Err("invalid"), a liczba poza zakresem — także przepełnienie i32 — Err("outside"). `ParseIntError::kind()` rozróżnia overflow od InvalidDigit/Empty. Nie wywołuj panic dla danych wejściowych.',
+          'Zmień percentage tak, aby każda liczba całkowita z zakresu `0..=100` zapisana jako tekst dawała Ok, tekst z błędną składnią dawał Err("invalid"), a liczba poza zakresem — także przepełnienie i32 — Err("outside"). `ParseIntError::kind()` rozróżnia overflow od InvalidDigit/Empty. Nie wywołuj panic dla danych wejściowych.',
         code: `use std::num::IntErrorKind;
 
 fn percentage(text: &str) -> Result<i32, &str> {

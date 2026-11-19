@@ -150,7 +150,8 @@ fn counts_even_values_in_empty_and_mixed_vectors() {
 
 #[test]
 fn counts_negative_and_repeated_values() {
-    assert_eq!(count_even(&vec![-4, -3, 0, 0, 9]), 3);
+    let values = [8, -4, -3, 0, 0, 9, 6];
+    assert_eq!(count_even(&values[1..6]), 3);
 }`;
 
 const stringCharsTests = `#[test]
