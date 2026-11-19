@@ -1202,14 +1202,14 @@ export const lessons: Lesson[] = [
         kind: "debug",
         title: "Właściciel nie wraca do wywołującego",
         prompt:
-          "Uruchom przykład i wyjaśnij, dlaczego drugie println nie może użyć message. Następnie napraw granicę show: funkcja ma czytać pożyczony tekst, a wywołujący nadal posiadać message. Zachowaj oba wypisania i nie używaj clone. Testy sprawdzą także inny komunikat.",
+          "Uruchom przykład i wyjaśnij, dlaczego drugie println nie może użyć message. Następnie napraw granicę show: funkcja ma czytać pożyczony tekst, a wywołujący nadal posiadać message. Zachowaj oba wypisania i dotychczasowy wynik `()` funkcji show; nie używaj clone. Testy sprawdzą pożyczkę i wynik `()` także dla innego komunikatu. Wypisania porównaj po uruchomieniu programu.",
         code: 'fn main() {\n    let message = String::from("hello");\n    show(message);\n    println!("{message}");\n}\n\nfn show(text: String) {\n    println!("{text}");\n}',
         solution:
           'fn main() {\n    let message = String::from("hello");\n    show(&message);\n    println!("{message}");\n}\n\nfn show(text: &String) {\n    println!("{text}");\n}',
         evaluator: {
           kind: "tests",
           tests:
-            '#[test]\nfn caller_can_reuse() {\n    let text = String::from("hello");\n    show(&text);\n    assert_eq!(text, "hello");\n    show(&String::from("nowy przypadek"));\n}',
+            '#[test]\nfn caller_can_reuse() {\n    let text = String::from("hello");\n    let _: () = show(&text);\n    assert_eq!(text, "hello");\n    let _: () = show(&String::from("nowy przypadek"));\n}',
           forbiddenPatterns: [".clone(", "Clone::clone("],
         },
         evidenceKind: "fix",
@@ -1579,14 +1579,14 @@ export const lessons: Lesson[] = [
         kind: "debug",
         title: "Zachowaj jednego właściciela komunikatu",
         prompt:
-          "Ten wariant przenosi String do formatera, a potem próbuje go wypisać. Napraw granicę przez pożyczkę.",
+          "Ten wariant przenosi String do formatera, a potem próbuje go wypisać. Napraw granicę przez pożyczkę. Zachowaj oba wypisania oraz dotychczasowy wynik `()` funkcji show bez clone. Testy sprawdzają pożyczkę i wynik `()`; wypisania porównaj po uruchomieniu programu.",
         code: 'fn main() {\n    let message = String::from("correct");\n    show(message);\n    println!("{message}");\n}\n\nfn show(text: String) {\n    println!("{text}");\n}',
         solution:
           'fn main() {\n    let message = String::from("correct");\n    show(&message);\n    println!("{message}");\n}\n\nfn show(text: &String) {\n    println!("{text}");\n}',
         evaluator: {
           kind: "tests",
           tests:
-            '#[test]\nfn caller_can_reuse() {\n    let text = String::from("correct");\n    show(&text);\n    assert_eq!(text, "correct");\n    show(&String::from("nowy przypadek"));\n}',
+            '#[test]\nfn caller_can_reuse() {\n    let text = String::from("correct");\n    let _: () = show(&text);\n    assert_eq!(text, "correct");\n    let _: () = show(&String::from("nowy przypadek"));\n}',
           forbiddenPatterns: [".clone(", "Clone::clone("],
         },
         evidenceKind: "fix",

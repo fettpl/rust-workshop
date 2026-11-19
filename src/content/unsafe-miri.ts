@@ -1,3 +1,4 @@
+import { linkSplitRegionSolutions } from "./split-region-solutions";
 import type {
   Competency,
   Concept,
@@ -1497,6 +1498,8 @@ for (const [lessonId, firstId, secondId] of [
     solution: primaryIds.map((stepId) => ({ lessonId, stepId })),
   };
 }
+
+linkSplitRegionSolutions(unsafeMiriLessons.find(lesson => lesson.id === "unsafe-miri-disjoint-regions")!);
 
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   "unsafe-miri-byte-view-contract": coding({

@@ -1055,6 +1055,13 @@ export const todoCliPackage: ProjectPackage = {
     "Uruchom cargo run --offline -- tasks.todo. Wpisuj add, done i list; zakończ przez quit albo EOF. Uruchom ponownie i sprawdź list.",
     "Rozwiązanie referencyjne podmienia wyłącznie src/storage.rs i src/app.rs. Porównaj je ze swoją pracą po ukończeniu lekcji formatu, plików i terminala.",
   ],
+  starterRevealStepRefs: [
+    { lessonId: "todo-command-parser", stepId: "parser-debug" },
+    { lessonId: "todo-command-parser", stepId: "parser-add-gate" },
+    { lessonId: "todo-state-invariants", stepId: "state-debug" },
+    { lessonId: "todo-state-invariants", stepId: "state-add-done-gate" },
+    { lessonId: "todo-state-invariants", stepId: "state-list-gate" },
+  ],
   revealStepRefs: [
     { lessonId: "todo-storage-format", stepId: "format-debug" },
     { lessonId: "todo-file-persistence", stepId: "file-debug" },

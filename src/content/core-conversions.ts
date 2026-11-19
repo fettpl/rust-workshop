@@ -85,6 +85,7 @@ fn byte_length_contract() {
     assert_eq!(byte_len(&fresh), 7);
     assert_eq!(fresh.text, "język ");
 }`;
+const measureTargets = [{ lessonId: "scenario-assessment", stepId: "assessment-repair" }];
 const labelStarter = `struct Label(String);
 impl From<String> for Label {
     fn from(text: String) -> Self { Self(text) }
@@ -293,6 +294,7 @@ export const coreConversionsLessons: Lesson[] = [
       }),
       exercise({
         id: "conversions-label-repair",
+        suppliedSolutions: { code: measureTargets, solution: measureTargets },
         kind: "debug",
         title: "Dodaj trait widoku Label",
         prompt:

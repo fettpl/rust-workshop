@@ -16,6 +16,7 @@ import type {
 export type EvidenceArtifact = "rust-code" | "manifest";
 
 export interface EvidencePolicy {
+  disclosureLessons?: readonly Lesson[];
   artifactForConcept(conceptId: string): EvidenceArtifact;
   calibrationForConcept?(
     conceptId: string,
@@ -171,6 +172,87 @@ function eventsBeforeSubmission(
   );
 }
 
+function disclosedSolution(event: EvidenceEvent): boolean {
+  return event.revealed && (event.kind !== "exposure" || event.id.startsWith("supplied-solution:"));
+}
+
+/** A different module can supply either this exact contract or its authored coding family. */
+export function hasExternalSolutionHelp(
+  state: UserState,
+  ref: ModuleGateTaskRef,
+  catalog: readonly Lesson[],
+  at = Infinity,
+): boolean {
+  const lesson = catalog.find((item) => item.id === ref.lessonId);
+  const target = lesson?.steps.find((item) => item.id === ref.stepId);
+  if (!lesson || !target) return false;
+  const family = target.evidence?.codingTaskId;
+  const supplies = (source: Lesson["steps"][number]) =>
+    source.suppliedSolutions?.solution?.some(
+      (item) =>
+        (item.lessonId === ref.lessonId && item.stepId === ref.stepId) ||
+        (family !== undefined &&
+          stepForRef(catalog, item)?.evidence?.codingTaskId === family),
+    );
+  if (
+    at === Infinity &&
+    catalog.some(
+      (source) =>
+        source.moduleId !== lesson.moduleId &&
+        source.steps.some(
+          (step) =>
+            state.steps[`${source.id}:${step.id}`]?.revealed && supplies(step),
+        ),
+    )
+  )
+    return true;
+  return state.events.some((event) => {
+    if (event.at > at || !disclosedSolution(event)) return false;
+    const source = catalog.find((item) => item.id === event.lessonId);
+    const step = source?.steps.find((item) => item.id === event.stepId);
+    return source?.moduleId !== lesson.moduleId && !!step && supplies(step);
+  });
+}
+
+/** Archives and visible starters store the target implementation that was shown. */
+export function hasRecordedSuppliedSolution(
+  events: readonly EvidenceEvent[],
+  ref: ModuleGateTaskRef,
+  catalog: readonly Lesson[],
+): boolean {
+  const family = stepForRef(catalog, ref)?.evidence?.codingTaskId;
+  return events.some(
+    (event) =>
+      event.kind === "exposure" &&
+      event.revealed &&
+      event.id.startsWith("supplied-solution:") &&
+      (eventForRef(event, ref) ||
+        (family !== undefined &&
+          stepForRef(catalog, event)?.evidence?.codingTaskId === family)),
+  );
+}
+
+/** Read an imported submission in chronological context without rewriting the journal. */
+export function observedSubmission(
+  state: UserState,
+  index: number,
+  policy?: EvidencePolicy,
+): EvidenceEvent {
+  const event = state.events[index];
+  const catalog = policy?.disclosureLessons;
+  if (!catalog || !isIndependentSuccess(event)) return event;
+  const prior = {
+    ...state,
+    events: eventsBeforeSubmission(state.events, index),
+  };
+  // Archives record the supplied lesson task itself. Older lesson exports may
+  // instead retain only the source that contained that implementation.
+  return hasRecordedSuppliedSolution(prior.events, event, catalog) ||
+    hasExternalSolutionHelp(prior, event, catalog, event.at)
+    ? { ...event, revealed: true }
+    : event;
+}
+
 function hasTaskAssistance(
   candidate: Pick<EvidenceEvent, "lessonId" | "stepId" | "at">,
   definition: StepEvidenceDefinition,
@@ -270,11 +352,7 @@ function hasRevealedRef(
       (event) =>
         eventForRef(event, ref) &&
         event.at <= at &&
-        event.revealed &&
-        // Legacy exposure.revealed also represented hint clicks. Only an actual
-        // submission or an explicitly supplied implementation discloses a peer.
-        (event.kind !== "exposure" ||
-          event.id.startsWith("supplied-solution:")),
+        disclosedSolution(event),
     )
   );
 }
@@ -590,8 +668,9 @@ export function independentCodingTaskIdForEvent(
   conceptId: string,
   policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
 ): string | undefined {
-  const event = state.events[eventIndex];
-  if (!event) return undefined;
+  if (!state.events[eventIndex]?.conceptIds.includes(conceptId))
+    return undefined;
+  const event = observedSubmission(state, eventIndex, policy);
   if (!policy.calibrationForConcept?.(conceptId)) {
     return hasVerifiedCodingEvidence([event], conceptId, policy)
       ? `${event.lessonId}:${event.stepId}`
@@ -710,10 +789,13 @@ export function deriveConceptMastery(
   policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
 ): MasteryRecord {
   const calibration = policy.calibrationForConcept?.(conceptId);
+  const relevant = state.events.flatMap((event, index) =>
+    event.conceptIds.includes(conceptId) ? [observedSubmission(state, index, policy)] : []
+  );
   if (!calibration) {
     return {
       ...deriveMastery(
-        state.events,
+        relevant,
         conceptId,
         state.mastery[conceptId]?.level,
         state.ratings,
@@ -722,9 +804,6 @@ export function deriveConceptMastery(
       updatedAt: state.mastery[conceptId]?.updatedAt ?? 0,
     };
   }
-  const relevant = state.events.filter((event) =>
-    event.conceptIds.includes(conceptId),
-  );
   const updatedAt = Math.max(
     0,
     ...relevant.map((event) => event.at),
@@ -1018,6 +1097,7 @@ function creditedGateTasks(
   criterion: ModuleGateCriterion,
   lessons: readonly Lesson[],
   definitionForTask?: EvidencePolicy["definitionForTask"],
+  disclosureLessons: readonly Lesson[] = lessons,
 ): Set<string> {
   const ids = new Set<string>();
   const resolveDefinition =
@@ -1028,6 +1108,9 @@ function creditedGateTasks(
     for (const [index, event] of state.events.entries()) {
       if (!eventForRef(event, ref)) continue;
       const history = eventsBeforeSubmission(state.events, index);
+      const prior = { ...state, events: history };
+      if (hasExternalSolutionHelp(prior, ref, disclosureLessons, event.at))
+        continue;
       if (criterion.requiredIndependentCodingTasks !== undefined) {
         const id = codingTaskId(
           event,
@@ -1038,7 +1121,6 @@ function creditedGateTasks(
         if (id) ids.add(id);
         continue;
       }
-      const prior = { ...state, events: history };
       if (
         isIndependentTaskSuccess(event, step, true, history) &&
         !(
@@ -1046,12 +1128,12 @@ function creditedGateTasks(
           CODING_KINDS.has(event.kind) &&
           hasTaskAssistance(event, step.evidence, history, resolveDefinition)
         ) &&
-        !hasEquivalentSolutionReveal(prior, ref, lessons, event.at) &&
+        !hasEquivalentSolutionReveal(prior, ref, disclosureLessons, event.at) &&
         !hasCriterionComponentAssistance(
           prior,
           criterion,
           ref,
-          lessons,
+          disclosureLessons,
           event.at,
         )
       ) {
@@ -1081,12 +1163,14 @@ export function gateRecovery(
   criterion: ModuleGateCriterion,
   lessons: readonly Lesson[],
   definitionForTask?: EvidencePolicy["definitionForTask"],
+  disclosureLessons: readonly Lesson[] = lessons,
 ): GateRecovery {
   const credited = creditedGateTasks(
     state,
     criterion,
     lessons,
     definitionForTask,
+    disclosureLessons,
   );
   const required = criterion.requiredIndependentCodingTasks ?? 1;
   if (credited.size >= required) {
@@ -1098,9 +1182,15 @@ export function gateRecovery(
     if (
       progress?.hints ||
       progress?.revealed ||
-      hasEquivalentSolutionReveal(state, ref, lessons) ||
+      hasExternalSolutionHelp(state, ref, disclosureLessons) ||
+      hasEquivalentSolutionReveal(state, ref, disclosureLessons) ||
       (criterion.requiredIndependentCodingTasks === undefined &&
-        hasCriterionComponentAssistance(state, criterion, ref, lessons)) ||
+        hasCriterionComponentAssistance(
+          state,
+          criterion,
+          ref,
+          disclosureLessons,
+        )) ||
       state.events.some(
         (event) =>
           eventForRef(event, ref) && (event.hints > 0 || event.revealed),
@@ -1111,7 +1201,7 @@ export function gateRecovery(
     const family = step?.evidence?.codingTaskId;
     if (step?.evidence && family && CODING_KINDS.has(step.evidenceKind)) {
       if (
-        familyHasSavedAssistance(state, family, lessons) ||
+        familyHasSavedAssistance(state, family, disclosureLessons) ||
         hasTaskAssistance(
           { ...ref, at: Infinity },
           step.evidence,
@@ -1147,13 +1237,19 @@ export function moduleGate(
   lessons: Lesson[],
   courseModule?: CourseModule,
   definitionForTask?: EvidencePolicy["definitionForTask"],
+  disclosureLessons: readonly Lesson[] = lessons,
 ): { passed: boolean; criteria: { label: string; passed: boolean }[] } {
   if (courseModule?.gateCriteria) {
     const criteria = courseModule.gateCriteria.map((criterion) => ({
       label: criterion.label,
       passed:
-        creditedGateTasks(state, criterion, lessons, definitionForTask).size >=
-          (criterion.requiredIndependentCodingTasks ?? 1) &&
+        creditedGateTasks(
+          state,
+          criterion,
+          lessons,
+          definitionForTask,
+          disclosureLessons,
+        ).size >= (criterion.requiredIndependentCodingTasks ?? 1) &&
         supplementaryPassed(state, criterion),
     }));
     return {
@@ -1166,13 +1262,24 @@ export function moduleGate(
   for (const lesson of lessons)
     for (const step of lesson.steps) {
       if (!step.evidenceGate || step.evaluator?.kind === "rubric") continue;
-      const passed = state.events.some(
-        (event) =>
-          event.lessonId === lesson.id &&
-          event.stepId === step.id &&
-          isIndependentTaskSuccess(event, step, true, state.events) &&
-          !hasEquivalentSolutionReveal(state, event, lessons, event.at),
-      );
+      const passed = state.events.some((event, index) => {
+        if (event.lessonId !== lesson.id || event.stepId !== step.id)
+          return false;
+        const prior = {
+          ...state,
+          events: eventsBeforeSubmission(state.events, index),
+        };
+        return (
+          isIndependentTaskSuccess(event, step, true, prior.events) &&
+          !hasExternalSolutionHelp(prior, event, disclosureLessons, event.at) &&
+          !hasEquivalentSolutionReveal(
+            prior,
+            event,
+            disclosureLessons,
+            event.at,
+          )
+        );
+      });
       criteria.push({ label: `${lesson.title}: ${step.title}`, passed });
     }
   return {

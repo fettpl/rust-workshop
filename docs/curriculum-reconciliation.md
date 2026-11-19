@@ -287,3 +287,11 @@ At `d7dee3b`, the 240 criteria offered 497 distinct subsets of two or more tasks
 The ownership map now recognizes when two exercises share a coding task even in an ordinary criterion. An older save can also record that a prerequisite implementation was shown inside another module. The map and the assessment use that information when deciding which part of a combined task can still earn credit. For example, seeing Todo state management in the storage lesson still leaves room to demonstrate session handling independently. Credit earned before disclosure is preserved.
 
 A counted criterion can have one fresh exercise left while still needing two independent successes. The map offers that exercise. Exhaustion is reported for the affected criterion, so a learner can still follow links for other criteria in the same module.
+
+## Disclosures across module boundaries
+
+The audit after `758c4a2` found that four split-buffer solutions in FFI pass all four corresponding Miri contracts, and vice versa. Native Rust controls verify all 32 directions, including implementations written differently. Revealing one of these solutions now leads to the distinct envelope exercise in FFI or the two-range exercise in Miri. A hint or an incomplete starter leaves those implementations available.
+
+Across the course, regression tests cover all 16 declared starter links and all 48 solution links from a lesson in one module to an exercise in another. They include a generic byte-length function shown in the conversions lesson and prerequisite implementations shown in Todo I/O. The Todo CLI starter archive also contains the complete parser and state model. Opening it records help on five earlier tasks while preserving fresh command, board, session and I/O practice.
+
+Additional controls compare the map, gate and evidence summary after import, keep independent successes earned before disclosure, and exercise the actual coach and module picker in the browser. The ownership exercises now test their existing unit-returning display API so that an unrelated formatter returning a string cannot pass by discarding its result. These checks concern visible authored implementations and observable progress records.

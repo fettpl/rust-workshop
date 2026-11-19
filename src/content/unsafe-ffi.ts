@@ -1,3 +1,4 @@
+import { linkSplitRegionSolutions } from "./split-region-solutions";
 import type {
   Competency,
   Concept,
@@ -1237,6 +1238,8 @@ export const unsafeFfiLessons: Lesson[] = [
     sourceIds: ["unsafe-ffi-nomicon", "unsafe-ffi-pointer"],
   },
 ];
+
+linkSplitRegionSolutions(unsafeFfiLessons.find(lesson => lesson.id === "unsafe-ffi-split-regions")!);
 
 export const unsafeFfiReviewExercises: Record<string, LessonStep> = {
   "unsafe-ffi-checked-view-contract": gate({

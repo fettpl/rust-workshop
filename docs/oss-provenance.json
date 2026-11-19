@@ -445,7 +445,7 @@
     },
     {
       "path": "src/content/catalog.ts",
-      "sha256": "8c10ed41e952e124bdbab0eaca2817782e628475f1a27b398b3178522f83facf",
+      "sha256": "1c18487756a5d100c1abbcaa77322071848c2363d6986758e79d239e662e2f57",
       "group": "course"
     },
     {
@@ -515,7 +515,7 @@
     },
     {
       "path": "src/content/core-conversions.ts",
-      "sha256": "771954fd639a923136180fecf193fcce061181dfc3a0b0828f4fa81821b16f5b",
+      "sha256": "35faf85294ad8f24a30f3a0bac3b69190071bd04f22a53d96befc674bc13ea92",
       "group": "course"
     },
     {
@@ -525,7 +525,7 @@
     },
     {
       "path": "src/content/core-practice-integration.test.ts",
-      "sha256": "320c25f590214d0e53018d11a3919c5fc9d89b5bd2119a24e47c703e3840c8c3",
+      "sha256": "44f10f8b238264175e567611fffd978b075421b185da42ec1a6131db0e64f3e3",
       "group": "course"
     },
     {
@@ -575,7 +575,7 @@
     },
     {
       "path": "src/content/curriculum-recovery-compatibility.test.ts",
-      "sha256": "bbbfccaf4fc59d0569e2a17c70d1974c9e24acaa9857bd9670bf00b21bc1f6aa",
+      "sha256": "26c7785a5094bfd88f6e3a276e874494d900453c1212cf93961b7ee5aeac4487",
       "group": "course"
     },
     {
@@ -755,7 +755,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "36f26d2b8d9d27ca8b3a3a7c93fcc17e5706f3574916aa1223a3e4126f08de2a",
+      "sha256": "a381aeb6d35f55dfc5560513eaee464decae5363bc9987c2f8559f073ad9e056",
       "group": "course"
     },
     {
@@ -811,6 +811,11 @@
     {
       "path": "src/content/fixtures/collections-event-report-delta.json",
       "sha256": "9a1d62985a7d64941b2144bd7ad7ad6418af16f1b389dea6c578bd9fb62f1a3d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/cross-module-delta.json",
+      "sha256": "d967740ee8cc86edcb104a9acde565b6ce3d6157cd229f29bd31b0e228b1f731",
       "group": "course"
     },
     {
@@ -1130,7 +1135,7 @@
     },
     {
       "path": "src/content/learning-context.ts",
-      "sha256": "4e140c4758e0b6c0ca7b9fcc59d05f5cfefcb5ac9e013418af3fceb0329e268b",
+      "sha256": "5ce85afe0afd213a8fe51f1e9bf475a1e208c92bf9195ba0478a6a43ddd7de3c",
       "group": "course"
     },
     {
@@ -1595,7 +1600,7 @@
     },
     {
       "path": "src/content/projects/todo-cli.ts",
-      "sha256": "0ed7ff1c4b7146726ab555dcc4c8aa0f92422ce09a4ef1df0aaa84ddf0b889b8",
+      "sha256": "ca591d067f01ce9e6b081a638edf3f27cd0dad80f780685895dd1ea49b5c6dfb",
       "group": "course"
     },
     {
@@ -1879,6 +1884,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/split-region-solutions.ts",
+      "sha256": "fed5fdef16eb56a0e97709d58b359fd03d2a86d66abffab261c92e0119f0d816",
+      "group": "course"
+    },
+    {
       "path": "src/content/string-gate-recovery.test.ts",
       "sha256": "276a687a524572e3bfed01cd7e51ad2fe144b179b25b0765a7212c8e8e8a83a9",
       "group": "course"
@@ -1916,6 +1926,11 @@
     {
       "path": "src/content/todo-io-supplied-solutions.test.ts",
       "sha256": "e9ed8e3b7dae6d348e6f4b0f06a1b66706d1b1e58a23b5c244b3e147e1a5db59",
+      "group": "course"
+    },
+    {
+      "path": "src/content/todo-package-supplied-solutions.test.ts",
+      "sha256": "91384f2358fce558dacc6a43389e961f7099d8294b0d30b9af5442e20c545a93",
       "group": "course"
     },
     {
@@ -2095,7 +2110,7 @@
     },
     {
       "path": "src/content/unsafe-ffi.ts",
-      "sha256": "6b720eaa91c638f78651574df2a6aec549fbd92348764e46f7052064d7df8a1c",
+      "sha256": "1be4a7be0bd91bf4d67e44f195c91ca1154743c872553d7ff90aca741d5a8bd9",
       "group": "course"
     },
     {
@@ -2245,7 +2260,7 @@
     },
     {
       "path": "src/content/unsafe-miri.ts",
-      "sha256": "fa70c0ee348d58a66c38e0e462aad655877667cf644218dcbf1fc422e0cb20df",
+      "sha256": "77668d33737e2ed7ad7a022b73098e314eab5e7dbc17308e0081ca8ee11b2546",
       "group": "course"
     },
     {
@@ -2260,7 +2275,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "d9db4a8af0d72acd4e726057a65faee5f877057ccfdcba74ff3ed71c3f25249f",
+      "sha256": "e6a36a34b4532ceabb5d548ee99e664c02e8b1ece40dfdfc9dd53b19023a029c",
       "group": "course"
     },
     {

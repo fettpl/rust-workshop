@@ -9,6 +9,7 @@ import {
   deriveConceptMastery,
   independentCodingTaskIdForEvent,
   isIndependentSuccess,
+  observedSubmission,
   gateRecovery,
   type EvidencePolicy,
 } from "./learning";
@@ -36,7 +37,7 @@ export function competencyProgress(
   const ids = new Set(related.map((concept) => concept.id));
   const ranks = related.map((concept) =>
     levels.indexOf(
-      policy?.calibrationForConcept?.(concept.id)
+      policy?.disclosureLessons || policy?.calibrationForConcept?.(concept.id)
         ? deriveConceptMastery(state, concept.id, policy).level
         : (state.mastery[concept.id]?.level ?? "new"),
     ),
@@ -58,7 +59,11 @@ export function competencyProgress(
               (id) =>
                 !policy?.calibrationForConcept?.(id) &&
                 (policy
-                  ? isIndependentSuccess(event, id, policy)
+                  ? isIndependentSuccess(
+                      observedSubmission(state, index, policy),
+                      id,
+                      policy,
+                    )
                   : isIndependentSuccess(event)),
             )
           ? [stepKey(event.lessonId, event.stepId)]
@@ -83,12 +88,19 @@ export function nextGateTask(
   criterion: ModuleGateCriterion,
   lessons: readonly Lesson[] = [],
   definitionForTask?: EvidencePolicy["definitionForTask"],
+  disclosureLessons: readonly Lesson[] = lessons,
 ) {
   if (
     criterion.requiredIndependentCodingTasks !== undefined ||
     lessons.length > 0
   ) {
-    const recovery = gateRecovery(state, criterion, lessons, definitionForTask);
+    const recovery = gateRecovery(
+      state,
+      criterion,
+      lessons,
+      definitionForTask,
+      disclosureLessons,
+    );
     return recovery.status === "available" ? recovery.task : undefined;
   }
   const taskPassed = criterion.taskRefs.some((ref) =>

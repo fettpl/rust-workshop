@@ -5,6 +5,8 @@ import {
   deriveConceptMastery,
   independentCodingTaskIds,
   hasEquivalentSolutionReveal,
+  hasExternalSolutionHelp,
+  hasRecordedSuppliedSolution,
   hasComponentSolutionReveal,
   isIndependentSuccess,
   delayedReviewEligibility,
@@ -92,6 +94,7 @@ function isHistoricalAnswerReview(
 }
 
 export const courseEvidencePolicy = {
+  disclosureLessons: lessons,
   ...evidencePolicyForConcepts(concepts),
   definitionForTask: (lessonId: string, stepId: string) =>
     currentStep(lessonId, stepId)?.evidence,
@@ -213,9 +216,17 @@ export function assistanceForLessonStep(
   step: LessonStep,
 ): Pick<EvidenceEvent, "hints" | "revealed"> {
   const current = state.steps[stepKey(lesson.id, step.id)];
+  const ref = { lessonId: lesson.id, stepId: step.id };
   const flags = {
     hints: current?.hints ?? 0,
-    revealed: Boolean(current?.revealed) || hasEquivalentSolutionReveal(state, { lessonId: lesson.id, stepId: step.id }, lessons),
+    revealed:
+      Boolean(current?.revealed) ||
+      hasRecordedSuppliedSolution(state.events, ref, lessons) ||
+      hasEquivalentSolutionReveal(
+        state,
+        { lessonId: lesson.id, stepId: step.id },
+        lessons,
+      ),
   };
   const family = step.evidence?.codingTaskId;
   if (
@@ -223,6 +234,11 @@ export function assistanceForLessonStep(
     !["fix", "transfer", "project", "assessment"].includes(step.evidenceKind)
   )
     return flags;
+  flags.revealed ||= hasExternalSolutionHelp(
+    state,
+    { lessonId: lesson.id, stepId: step.id },
+    lessons,
+  );
   for (const authoredLesson of lessons) {
     for (const authoredStep of authoredLesson.steps) {
       if (authoredStep.evidence?.codingTaskId !== family) continue;
@@ -286,6 +302,7 @@ export function courseModuleGate(
     scopedLessons,
     module,
     courseEvidencePolicy.definitionForTask,
+    lessons,
   );
 }
 
@@ -299,6 +316,7 @@ export function courseGateRecovery(
     criterion,
     scopedLessons,
     courseEvidencePolicy.definitionForTask,
+    lessons,
   );
 }
 
@@ -312,6 +330,7 @@ export function courseNextGateTask(
     criterion,
     scopedLessons,
     courseEvidencePolicy.definitionForTask,
+    lessons,
   );
 }
 

@@ -1,4 +1,4 @@
-import { restoreIndependentPracticeLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import { restoreCrossModuleLessons, restoreIndependentPracticeLessons } from "./workshop-assessment-repair-compatibility-fixture";
 import { matchesRegistryValue } from "./file-schema-evolution-compatibility-fixture";
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
@@ -197,7 +197,7 @@ it("preserves the immutable legacy prefixes, module order and every old step ind
 
 it("appends the bounded practices and their reviews with unique, resolvable registry IDs", () => {
   expect(course.lessons.slice(legacy.lessons.length)).toEqual([
-    ...coreConversionsLessons,
+    ...restoreCrossModuleLessons(coreConversionsLessons, new Map(), matchesRegistryValue),
     ...coreCheckedConversionsLessons,
     ...restoreIndependentPracticeLessons(nestedPatternLessons, new Map(), matchesRegistryValue),
     historicalFunctionOwnershipCalibration,

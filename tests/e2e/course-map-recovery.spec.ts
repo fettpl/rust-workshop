@@ -266,3 +266,61 @@ test("fully exhausted recovery preserves access through the lesson list without 
     firstLesson.steps[0].title,
   );
 });
+
+test("an actual FFI coach reveal sends Miri course-map recovery to the fresh range transfer", async ({
+  page,
+}) => {
+  const sourceLesson = lessons.find(
+    (lesson) => lesson.id === "unsafe-ffi-split-regions",
+  )!;
+  const source = sourceLesson.steps.find(
+    (step) => step.id === "split-regions-gate",
+  )!;
+  const stage = modules.find(
+    (module) => module.id === "unsafe-miri-contracts",
+  )!;
+  const criterion = stage.gateCriteria!.find(
+    (entry) => entry.id === "unsafe-miri-disjoint-regions-gate",
+  )!;
+  const targetLesson = lessons.find(
+    (lesson) => lesson.id === "unsafe-miri-disjoint-regions",
+  )!;
+  const fresh = targetLesson.steps.find(
+    (step) => step.id === "disjoint-regions-range-transfer",
+  )!;
+  const state = ready(sourceLesson.id);
+  state.resume = {
+    ...state.resume,
+    view: "lesson",
+    stepIndex: sourceLesson.steps.findIndex((step) => step.id === source.id),
+  };
+  await seed(page, state);
+  await expect(page.locator(".task-pane h1")).toHaveText(source.title);
+  await reveal(page);
+
+  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+  await page
+    .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+    .fill(stage.title);
+  await page
+    .locator(".module-picker > button")
+    .filter({ hasText: stage.title })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: stage.title, exact: true }),
+  ).toBeVisible();
+  const row = page.locator(".gate-panel li").filter({
+    hasText: criterion.label,
+  });
+  await expect(row.getByLabel("Do sprawdzenia")).toBeVisible();
+  await expect(row.getByLabel("Potwierdzone")).toHaveCount(0);
+  await row.getByRole("button", { name: "Sprawdź w zadaniu" }).click();
+  await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+  await expect(page.locator(".revealed-solution")).toHaveCount(0);
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  await page.reload();
+  await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+  await expect(page.locator(".revealed-solution")).toHaveCount(0);
+});
