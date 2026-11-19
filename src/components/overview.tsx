@@ -360,7 +360,11 @@ export function CourseMap() {
   const moduleLessons = lessons.filter(
     (lesson) => lesson.moduleId === selectedModule.id,
   );
-  const gate = courseModuleGate(state, moduleLessons, selectedModule);
+  const gate = courseModuleGate(
+    state,
+    selectedModule.gateCriteria ? lessons : moduleLessons,
+    selectedModule,
+  );
   const prerequisiteModules = selectedModule.prerequisites
     .map((id) => modules.find((module) => module.id === id))
     .filter((module): module is (typeof modules)[number] => Boolean(module));
@@ -496,9 +500,14 @@ export function CourseMap() {
           </p>
           {exhaustedCriteria.length > 0 && (
             <p className="footnote">
-              Brak świeżego samodzielnego wariantu: pozostałe zadania mają
-              zapisane podpowiedzi lub rozwiązanie. Możesz nadal ćwiczyć;
-              powtórzenie nie usuwa wcześniejszej pomocy.
+              Brak świeżego samodzielnego wariantu dla kryteriów:{" "}
+              {exhaustedCriteria
+                .map((criterion) => criterion.label)
+                .join(" · ")}
+              <br />
+              Pozostałe zadania w tych kryteriach mają zapisane podpowiedzi lub
+              rozwiązanie. Możesz nadal ćwiczyć; powtórzenie nie usuwa
+              wcześniejszej pomocy.
             </p>
           )}
           {recoveryTargets.length ? (

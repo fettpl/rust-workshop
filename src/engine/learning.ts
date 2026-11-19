@@ -160,6 +160,17 @@ function currentDefinition(
     : undefined;
 }
 
+function eventsBeforeSubmission(
+  events: readonly EvidenceEvent[],
+  index: number,
+): EvidenceEvent[] {
+  const at = events[index].at;
+  // Import preserves array order. Use it only to order events at the same time.
+  return events.filter(
+    (entry, position) => entry.at < at || (entry.at === at && position < index),
+  );
+}
+
 function hasTaskAssistance(
   candidate: Pick<EvidenceEvent, "lessonId" | "stepId" | "at">,
   definition: StepEvidenceDefinition,
@@ -282,6 +293,19 @@ export function hasEquivalentSolutionReveal(
   );
 }
 
+/** A component can have been shown directly or inside another authored solution. */
+export function hasComponentSolutionReveal(
+  state: UserState,
+  ref: ModuleGateTaskRef,
+  lessons: readonly Lesson[],
+  at = Infinity,
+): boolean {
+  return (
+    hasRevealedRef(state, ref, at) ||
+    hasEquivalentSolutionReveal(state, ref, lessons, at)
+  );
+}
+
 function hasCriterionComponentAssistance(
   state: UserState,
   criterion: ModuleGateCriterion,
@@ -296,7 +320,7 @@ function hasCriterionComponentAssistance(
         (target) =>
           target.lessonId === component.lessonId &&
           target.stepId === component.stepId,
-      ) && hasRevealedRef(state, component, at),
+      ) && hasComponentSolutionReveal(state, component, lessons, at),
   );
 }
 
@@ -578,7 +602,7 @@ export function independentCodingTaskIdForEvent(
   return codingTaskId(
     event,
     definition,
-    state.events.slice(0, eventIndex),
+    eventsBeforeSubmission(state.events, eventIndex),
     policy.definitionForTask,
   );
 }
@@ -996,30 +1020,35 @@ function creditedGateTasks(
   definitionForTask?: EvidencePolicy["definitionForTask"],
 ): Set<string> {
   const ids = new Set<string>();
+  const resolveDefinition =
+    definitionForTask ??
+    ((lessonId, stepId) => stepForRef(lessons, { lessonId, stepId })?.evidence);
   for (const ref of criterion.taskRefs) {
     const step = stepForRef(lessons, ref);
     for (const [index, event] of state.events.entries()) {
       if (!eventForRef(event, ref)) continue;
+      const history = eventsBeforeSubmission(state.events, index);
       if (criterion.requiredIndependentCodingTasks !== undefined) {
         const id = codingTaskId(
           event,
           definitionForStep(event, step),
-          state.events.slice(0, index),
-          definitionForTask ??
-            ((lessonId, stepId) =>
-              stepForRef(lessons, { lessonId, stepId })?.evidence),
+          history,
+          resolveDefinition,
         );
         if (id) ids.add(id);
-      } else if (
-        isIndependentTaskSuccess(
-          event,
-          step,
-          criterion.requiredIndependentCodingTasks === undefined,
-          state.events,
+        continue;
+      }
+      const prior = { ...state, events: history };
+      if (
+        isIndependentTaskSuccess(event, step, true, history) &&
+        !(
+          step?.evidence?.codingTaskId &&
+          CODING_KINDS.has(event.kind) &&
+          hasTaskAssistance(event, step.evidence, history, resolveDefinition)
         ) &&
-        !hasEquivalentSolutionReveal(state, ref, lessons, event.at) &&
+        !hasEquivalentSolutionReveal(prior, ref, lessons, event.at) &&
         !hasCriterionComponentAssistance(
-          state,
+          prior,
           criterion,
           ref,
           lessons,
@@ -1078,15 +1107,12 @@ export function gateRecovery(
       )
     )
       return false;
-    if (criterion.requiredIndependentCodingTasks !== undefined) {
-      const step = stepForRef(lessons, ref);
-      return (
-        step?.evaluator?.kind === "tests" &&
-        step.evidence?.codingTaskId &&
-        step.evidence.conceptIds.length > 0 &&
-        !credited.has(step.evidence.codingTaskId) &&
-        !familyHasSavedAssistance(state, step.evidence.codingTaskId, lessons) &&
-        !hasTaskAssistance(
+    const step = stepForRef(lessons, ref);
+    const family = step?.evidence?.codingTaskId;
+    if (step?.evidence && family && CODING_KINDS.has(step.evidenceKind)) {
+      if (
+        familyHasSavedAssistance(state, family, lessons) ||
+        hasTaskAssistance(
           { ...ref, at: Infinity },
           step.evidence,
           state.events,
@@ -1094,9 +1120,16 @@ export function gateRecovery(
             ((lessonId, stepId) =>
               stepForRef(lessons, { lessonId, stepId })?.evidence),
         )
-      );
+      )
+        return false;
     }
-    return true;
+    return (
+      criterion.requiredIndependentCodingTasks === undefined ||
+      (step?.evaluator?.kind === "tests" &&
+        !!family &&
+        !!step.evidence?.conceptIds.length &&
+        !credited.has(family))
+    );
   });
   // Counted families can be retried even when an older draft is marked complete.
   const task =

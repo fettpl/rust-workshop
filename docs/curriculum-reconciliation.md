@@ -279,3 +279,11 @@ Some later exercises supplied enough code to pass an earlier assessment. For exa
 Seven new exercises provide independent practice: count occurrences of a Unicode scalar, append a sequence of text fragments with separators, retain an unsent channel message in a retry queue, classify a batch of allocation reports, transform owned values on Tokio's blocking pool, report every mismatching fuzz case and track drain completion by job ID. The counter lesson already had a suitable repair exercise. Native Rust tests check copied implementations against the affected contracts and check the new exercises with correct and deliberately incorrect submissions.
 
 The updated 192 criteria have 438 criterion–task combinations. Each regression starts with one disclosure, including when that disclosure is the last variant in the lesson. The catalog now has 1,431 steps in 204 lessons. A separate comparison reconstructs all six registries at `f3a0081`. These checks cover observable assistance and executable behavior. They do not estimate learning time or measure retention.
+
+## Finding fresh practice after several disclosures
+
+At `d7dee3b`, the 240 criteria offered 497 distinct subsets of two or more tasks within a criterion. For each subset, the regression compares the map recommendation with the credit a successful submission of each candidate would actually earn. It repeats this comparison with coach disclosures, restored flags and a mixture of the two, then follows the recommendations until the criterion is complete or the learner has used every eligible task.
+
+The ownership map now recognizes when two exercises share a coding task even in an ordinary criterion. An older save can also record that a prerequisite implementation was shown inside another module. The map and the assessment use that information when deciding which part of a combined task can still earn credit. For example, seeing Todo state management in the storage lesson still leaves room to demonstrate session handling independently. Credit earned before disclosure is preserved.
+
+A counted criterion can have one fresh exercise left while still needing two independent successes. The map offers that exercise. Exhaustion is reported for the affected criterion, so a learner can still follow links for other criteria in the same module.

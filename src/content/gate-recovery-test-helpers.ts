@@ -52,7 +52,11 @@ function task(ref: ModuleGateTaskRef) {
   };
 }
 
-function pass(state: UserState, ref: ModuleGateTaskRef, at: number) {
+export function submitPassingExercise(
+  state: UserState,
+  ref: ModuleGateTaskRef,
+  at: number,
+) {
   const { lesson, step } = task(ref);
   const draft = state.steps[stepKey(ref.lessonId, ref.stepId)]?.code;
   const displayed =
@@ -121,7 +125,7 @@ export function checkRecoveryAfterEachReveal(
           assistanceForLessonStep(state, sibling.lesson, sibling.step).revealed,
           shown.stepId + " -> " + target.stepId,
         ).toBe(true);
-        const manualSubmission = pass(state, target, 2);
+        const manualSubmission = submitPassingExercise(state, target, 2);
         expect(
           courseModuleGate(manualSubmission, lessons, stage).criteria[index]
             .passed,
@@ -133,7 +137,7 @@ export function checkRecoveryAfterEachReveal(
       if (firstRecovery.status !== "available") throw new Error(shown.stepId);
       expect(firstRecovery.task, shown.stepId).not.toEqual(shown);
       // A passing submission of the disclosed implementation cannot open the gate.
-      state = pass(state, shown, 2);
+      state = submitPassingExercise(state, shown, 2);
       const label =
         shown.stepId + (explicit ? " (explicit reveal)" : " (restored flag)");
       const required = criterion.requiredIndependentCodingTasks ?? 1;
@@ -156,7 +160,7 @@ export function checkRecoveryAfterEachReveal(
         const id = step.evidence?.codingTaskId ?? step.id;
         expect(seen.has(id), label).toBe(false);
         seen.add(id);
-        state = pass(state, recovery.task, n + 3);
+        state = submitPassingExercise(state, recovery.task, n + 3);
       }
       if (criterion.supplementaryStepRefs?.length) {
         expect(
@@ -167,7 +171,7 @@ export function checkRecoveryAfterEachReveal(
         expect(extra.status, label).toBe("available");
         if (extra.status !== "available") throw new Error(label);
         expect(criterion.supplementaryStepRefs).toContainEqual(extra.task);
-        state = pass(state, extra.task, required + 3);
+        state = submitPassingExercise(state, extra.task, required + 3);
       }
       expect(
         courseModuleGate(state, lessons, stage).criteria[index].passed,

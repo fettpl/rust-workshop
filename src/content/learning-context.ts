@@ -5,6 +5,8 @@ import {
   deriveConceptMastery,
   independentCodingTaskIds,
   hasEquivalentSolutionReveal,
+  hasComponentSolutionReveal,
+  isIndependentSuccess,
   delayedReviewEligibility,
   gateRecovery,
   moduleGate,
@@ -318,7 +320,29 @@ export function recordCourseEvidence(
   state: UserState,
   event: EvidenceEvent,
 ): UserState {
-  return recordEvidence(state, event, courseEvidencePolicy);
+  if (!isIndependentSuccess(event)) return recordEvidence(state, event, courseEvidencePolicy);
+  const supplied = currentStep(event.lessonId, event.stepId)?.suppliedSolutions;
+  if (!supplied) return recordEvidence(state, event, courseEvidencePolicy);
+  if (state.events.some((existing) => existing.id === event.id)) return state;
+  // Old saves may only have a reveal flag on the component or its source.
+  // Date its first observation before this submission, without backdating help.
+  const savedFlags = { ...state, events: [] };
+  const restoredComponents = [
+    ...(supplied.code ?? []),
+    ...(supplied.solution ?? []),
+  ].filter(
+    (ref) =>
+      hasComponentSolutionReveal(savedFlags, ref, lessons) &&
+      !hasComponentSolutionReveal(state, ref, lessons, event.at),
+  );
+  const observed = revealAuthoredStepSolutions(
+    state,
+    restoredComponents,
+    lessons,
+    event.at,
+    courseEvidencePolicy,
+  );
+  return recordEvidence(observed, event, courseEvidencePolicy);
 }
 
 /** Course boundary: apply authored artifact policy to neutral lesson exposure. */

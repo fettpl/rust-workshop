@@ -1055,7 +1055,7 @@
     },
     {
       "path": "src/content/gate-recovery-test-helpers.ts",
-      "sha256": "1a19352f366e6aad4876d75bb541b656d053e2c65f65b1c98c4cd7826948ce9e",
+      "sha256": "8b7fe15220381d6b755f0e0f70af651cf5c6eaccf94c7d00630b16f16680f641",
       "group": "course"
     },
     {
@@ -1130,7 +1130,7 @@
     },
     {
       "path": "src/content/learning-context.ts",
-      "sha256": "7c2a85b588f818362b5516dd58c2b27db7269fd7bd93df64879e2b8ec4fc60ad",
+      "sha256": "4e140c4758e0b6c0ca7b9fcc59d05f5cfefcb5ac9e013418af3fceb0329e268b",
       "group": "course"
     },
     {
