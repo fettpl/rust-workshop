@@ -1,3 +1,4 @@
+import testingRecallDelta from "./fixtures/testing-recall-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
@@ -381,7 +382,7 @@ function collectAdditions(
     const items = registry[key] as Registry;
     if (replacements.has(items)) continue;
     const descriptors = Object.getOwnPropertyDescriptors(items);
-    for (const review of [recoveryDelta.review, exerciseDelta.review]) {
+    for (const review of [recoveryDelta.review, exerciseDelta.review, ...testingRecallDelta]) {
       const reviewKey = key === "reviewExercises" ? review.conceptId : review.id;
       const descriptor = descriptors[reviewKey];
       const current = descriptor?.value;

@@ -660,7 +660,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "657ff393596b613e581014db02abbccf44786cd3f62257c442611d4289ef1b88",
+      "sha256": "35de84fd0b463809cb3997dbe01635a9f1c61be21b0dc261a37110f45ebadccd",
       "group": "course"
     },
     {
@@ -781,6 +781,11 @@
     {
       "path": "src/content/fixtures/regression-skills-delta.json",
       "sha256": "4f3022c6830ca00e7f28560148d6415cea806124bc998744b7a9d12c082966d8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/testing-recall-delta.json",
+      "sha256": "6806fba0529d4ae84626f1644411b319ad6f39a1308fc010af60f3b4178f981a",
       "group": "course"
     },
     {
@@ -1505,7 +1510,7 @@
     },
     {
       "path": "src/content/recovery-practice.test.ts",
-      "sha256": "e34f697f7ce073af37e0ed2bd0631574f164a1802d58dddd2d299c2d8cc334e0",
+      "sha256": "3db7cd5b13c5cda610282cbdbc9c97239da4b1e2727595980d4782d277b43fcd",
       "group": "course"
     },
     {
@@ -1695,7 +1700,7 @@
     },
     {
       "path": "src/content/testing.ts",
-      "sha256": "3bec7274f012e835a90369c702960a71ee07fcfff51f66a1420658c7365c9bfd",
+      "sha256": "c61f2195ddbeef1661194a1f60ae113f000684274c84a0b7532689ac4c19a173",
       "group": "course"
     },
     {

@@ -1,3 +1,4 @@
+import testingRecallDelta from "./fixtures/testing-recall-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -334,4 +335,81 @@ it("requires non-ASCII casing, separators and whitespace-only labels", () => {
     const assertions = cases.filter((_, index) => index !== omitted).join("\n");
     checkRust(`fn sprawdz_etykiete(f: fn(&str) -> String) { ${assertions} }`, testsOf(s), omitted === -1);
   }
+});
+
+const recallSuites = [
+  {
+    concept: "testing-contracts",
+    signature: "fn assert_even_contract(candidate: fn(i32) -> bool)",
+    cases: {
+      negativeOdd: "assert!(!candidate(-17));",
+      zero: "assert!(candidate(0));",
+      negativeEven: "assert!(candidate(-12));",
+      positiveOdd: "assert!(!candidate(13));",
+    },
+  },
+  {
+    concept: "testing-regressions",
+    signature: "fn assert_discount_contract(candidate: fn(u32) -> u32)",
+    cases: {
+      lastFullPrice: "assert_eq!(candidate(100), 100);",
+      firstDiscount: "assert_eq!(candidate(101), 91);",
+      // An ordinary discounted price cannot stand in for 101.
+      ordinaryPrice: "assert_eq!(candidate(207), 197);",
+    },
+  },
+  {
+    concept: "testing-quality-workflow",
+    signature: "fn assert_occurrence_contract(candidate: fn(&[i32], i32) -> usize)",
+    cases: {
+      empty: "assert_eq!(candidate(&[], 9), 0);",
+      single: "assert_eq!(candidate(&[-3, 8], -3), 1);",
+      repeated: "assert_eq!(candidate(&[7, 7, 7], 7), 3);",
+      absent: "assert_eq!(candidate(&[4, 5], 9), 0);",
+      zeroNeedle: "assert_eq!(candidate(&[3, 0], 0), 1);",
+    },
+  },
+];
+
+for (const { concept, signature, cases } of recallSuites) {
+  const exercise = reviewExercises[concept];
+  const entries = Object.entries(cases);
+  const suite = (omitted?: string) => {
+    const assertions = entries.filter(([name]) => name !== omitted).map(([name, assertion]) => {
+      // Still exercise needle zero without accidentally covering a single match.
+      if (name === "zeroNeedle" && omitted === "single") {
+        return "assert_eq!(candidate(&[0, 0], 0), 2);";
+      }
+      return assertion;
+    });
+    return `${signature} {\n${assertions.join("\n")}\n}`;
+  };
+  it.each(entries.filter(([name]) => name !== "ordinaryPrice").map(([name]) => name))(
+    `scheduled ${concept} rejects a suite missing %s`, (omitted) => {
+      checkRust(suite(omitted), testsOf(exercise), false);
+    },
+  );
+  it(`scheduled ${concept} accepts an independent suite and its reference`, () => {
+    checkRust(suite(), testsOf(exercise), true);
+    checkRust(exercise.solution!, testsOf(exercise), true);
+  });
+}
+
+it("scheduled testing-contracts requires expected parity, beyond within-group agreement", () => {
+  const exercise = reviewExercises["testing-contracts"];
+  const incomplete = `fn assert_even_contract(f: fn(i32) -> bool) {
+    assert_eq!(f(-9), f(5));
+    assert_eq!(f(-2), f(0));
+  }`;
+  checkRust(incomplete, testsOf(exercise), false);
+});
+
+it.each(testingRecallDelta)("preserves the historical scheduled review and its aliases for $conceptId", (entry) => {
+  const live = reviewExercises[entry.conceptId];
+  expect(live.id).toBe(entry.id);
+  const previous = historicalBeforeA12({ ...course, selectedReview: live, grading: live.evaluator });
+  expect(previous.selectedReview).toBe(previous.reviewExercises[entry.conceptId]);
+  expect(previous.selectedReview).toBe(previous.reviewExercisesById[entry.id]);
+  expect(previous.grading).toBe(previous.selectedReview.evaluator);
+  expect(hashRegistryValue(previous.selectedReview)).toBe(entry.beforeSha256);
 });

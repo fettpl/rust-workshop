@@ -980,15 +980,27 @@ const reviewContractsSolution = `fn assert_even_contract(is_even: fn(i32) -> boo
 
 const reviewContractsTests = `
 fn even(value: i32) -> bool { value % 2 == 0 }
-fn positive_even(value: i32) -> bool { value > 0 && value % 2 == 0 }
-fn always_true(_: i32) -> bool { true }
-fn negative_even_wrong(value: i32) -> bool { value >= 0 && value % 2 == 0 }
 #[test]
-fn review_contract_accepts_and_rejects() {
-    assert!(std::panic::catch_unwind(|| assert_even_contract(even)).is_ok());
-    assert!(std::panic::catch_unwind(|| assert_even_contract(positive_even)).is_err());
-    assert!(std::panic::catch_unwind(|| assert_even_contract(always_true)).is_err());
-    assert!(std::panic::catch_unwind(|| assert_even_contract(negative_even_wrong)).is_err());
+fn review_contract_accepts_correct_parity() {
+    assert_even_contract(even);
+}
+#[test]
+fn review_contract_rejects_shortcuts() {
+    assert!(std::panic::catch_unwind(|| assert_even_contract(|_| true)).is_err());
+    assert!(std::panic::catch_unwind(|| assert_even_contract(|n| n > 0 && even(n))).is_err());
+}
+#[test]
+fn review_contract_distinguishes_each_required_case() {
+    let faults: [(&str, fn(i32) -> bool); 4] = [
+        ("ujemna nieparzysta", |n| n < 0 || even(n)),
+        ("zero", |n| n != 0 && even(n)),
+        ("ujemna parzysta", |n| n >= 0 && even(n)),
+        ("dodatnia nieparzysta", |n| n > 0 || even(n)),
+    ];
+    for (case, faulty) in faults {
+        assert!(std::panic::catch_unwind(|| assert_even_contract(faulty)).is_err(),
+            "Twój test zaakceptował błędny wynik dla przypadku: {case}.");
+    }
 }`;
 
 const reviewRegressionsStarter = `fn assert_discount_contract(_discount: fn(u32) -> u32) {
@@ -1005,12 +1017,15 @@ const reviewRegressionsSolution = `fn assert_discount_contract(discount: fn(u32)
 const reviewRegressionsTests = `
 fn discount(price: u32) -> u32 { if price > 100 { price - 10 } else { price } }
 fn wrong_boundary(price: u32) -> u32 { if price >= 100 { price - 10 } else { price } }
+fn late_discount(price: u32) -> u32 { if price > 101 { price - 10 } else { price } }
 fn no_discount(price: u32) -> u32 { price }
 #[test]
 fn review_regression_contract_is_mutation_sensitive() {
     assert!(std::panic::catch_unwind(|| assert_discount_contract(discount)).is_ok());
     assert!(std::panic::catch_unwind(|| assert_discount_contract(wrong_boundary)).is_err());
     assert!(std::panic::catch_unwind(|| assert_discount_contract(no_discount)).is_err());
+    assert!(std::panic::catch_unwind(|| assert_discount_contract(late_discount)).is_err(),
+        "Sprawdź cenę w pierwszym punkcie, w którym przysługuje rabat.");
 }`;
 
 const reviewQualityStarter = `fn assert_occurrence_contract(_count: fn(&[i32], i32) -> usize) {
@@ -1034,6 +1049,18 @@ fn review_quality_contract_rejects_lost_duplicates() {
     assert!(std::panic::catch_unwind(|| assert_occurrence_contract(count)).is_ok());
     assert!(std::panic::catch_unwind(|| assert_occurrence_contract(first_occurrence)).is_err());
     assert!(std::panic::catch_unwind(|| assert_occurrence_contract(count_nonzero)).is_err());
+}
+#[test]
+fn review_quality_contract_distinguishes_empty_single_and_absent() {
+    let faults: [(&str, fn(&[i32], i32) -> usize); 3] = [
+        ("pusta lista", |xs, n| if xs.is_empty() { 1 } else { count(xs, n) }),
+        ("pojedyncze wystąpienie", |xs, n| match count(xs, n) { 1 => 0, total => total }),
+        ("brak w niepustej liście", |xs, n| if !xs.is_empty() && !xs.contains(&n) { 1 } else { count(xs, n) }),
+    ];
+    for (case, faulty) in faults {
+        assert!(std::panic::catch_unwind(|| assert_occurrence_contract(faulty)).is_err(),
+            "Twój test zaakceptował błędny wynik dla przypadku: {case}.");
+    }
 }`;
 
 export const testingReviewExercises: Record<string, LessonStep> = {
@@ -1042,7 +1069,7 @@ export const testingReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: parzystość jako kontrakt",
     prompt:
-      "Uzupełnij helper, który sprawdza fn(i32) -> bool na ujemnej nieparzystej, zerze, ujemnej parzystej i dodatniej nieparzystej. Testy podają poprawną funkcję oraz trzy błędne warianty.",
+      "Uzupełnij helper, który sprawdza fn(i32) -> bool na ujemnej nieparzystej, zerze, ujemnej parzystej i dodatniej nieparzystej. Dobierz własne liczby. Twój zestaw powinien rozpoznać błąd dotyczący dowolnego z tych czterech przypadków.",
     code: reviewContractsStarter,
     solution: reviewContractsSolution,
     hints: [
@@ -1074,7 +1101,7 @@ export const testingReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: liczba wystąpień",
     prompt:
-      "Napisz helper dla fn(&[i32], i32) -> usize. Sprawdź pustkę, pojedyncze wystąpienie, duplikaty i brak wartości, także gdy szukaną liczbą jest zero. Potem lokalnie rozdziel cargo test od cargo fmt i cargo clippy.",
+      "Napisz helper dla fn(&[i32], i32) -> usize. Sprawdź pustą listę, pojedyncze wystąpienie, kilka wystąpień i brak szukanej wartości w niepustej liście. W co najmniej jednym przypadku wyszukaj zero, które występuje na liście. Potem lokalnie rozdziel cargo test od cargo fmt i cargo clippy.",
     code: reviewQualityStarter,
     solution: reviewQualitySolution,
     hints: [
