@@ -218,3 +218,107 @@ test("the foundations gate opens a fresh range task after help on the original",
   await map.click();
   await expect(row.getByLabel("Potwierdzone")).toBeVisible();
 });
+
+for (const [lessonId, stepId, explanation] of [
+  [
+    "async-lending-cancel-commit",
+    "async-lending-cancel-commit-recall",
+    "Zatwierdzę po zakończeniu pracy. Przy anulowaniu w oczekiwaniu odczytam ponownie ten sam rekord.",
+  ],
+  [
+    "runtime-allocation-scope",
+    "allocation-scope-recall",
+    "Liczyłem wywołania w oknie. Nie znam liczby rezydentnych stron ani żywych obiektów.",
+  ],
+  [
+    "service-client-ambiguous-driver",
+    "ambiguous-driver-recall",
+    "Pokwitowanie z dodatnią sekwencją potwierdza zapis. Po zerwanym połączeniu wynik może być nieznany.",
+  ],
+]) {
+  test(`${stepId} retains the explanation and requires the learner's self-check`, async ({
+    page,
+  }) => {
+    const lesson = lessons.find((l) => l.id === lessonId)!;
+    const index = lesson.steps.findIndex((s) => s.id === stepId);
+    const state = createInitialState();
+    state.onboarding.completed = true;
+    state.diagnostic.completed = true;
+    state.resume = {
+      ...state.resume,
+      view: "lesson",
+      lessonId,
+      stepIndex: index,
+    };
+    state.steps[stepKey(lessonId, stepId)] = {
+      ...createStepProgress(),
+      answer: explanation,
+    };
+    await seed(page, state);
+    const text = page.getByRole("textbox", { name: "Twoje wyjaśnienie" });
+    await expect(text).toHaveValue(explanation);
+    await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+    const boxes = page.locator("details.rubric").getByRole("checkbox");
+    const submit = page.getByRole("button", {
+      name: "Sprawdź odpowiedź",
+      exact: true,
+    });
+    await boxes.first().check();
+    await submit.click();
+    await expect(page.locator(".feedback")).toContainText(
+      "zaznacz każde kryterium",
+    );
+    for (const box of await boxes.all()) await box.check();
+    await submit.click();
+    await expect(page.locator(".feedback.passed")).toBeVisible();
+    await expect(page.locator(".save-status")).toContainText(
+      "Zapisano na tym urządzeniu",
+    );
+    await page.reload();
+    await expect(text).toHaveValue(explanation);
+    await expect(page.locator(".feedback.passed")).toBeVisible();
+  });
+}
+
+test("the error-policy workshop keeps the learner's own code and rationale", async ({
+  page,
+}) => {
+  const lesson = lessons.find((l) => l.id === "panic-and-contracts")!;
+  const index = lesson.steps.findIndex(
+    (s) => s.id === "recovery-readings-policy",
+  );
+  const state = createInitialState();
+  state.onboarding.completed = true;
+  state.diagnostic.completed = true;
+  state.settings.accessibleEditor = true;
+  state.resume = {
+    ...state.resume,
+    view: "lesson",
+    lessonId: lesson.id,
+    stepIndex: index,
+  };
+  await seed(page, state);
+  await expect(page.locator(".task-pane h1")).toHaveText(
+    "Zdecyduj, kiedy kontynuować import",
+  );
+  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+  await expect(editor).toHaveValue("");
+  const draft = "const POMIJAJ_BRAKI: bool = false;";
+  await editor.fill(draft);
+  await page.getByText("Twój notatnik", { exact: true }).click();
+  const note = page.getByRole("textbox", {
+    name: "Notatki do lekcji",
+    exact: true,
+  });
+  await note.fill(
+    "Dla rozliczenia muszę znać każdą próbkę. Przerywam na pierwszym braku.",
+  );
+  await expect(page.locator(".save-status")).toContainText(
+    "Zapisano na tym urządzeniu",
+  );
+  await page.reload();
+  await expect(editor).toHaveValue(draft);
+  if (!(await note.isVisible()))
+    await page.getByText("Twój notatnik", { exact: true }).click();
+  await expect(note).toHaveValue(/Przerywam na pierwszym braku/);
+});

@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import recoveryPracticeDelta from "./fixtures/recovery-practice-delta.json";
 import foundationsRangeDelta from "./fixtures/foundations-range-gate-delta.json";
 import logRecallDelta from "./fixtures/log-analyzer-recall-delta.json";
 import eventReportDelta from "./fixtures/collections-event-report-delta.json";
@@ -193,13 +194,26 @@ function restoreReviewedLessons(
   return result;
 }
 
-export function restoreFoundationsRangeLessons(
+export function restoreRecoveryPracticeLessons(
   lessons: Lesson[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
   return restoreReviewedLessons(
     lessons,
+    replacements,
+    matches,
+    recoveryPracticeDelta,
+  );
+}
+
+export function restoreFoundationsRangeLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(
+    restoreRecoveryPracticeLessons(lessons, replacements, matches),
     replacements,
     matches,
     foundationsRangeDelta,

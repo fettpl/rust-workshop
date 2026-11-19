@@ -133,6 +133,13 @@ fn finds_the_last_value_without_taking_the_vector() {
     let values = vec![-4, 8, 15];
     assert_eq!(last_value(&values), Some(&15));
     assert_eq!(values, vec![-4, 8, 15]);
+}
+
+#[test]
+fn borrows_the_last_slot_when_values_repeat() {
+    let values = [7, 2, 7];
+    let last = last_value(&values[..]).expect("brak ostatniego elementu");
+    assert!(std::ptr::eq(last, &values[2]), "Zwróć pożyczkę ostatniego elementu.");
 }`;
 
 const vecEvenTests = `#[test]
@@ -379,7 +386,7 @@ fn pushes_after_the_old_reference_ends() {
         kind: "modify",
         title: "Zwróć ostatni element",
         prompt:
-          "Kontrakt: napisz `fn last_value(values: &[i32]) -> Option<&i32>`. Zwróć ostatni element przez pożyczkę albo None dla pustego Vec; nie przenoś i nie klonuj wektora. Starter zwraca pierwszy element, więc popraw go dla pustego, jednoelementowego i wieloelementowego przypadku.",
+          "Kontrakt: napisz `fn last_value(values: &[i32]) -> Option<&i32>`. Zwróć ostatni element przez pożyczkę albo None dla pustego wycinka; nie przenoś i nie klonuj wektora. Starter zwraca pierwszy element, więc popraw go dla pustego, jednoelementowego i wieloelementowego przypadku. Jeśli liczba się powtarza, zwróć referencję do elementu na wskazanej pozycji.",
         code: `fn last_value(values: &[i32]) -> Option<&i32> {
     values.get(0)
 }`,
@@ -431,7 +438,7 @@ fn pushes_after_the_old_reference_ends() {
         kind: "apply",
         title: "Połącz odczyt i iterację",
         prompt:
-          "Napisz summary przyjmujące &[i32] i zwracające parę (Option<&i32>, usize): referencję do pierwszej liczby oraz liczbę wartości ujemnych. Para (a, b) zawiera dwa niezależne wyniki, a typy pary zapisujemy tak samo w nawiasach. Dla pustego wycinka zwróć (None, 0). Pożyczaj dane i nie klonuj ich. first() jest odpowiednikiem get(0).",
+          "Napisz summary przyjmujące &[i32] i zwracające parę (Option<&i32>, usize): referencję do pierwszej liczby oraz liczbę wartości ujemnych. Para (a, b) zawiera dwa niezależne wyniki, a typy pary zapisujemy tak samo w nawiasach. Dla pustego wycinka zwróć (None, 0). Pożyczaj dane i nie klonuj ich. first() jest odpowiednikiem get(0). Jeśli liczba się powtarza, zwróć referencję do elementu na wskazanej pozycji.",
         code: "fn summary(values: &[i32]) -> (Option<&i32>, usize) { (None, 0) }",
         solution:
           "fn summary(values: &[i32]) -> (Option<&i32>, usize) {\n    let mut count = 0;\n    for value in values {\n        if *value < 0 { count += 1; }\n    }\n    (values.first(), count)\n}",
@@ -439,7 +446,15 @@ fn pushes_after_the_old_reference_ends() {
         evaluator: {
           kind: "tests",
           tests:
-            "#[test] fn summary_retains_borrowed_input() { assert_eq!(summary(&[]), (None, 0)); let values=vec![-3,7,0]; let actual: (Option<&i32>, usize)=summary(&values); assert_eq!(actual,(Some(&-3),1)); assert_eq!(values,vec![-3,7,0]); assert_eq!(summary(&[5,-1,-2]),(Some(&5),2)); assert_eq!(summary(&[0]),(Some(&0),0)); }",
+            `#[test] fn summary_retains_borrowed_input() { assert_eq!(summary(&[]), (None, 0)); let values=vec![-3,7,0]; let actual: (Option<&i32>, usize)=summary(&values); assert_eq!(actual,(Some(&-3),1)); assert_eq!(values,vec![-3,7,0]); assert_eq!(summary(&[5,-1,-2]),(Some(&5),2)); assert_eq!(summary(&[0]),(Some(&0),0)); }
+
+#[test]
+fn borrows_the_first_slot_when_values_repeat() {
+    let values = [-3, 5, -3];
+    let (first, count) = summary(&values);
+    assert_eq!(count, 2);
+    assert!(first.is_some_and(|n| std::ptr::eq(n, &values[0])), "Zwróć pożyczkę pierwszego elementu.");
+}`,
           forbiddenPatterns: [".clone("],
         },
         evidenceKind: "transfer",
@@ -1088,14 +1103,20 @@ export const collectionsReviewExercises: Record<string, LessonStep> = {
     kind: "debug",
     title: "Powtórka: drugi element",
     prompt:
-      "Napraw funkcję second: pożycza wycinek i zwraca Option referencji do elementu o indeksie 1. Dla pustej i jednoelementowej listy daje None. Nie przenosi danych.",
+      "Napraw funkcję second: pożycza wycinek i zwraca Option referencji do elementu o indeksie 1. Dla pustej i jednoelementowej listy daje None. Nie przenosi danych. Jeśli liczba się powtarza, zwróć referencję do elementu na wskazanej pozycji.",
     code: "fn second(values: &[i32]) -> Option<&i32> { values.first() }",
     solution: "fn second(values: &[i32]) -> Option<&i32> { values.get(1) }",
     expectedStatus: "success",
     evaluator: {
       kind: "tests",
       tests:
-        "#[test] fn borrowed_second() { assert_eq!(second(&[]), None); assert_eq!(second(&[4]), None); let values = vec![2, -7, 8]; let result: Option<&i32> = second(&values); assert_eq!(result, Some(&-7)); assert_eq!(values, vec![2, -7, 8]); assert_eq!(second(&[9, 0]), Some(&0)); }",
+        `#[test] fn borrowed_second() { assert_eq!(second(&[]), None); assert_eq!(second(&[4]), None); let values = vec![2, -7, 8]; let result: Option<&i32> = second(&values); assert_eq!(result, Some(&-7)); assert_eq!(values, vec![2, -7, 8]); assert_eq!(second(&[9, 0]), Some(&0)); }
+
+#[test]
+fn borrows_the_second_slot_when_values_repeat() {
+    let values = [9, 9, 9];
+    assert!(second(&values).is_some_and(|n| std::ptr::eq(n, &values[1])), "Zwróć pożyczkę elementu o indeksie 1.");
+}`,
     },
     evidenceKind: "recall",
     hints: [

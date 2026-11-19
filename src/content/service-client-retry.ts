@@ -255,14 +255,14 @@ function rubric(id: string, title: string, prompt: string, conceptId: string): L
   return { id, kind: "assessment", title, prompt, evaluator: { kind: "rubric", criteria }, rubric: criteria, evidenceKind: "self-rating", evidence: { version: 2, conceptIds: [conceptId] } };
 }
 
-function recallStep(id: string, title: string, prompt: string, accepted: string[], conceptId: string): LessonStep {
+function recallStep(id: string, title: string, prompt: string, criteria: string[], conceptId: string): LessonStep {
   return {
     id,
     kind: "recall",
     title,
     prompt,
-    evaluator: { kind: "answer", accepted, feedback: "Odwołaj się do konkretnej obserwacji i granicy kontraktu." },
-    evidenceKind: "recall",
+    evaluator: { kind: "rubric", criteria },
+    evidenceKind: "self-rating",
     evidence: { version: 2, conceptIds: [conceptId] },
   };
 }
@@ -277,7 +277,10 @@ export const serviceClientRetryLessons: Lesson[] = [
       testStep("service-client-retry-next-action", "Wybierz następną akcję", "Zaimplementuj `next_action(attempts_started, max_attempts, now, deadline, backoff, status) -> Action`: attempts_started=0 lub nieważny/osiągnięty budżet daje NotAttempted/Stop bez I/O; tylko BUSY i QUEUE_FULL mogą dać Retry, a checked backoff musi zostawić następny start przed deadline. Pozostałe statusy terminalne dają Stop.", "service-client/retry-next-action-v1", nextActionSolution, nextActionTests, "modify", "service-client-retry-policy", nextActionStarter, true),
       testStep("service-client-retry-budget-reservation", "Zarezerwuj budżet", "Zaimplementuj `reserve(...) -> Reservation`: attempts_started=0 jest prawidłową pierwszą rezerwacją przy max_attempts>0; oblicz checked backoff i next_start, a per-attempt I/O deadline licz od tego rzeczywistego startu i ogranicz globalnym deadline. Zwracaj jawny StopReason dla invalid policy, limitu, deadline i overflow.", "service-client/retry-budget-reservation-v1", budgetSolution, budgetTests, "apply", "service-client-retry-policy", budgetStarter, true),
       { ...rubric("bounded-retry-observe", "Obserwacja bez obietnicy", "Opisz, co dowodzi receiptu, a czego nie dowodzi sam timeout.", "service-client-retry-policy"), kind: "observe", evidenceKind: "exposure" },
-      recallStep("bounded-retry-recall", "Powtórz granice", "Wymień warunki, które dają NotAttempted, i dwa statusy retryable.", ["NotAttempted przy zerowej polityce lub deadline przed pierwszą próbą; BUSY i QUEUE_FULL mogą zaplanować bounded replay."], "service-client-retry-policy"),
+      recallStep("bounded-retry-recall", "Powtórz granice", "Wyjaśnij własnymi słowami, kiedy klient kończy bez pierwszej próby i kiedy odpowiedź serwera pozwala rozważyć ponowienie.", [
+        "Wskazuję zerowy limit prób lub wyczerpanie deadline przed rozpoczęciem pierwszej próby jako przyczyny NotAttempted.",
+        "Rozpoznaję BUSY i QUEUE_FULL. Kolejna próba tego samego żądania musi zmieścić się w limicie prób i wspólnym budżecie czasu.",
+      ], "service-client-retry-policy"),
       testStep("bounded-retry-blank", "Odtwórz kontrakt", "Napisz od zera minimalną politykę z tymi samymi granicami.", "service-client/retry-next-action-v1", nextActionSolution, nextActionTests, "blank", "service-client-retry-policy", nextActionStarter),
       testStep("bounded-retry-budget-blank", "Odtwórz rezerwację", "Napisz od zera checked reservation bez resetowania wspólnego deadline.", "service-client/retry-budget-reservation-v1", budgetSolution, budgetTests, "blank", "service-client-retry-policy", budgetStarter),
       rubric("bounded-retry-transfer", "Przenieś politykę", "Zaplanuj test granicy, w którym opóźnienie dosięga deadline.", "service-client-retry-policy"),
@@ -290,7 +293,10 @@ export const serviceClientRetryLessons: Lesson[] = [
       testStep("service-client-immutable-frame-replay", "Powtórz te same bajty", "Zaimplementuj `drive(frame, max_attempts, send) -> DriverResult` z typed Receipt(seq, Inserted|Duplicate), terminalną Refused(reason, Terminal), Unknown(last, stop, attempts) i NotAttempted. Wyślij dokładnie ten sam frame; zatrzymaj się po receipt/refusal, a transport replayuj tylko w limicie.", "service-client/immutable-frame-replay-v1", frameSolution, frameTests, "modify", "service-client-ambiguity-contract", frameStarter, true),
       testStep("service-client-aggregate-uncertainty", "Agreguj obserwacje", "Zaimplementuj `aggregate(observations, stopped) -> Final` dla Receipt(seq, disposition), BUSY/QUEUE_FULL, każdej terminalnej odmowy, STORAGE, transportu, timeoutu, malformed i unrecognized. Receipt rozstrzyga Delivered; bez niego prior uncertainty pozostaje Unknown, a czysta seria overloadu może dać Refused.", "service-client/aggregate-uncertainty-v1", aggregateSolution, aggregateTests, "apply", "service-client-ambiguity-contract", aggregateStarter, true),
       { ...rubric("ambiguous-driver-observe", "Odczytaj granicę", "Porównaj INSERTED, DUPLICATE i brak kompletnej odpowiedzi.", "service-client-ambiguity-contract"), kind: "observe", evidenceKind: "exposure" },
-      recallStep("ambiguous-driver-recall", "Powtórz niepewność", "Kiedy możesz powiedzieć Delivered, a kiedy historia kończy się Unknown?", ["Delivered wymaga prawidłowego INSERTED albo DUPLICATE receiptu; timeout, STORAGE lub niepełna odpowiedź pozostawiają Unknown bez takiego receiptu."], "service-client-ambiguity-contract"),
+      recallStep("ambiguous-driver-recall", "Powtórz niepewność", "Klient wysłał żądanie, ale nie odebrał pełnej odpowiedzi. Wyjaśnij własnymi słowami, co uzasadnia Delivered i kiedy po zakończeniu prób pozostaje Unknown.", [
+        "Dostarczony zapis potwierdza poprawne pokwitowanie INSERTED lub DUPLICATE dla tego żądania z dodatnim numerem sekwencji.",
+        "Po niejednoznacznej próbie utrata odpowiedzi, timeout lub STORAGE pozostawia niepewność co do zapisu. Późniejsza odmowa sama tej niepewności nie usuwa.",
+      ], "service-client-ambiguity-contract"),
       testStep("ambiguous-driver-frame-blank", "Odtwórz replay", "Napisz callback-driven replay zachowujący jeden frame.", "service-client/immutable-frame-replay-v1", frameSolution, frameTests, "blank", "service-client-ambiguity-contract", frameStarter),
       testStep("ambiguous-driver-blank", "Odtwórz agregację", "Napisz agregator, w którym terminalna odmowa nie kasuje Unknown.", "service-client/aggregate-uncertainty-v1", aggregateSolution, aggregateTests, "blank", "service-client-ambiguity-contract", aggregateStarter),
       rubric("ambiguous-driver-transfer", "Przenieś do runbooka", "Opisz, kiedy operator może powiedzieć Delivered, a kiedy tylko Unknown.", "service-client-ambiguity-contract"),

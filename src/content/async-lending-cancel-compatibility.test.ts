@@ -1,3 +1,5 @@
+import { restoreRecoveryPracticeLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import { matchesRegistryValue } from "./file-schema-evolution-compatibility-fixture";
 import { dependencyFileSuccessor } from "./dependency-maintenance-compatibility-fixture";
 import {
   assertReviewedHistoryRedaction,
@@ -175,7 +177,10 @@ it("binds the immutable accepted A1 cancellation and Send snapshots", () => {
 });
 
 it("appends exactly the declared A2 cancellation steps with the frozen metadata", () => {
-  const lesson = currentCourse.lessons.find(
+  const previousLessons = restoreRecoveryPracticeLessons(
+    currentCourse.lessons, new Map(), matchesRegistryValue,
+  );
+  const lesson = previousLessons.find(
     (candidate) => candidate.id === cancellationTransferLessonId,
   )!;
   expect(lesson.steps.slice(0, 5)).toEqual(acceptedCancellationLesson.steps);

@@ -1,3 +1,4 @@
+import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
 import { restoreWorkshopAssessmentLessons } from "./workshop-assessment-repair-compatibility-fixture";
 import { createHash } from "node:crypto";
@@ -379,6 +380,32 @@ function collectAdditions(
     const items = registry[key] as Registry;
     if (replacements.has(items)) continue;
     const descriptors = Object.getOwnPropertyDescriptors(items);
+    const review = recoveryDelta.review;
+    const reviewKey = key === "reviewExercises" ? review.conceptId : review.id;
+    const descriptor = descriptors[reviewKey];
+    const current = descriptor?.value;
+    if (matches(current, review.successorSha256)) {
+      const evaluator = withValue(
+        current.evaluator,
+        "tests",
+        review.beforeTests,
+      );
+      const previous =
+        replacements.get(current) ??
+        withValue(
+          withValue(current, "prompt", review.beforePrompt),
+          "evaluator",
+          evaluator,
+        );
+      if (matches(previous, review.beforeSha256)) {
+        descriptors[reviewKey] = { ...descriptor, value: previous };
+        replacements.set(current, previous);
+        replacements.set(
+          current.evaluator,
+          (previous as typeof current).evaluator,
+        );
+      }
+    }
     delete descriptors[addition];
     replacements.set(
       items,

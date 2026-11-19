@@ -520,16 +520,15 @@ export const asyncLendingCoreLessons: Lesson[] = [
         id: "async-lending-receiver-recall",
         kind: "recall",
         title: "Przypomnij granicę",
-        prompt: "Kiedy wolno rozpocząć drugi borrowed receive?",
+        prompt: "Future pierwszego receive zwróciła pożyczony rekord. Kiedy możesz ponownie wywołać receive na tym samym odbiorniku? Wyjaśnij, co stanie się z kursorem po finish i po porzuceniu rekordu.",
         evaluator: {
-          kind: "answer",
-          accepted: [
-            "Po zakończeniu pierwszej pożyczki.",
-            "po drop lub finish",
+          kind: "rubric",
+          criteria: [
+            "Wyjaśniam, że drugie wyłączne pożyczenie odbiornika może zacząć się po zakończeniu pierwszego. Samo odebranie rekordu nie zwalnia jego pożyczki.",
+            "Rozróżniam zakończenie pożyczki od zatwierdzenia odczytu. W tym protokole finish przesuwa kursor, a porzucenie rekordu bez finish pozostawia go na miejscu.",
           ],
-          feedback: "Druga pożyczka nie może nakładać się z pierwszą.",
         },
-        evidenceKind: "recall",
+        evidenceKind: "self-rating",
       },
       {
         id: "async-lending-receiver-bounded-batch",

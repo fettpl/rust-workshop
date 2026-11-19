@@ -1087,6 +1087,53 @@ fn main() {
         },
         evidenceKind: "recall",
       },
+      {
+        id: "recovery-readings-policy",
+        kind: "blank",
+        title: "Zdecyduj, kiedy kontynuować import",
+        prompt:
+          "Projektujesz import dziennika pomiarów. Liczbę zapisaną w wierszu odczytaj tak jak przez parse::<i16>(). Uszkodzony zapis (np. litery, same spacje lub liczba poza zakresem i16) musi zatrzymać import. Pusty napis ma inne znaczenie: może oznaczać dopuszczalną przerwę w zapisie albo brak wymaganej próbki. Wybierz odbiorcę raportu i zdecyduj, czy pominiesz takie braki z ostrzeżeniem, czy zakończysz import na pierwszym braku. W notatce uzasadnij swój wybór i opisz jego koszt dla odbiorcy.\n\nZadeklaruj własną decyzję przez `const POMIJAJ_BRAKI: bool`. Napisz `fn podsumuj(wiersze: &[&str]) -> Result<(i64, usize), usize>`. Przy sukcesie zwróć sumę pomiarów i liczbę pominiętych braków. Ta liczba pełni rolę ostrzeżenia dla odbiorcy. Przy błędzie zwróć numer pierwszego odrzuconego wiersza, licząc od 1. Pusta lista daje sumę 0 i zero braków. Wejście ma najwyżej 1000 wierszy. Typ wyniku służy do porównania raportów; reprezentację problemów wewnątrz funkcji dobierz samodzielnie. Przed uruchomieniem zapisz, co Twoja polityka zrobi z pustym napisem, liczbą zero i uszkodzonym wierszem w jednym dzienniku.",
+        solution: `const POMIJAJ_BRAKI: bool = true;
+
+fn podsumuj(wiersze: &[&str]) -> Result<(i64, usize), usize> {
+    let mut suma = 0;
+    let mut braki = 0;
+    for (indeks, &tekst) in wiersze.iter().enumerate() {
+        if tekst.is_empty() && POMIJAJ_BRAKI {
+            braki += 1;
+            continue;
+        }
+        match tekst.parse::<i16>() {
+            Ok(pomiar) => suma += i64::from(pomiar),
+            Err(_) => return Err(indeks + 1),
+        }
+    }
+    Ok((suma, braki))
+}`,
+        evaluator: {
+          kind: "tests",
+          tests: `#[test]
+fn poprawne_pomiary() {
+    assert_eq!(podsumuj(&[]), Ok((0, 0)));
+    assert_eq!(podsumuj(&["+04", "-0", "-12"]), Ok((-8, 0)));
+    assert_eq!(podsumuj(&["0", "32767", "32767", "-32768"]), Ok((32766, 0)));
+}
+#[test]
+fn braki_zgodne_z_deklaracja() {
+    let oczekiwane = if POMIJAJ_BRAKI { Ok((5, 2)) } else { Err(2) };
+    assert_eq!(podsumuj(&["-3", "", "8", ""]), oczekiwane);
+    assert_eq!(podsumuj(&[""]), if POMIJAJ_BRAKI { Ok((0, 1)) } else { Err(1) });
+}
+#[test]
+fn pierwszy_blad_i_jego_kontekst() {
+    for bledny in [" ", " 1", "1 ", "x", "32768", "-32769"] {
+        assert_eq!(podsumuj(&["10", bledny, "0", "x"]), Err(2));
+        assert_eq!(podsumuj(&["", "1", bledny]), if POMIJAJ_BRAKI { Err(3) } else { Err(1) });
+    }
+}`,
+        },
+        evidenceKind: "transfer",
+      },
     ],
     misconceptions: [
       "unwrap jest bezpieczny dla każdego tekstu użytkownika.",

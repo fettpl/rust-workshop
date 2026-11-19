@@ -92,7 +92,7 @@ describe("bounded client retry policy", () => {
     ]));
     expect(new Set(primarySteps.map((step) => step.evidence?.codingTaskId)).size).toBe(4);
     expect(added.every((lesson) => lesson.steps.some((step) => step.kind === "predict" && step.evidenceKind === "prediction"))).toBe(true);
-    expect(added.every((lesson) => lesson.steps.some((step) => step.kind === "recall" && step.evidenceKind === "recall"))).toBe(true);
+    expect(added.every((lesson) => lesson.steps.some((step) => step.kind === "recall" && step.evaluator?.kind === "rubric" && step.evidenceKind === "self-rating"))).toBe(true);
     const byFamily = new Map(primarySteps.map((step) => [step.evidence?.codingTaskId, step.solution ?? ""]));
     expect(byFamily.get("service-client/retry-next-action-v1")).toMatch(/QUEUE_FULL|NotAttempted|attempts_started/);
     expect(byFamily.get("service-client/retry-budget-reservation-v1")).toMatch(/Reservation|StopReason|checked_add|attempts_started/);
