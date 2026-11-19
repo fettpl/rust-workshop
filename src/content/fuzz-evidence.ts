@@ -1,3 +1,4 @@
+import { fuzzOracleBatchRecovery } from "./fuzz-oracle-batch-recovery";
 import type {
   Competency,
   Concept,
@@ -404,14 +405,24 @@ export const fuzzEvidenceLessons: Lesson[] = [
         testsOf(fixture("fuzz-oracle-sensitivity-gate").reference),
         "fn same_output(a: &[(usize, String, bool)], b: &[(usize, String, bool)]) -> bool { a.len() == b.len() } fn same_result(a: Result<Vec<(usize, String, bool)>, &'static str>, b: Result<Vec<(usize, String, bool)>, &'static str>) -> bool { a == b }",
       ),
-      tested(
-        "fuzz-oracle-sensitivity-blank",
-        "blank",
-        "Transfer: duplicate-preserving selection",
-        "Zaimplementuj `Frame<'a> { context: u8, query: String, body: &'a [u8] }` oraz `decode_frame(bytes: &[u8]) -> Option<Frame<'_>>`. Header ma układ `context: u8`, gdzie `context = bytes[0] % 20`, oraz big-endian `u16` długości query; odrzuć input krótszy niż 3 lub dłuższy niż 4096, ogranicz zadeklarowaną długość do dostępnych bajtów, dekoduj lossy tylko query i pożycz raw body. Następnie zaimplementuj `duplicate_selection_matches(actual: &[(usize, bool)], expected: &[(usize, bool)]) -> bool` bez sortowania.",
-        codeOf(fixture("fuzz-oracle-sensitivity-blank").reference),
-        testsOf(fixture("fuzz-oracle-sensitivity-blank").reference),
-      ),
+      {
+        ...tested(
+          "fuzz-oracle-sensitivity-blank",
+          "blank",
+          "Transfer: duplicate-preserving selection",
+          "Zaimplementuj `Frame<'a> { context: u8, query: String, body: &'a [u8] }` oraz `decode_frame(bytes: &[u8]) -> Option<Frame<'_>>`. Header ma układ `context: u8`, gdzie `context = bytes[0] % 20`, oraz big-endian `u16` długości query; odrzuć input krótszy niż 3 lub dłuższy niż 4096, ogranicz zadeklarowaną długość do dostępnych bajtów, dekoduj lossy tylko query i pożycz raw body. Następnie zaimplementuj `duplicate_selection_matches(actual: &[(usize, bool)], expected: &[(usize, bool)]) -> bool` bez sortowania.",
+          codeOf(fixture("fuzz-oracle-sensitivity-blank").reference),
+          testsOf(fixture("fuzz-oracle-sensitivity-blank").reference),
+        ),
+        suppliedSolutions: {
+          solution: [
+            {
+              lessonId: "fuzz-oracle-sensitivity",
+              stepId: "fuzz-oracle-sensitivity-gate",
+            },
+          ],
+        },
+      },
       recallChoice(
         "fuzz-oracle-sensitivity-recall",
         "Powtórka: pełny oracle",
@@ -423,6 +434,7 @@ export const fuzzEvidenceLessons: Lesson[] = [
         ],
         0,
       ),
+      fuzzOracleBatchRecovery,
     ],
     misconceptions: [
       "Zgodna długość oznacza zgodność.",

@@ -28,6 +28,9 @@ export const fuzzEvidenceModule: CourseModule = {
     taskRefs: [
       { lessonId, stepId: `${lessonId}-gate` },
       { lessonId, stepId: `${lessonId}-blank` },
+      ...(lessonId === "fuzz-oracle-sensitivity"
+        ? [{ lessonId, stepId: "fuzz-oracle-batch-mismatches-transfer" }]
+        : []),
     ],
   })),
 };

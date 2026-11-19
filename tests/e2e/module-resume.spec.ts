@@ -284,13 +284,16 @@ for (const moduleId of [
     } else {
       // Other criteria expose their available blank through the gate action.
       await page.locator(".gate-action").first().click();
-      if (moduleId === "unsafe-miri-contracts") {
-        expect(initializedPrefix).toBeDefined();
-        await expect(page.locator(".task-pane h1")).toHaveText(
-          initializedPrefix!.title,
-        );
-        // The historical blank remains directly navigable, but it is no
-        // longer the fresh gate recovery after the initialized-prefix family.
+      if (moduleId === "unsafe-miri-contracts" || moduleId === "tokio-blocking-work") {
+        const freshPractice = moduleId === "tokio-blocking-work"
+          ? lesson.steps.find(item => item.id === "tokio-spawn-blocking-boundary-map-transfer")
+          : initializedPrefix;
+        expect(freshPractice).toBeDefined();
+        await expect(page.locator(".task-pane h1")).toHaveText(freshPractice!.title);
+        if (moduleId === "tokio-blocking-work") {
+          await expect(editor).toHaveValue(freshPractice!.code!);
+        }
+        // The gate recommends fresh practice. The historical blank is still directly accessible.
         await page
           .getByLabel("Kroki lekcji")
           .getByRole("button")

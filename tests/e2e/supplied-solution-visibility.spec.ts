@@ -3,6 +3,7 @@ import { lessons, modules, reviewExercises } from "../../src/content/course";
 import {
   assistanceForLessonStep,
   courseModuleGate,
+  courseGateRecovery,
   evidenceForLessonStep,
 } from "../../src/content/learning-context";
 import {
@@ -393,3 +394,60 @@ for (const display of [
     expect(helperFacts(await saved(page))).toEqual(facts);
   });
 }
+
+test("a later lifecycle solution keeps both earlier gates assisted after reloading", async ({
+  page,
+}) => {
+  const lesson = lessons.find((item) => item.id === "service-readiness-drain")!;
+  const replay = lesson.steps.find(
+    (step) => step.id === "readiness-drain-replay-transfer",
+  )!;
+  const stage = modules.find((item) => item.id === lesson.moduleId)!;
+  const criteria = stage.gateCriteria!.filter((item) =>
+    item.taskRefs.some((ref) => ref.stepId === replay.id),
+  );
+  expect(criteria).toHaveLength(2);
+  const state = ready();
+  state.resume.lessonId = lesson.id;
+  state.resume.stepIndex = lesson.steps.indexOf(replay);
+  const key = stepKey(lesson.id, replay.id);
+  const draft = "// własny szkic historii zamykania";
+  state.steps[key] = createStepProgress(draft);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await seed(page, state);
+  await expect(
+    page.getByRole("heading", { name: replay.title, exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
+  await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
+  await page
+    .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
+    .click();
+  await expect(page.locator(".revealed-solution pre")).toHaveText(
+    replay.solution!,
+  );
+  await expect
+    .poll(async () => (await saved(page)).steps[key]?.revealed)
+    .toBe(true);
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: replay.title, exact: true }),
+  ).toBeVisible();
+  const restored = await saved(page);
+  expect(restored.steps[key].code).toBe(draft);
+  for (const criterion of criteria) {
+    const first = lesson.steps.find(
+      (step) => step.id === criterion.taskRefs[0].stepId,
+    )!;
+    expect(assistanceForLessonStep(restored, lesson, first).revealed).toBe(
+      true,
+    );
+    expect(courseGateRecovery(restored, criterion, lessons)).toEqual({
+      status: "available",
+      task: { lessonId: lesson.id, stepId: "readiness-job-ledger-transfer" },
+    });
+  }
+});

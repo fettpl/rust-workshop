@@ -4,6 +4,11 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { expect, it } from "vitest";
 import type { EvidenceEvent } from "../domain/types";
+import {
+  assistanceForLessonStep,
+  recordCourseEvidence,
+  recordSuppliedSolutions,
+} from "./learning-context";
 import { gateRecovery, moduleGate } from "../engine/learning";
 import { evaluate } from "../engine/evaluate";
 import { appendHiddenTests } from "../runner";
@@ -182,3 +187,81 @@ it.each(serviceOperationsTransferControls)(
   },
   240_000,
 );
+
+it("the two predicates shown by the replay solve the original accounting exercise", () => {
+  const lesson = lessons.find((item) => item.id === "service-readiness-drain")!;
+  const replay = lesson.steps.find(
+    (step) => step.id === "readiness-drain-replay-transfer",
+  )!;
+  const target = lesson.steps.find(
+    (step) => step.id === "readiness-drain-accounting-gate",
+  )!;
+  if (!replay.solution || !target.code || target.evaluator?.kind !== "tests")
+    throw new Error("Missing authored replay or accounting contract");
+  const predicates = replay.solution.match(
+    /Snapshot \{ state, ready: (.+?), drained: (.+?) \}/,
+  );
+  expect(predicates).not.toBeNull();
+  const bodies = predicates!.slice(1);
+  const adapted = target.code.replace(/let _ = state;\s*todo!\(\)/g, () =>
+    bodies.shift()!,
+  );
+  expect(bodies).toHaveLength(0);
+  const directory = mkdtempSync(join(tmpdir(), "readiness-predicates-"));
+  try {
+    for (const [source, expectedStatus] of [
+      [target.code, 101],
+      [adapted, 0],
+    ] as const) {
+      const file = join(directory, "readiness.rs");
+      const binary = join(directory, "readiness");
+      writeFileSync(file, appendHiddenTests(source, target.evaluator.tests));
+      const compile = spawnSync(
+        "rustc",
+        ["--edition=2024", "--test", file, "-o", binary],
+        { encoding: "utf8", timeout: 60_000 },
+      );
+      expect(compile.status, compile.stderr).toBe(0);
+      const run = spawnSync(binary, [], { encoding: "utf8", timeout: 10_000 });
+      expect(run.status, run.stdout + run.stderr).toBe(expectedStatus);
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+it("keeps the decisions disclosed by a lifecycle replay out of subsequent independent credit", () => {
+  const lesson = lessons.find((item) => item.id === "service-readiness-drain")!;
+  const replay = lesson.steps.find(
+    (step) => step.id === "readiness-drain-replay-transfer",
+  )!;
+  const state = createInitialState();
+  state.steps[stepKey(lesson.id, replay.id)] = {
+    ...createStepProgress(),
+    revealed: true,
+  };
+  const recovered = importState(exportState(state));
+  for (const criterion of courseModule.gateCriteria!.filter((item) =>
+    item.taskRefs.some((ref) => ref.stepId === replay.id),
+  )) {
+    const first = criterion.taskRefs[0];
+    expect(gateRecovery(recovered, criterion, lessons), criterion.id).toEqual({
+      status: "available",
+      task: { lessonId: lesson.id, stepId: "readiness-job-ledger-transfer" },
+    });
+    const after = recordSuppliedSolutions(recovered, replay, "solution", 2);
+    const recorded = recordCourseEvidence(after, {
+      ...eventFor(lesson.id, first.stepId, 3),
+      ...assistanceForLessonStep(
+        after,
+        lesson,
+        lesson.steps.find((step) => step.id === first.stepId)!,
+      ),
+    });
+    expect(
+      moduleGate(recorded, lessons, courseModule).criteria[
+        courseModule.gateCriteria!.indexOf(criterion)
+      ].passed,
+    ).toBe(false);
+  }
+});

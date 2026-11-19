@@ -1255,6 +1255,7 @@ export const profileEvidenceModule: CourseModule = addPerformanceRecoveryRefs({
       taskRefs: [
         { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-gate" },
         { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-blank" },
+        { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-audit" },
       ],
     },
     {
@@ -1263,6 +1264,7 @@ export const profileEvidenceModule: CourseModule = addPerformanceRecoveryRefs({
       taskRefs: [
         { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-complete-gate" },
         { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-blank" },
+        { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-audit" },
       ],
     },
   ],

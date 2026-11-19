@@ -160,6 +160,10 @@ export const tokioBlockingModule: CourseModule = {
           lessonId: "tokio-spawn-blocking-boundary",
           stepId: "tokio-spawn-blocking-boundary-blank",
         },
+        {
+          lessonId: "tokio-spawn-blocking-boundary",
+          stepId: "tokio-spawn-blocking-boundary-map-transfer",
+        },
       ],
     },
     {

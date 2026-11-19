@@ -16,7 +16,7 @@ const assessments = [
 const normalizeRust = (source: string) => source.replace(/\s+/g, "");
 
 it("covers every allocation coding task with distinct passing equivalent and rejecting mutant", () => {
-  expect(assessments).toHaveLength(8);
+  expect(assessments).toHaveLength(9);
   expect(runtimeAllocationAssessmentFixtures.map((fixture) => fixture.id).sort()).toEqual(assessments.map((step) => step.id).sort());
   for (const fixture of runtimeAllocationAssessmentFixtures) {
     const step = assessments.find((candidate) => candidate.id === fixture.id)!;

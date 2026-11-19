@@ -118,10 +118,11 @@ function checkAcyclic(
   for (const id of graph.keys()) visit(id, []);
 }
 
-const recoveryExtensions: Partial<Record<string, [string, string[]]>> = {
-  "documentation-guided-repair": ["docs-split-transfer", ["docs-keyed-setting"]],
-  "service-client-bounded-retry": ["bounded-retry-transfer", ["retry-ready-queue", "retry-time-windows"]],
-  "service-client-ambiguous-driver": ["ambiguous-driver-transfer", ["retry-replica-frame", "retry-receipt-ledger"]],
+const recoveryExtensions: Partial<Record<string, { prefixLength: number; breakAfter: string; suffix: string[] }>> = {
+  "documentation-guided-repair": { prefixLength: 9, breakAfter: "docs-split-transfer", suffix: ["docs-keyed-setting"] },
+  "service-client-bounded-retry": { prefixLength: 9, breakAfter: "bounded-retry-transfer", suffix: ["retry-ready-queue", "retry-time-windows"] },
+  "service-client-ambiguous-driver": { prefixLength: 9, breakAfter: "ambiguous-driver-transfer", suffix: ["retry-replica-frame", "retry-receipt-ledger"] },
+  "string-and-utf8": { prefixLength: 8, breakAfter: "string-recall", suffix: ["string-scalar-frequency-transfer", "string-joined-parts-transfer"] },
 };
 
 export function validateContent(content: ContentBundle): string[] {
@@ -418,10 +419,10 @@ export function validateContent(content: ContentBundle): string[] {
     // Keep saved indices and limit the extra session to these reviewed alternatives.
     const extension = Object.hasOwn(recoveryExtensions, lesson.id) ? recoveryExtensions[lesson.id] : undefined;
     const reviewedExtension = extension &&
-      lesson.steps.length === 9 + extension[1].length &&
-      extension[1].every((id, index) => lesson.steps[9 + index].id === id) &&
+      lesson.steps.length === extension.prefixLength + extension.suffix.length &&
+      extension.suffix.every((id, index) => lesson.steps[extension.prefixLength + index].id === id) &&
       Array.isArray(lesson.sessionStops) &&
-      lesson.sessionStops.some(stop => stop?.afterStepId === extension[0]);
+      lesson.sessionStops.some(stop => stop?.afterStepId === extension.breakAfter);
     const appendedPatternBridge =
       lesson.id === "nested-patterns-and-destructuring" &&
       lesson.steps.length === 11 &&

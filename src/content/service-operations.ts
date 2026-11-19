@@ -2,6 +2,7 @@ import {
   admissionBatchTransfer,
   telemetryReportsTransfer,
   lifecycleReplayTransfer,
+  jobLedgerTransfer,
   incidentTimelineTransfer,
   serviceOperationsTransferControls,
 } from "./service-operations-transfer";
@@ -950,6 +951,7 @@ fn main() { println!("{} {}", drain_complete("draining", 2, 1), drain_complete("
         tests: readinessTests,
       }),
       lifecycleReplayTransfer,
+      jobLedgerTransfer,
     ],
     misconceptions: [
       "Ready oznacza, że można już kończyć proces.",
@@ -1193,6 +1195,7 @@ export const serviceOperationsModule: CourseModule = {
           lessonId: "service-readiness-drain",
           stepId: "readiness-drain-replay-transfer",
         },
+        { lessonId: "service-readiness-drain", stepId: jobLedgerTransfer.id },
       ],
     },
     {
@@ -1211,6 +1214,7 @@ export const serviceOperationsModule: CourseModule = {
           lessonId: "service-readiness-drain",
           stepId: "readiness-drain-replay-transfer",
         },
+        { lessonId: "service-readiness-drain", stepId: jobLedgerTransfer.id },
       ],
     },
     {

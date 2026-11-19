@@ -7,15 +7,17 @@ const choice = (id: string, title: string, prompt: string, answers: [string, str
   evidenceKind: "prediction",
 });
 
-const run = (id: string, title: string, prompt: string, code: string, expected: string): LessonStep => ({
+const run = (id: string, title: string, prompt: string, code: string, expected: string, suppliedSolutions?: LessonStep["suppliedSolutions"]): LessonStep => ({
   id, kind: "run", title, prompt, code, solution: code,
+  ...(suppliedSolutions ? { suppliedSolutions } : {}),
   evaluator: { kind: "exact-output", expected }, expectedStatus: "success", evidenceKind: "exposure",
 });
 
-const tested = (options: { id: string; kind: "modify" | "apply" | "blank"; title: string; prompt: string; code?: string; solution: string; tests: string; gate?: boolean }): LessonStep => ({
+const tested = (options: { id: string; kind: "modify" | "apply" | "blank"; title: string; prompt: string; code?: string; solution: string; tests: string; gate?: boolean; suppliedSolutions?: LessonStep["suppliedSolutions"] }): LessonStep => ({
   id: options.id, kind: options.kind, title: options.title, prompt: options.prompt,
   ...(options.code === undefined ? {} : { code: options.code, expectedStatus: "success" as const }),
   solution: options.solution,
+  ...(options.suppliedSolutions ? { suppliedSolutions: options.suppliedSolutions } : {}),
   hints: ["Najpierw zaznacz przygotowanie, okno pomiaru i sprzątanie.", "Porównuj ten sam input i Summary, a licznik wyzeruj przed wejściem do okna."],
   evaluator: { kind: "tests", tests: options.tests }, evidenceKind: options.kind === "blank" ? "assessment" : "transfer", evidenceGate: options.gate ?? false,
 });
@@ -256,6 +258,43 @@ fn result_equality_and_completion_precede_cost_interpretation() {
     assert!(!comparable_reports(Report { complete: false, ..baseline }, baseline));
 }`;
 
+// A scalar predicate cannot supply the ordered diagnostic and metric audit.
+const comparisonAuditSolution = String.raw`#[derive(Debug, Clone, Copy)]
+struct Sample { input: &'static str, summary: u64, complete: bool, calls: usize }
+#[derive(Debug, PartialEq, Eq)]
+enum Audit { Incomplete, DifferentInput, DifferentSummary, MoreCalls(usize), SameOrFewer }
+
+fn audit_reports(baseline: Sample, candidates: &[Sample]) -> Vec<Audit> {
+    candidates.iter().map(|candidate| {
+        if !baseline.complete || !candidate.complete { Audit::Incomplete }
+        else if baseline.input != candidate.input { Audit::DifferentInput }
+        else if baseline.summary != candidate.summary { Audit::DifferentSummary }
+        else if candidate.calls > baseline.calls { Audit::MoreCalls(candidate.calls - baseline.calls) }
+        else { Audit::SameOrFewer }
+    }).collect()
+}`;
+const comparisonAuditStarter = comparisonAuditSolution.slice(0, comparisonAuditSolution.indexOf("    candidates.iter()")) + `    Vec::new()
+}`;
+const comparisonAuditTests = String.raw`#[test]
+fn audits_each_candidate_in_order_before_interpreting_calls() {
+    let base = Sample { input: "żółć", summary: 7, complete: true, calls: 10 };
+    let candidates = [
+        Sample { calls: 4, ..base }, Sample { calls: 15, ..base },
+        Sample { calls: 10, ..base }, Sample { complete: false, input: "other", summary: 0, ..base },
+        Sample { input: "other", summary: 0, ..base }, Sample { summary: 0, ..base },
+    ];
+    assert_eq!(audit_reports(base, &candidates), vec![Audit::SameOrFewer, Audit::MoreCalls(5), Audit::SameOrFewer, Audit::Incomplete, Audit::DifferentInput, Audit::DifferentSummary]);
+    assert_eq!(audit_reports(Sample { complete: false, ..base }, &candidates), vec![Audit::Incomplete, Audit::Incomplete, Audit::Incomplete, Audit::Incomplete, Audit::Incomplete, Audit::Incomplete]);
+    assert!(audit_reports(base, &[]).is_empty());
+}
+
+#[test]
+fn empty_workload_and_extreme_costs_keep_their_meaning() {
+    let base = Sample { input: "", summary: 0, complete: true, calls: 0 };
+    assert_eq!(audit_reports(base, &[base, Sample { calls: usize::MAX, ..base }]), vec![Audit::SameOrFewer, Audit::MoreCalls(usize::MAX)]);
+    assert_eq!(audit_reports(Sample { calls: usize::MAX, ..base }, &[base]), vec![Audit::SameOrFewer]);
+}`;
+
 const scopeReviewSolution = String.raw`#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Marker { Setup(usize), Work(usize), Report(usize), Teardown }
 #[derive(Debug, PartialEq, Eq)]
@@ -333,14 +372,21 @@ fn main() {
     let baseline = Observation { input: "records-512", summary: 512, calls: 8, requested: 90, retained: 12 };
     let candidate = Observation { input: "records-512", summary: 512, calls: 3, requested: 48, retained: 16 };
     println!("comparable={} calls={} requested={} retained={}", comparable(baseline, candidate), candidate.calls, candidate.requested, candidate.retained);
-}`, "comparable=true calls=3 requested=48 retained=16\n"),
+}`, "comparable=true calls=3 requested=48 retained=16\n", {
+      code: [{ lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-gate" }],
+      solution: [{ lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-gate" }],
+    }),
     tested({ id: "allocation-comparison-gate", kind: "modify", title: "Porównaj input i Summary", prompt: "Zaimplementuj comparable bez używania kosztu jako warunku równoważności workloadu.", code: compareGateStarter, solution: compareGateSolution, tests: compareGateTests, gate: true }),
     tested({ id: "allocation-comparison-complete-gate", kind: "apply", title: "Odrzuć niekompletne dowody", prompt: "Akceptuj dowód tylko wtedy, gdy oba raporty są kompletne, mają ten sam workload i ten sam Summary.", code: completeGateStarter, solution: completeGateSolution, tests: completeGateTests, gate: true }),
-    tested({ id: "allocation-comparison-blank", kind: "blank", title: "Blank page: raport porównania", prompt: "Zaimplementuj publiczny kontrakt Rust: #[derive(Debug, Clone, Copy, PartialEq, Eq)] struct Report { input: &'static str, summary: u64, allocator_calls: usize, requested_bytes: usize, retained_bytes: usize, complete: bool } oraz fn comparable_reports(baseline: Report, candidate: Report) -> bool. Zwróć true wyłącznie dla dwóch kompletnych raportów z tym samym input i Summary; pola allocator_calls, requested_bytes i retained_bytes opisują różne metryki kosztu i nie mogą zastępować warunku porównywalności. Zwróć false dla niekompletnego baseline albo candidate oraz dla różnego inputu lub Summary.", solution: comparisonBlankSolution, tests: comparisonBlankTests }),
+    tested({ id: "allocation-comparison-blank", kind: "blank", title: "Blank page: raport porównania", prompt: "Zaimplementuj publiczny kontrakt Rust: #[derive(Debug, Clone, Copy, PartialEq, Eq)] struct Report { input: &'static str, summary: u64, allocator_calls: usize, requested_bytes: usize, retained_bytes: usize, complete: bool } oraz fn comparable_reports(baseline: Report, candidate: Report) -> bool. Zwróć true wyłącznie dla dwóch kompletnych raportów z tym samym input i Summary; pola allocator_calls, requested_bytes i retained_bytes opisują różne metryki kosztu i nie mogą zastępować warunku porównywalności. Zwróć false dla niekompletnego baseline albo candidate oraz dla różnego inputu lub Summary.", solution: comparisonBlankSolution, tests: comparisonBlankTests, suppliedSolutions: { solution: [
+      { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-gate" },
+      { lessonId: "runtime-allocation-comparison", stepId: "allocation-comparison-complete-gate" },
+    ] } }),
     recall("allocation-comparison-recall", "Zinterpretuj różnicę", "Druga wersja zarejestrowała mniej wywołań alokatora. Co sprawdzisz przed porównaniem i jaki wniosek wolno Ci sformułować? Odpowiedz własnymi słowami.", "Nie; najpierw trzeba potwierdzić ten sam input, ten sam Summary i kompletność, a metryka dotyczy tylko wywołań obserwowanego alokatora.", [
       "Porównuję to samo wejście i wynik Summary oraz sprawdzam kompletność obu pomiarów i zgodność okien.",
       "Ograniczam wniosek do zaobserwowanych wywołań. Ocena czasu lub pamięci procesu wymaga osobnego pomiaru.",
     ]),
+    tested({ id: "allocation-comparison-audit", kind: "apply", title: "Audytuj serię kandydatów", prompt: "Uzupełnij audit_reports(baseline: Sample, candidates: &[Sample]) -> Vec<Audit>. Zachowaj kolejność i liczbę kandydatów. Dla każdego wybierz pierwszy pasujący wynik: Incomplete, gdy baseline lub kandydat jest niekompletny; DifferentInput dla różnego input; DifferentSummary dla różnego summary; MoreCalls(n), gdy kompletny porównywalny kandydat ma więcej calls, gdzie n to różnica; w pozostałych porównywalnych przypadkach SameOrFewer. Pusta lista daje pusty Vec. Liczba calls opisuje tylko tę metrykę kosztu, a mniejsza wartość sama nie dowodzi mniejszej pamięci procesu.", code: comparisonAuditStarter, solution: comparisonAuditSolution, tests: comparisonAuditTests, gate: true }),
   ], misconceptions: ["Mniejszy requested bytes zawsze oznacza mniejszy RSS.", "Różny input nadal daje porównywalny wynik.", "Niekompletny raport jest poprawą."], transferTask: "Zaprojektuj tabelę baseline/candidate/mutant dla pustego, poprawnego i uszkodzonego inputu.", evidenceGate: "Bramki wymagają tej samej pracy i wyniku przed interpretacją calls, bajtów i pamięci zachowanej.", sourceIds: ["profile-global-allocator", "profile-criterion"] },
 ];
 

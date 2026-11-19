@@ -25,18 +25,18 @@ it("connects Service Operations to eight gates, blank pages, and retrievals", ()
     moduleLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(12);
+  ).toHaveLength(13);
 
   for (const lesson of moduleLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
-      2,
+      lesson.id === "service-readiness-drain" ? 3 : 2,
     );
     expect(
       lesson.steps.filter(
         (step) => step.kind === "recall" && step.evaluator?.kind === "tests",
       ),
     ).toHaveLength(1);
-    expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(3);
+    expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(lesson.id === "service-readiness-drain" ? 4 : 3);
     expect(
       lesson.steps
         .filter((step) => step.evidenceGate)
@@ -76,8 +76,8 @@ it("connects Service Operations to eight gates, blank pages, and retrievals", ()
   const refs = stage!.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(24);
-  expect(new Set(refs).size).toBe(20);
+  expect(refs).toHaveLength(26);
+  expect(new Set(refs).size).toBe(21);
 
   for (const lesson of moduleLessons) {
     const blank = lesson.steps.find((step) => step.kind === "blank")!;

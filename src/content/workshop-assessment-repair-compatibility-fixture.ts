@@ -1,3 +1,4 @@
+import allVariantsDelta from "./fixtures/all-variants-delta.json";
 import remainingDelta from "./fixtures/remaining-criteria-delta.json";
 import practiceDelta from "./fixtures/independent-practice-delta.json";
 /** Test-only reversal of the reviewed November assessment repairs. */
@@ -220,7 +221,7 @@ function restoreReviewedLessons(
 }
 
 // Repeated worked examples share their predecessor value in the fixture.
-const beforeValues: Record<string, unknown> = { ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
+const beforeValues: Record<string, unknown> = { ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
 function withPredecessor<T extends { beforeSha256: string | null }>(entry: T) {
   return { ...entry, before: entry.beforeSha256 === null ? null : beforeValues[entry.beforeSha256] };
 }
@@ -230,6 +231,30 @@ const practiceLessons = {
   lessonRestorations: practiceDelta.lessonRestorations.map(withPredecessor),
 };
 const practiceRegistries = practiceDelta.registries.map(withPredecessor);
+
+const allVariantsLessons = {
+  ...allVariantsDelta,
+  restorations: allVariantsDelta.restorations.map(withPredecessor),
+  lessonRestorations: allVariantsDelta.lessonRestorations.map(withPredecessor),
+};
+const allVariantsRegistries = allVariantsDelta.registries.map(withPredecessor);
+
+export function restoreAllVariantsLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, allVariantsLessons);
+}
+
+export function restoreAllVariantsRegistry<T extends object>(
+  registry: T,
+  name: string,
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): T {
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, allVariantsRegistries);
+}
 
 const remainingLessons = {
   ...remainingDelta,
@@ -243,7 +268,7 @@ export function restoreRemainingCriteriaLessons(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  return restoreReviewedLessons(lessons, replacements, matches, remainingLessons);
+  return restoreReviewedLessons(restoreAllVariantsLessons(lessons, replacements, matches), replacements, matches, remainingLessons);
 }
 
 export function restoreRemainingCriteriaRegistry<T extends object>(
@@ -252,7 +277,7 @@ export function restoreRemainingCriteriaRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, remainingRegistries);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...allVariantsRegistries, ...remainingRegistries]);
 }
 
 export function restoreIndependentPracticeLessons(
@@ -269,7 +294,7 @@ export function restoreIndependentPracticeRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...remainingRegistries, ...practiceRegistries]);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries]);
 }
 
 /** Restores this batch first, so all older projections still see their authored successors. */
@@ -302,7 +327,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   name: string,
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
-  entries: readonly RegistryRestoration[] = [...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
+  entries: readonly RegistryRestoration[] = [...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
   for (const entry of entries.filter(

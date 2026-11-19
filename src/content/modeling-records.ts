@@ -1007,6 +1007,11 @@ impl Counter {
       },
       {
         id: "method-reset-gate",
+        // Both variants include the complete earlier Counter implementation.
+        suppliedSolutions: {
+          code: [{ lessonId: "methods-and-state", stepId: "method-gate" }],
+          solution: [{ lessonId: "methods-and-state", stepId: "method-gate" }],
+        },
         kind: "modify",
         title: "Dodaj operację resetu",
         prompt:

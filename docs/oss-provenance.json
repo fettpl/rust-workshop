@@ -325,7 +325,12 @@
     },
     {
       "path": "src/content/baseline-session-stops.test.ts",
-      "sha256": "89e3b73cc3409e115dd5cd70f323de44a423624a360570e4827d2b5b95cb89be",
+      "sha256": "ce2e90c5e967b41dcf58f5806b7fbe5ac03874b8e5099a34e5792f36384401a1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/body-copy-assistance.test.ts",
+      "sha256": "aafb0fd7f810a4c205eb04fbe7c2e192651f52f3d27bd0ff7c3641ed93b06e85",
       "group": "course"
     },
     {
@@ -445,7 +450,7 @@
     },
     {
       "path": "src/content/channels.ts",
-      "sha256": "dc84f7d57456daedae468d800297fe5f1575500c0e355cb8f8c3b3bb27e308c3",
+      "sha256": "b8899a15e2e1e314046517957f21a457fb06abb2b6cf17351c93358e8ea650e9",
       "group": "course"
     },
     {
@@ -469,13 +474,18 @@
       "group": "course"
     },
     {
+      "path": "src/content/collections-string-recovery.ts",
+      "sha256": "4f6c5ea73550c8900a9fbae45721491d3ea178f6be47192a07f78b9a7c0e4e61",
+      "group": "course"
+    },
+    {
       "path": "src/content/collections.ts",
-      "sha256": "c4757d6713fdceeb791c40cf53b568bf20f6d6b54dbdd447a2bf6a0f3ab756de",
+      "sha256": "ab766d4caf9428d7393f4aebc810c01c2eaf73ec571dd7ce691974491b7dfd33",
       "group": "course"
     },
     {
       "path": "src/content/content-validation.test.ts",
-      "sha256": "a948e45c7ecca355f667ae370d3ce8910034c433a5ec69e1262c9189d1a6eb9b",
+      "sha256": "0735951b635162bc8d2460f943b203fff47444f2ba2c2bc77970b0ca98fd6d54",
       "group": "course"
     },
     {
@@ -565,7 +575,7 @@
     },
     {
       "path": "src/content/curriculum-recovery-compatibility.test.ts",
-      "sha256": "8e21831cd71259734a444989656acbef97363d54504e444df4368a31fbadeec5",
+      "sha256": "bbbfccaf4fc59d0569e2a17c70d1974c9e24acaa9857bd9670bf00b21bc1f6aa",
       "group": "course"
     },
     {
@@ -745,7 +755,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "5c0734ff2e93650c2801a5750cb8b6e01cb07b00367b42da4ec818b60e2dba73",
+      "sha256": "36f26d2b8d9d27ca8b3a3a7c93fcc17e5706f3574916aa1223a3e4126f08de2a",
       "group": "course"
     },
     {
@@ -765,12 +775,17 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "84cb39a467ca2d62b8fef17809fb6ef37c939b06ce9736d5f82904281cb5d443",
+      "sha256": "1dde48c51b04c8bc423c5539ee65cd60e38b4d684d367d692eedbecd38d370f1",
       "group": "course"
     },
     {
       "path": "src/content/file-schema-evolution.ts",
       "sha256": "1b761906774c7563b738fd775aae88cc0b0856fa331a3f62a9a2f29f1cf33b36",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/all-variants-delta.json",
+      "sha256": "e06732db63677af012e062ae896e7565bcb87e99a3e2d54e200962d9316ba05f",
       "group": "course"
     },
     {
@@ -955,7 +970,7 @@
     },
     {
       "path": "src/content/fuzz-evidence-assessment.test.ts",
-      "sha256": "e6f4106a94ffb4d2d774b04f58871b15c0667be1df140e6dc265b8869829f77f",
+      "sha256": "fd9c866a1c288d85901e02086c64fb0639b4bad20c75e8f039d7e939023f5952",
       "group": "course"
     },
     {
@@ -965,7 +980,7 @@
     },
     {
       "path": "src/content/fuzz-evidence-module.ts",
-      "sha256": "9171ea677cab059ba06639f09c52aab0c43047285a75aace61906f07bc07cb7b",
+      "sha256": "59f709baa229f839061d4fbe251aefd6b73e92c465b083c1da6fb30a58f4e06e",
       "group": "course"
     },
     {
@@ -975,7 +990,17 @@
     },
     {
       "path": "src/content/fuzz-evidence.ts",
-      "sha256": "7d01ea57dd3fe58e78000c4675e4fd12df321d02fd97dafa3b51e62097a453f6",
+      "sha256": "7905c3b18bb21b705e0a62f56ea28b7ca4468d6eee4ddcdee7ef401ed3fc26d8",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-oracle-batch-recovery.ts",
+      "sha256": "8a61177fcfd0113c09bac4edadd421a4cfa0735dc42bd813dadb65bbf3a307d3",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fuzz-oracle-recovery.test.ts",
+      "sha256": "06f91f2445fd84756fec7cbe5d751e226cc4e7d5542e4826c89a20c25646cfdc",
       "group": "course"
     },
     {
@@ -1026,6 +1051,11 @@
     {
       "path": "src/content/gat-producers.ts",
       "sha256": "ea58bc891372eca525c7b563a822093028396d32344b838462d4fbfb1a9cc9ff",
+      "group": "course"
+    },
+    {
+      "path": "src/content/gate-recovery-test-helpers.ts",
+      "sha256": "1a19352f366e6aad4876d75bb541b656d053e2c65f65b1c98c4cd7826948ce9e",
       "group": "course"
     },
     {
@@ -1144,6 +1174,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/method-assistance-boundaries.test.ts",
+      "sha256": "8dccb0e0f43604d8c222e468de3a9a6d4d43af043c1d9a684dd5b2aade4e27d5",
+      "group": "course"
+    },
+    {
       "path": "src/content/mini-grep-integration.test.ts",
       "sha256": "f1de39682795278d67f42b8eecedfd971c0c1d04ab2d1b52948f9e2a1a7f2eb3",
       "group": "course"
@@ -1185,7 +1220,7 @@
     },
     {
       "path": "src/content/modeling-records.ts",
-      "sha256": "7641aaeafdf0535fe86f683ef0ad81c07a6ec0856494d932d510316d49bbbc8f",
+      "sha256": "bb4d7afd3cb58ae1fc61a5c7679b3c9ae6aa0654285f01421fc6f56ffe660b33",
       "group": "course"
     },
     {
@@ -1220,7 +1255,7 @@
     },
     {
       "path": "src/content/ordinary-transfer-availability.test.ts",
-      "sha256": "7c3d45db0b6b2264020d827e230a8685fb7ea624efc8f9f512d52e7a957c533c",
+      "sha256": "cfa23e372950056b83846c5e8e5587cdea8c1b23ce3e075a8bed52aa1f99358c",
       "group": "course"
     },
     {
@@ -1340,12 +1375,12 @@
     },
     {
       "path": "src/content/profile-evidence-integration.test.ts",
-      "sha256": "1f33b8aa2f04416abc30da49212a041f92635945563414b2955f3eeb49fd96fc",
+      "sha256": "8ad1ad7a356d6ff696a2df0d932cf01b56d2a031956ae73866aa1118c453749a",
       "group": "course"
     },
     {
       "path": "src/content/profile-evidence.ts",
-      "sha256": "4cb994638845db3f46a06dffb672273f797210b367bab4dcf192d118141623fb",
+      "sha256": "00b7027534cfbe3845a30cde8813a7e4c0635529a4c5ce714cd68885f4e7a614",
       "group": "course"
     },
     {
@@ -1655,7 +1690,7 @@
     },
     {
       "path": "src/content/remaining-gate-recovery.test.ts",
-      "sha256": "11dbefd7902e0e6b661024503d53638f67689dda3f01a0cc5f03918446d67521",
+      "sha256": "834561fa539166c0cc60443c9c9b1114f79f9ffb25af10b65ad021d24dc018e7",
       "group": "course"
     },
     {
@@ -1670,17 +1705,17 @@
     },
     {
       "path": "src/content/runtime-allocation-assessment-fixtures.ts",
-      "sha256": "0e6660262b7ca755181418f294916d1e18c547c79d875859c6945086245a3bff",
+      "sha256": "cac2dce30095e208a8cea67cbf72876469bde990ae3a3181e0f4b11d45067079",
       "group": "course"
     },
     {
       "path": "src/content/runtime-allocation-assessment.test.ts",
-      "sha256": "948ce49dc0b106b417be762324ed2dad1d10b634da6d5e01d022de78e39e42b3",
+      "sha256": "707bb5c997c317aac285ac4e8a6b2f57cdcc042d78da8e9e1cf985112a837f96",
       "group": "course"
     },
     {
       "path": "src/content/runtime-allocation-evidence.ts",
-      "sha256": "fd61d75dc8eb8b7d553cf0ac0cfcee6a288173acf2c5449140a9315378702d08",
+      "sha256": "859e722ed6acbd090c068405655105c1aaa928b14bdb14493120b1046633f611",
       "group": "course"
     },
     {
@@ -1795,27 +1830,27 @@
     },
     {
       "path": "src/content/service-operations-assessment.test.ts",
-      "sha256": "d5efe480612ebbf7b684dd2f18ba74f903d0212b30a927ce657d897e18fa2446",
+      "sha256": "3c76aa2e317877f5e7ff1754a482a9c97e51a5ffd61c36e532ec88d0a1eb6089",
       "group": "course"
     },
     {
       "path": "src/content/service-operations-integration.test.ts",
-      "sha256": "b329155d198cc99c0692ff6acc468662ad02dde0f0f04bb227b4d0d52dd123bb",
+      "sha256": "86fbacc87eaf2a93cb125b1620f388ec74c49f0790397414d5ec39d14c85ec4f",
       "group": "course"
     },
     {
       "path": "src/content/service-operations-transfer.test.ts",
-      "sha256": "60e4a50e8c77a8121d3dfe9de3e7a2bd088d78473fab5fe9f61f120951ca9d6b",
+      "sha256": "3f1e0e2696cb8bd8c7d125abf299feb015833a0972578bdf3f9524f42fbdf2e4",
       "group": "course"
     },
     {
       "path": "src/content/service-operations-transfer.ts",
-      "sha256": "2d67c1bdef264f2cf1bc5a04224012245c9f75a4460ceca4e6d003a7635c8a93",
+      "sha256": "d738df1c6a6b960ea0c5ec12104d0036bd3a9c1c4e27b74515a6dbde454282ee",
       "group": "course"
     },
     {
       "path": "src/content/service-operations.ts",
-      "sha256": "214a4452f5b0e9b9ac25d217b845e589c16848d02b4b123daf5fc9dc7c97c900",
+      "sha256": "ec3585d5d507f4f177cf55b78d179931f9bf985e3087f576eb9affa3027c55f7",
       "group": "course"
     },
     {
@@ -1841,6 +1876,11 @@
     {
       "path": "src/content/shared-ownership.ts",
       "sha256": "ac5c6275ca6c6461f06a28a124dd98f3c1acbedda7798ec79f3dafc533f3bfe1",
+      "group": "course"
+    },
+    {
+      "path": "src/content/string-gate-recovery.test.ts",
+      "sha256": "276a687a524572e3bfed01cd7e51ad2fe144b179b25b0765a7212c8e8e8a83a9",
       "group": "course"
     },
     {
@@ -1890,7 +1930,7 @@
     },
     {
       "path": "src/content/tokio-blocking.ts",
-      "sha256": "4c14e79e0225c06ace806f040a7c54c00f48440588fe3ce30c521cf888f8d0b0",
+      "sha256": "73b76a3c0ad83469f1e49149f903c1925a1722c9a2c95774900488c8c1261984",
       "group": "course"
     },
     {
@@ -1910,7 +1950,7 @@
     },
     {
       "path": "src/content/tokio-io-modules.ts",
-      "sha256": "49e6cead93ef8d521cbc60f0d0713cc8caf6ff1f2c283c2d9b9cb06984c3a69a",
+      "sha256": "44e718ce626a7e8176c1ff01df1feec7eb0bad139c943bfb95b12d36cbcc0e9e",
       "group": "course"
     },
     {
@@ -1926,6 +1966,16 @@
     {
       "path": "src/content/tokio-network-module.ts",
       "sha256": "e2bce7d81f15d0779527002421753c0b2b28a898f4a68b0d574404f50331c80f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-owned-map-recovery.ts",
+      "sha256": "130a86a8e5132798520e7b978799690b01b284f4e2d9620dbe50825661910199",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-owned-recovery.test.ts",
+      "sha256": "0e4364ca4921db00257ae1411283dfdd25a4e8758f96939196949aef4313832d",
       "group": "course"
     },
     {
@@ -2200,7 +2250,7 @@
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "1a328eadc059b803a68ba0efbfbfcc12779bc7b2febfd78fb993313627935e7e",
+      "sha256": "7dedd2695bb3c8bb5692dadc7a5169821769454e5fb153e67a843795755d92d7",
       "group": "course"
     },
     {
@@ -2210,7 +2260,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "5a9aa9c43767a878bb0a710993d30bb3e684b08fed1aae5245159f9568289fcb",
+      "sha256": "d9db4a8af0d72acd4e726057a65faee5f877057ccfdcba74ff3ed71c3f25249f",
       "group": "course"
     },
     {

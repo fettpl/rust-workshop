@@ -10,18 +10,29 @@ const scopedLessons = [
   ...guessingIoLessons,
   ...logAnalyzerLessons,
 ];
-it("offers two optional resumable boundaries in each substantial original lesson", () => {
+it("preserves the original session boundaries and offers a stop before the extra Unicode practice", () => {
   expect(scopedLessons).toHaveLength(10);
   for (const lesson of scopedLessons) {
-    expect(lesson.sessionStops, lesson.id).toHaveLength(2);
-    const indices = lesson.sessionStops!.map((stop) =>
-      lesson.steps.findIndex((step) => step.id === stop.afterStepId),
-    );
-    expect(indices[0], lesson.id).toBeGreaterThanOrEqual(0);
-    expect(indices[1], lesson.id).toBeGreaterThan(indices[0]);
-    expect(indices[1], lesson.id).toBeLessThan(lesson.steps.length - 1);
-    for (const stop of lesson.sessionStops!)
+    const stops = lesson.sessionStops!;
+    if (lesson.id === "string-and-utf8") {
+      expect(stops.map((stop) => stop.afterStepId)).toEqual([
+        "string-explain",
+        "string-char-gate",
+        "string-recall",
+      ]);
+    } else {
+      expect(stops, lesson.id).toHaveLength(2);
+    }
+    let previous = -1;
+    for (const stop of stops) {
+      const index = lesson.steps.findIndex(
+        (step) => step.id === stop.afterStepId,
+      );
+      expect(index, lesson.id).toBeGreaterThan(previous);
+      expect(index, lesson.id).toBeLessThan(lesson.steps.length - 1);
       expect(stop.nextGoal.trim().length).toBeGreaterThan(10);
+      previous = index;
+    }
   }
 });
 

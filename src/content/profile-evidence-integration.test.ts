@@ -65,8 +65,8 @@ it("registers profile lessons with independent gates, blanks, and retrievals", (
   const refs = profileEvidenceModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(31);
-  expect(new Set(refs).size).toBe(26);
+  expect(refs).toHaveLength(33);
+  expect(new Set(refs).size).toBe(27);
   expect(
     profileEvidenceModule.gateCriteria!.map((criterion) =>
       criterion.taskRefs.map((ref) => ref.stepId),
@@ -82,8 +82,8 @@ it("registers profile lessons with independent gates, blanks, and retrievals", (
     ["decision-evidence-gate", "decision-blank", "profile-regression-batch-transfer"],
     ["allocation-scope-gate", "allocation-scope-blank"],
     ["allocation-scope-error-gate", "allocation-scope-blank"],
-    ["allocation-comparison-gate", "allocation-comparison-blank"],
-    ["allocation-comparison-complete-gate", "allocation-comparison-blank"],
+    ["allocation-comparison-gate", "allocation-comparison-blank", "allocation-comparison-audit"],
+    ["allocation-comparison-complete-gate", "allocation-comparison-blank", "allocation-comparison-audit"],
   ]);
   expect(
     profileEvidenceModule.gateCriteria!.every((criterion) => {

@@ -201,6 +201,7 @@ function coding(options: {
   tests: string;
   hints: [string, string];
   gate?: boolean;
+  suppliedSolutions?: LessonStep["suppliedSolutions"];
 }): LessonStep {
   return {
     id: options.id,
@@ -209,6 +210,7 @@ function coding(options: {
     prompt: options.prompt,
     ...(options.code === undefined ? {} : { code: options.code }),
     solution: options.solution,
+    ...(options.suppliedSolutions ? { suppliedSolutions: options.suppliedSolutions } : {}),
     hints: options.hints,
     evaluator: { kind: "tests", tests: options.tests },
     ...(options.code === undefined
@@ -490,6 +492,70 @@ fn full_disconnected_and_empty_preserve_the_contract() {
         _ => panic!("odbiorca zniknął"),
     }
     assert!(matches!(send_batch(&sender, Vec::new()), BatchDelivery::Complete));
+}`;
+
+// Recovery applies a send outcome to caller state; it does not supply try_enqueue.
+const retainOutcomeSolution = `use std::collections::VecDeque;
+use std::sync::mpsc::TrySendError;
+
+#[derive(Debug, PartialEq, Eq)]
+enum OfferState { Accepted, Paused, Closed }
+
+fn retain_outcome(outcome: Result<(), TrySendError<String>>, pending: &mut VecDeque<String>, delivered: &mut usize) -> OfferState {
+    match outcome {
+        Ok(()) => { *delivered += 1; OfferState::Accepted }
+        Err(TrySendError::Full(value)) => {
+            pending.push_front(value);
+            OfferState::Paused
+        }
+        Err(TrySendError::Disconnected(value)) => {
+            pending.push_front(value);
+            OfferState::Closed
+        }
+    }
+}`;
+const retainOutcomeStarter = retainOutcomeSolution.slice(0, retainOutcomeSolution.indexOf("    match outcome")) + `    OfferState::Accepted
+}`;
+const retainOutcomeTests = `#[test]
+fn a_success_increments_only_the_delivery_count() {
+    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+    let mut pending = VecDeque::from(["later".to_owned()]);
+    let mut delivered = 4;
+    assert_eq!(retain_outcome(sender.try_send("A".to_owned()), &mut pending, &mut delivered), OfferState::Accepted);
+    assert_eq!(delivered, 5);
+    assert_eq!(pending, VecDeque::from(["later".to_owned()]));
+    assert_eq!(receiver.try_recv().unwrap(), "A");
+}
+
+#[test]
+fn full_restores_the_rejected_value_before_the_pending_tail() {
+    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+    sender.send("seed".to_owned()).unwrap();
+    let mut pending = VecDeque::from(["żółć".to_owned(), "last".to_owned()]);
+    let mut delivered = 7;
+    assert_eq!(retain_outcome(sender.try_send("first".to_owned()), &mut pending, &mut delivered), OfferState::Paused);
+    assert_eq!(pending, VecDeque::from(["first".to_owned(), "żółć".to_owned(), "last".to_owned()]));
+    assert_eq!(delivered, 7);
+    assert_eq!(receiver.try_recv().unwrap(), "seed");
+    let first = pending.pop_front().unwrap();
+    assert_eq!(retain_outcome(sender.try_send(first), &mut pending, &mut delivered), OfferState::Accepted);
+    assert_eq!(delivered, 8);
+    assert_eq!(receiver.try_recv().unwrap(), "first");
+    assert_eq!(pending, VecDeque::from(["żółć".to_owned(), "last".to_owned()]));
+}
+
+#[test]
+fn disconnected_preserves_empty_strings_and_does_not_count_delivery() {
+    let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+    drop(receiver);
+    let mut pending = VecDeque::from(["tail".to_owned()]);
+    let mut delivered = 0;
+    assert_eq!(retain_outcome(sender.try_send(String::new()), &mut pending, &mut delivered), OfferState::Closed);
+    assert_eq!(pending, VecDeque::from([String::new(), "tail".to_owned()]));
+    assert_eq!(delivered, 0);
+    let mut empty = VecDeque::new();
+    assert_eq!(retain_outcome(Err(TrySendError::Full("only".to_owned())), &mut empty, &mut delivered), OfferState::Paused);
+    assert_eq!(empty, VecDeque::from(["only".to_owned()]));
 }`;
 
 export const channelsLessons: Lesson[] = [
@@ -833,12 +899,19 @@ fn try_enqueue(sender: &SyncSender<String>, value: String) -> Result<(), TrySend
         prompt:
           "Zaprojektuj nieblokujące wysyłanie partii. Zdefiniuj enum `BatchDelivery`: wariant bez danych `Complete` oraz warianty `Full` i `Disconnected`, każdy z jednym Vec<String>. Funkcja `send_batch` przyjmuje kolejno `&std::sync::mpsc::SyncSender<String>` i własny Vec<String>, zwraca BatchDelivery. Przesyłaj w kolejności wejścia do dostarczonego kanału. Po pierwszej odmowie zakończ próbę; wynik ma zachować powód oraz wszystkie niesłane teksty, od odrzuconego po ostatni, w tej samej kolejności. Complete oznacza wysłanie całej partii; pusta partia także jest Complete. Zachowaj wiadomości już obecne w buforze. Nie blokuj i nie odbieraj z kanału — odbiorcą zarządza wywołujący.",
         solution: backpressureBlankSolution,
+        suppliedSolutions: { solution: [{ lessonId: "channel-backpressure", stepId: "backpressure-modify" }] },
         tests: backpressureBlankTests,
         gate: true,
         hints: [
           "Rozdziel część już wysłaną od reszty partii; odmowa nadal niesie odrzucony element.",
           "Po pierwszym błędzie pozostałe elementy nie były jeszcze wysłane. Wynik musi zachować je razem z elementem zwróconym w błędzie.",
         ],
+      }),
+      coding({
+        id: "backpressure-retain-outcome", kind: "modify", title: "Zachowaj odmowę przed resztą kolejki",
+        prompt: "Uzupełnij retain_outcome(outcome: Result<(), TrySendError<String>>, pending: &mut VecDeque<String>, delivered: &mut usize) -> OfferState. Wywołujący już podjął próbę wysłania; przetwórz jej wynik. VecDeque to kolejka, a push_front odkłada element na początek. Dla Ok(()) zwiększ delivered o jeden, zachowaj pending i zwróć Accepted. Dla Full(value) przywróć value przed wszystkimi elementami pending, nie zmieniaj delivered i zwróć Paused. Dla Disconnected(value) zachowaj własność w ten sam sposób, lecz zwróć Closed. Nie wysyłaj ani nie odbieraj. Zakładamy, że zwiększony licznik mieści się w usize. Testy obejmują prawdziwe wyniki kanału, późniejsze ponowienie i pusty tekst.",
+        code: retainOutcomeStarter, solution: retainOutcomeSolution, tests: retainOutcomeTests, gate: true,
+        hints: ["Wynik próby określa, czy wolno zwiększyć delivered.", "Odmowa oddaje wartość; przywróć ją przed pozostałymi elementami kolejki."],
       }),
     ],
     misconceptions: [
@@ -1036,6 +1109,7 @@ export const channelsModule: CourseModule = {
       taskRefs: [
         { lessonId: "channel-backpressure", stepId: "backpressure-modify" },
         { lessonId: "channel-backpressure", stepId: "backpressure-blank" },
+        { lessonId: "channel-backpressure", stepId: "backpressure-retain-outcome" },
       ],
     },
   ],

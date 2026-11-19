@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import * as rawCourse from "./course";
 import delta from "./fixtures/curriculum-recovery-nov19-delta.json";
 import {
+  historicalBeforeAllVariants,
   historicalBeforeRemainingCriteria,
   historicalBeforeIndependentPractice,
   historicalBeforeA12,
@@ -239,4 +240,14 @@ it("restores all six ea82ec2 registries and preserves independent edits to appen
   const steps = historicalBeforeRemainingCriteria({ ...rawCourse, lessons: edited }).lessons.find(lesson => lesson.id === lessonId)!.steps;
   expect(steps.at(-1)?.title).toBe("Independent revision");
   expect(steps.some(step => step.id === "retry-ready-queue")).toBe(false);
+});
+
+it("restores the reviewed catalog at f3a0081 before any earlier projection", async () => {
+  const { baseline } = await import("./fixtures/all-variants-delta.json");
+  const prior = historicalBeforeAllVariants(rawCourse);
+  expect(baseline.sha).toBe("f3a0081");
+  for (const key of ["lessons", "modules", "projects", "reviewExercises", "shortReviewExercises", "delayedReviewExercises"] as const) {
+    expect(hashRegistryValue(prior[key]), key).toBe(baseline[`${key}Sha256`]);
+  }
+  expect(historicalBeforeAllVariants(prior)).toBe(prior);
 });

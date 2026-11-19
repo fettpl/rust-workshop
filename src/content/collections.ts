@@ -8,6 +8,7 @@ import type {
 } from "@/domain/types";
 
 import { eventReport } from "./collections-event-report";
+import { stringRecoverySteps } from "./collections-string-recovery";
 
 const reviewedAt = "2026-09-12";
 
@@ -710,6 +711,12 @@ fn borrows_the_first_slot_when_values_repeat() {
       },
       {
         id: "string-transfer",
+        suppliedSolutions: {
+          solution: [
+            { lessonId: "string-and-utf8", stepId: "string-char-gate" },
+            { lessonId: "string-and-utf8", stepId: "string-push-gate" },
+          ],
+        },
         kind: "apply",
         title: "Zbuduj tekst i policz wynik",
         prompt:
@@ -764,6 +771,7 @@ fn borrows_the_first_slot_when_values_repeat() {
         },
         evidenceKind: "recall",
       },
+      ...stringRecoverySteps,
     ],
     misconceptions: [
       "char zawsze oznacza jeden widoczny znak.",
@@ -787,6 +795,12 @@ fn borrows_the_first_slot_when_values_repeat() {
         title: "Opcjonalna przerwa: zachowaj bieżące miejsce",
         nextGoal:
           "Dołącz cały wycinek tekstu i sprawdź wynik w zadaniu łączącym operacje. Szacunek czasu jest wstępny; dobierz długość sesji do siebie.",
+      },
+      {
+        afterStepId: "string-recall",
+        title: "Opcjonalna przerwa przed nowymi kontraktami tekstu",
+        nextGoal:
+          "Policz wystąpienia wybranej wartości char i dołącz pożyczone części z separatorem. Własne rozwiązania tych zadań potwierdzają nowe zachowanie po obejrzeniu wcześniejszego przykładu.",
       },
     ],
     sourceIds: ["collections-book-strings"],
@@ -1214,6 +1228,7 @@ export const collectionsModule: CourseModule = {
       taskRefs: [
         { lessonId: "string-and-utf8", stepId: "string-char-gate" },
         { lessonId: "string-and-utf8", stepId: "string-transfer" },
+        { lessonId: "string-and-utf8", stepId: "string-scalar-frequency-transfer" },
       ],
     },
     {
@@ -1222,6 +1237,7 @@ export const collectionsModule: CourseModule = {
       taskRefs: [
         { lessonId: "string-and-utf8", stepId: "string-push-gate" },
         { lessonId: "string-and-utf8", stepId: "string-transfer" },
+        { lessonId: "string-and-utf8", stepId: "string-joined-parts-transfer" },
       ],
     },
     {

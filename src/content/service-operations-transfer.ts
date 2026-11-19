@@ -171,13 +171,77 @@ fn readiness_and_drain_are_distinct_even_when_counts_are_equal() {
     let active = replay(State { phase: Phase::Ready, accepted: 2, completed: 1 }, &[Command::Finish]);
     assert_eq!(active.last().unwrap(), &Snapshot { state: State { phase: Phase::Ready, accepted: 2, completed: 2 }, ready: true, drained: false });
 }`;
-export const lifecycleReplayTransfer = transfer(
+const lifecycleReplay = transfer(
   "readiness-drain-replay-transfer",
   "service-operations-readiness-drain",
   "Odtwórz pełną oś readiness i drain",
   "Napisz typy z Debug, PartialEq, Eq, Clone i Copy: `enum Phase { Starting, Ready, Draining, Stopped }`, `struct State { phase: Phase, accepted: usize, completed: usize }`, `enum Command { Boot, Submit, Finish, Close }`. Dodaj `#[derive(Debug, PartialEq, Eq)] struct Snapshot { state: State, ready: bool, drained: bool }` i `fn replay(state: State, commands: &[Command]) -> Vec<Snapshot>`. Wynik zawiera najpierw niezmieniony stan początkowy, a potem jeden snapshot po każdym poleceniu (również ignorowanym). Boot zmienia tylko Starting na Ready. Submit zwiększa accepted tylko w Ready. Finish zwiększa completed tylko poniżej accepted. Close zmienia tylko Ready na Draining. Po każdym poleceniu Draining z równymi licznikami staje się Stopped; nie normalizuj początkowego snapshotu przed pierwszym poleceniem. ready jest true dokładnie w Ready; drained wymaga Draining lub Stopped i accepted == completed. Żadna inna faza nie oznacza zakończenia. Kolejne Boot ani Submit nie otwierają drainu lub Stopped. Dane wejściowe mają completed <= accepted, a accepted + commands.len() mieści się w usize. Puste commands zwraca dokładnie snapshot wejściowy.",
   lifecycleSolution,
   lifecycleTests,
+);
+
+// The replay solution demonstrates both state transitions and the two accounting predicates.
+export const lifecycleReplayTransfer: LessonStep = {
+  ...lifecycleReplay,
+  suppliedSolutions: {
+    solution: [
+      "readiness-drain-gate",
+      "readiness-drain-blank",
+      "readiness-drain-accounting-gate",
+      "readiness-drain-recall",
+    ].map((stepId) => ({ lessonId: "service-readiness-drain", stepId })),
+  },
+};
+
+const ledgerSolution = String.raw`#[derive(Debug, PartialEq, Eq)]
+enum Event { Accept(u32), Finish(u32), Close }
+#[derive(Debug, PartialEq, Eq)]
+enum Status { Ready(usize), Draining(usize), Stopped }
+fn audit_jobs(events: &[Event]) -> Vec<Status> {
+    use std::collections::HashSet;
+    let mut admitted = HashSet::<u32>::new();
+    let mut pending = HashSet::new();
+    let mut open = true;
+    let mut result = Vec::new();
+    for event in events {
+        match *event {
+            Event::Accept(id) if open && admitted.insert(id) => { pending.insert(id); }
+            Event::Finish(id) => { pending.remove(&id); }
+            Event::Close => open = false,
+            _ => {}
+        }
+        result.push(match (open, pending.len()) {
+            (true, count) => Status::Ready(count),
+            (false, 0) => Status::Stopped,
+            (false, count) => Status::Draining(count),
+        });
+    }
+    result
+}`;
+const ledgerTests = String.raw`#[test]
+fn readiness_tracks_admitted_identities_and_close_waits_for_every_one() {
+    use Event::*;
+    use Status::*;
+    assert_eq!(audit_jobs(&[]), vec![]);
+    assert_eq!(audit_jobs(&[Close, Accept(0), Finish(0), Close]), vec![Stopped, Stopped, Stopped, Stopped]);
+    let input = [Finish(3), Accept(3), Accept(7), Accept(3), Close, Accept(9), Finish(9), Finish(3), Finish(3), Close, Finish(7), Accept(3)];
+    assert_eq!(audit_jobs(&input), vec![Ready(0),Ready(1),Ready(2),Ready(2),Draining(2),Draining(2),Draining(2),Draining(1),Draining(1),Draining(1),Stopped,Stopped]);
+}
+#[test]
+fn finished_ids_cannot_be_admitted_again_while_open() {
+    use Event::*;
+    use Status::*;
+    assert_eq!(audit_jobs(&[Accept(0), Finish(0), Accept(0), Accept(u32::MAX), Close, Finish(u32::MAX)]),
+        vec![Ready(1),Ready(0),Ready(0),Ready(1),Draining(1),Stopped]);
+}`;
+
+export const jobLedgerTransfer = transfer(
+  "readiness-job-ledger-transfer",
+  "service-operations-readiness-drain",
+  "Rozlicz zamknięcie usługi według identyfikatorów",
+  "Zdefiniuj enum Event { Accept(u32), Finish(u32), Close }, porównywalny enum Status { Ready(usize), Draining(usize), Stopped } z Debug oraz fn audit_jobs(events: &[Event]) -> Vec<Status>. Usługa początkowo przyjmuje pracę. Przyjmij każdy identyfikator najwyżej raz w całej historii, także po zakończeniu zadania. Finish rozlicza tylko przyjęte i wciąż otwarte zadanie o tym ID. Close trwale zamyka przyjęcia. Po każdym zdarzeniu, również zignorowanym, zapisz stan. Ready(n) oznacza otwarte przyjęcia i n nierozliczonych zadań. Po zamknięciu raportuj Draining(n) do ostatniego zakończenia, potem Stopped. Puste wejście daje pusty raport.",
+  ledgerSolution,
+  ledgerTests,
 );
 
 const incidentSolution = String.raw`#[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -292,6 +356,32 @@ export const serviceOperationsTransferControls = [
       telemetrySolution.replace(
         "kinds }",
         "kinds: kinds.into_iter().rev().collect() }",
+      ),
+    ],
+  },
+  {
+    step: jobLedgerTransfer,
+    equivalent: ledgerSolution.replace(/HashSet/g, "BTreeSet"),
+    mutants: [
+      ledgerSolution.replace(
+        "open && admitted.insert(id)",
+        "admitted.insert(id)",
+      ),
+      ledgerSolution.replace(
+        "open && admitted.insert(id)",
+        "open && !pending.contains(&id)",
+      ),
+      ledgerSolution.replace(
+        "(false, count) => Status::Draining(count)",
+        "(false, _) => Status::Stopped",
+      ),
+      ledgerSolution.replace(
+        "pending.remove(&id);",
+        "if let Some(any) = pending.iter().copied().min() { pending.remove(&any); }",
+      ),
+      ledgerSolution.replace(
+        "(true, count) => Status::Ready(count)",
+        "(true, 0) => Status::Stopped, (true, count) => Status::Ready(count)",
       ),
     ],
   },

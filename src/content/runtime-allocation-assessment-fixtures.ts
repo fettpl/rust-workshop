@@ -71,6 +71,23 @@ fn comparable_reports(baseline: Report, candidate: Report) -> bool {
     let complete = baseline.complete && candidate.complete;
     complete && baseline.input == candidate.input && baseline.summary == candidate.summary
 }`,
+  "allocation-comparison-audit": `#[derive(Debug, Clone, Copy)]
+struct Sample { input: &'static str, summary: u64, complete: bool, calls: usize }
+#[derive(Debug, PartialEq, Eq)]
+enum Audit { Incomplete, DifferentInput, DifferentSummary, MoreCalls(usize), SameOrFewer }
+fn audit_reports(baseline: Sample, candidates: &[Sample]) -> Vec<Audit> {
+    let mut results = Vec::new();
+    for candidate in candidates {
+        results.push(match (baseline.complete, candidate.complete) {
+            (false, _) | (_, false) => Audit::Incomplete,
+            _ if baseline.input != candidate.input => Audit::DifferentInput,
+            _ if baseline.summary != candidate.summary => Audit::DifferentSummary,
+            _ if candidate.calls > baseline.calls => Audit::MoreCalls(candidate.calls - baseline.calls),
+            _ => Audit::SameOrFewer,
+        });
+    }
+    results
+}`,
   "allocation-scope-review": `#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Marker { Setup(usize), Work(usize), Report(usize), Teardown }
 #[derive(Debug, PartialEq, Eq)]
@@ -102,6 +119,7 @@ const mutants: Record<string, string> = {
   "allocation-comparison-gate": equivalents["allocation-comparison-gate"].replace("let same_summary = baseline.summary == candidate.summary;", "let same_summary = baseline.allocations == candidate.allocations;"),
   "allocation-comparison-complete-gate": equivalents["allocation-comparison-complete-gate"].replace("complete: true, same_workload: true, same_summary: true", "complete: false, same_workload: true, same_summary: true"),
   "allocation-comparison-blank": equivalents["allocation-comparison-blank"].replace("let complete = baseline.complete && candidate.complete;", "let complete = true;"),
+  "allocation-comparison-audit": equivalents["allocation-comparison-audit"].replace("(false, _) | (_, false)", "(_, false)"),
   "allocation-scope-review": equivalents["allocation-scope-review"].replace("let report = Marker::Report(observation.output);", "let report = Marker::Work(observation.output);"),
   "allocation-comparison-review": equivalents["allocation-comparison-review"].replace("baseline.input == candidate.input", "baseline.input != candidate.input"),
 };

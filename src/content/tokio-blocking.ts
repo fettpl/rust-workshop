@@ -1,3 +1,4 @@
+import { tokioOwnedMapRecovery } from "./tokio-owned-map-recovery";
 import { choose, tokioError, tokioExercise, tokioRun } from "./tokio-helpers";
 import type {
   Competency,
@@ -774,20 +775,30 @@ export const tokioBlockingLessons: Lesson[] = [
         ],
         gate: true,
       }),
-      tokioExercise({
-        id: "tokio-spawn-blocking-boundary-blank",
-        kind: "blank",
-        title: "Od pustej kartki: wróć z worker do lokalnego consumera",
-        prompt:
-          "Od pustej kartki utwórz funkcję o nazwie `offload_then`. Jej umowa publiczna przyjmuje krótką, posiadaną pracę blocking oraz jednorazowy consumer jej wyniku. Praca blocking i jej wynik przekraczają granicę puli Tokio; consumer i zwracany przez niego Future działają już lokalnie po join. Funkcja zwraca `Result`, którego błąd zachowuje `JoinError`. Test przekazuje do consumera pożyczony String i Rc<Cell<_>>; osobny panic worker ma zwrócić JoinError bez wywołania consumera.",
-        solution: offloadThenSolution,
-        tests: offloadThenTests,
-        hints: [
-          "Granice Send i 'static dotyczą wejścia do closure blocking oraz wartości, która z niego wraca.",
-          "Consumer powstaje tylko po sukcesie JoinHandle, więc jego Future może pozostać lokalny.",
-        ],
-        gate: true,
-      }),
+      {
+        ...tokioExercise({
+          id: "tokio-spawn-blocking-boundary-blank",
+          kind: "blank",
+          title: "Od pustej kartki: wróć z worker do lokalnego consumera",
+          prompt:
+            "Od pustej kartki utwórz funkcję o nazwie `offload_then`. Jej umowa publiczna przyjmuje krótką, posiadaną pracę blocking oraz jednorazowy consumer jej wyniku. Praca blocking i jej wynik przekraczają granicę puli Tokio; consumer i zwracany przez niego Future działają już lokalnie po join. Funkcja zwraca `Result`, którego błąd zachowuje `JoinError`. Test przekazuje do consumera pożyczony String i Rc<Cell<_>>; osobny panic worker ma zwrócić JoinError bez wywołania consumera.",
+          solution: offloadThenSolution,
+          tests: offloadThenTests,
+          hints: [
+            "Granice Send i 'static dotyczą wejścia do closure blocking oraz wartości, która z niego wraca.",
+            "Consumer powstaje tylko po sukcesie JoinHandle, więc jego Future może pozostać lokalny.",
+          ],
+          gate: true,
+        }),
+        suppliedSolutions: {
+          solution: [
+            {
+              lessonId: "tokio-spawn-blocking-boundary",
+              stepId: "tokio-spawn-blocking-boundary-owned-gate",
+            },
+          ],
+        },
+      },
       tokioExercise({
         id: "tokio-spawn-blocking-boundary-result-review",
         kind: "debug",
@@ -802,6 +813,7 @@ export const tokioBlockingLessons: Lesson[] = [
           "Etykieta i Result są niezależnymi danymi raportu, więc zwróć je razem.",
         ],
       }),
+      tokioOwnedMapRecovery,
     ],
     misconceptions: [
       "spawn_blocking wykonuje closure na tym samym wątku current-thread runtime.",

@@ -343,7 +343,7 @@ describe("curriculum content contract", () => {
   });
 
   it("keeps long recovery lessons bound to their reviewed suffix and session break", () => {
-    for (const id of ["service-client-bounded-retry", "service-client-ambiguous-driver", "documentation-guided-repair"]) {
+    for (const id of ["service-client-bounded-retry", "service-client-ambiguous-driver", "documentation-guided-repair", "string-and-utf8"]) {
       const lesson = lessons.find(item => item.id === id)!;
       const invalid = [
         { ...lesson, sessionStops: [] },

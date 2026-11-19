@@ -201,7 +201,7 @@ it("compiles and runs every correct gate, blank and retrieval reference, then re
   const retrievals = fuzzEvidenceLessons.map(
     (lesson) => reviewExercises[lesson.conceptIds[0]],
   );
-  expect(steps).toHaveLength(8);
+  expect(steps).toHaveLength(9);
   expect(retrievals).toHaveLength(4);
   for (const step of [...steps, ...retrievals]) {
     expect(step.evaluator?.kind, step.id).toBe("tests");
