@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import * as rawCourse from "./course";
 import delta from "./fixtures/curriculum-recovery-nov19-delta.json";
 import {
+  historicalBeforeProjectArchives,
   historicalBeforeCrossModule,
   historicalBeforeAllVariants,
   historicalBeforeRemainingCriteria,
@@ -261,4 +262,14 @@ it("restores the reviewed catalog at 758c4a2 before any earlier projection", asy
     expect(hashRegistryValue(prior[key]), key).toBe(baseline[`${key}Sha256`]);
   }
   expect(historicalBeforeCrossModule(prior)).toBe(prior);
+});
+
+it("restores the reviewed catalog at 3bb18b7 before any earlier projection", async () => {
+  const { baseline } = await import("./fixtures/project-archives-delta.json");
+  const prior = historicalBeforeProjectArchives(rawCourse);
+  expect(baseline.sha).toBe("3bb18b7");
+  for (const key of ["lessons", "modules", "projects", "reviewExercises", "shortReviewExercises", "delayedReviewExercises"] as const) {
+    expect(hashRegistryValue(prior[key]), key).toBe(baseline[`${key}Sha256`]);
+  }
+  expect(historicalBeforeProjectArchives(prior)).toBe(prior);
 });

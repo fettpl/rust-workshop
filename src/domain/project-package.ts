@@ -135,11 +135,27 @@ export function revealProjectPackageVariant(
 ): UserState {
   const errors = validateProjectPackage(project);
   if (errors.length) throw new Error(errors.join("; "));
-  const refs =
-    variant === "starter"
-      ? (project.starterRevealStepRefs ?? [])
-      : [...project.revealStepRefs, ...(project.starterRevealStepRefs ?? [])];
-  return revealAuthoredStepSolutions(state, refs, lessons, now, policy);
+  return revealAuthoredStepSolutions(state, packageRevealRefs(project, variant), lessons, now, policy);
+}
+
+export function packageRevealRefs(project: ProjectPackage, variant: PackageVariant) {
+  return variant === "starter"
+    ? (project.starterRevealStepRefs ?? [])
+    : [...project.revealStepRefs, ...(project.starterRevealStepRefs ?? [])];
+}
+
+/** A restored flag alone cannot date help relative to a later submission. */
+export function hasDatedPackageExposure(
+  state: UserState,
+  ref: ModuleGateTaskRef,
+  through: number,
+): boolean {
+  return Boolean(state.steps[stepKey(ref.lessonId, ref.stepId)]?.revealed) &&
+    state.events.some((event) =>
+      event.lessonId === ref.lessonId && event.stepId === ref.stepId &&
+      event.at <= through && event.kind === "exposure" && event.revealed &&
+      event.id.startsWith("supplied-solution:")
+    );
 }
 
 export function revealAuthoredStepSolutions(
@@ -162,14 +178,7 @@ export function revealAuthoredStepSolutions(
       );
     {
       const key = stepKey(lesson.id, step.id);
-      if (
-        next.steps[key]?.revealed &&
-        next.events.some((event) =>
-          event.lessonId === ref.lessonId && event.stepId === ref.stepId &&
-          event.at <= now && event.kind === "exposure" && event.revealed &&
-          event.id.startsWith("supplied-solution:")
-        )
-      ) continue;
+      if (hasDatedPackageExposure(next, ref, now)) continue;
       next = recordLessonExposure(
         {
           ...next,

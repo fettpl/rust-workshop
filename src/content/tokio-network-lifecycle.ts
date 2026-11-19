@@ -1,3 +1,4 @@
+import { ownedFrameDiscardTransfer } from "./tokio-network-recovery";
 import { choose, tokioExercise, tokioRun } from "./tokio-helpers";
 import type {
   Competency,
@@ -1369,6 +1370,7 @@ export const tokioNetworkLifecycleLessons: Lesson[] = [
           "Pusty body jest inną ramką tylko wtedy, gdy był poprawnie zakodowany od początku, nie naprawą przerwanej ramki.",
         ],
       ),
+      ownedFrameDiscardTransfer,
     ],
     misconceptions: [
       "Nowy timeout dla każdej porcji nadal ogranicza czas całej ramki.",
@@ -1379,7 +1381,7 @@ export const tokioNetworkLifecycleLessons: Lesson[] = [
     transferTask:
       "Projektujesz klienta, który wysyła ramkę żądania i czyta ramkę odpowiedzi z budżetem 750 ms. Wskaż jeden moment utworzenia Instant, granice obu formatów, wyniki API dla Elapsed i ConnectionReset oraz dokładny moment upuszczenia TcpStream po częściowej ramce.",
     evidenceGate:
-      "tokio-frame-deadlines-gate ręcznie przesuwa zatrzymany zegar przez porcje krótsze od deadline, lecz przekraczające jego sumę; sprawdza także EOF, ucięcie, limit i własny io::Error. tokio-frame-deadlines-blank niezależnie sprawdza header/body/flush pod tym samym Instant oraz brak outputu dla oversize. Powtórka `review-tokio-frame-absolute-deadline` używa prawdziwego loopback TCP i sprawdza, że timeout upuszcza stream, zaś sukces zwraca nadal używalny stream.",
+      "tokio-frame-deadlines-gate ręcznie przesuwa zatrzymany zegar przez porcje krótsze od deadline, lecz przekraczające jego sumę; sprawdza także EOF, ucięcie, limit i własny io::Error. tokio-frame-deadlines-blank niezależnie sprawdza header/body/flush pod tym samym Instant oraz brak outputu dla oversize. Zadanie `tokio-frame-deadlines-owned-discard-transfer` przyjmuje całe połączenie i zwraca je tylko z kompletną ramką; testuje też EOF peer-a po błędzie. Powtórka `review-tokio-frame-absolute-deadline` używa prawdziwego loopback TCP i sprawdza, że timeout upuszcza stream, zaś sukces zwraca nadal używalny stream.",
     sourceIds: [
       "tokio-timeout-at",
       "tokio-time-instant",

@@ -12,16 +12,14 @@ export const concurrencyLabPackage: ProjectPackage = {
     "Odtwórz osobno dwa celowe kontrprzykłady według README. Powinny dać właściwą nieudaną asercję, a nie timeout.",
     "Sprawdź format i Clippy dla obu wariantów. Zapisz w ADR własne uzasadnienie porządkowania oraz ograniczeń modelu.",
   ],
-  revealStepRefs: [
-    { lessonId: "atomic-rmw", stepId: "atomic-rmw-fetch-gate" },
-    { lessonId: "atomic-cas", stepId: "atomic-cas-retry-gate" },
-    { lessonId: "atomic-limits", stepId: "atomic-limits-counter-gate" },
+  // ADR.md supplies these algorithms even when src/lib.rs still contains TODOs.
+  starterRevealStepRefs: [
+    { lessonId: "atomic-cas", stepId: "atomic-cas-conditional-blank" },
     { lessonId: "release-acquire", stepId: "release-acquire-publication-gate" },
-    {
-      lessonId: "ordering-contracts",
-      stepId: "ordering-contracts-validation-gate",
-    },
-    { lessonId: "loom-evidence", stepId: "loom-evidence-assertions-gate" },
+  ],
+  revealStepRefs: [
+    { lessonId: "atomic-cas", stepId: "atomic-cas-conditional-blank" },
+    { lessonId: "release-acquire", stepId: "release-acquire-publication-gate" },
   ],
   files: [
     {

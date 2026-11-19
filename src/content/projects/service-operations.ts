@@ -828,10 +828,9 @@ export const serviceOperationsPackage: ProjectPackage = {
       stepId: "telemetry-correlation-gate",
     },
     { lessonId: "service-readiness-drain", stepId: "readiness-drain-gate" },
-    {
-      lessonId: "service-incident-diagnosis",
-      stepId: "incident-diagnosis-gate",
-    },
+    { lessonId: "service-trust-admission", stepId: "trust-admission-budget-gate" },
+    { lessonId: "service-correlated-telemetry", stepId: "telemetry-correlation-allowlist-gate" },
+    { lessonId: "service-readiness-drain", stepId: "readiness-drain-accounting-gate" },
   ],
   files,
 };

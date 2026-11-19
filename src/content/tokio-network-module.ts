@@ -46,6 +46,9 @@ export const tokioNetworkModule: CourseModule = {
     taskRefs: [
       { lessonId, stepId: `${lessonId}-gate` },
       { lessonId, stepId: `${lessonId}-blank` },
+      ...(lessonId === "tokio-frame-deadlines"
+        ? [{ lessonId, stepId: "tokio-frame-deadlines-owned-discard-transfer" }]
+        : []),
     ],
   })),
 };

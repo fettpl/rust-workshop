@@ -45,7 +45,7 @@ const lessonIds = [
   "unsafe-miri-mut-slot",
 ];
 
-it("registers exactly four Miri lessons with eight rubric gates, seventeen evidence gates, and independent retrievals", () => {
+it("registers exactly four Miri lessons with eight rubric gates, nineteen evidence gates, and independent retrievals", () => {
   expect(unsafeMiriLessons.map((lesson) => lesson.id)).toEqual(lessonIds);
   expect(unsafeMiriModule.lessonIds).toEqual(lessonIds);
   expect(unsafeMiriModule.prerequisites).toEqual(["unsafe-ffi-contracts"]);
@@ -54,11 +54,11 @@ it("registers exactly four Miri lessons with eight rubric gates, seventeen evide
     unsafeMiriLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(17);
+  ).toHaveLength(19);
 
   for (const lesson of unsafeMiriLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
-      lesson.id === "unsafe-miri-mut-slot" ? 2 : 1,
+      lesson.id === "unsafe-miri-byte-view" ? 1 : 2,
     );
     expect(
       lesson.steps.filter(
@@ -66,7 +66,7 @@ it("registers exactly four Miri lessons with eight rubric gates, seventeen evide
       ),
     ).toHaveLength(1);
     expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(
-      lesson.id === "unsafe-miri-mut-slot" ? 5 : 4,
+      lesson.id === "unsafe-miri-byte-view" ? 4 : 5,
     );
     const blank = lesson.steps.find((step) => step.kind === "blank")!;
     expect(blank.evidenceGate).toBe(true);
@@ -99,9 +99,9 @@ it("registers exactly four Miri lessons with eight rubric gates, seventeen evide
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(25);
+  expect(refs).toHaveLength(29);
   expect(refs.filter(ref => ref === "unsafe-miri-mut-slot/mut-slot-pair-reborrow-transfer")).toHaveLength(2);
-  expect(new Set(refs).size).toBe(21);
+  expect(new Set(refs).size).toBe(23);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,
   );
@@ -150,7 +150,7 @@ it("appends lazy initialization after historical slot steps and attributes only 
   const lesson = unsafeMiriLessons.find(
     (candidate) => candidate.id === "unsafe-miri-slot-state",
   )!;
-  expect(lesson.steps.map((step) => step.id).slice(-2)).toEqual(
+  expect(lesson.steps.map((step) => step.id).slice(7, 9)).toEqual(
     slotLazyInitSteps.map((step) => step.id),
   );
   const primary = lesson.steps.find(
@@ -189,7 +189,7 @@ it("appends the range family while preserving the old midpoint family", () => {
     "disjoint-regions-blank",
     "disjoint-regions-recall",
   ]);
-  expect(lesson.steps.slice(-2).map((step) => step.id)).toEqual(
+  expect(lesson.steps.slice(7, 9).map((step) => step.id)).toEqual(
     disjointRangesSteps.map((step) => step.id),
   );
   expect(

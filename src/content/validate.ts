@@ -119,6 +119,8 @@ function checkAcyclic(
 }
 
 const recoveryExtensions: Partial<Record<string, { prefixLength: number; breakAfter: string; suffix: string[] }>> = {
+  "unsafe-miri-disjoint-regions": { prefixLength: 9, breakAfter: "disjoint-regions-range-transfer", suffix: ["disjoint-regions-pivot-transfer"] },
+  "unsafe-miri-slot-state": { prefixLength: 9, breakAfter: "slot-state-lazy-init-transfer", suffix: ["slot-state-move-transfer"] },
   "documentation-guided-repair": { prefixLength: 9, breakAfter: "docs-split-transfer", suffix: ["docs-keyed-setting"] },
   "service-client-bounded-retry": { prefixLength: 9, breakAfter: "bounded-retry-transfer", suffix: ["retry-ready-queue", "retry-time-windows"] },
   "service-client-ambiguous-driver": { prefixLength: 9, breakAfter: "ambiguous-driver-transfer", suffix: ["retry-replica-frame", "retry-receipt-ledger"] },

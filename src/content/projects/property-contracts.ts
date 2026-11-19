@@ -13,19 +13,13 @@ export const propertyContractsPackage: ProjectPackage = {
     "Sprawdź relację metamorfologiczną dla niepasującego sufiksu oraz warunki, przy których ta relacja przestaje obowiązywać.",
     "Uruchom cargo fmt --all -- --check, cargo test --locked, cargo test replay_saved_regression --locked oraz cargo clippy --all-targets --locked -- -D warnings.",
   ],
+  // Proptest configuration and a fixed suffix property do not provide the
+  // lessons' custom reducer/replay protocol or guarded metamorphic validator.
   revealStepRefs: [
     { lessonId: "property-invariants", stepId: "property-invariants-gate" },
     {
       lessonId: "property-generated-inputs",
       stepId: "property-generated-inputs-gate",
-    },
-    {
-      lessonId: "property-shrinking-replay",
-      stepId: "property-shrinking-replay-gate",
-    },
-    {
-      lessonId: "property-metamorphic-transfer",
-      stepId: "property-metamorphic-transfer-gate",
     },
   ],
   files: propertyContractsFiles,

@@ -10,7 +10,7 @@ describe("FFI buffer archive contract", () => {
     expect(validateProjectPackage(ffiBufferPackage)).toEqual([]);
     expect(ffiBufferPackage.id).toBe("ffi-buffer-workshop");
     expect(ffiBufferProject.id).toBe("ffi-buffer");
-    expect(ffiBufferPackage.revealStepRefs).toHaveLength(4);
+    expect(ffiBufferPackage.revealStepRefs).toHaveLength(2);
 
     const solution = projectFiles(ffiBufferPackage, "solution");
     expect(Object.keys(solution)).toEqual(

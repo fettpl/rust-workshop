@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { lessons, projects, reviewExercises } from "../../src/content/course";
-import { createInitialState, stepKey } from "../../src/persistence/state";
+import { createInitialState, createStepProgress, stepKey } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 
 function readyState(): UserState {
@@ -220,4 +220,30 @@ test("starter preview and download expose primary manifests while preserving bla
   saved = await savedState(page);
   for (const ref of project.package!.revealStepRefs)
     expect(saved.steps[stepKey(ref.lessonId, ref.stepId)]?.revealed).toBe(true);
+});
+
+test("reopening a starter records dated help for restored flags and preserves the learner draft", async ({ page }) => {
+  const project = projects.find((item) => item.id === "frame-protocol")!;
+  const refs = project.package!.starterRevealStepRefs!;
+  const imported = readyState();
+  for (const ref of refs) {
+    imported.steps[stepKey(ref.lessonId, ref.stepId)] = {
+      ...createStepProgress("# moje notatki"),
+      revealed: true,
+    };
+  }
+  await seed(page, imported);
+  await page.getByRole("button", { name: "Projekt", exact: true }).click();
+  await page.getByRole("navigation", { name: "Wybierz projekt" })
+    .getByRole("button", { name: project.title }).click();
+  const panel = page.getByRole("region", { name: "Pakiet Cargo" });
+  await expect(panel.getByLabel("Zawartość pliku")).toBeVisible();
+  const saved = await savedState(page);
+  for (const ref of refs) {
+    expect(saved.steps[stepKey(ref.lessonId, ref.stepId)].code).toBe("# moje notatki");
+    const dated = saved.events.filter((event) => event.id.startsWith("supplied-solution:") &&
+      event.lessonId === ref.lessonId && event.stepId === ref.stepId);
+    expect(dated).toHaveLength(1);
+    expect(dated[0].at).toBeGreaterThanOrEqual(imported.updatedAt);
+  }
 });

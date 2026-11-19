@@ -4,7 +4,7 @@ import { revealProjectSolution } from "../domain/project-package";
 import { createInitialState, stepKey } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
 
-it("keeps four independent networking challenges after the service reference is revealed", () => {
+it("attributes both frame directions and the handler while keeping distinct networking contracts fresh", () => {
   const project = projects.find((entry) => entry.id === "tokio-service");
   expect(project).toBeDefined();
   const stage = modules.find((entry) => entry.id === "tokio-network-service")!;
@@ -20,7 +20,7 @@ it("keeps four independent networking challenges after the service reference is 
   expect(archive.files.map((file) => file.path)).toEqual(
     expect.arrayContaining(["Cargo.toml", "Cargo.lock", "README.md", "ADR.md"]),
   );
-  expect(archive.revealStepRefs).toHaveLength(4);
+  expect(archive.revealStepRefs).toHaveLength(3);
   expect(stage.gateCriteria).toHaveLength(4);
   let state = revealProjectSolution(
     createInitialState(),
@@ -29,18 +29,26 @@ it("keeps four independent networking challenges after the service reference is 
     1000,
   );
   expect(moduleGate(state, lessons, stage).passed).toBe(false);
-  expect(state.events).toHaveLength(4);
+  expect(state.events).toHaveLength(14);
   for (const criterion of stage.gateCriteria!) {
-    expect(criterion.taskRefs).toHaveLength(2);
+    expect(criterion.taskRefs).toHaveLength(
+      criterion.id === "tokio-frame-deadlines-contract" ? 3 : 2,
+    );
     const fresh = criterion.taskRefs.filter(
       (ref) => !state.steps[stepKey(ref.lessonId, ref.stepId)]?.revealed,
     );
-    expect(fresh).toHaveLength(1);
+    const expectedFresh =
+      criterion.id === "tokio-frame-deadlines-contract"
+        ? 1
+        : criterion.id === "tokio-admission-lifecycle-contract"
+          ? 1
+          : 2;
+    expect(fresh).toHaveLength(expectedFresh);
+    if (!fresh.length) continue;
     const ref = fresh[0];
     const lesson = lessons.find((item) => item.id === ref.lessonId)!;
     const step = lesson.steps.find((item) => item.id === ref.stepId)!;
-    expect(step.kind).toBe("blank");
-    expect(step.code).toBeUndefined();
+    expect(["modify", "debug", "blank", "apply"]).toContain(step.kind);
     expect(step.evaluator?.kind).toBe("tests");
     state = recordEvidence(state, {
       id: `fresh-service/${ref.stepId}`,

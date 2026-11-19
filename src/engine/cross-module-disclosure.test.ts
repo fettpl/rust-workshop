@@ -196,7 +196,7 @@ it.each([
   },
 );
 
-it("keeps the FFI starter independent and sends a reader of the solution archive to fresh Miri work", () => {
+it("keeps the Miri split exercise independent after either opaque FFI buffer archive", () => {
   const pkg = projects.find(
     (p) => p.package?.id === "ffi-buffer-workshop",
   )!.package!;
@@ -217,9 +217,7 @@ it("keeps the FFI starter independent and sends a reader of the solution archive
       ),
     );
     expect(courseNextGateTask(state, criterion)?.stepId).toBe(
-      variant === "starter"
-        ? "disjoint-regions-gate"
-        : "disjoint-regions-range-transfer",
+      "disjoint-regions-gate",
     );
   }
 });

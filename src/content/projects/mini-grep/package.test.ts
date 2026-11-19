@@ -10,7 +10,7 @@ describe("Mini grep archive contract", () => {
     expect(validateProjectPackage(miniGrepPackage)).toEqual([]);
     expect(miniGrepPackage.id).toBe("mini-grep-workshop");
     expect(miniGrepProject.id).toBe("mini-grep");
-    expect(miniGrepPackage.revealStepRefs).toHaveLength(8);
+    expect(miniGrepPackage.revealStepRefs).toHaveLength(4);
 
     const reference = projectFiles(miniGrepPackage, "solution");
     expect(Object.keys(reference)).toEqual(

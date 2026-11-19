@@ -213,7 +213,7 @@ import { tsImport } from "tsx/esm/api";
       /Laboratorium: pipeline Tokio/,
       /Laboratorium: serwis TCP/,
       /Laboratorium: publiczne API i workspace/,
-      /Projekt: ograniczony Mini grep/,
+      // Mini Grep is opened below after the independent fuzz submission.
       /Projekt: kontrakty własności/,
       /Projekt: bezpieczny właściciel bufora FFI/,
       /Projekt: operacje serwisu Tokio/,
@@ -257,25 +257,6 @@ import { tsImport } from "tsx/esm/api";
       );
     }
     await context.setOffline(false);
-    await page
-      .getByRole("navigation", { name: "Wybierz projekt" })
-      .getByRole("button", { name: /Projekt: ograniczony Mini grep/ })
-      .click();
-    const miniGrepPanel = page.getByRole("region", { name: "Pakiet Cargo" });
-    const miniGrepStarterLink = miniGrepPanel.getByRole("link", {
-      name: "Pobierz pakiet startowy",
-    });
-    const miniGrepStarterUrl = await miniGrepStarterLink.getAttribute("href");
-    await page.waitForFunction(
-      async (path) => !!(await caches.match(path)),
-      miniGrepStarterUrl,
-    );
-    const miniGrepStarterBytes = await page.evaluate(
-      async (path) =>
-        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
-      miniGrepStarterUrl,
-    );
-    let miniGrepSolutionBytes;
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const fuzzTitle = "Fuzz evidence: od bajtów do audytowalnej regresji";
     await page
@@ -336,6 +317,24 @@ import { tsImport } from "tsx/esm/api";
     await page.getByRole("button", { name: "Projekt", exact: true }).click();
     await page.getByRole("navigation", { name: "Wybierz projekt" }).getByRole("button", { name: /Projekt: ograniczony Mini grep/ }).click();
     const assistedPackage = page.getByRole("region", { name: "Pakiet Cargo" });
+    const miniGrepStarterLink = assistedPackage.getByRole("link", {
+      name: "Pobierz pakiet startowy",
+    });
+    const miniGrepStarterUrl = await miniGrepStarterLink.getAttribute("href");
+    await page.waitForFunction(
+      async (path) => !!(await caches.match(path)),
+      miniGrepStarterUrl,
+    );
+    const miniGrepStarterBytes = await page.evaluate(
+      async (path) =>
+        Array.from(new Uint8Array(await (await fetch(path)).arrayBuffer())),
+      miniGrepStarterUrl,
+    );
+    let miniGrepSolutionBytes;
+    expect(miniGrepStarterBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
+    await expect.poll(async () => (await readLearningState()).steps[
+      "fuzz-oracle-sensitivity:fuzz-oracle-sensitivity-gate"
+    ]?.revealed).toBe(true);
     await assistedPackage.getByRole("button", { name: "Pokaż rozwiązanie pakietu" }).click();
     const assistedDownload = page.waitForEvent("download");
     await assistedPackage.getByRole("link", { name: "Pobierz rozwiązanie" }).click();

@@ -1,3 +1,4 @@
+import { miriArchiveRecoverySources } from "./miri-archive-recovery";
 import {
   initializedPrefixEquivalent,
   initializedPrefixMutant,
@@ -19,6 +20,7 @@ export interface UnsafeMiriAssessmentFixture {
 }
 
 function sourceFor(id: string, solution: string) {
+  if (Object.hasOwn(miriArchiveRecoverySources, id)) return miriArchiveRecoverySources[id];
   if (id === initializedPrefixPrimaryStepId) {
     return {
       equivalent: initializedPrefixEquivalent,

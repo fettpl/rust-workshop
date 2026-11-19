@@ -27,7 +27,7 @@ it("connects the property contracts project to four independent module gates", (
     "property-shrinking-replay",
     "property-metamorphic-transfer",
   ]);
-  expect(project!.package?.revealStepRefs).toHaveLength(4);
+  expect(project!.package?.revealStepRefs).toHaveLength(2);
 
   const state = revealProjectSolution(
     createInitialState(),
@@ -41,8 +41,8 @@ it("connects the property contracts project to four independent module gates", (
     const [primary, blank] = criterion.taskRefs;
     expect(primary.lessonId).toBe(lessonIds[index]);
     expect(
-      state.steps[stepKey(primary.lessonId, primary.stepId)]?.revealed,
-    ).toBe(true);
+      Boolean(state.steps[stepKey(primary.lessonId, primary.stepId)]?.revealed),
+    ).toBe(index < 2);
     expect(
       state.steps[stepKey(blank.lessonId, blank.stepId)]?.revealed,
     ).toBeFalsy();

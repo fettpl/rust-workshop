@@ -1,8 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules, projects } from "../../src/content/course";
 import {
   courseEvidencePolicy,
   courseEvidenceSummary,
+  revealCourseProjectPackageVariant,
 } from "../../src/content/learning-context";
 import {
   createInitialState,
@@ -349,7 +350,12 @@ function asyncTransferContext(item: AsyncTransferCase) {
   const transfer = lesson.steps.find(
     (candidate) => candidate.id === item.stepId,
   )!;
-  expect(lesson.steps.at(-1)).toBe(transfer);
+  if (item.lessonId === "unsafe-miri-slot-state") {
+    expect(lesson.steps[8]).toBe(transfer);
+    expect(lesson.steps.at(-1)?.id).toBe("slot-state-move-transfer");
+  } else {
+    expect(lesson.steps.at(-1)).toBe(transfer);
+  }
   expect(transfer.evidence).toEqual({
     version: 2,
     conceptIds: [item.conceptId],
@@ -536,7 +542,10 @@ function observeBrowserErrors(page: Page) {
   return errors;
 }
 
-async function revealAsyncSolution(page: Page, item: AsyncTransferCase) {
+async function revealAsyncSolution(
+  page: Page,
+  item: { lessonId: string; stepId: string },
+) {
   await page.getByRole("button", { name: "Pomóż mi to zrozumieć" }).click();
   await page.getByRole("button", { name: "Pokaż drugą wskazówkę" }).click();
   await page
@@ -768,7 +777,7 @@ for (const item of asyncTransferCases) {
     expect(errors).toEqual([]);
   });
 
-  test(`${item.stepId}: both helped families show exhaustion without clearing old assistance`, async ({
+  test(`${item.stepId}: ${item.lessonId === "unsafe-miri-slot-state" ? "older helped families route to the final task before exhaustion" : "both helped families show exhaustion"} without clearing old assistance`, async ({
     page,
   }) => {
     const errors = observeBrowserErrors(page);
@@ -790,11 +799,37 @@ for (const item of asyncTransferCases) {
       .getByText("Potrzebuję pełnego rozwiązania", { exact: true })
       .click();
     await expect(page.locator(".solution-warning")).toContainText(
-      "potwierdzenie samodzielności poczeka na inne świeże zadanie",
+      item.lessonId === "unsafe-miri-slot-state"
+        ? "możesz przejść do dostępnego świeżego zadania"
+        : "potwierdzenie samodzielności poczeka na inne świeże zadanie",
     );
     await page
       .getByRole("button", { name: "Pokaż rozwiązanie", exact: true })
       .click();
+    if (item.lessonId === "unsafe-miri-slot-state") {
+      const fresh = lesson.steps.find(
+        (step) => step.id === "slot-state-move-transfer",
+      )!;
+      expect(gateRecovery(await savedState(page), criterion, lessons)).toEqual({
+        status: "available",
+        task: { lessonId: lesson.id, stepId: fresh.id },
+      });
+      await page
+        .getByRole("button", { name: stage.title, exact: true })
+        .click();
+      await page
+        .locator(".gate-panel li")
+        .filter({
+          has: page.getByText(criterion.label, { exact: true }),
+        })
+        .getByRole("button", { name: "Sprawdź w zadaniu" })
+        .click();
+      await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+      await revealAsyncSolution(page, {
+        lessonId: lesson.id,
+        stepId: fresh.id,
+      });
+    }
     const after = await savedState(page);
     expect(after.steps[stepKey(lesson.id, blank.id)]).toEqual(
       before.steps[stepKey(lesson.id, blank.id)],
@@ -1394,3 +1429,86 @@ test("initialized prefix preserves old seven-step history through import, help, 
   await page.keyboard.press("Shift+Tab");
   await expect(editor).toBeFocused();
 });
+
+for (const [lessonId, freshId] of [
+  ["unsafe-miri-disjoint-regions", "disjoint-regions-pivot-transfer"],
+  ["unsafe-miri-slot-state", "slot-state-move-transfer"],
+]) {
+  test(`${freshId}: solution archive routes both criteria to final fresh work and only its reveal exhausts them (UI/state only)`, async ({
+    page,
+  }) => {
+    const lesson = lessons.find((item) => item.id === lessonId)!;
+    const fresh = lesson.steps.find((step) => step.id === freshId)!;
+    const stage = modules.find((item) => item.id === lesson.moduleId)!;
+    const criteria = stage.gateCriteria!.filter(
+      (item) =>
+        item.id === lessonId + "-gate" || item.id === lessonId + "-recall",
+    );
+    const state = createInitialState();
+    state.onboarding = { completed: true, name: "Ada", minutes: 15 };
+    state.diagnostic = {
+      completed: true,
+      answers: {},
+      score: 0,
+      recommendation: "",
+    };
+    state.settings.accessibleEditor = true;
+    state.resume = {
+      ...state.resume,
+      view: "lesson",
+      lessonId,
+      stepIndex: 0,
+      panel: "lesson",
+    };
+    const exposed = revealCourseProjectPackageVariant(
+      state,
+      projects.find((item) => item.id === "miri-safety")!.package!,
+      lessons,
+      "solution",
+      100,
+    );
+    await page.goto("/");
+    await seedState(page, exposed);
+    await page.getByRole("button", { name: stage.title, exact: true }).click();
+    for (const criterion of criteria) {
+      expect(gateRecovery(await savedState(page), criterion, lessons)).toEqual({
+        status: "available",
+        task: { lessonId, stepId: freshId },
+      });
+      const row = page
+        .locator(".gate-panel li")
+        .filter({ has: page.getByText(criterion.label, { exact: true }) });
+      await expect(
+        row.getByRole("button", { name: "Sprawdź w zadaniu" }),
+      ).toBeVisible();
+    }
+    await page
+      .locator(".gate-panel li")
+      .filter({ has: page.getByText(criteria[0].label, { exact: true }) })
+      .getByRole("button", { name: "Sprawdź w zadaniu" })
+      .click();
+    await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+    await expect(page.locator(".revealed-solution")).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+    await revealAsyncSolution(page, { lessonId, stepId: freshId });
+    const after = await savedState(page);
+    expect(after.events.slice(0, exposed.events.length)).toEqual(
+      exposed.events,
+    );
+    for (const criterion of criteria)
+      expect(gateRecovery(after, criterion, lessons)).toEqual({
+        status: "exhausted",
+      });
+    await page.getByRole("button", { name: stage.title, exact: true }).click();
+    for (const criterion of criteria) {
+      const row = page
+        .locator(".gate-panel li")
+        .filter({ hasText: criterion.label });
+      await expect(row).toContainText("Brak świeżego samodzielnego wariantu");
+      await expect(
+        row.getByRole("button", { name: "Sprawdź w zadaniu" }),
+      ).toHaveCount(0);
+    }
+  });
+}

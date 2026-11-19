@@ -30,10 +30,15 @@ export const miniGrepPackage: ProjectPackage = {
       lessonId: "grep-cli-contract",
       stepId: "grep-cli-contract-gate",
     },
+  ],
+  // The starter ships the completed fuzz decoder and full-output comparisons.
+  // Seeds and evidence documentation do not supply a reducer or report classifier.
+  starterRevealStepRefs: [
     { lessonId: "fuzz-input-domain", stepId: "fuzz-input-domain-gate" },
-    { lessonId: "fuzz-oracle-sensitivity", stepId: "fuzz-oracle-sensitivity-gate" },
-    { lessonId: "fuzz-counterexample-regression", stepId: "fuzz-counterexample-regression-gate" },
-    { lessonId: "fuzz-campaign-evidence", stepId: "fuzz-campaign-evidence-gate" },
+    {
+      lessonId: "fuzz-oracle-sensitivity",
+      stepId: "fuzz-oracle-sensitivity-gate",
+    },
   ],
   files: miniGrepFiles,
 };

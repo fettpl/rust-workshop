@@ -473,16 +473,13 @@ export const ffiBufferPackage: ProjectPackage = {
     "Uruchom cargo test --locked --test native_integration, aby sprawdzić round trip, pusty widok, deterministyczną awarię natywną i udokumentowany limit rozmiaru.",
     "Na koniec uruchom cargo fmt --all -- --check, cargo check --locked, cargo test --locked i cargo clippy --all-targets --locked -- -D warnings.",
   ],
+  // The opaque buffer ABI supplies ownership and checked views, not a mutable
+  // split implementation or a tagged repr(C) record decoder.
   revealStepRefs: [
     {
       lessonId: "unsafe-ffi-checked-view",
       stepId: "checked-view-contract-gate",
     },
-    {
-      lessonId: "unsafe-ffi-split-regions",
-      stepId: "split-regions-alias-gate",
-    },
-    { lessonId: "unsafe-ffi-raw-record", stepId: "raw-record-flags-gate" },
     { lessonId: "unsafe-ffi-owned-handle", stepId: "owned-handle-borrow-gate" },
   ],
   files: [...packageFiles],

@@ -12,19 +12,36 @@ export const tokioServicePackage: ProjectPackage = {
     "Uruchom cargo fmt --all -- --check, cargo check --offline --locked --all-targets, cargo test --offline --locked oraz cargo clippy --offline --locked --all-targets -- -D warnings.",
     "Starter kompiluje się, ale testy celowo kończą się na todo!. Rozwiązanie referencyjne przechodzi pełny zestaw.",
   ],
-  revealStepRefs: [
-    { lessonId: "tokio-tcp-connect", stepId: "tokio-tcp-connect-gate" },
+  // The bundled lending implementation, producer and boxed adapter are already
+  // worked answers in the starter. Counterexamples also supply owned spawn_blocking.
+  starterRevealStepRefs: [
+    ...[
+      "receiver",
+      "callbacks",
+      "cancel-commit",
+      "send-boundary",
+      "dyn-adapter",
+    ].flatMap((suffix) =>
+      ["gate", "blank"].map((kind) => ({
+        lessonId: `async-lending-${suffix}`,
+        stepId: `async-lending-${suffix}-${kind}`,
+      })),
+    ),
     {
-      lessonId: "tokio-tcp-half-close",
-      stepId: "tokio-tcp-half-close-gate",
+      lessonId: "tokio-spawn-blocking-boundary",
+      stepId: "tokio-spawn-blocking-boundary-owned-gate",
     },
+  ],
+  // A framed request does not supply the preamble or EOF-delimited TCP contracts.
+  revealStepRefs: [
+    { lessonId: "tokio-frame-deadlines", stepId: "tokio-frame-deadlines-gate" },
     {
       lessonId: "tokio-frame-deadlines",
-      stepId: "tokio-frame-deadlines-gate",
+      stepId: "tokio-frame-deadlines-blank",
     },
     {
       lessonId: "tokio-admission-lifecycle",
-      stepId: "tokio-admission-lifecycle-gate",
+      stepId: "tokio-admission-lifecycle-blank",
     },
   ],
   files: [

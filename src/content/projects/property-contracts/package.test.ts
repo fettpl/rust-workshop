@@ -12,7 +12,7 @@ describe("Property contracts archive contract", () => {
   it("provides a real locked Proptest package", () => {
     expect(validateProjectPackage(propertyContractsPackage)).toEqual([]);
     expect(propertyContractsProject.id).toBe("property-contracts");
-    expect(propertyContractsPackage.revealStepRefs).toHaveLength(4);
+    expect(propertyContractsPackage.revealStepRefs).toHaveLength(2);
 
     const reference = projectFiles(propertyContractsPackage, "solution");
     expect(Object.keys(reference)).toEqual(

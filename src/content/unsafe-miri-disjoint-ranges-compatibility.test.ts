@@ -508,7 +508,7 @@ describe("disjoint range compatibility and evidence", () => {
     const project = projects.find(
       (candidate) => candidate.id === "miri-safety",
     )!.package!;
-    expect(project.revealStepRefs).toHaveLength(7);
+    expect(project.revealStepRefs).toHaveLength(5);
     const starter = revealCourseProjectPackageVariant(
       createInitialState(),
       project,
@@ -516,7 +516,7 @@ describe("disjoint range compatibility and evidence", () => {
       "starter",
       2_000,
     );
-    expect(starter.events).toHaveLength(0);
+    expect(starter.events.some((event) => event.lessonId === disjointRangesLessonId)).toBe(false);
     const oldClean = eventFor(lesson, oldStep, "old-clean-before-help", 2_500);
     const prior = recordCourseEvidence(createInitialState(), oldClean);
     const exposed = revealCourseProjectPackageVariant(

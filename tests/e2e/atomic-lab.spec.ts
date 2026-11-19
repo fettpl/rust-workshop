@@ -1,4 +1,5 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+import type { UserState } from "../../src/domain/types";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
@@ -9,6 +10,63 @@ import {
 } from "./archive-notices.helper";
 
 const project = projects.find((item) => item.id === "concurrency-lab")!;
+
+const labHelpKeys = [
+  "atomic-cas:atomic-cas-conditional-blank",
+  "release-acquire:release-acquire-publication-gate",
+];
+
+async function savedState(page: Page): Promise<UserState> {
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  return page.evaluate(
+    () =>
+      new Promise<UserState>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const database = request.result;
+          const read = database
+            .transaction("user-state", "readonly")
+            .objectStore("user-state")
+            .get("current");
+          read.onsuccess = () => {
+            database.close();
+            resolve(read.result as UserState);
+          };
+          read.onerror = () => {
+            database.close();
+            reject(read.error);
+          };
+        };
+      }),
+  );
+}
+
+async function expectOnlyLabHelp(page: Page) {
+  const state = await savedState(page);
+  expect(
+    Object.entries(state.steps)
+      .filter(([, progress]) => progress.revealed)
+      .map(([key]) => key)
+      .sort(),
+  ).toEqual([...labHelpKeys].sort());
+  const supplied = state.events.filter((event) =>
+    event.id.startsWith("supplied-solution:"),
+  );
+  expect(
+    supplied.map((event) => `${event.lessonId}:${event.stepId}`).sort(),
+  ).toEqual([...labHelpKeys].sort());
+  for (const event of supplied)
+    expect(event).toMatchObject({
+      kind: "exposure",
+      revealed: true,
+      gate: false,
+    });
+  for (const key of labHelpKeys) expect(state.steps[key].completed).toBe(false);
+  return state;
+}
 
 test("downloads the actual Loom lab and keeps project work separate after viewing a reference", async ({
   page,
@@ -41,6 +99,9 @@ test("downloads the actual Loom lab and keeps project work separate after viewin
       .click();
     const download = await started;
     expect(await download.failure()).toBeNull();
+    // The worked ADR is present in both variants; viewing either supplies only
+    // conditional CAS and publication, without completing either task.
+    await expectOnlyLabHelp(page);
     const files = unzipSync(await readFile((await download.path())!));
     const archive = project.package!;
     expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
@@ -77,49 +138,74 @@ test("downloads the actual Loom lab and keeps project work separate after viewin
   expect(errors).toEqual([]);
 });
 
-test("resumes a fresh atomic task through its lab project without revealing code", async ({
-  page,
-}) => {
-  const lesson = lessons.find((item) => item.id === "atomic-cas")!;
-  const index = lesson.steps.findIndex((step) => step.kind === "blank");
-  const stage = modules.find((item) => item.id === lesson.moduleId)!;
-  await page.goto("/");
-  await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
-  await page.getByRole("button", { name: "Przejdź do nauki" }).click();
-  await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-  await page
-    .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
-    .fill("atomic");
-  await page
-    .locator(".module-picker")
-    .getByRole("button", { name: new RegExp(stage.title) })
-    .click();
-  await page
-    .locator(".lesson-list-item")
-    .filter({ hasText: lesson.title })
-    .click();
-  await page.locator('[aria-label="Kroki lekcji"] button').nth(index).click();
-  await page
-    .getByRole("button", { name: "Prosty edytor", exact: true })
-    .click();
-  const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
-  await expect(editor).toHaveValue("");
-  await editor.fill("// Po konflikcie ponownie sprawdzę limit.\n");
-  await expect(
-    page
-      .locator(".save-status")
-      .filter({ hasText: "Zapisano na tym urządzeniu" }),
-  ).toBeVisible();
-  await page.reload();
-  await page.getByRole("button", { name: "Projekt", exact: true }).click();
-  await page.getByRole("button", { name: "Pracuj nad projektem" }).click();
-  await expect(
-    page.getByRole("heading", { name: lesson.steps[index].title, exact: true }),
-  ).toBeVisible();
-  await expect(editor).toHaveValue(
-    "// Po konflikcie ponownie sprawdzę limit.\n",
-  );
-  await expect(
-    page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
-  ).toHaveCount(0);
-});
+for (const [stepId, assisted, title] of [
+  [
+    "atomic-cas-conditional-blank",
+    true,
+    "preserves the atomic blank draft while showing the ADR-supplied comparison",
+  ],
+  [
+    "atomic-cas-retry-gate",
+    false,
+    "resumes a fresh atomic retry task through its lab project without revealing code",
+  ],
+] as const) {
+  test(title, async ({ page }) => {
+    const lesson = lessons.find((item) => item.id === "atomic-cas")!;
+    const index = lesson.steps.findIndex((step) => step.id === stepId);
+    const stage = modules.find((item) => item.id === lesson.moduleId)!;
+    await page.goto("/");
+    await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
+    await page.getByRole("button", { name: "Przejdź do nauki" }).click();
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill("atomic");
+    await page
+      .locator(".module-picker")
+      .getByRole("button", { name: new RegExp(stage.title) })
+      .click();
+    await page
+      .locator(".lesson-list-item")
+      .filter({ hasText: lesson.title })
+      .click();
+    await page.locator('[aria-label="Kroki lekcji"] button').nth(index).click();
+    await page
+      .getByRole("button", { name: "Prosty edytor", exact: true })
+      .click();
+    const editor = page.getByRole("textbox", { name: "Kod Rust", exact: true });
+    await expect(editor).toHaveValue(lesson.steps[index].code ?? "");
+    await expect(page.locator(".revealed-solution")).toHaveCount(0);
+    await editor.fill("// Po konflikcie ponownie sprawdzę limit.\n");
+    await expect(
+      page
+        .locator(".save-status")
+        .filter({ hasText: "Zapisano na tym urządzeniu" }),
+    ).toBeVisible();
+    await page.reload();
+    await page.getByRole("button", { name: "Projekt", exact: true }).click();
+    await expectOnlyLabHelp(page);
+    await page.getByRole("button", { name: "Pracuj nad projektem" }).click();
+    await expect(
+      page.getByRole("heading", {
+        name: lesson.steps[index].title,
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(editor).toHaveValue(
+      "// Po konflikcie ponownie sprawdzę limit.\n",
+    );
+    await expect(
+      page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
+    ).toHaveCount(assisted ? 1 : 0);
+    if (assisted)
+      await expect(page.locator(".revealed-solution pre")).toHaveText(
+        lesson.steps[index].solution!,
+      );
+    const state = await expectOnlyLabHelp(page);
+    expect(state.steps[`atomic-cas:${stepId}`].code).toBe(
+      "// Po konflikcie ponownie sprawdzę limit.\n",
+    );
+    expect(state.steps[`atomic-cas:${stepId}`].completed).toBe(false);
+  });
+}

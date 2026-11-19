@@ -756,7 +756,6 @@ export const miriSafetyPackage: ProjectPackage = {
     "Uruchom npm run content:miri -- --fetch w repozytorium, aby powtórzyć weryfikator autora.",
   ],
   revealStepRefs: [
-    { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-gate" },
     {
       lessonId: "unsafe-miri-disjoint-regions",
       stepId: "disjoint-regions-gate",
@@ -770,11 +769,16 @@ export const miriSafetyPackage: ProjectPackage = {
       lessonId: "unsafe-miri-slot-state",
       stepId: "slot-state-lazy-init-transfer",
     },
-    { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
     {
       lessonId: "unsafe-miri-mut-slot",
       stepId: "mut-slot-with-mut-transfer",
     },
+  ],
+  // tests/mut_slot_with_mut.rs supplies the complete earlier reborrow contract
+  // even while its callback result remains unfinished. ByteView::from_slice
+  // does not supply the raw-pointer or initialized-prefix constructor tasks.
+  starterRevealStepRefs: [
+    { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
   ],
   files: commonFiles,
 };

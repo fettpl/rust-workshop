@@ -1,42 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, FileCode, Eye } from "lucide-react";
 import type { ProjectPackage as Package } from "@/domain/types";
 import {
+  hasDatedPackageExposure,
   packageDownloadPath,
+  packageRevealRefs,
   type PackageVariant,
 } from "@/domain/project-package";
 import { revealCourseProjectPackageVariant } from "@/content/learning-context";
 import { lessons } from "@/content/course";
-import { stepKey } from "@/persistence/state";
 import { useLearning } from "./learning-provider";
 import { Eyebrow } from "./ui";
 
 export function ProjectPackage({ project }: { project: Package }) {
   const { state, update } = useLearning();
   const [variant, setVariant] = useState<PackageVariant>("starter");
-  const previewRefs =
-    variant === "solution"
-      ? [...(project.starterRevealStepRefs ?? []), ...project.revealStepRefs]
-      : (project.starterRevealStepRefs ?? []);
+  const previewRefs = useMemo(
+    () => packageRevealRefs(project, variant),
+    [project, variant],
+  );
   const needsExposure = previewRefs.some(
-    (ref) => !state.steps[stepKey(ref.lessonId, ref.stepId)]?.revealed,
+    (ref) => !hasDatedPackageExposure(state, ref, Infinity),
   );
   useEffect(() => {
-    // Also restore exposure if imported progress changes while a preview is open.
-    if (needsExposure) {
-      update((state) =>
+    const now = Date.now();
+    if (previewRefs.some((ref) => !hasDatedPackageExposure(state, ref, now))) {
+      update((current) =>
         revealCourseProjectPackageVariant(
-          state,
+          current,
           project,
           lessons,
           variant,
-          Date.now(),
+          now,
         ),
       );
     }
-  }, [project, update, needsExposure, variant]);
+  }, [previewRefs, project, state, update, variant]);
   useEffect(() => {
     if (
       process.env.NODE_ENV !== "production" ||
@@ -128,7 +129,7 @@ export function ProjectPackage({ project }: { project: Package }) {
       </div>
       <p className="package-help-note">
         {project.starterRevealStepRefs?.length
-          ? "Podgląd lub pobranie plików startowych zapisuje pomoc w zadaniach z gotowymi manifestami. Rozwiązanie pakietu zapisuje także pomoc w powiązanych zadaniach Rust."
+          ? "Podgląd lub pobranie plików startowych zapisuje pomoc w zadaniach, których rozwiązania zawiera starter. Rozwiązanie pakietu zapisuje także pomoc w powiązanych zadaniach Rust."
           : "Podgląd rozwiązania zapisuje użycie pomocy w powiązanych lekcjach."}{" "}
         Wcześniejsze samodzielne wyniki pozostają zachowane.
       </p>

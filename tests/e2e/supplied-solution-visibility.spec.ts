@@ -273,29 +273,34 @@ test("revealing the authored solution discloses its supplied components while ke
   expect(facts[0].at).toBeGreaterThanOrEqual(revealedAt);
 });
 
-test("an editor loading placeholder does not disclose code before the fallback displays it", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  const state = ready();
-  state.settings.accessibleEditor = false;
-  state.resume.panel = "code";
-  await page.route("**/monaco/**", (route) => route.abort());
-  await seed(page, state);
-  const fallback = page.getByRole("button", {
-    name: "Otwórz prosty edytor",
-    exact: true,
+test.describe("editor loading and disclosure", () => {
+  // A service worker can serve cached Monaco files before page.route intercepts them.
+  test.use({ serviceWorkers: "block" });
+
+  test("an editor loading placeholder does not disclose code before the fallback displays it", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const state = ready();
+    state.settings.accessibleEditor = false;
+    state.resume.panel = "code";
+    await page.route("**/monaco/**", (route) => route.abort());
+    await seed(page, state);
+    const fallback = page.getByRole("button", {
+      name: "Otwórz prosty edytor",
+      exact: true,
+    });
+    await expect(fallback).toBeVisible();
+    await expect(page.locator("textarea.code-textarea")).toHaveCount(0);
+    expect(helped(await saved(page))).toEqual([false, false]);
+    await fallback.click();
+    await expect(page.getByRole("textbox", { name: "Kod Rust" })).toHaveValue(
+      source.code!,
+    );
+    await expect
+      .poll(async () => helped(await saved(page)))
+      .toEqual([true, true]);
   });
-  await expect(fallback).toBeVisible();
-  await expect(page.locator("textarea.code-textarea")).toHaveCount(0);
-  expect(helped(await saved(page))).toEqual([false, false]);
-  await fallback.click();
-  await expect(page.getByRole("textbox", { name: "Kod Rust" })).toHaveValue(
-    source.code!,
-  );
-  await expect
-    .poll(async () => helped(await saved(page)))
-    .toEqual([true, true]);
 });
 
 for (const display of [

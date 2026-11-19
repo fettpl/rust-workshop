@@ -16,7 +16,7 @@ describe("Miri safety authored package contract", () => {
     expect(validateProjectPackage(miriSafetyPackage)).toEqual([]);
     expect(miriSafetyProject.id).toBe("miri-safety");
     expect(miriSafetyPackage.id).toBe("miri-safety-workshop");
-    expect(miriSafetyPackage.revealStepRefs).toHaveLength(7);
+    expect(miriSafetyPackage.revealStepRefs).toHaveLength(5);
 
     const solution = projectFiles(miriSafetyPackage, "solution");
     expect(Object.keys(solution)).toEqual(

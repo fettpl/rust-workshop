@@ -295,3 +295,21 @@ The audit after `758c4a2` found that four split-buffer solutions in FFI pass all
 Across the course, regression tests cover all 16 declared starter links and all 48 solution links from a lesson in one module to an exercise in another. They include a generic byte-length function shown in the conversions lesson and prerequisite implementations shown in Todo I/O. The Todo CLI starter archive also contains the complete parser and state model. Opening it records help on five earlier tasks while preserving fresh command, board, session and I/O practice.
 
 Additional controls compare the map, gate and evidence summary after import, keep independent successes earned before disclosure, and exercise the actual coach and module picker in the browser. The ownership exercises now test their existing unit-returning display API so that an unrelated formatter returning a string cannot pass by discarding its result. These checks concern visible authored implementations and observable progress records.
+
+### Project archive disclosures after `3bb18b7`
+
+The audit compared the files in each starter and solution ZIP with the decisions required by the lesson exercises. A completed implementation in a starter test, example or design note can disclose an answer. A signature, unfinished function or specification can leave the implementation to the learner.
+
+| Project archives | Evidence affecting independent practice |
+| --- | --- |
+| Number Guessing, Log Analyzer, Tokio Pipeline | The starter contracts leave the assessed implementations open. The reference solutions retain their existing task mappings. |
+| Concurrency Lab | The starter ADR already explains conditional compare-and-swap reservation and release/acquire publication. Separate RMW, retry instrumentation and model-analysis exercises remain available. |
+| Tokio Service | Lending, callbacks and ownership examples are present in the starter. The solution adds frame reading, frame writing and permit ownership. Independent practice includes receiving a bounded frame on an owned TCP connection and deciding when to discard that connection. |
+| Frame Protocol | The starter includes completed Cargo manifests. The API implementations appear in the solution. The maintenance exercises still require learner decisions. |
+| Mini Grep, Property Contracts | The Mini Grep starter includes the fuzz decoder and equality oracle. Seeds and campaign records leave reduction and evidence classification open. Property Contracts leaves the custom shrinking and metamorphic checks to the learner. |
+| FFI Buffer, Miri Safety | The opaque FFI buffer supplies ownership and checked views. Splitting mutable regions and decoding tagged records are separate tasks. The Miri starter supplies a mutable reborrow. The solution includes range selection and lazy initialization. New independent exercises isolate a pivot element and move a value between two slots while preserving both on refusal. |
+| Service Operations | The solution supplies admission limits, correlated selection and readiness/drain predicates. The incident drill gathers evidence. Implementing the ordered diagnosis classifier still requires independent work. |
+| Durable Log Service, Durable Log Retry | The retry starter includes completed code from the parent capstone. Its own retry client remains unfinished until the solution is opened. |
+| Service Authorization, File Schema Evolution | The starter leaves authorization operations and schema normalization unfinished. The solutions supply those operations. Atomic authorization batches and independent snapshot validation retain separate requirements. |
+
+The all-archive regression includes Todo CLI as a control. For both ZIP variants it compares shipped file contents with the preview, checks that reopening records help once, and evaluates earlier and later submissions separately. Across all module criteria it checks the first recommendation. For affected criteria it follows recommendations through the required quota and supplementary work to actual gate completion. Reopening a package after restoring a flag-only save records the observation at the time of reopening.

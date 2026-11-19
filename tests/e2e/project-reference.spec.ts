@@ -24,7 +24,9 @@ for (const [projectId, moduleId] of [
     const stage = modules.find((item) => item.id === moduleId)!;
     const fresh = stage.gateCriteria![0].taskRefs[1];
     const expectedStepRef =
-      projectId === "ffi-buffer" ? stage.gateCriteria![0].taskRefs[0] : fresh;
+      projectId === "ffi-buffer" || projectId === "tokio-service"
+        ? stage.gateCriteria![0].taskRefs[0]
+        : fresh;
     const expectedLesson = lessons.find(
       (item) => item.id === expectedStepRef.lessonId,
     )!;

@@ -124,14 +124,14 @@ const subsets = (refs: ModuleGateTaskRef[]) =>
     refs.filter((_, i) => mask & (1 << i)),
   ).filter((group) => group.length >= 2);
 
-it("covers every multi-disclosure subset in the d7dee3b catalog", () => {
+it("covers every multi-disclosure subset in the current gate catalog", () => {
   expect(cases).toHaveLength(240);
   expect(
     cases.reduce(
       (sum, { criterion }) => sum + subsets(criterion.taskRefs).length,
       0,
     ),
-  ).toBe(497);
+  ).toBe(528);
 });
 
 it.each(cases)(

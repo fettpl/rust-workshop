@@ -29,7 +29,7 @@ it("preserves independent Mini grep evidence after revealing the project referen
       "THREAT-MODEL.md",
     ]),
   );
-  expect(archive.revealStepRefs).toHaveLength(8);
+  expect(archive.revealStepRefs).toHaveLength(4);
   expect(stage!.gateCriteria).toHaveLength(4);
   let state = revealProjectSolution(
     createInitialState(),
@@ -38,7 +38,7 @@ it("preserves independent Mini grep evidence after revealing the project referen
     1000,
   );
   expect(moduleGate(state, lessons, stage!).passed).toBe(false);
-  expect(state.events).toHaveLength(8);
+  expect(state.events).toHaveLength(6);
   for (const criterion of stage!.gateCriteria!) {
     expect(criterion.taskRefs).toHaveLength(2);
     const fresh = criterion.taskRefs.filter(

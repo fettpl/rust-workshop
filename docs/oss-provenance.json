@@ -119,6 +119,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/archive-foundations-exposure.test.ts",
+      "sha256": "af8fa99013cadbdf5170f174397bf230e761c82b367ee32ff5df67ea85a26f85",
+      "group": "course"
+    },
+    {
       "path": "src/content/assessment-boundaries.test.ts",
       "sha256": "f5bc353be4b409819b229ebd181a2beea0a68b203b0472cf2386e969887914b2",
       "group": "course"
@@ -575,7 +580,7 @@
     },
     {
       "path": "src/content/curriculum-recovery-compatibility.test.ts",
-      "sha256": "26c7785a5094bfd88f6e3a276e874494d900453c1212cf93961b7ee5aeac4487",
+      "sha256": "94920b42c9aece14aaa3d8758caf211d1b5e1181eddd1420772b455e5e7bc0a9",
       "group": "course"
     },
     {
@@ -755,7 +760,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "a381aeb6d35f55dfc5560513eaee464decae5363bc9987c2f8559f073ad9e056",
+      "sha256": "8b246c0618b6f6309d7dd0e336b32c18590d2e8b9a6bf499b58d45ed348f456e",
       "group": "course"
     },
     {
@@ -775,7 +780,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "1dde48c51b04c8bc423c5539ee65cd60e38b4d684d367d692eedbecd38d370f1",
+      "sha256": "f13ccf040b343ff0bc9035e4c05246478dc1663a8d5948cef0ac93f71e49ff32",
       "group": "course"
     },
     {
@@ -887,6 +892,11 @@
       "path": "src/content/fixtures/performance-investigation-pre-a7-projection.json",
       "group": "course",
       "sha256": "43351e38cedb2034af1fe4737162de4c3fe636ab2a9aed19aa63c26aa0fa71fe"
+    },
+    {
+      "path": "src/content/fixtures/project-archives-delta.json",
+      "sha256": "53dcf189dbc795ff863068255768126cc75020e4c752ab66767b0cc61fff1f42",
+      "group": "course"
     },
     {
       "path": "src/content/fixtures/recovery-practice-delta.json",
@@ -1185,7 +1195,7 @@
     },
     {
       "path": "src/content/mini-grep-integration.test.ts",
-      "sha256": "f1de39682795278d67f42b8eecedfd971c0c1d04ab2d1b52948f9e2a1a7f2eb3",
+      "sha256": "4e3e0d762d3ee8a95a300f1be43c3c0666634bd963894bb2552dd7ba6114cd37",
       "group": "course"
     },
     {
@@ -1206,6 +1216,16 @@
     {
       "path": "src/content/mini-grep-system.ts",
       "sha256": "9444349b44393bd6e89f12e55ef8f3a5e18edaef6cf21a75e34a9490263ad956",
+      "group": "course"
+    },
+    {
+      "path": "src/content/miri-archive-recovery.test.ts",
+      "sha256": "43203d32a6685178dcdf726de8d193eec7a7940e3837d5c505202b8fe69f082b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/miri-archive-recovery.ts",
+      "sha256": "840d55822bb101b478d2e72997049476b6d1cab47cc4e5ad09604cffb0b36ddf",
       "group": "course"
     },
     {
@@ -1389,8 +1409,13 @@
       "group": "course"
     },
     {
+      "path": "src/content/project-tooling-reveal-audit.test.ts",
+      "sha256": "2bcda1a7fe457d1766396e5699ee001acf832959274ca3e37159e6de0dfefbee",
+      "group": "course"
+    },
+    {
       "path": "src/content/projects/concurrency-lab.ts",
-      "sha256": "df5742b2bfbf7d62990a51f912704020202becec4fe0bcdb952b3601b45622b6",
+      "sha256": "0f85ee1744b496aaea2a40228c557f7ecbd0a678e499c179ad8a59e095946f84",
       "group": "course"
     },
     {
@@ -1445,12 +1470,12 @@
     },
     {
       "path": "src/content/projects/ffi-buffer/archive.ts",
-      "sha256": "d6ef2b034b51445309c8fa52e232c2d5f2bc3c9a857263d832d0707fb2e70d53",
+      "sha256": "34600cfea99dbc14870600066f0f9a020012566e04aacfff95e248be709f1bcd",
       "group": "course"
     },
     {
       "path": "src/content/projects/ffi-buffer/package.test.ts",
-      "sha256": "1c933fc27970ddf5d200d9f4f6f4a24b7a0d701810d73b970ba9a30755ef2034",
+      "sha256": "f197658d2f4d51f62ee0e4349c16698ee6b9dfe69252ff802e0764de6baec349",
       "group": "course"
     },
     {
@@ -1510,7 +1535,7 @@
     },
     {
       "path": "src/content/projects/mini-grep.ts",
-      "sha256": "d976329c5f53440c0a9c76acbac9fb9cca6fdb2ab1955027b89acaa09c772df5",
+      "sha256": "27f18c7fd720d41a64f04fc0b0fd393b07c7f921936ec6fb5965bb37b9e0d734",
       "group": "course"
     },
     {
@@ -1530,17 +1555,17 @@
     },
     {
       "path": "src/content/projects/mini-grep/package.test.ts",
-      "sha256": "9bd76beae8bc955b357e7f13262f7e32e4d06e504ae9caab0acbd53b8d846041",
+      "sha256": "e5e4fcfe400575dd5a262f8dd645a18215d8fc827cb4e3b526bf9fe35b5af7c6",
       "group": "course"
     },
     {
       "path": "src/content/projects/miri-safety.ts",
-      "sha256": "ba27edfc3259fe618552d5ea49efdd2a341f41f50c0cc5b887e6a063c01727b6",
+      "sha256": "ce6d9dc4a48c5418706a38dae25483c0401de207e4e34f777d97cb53295bd03c",
       "group": "course"
     },
     {
       "path": "src/content/projects/miri-safety/package.test.ts",
-      "sha256": "25258a52fe78d8bac6eceeb24ab4c929c5d4757fb283cc37afe191eeed7a516a",
+      "sha256": "daae3850e4ccf7470e2a3e486862b45a652580e3784d9c2f38271572c9f8944d",
       "group": "course"
     },
     {
@@ -1560,7 +1585,7 @@
     },
     {
       "path": "src/content/projects/property-contracts.ts",
-      "sha256": "c639b2e1f4a612b062545586bb0647f0a183716eb8f98a2d9a0158c65835c920",
+      "sha256": "8a21df6470ce6350045a6661bc0cc0b819330e91138f543a25719e6a9b59f597",
       "group": "course"
     },
     {
@@ -1570,7 +1595,7 @@
     },
     {
       "path": "src/content/projects/property-contracts/package.test.ts",
-      "sha256": "a8f7197b3df9dd1db9ca4f1f121e407db67c267dce33f4744fc1704c4815bac9",
+      "sha256": "468f1290e5de0d8874e644f7d83b6a37c121845d36b1f0d17d7ebfac45ab9878",
       "group": "course"
     },
     {
@@ -1590,7 +1615,7 @@
     },
     {
       "path": "src/content/projects/service-operations.ts",
-      "sha256": "1aa78d204b57567df610631b0dc4f37c6d7400f14611bbdc80101772fb4201cd",
+      "sha256": "ffb6a6ec9c293f6cf7e5fc2eed4e96506124746eb13d52b3f7d0d407b85002b1",
       "group": "course"
     },
     {
@@ -1615,12 +1640,12 @@
     },
     {
       "path": "src/content/projects/tokio-service.ts",
-      "sha256": "f9f3ce6ca4d38a702a8beea67a822ea7cfe4785caf399aa1fada1ac4a38eccdb",
+      "sha256": "376db00a00f252e5df541a6f16592f1b23f980c93b9a65d664c2fcd113a6754b",
       "group": "course"
     },
     {
       "path": "src/content/property-contracts-integration.test.ts",
-      "sha256": "a7fb884e66329f647e7f655786bfde022842e49f31ff8849cc49938b7555b144",
+      "sha256": "62114d61bd1377706d16027265d82514512332b0c16994ff8e18b487eaac474e",
       "group": "course"
     },
     {
@@ -1975,12 +2000,22 @@
     },
     {
       "path": "src/content/tokio-network-lifecycle.ts",
-      "sha256": "85318547af2dc3e0af02898f44b27d0d95ff35f32c57960937d2604675b367c8",
+      "sha256": "08a2d434a94ed9660ab15e0ef3fc475860447e9f8d0153a096d74aab00015d86",
       "group": "course"
     },
     {
       "path": "src/content/tokio-network-module.ts",
-      "sha256": "e2bce7d81f15d0779527002421753c0b2b28a898f4a68b0d574404f50331c80f",
+      "sha256": "0e1fc445189c2b8bf85574da3deed500b541cab0a22f7046c117293afe658b1d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-network-recovery.test.ts",
+      "sha256": "194a731517dd1f43b98abb410f3b769a2af2cdfaeeef4a1bd87e1e8f36d47aa5",
+      "group": "course"
+    },
+    {
+      "path": "src/content/tokio-network-recovery.ts",
+      "sha256": "c433dbb293c8af6441581fd257e4c859c03a2d34b557cec718048a47b53f6c59",
       "group": "course"
     },
     {
@@ -2010,7 +2045,7 @@
     },
     {
       "path": "src/content/tokio-service-integration.test.ts",
-      "sha256": "5adbcdb168528973595e3ea8718fcad3ea1d20fba468aecd4ea2e5a422295ee0",
+      "sha256": "1e048bd2b2539b44d5879cf37a375372e203dbc2fc5009c1c202f0ddbc1f5721",
       "group": "course"
     },
     {
@@ -2115,7 +2150,7 @@
     },
     {
       "path": "src/content/unsafe-miri-assessment-fixtures.ts",
-      "sha256": "69891dab1bd600a99c792e5375e8107dfcb5beda889be24ccfe123084252e3a4",
+      "sha256": "c80928c4eb30327c2f3274f4f1f21ca7abf8049e18f35168c322b03f22d32050",
       "group": "course"
     },
     {
@@ -2125,7 +2160,7 @@
     },
     {
       "path": "src/content/unsafe-miri-disjoint-ranges-compatibility.test.ts",
-      "sha256": "7d356d77dd0cb671bd96ffd65c5139300f5ea59deeef6b7139ae60f8b59148c9",
+      "sha256": "9b5bc50dde8b3af7a4e73da07c5d6ab37067f1ceafc5219140760ee44b6b7053",
       "group": "course"
     },
     {
@@ -2195,7 +2230,7 @@
     },
     {
       "path": "src/content/unsafe-miri-integration.test.ts",
-      "sha256": "58d942cbf1c15620c2125868c05ed3bb39c18ce06dfc0a94fd41c72e843930da",
+      "sha256": "20669c0bd23aaeaffca8b147b2a48e7c0bed2ea84bd83b6e860664d404224234",
       "group": "course"
     },
     {
@@ -2260,12 +2295,12 @@
     },
     {
       "path": "src/content/unsafe-miri.ts",
-      "sha256": "77668d33737e2ed7ad7a022b73098e314eab5e7dbc17308e0081ca8ee11b2546",
+      "sha256": "6314781cf30076ccdae03c8121e94e13d9da3819b004ba239ff8ee3702eda7ee",
       "group": "course"
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "7dedd2695bb3c8bb5692dadc7a5169821769454e5fb153e67a843795755d92d7",
+      "sha256": "bfda64e0f0903800d1e461fce8388904028baf1487333e86ffadd68ef9a2535b",
       "group": "course"
     },
     {
@@ -2275,7 +2310,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "e6a36a34b4532ceabb5d548ee99e664c02e8b1ece40dfdfc9dd53b19023a029c",
+      "sha256": "35bde6efd5beb7c0f814d18f128e0165cd0f7bf01a7ef5c5231c69906707a667",
       "group": "course"
     },
     {

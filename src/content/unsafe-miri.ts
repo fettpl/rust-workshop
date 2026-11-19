@@ -1,3 +1,4 @@
+import { pivotRegionsTransfer, moveSlotTransfer } from "./miri-archive-recovery";
 import { linkSplitRegionSolutions } from "./split-region-solutions";
 import type {
   Competency,
@@ -1159,7 +1160,9 @@ export const unsafeMiriLessons: Lesson[] = [
         tests: regionsRecallTests,
       }),
       ...disjointRangesSteps,
+      pivotRegionsTransfer,
     ],
+    sessionStops: [{ afterStepId: disjointRangesPrimaryStepId, title: "Przerwa przed kolejnym transferem", nextGoal: "Oddziel element od obu sąsiednich regionów w bezpiecznym slice." }],
     misconceptions: [
       "`mid == len` to błąd.",
       "Ręczne pointer arithmetic jest dowodem rozłączności.",
@@ -1263,7 +1266,9 @@ export const unsafeMiriLessons: Lesson[] = [
         tests: slotRecallTests,
       }),
       ...slotLazyInitSteps,
+      moveSlotTransfer,
     ],
+    sessionStops: [{ afterStepId: slotLazyInitPrimaryStepId, title: "Przerwa przed kolejnym transferem", nextGoal: "Przenieś własność między slotami Option<T> bez utraty wartości." }],
     misconceptions: [
       "MaybeUninit automatycznie dropuje T.",
       "`assume_init_read` można wykonać wiele razy.",
@@ -1404,6 +1409,9 @@ for (const lesson of unsafeMiriLessons) {
     };
   }
 }
+
+pivotRegionsTransfer.evidence = { version: 2, conceptIds: ["unsafe-miri-disjoint-regions-contract"], codingTaskId: "unsafe-miri/pivot-regions-v1" };
+moveSlotTransfer.evidence = { version: 2, conceptIds: ["unsafe-miri-slot-state-contract"], codingTaskId: "unsafe-miri/slot-owner-transfer-v1" };
 
 // The initialized-prefix primary assignment is intentionally explicit and
 // follows the historical family loop above. It must not be inferred by the
@@ -1600,6 +1608,7 @@ export const unsafeMiriModule: CourseModule = {
           lessonId: "unsafe-miri-disjoint-regions",
           stepId: disjointRangesPrimaryStepId,
         },
+        { lessonId: "unsafe-miri-disjoint-regions", stepId: pivotRegionsTransfer.id },
       ],
     },
     {
@@ -1613,6 +1622,7 @@ export const unsafeMiriModule: CourseModule = {
           lessonId: "unsafe-miri-slot-state",
           stepId: slotLazyInitPrimaryStepId,
         },
+        { lessonId: "unsafe-miri-slot-state", stepId: moveSlotTransfer.id },
       ],
     },
     {
@@ -1661,6 +1671,7 @@ export const unsafeMiriModule: CourseModule = {
           lessonId: "unsafe-miri-disjoint-regions",
           stepId: disjointRangesPrimaryStepId,
         },
+        { lessonId: "unsafe-miri-disjoint-regions", stepId: pivotRegionsTransfer.id },
       ],
     },
     {
@@ -1676,6 +1687,7 @@ export const unsafeMiriModule: CourseModule = {
           lessonId: "unsafe-miri-slot-state",
           stepId: slotLazyInitPrimaryStepId,
         },
+        { lessonId: "unsafe-miri-slot-state", stepId: moveSlotTransfer.id },
       ],
     },
     {
