@@ -314,6 +314,9 @@ for (const [moduleId, missingId, provenId] of [
     await expect(
       panel.getByRole("heading", { name: "Masz dowody samodzielności." }),
     ).toBeVisible();
+    await expect(page.locator(".save-status")).toHaveText(
+      "Zapisano na tym urządzeniu",
+    );
     await page.reload();
     await expect(row(proven.label).getByLabel("Potwierdzone")).toBeVisible();
     await expect(row(missing.label).getByLabel("Potwierdzone")).toBeVisible();

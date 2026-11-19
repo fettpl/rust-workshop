@@ -1,6 +1,9 @@
 import { expect, it } from "vitest";
 import * as course from "./course";
-import { hashRegistryValue } from "./file-schema-evolution-compatibility-fixture";
+import {
+  hashRegistryValue,
+  historicalBeforeCurriculumRecovery,
+} from "./file-schema-evolution-compatibility-fixture";
 import { validateContent } from "./validate";
 
 // Ordered metadata from the frozen predecessor registry. Null encodes an absent property.
@@ -313,7 +316,7 @@ it.each([0, -1, NaN, Infinity])(
   },
 );
 
-it("reports the current catalog and pins all fifteen inherited project objects", () => {
+it("reports the current catalog and pins inherited projects before the reviewed recovery", () => {
   expect({
     modules: course.modules.length,
     lessons: course.lessons.length,
@@ -346,8 +349,8 @@ it("reports the current catalog and pins all fifteen inherited project objects",
     ],
   ]);
   expect(
-    course.projects
-      .slice(0, 15)
+    historicalBeforeCurriculumRecovery(course)
+      .projects.slice(0, 15)
       .map((project) => [project.id, hashRegistryValue(project)]),
   ).toEqual(
     predecessorProjectHashes.map(([id, hash]) => [

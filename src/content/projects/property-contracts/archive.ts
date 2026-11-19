@@ -426,7 +426,7 @@ fn metamorphic_suffix_property() {
 }
 `;
 
-const readme = String.raw`# Property contracts workshop
+const readme = `# Property contracts workshop
 
 This repository-authored Rust 2024 package is a bounded Proptest workshop. It
 uses exactly \`proptest = 1.11.0\` as a development dependency and has no runtime

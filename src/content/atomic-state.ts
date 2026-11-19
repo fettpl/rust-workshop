@@ -622,7 +622,7 @@ const reviewCas = exercise({
   kind: "apply",
   title: "Powtórka: ustawienie minimum przez CAS",
   prompt:
-    "Dokończ `raise_to`, aby ustawić `cell` na co najmniej `target` przez ograniczoną pętlę CAS. Zwróć `true` tylko po faktycznym zapisie, `false` gdy wartość już wystarcza lub próby się skończą. Nie obniżaj wartości i nie zawijaj.",
+    "Dokończ `raise_to`, aby ustawić `cell` na co najmniej `target` przez najwyżej 8 prób silnego compare_exchange. Nie używaj osobnego store. Testy sekwencyjne i ograniczenie kodu odrzucają prosty load/store; nie są dowodem wszystkich harmonogramów. Zwróć `true` tylko po faktycznym zapisie, `false` gdy wartość już wystarcza lub próby się skończą. Nie obniżaj wartości i nie zawijaj.",
   code: `use std::sync::atomic::{AtomicUsize, Ordering};
 
 fn raise_to(cell: &AtomicUsize, target: usize) -> bool {
@@ -663,6 +663,7 @@ fn review_raise_to_handles_zero_and_max() {
     "Po nieudanym CAS `Err` jest nowym current; nie ignoruj zaobserwowanej wartości.",
     "Najpierw odrzuć stan, który już spełnia minimum, a zapis wykonuj tylko dla równego oczekiwania.",
   ],
+  forbiddenPatterns: [".store("],
 });
 
 const reviewLimits = exercise({
@@ -670,7 +671,7 @@ const reviewLimits = exercise({
   kind: "apply",
   title: "Powtórka: warunkowa transakcja pary",
   prompt:
-    "Dokończ `transfer_pair_if_current`, aby pod jednym Mutex sprawdzić oczekiwaną parę i wykonać transfer `amount` z lewego pola do prawego. Odrzuć nieaktualny snapshot, niedobór lub overflow bez częściowej zmiany; opisz, dlaczego dwa niezależne atomiki nie zastępują tej transakcji.",
+    'Dokończ `transfer_pair_if_current`, aby pod jednym Mutex sprawdzić oczekiwaną parę i wykonać transfer `amount` z lewego pola do prawego. Zwróć Ok(()) po sukcesie; błędy to dokładnie Err("nieaktualny") dla starego snapshotu, Err("niedobór") przy braku jednostek i Err("przepełnienie") przy overflow. Sprawdzaj je w tej kolejności i pozostaw oba pola bez zmiany; opisz, dlaczego dwa niezależne atomiki nie zastępują tej transakcji.',
   code: `use std::sync::Mutex;
 
 fn transfer_pair_if_current(

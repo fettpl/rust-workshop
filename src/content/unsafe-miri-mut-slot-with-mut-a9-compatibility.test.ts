@@ -93,7 +93,9 @@ it("restores the A9 prompt across all 15 registries without mutating input", () 
       ?.steps.find((step) => step.id === a9ModelStepId)?.prompt,
   ).toContain("R może być niezależne");
   expect(projected.unknownMarker).toBe(input.unknownMarker);
-  expect(projected.project).toBe(input.project);
+  expect(projected.project).toBe(
+    projected.projects.find((project) => project.id === input.project.id),
+  );
   expect(projected.ownershipModule).toBe(input.ownershipModule);
   expect(projected.reviewExerciseForId).toBe(input.reviewExerciseForId);
   expect(projected.default).not.toBe(input.default);

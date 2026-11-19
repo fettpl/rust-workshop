@@ -1,5 +1,6 @@
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
+import curriculumRecoveryDelta from "./fixtures/curriculum-recovery-nov19-delta.json";
 import regressionDelta from "./fixtures/regression-skills-delta.json";
 import firstEvenDelta from "./fixtures/first-even-assessment-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
@@ -80,7 +81,17 @@ function restorePath(
   }
   // A null predecessor hash records a field absent from the previous object.
   if (predecessor === null) {
-    if (before !== null || !matches(current, successor)) return object;
+    const descriptor = Object.getOwnPropertyDescriptor(object, key);
+    if (
+      before !== null ||
+      !matches(current, successor) ||
+      !descriptor ||
+      !("value" in descriptor) ||
+      descriptor.enumerable !== true ||
+      descriptor.writable !== true ||
+      descriptor.configurable !== true
+    )
+      return object;
     const descriptors = Object.getOwnPropertyDescriptors(object);
     delete descriptors[key];
     const copy = Object.create(Object.getPrototypeOf(object), descriptors);
@@ -206,15 +217,108 @@ function restoreReviewedLessons(
   return result;
 }
 
+/** Restores this batch first, so all older projections still see their authored successors. */
+export function restoreCurriculumRecoveryLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(
+    lessons,
+    replacements,
+    matches,
+    curriculumRecoveryDelta,
+  );
+}
+
+type RegistryRestoration = {
+  registry: string;
+  selector: string;
+  id?: string;
+  path: string[];
+  before: unknown;
+  beforeSha256: string | null;
+  successorSha256: string;
+};
+
+/** Field-level registry restoration, preserving unmatched drift and object descriptors. */
+export function restoreCurriculumRecoveryRegistry<T extends object>(
+  registry: T,
+  name: string,
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+  entries: readonly RegistryRestoration[] = curriculumRecoveryDelta.registries,
+): T {
+  let result = registry;
+  for (const entry of entries.filter(
+    (item) =>
+      item.registry === name ||
+      (name === "reviewExercisesById" && item.registry === "reviewExercises"),
+  )) {
+    const selected = Array.isArray(result)
+      ? result.flatMap((value, index) =>
+          ownValue(value, "id") === entry.selector ? [String(index)] : [],
+        )
+      : [name === "reviewExercisesById" ? entry.id! : entry.selector];
+    if (selected.length !== 1) continue;
+    const key = selected[0];
+    const current = ownValue(result, key);
+    if (current === null || typeof current !== "object") continue;
+    if (entry.id && ownValue(current, "id") !== entry.id) continue;
+    const cached = replacements.get(current);
+    const base =
+      cached !== null && typeof cached === "object" ? cached : current;
+    const restored = restorePath(
+      base,
+      entry.path,
+      entry.before,
+      entry.successorSha256,
+      entry.beforeSha256,
+      replacements,
+      matches,
+    );
+    if (restored !== current) {
+      replacements.set(current, restored);
+      result = replaceField(result, key, restored, replacements);
+    }
+  }
+  for (const [original, replacement] of replacements) {
+    let final = replacement;
+    while (replacements.has(final)) final = replacements.get(final);
+    replacements.set(original, final);
+  }
+  return result;
+}
+
 export function restoreRecoveryPracticeLessons(
   lessons: Lesson[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  const beforeSplit = restoreReviewedLessons(lessons, replacements, matches, regressionDelta);
-  const beforeFirstEven = restoreReviewedLessons(beforeSplit, replacements, matches, firstEvenDelta);
+  const recovered = restoreCurriculumRecoveryLessons(
+    lessons,
+    replacements,
+    matches,
+  );
+  const beforeSplit = restoreReviewedLessons(
+    recovered,
+    replacements,
+    matches,
+    regressionDelta,
+  );
+  const beforeFirstEven = restoreReviewedLessons(
+    beforeSplit,
+    replacements,
+    matches,
+    firstEvenDelta,
+  );
   return restoreReviewedLessons(
-    restoreReviewedLessons(beforeFirstEven, replacements, matches, exerciseDelta),
+    restoreReviewedLessons(
+      beforeFirstEven,
+      replacements,
+      matches,
+      exerciseDelta,
+    ),
     replacements,
     matches,
     recoveryPracticeDelta,

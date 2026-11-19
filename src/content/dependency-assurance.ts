@@ -260,6 +260,17 @@ fn inspect_graph(edges: &[Edge]) -> GraphResult {
 }`;
 const graphBlankTests = `#[test]
 fn blank_graph_contract_covers_version_source_and_cycle_shape() {
+    assert_eq!(inspect_graph(&[]), GraphResult::Clean);
+    let identical = [
+        Edge { from: "app", package: "bytes", version: "1.5", source: "registry" },
+        Edge { from: "helper", package: "bytes", version: "1.5", source: "registry" },
+    ];
+    assert_eq!(inspect_graph(&identical), GraphResult::Clean);
+    let source_only = [
+        Edge { from: "app", package: "bytes", version: "1.5", source: "registry" },
+        Edge { from: "helper", package: "bytes", version: "1.5", source: "git" },
+    ];
+    assert_eq!(inspect_graph(&source_only), GraphResult::Conflict("bytes"));
     let edges = [
         Edge { from: "app", package: "serde", version: "1.0.228", source: "registry" },
         Edge { from: "helper", package: "serde", version: "1.0.229", source: "registry" },
@@ -281,6 +292,17 @@ fn find_conflict(items: &[CrateRef]) -> GraphStatus {
 }`;
 const graphRecallTests = `#[test]
 fn recall_graph_uses_different_versions_and_parent_source() {
+    let source_only = [
+        CrateRef { package: "bytes", version: "1.5", source: "registry", selected: true },
+        CrateRef { package: "bytes", version: "1.5", source: "git", selected: true },
+    ];
+    assert_eq!(find_conflict(&source_only), GraphStatus::Conflict("bytes"));
+    let inactive_second = [
+        CrateRef { package: "bytes", version: "1.5", source: "registry", selected: true },
+        CrateRef { package: "bytes", version: "1.5", source: "git", selected: false },
+    ];
+    assert_eq!(find_conflict(&inactive_second), GraphStatus::Stable);
+    assert_eq!(find_conflict(&[]), GraphStatus::Stable);
     let items = [CrateRef { package: "bytes", version: "1.5", source: "registry", selected: true }, CrateRef { package: "bytes", version: "1.4", source: "registry", selected: true }];
     assert_eq!(find_conflict(&items), GraphStatus::Conflict("bytes"));
     let clean = [CrateRef { package: "bytes", version: "1.4", source: "registry", selected: false }, CrateRef { package: "bytes", version: "1.5", source: "registry", selected: true }];
@@ -298,6 +320,19 @@ fn review_graph(dependencies: &[Dependency]) -> Review {
 }`;
 const graphReviewTests = `#[test]
 fn review_graph_reports_a_feature_selected_source_conflict() {
+    for (version, source) in [("0.17", "git"), ("0.16", "registry")] {
+        let pair = [
+            Dependency { name: "ring", version: "0.17", source: "registry", feature: "tls" },
+            Dependency { name: "ring", version, source, feature: "legacy" },
+        ];
+        assert_eq!(review_graph(&pair), Review::Hold("ring"));
+    }
+    let identical = [
+        Dependency { name: "ring", version: "0.17", source: "registry", feature: "tls" },
+        Dependency { name: "ring", version: "0.17", source: "registry", feature: "legacy" },
+    ];
+    assert_eq!(review_graph(&identical), Review::Pass);
+    assert_eq!(review_graph(&[]), Review::Pass);
     let dependencies = [Dependency { name: "ring", version: "0.17", source: "registry", feature: "tls" }, Dependency { name: "ring", version: "0.16", source: "git", feature: "legacy" }];
     assert_eq!(review_graph(&dependencies), Review::Hold("ring"));
     assert_eq!(review_graph(&dependencies[..1]), Review::Pass);
@@ -371,6 +406,12 @@ fn active(exception: &Exception, as_of_ymd: u32) -> bool {
 const advisoryTests = `#[test]
 fn injected_date_controls_exception_expiry() {
     let exception = Exception { id: "RUSTSEC-2026-0001", package: "serde", owner: "platform", scope: "frame-protocol", reason: "fix scheduled", expires_ymd: 20260930 };
+    assert!(active(&exception, 20260930));
+    assert!(!active(&Exception { id: "", ..exception }, 20260930));
+    assert!(!active(&Exception { package: "", ..exception }, 20260930));
+    assert!(!active(&Exception { owner: "", ..exception }, 20260930));
+    assert!(!active(&Exception { scope: "", ..exception }, 20260930));
+    assert!(!active(&Exception { reason: "", ..exception }, 20260930));
     assert!(active(&exception, 20260918));
     assert!(active(&exception, 20260930));
     assert!(!active(&exception, 20261001));
@@ -384,6 +425,12 @@ fn is_current(exception: &AdvisoryException, as_of_ymd: u32) -> bool {
 const advisoryBlankTests = `#[test]
 fn blank_advisory_checks_owner_reason_scope_and_date() {
     let exception = AdvisoryException { advisory: "RUSTSEC-2026-0002", package: "bytes", owner: "runtime", scope: "default", reason: "upstream patch", expires_ymd: 20261001 };
+    assert!(is_current(&exception, 20261001));
+    assert!(!is_current(&AdvisoryException { advisory: "", ..exception }, 20261001));
+    assert!(!is_current(&AdvisoryException { package: "", ..exception }, 20261001));
+    assert!(!is_current(&AdvisoryException { owner: "", ..exception }, 20261001));
+    assert!(!is_current(&AdvisoryException { scope: "", ..exception }, 20261001));
+    assert!(!is_current(&AdvisoryException { reason: "", ..exception }, 20261001));
     assert!(is_current(&exception, 20260918));
     assert!(!is_current(&AdvisoryException { advisory: "RUSTSEC-2026-0002", package: "bytes", owner: "runtime", scope: "default", reason: "", expires_ymd: 20261001 }, 20260918));
     assert!(!is_current(&AdvisoryException { advisory: "RUSTSEC-2026-0002", package: "bytes", owner: "runtime", scope: "default", reason: "upstream patch", expires_ymd: 20261002 }, 20261003));
@@ -396,6 +443,11 @@ fn usable(waiver: &Waiver, today: u32) -> bool {
 const advisoryRecallTests = `#[test]
 fn recall_advisory_rejects_empty_scope_and_past_expiry() {
     let waiver = Waiver { advisory: "RUSTSEC-2026-0003", owner: "security", scope: "feature-x", reason: "migration", expires_ymd: 20260925 };
+    assert!(usable(&waiver, 20260925));
+    assert!(!usable(&Waiver { advisory: "", ..waiver }, 20260925));
+    assert!(!usable(&Waiver { owner: "", ..waiver }, 20260925));
+    assert!(!usable(&Waiver { scope: "", ..waiver }, 20260925));
+    assert!(!usable(&Waiver { reason: "", ..waiver }, 20260925));
     assert!(usable(&waiver, 20260918));
     assert!(!usable(&Waiver { advisory: "RUSTSEC-2026-0003", owner: "security", scope: "", reason: "migration", expires_ymd: 20260925 }, 20260918));
     assert!(!usable(&waiver, 20260926));
@@ -408,6 +460,11 @@ fn within_window(record: &ExceptionRecord, as_of_ymd: u32) -> bool {
 const advisoryReviewTests = `#[test]
 fn review_advisory_requires_identity_reason_and_date() {
     let record = ExceptionRecord { advisory: "RUSTSEC-2026-0004", package: "ring", owner: "release", reason: "patch window", expires_ymd: 20261015 };
+    assert!(within_window(&record, 20261015));
+    assert!(!within_window(&ExceptionRecord { advisory: "", ..record }, 20261015));
+    assert!(!within_window(&ExceptionRecord { package: "", ..record }, 20261015));
+    assert!(!within_window(&ExceptionRecord { owner: "", ..record }, 20261015));
+    assert!(!within_window(&ExceptionRecord { reason: "", ..record }, 20261015));
     assert!(within_window(&record, 20260918));
     assert!(!within_window(&ExceptionRecord { advisory: "", package: "ring", owner: "release", reason: "patch window", expires_ymd: 20261015 }, 20260918));
     assert!(!within_window(&ExceptionRecord { advisory: "RUSTSEC-2026-0004", package: "ring", owner: "release", reason: "", expires_ymd: 20261015 }, 20260918));
@@ -432,6 +489,13 @@ fn decide(dossier: &Dossier<'_>) -> ReleaseDecision {
 const dossierTests = `#[test]
 fn release_requires_artifact_config_consumer_and_publish_false() {
     let complete = Dossier { manifest: "sha256:manifest", lock: "sha256:lock", audit: "sha256:audit", artifact: "sha256:archive", config: "deny.toml", consumer: true, publish: false };
+    assert_eq!(decide(&Dossier { manifest: "", ..complete }), ReleaseDecision::Hold);
+    assert_eq!(decide(&Dossier { lock: "", ..complete }), ReleaseDecision::Hold);
+    assert_eq!(decide(&Dossier { audit: "", ..complete }), ReleaseDecision::Hold);
+    assert_eq!(decide(&Dossier { artifact: "", ..complete }), ReleaseDecision::Hold);
+    assert_eq!(decide(&Dossier { config: "", ..complete }), ReleaseDecision::Hold);
+    assert_eq!(decide(&Dossier { consumer: false, ..complete }), ReleaseDecision::Hold);
+    assert_eq!(decide(&Dossier { publish: true, ..complete }), ReleaseDecision::Hold);
     assert_eq!(decide(&complete), ReleaseDecision::Release);
     assert_eq!(decide(&Dossier { manifest: "", lock: "sha256:lock", audit: "sha256:audit", artifact: "sha256:archive", config: "deny.toml", consumer: true, publish: false }), ReleaseDecision::Hold);
     assert_eq!(decide(&Dossier { artifact: "", lock: "sha256:lock", manifest: "sha256:manifest", audit: "sha256:audit", config: "deny.toml", consumer: true, publish: false }), ReleaseDecision::Hold);
@@ -449,6 +513,13 @@ fn evaluate(dossier: &ReleaseDossier<'_>) -> Decision {
 const dossierBlankTests = `#[test]
 fn blank_dossier_rejects_missing_policy_and_consumer() {
     let complete = ReleaseDossier { manifest: "manifest", lockfile: "lock", policy: "audit", archive: "zip", config: "deny", consumer: true, publish: false };
+    assert_eq!(evaluate(&ReleaseDossier { manifest: "", ..complete }), Decision::Hold);
+    assert_eq!(evaluate(&ReleaseDossier { lockfile: "", ..complete }), Decision::Hold);
+    assert_eq!(evaluate(&ReleaseDossier { policy: "", ..complete }), Decision::Hold);
+    assert_eq!(evaluate(&ReleaseDossier { archive: "", ..complete }), Decision::Hold);
+    assert_eq!(evaluate(&ReleaseDossier { config: "", ..complete }), Decision::Hold);
+    assert_eq!(evaluate(&ReleaseDossier { consumer: false, ..complete }), Decision::Hold);
+    assert_eq!(evaluate(&ReleaseDossier { publish: true, ..complete }), Decision::Hold);
     assert_eq!(evaluate(&complete), Decision::Release);
     assert_eq!(evaluate(&ReleaseDossier { manifest: "manifest", lockfile: "lock", policy: "", archive: "zip", config: "deny", consumer: true, publish: false }), Decision::Hold);
     assert_eq!(evaluate(&ReleaseDossier { manifest: "manifest", lockfile: "lock", policy: "audit", archive: "zip", config: "deny", consumer: false, publish: false }), Decision::Hold);
@@ -463,6 +534,10 @@ fn release_status(bundle: &EvidenceBundle<'_>) -> Status {
 const dossierRecallTests = `#[test]
 fn recall_dossier_treats_missing_evidence_as_hold() {
     let ready = EvidenceBundle { artifact: "zip-sha", config: "deny.toml", consumer: true, missing_evidence: false, publish: false };
+    assert_eq!(release_status(&EvidenceBundle { artifact: "", ..ready }), Status::Hold);
+    assert_eq!(release_status(&EvidenceBundle { config: "", ..ready }), Status::Hold);
+    assert_eq!(release_status(&EvidenceBundle { consumer: false, ..ready }), Status::Hold);
+    assert_eq!(release_status(&EvidenceBundle { publish: true, ..ready }), Status::Hold);
     assert_eq!(release_status(&ready), Status::Ready);
     assert_eq!(release_status(&EvidenceBundle { artifact: "zip-sha", config: "deny.toml", consumer: true, missing_evidence: true, publish: false }), Status::Hold);
     assert_eq!(release_status(&EvidenceBundle { artifact: "", config: "deny.toml", consumer: true, missing_evidence: false, publish: false }), Status::Hold);
@@ -477,6 +552,13 @@ fn release(proof: &ReleaseProof<'_>) -> Outcome {
 const dossierReviewTests = `#[test]
 fn review_dossier_stops_when_lock_evidence_is_missing() {
     let proof = ReleaseProof { manifest: "manifest", lock: "lock", audit: "audit", artifact: "archive", config: "deny", consumer: true, publish: false };
+    assert_eq!(release(&ReleaseProof { manifest: "", ..proof }), Outcome::Stop);
+    assert_eq!(release(&ReleaseProof { lock: "", ..proof }), Outcome::Stop);
+    assert_eq!(release(&ReleaseProof { audit: "", ..proof }), Outcome::Stop);
+    assert_eq!(release(&ReleaseProof { artifact: "", ..proof }), Outcome::Stop);
+    assert_eq!(release(&ReleaseProof { config: "", ..proof }), Outcome::Stop);
+    assert_eq!(release(&ReleaseProof { consumer: false, ..proof }), Outcome::Stop);
+    assert_eq!(release(&ReleaseProof { publish: true, ..proof }), Outcome::Stop);
     assert_eq!(release(&proof), Outcome::Ship);
     assert_eq!(release(&ReleaseProof { manifest: "manifest", lock: "", audit: "audit", artifact: "archive", config: "deny", consumer: true, publish: false }), Outcome::Stop);
     assert_eq!(release(&ReleaseProof { manifest: "manifest", lock: "lock", audit: "audit", artifact: "archive", config: "deny", consumer: true, publish: true }), Outcome::Stop);
@@ -555,7 +637,7 @@ export const dependencyAssuranceLessons: Lesson[] = [
         id: "dependency-graph-diagnosis-recall",
         title: "Powtórka: rodzic i wersja",
         prompt:
-          "Zaimplementuj samodzielnie `#[derive(Debug, PartialEq, Eq)] struct CrateRef { package: &'static str, version: &'static str, source: &'static str, selected: bool }`, `#[derive(Debug, PartialEq, Eq)] enum GraphStatus { Stable, Conflict(&'static str) }` oraz `fn find_conflict(items: &[CrateRef]) -> GraphStatus`. Porównuj tylko rekordy z `selected == true`; dla dwóch selected wpisów `bytes` w wersjach 1.5 i 1.4 zwróć `Conflict(\"bytes\")`, a gdy 1.4 ma `selected: false`, zwróć `Stable`.",
+          "Zaimplementuj samodzielnie `#[derive(Debug, PartialEq, Eq)] struct CrateRef { package: &'static str, version: &'static str, source: &'static str, selected: bool }`, `#[derive(Debug, PartialEq, Eq)] enum GraphStatus { Stable, Conflict(&'static str) }` oraz `fn find_conflict(items: &[CrateRef]) -> GraphStatus`. Porównuj tylko rekordy z `selected == true`; konflikt oznacza inną wersję lub source tego samego package. Identyczne wpisy nie są konfliktem. Dla dwóch selected wpisów `bytes` w wersjach 1.5 i 1.4 zwróć `Conflict(\"bytes\")`, a gdy 1.4 ma `selected: false`, zwróć `Stable`.",
         solution: graphRecallSolution,
         tests: graphRecallTests,
         kind: "recall",
@@ -733,7 +815,7 @@ export const dependencyAssuranceLessons: Lesson[] = [
         id: "dependency-advisory-exceptions-recall",
         title: "Powtórka: brak zegara",
         prompt:
-          "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct Waiver { advisory: &'static str, owner: &'static str, scope: &'static str, reason: &'static str, expires_ymd: u32 }` oraz `fn usable(waiver: &Waiver, today: u32) -> bool`. Dla advisory `RUSTSEC-2026-0003`, ownera `security`, scope `feature-x`, reason `migration` i expiry `20260925` zwróć true dla `today = 20260918`, false dla pustego scope oraz false dla `today = 20260926`; nie czytaj zegara systemowego.",
+          "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct Waiver { advisory: &'static str, owner: &'static str, scope: &'static str, reason: &'static str, expires_ymd: u32 }` oraz `fn usable(waiver: &Waiver, today: u32) -> bool`. Wymagaj niepustych advisory/owner/scope/reason oraz `today <= expires_ymd`, także w dniu expiry. Dla advisory `RUSTSEC-2026-0003`, ownera `security`, scope `feature-x`, reason `migration` i expiry `20260925` zwróć true dla `today = 20260918`, false dla pustego scope oraz false dla `today = 20260926`; nie czytaj zegara systemowego.",
         solution: advisoryRecallSolution,
         tests: advisoryRecallTests,
         kind: "recall",
@@ -822,7 +904,7 @@ export const dependencyAssuranceLessons: Lesson[] = [
         id: "dependency-release-dossier-recall",
         title: "Powtórka: kompletność",
         prompt:
-          "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct EvidenceBundle<'a> { artifact: &'a str, config: &'a str, consumer: bool, missing_evidence: bool, publish: bool }`, `#[derive(Debug, PartialEq, Eq)] enum Status { Ready, Hold }` oraz `fn release_status(bundle: &EvidenceBundle<'_>) -> Status`. Kompletne `artifact = \"zip-sha\"`, `config = \"deny.toml\"`, `consumer = true`, `missing_evidence = false`, `publish = false` daje `Ready`; brak artifactu albo `missing_evidence = true` daje `Hold`.",
+          "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct EvidenceBundle<'a> { artifact: &'a str, config: &'a str, consumer: bool, missing_evidence: bool, publish: bool }`, `#[derive(Debug, PartialEq, Eq)] enum Status { Ready, Hold }` oraz `fn release_status(bundle: &EvidenceBundle<'_>) -> Status`. Wymagaj niepustych artifact/config, `consumer == true`, `missing_evidence == false` i `publish == false`; każda niespełniona kontrola daje Hold. Kompletne `artifact = \"zip-sha\"`, `config = \"deny.toml\"`, `consumer = true`, `missing_evidence = false`, `publish = false` daje `Ready`; brak artifactu albo `missing_evidence = true` daje `Hold`.",
         solution: dossierRecallSolution,
         tests: dossierRecallTests,
         kind: "recall",
@@ -846,7 +928,7 @@ export const dependencyAssuranceReviewExercises: Record<string, LessonStep> = {
     id: "dependency-graph-diagnosis-review",
     title: "Powtórka: konflikt source",
     prompt:
-      "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct Dependency { name: &'static str, version: &'static str, source: &'static str, feature: &'static str }`, `#[derive(Debug, PartialEq, Eq)] enum Review { Pass, Hold(&'static str) }` oraz `fn review_graph(dependencies: &[Dependency]) -> Review`. Dwa wpisy `ring` z wersjami 0.17/0.16 i source registry/git mają dać `Hold(\"ring\")`; pojedynczy wpis ma dać `Pass`.",
+      "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct Dependency { name: &'static str, version: &'static str, source: &'static str, feature: &'static str }`, `#[derive(Debug, PartialEq, Eq)] enum Review { Pass, Hold(&'static str) }` oraz `fn review_graph(dependencies: &[Dependency]) -> Review`. Różna wersja lub różny source tego samego package daje Hold; identyczne wpisy i pusty graf dają Pass. Dwa wpisy `ring` z wersjami 0.17/0.16 i source registry/git mają dać `Hold(\"ring\")`; pojedynczy wpis ma dać `Pass`.",
     solution: graphReviewSolution,
     tests: graphReviewTests,
     kind: "recall",
@@ -873,7 +955,7 @@ export const dependencyAssuranceReviewExercises: Record<string, LessonStep> = {
     id: "dependency-release-dossier-review",
     title: "Powtórka: Hold",
     prompt:
-      "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct ReleaseProof<'a> { manifest: &'a str, lock: &'a str, audit: &'a str, artifact: &'a str, config: &'a str, consumer: bool, publish: bool }`, `#[derive(Debug, PartialEq, Eq)] enum Outcome { Ship, Stop }` oraz `fn release(proof: &ReleaseProof<'_>) -> Outcome`. Kompletne dowody z `consumer = true` i `publish = false` dają `Ship`; pusty lock albo `publish = true` daje `Stop`.",
+      "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct ReleaseProof<'a> { manifest: &'a str, lock: &'a str, audit: &'a str, artifact: &'a str, config: &'a str, consumer: bool, publish: bool }`, `#[derive(Debug, PartialEq, Eq)] enum Outcome { Ship, Stop }` oraz `fn release(proof: &ReleaseProof<'_>) -> Outcome`. Niepuste manifest/lock/audit/artifact/config z `consumer = true` i `publish = false` dają `Ship`; każda niespełniona kontrola daje `Stop`; pusty lock albo `publish = true` daje `Stop`.",
     solution: dossierReviewSolution,
     tests: dossierReviewTests,
     kind: "recall",

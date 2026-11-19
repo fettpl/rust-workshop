@@ -2149,6 +2149,11 @@ linia bez LF są obsługiwane.
 
 ## Uruchomienie
 
+Otwórz terminal w rozpakowanym katalogu z Cargo.toml. Przed pierwszymi
+poleceniami offline pobierz przypięty graf zależności przez cargo fetch --locked.
+Wymaga to sieci, jeśli zależności nie są jeszcze w lokalnym cache Cargo.
+Kod produkcyjny używa std, lecz testy i benchmark wymagają Criterion z lockfile.
+
 Uruchom bez filtra: cargo run --offline -- fixtures/mixed.log
 Uruchom z filtrem: cargo run --offline -- fixtures/mixed.log INFO
 
@@ -2278,7 +2283,7 @@ export const logAnalyzerPackage: ProjectPackage = {
   description:
     "Kod produkcyjny korzysta ze std; benchmark ma deweloperską zależność Criterion. Zbuduj parser pożyczający dane, licz rekordy na bieżąco i przetestuj CLI bez przechowywania całego pliku.",
   instructions: [
-    "Rozpakuj projekt i użyj Rust 2024. Zacznij od cargo fmt --check, cargo check --offline --locked i cargo test --offline --locked.",
+    "Rozpakuj projekt i użyj Rust 2024. W katalogu z Cargo.toml wykonaj cargo fetch --locked; pierwsze pobranie zależności testowych Criterion wymaga sieci. Potem uruchom cargo fmt --check, cargo check --offline --locked i cargo test --offline --locked.",
     "Uzupełnij parser w src/analyzer.rs: timestamp, dokładny level, niepusty UTF-8 message, CRLF i zachowanie remainder.",
     "Zaimplementuj analyze_reader przez fill_buf/consume z limitem 4096 bajtów przed LF (wliczając CR); pominięcie linii 4097+ ma zwiększyć malformed dokładnie raz.",
     "Zachowaj niezależność filtra i poprawności: błędna linia zawsze zwiększa malformed, poprawne rekordy liczą się tylko dla wybranego poziomu.",

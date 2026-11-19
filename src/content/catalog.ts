@@ -2517,22 +2517,17 @@ export const reviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: bufor i wiązanie",
     prompt:
-      "Wiązanie Vec<u8> wskazuje bufor na stercie. Co przechowuje lokalnie i kto odpowiada za bufor?",
+      "Dla znanego już String rozróżnij lokalne metadane i należący do niego bufor tekstu. Kto odpowiada za posprzątanie bufora? Wyjaśnij własnymi słowami. To samoocena według kryteriów; aplikacja nie ocenia automatycznie prawdziwości wyjaśnienia. Model stosu i sterty nie gwarantuje fizycznego rozmieszczenia po optymalizacji.",
     solution:
-      "Wiązanie przechowuje metadane Vec, a jego właściciel odpowiada za usunięcie bufora na stercie.",
+      "W modelu String przechowuje metadane: wskaźnik, długość i pojemność, a aktualny właściciel odpowiada za posprzątanie jego bufora przy drop.",
     evaluator: {
-      kind: "answer",
-      accepted: [
-        "metadata and owns the heap buffer",
-        "vec metadata; its owner drops the heap buffer",
-        "the owner drops the heap buffer",
-        "metadane i właściciel bufora na stercie",
-        "metadane Vec; właściciel zwalnia bufor na stercie",
-        "właściciel zwalnia bufor na stercie",
+      kind: "rubric",
+      criteria: [
+        "Rozróżniam metadane String od bajtów należącego do niego bufora.",
+        "Wskazuję aktualnego właściciela jako odpowiedzialnego za posprzątanie własnego bufora przy drop.",
       ],
-      feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
     },
-    evidenceKind: "recall",
+    evidenceKind: "self-rating",
   },
   "scope-drop": {
     id: "review-scope-drop",
@@ -2540,21 +2535,16 @@ export const reviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: zakres",
     prompt:
-      "String powstaje w wewnętrznym bloku i nie jest przenoszony. Kiedy zostanie usunięty?",
+      "String powstaje w wewnętrznym bloku i nie jest przenoszony. Kiedy zostanie posprzątany? Wyjaśnij własnymi słowami, odnosząc się do zakresu właściciela. To samoocena według kryteriów; aplikacja nie ocenia automatycznie prawdziwości wyjaśnienia.",
     solution: "Na końcu wewnętrznego bloku, gdy właściciel opuszcza zakres.",
     evaluator: {
-      kind: "answer",
-      accepted: [
-        "at the end of the inner block",
-        "when the owner leaves the inner scope",
-        "at scope end",
-        "na końcu wewnętrznego bloku",
-        "gdy właściciel opuszcza wewnętrzny zakres",
-        "na końcu zakresu",
+      kind: "rubric",
+      criteria: [
+        "Wskazuję koniec wewnętrznego bloku jako koniec zakresu właściciela.",
+        "Łączę ten koniec zakresu z drop wartości i jej własnego bufora; w tym przykładzie nie nastąpił move.",
       ],
-      feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
     },
-    evidenceKind: "recall",
+    evidenceKind: "self-rating",
   },
   "move-semantics": {
     id: "review-move-semantics",
@@ -2584,14 +2574,14 @@ export const reviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: krotka Copy",
     prompt:
-      "Przewidź, czy oba wiązania zostaną wypisane w przykładzie z `(u8, bool)`.",
+      "Wpisz dokładny tekst wypisany w przykładzie z `(u8, bool)`. Uwzględnij obie krotki w jednym wierszu; uzasadnienie reguły Copy porównaj z informacją po sprawdzeniu.",
     code: 'fn main() {\n    let pair = (2u8, true);\n    let other = pair;\n    println!("{pair:?} {other:?}");\n}',
-    solution:
-      "Oba wiązania pozostają poprawne, bo krotka zawiera wyłącznie typy Copy.",
+    solution: "(2, true) (2, true)",
     evaluator: {
       kind: "answer",
       accepted: ["(2, true) (2, true)", "(2,true) (2,true)"],
-      feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
+      feedback:
+        "Obie krotki mają wartość (2, true). Ich pola są Copy, więc przypisanie nie unieważnia pair.",
     },
     evidenceKind: "recall",
     expectedStatus: "success",
@@ -2602,22 +2592,17 @@ export const reviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: parametr własnościowy",
     prompt:
-      "Sygnatura to `fn save(label: String)`. Co wywołanie robi z wiązaniem String wywołującego?",
+      "Sygnatura to `fn save(label: String)`. Co dzieje się z własnością i dostępnością String wywołującego po przekazaniu go do save? Wyjaśnij własnymi słowami. To samoocena według kryteriów; aplikacja nie ocenia automatycznie prawdziwości wyjaśnienia.",
     solution:
-      "Własność przechodzi do save, więc wywołujący nie użyje wiązania, jeśli funkcja jej nie zwróci.",
+      "Własność przechodzi do parametru save; wcześniejsze wiązanie wywołującego nie udostępnia już przeniesionej wartości.",
     evaluator: {
-      kind: "answer",
-      accepted: [
-        "moves ownership into save",
-        "the string moves into the function",
-        "caller cannot use it after the call",
-        "własność przechodzi do save",
-        "String zostaje przeniesiony do funkcji",
-        "wywołujący nie może go użyć po wywołaniu",
+      kind: "rubric",
+      criteria: [
+        "Wyjaśniam, że przekazanie String przez wartość przenosi własność do parametru save.",
+        "Wskazuję, że dawne wiązanie wywołującego nie może być dalej użyte do odczytu przeniesionego String.",
       ],
-      feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
     },
-    evidenceKind: "recall",
+    evidenceKind: "self-rating",
   },
   "shared-borrow": {
     id: "review-shared-borrow",

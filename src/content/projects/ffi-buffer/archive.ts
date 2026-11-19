@@ -380,7 +380,7 @@ fn drop_releases_the_native_owner_without_manual_free() {
 }
 `;
 
-const readme = String.raw`# FFI buffer workshop
+const readme = `# FFI buffer workshop
 
 This package is a deliberately small Rust 2024 FFI boundary. Rust owns a
 native buffer after a successful \`ffi_buffer_create\`, borrows its immutable
@@ -429,7 +429,7 @@ safe API can check the documented bound and null result; it cannot prove that
 arbitrary foreign code obeys the contract.
 `;
 
-const safety = String.raw`# Safety ledger
+const safety = `# Safety ledger
 
 | Boundary | Assumption | Rust proof or containment |
 | --- | --- | --- |

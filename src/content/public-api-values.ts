@@ -285,6 +285,15 @@ const validatedConstructionBlankTests = `use std::convert::TryFrom;
 
 #[test]
 fn api_keys_validate_every_boundary_and_preserve_borrowed_input() {
+    assert_eq!(ApiKey::MAX_BYTES, 16);
+    let boundary = "A-z0".repeat(4);
+    let at_limit = ApiKey::try_from(boundary.as_str());
+    assert!(at_limit.is_ok());
+    assert_eq!(at_limit.unwrap().as_str(), boundary);
+    assert!(matches!(
+        ApiKey::try_from("é"),
+        Err(ApiKeyError::InvalidCharacter { character: 'é' }),
+    ));
     let key = ApiKey::try_from("abcd-1234").unwrap();
     assert_eq!(key.as_str(), "abcd-1234");
     assert_eq!(key.into_inner(), "abcd-1234");

@@ -39,6 +39,37 @@ import {
 
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 
+type ReviewRating = Parameters<typeof rateReview>[2];
+
+function RatingButtons({
+  disabled,
+  onRate,
+}: {
+  disabled: boolean;
+  onRate: (rating: ReviewRating) => void;
+}) {
+  const ratings = [
+    ["again", "Again · Jeszcze raz"],
+    ["hard", "Hard · Trudne"],
+    ["good", "Good · Dobrze"],
+    ["easy", "Easy · Łatwe"],
+  ] as const;
+  return (
+    <div className="rating-buttons">
+      {ratings.map(([rating, label]) => (
+        <button
+          key={rating}
+          className="secondary"
+          disabled={disabled}
+          onClick={() => onRate(rating)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function reviewEventStepId(session: ReviewSession): string {
   return (session.exerciseId ?? session.conceptId) + ":" + session.sessionId;
 }
@@ -240,7 +271,7 @@ export function ReviewView() {
       },
     }));
   }
-  function check() {
+  function check(rating?: ReviewRating) {
     if (
       !concept ||
       !step?.evaluator ||
@@ -251,12 +282,17 @@ export function ReviewView() {
     )
       return;
     const evaluator = step.evaluator;
-    const outcome = evaluate(evaluator, { answer: progress.answer, code });
+    const rubric = evaluator.kind === "rubric";
+    if (rubric !== (rating !== undefined)) return;
+    const outcome = evaluate(evaluator, { ...progress, code });
+    if (rubric && !outcome.passed) return;
     const probe = step.reviewPurpose === "practice-probe";
     // eslint-disable-next-line react-hooks/purity -- Event handler: record actual action time, not the render clock.
     const now = Date.now();
     update((s) => {
+      if (s.reviewSession?.sessionId !== session.sessionId) return s;
       const current = s.steps[key] ?? createStepProgress();
+      if (current.completed) return s;
       let next = {
         ...s,
         steps: {
@@ -282,15 +318,16 @@ export function ReviewView() {
         ...evidenceForReview(concept.id, step),
         lessonId: "review",
         stepId: reviewEventStepId(session),
-        kind: probe ? "exposure" : "recall",
+        kind: rubric ? "self-rating" : probe ? "exposure" : "recall",
         passed: outcome.passed,
         hints: 0,
         revealed: current.revealed,
         at: now,
-        delayed: probe ? false : session.wasDue,
+        delayed: !rubric && !probe && session.wasDue,
         gate: false,
         evaluator: evaluator.kind,
       });
+      if (rating) next = rateReview(next, concept.id, rating, now);
       if (outcome.passed && !probe) delete next.reviewSession;
       return next;
     });
@@ -422,7 +459,7 @@ export function ReviewView() {
     setSelected(null);
     setExecutionMessage("");
   }
-  function rate(rating: "again" | "hard" | "good" | "easy") {
+  function rate(rating: ReviewRating) {
     const canRateProbe = isPracticeProbe && awaitingProbeRating;
     const canRateCard = !isPracticeProbe && !completed;
     if (
@@ -576,7 +613,9 @@ export function ReviewView() {
                         <button
                           className="primary"
                           disabled={pending || completed || !code.trim()}
-                          onClick={isManifest ? check : () => void run()}
+                          onClick={
+                            isManifest ? () => check() : () => void run()
+                          }
                         >
                           {isManifest
                             ? "Sprawdź manifest"
@@ -632,27 +671,7 @@ export function ReviewView() {
                       {awaitingProbeRating && (
                         <div className="retrieval-reveal">
                           <h4>Oceń tę powtórkę</h4>
-                          <div className="rating-buttons">
-                            {(["again", "hard", "good", "easy"] as const).map(
-                              (rating, index) => (
-                                <button
-                                  key={rating}
-                                  className="secondary"
-                                  disabled={pending}
-                                  onClick={() => rate(rating)}
-                                >
-                                  {
-                                    [
-                                      "Again · Jeszcze raz",
-                                      "Hard · Trudne",
-                                      "Good · Dobrze",
-                                      "Easy · Łatwe",
-                                    ][index]
-                                  }
-                                </button>
-                              ),
-                            )}
-                          </div>
+                          <RatingButtons disabled={pending} onRate={rate} />
                           <p className="footnote">
                             Bez oceny termin poprzedniej powtórki pozostaje bez
                             zmian.
@@ -690,16 +709,61 @@ export function ReviewView() {
                   )}
                   {!executable && !isManifest && (
                     <>
-                      <button
-                        className="primary"
-                        disabled={
-                          pending || completed || !progress.answer.trim()
-                        }
-                        onClick={check}
-                      >
-                        Sprawdź
-                        <Check size={17} />
-                      </button>
+                      {evaluator?.kind === "rubric" ? (
+                        <>
+                          <details className="rubric">
+                            <summary>Porównaj z kryteriami</summary>
+                            <p>
+                              Zaznacz punkty, które wyjaśniasz w swojej
+                              odpowiedzi. Możesz ją jeszcze uzupełnić.
+                            </p>
+                            {evaluator.criteria.map((criterion) => (
+                              <label className="check-label" key={criterion}>
+                                <input
+                                  type="checkbox"
+                                  checked={progress.rubricChecks.includes(
+                                    criterion,
+                                  )}
+                                  disabled={pending || completed}
+                                  onChange={(event) =>
+                                    patch({
+                                      rubricChecks: event.target.checked
+                                        ? [...progress.rubricChecks, criterion]
+                                        : progress.rubricChecks.filter(
+                                            (item) => item !== criterion,
+                                          ),
+                                    })
+                                  }
+                                />
+                                {criterion}
+                              </label>
+                            ))}
+                          </details>
+                          <p>
+                            Oceń, jak łatwo udało Ci się to wyjaśnić. Ta
+                            samoocena ustala termin kolejnej powtórki.
+                          </p>
+                          <RatingButtons
+                            disabled={
+                              pending ||
+                              completed ||
+                              !evaluate(evaluator, progress).passed
+                            }
+                            onRate={check}
+                          />
+                        </>
+                      ) : (
+                        <button
+                          className="primary"
+                          disabled={
+                            pending || completed || !progress.answer.trim()
+                          }
+                          onClick={() => check()}
+                        >
+                          Sprawdź
+                          <Check size={17} />
+                        </button>
+                      )}
                       {progress.attempts.at(-1) && (
                         <p className="feedback" role="status">
                           {progress.attempts.at(-1)?.feedback}
@@ -760,27 +824,10 @@ export function ReviewView() {
                         </p>
                       ) : (
                         <>
-                          <div className="rating-buttons">
-                            {(["again", "hard", "good", "easy"] as const).map(
-                              (rating, index) => (
-                                <button
-                                  key={rating}
-                                  className="secondary"
-                                  disabled={pending || completed}
-                                  onClick={() => rate(rating)}
-                                >
-                                  {
-                                    [
-                                      "Again · Jeszcze raz",
-                                      "Hard · Trudne",
-                                      "Good · Dobrze",
-                                      "Easy · Łatwe",
-                                    ][index]
-                                  }
-                                </button>
-                              ),
-                            )}
-                          </div>
+                          <RatingButtons
+                            disabled={pending || completed}
+                            onRate={rate}
+                          />
                           <p className="footnote">
                             Samoocena ustala termin powtórki. Nie jest dowodem
                             opanowania umiejętności.

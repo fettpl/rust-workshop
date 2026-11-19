@@ -58,6 +58,35 @@ function currentStep(lessonId: string, stepId: string): LessonStep | undefined {
     .find((lesson) => lesson.id === lessonId)
     ?.steps.find((step) => step.id === stepId);
 }
+// These three v2 ordinary reviews previously recorded answer/recall events.
+// Keep their contact attribution without rewriting history or granting coding proof.
+const historicalAnswerReviewIds = new Map([
+  ["stack-heap", "review-stack-heap"],
+  ["scope-drop", "review-scope-drop"],
+  ["function-ownership", "review-function-ownership"],
+]);
+function isHistoricalAnswerReview(
+  event: EvidenceEvent,
+  step: LessonStep | undefined,
+): boolean {
+  const conceptId = event.conceptIds[0];
+  return (
+    event.lessonId === "review" &&
+    event.kind === "recall" &&
+    event.evaluator === "answer" &&
+    event.evidenceVersion === 2 &&
+    event.gate !== true &&
+    event.conceptIds.length === 1 &&
+    historicalAnswerReviewIds.get(conceptId) === step?.id &&
+    step === reviewExercises[conceptId] &&
+    step?.evaluator?.kind === "rubric" &&
+    step.evidenceKind === "self-rating" &&
+    step.reviewPurpose === undefined &&
+    step.evidence?.version === 2 &&
+    step.evidence.codingTaskId === undefined
+  );
+}
+
 export const courseEvidencePolicy = {
   ...evidencePolicyForConcepts(concepts),
   definitionForTask: (lessonId: string, stepId: string) =>
@@ -73,11 +102,12 @@ export const courseEvidencePolicy = {
     if (
       !step ||
       !definition ||
-      event.evaluator !== step.evaluator?.kind ||
-      event.kind !==
-        (step.evaluator?.kind === "rubric"
-          ? "self-rating"
-          : step.evidenceKind) ||
+      ((event.evaluator !== step.evaluator?.kind ||
+        event.kind !==
+          (step.evaluator?.kind === "rubric"
+            ? "self-rating"
+            : step.evidenceKind)) &&
+        !isHistoricalAnswerReview(event, step)) ||
       event.evidenceVersion !== definition.version ||
       event.conceptIds.length !== definition.conceptIds.length ||
       new Set(event.conceptIds).size !== event.conceptIds.length ||

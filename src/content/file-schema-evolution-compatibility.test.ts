@@ -6,11 +6,14 @@ import logRecallDelta from "./fixtures/log-analyzer-recall-delta.json";
 import assessmentDelta from "./fixtures/workshop-assessment-repair-delta.json";
 import ownershipDecisionDelta from "./fixtures/ownership-borrow-decision-delta.json";
 import { expect, it } from "vitest";
-import * as actualCourse from "./course";
+import * as rawCourse from "./course";
 import {
   hashRegistryValue,
   historicalBeforeA12,
+  historicalBeforeCurriculumRecovery,
 } from "./file-schema-evolution-compatibility-fixture";
+
+const actualCourse = historicalBeforeCurriculumRecovery(rawCourse);
 
 // Synthetic Vitest namespace uses the observed loader key order and preserves its aggregate aliases.
 const course = {

@@ -619,12 +619,29 @@ fn main() {
 }
 `;
 
-const readme = String.raw`# Warsztat bezpieczeństwa z Miri
+const readme = `# Warsztat bezpieczeństwa z Miri
 
 This authored package is a small, dependency-free Rust 2024 fixture for the
 unsafe curriculum. The library keeps its public API safe and tests the
 contracts for borrowed byte views, caller-selected disjoint mutable regions,
 single-value storage and short mutable reborrows.
+
+## Run the downloaded package
+
+Use stable Rust supporting edition 2024 (minimum Rust 1.85.0). Open a terminal
+in the extracted directory containing Cargo.toml. The safe root crate has no
+external dependencies, so these commands work without fetching crates:
+
+    cargo fmt --all -- --check
+    cargo check --offline --locked --all-targets
+    cargo test --offline --locked
+    cargo clippy --offline --locked --all-targets -- -D warnings
+
+The starter deliberately fails tests until you complete the todo! bodies in
+src/lib.rs, tests/slot_lazy_init.rs and tests/mut_slot_with_mut.rs. The
+solution runs the same contracts with completed implementations.
+
+## Negative fixtures and repository verification
 
 The \`fixtures/\` crate contains four deliberately invalid programs. They are
 compiled for diagnostics only and are interpreted by a pinned Miri nightly.
@@ -632,7 +649,13 @@ The verifier never executes their native binaries. A Miri failure is evidence
 that the interpreter observed undefined behavior in the fixture; it is not a
 claim that Miri proves every possible unsafe program safe.
 
-Run the authored checks from the repository with:
+The npm command below belongs to the full course repository, which contains
+package.json and scripts/verify-miri.ts. It does not run inside this standalone
+Cargo download. The repository verifier uses nightly-2026-08-08 with its Miri
+component for the negative fixtures; it may fetch the pinned toolchain/sysroot.
+Never execute the negative fixtures as native programs.
+
+From the full course repository only:
 
 \`\`\`text
 npm run content:miri -- --stable --fetch
@@ -642,7 +665,7 @@ The command accepts no learner paths, source overrides, dependency overrides,
 or arbitrary toolchains.
 `;
 
-const safety = String.raw`# Safety ledger
+const safety = `# Safety ledger
 
 The main crate has \`#![forbid(unsafe_code)]\`. Its contracts are deliberately
 small:

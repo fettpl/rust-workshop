@@ -6,7 +6,10 @@ import {
   dependencyFileSuccessor,
   historicalBeforeDependencyRefresh,
 } from "./dependency-maintenance-compatibility-fixture";
-import { historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair } from "./file-schema-evolution-compatibility-fixture";
+import {
+  historicalBeforeCurriculumRecovery,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as historicalBeforeExistingContractRepair,
+} from "./file-schema-evolution-compatibility-fixture";
 
 const hash = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
@@ -74,7 +77,9 @@ describe("reviewed dependency maintenance predecessor", () => {
     const previous = historicalBeforeDependencyRefresh(
       historicalBeforeExistingContractRepair(course),
     );
-    const project = structuredClone(course.project);
+    const project = structuredClone(
+      historicalBeforeCurriculumRecovery(course).project,
+    );
     project.package!.files[0].starter += "\n# unexpected manifest payload";
     const citation = structuredClone(
       course.sources.find((source) => source.id === "tokio-runtime-builder")!,

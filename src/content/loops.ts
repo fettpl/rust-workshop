@@ -833,6 +833,16 @@ fn returns_the_last_power_not_above_limit() {
 fn handles_a_limit_between_powers() {
     assert_eq!(last_power_of_two(33), 32);
     assert_eq!(last_power_of_two(100), 64);
+}
+
+#[test]
+fn retains_the_full_advertised_limit_domain() {
+    assert_eq!(last_power_of_two(255), 128);
+    assert_eq!(last_power_of_two(256), 256);
+    assert_eq!(last_power_of_two(257), 256);
+    assert_eq!(last_power_of_two(524_287), 262_144);
+    assert_eq!(last_power_of_two(524_288), 524_288);
+    assert_eq!(last_power_of_two(1_000_000), 524_288);
 }`;
 
 const reviewControlSolution = `fn first_pair_sum_at_least(limit: i32) -> i32 {

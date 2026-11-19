@@ -1140,22 +1140,45 @@ export const recordsReviewExercises: Record<string, LessonStep> = {
   "struct-records": {
     id: "review-struct-records",
     kind: "recall",
-    title: "Powtórka: pole String",
+    title: "Powtórka: rekord z własną nazwą",
     prompt:
-      "Dlaczego `String` jest dobrym polem prostego rekordu przechowującego własną nazwę?",
+      "Napisz funkcję make_label(name: &str) -> Label. Zwrócony rekord ma mieć pole name typu String i zachować dokładnie podaną nazwę, łącznie ze spacjami i polskimi znakami. Kod wywołujący może potem zmienić albo usunąć źródłowy tekst.",
+    code: `struct Label {
+    name: String,
+}
+
+fn make_label(_name: &str) -> Label {
+    Label { name: String::new() }
+}
+
+fn main() {}`,
     evaluator: {
-      kind: "answer",
-      accepted: [
-        "Bo rekord posiada bufor i może żyć dłużej niż funkcja tworząca.",
-        "String daje rekordowi własność tekstu.",
-        "the record owns the text",
-      ],
-      feedback:
-        "Wskaż właściciela bufora i to, że rekord może przeżyć funkcję tworzącą.",
+      kind: "tests",
+      tests: `#[test]
+fn the_returned_record_owns_the_original_name() {
+    for expected in ["", "  Łódź 🦀  ", "port"] {
+        let label = {
+            let mut source = String::from(expected);
+            let label = make_label(&source);
+            source.push('!');
+            label
+        };
+        let owned: String = label.name;
+        assert_eq!(owned, expected);
+    }
+}`,
     },
     evidenceKind: "recall",
-    solution:
-      "String posiada tekst, więc rekord może przechowywać nazwę bez pożyczonego lifetime.",
+    solution: `struct Label {
+    name: String,
+}
+
+fn make_label(name: &str) -> Label {
+    Label { name: String::from(name) }
+}
+
+fn main() {}`,
+    expectedStatus: "success",
   },
   "method-receivers": {
     id: "review-method-receivers",

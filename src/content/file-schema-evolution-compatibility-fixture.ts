@@ -2,7 +2,11 @@ import testingRecallDelta from "./fixtures/testing-recall-delta.json";
 import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
-import { restoreWorkshopAssessmentLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import {
+  restoreWorkshopAssessmentLessons,
+  restoreCurriculumRecoveryRegistry,
+  restoreCurriculumRecoveryLessons,
+} from "./workshop-assessment-repair-compatibility-fixture";
 import { createHash } from "node:crypto";
 import type * as Course from "./course";
 import {
@@ -240,6 +244,8 @@ function copyRegistry(input: Registry, replacements: Map<unknown, unknown>) {
     const descriptor = Object.getOwnPropertyDescriptor(input, key)!;
     const projectedKey =
       key === "default" ||
+      key === "project" ||
+      key === "ownershipModule" ||
       Object.hasOwn(arrayAdditions, key) ||
       Object.hasOwn(reviewAdditions, key);
     // Only the known authored getters may be read. Unknown accessors stay intact.
@@ -348,18 +354,23 @@ function collectAdditions(
               replacements,
               matches,
             )
-          : items;
+          : restoreCurriculumRecoveryRegistry(
+              items,
+              key,
+              replacements,
+              matches,
+            );
     const projected = restored.filter((_, index) => !indices.has(index));
     if (key === "projects") {
       for (const format of projectFormats) {
-        const restored = restoreProjectFormat(
-          items as typeof Course.projects,
+        const formatted = restoreProjectFormat(
+          restored as typeof Course.projects,
           format,
         );
-        if (!restored) continue;
-        if (!replacements.has(restored.project))
-          replacements.set(restored.project, restored.historical);
-        projected[format.index] = replacements.get(restored.project);
+        if (!formatted) continue;
+        if (!replacements.has(formatted.project))
+          replacements.set(formatted.project, formatted.historical);
+        projected[format.index] = replacements.get(formatted.project);
       }
     }
     for (const key of Reflect.ownKeys(items)) {
@@ -381,9 +392,20 @@ function collectAdditions(
   for (const [key, addition] of Object.entries(reviewAdditions)) {
     const items = registry[key] as Registry;
     if (replacements.has(items)) continue;
-    const descriptors = Object.getOwnPropertyDescriptors(items);
-    for (const review of [recoveryDelta.review, exerciseDelta.review, ...testingRecallDelta]) {
-      const reviewKey = key === "reviewExercises" ? review.conceptId : review.id;
+    const recovered = restoreCurriculumRecoveryRegistry(
+      items,
+      key,
+      replacements,
+      matches,
+    );
+    const descriptors = Object.getOwnPropertyDescriptors(recovered);
+    for (const review of [
+      recoveryDelta.review,
+      exerciseDelta.review,
+      ...testingRecallDelta,
+    ]) {
+      const reviewKey =
+        key === "reviewExercises" ? review.conceptId : review.id;
       const descriptor = descriptors[reviewKey];
       const current = descriptor?.value;
       if (matches(current, review.successorSha256)) {
@@ -415,6 +437,57 @@ function collectAdditions(
       Object.create(Object.getPrototypeOf(items), descriptors),
     );
   }
+}
+
+/** Reverses only this reviewed batch, for tests isolating an earlier maintenance layer. */
+export function historicalBeforeCurriculumRecovery<T extends typeof Course>(
+  course: T,
+): T {
+  const input = course as unknown as Registry;
+  const defaultRegistry = input.default;
+  const registries =
+    objectRecord(defaultRegistry) && defaultRegistry !== input
+      ? [input, defaultRegistry]
+      : [input];
+  const replacements = new Map<unknown, unknown>();
+  for (const registry of registries) {
+    for (const key of [
+      "lessons",
+      "modules",
+      "projects",
+      "reviewExercises",
+      "reviewExercisesById",
+      "shortReviewExercises",
+      "delayedReviewExercises",
+    ]) {
+      const current = registry[key];
+      if (
+        current === null ||
+        typeof current !== "object" ||
+        replacements.has(current)
+      )
+        continue;
+      const restored =
+        key === "lessons"
+          ? restoreCurriculumRecoveryLessons(
+              current as typeof Course.lessons,
+              replacements,
+              matches,
+            )
+          : restoreCurriculumRecoveryRegistry(
+              current,
+              key,
+              replacements,
+              matches,
+            );
+      if (restored !== current) replacements.set(current, restored);
+    }
+  }
+  if (replacements.size === 0) return course;
+  for (const registry of registries)
+    replacements.set(registry, Object.create(Object.getPrototypeOf(registry)));
+  for (const registry of registries) copyRegistry(registry, replacements);
+  return replacements.get(input) as T;
 }
 
 /** Removes the complete authored A12 successor or returns the input unchanged. */

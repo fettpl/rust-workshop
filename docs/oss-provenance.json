@@ -275,7 +275,7 @@
     },
     {
       "path": "src/content/atomic-state.ts",
-      "sha256": "d4363cd1fa5669b6d3da268d7986ed31260f339a93ff987be680106e4cd19bde",
+      "sha256": "bd71f5ce91ba6c9090f2bafaa4f070521a8cee7af3077fab8b090056b69b7275",
       "group": "course"
     },
     {
@@ -430,7 +430,7 @@
     },
     {
       "path": "src/content/catalog.ts",
-      "sha256": "ce18076cbd107bbb3c6d02eaa84eac19ec998f723eade25b2f38d275a46eb3b0",
+      "sha256": "b3b0c5ccebaa29914d7d581606ea447ffd464e2d9b5c53cdf400d7c54f8d6417",
       "group": "course"
     },
     {
@@ -440,7 +440,7 @@
     },
     {
       "path": "src/content/closures.ts",
-      "sha256": "cb51cd7d2425b66b60d9e726e57d390cde8635389be7e6f39ac6ec6302eda706",
+      "sha256": "2a7f9860459c7011e90330fec8bb9c2eee620178973ff51719c5275fef6e9012",
       "group": "course"
     },
     {
@@ -509,6 +509,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/core-recovery-contracts.test.ts",
+      "sha256": "4be5943ebd39b77907a1f1e8caba57d76521539a4c469d2cb72412f28c785744",
+      "group": "course"
+    },
+    {
       "path": "src/content/course.ts",
       "sha256": "4af356cfcb3674c47960db10a9ef8c79ec7f892e67a52ca71e843a8afbdfe392",
       "group": "course"
@@ -516,6 +521,11 @@
     {
       "path": "src/content/curriculum-contract-repairs.test.ts",
       "sha256": "80889ea194f45790814f9bf7ef0d4b2953109b4be4ae45356d03cf65525636c6",
+      "group": "course"
+    },
+    {
+      "path": "src/content/curriculum-recovery-compatibility.test.ts",
+      "sha256": "5de845aa0c19b7a312f3f8558099413486bc8dab5eaa934c234da05c197f07e8",
       "group": "course"
     },
     {
@@ -530,7 +540,7 @@
     },
     {
       "path": "src/content/dependency-assurance.ts",
-      "sha256": "9aa6212dd683f9547899350e52a561ee9861d704536ec92288ea2a45090ad705",
+      "sha256": "bf0d6ddf217e20b295da37836fc866a323935c69772d22b148296f5be067c757",
       "group": "course"
     },
     {
@@ -545,7 +555,7 @@
     },
     {
       "path": "src/content/dependency-maintenance-compatibility.test.ts",
-      "sha256": "63667eed7ad701c4fdab34ccc53f5b1f73ee7f879f1add4b17992e6280852d76",
+      "sha256": "5eaa03a7dc86f8aa8865d872b45317e4ddaca723f257068330fed1628b0bd32f",
       "group": "course"
     },
     {
@@ -586,6 +596,11 @@
     {
       "path": "src/content/documentation-guided-repair.ts",
       "sha256": "2126c7603a0a9e8a706748036284e3ad3351e937bb9609634dd0c65f4f94bdb4",
+      "group": "course"
+    },
+    {
+      "path": "src/content/download-project-instructions.test.ts",
+      "sha256": "0aaa7f42d11c37bc629b4018b9b2c71b8761905f077d897773a79d1956c886b0",
       "group": "course"
     },
     {
@@ -660,12 +675,12 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "35de84fd0b463809cb3997dbe01635a9f1c61be21b0dc261a37110f45ebadccd",
+      "sha256": "958a4b9e1ff1bb73627c9faec4f44eeb582a360a135325a8384d82e2bb3dd9e2",
       "group": "course"
     },
     {
       "path": "src/content/file-schema-evolution-compatibility.test.ts",
-      "sha256": "24dbbc3f33910ce4c57eaf4953b42f636d45b5dc0d5b0c80000de404832b6db5",
+      "sha256": "6fda4787cadaeb3be4e8db4afb19bbe6a32b51a348bf4c537caf25be281a7a6b",
       "group": "course"
     },
     {
@@ -680,7 +695,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "4e80cf0d7f1e4299d71882be04515198565d1b9fa08ee28c19a17d35ca482ebf",
+      "sha256": "1c306bd7eb252c394b7df0b5b40525e55f2845fee0e1c787ba3777f2b074badf",
       "group": "course"
     },
     {
@@ -711,6 +726,11 @@
     {
       "path": "src/content/fixtures/collections-event-report-delta.json",
       "sha256": "9a1d62985a7d64941b2144bd7ad7ad6418af16f1b389dea6c578bd9fb62f1a3d",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/curriculum-recovery-nov19-delta.json",
+      "sha256": "96a85583db36e6846319ebff88dcb8ad95711ba7864f6873e3c2485a05f44b79",
       "group": "course"
     },
     {
@@ -945,7 +965,7 @@
     },
     {
       "path": "src/content/guessing-io.ts",
-      "sha256": "ba18a358053a3674796d69b43a3a336880fe4837343604941587ddebb41d7483",
+      "sha256": "79dfe34fee44f526a536858d50e3e942e283f7b22c21beb3c83739b63aa4d131",
       "group": "course"
     },
     {
@@ -1000,7 +1020,7 @@
     },
     {
       "path": "src/content/learning-context.ts",
-      "sha256": "c5bd55cf932ef5c0ac5351cf24ac2331cc50cce4d24489c0c069669cf996c930",
+      "sha256": "22e8d4fdaebf4004ce6242e90b15e85f99bdcd42e642ab0d67d3633794f8dad6",
       "group": "course"
     },
     {
@@ -1015,7 +1035,7 @@
     },
     {
       "path": "src/content/log-analyzer.ts",
-      "sha256": "fe7280d54cb95421660ee63627cbd7db21f8609b6c6a4fb45deae586d0f88170",
+      "sha256": "0ab0f87dc2059393ed53e9d5896c8fc9e39d1f73bde41f48ff3227d72fbffda4",
       "group": "course"
     },
     {
@@ -1025,7 +1045,7 @@
     },
     {
       "path": "src/content/loops.ts",
-      "sha256": "ee04378a0c39754fb45c5e39b5fa207aed3d27768b0a5343a927d6c24163335e",
+      "sha256": "0adcd8a51c70c788f4b8d94635815773504e3a33ee6dccad89dd77bce5929309",
       "group": "course"
     },
     {
@@ -1040,7 +1060,7 @@
     },
     {
       "path": "src/content/memory-ordering.ts",
-      "sha256": "2d9dad307d4a09750217fa9fbc5dc022805519a4e97155a7cd613ad15eb6d9a1",
+      "sha256": "d601bec1aabd7bad791b47940f96d60a7c94213636f6aed28cd606d3b85b190b",
       "group": "course"
     },
     {
@@ -1080,7 +1100,7 @@
     },
     {
       "path": "src/content/modeling-records.ts",
-      "sha256": "73ef242d1424a47edd38b9d5e2ee10092892de9db44ec339da63ae56628b85c1",
+      "sha256": "3a922fb030495fceefd70fc3c6561fd53fad9c93e0b7c4c01c87068536095748",
       "group": "course"
     },
     {
@@ -1169,6 +1189,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/ownership-review-history.test.ts",
+      "sha256": "e34c838273d068bcefa185e38cf3d3e44703c4b00a1bcfbc35e660735652a777",
+      "group": "course"
+    },
+    {
       "path": "src/content/performance-evidence-assessment-fixtures.ts",
       "sha256": "42860373b8bb92e70a4f77da152645360ed696cdc79b705c0dc9c0ace3985e6c",
       "group": "course"
@@ -1196,11 +1221,16 @@
     {
       "path": "src/content/performance-investigation-compatibility.test.ts",
       "group": "course",
-      "sha256": "39a85bf539b9fa6afe7c0d65e1274fbb5f9b5b6d1deb3b9f52381fa3dea77113"
+      "sha256": "bf27324f2d0926017c362000cf7c640a118856a6d70e40700db8b51c1379074c"
     },
     {
       "path": "src/content/prerequisite-entries.test.ts",
       "sha256": "b2161a931271cbdc3bb88d431e02481205c6504998b0074a6f6f202a85c8e6ed",
+      "group": "course"
+    },
+    {
+      "path": "src/content/professional-contract-recovery.test.ts",
+      "sha256": "5e1af96861e68e3d5b1fb61e9336d06a6f532cda66f5a46658bc2fdff3b74804",
       "group": "course"
     },
     {
@@ -1270,7 +1300,7 @@
     },
     {
       "path": "src/content/projects/ffi-buffer/archive.ts",
-      "sha256": "0f14bc7a51acd63f6b232b4118a28bb7be54282c261ed2388e8951b1aa32738d",
+      "sha256": "d6ef2b034b51445309c8fa52e232c2d5f2bc3c9a857263d832d0707fb2e70d53",
       "group": "course"
     },
     {
@@ -1325,7 +1355,7 @@
     },
     {
       "path": "src/content/projects/log-analyzer.ts",
-      "sha256": "e1eaab535a3e20a59bedb07d6fc2a7ef2259536b3ce06859ff8788fb8b5c9a28",
+      "sha256": "8ccad3e079e23f12cb08bbc469978bf8fb481a52f6c4a806367cfe2c8208a6d9",
       "group": "course"
     },
     {
@@ -1360,7 +1390,7 @@
     },
     {
       "path": "src/content/projects/miri-safety.ts",
-      "sha256": "bbcebadc7515c66d6c8887c42a8eb4710f6c6e269a6b4d1e7ae0e6e6573137f6",
+      "sha256": "ba27edfc3259fe618552d5ea49efdd2a341f41f50c0cc5b887e6a063c01727b6",
       "group": "course"
     },
     {
@@ -1370,7 +1400,7 @@
     },
     {
       "path": "src/content/projects/number-guessing.ts",
-      "sha256": "3a8a18a0477c1fc8d8526a7e90ffe1a5965111a5480c045c17477b89f94c5ae1",
+      "sha256": "391ccbe0b0a535e5815d88058fe57b4496d9dd9e45dc5f0af2b6075332b6ee0a",
       "group": "course"
     },
     {
@@ -1390,7 +1420,7 @@
     },
     {
       "path": "src/content/projects/property-contracts/archive.ts",
-      "sha256": "7a8a0a1172e30cfe33fa905210282154755cd3a117f0e464f34e03bf37309d9d",
+      "sha256": "3bb55d39d3672135a704cf0c195e928ce0d43ae9b11122008b6bb258122a3f26",
       "group": "course"
     },
     {
@@ -1415,7 +1445,7 @@
     },
     {
       "path": "src/content/projects/service-operations.ts",
-      "sha256": "adea8bacdc8af78a1f56874c0ee2548ab57ce2facf2b9199ed27634a2022395d",
+      "sha256": "1aa78d204b57567df610631b0dc4f37c6d7400f14611bbdc80101772fb4201cd",
       "group": "course"
     },
     {
@@ -1485,7 +1515,7 @@
     },
     {
       "path": "src/content/public-api-evolution.ts",
-      "sha256": "25ec9224a33a61d57a1ffea2f7efe219263de630e0b8c4b0fcb0c01e14dd14c5",
+      "sha256": "244e535a8ad6d4834aaa84caa5891a5b9e4e1d14bb987404d250d623121f1593",
       "group": "course"
     },
     {
@@ -1500,7 +1530,7 @@
     },
     {
       "path": "src/content/public-api-values.ts",
-      "sha256": "b378331e2d3effb23f1ac102c298e16688171e139c44503e6e6fea50f3311963",
+      "sha256": "a23ff15f6cb6fa0abf75fe8cb39cdb759b37820499070c677eb43b7b8ea06ffc",
       "group": "course"
     },
     {
@@ -1696,6 +1726,11 @@
     {
       "path": "src/content/synchronized-state.ts",
       "sha256": "5209b2b34ab9866060002af7493a88e57b00bd1ce3fbc32ca46cb80f7967d629",
+      "group": "course"
+    },
+    {
+      "path": "src/content/systems-curriculum-recovery.test.ts",
+      "sha256": "36359ebe15b5c5e3353588483497a7dbaab3fcad44cbc3ef5cf6cd718582af46",
       "group": "course"
     },
     {
@@ -1956,7 +1991,7 @@
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-a9-compatibility.test.ts",
       "group": "course",
-      "sha256": "88b72b014cbf9b907af5f15d59f852117bff94522bdffb3d2159acc919128948"
+      "sha256": "aea030047bae589696c3b0d828db331d81a7013fc533366bcab06d6d032efa96"
     },
     {
       "path": "src/content/unsafe-miri-mut-slot-with-mut-compatibility-fixture.ts",
@@ -2020,7 +2055,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "f319ff52a8b3193f026d6fa42912d1a66ec2e42781f720e151a93fe7b8d348f1",
+      "sha256": "b4b3ada979489f782c8ee0bf6842b3dba0f65adea4e1c5c24207a985df3001d2",
       "group": "course"
     },
     {

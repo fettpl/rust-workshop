@@ -1,0 +1,688 @@
+{
+  "baseline": {
+    "sha": "f530f67",
+    "lessonsSha256": "28416386d13c4b2b2100ca7e365221365891766d2a7cd9433bd7380513efd0ff",
+    "modulesSha256": "583091b30435f100d1c3d17cccdbcc2335c33618cf6ecdb07491c30793866128",
+    "projectsSha256": "858f817f202057e726ca0834f02c7e816bb2f96aca0732b7baa655e0932dc830",
+    "reviewExercisesSha256": "1017d9abfcbc7fc22733dd673df8419b71b7b7cba68c4f7ddc7e15d373e1b8a8",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [
+    {
+      "lessonId": "guess-session-io",
+      "stepId": "guess-session-io-blank",
+      "path": ["prompt"],
+      "before": "Od pustej kartki napisz odbiornik `receive_notice`. Protokół ma w nagłówku napisać `NOTICE READY\n`, przed każdym odczytem `notice> ` i flush. Odczytaj jedną linię o limicie 64 bajtów przed LF, zwróć `Ok(Some(String))` dla poprawnego UTF-8, `Ok(None)` tylko dla EOF bez danych; CRLF normalizuj, usuwając CR wyłącznie wtedy, gdy nastąpiło po nim LF. Samotny CR przed EOF jest częścią tekstu komunikatu. W przeciwieństwie do gry nie ma parsowania poleceń ani pętli: pojedynczy komunikat bez LF jest prawidłowy, a każdy błąd I/O zostaje błędem.",
+      "beforeSha256": "6298c762eff96ce1e1d9db4e307476cd9cc24832c93a885da4417562a6ef7281",
+      "successorSha256": "a7783a744578d7ba23928198729efb81891b06d3d71c2aea2422b424b0c944d7"
+    },
+    {
+      "lessonId": "guess-session-io",
+      "stepId": "guess-session-io-blank",
+      "path": ["evaluator", "tests"],
+      "before": "use std::io::Cursor;\n#[test]\nfn header_prompt_and_final_notice_are_observable() {\n    let mut input = Cursor::new(b\"alarm\".to_vec());\n    let mut output = Vec::new();\n    assert_eq!(\n        receive_notice(&mut input, &mut output).unwrap(),\n        Some(String::from(\"alarm\"))\n    );\n    assert_eq!(output, b\"NOTICE READY\\nnotice> \");\n}\n#[test]\nfn blank_lf_and_crlf_are_messages_but_empty_eof_is_none() {\n    for data in [b\"\\n\".to_vec(), b\"\\r\\n\".to_vec()] {\n        let mut input = Cursor::new(data);\n        let mut output = Vec::new();\n        assert_eq!(\n            receive_notice(&mut input, &mut output).unwrap(),\n            Some(String::new())\n        );\n    }\n    let mut input = Cursor::new(Vec::<u8>::new());\n    let mut output = Vec::new();\n    assert_eq!(receive_notice(&mut input, &mut output).unwrap(), None);\n}\n#[test]\nfn lone_cr_at_eof_is_payload_and_lf_only_removes_the_terminator() {\n    for (bytes, expected) in [\n        (b\"alarm\\n\".as_slice(), \"alarm\"),\n        (b\"alarm\\r\\n\".as_slice(), \"alarm\"),\n        (b\"alarm\\r\".as_slice(), \"alarm\\r\"),\n        (b\"\\r\".as_slice(), \"\\r\"),\n        (b\"alarm\".as_slice(), \"alarm\"),\n    ] {\n        let mut input = Cursor::new(bytes);\n        let mut output = Vec::new();\n        assert_eq!(receive_notice(&mut input, &mut output).unwrap().as_deref(), Some(expected));\n    }\n}\n#[test]\nfn over_limit_is_invalid_data() {\n    let mut input = Cursor::new(vec![b'x'; 65]);\n    let mut output = Vec::new();\n    assert_eq!(\n        receive_notice(&mut input, &mut output).unwrap_err().kind(),\n        std::io::ErrorKind::InvalidData\n    );\n}\n",
+      "beforeSha256": "ec8f2d818caa07d08533dfd63d73aa9c4d551327db2daf472d3257ba31bb83b3",
+      "successorSha256": "5b1e598163305a2aedf0eb5a7584754435095ff20be6a652d41bab8fb24820f4"
+    },
+    {
+      "lessonId": "guess-random-boundary",
+      "stepId": "guess-random-boundary-blank",
+      "path": ["evaluator", "tests"],
+      "before": "use std::cell::Cell;\n#[test]\nfn crew_is_checked_before_badge_source() {\n    let calls = Cell::new(0);\n    assert_eq!(\n        assign_shift_with(1, &[321], || {\n            calls.set(1);\n            321\n        }),\n        Err(ShiftError::Crew)\n    );\n    assert_eq!(calls.get(), 0);\n}\n#[test]\nfn a_valid_crew_consumes_one_badge_and_keeps_its_exact_value() {\n    let calls = Cell::new(0);\n    assert_eq!(\n        assign_shift_with(4, &[999], || {\n            calls.set(calls.get() + 1);\n            321\n        })\n        .unwrap(),\n        Shift {\n            badge: 321,\n            crew: 4\n        }\n    );\n    assert_eq!(calls.get(), 1);\n}\n#[test]\nfn reserved_badge_is_rejected_without_redrawing_even_when_reserved_twice() {\n    let calls = Cell::new(0);\n    assert_eq!(\n        assign_shift_with(4, &[321, 321], || {\n            calls.set(calls.get() + 1);\n            321\n        }),\n        Err(ShiftError::Reserved)\n    );\n    assert_eq!(calls.get(), 1);\n}\n#[test]\nfn badge_range_is_checked_after_the_single_source_call() {\n    let calls = Cell::new(0);\n    assert_eq!(\n        assign_shift_with(4, &[], || {\n            calls.set(calls.get() + 1);\n            99\n        }),\n        Err(ShiftError::Badge)\n    );\n    assert_eq!(calls.get(), 1);\n}\n",
+      "beforeSha256": "449244b080ad7b7ec6150bbbf556226053c4343a19ce5c7872b3f3aa43ab7f16",
+      "successorSha256": "3adc1d63dfb8d90b3bc80d29e08bbae61c4dfffdbb07451da40486177fe022ba"
+    },
+    {
+      "lessonId": "log-records",
+      "stepId": "records-transfer",
+      "path": ["prompt"],
+      "before": "Uzupełnij `parse_reading` dla nowej domeny. Rekord ma `at: u64`, `unit: &str` i `note: &str`; format to `AT|UNIT|NOTE`, jednostka to dokładnie `C` albo `kPa`, a notatka ma być niepusta po trim. Zachowaj wszystkie pozostałe znaki notatki i pożycz ją z wejścia.",
+      "beforeSha256": "f908de71cbb12c4c50afad3aacb1daee0b2af71879377c06613185d817f7a48d",
+      "successorSha256": "bb093c914076e2136dd0d66f1687569cc51b37092cb3ebb5cb9c2d94f368ab63"
+    },
+    {
+      "lessonId": "log-records",
+      "stepId": "records-transfer",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn preserves_a_sensor_note_with_unicode_and_separators() {\n    let line = \"42|kPa|  zawór: otwarty |🙂  \";\n    let reading = match parse_reading(line) {\n        Ok(value) => value,\n        Err(error) => panic!(\"unexpected error: {:?}\", error),\n    };\n    assert_eq!(reading.at, 42);\n    assert_eq!(reading.unit, \"kPa\");\n    assert_eq!(reading.note, \"  zawór: otwarty |🙂  \");\n    assert_eq!(reading.note.as_ptr(), line.as_ptr().wrapping_add(7));\n}\n\n#[test]\nfn distinguishes_bad_unit_and_empty_note() {\n    assert_eq!(parse_reading(\"4|bar|ok\"), Err(ReadingError::InvalidUnit));\n    assert_eq!(parse_reading(\"4|C|   \"), Err(ReadingError::EmptyNote));\n}",
+      "beforeSha256": "af3920075ca1604285ff9f3a708ae7a865f520655b2fb09bfb19bd18e56f18b9",
+      "successorSha256": "aefca2bc01861bd7908042db5af11bd7f9c8988851669630422a94d14e847b69"
+    },
+    {
+      "lessonId": "api-validated-construction",
+      "stepId": "api-validated-construction-blank",
+      "path": ["evaluator", "tests"],
+      "before": "use std::convert::TryFrom;\n\n#[test]\nfn api_keys_validate_every_boundary_and_preserve_borrowed_input() {\n    let key = ApiKey::try_from(\"abcd-1234\").unwrap();\n    assert_eq!(key.as_str(), \"abcd-1234\");\n    assert_eq!(key.into_inner(), \"abcd-1234\");\n\n    assert!(matches!(ApiKey::try_from(\"\"), Err(ApiKeyError::Empty)));\n    let too_long = \"a\".repeat(ApiKey::MAX_BYTES + 1);\n    assert!(matches!(\n        ApiKey::try_from(too_long.as_str()),\n        Err(ApiKeyError::TooLong {\n            actual,\n            maximum,\n        }) if actual == ApiKey::MAX_BYTES + 1 && maximum == ApiKey::MAX_BYTES,\n    ));\n    assert!(matches!(\n        ApiKey::try_from(\"abcd_1234\"),\n        Err(ApiKeyError::InvalidCharacter { character: '_' }),\n    ));\n\n    let reusable = String::from(\"ABC-99\");\n    let first = ApiKey::try_from(reusable.as_str()).unwrap();\n    let second = ApiKey::try_from(reusable.as_str()).unwrap();\n    assert_eq!(reusable, \"ABC-99\");\n    assert_eq!(first.as_str(), second.as_str());\n}",
+      "beforeSha256": "7ad97384a421d597ff2281e9f60a2671d3bb0d190f5f4e4ebb498464278197b8",
+      "successorSha256": "beed830286bd5d48f9c9ce9964f1ceb982a09e1e9f2717b9c737f969599549c1"
+    },
+    {
+      "lessonId": "api-trait-compatibility",
+      "stepId": "api-trait-compatibility-gate",
+      "path": ["evaluator", "tests"],
+      "before": "struct ExistingClient {\n    value: u16,\n    marker: String,\n}\n\nimpl Meter for ExistingClient {\n    fn units(&self) -> u16 { self.value }\n}\n\nstruct FreshClient { value: u16 }\n\nimpl Meter for FreshClient {\n    fn units(&self) -> u16 { self.value }\n}\n\n#[test]\nfn old_implementer_dyn_consumer_and_unbounded_generic_stay_usable() {\n    let old = ExistingClient {\n        value: 7,\n        marker: String::from(\"bez Clone i Debug\"),\n    };\n    let fresh = FreshClient { value: 5 };\n    let old_dyn_consumer: fn(&dyn Meter) -> u16 = dyn_units;\n\n    assert_eq!(old_dyn_consumer(&old), 7);\n    assert_eq!(read_units(&old), 7);\n    assert_eq!(old.label(), \"7 units\");\n    assert_eq!(total(&[&old, &fresh]), 12);\n    assert_eq!(old.marker, \"bez Clone i Debug\");\n}",
+      "beforeSha256": "3c3806127220acb014b15292422e9f27757c5c8e675c154afde182f738d57835",
+      "successorSha256": "59d0796f8ef3185186a48decba1181d871410eabe797a2f6ad8e68d2f8258d5d"
+    },
+    {
+      "lessonId": "api-trait-compatibility",
+      "stepId": "api-trait-compatibility-blank",
+      "path": ["evaluator", "tests"],
+      "before": "struct FieldProbe {\n    value: i32,\n    retained: String,\n}\n\nimpl Pulse for FieldProbe {\n    fn current(&self) -> i32 { self.value }\n}\n\nstruct Calibrated { value: i32 }\n\nimpl Pulse for Calibrated {\n    fn current(&self) -> i32 { self.value }\n}\n\n#[test]\nfn independent_trait_contract_keeps_old_impl_dyn_and_plain_borrow() {\n    let old = FieldProbe {\n        value: 100,\n        retained: String::from(\"nie kopiuj mnie\"),\n    };\n    let newer = Calibrated { value: 101 };\n    let old_dyn_consumer: fn(&dyn Pulse) -> i32 = current_from_dyn;\n\n    assert_eq!(old_dyn_consumer(&old), 100);\n    assert!(is_at_most(&old, 100));\n    assert!(newer.warning());\n    assert_eq!(old.retained, \"nie kopiuj mnie\");\n}",
+      "beforeSha256": "bad89c64cb78f962446bf8c342fa87443e57757db6b4f5484e6eba8a139451a1",
+      "successorSha256": "9b4328bbc20b2c452f5960404a9304bb11b06e4b8e11109f23713e9dd91f5ee2"
+    },
+    {
+      "lessonId": "dependency-graph-diagnosis",
+      "stepId": "dependency-graph-diagnosis-blank",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn blank_graph_contract_covers_version_source_and_cycle_shape() {\n    let edges = [\n        Edge { from: \"app\", package: \"serde\", version: \"1.0.228\", source: \"registry\" },\n        Edge { from: \"helper\", package: \"serde\", version: \"1.0.229\", source: \"registry\" },\n        Edge { from: \"app\", package: \"helper\", version: \"1\", source: \"path\" },\n    ];\n    assert_eq!(inspect_graph(&edges), GraphResult::Conflict(\"serde\"));\n    let cycle = [Edge { from: \"app\", package: \"app\", version: \"1\", source: \"path\" }];\n    assert_eq!(inspect_graph(&cycle), GraphResult::Cycle(\"app\"));\n}",
+      "beforeSha256": "a9c6139b47cd310790f0cf294d3bb96022daf283caeb9fd3b0cb572dac8dc821",
+      "successorSha256": "c9e9162098f61ae11b64527273abc3aa119677c5748de655767cdea1ba0774ca"
+    },
+    {
+      "lessonId": "dependency-graph-diagnosis",
+      "stepId": "dependency-graph-diagnosis-recall",
+      "path": ["prompt"],
+      "before": "Zaimplementuj samodzielnie `#[derive(Debug, PartialEq, Eq)] struct CrateRef { package: &'static str, version: &'static str, source: &'static str, selected: bool }`, `#[derive(Debug, PartialEq, Eq)] enum GraphStatus { Stable, Conflict(&'static str) }` oraz `fn find_conflict(items: &[CrateRef]) -> GraphStatus`. Porównuj tylko rekordy z `selected == true`; dla dwóch selected wpisów `bytes` w wersjach 1.5 i 1.4 zwróć `Conflict(\"bytes\")`, a gdy 1.4 ma `selected: false`, zwróć `Stable`.",
+      "beforeSha256": "af760ca8a122005c48d89b83f1c19f1b23fd257995e8048055504f0721b662a7",
+      "successorSha256": "6d9f0df08e8173d85a5d0df9b1dfca5f0959975c12d6dde76a4f15546bf70bc6"
+    },
+    {
+      "lessonId": "dependency-graph-diagnosis",
+      "stepId": "dependency-graph-diagnosis-recall",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn recall_graph_uses_different_versions_and_parent_source() {\n    let items = [CrateRef { package: \"bytes\", version: \"1.5\", source: \"registry\", selected: true }, CrateRef { package: \"bytes\", version: \"1.4\", source: \"registry\", selected: true }];\n    assert_eq!(find_conflict(&items), GraphStatus::Conflict(\"bytes\"));\n    let clean = [CrateRef { package: \"bytes\", version: \"1.4\", source: \"registry\", selected: false }, CrateRef { package: \"bytes\", version: \"1.5\", source: \"registry\", selected: true }];\n    assert_eq!(find_conflict(&clean), GraphStatus::Stable);\n}",
+      "beforeSha256": "408675d5a0f59ffbd6835f00c336ff6ffd781a8bc0be57d5b71e98a22e483355",
+      "successorSha256": "22e1dfc5ff49c83e09b0bf1d01c565cbeaa194098bae777866c76eb732791cb5"
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "stepId": "dependency-advisory-exceptions-gate",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn injected_date_controls_exception_expiry() {\n    let exception = Exception { id: \"RUSTSEC-2026-0001\", package: \"serde\", owner: \"platform\", scope: \"frame-protocol\", reason: \"fix scheduled\", expires_ymd: 20260930 };\n    assert!(active(&exception, 20260918));\n    assert!(active(&exception, 20260930));\n    assert!(!active(&exception, 20261001));\n    assert!(!active(&Exception { owner: \"\", ..exception }, 20260918));\n}",
+      "beforeSha256": "031c8c5813c0bbd6a9bdfd78aea43f6a46d25f61a2c2650d6da46cd46629f90a",
+      "successorSha256": "b6bf446d53a0f6d43952f592bb79bc645558d351b728af4ec76296010ed14d0c"
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "stepId": "dependency-advisory-exceptions-blank",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn blank_advisory_checks_owner_reason_scope_and_date() {\n    let exception = AdvisoryException { advisory: \"RUSTSEC-2026-0002\", package: \"bytes\", owner: \"runtime\", scope: \"default\", reason: \"upstream patch\", expires_ymd: 20261001 };\n    assert!(is_current(&exception, 20260918));\n    assert!(!is_current(&AdvisoryException { advisory: \"RUSTSEC-2026-0002\", package: \"bytes\", owner: \"runtime\", scope: \"default\", reason: \"\", expires_ymd: 20261001 }, 20260918));\n    assert!(!is_current(&AdvisoryException { advisory: \"RUSTSEC-2026-0002\", package: \"bytes\", owner: \"runtime\", scope: \"default\", reason: \"upstream patch\", expires_ymd: 20261002 }, 20261003));\n}",
+      "beforeSha256": "b0778101c7e0f51034ed0d8ea10bd98254f8e79e27f8500b9f2f373171282e20",
+      "successorSha256": "5acf215dbf973cbbceccb779545dcc33eddcaa7e55491fc1642d1993d8815857"
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "stepId": "dependency-advisory-exceptions-recall",
+      "path": ["prompt"],
+      "before": "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct Waiver { advisory: &'static str, owner: &'static str, scope: &'static str, reason: &'static str, expires_ymd: u32 }` oraz `fn usable(waiver: &Waiver, today: u32) -> bool`. Dla advisory `RUSTSEC-2026-0003`, ownera `security`, scope `feature-x`, reason `migration` i expiry `20260925` zwróć true dla `today = 20260918`, false dla pustego scope oraz false dla `today = 20260926`; nie czytaj zegara systemowego.",
+      "beforeSha256": "d15228317b6e43ccdfb7f5b868ac0c161d70bea8d1368ed4c13656d0bcb57933",
+      "successorSha256": "02be97b05d9b592dcc8bef157b7afc3801ca472c7985e25c33b0ccbfd5331124"
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "stepId": "dependency-advisory-exceptions-recall",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn recall_advisory_rejects_empty_scope_and_past_expiry() {\n    let waiver = Waiver { advisory: \"RUSTSEC-2026-0003\", owner: \"security\", scope: \"feature-x\", reason: \"migration\", expires_ymd: 20260925 };\n    assert!(usable(&waiver, 20260918));\n    assert!(!usable(&Waiver { advisory: \"RUSTSEC-2026-0003\", owner: \"security\", scope: \"\", reason: \"migration\", expires_ymd: 20260925 }, 20260918));\n    assert!(!usable(&waiver, 20260926));\n}",
+      "beforeSha256": "541b17677451e342be192167a7a87290801a10ce93da62e180e35cfe44e01cb8",
+      "successorSha256": "434c498cfc46706fbbff9f641dad1c6213c814d4773d33cc6421f1284cab2e2e"
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "stepId": "dependency-release-dossier-gate",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn release_requires_artifact_config_consumer_and_publish_false() {\n    let complete = Dossier { manifest: \"sha256:manifest\", lock: \"sha256:lock\", audit: \"sha256:audit\", artifact: \"sha256:archive\", config: \"deny.toml\", consumer: true, publish: false };\n    assert_eq!(decide(&complete), ReleaseDecision::Release);\n    assert_eq!(decide(&Dossier { manifest: \"\", lock: \"sha256:lock\", audit: \"sha256:audit\", artifact: \"sha256:archive\", config: \"deny.toml\", consumer: true, publish: false }), ReleaseDecision::Hold);\n    assert_eq!(decide(&Dossier { artifact: \"\", lock: \"sha256:lock\", manifest: \"sha256:manifest\", audit: \"sha256:audit\", config: \"deny.toml\", consumer: true, publish: false }), ReleaseDecision::Hold);\n    assert_eq!(decide(&Dossier { config: \"\", lock: \"sha256:lock\", manifest: \"sha256:manifest\", audit: \"sha256:audit\", artifact: \"sha256:archive\", consumer: true, publish: false }), ReleaseDecision::Hold);\n    assert_eq!(decide(&Dossier { consumer: false, lock: \"sha256:lock\", manifest: \"sha256:manifest\", audit: \"sha256:audit\", artifact: \"sha256:archive\", config: \"deny.toml\", publish: false }), ReleaseDecision::Hold);\n    assert_eq!(decide(&Dossier { publish: true, lock: \"sha256:lock\", manifest: \"sha256:manifest\", audit: \"sha256:audit\", artifact: \"sha256:archive\", config: \"deny.toml\", consumer: true }), ReleaseDecision::Hold);\n}",
+      "beforeSha256": "aead1c2b7dd7ea0a27ef589b392b5681816a21364e5e49612c541812e422721e",
+      "successorSha256": "ee0da6f98cd6b2bdd97e2eedcf4bc1a6a34783c500ec521f2758d56203e4c692"
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "stepId": "dependency-release-dossier-blank",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn blank_dossier_rejects_missing_policy_and_consumer() {\n    let complete = ReleaseDossier { manifest: \"manifest\", lockfile: \"lock\", policy: \"audit\", archive: \"zip\", config: \"deny\", consumer: true, publish: false };\n    assert_eq!(evaluate(&complete), Decision::Release);\n    assert_eq!(evaluate(&ReleaseDossier { manifest: \"manifest\", lockfile: \"lock\", policy: \"\", archive: \"zip\", config: \"deny\", consumer: true, publish: false }), Decision::Hold);\n    assert_eq!(evaluate(&ReleaseDossier { manifest: \"manifest\", lockfile: \"lock\", policy: \"audit\", archive: \"zip\", config: \"deny\", consumer: false, publish: false }), Decision::Hold);\n}",
+      "beforeSha256": "b494febb1e922b4f651be9edd669ccb6f743fcef0d6ec47a886d5cd97dc4fb3f",
+      "successorSha256": "9ccdf36288a52ecee4ac0abd6dea1be540f34ada3c03059fba49205dc1dea4b0"
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "stepId": "dependency-release-dossier-recall",
+      "path": ["prompt"],
+      "before": "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct EvidenceBundle<'a> { artifact: &'a str, config: &'a str, consumer: bool, missing_evidence: bool, publish: bool }`, `#[derive(Debug, PartialEq, Eq)] enum Status { Ready, Hold }` oraz `fn release_status(bundle: &EvidenceBundle<'_>) -> Status`. Kompletne `artifact = \"zip-sha\"`, `config = \"deny.toml\"`, `consumer = true`, `missing_evidence = false`, `publish = false` daje `Ready`; brak artifactu albo `missing_evidence = true` daje `Hold`.",
+      "beforeSha256": "3859ca9a0317a402d99a442e463814a95c43971e6aa8281ae8a57122fd50e64c",
+      "successorSha256": "4e9fac101c67abdf49fcd4921b84256b8324194d81bb8041f8990b2e95cf9606"
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "stepId": "dependency-release-dossier-recall",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn recall_dossier_treats_missing_evidence_as_hold() {\n    let ready = EvidenceBundle { artifact: \"zip-sha\", config: \"deny.toml\", consumer: true, missing_evidence: false, publish: false };\n    assert_eq!(release_status(&ready), Status::Ready);\n    assert_eq!(release_status(&EvidenceBundle { artifact: \"zip-sha\", config: \"deny.toml\", consumer: true, missing_evidence: true, publish: false }), Status::Hold);\n    assert_eq!(release_status(&EvidenceBundle { artifact: \"\", config: \"deny.toml\", consumer: true, missing_evidence: false, publish: false }), Status::Hold);\n}",
+      "beforeSha256": "edcb06526d7a4ced311a68c07ffce0b28e24d61677d0d1471f9dcf64370b4886",
+      "successorSha256": "e25dbe67e8ce8c5f8e21c3385a9529d16c1782861e9e6a3b2f5471daee55ac16"
+    }
+  ],
+  "lessonRestorations": [],
+  "appendedSteps": [],
+  "registries": [
+    {
+      "registry": "projects",
+      "selector": "number-guessing-result-message",
+      "path": ["constraints", "0"],
+      "before": "Rust 2024 oraz dokładnie rand 0.10.2 z thread_rng.",
+      "beforeSha256": "6e46bd611da278bac320a7dca58fa11ef2a76573f06587692f972c1d65cce593",
+      "successorSha256": "df3e05d8f4ff0653a7edfcc561b6ee4573e82441277c71a0476f4a17c40f1bd9"
+    },
+    {
+      "registry": "projects",
+      "selector": "number-guessing-result-message",
+      "path": ["package", "instructions", "2"],
+      "before": "Zachowaj rand 0.10.2, zwykły losowy sekret w normalnej grze oraz --secret wyłącznie dla powtarzalnego ćwiczenia.",
+      "beforeSha256": "a0397a8c9d3b92316ebb1570fff81a161dfb683927c7e053a802aa0b13c05c2e",
+      "successorSha256": "c97a22a6ef9924524e95be13ee4a1b85a19fed48444bf54705a03166153e662b"
+    },
+    {
+      "registry": "projects",
+      "selector": "log-analyzer-project",
+      "path": ["package", "instructions", "0"],
+      "before": "Rozpakuj projekt i użyj Rust 2024. Zacznij od cargo fmt --check, cargo check --offline --locked i cargo test --offline --locked.",
+      "beforeSha256": "8b446c634fad1c4f383fc7c07b5cbaa1889dbe2e6244430e4b34e732a6c491a8",
+      "successorSha256": "c204f25760895804497347b61ecc9ef3d67ded65c1416740e6dcb3bd754e28a7"
+    },
+    {
+      "registry": "projects",
+      "selector": "log-analyzer-project",
+      "path": ["package", "files", "18", "starter"],
+      "before": "# Log Analyzer Workshop\n\nTen pakiet używa biblioteki standardowej Rust w kodzie produkcyjnym, edycji 2024 i minimalnej wersji Rust 1.85.0. Czyta plik w formacie\nTIMESTAMP LEVEL MESSAGE. Timestamp jest nieujemną liczbą dziesiętną u64, level\njest dokładnie INFO, WARN albo ERROR, a message jest niepustym tekstem UTF-8.\nKomunikat zachowuje cały tekst po separatorze poziomu, łącznie ze spacjami. CRLF i ostatnia\nlinia bez LF są obsługiwane.\n\n## Uruchomienie\n\nUruchom bez filtra: cargo run --offline -- fixtures/mixed.log\nUruchom z filtrem: cargo run --offline -- fixtures/mixed.log INFO\n\nRaport zaczyna się od LOG REPORT V1, potem podaje filter: ALL albo wybrany level,\na następnie w kolejności INFO, WARN, ERROR i malformed. Filtr ogranicza tylko\npoprawne rekordy; linia z błędnym UTF-8 nadal zwiększa malformed, nawet gdy filtr\nwskazuje inny poziom. Błąd otwarcia lub odczytu kończy proces kodem niezerowym i\nnie wypisuje częściowego raportu na stdout.\n\nBiblioteka przyjmuje &[u8], aby móc odróżnić uszkodzone UTF-8 od poprawnego\nrekordu. Po udanym parsowaniu message jest pożyczonym &str i zachowuje oryginalne\nspacje.\n\n## Stała pamięć\n\nCzytnik używa BufRead::fill_buf i consume. Zachowuje najwyżej 4096 bajtów linii\nprzed LF, przy czym końcowy CR jest wliczony do tego limitu. Linia o długości\n4097 lub większej jest pomijana do końca i liczona jako dokładnie jeden rekord\nbłędny; następna linia może być poprawna. Nie przechowujemy rekordów, mapy\nwiadomości ani listy diagnostyk. Liczniki są u64 i każdy przyrost jest\nsprawdzany; przepełnienie jest jawnym błędem. To opis kosztu pamięci, bez\nBenchmark `cargo bench --offline --locked --bench log_analyzer` porównuje równoważną ścieżkę bazową i strumieniową na trzech ograniczonych wejściach. Przygotowanie wejścia odbywa się poza mierzonym ciałem, a każda iteracja dostaje świeży czytnik pożyczający gotowe bajty. Criterion mierzy przetwarzanie, a zwalnianie czytnika odbywa się po pomiarze. Wynik nie jest uniwersalnym progiem czasu ani obietnicą wydajności na każdym sprzęcie.\n\n## Testy i kontrola jakości\n\ncargo test --offline uruchamia testy jednostkowe parsera i strumienia, testy\nintegracyjne z małymi fragmentami BufRead, granicami 4096/4097, CRLF, Unicode,\nduplikatami, końcem bez LF i błędem I/O, a także test procesu CLI z filtrem,\nbrakującym plikiem, błędnym filtrem i rozdzieleniem stdout/stderr. Dokumentacja\nw src/lib.rs jest sprawdzana jako doctest.\n\nBenchmark używa Criterion wyłącznie jako dev-dependency. Test kontraktowy porównuje\nwynik bazowej i strumieniowej ścieżki dla małego wejścia poprawnego, mieszanego\noraz kończącego się bez LF.\n\nPrzed oddaniem uruchom kolejno:\n\ncargo fmt --check\ncargo check --offline --locked --all-targets\ncargo test --offline --locked\ncargo doc --offline --no-deps\ncargo clippy --offline --locked --all-targets -- -D warnings\n\ncargo bench --offline --locked --bench log_analyzer\n\nStarter ma celowe todo! w src/analyzer.rs: powinien przejść cargo check i\nformatowanie, ale testy muszą wykazać brak implementacji. Uzupełnij parser,\nliczenie strumieniowe, pomijanie za długiej linii i raport, zachowując podane\nAPI. Następnie sprawdź referencję oraz wykonaj ręczne próby: pusty plik, 4096 i\n4097 bajtów przed LF, CRLF, brak końcowego LF, uszkodzony UTF-8, nieznany level,\nprzepełniony timestamp i niedostępny plik.\n\n## Projekt końcowy: Study Session CLI od zera\n\nCore17 dostarcza technicznych podstaw. Zalecane oddanie następuje po Mini grep\n(4 lekcje) i Box → Rc/Weak → wątki → kanały → Arc/Mutex (15 lekcji).\nWłasny program korzysta wyłącznie ze std; Criterion pobranego warsztatu nie jest\njego zależnością. Wybierasz typy, nazwy, podział funkcji i własne testy.\nSamoocena i przegląd zewnętrzny są odrębnymi kategoriami dowodu; projekt nie ma\nautomatycznego zaliczenia. W retrospektywie opisz własność, politykę błędów\ni zmianę wymagania: który koncept zdecydował o projekcie, który nieudany test\nzmienił decyzję i jaka granica pozostaje niesprawdzona? Publiczny follow-up\nnie jest gwarantowanie nieznany.\n\nUtwórz osobny lokalny projekt Cargo korzystający ze standardowej biblioteki.\nMożesz zaglądać do dokumentacji standardowej biblioteki; zapisz, z jakiej\npomocy skorzystałeś. Program przyjmuje dokładnie jeden argument: ścieżkę do\npliku w UTF-8. Każda niepusta linia ma postać `name;minutes`, zawiera dokładnie\njeden średnik, a oba pola trzeba przyciąć; name nie może być puste. minutes to\ndziesiętne cyfry ASCII z zakresu 1..=1440. Puste linie pomijasz, nazwy są\nnapisami Unicode rozróżniającymi wielkość liter.\n\nZsumuj minuty dla każdej nazwy i wypisz `name;total`, po jednej linii, w porządku\nnapisów Rust. Błędny rekord zgłoś na stderr z numerem linii od 1, kontynuuj dla\npoprawnych rekordów, wypisz poprawne podsumowanie i zakończ `exit 2`. Błędna\nliczba argumentów, błąd I/O albo błąd UTF-8 ma trafić na stderr, nie wypisać\nraportu i zakończyć się `exit 1`; poprawny plik kończy się `exit 0`. Przepełnienie\nsumy jest błędnym rekordem i zachowuje wcześniejsze sumy. Użyj wyłącznie std, bez zewnętrznych zależności. Sieć, znaczniki czasu,\nwdrożenie i próg wydajności są poza wymaganiami.\n\nPrzykład 1 — wejście. Pierwsza linia zaczyna się jedną spacją.\n\n` Basia;30`\n`Ada;5`\n`Basia; 15`\n\nstdout:\n\n`Ada;5`\n`Basia;45`\n\nstderr jest puste, a kod wyjścia to 0.\n\nPrzykład 2 — wejście:\n\n`Ada;5`\n`to nie jest rekord`\n`Basia;7`\n\nstdout:\n\n`Ada;5`\n`Basia;7`\n\nstderr zawiera numer linii 2, a kod wyjścia to 2; treść komunikatu wybierasz\nsamodzielnie. Zapisz decyzje o własności nazw i strukturze danych, własne testy\nbłędu oraz agregacji i kolejności, wyniki poleceń dla pliku poprawnego i\nmieszanego oraz krótkie omówienie jednej decyzji własności. Udokumentowana samoocena\nlub przegląd zewnętrzny obejmuje powtórzenia oraz dwie różnie zapisane nazwy, które po przycięciu są tą samą nazwą, a także Unicode, pusty plik, CRLF,\ngranice minut, złe pola, I/O i przepełnienie. Pakiet referencyjny jest pomocą,\nnie artefaktem uczącego się ani automatycznym zaliczeniem.\n\nPo udokumentowanej samoocenie lub przeglądzie zewnętrznym pierwszego artefaktu możesz\ndodać opcjonalne `--min-total N`, na przykład `--min-total 10`. Filtr dotyczy\ntylko końcowych sum, a stare wywołanie pozostaje zgodne; parsowanie, diagnostyka\ni kody wyjścia pozostają bez zmian, testy trzeba zaktualizować i wyjaśnić nową\ngranicę. Sposób zapisu liczby `N` nie jest tu narzucony. Określ dozwolony\nzapis i obsługę błędów we własnym kontrakcie; pokaż tę granicę w testach i\nwyjaśnij swoją decyzję.\n",
+      "beforeSha256": "3f52f135001f5b367eb3e6d517d22506116485fc0fd5fcfc0f454c614ccf6ce2",
+      "successorSha256": "ce42d32531ffab3fe6e5ab2a790a9166b1d0da5ef2d1b6b3c5056c36d68ee115"
+    },
+    {
+      "registry": "projects",
+      "selector": "service-operations",
+      "path": ["package", "instructions", "0"],
+      "before": "Rozpakuj starter i uruchom cargo fmt --all -- --check oraz cargo test --offline --locked.",
+      "beforeSha256": "4ed51baae0d99c4afdf3764664fc25d1cc1e373bec61f4d2a85b25276c23531a",
+      "successorSha256": "9b60057bffa235e2abf3be5725269bec5f2ad473050efba351f7159121f7b9d3"
+    },
+    {
+      "registry": "projects",
+      "selector": "service-operations",
+      "path": ["package", "files", "2", "starter"],
+      "before": "# Service Operations fixture\n\nThis is a small authored Tokio fixture for admission policy, allowlisted telemetry, readiness/drain accounting and deterministic incident evidence. The event model is deliberately implemented with `std` and Tokio types; it does not claim to configure a production tracing subscriber.\n\nRun the solution with:\n\n```sh\ncargo fmt --all -- --check\ncargo check --offline --locked --all-targets\ncargo test --offline --locked --no-fail-fast\ncargo clippy --offline --locked --all-targets -- -D warnings\n```\n\nThe starter contains explicit `todo!` markers. Keep the source allowlist, proof and cost checks before accepted accounting, emit only reviewed event fields, close readiness before drain and preserve worker joins after timeout.\n",
+      "beforeSha256": "c3d2da66ac6ebc4aa44d27cead4b6b9adf85642a9ef949b9bbdb2cfa6a37ac6d",
+      "successorSha256": "20f266851b17393b2a363c7da946a98a62aac020717be63497ec6e71202798d1"
+    },
+    {
+      "registry": "projects",
+      "selector": "service-operations",
+      "path": ["package", "files", "2", "solution"],
+      "before": "# Service Operations fixture\n\nThis is a small authored Tokio fixture for admission policy, allowlisted telemetry, readiness/drain accounting and deterministic incident evidence. The event model is deliberately implemented with `std` and Tokio types; it does not claim to configure a production tracing subscriber.\n\nRun the solution with:\n\n```sh\ncargo fmt --all -- --check\ncargo check --offline --locked --all-targets\ncargo test --offline --locked --no-fail-fast\ncargo clippy --offline --locked --all-targets -- -D warnings\n```\n\nThe starter contains explicit `todo!` markers. Keep the source allowlist, proof and cost checks before accepted accounting, emit only reviewed event fields, close readiness before drain and preserve worker joins after timeout.\n",
+      "beforeSha256": "c3d2da66ac6ebc4aa44d27cead4b6b9adf85642a9ef949b9bbdb2cfa6a37ac6d",
+      "successorSha256": "20f266851b17393b2a363c7da946a98a62aac020717be63497ec6e71202798d1"
+    },
+    {
+      "registry": "projects",
+      "selector": "property-contracts",
+      "path": ["package", "files", "2", "starter"],
+      "before": "# Property contracts workshop\n\nThis repository-authored Rust 2024 package is a bounded Proptest workshop. It\nuses exactly \\`proptest = 1.11.0\\` as a development dependency and has no runtime\ndependency. The library models two pure domains: Mini grep line selection and\nLog Analyzer record classification.\n\n## Verification\n\nRun the following commands from this directory after fetching the locked\ndependency graph:\n\n    cargo fmt --all -- --check\n    cargo test --locked\n    cargo test replay_saved_regression --locked\n    cargo clippy --all-targets --locked -- -D warnings\n\nThe starter test file contains TODOs for strategy composition, properties,\nshrinking, replay, and the metamorphic relation. The solution test file\ncontains the completed bounded properties. The checked-in\n\\`proptest-regressions/property_contracts.txt\\` file records the\nrepository-authored witness for the shrinking exercise. The replay test\ndecodes that witness and checks the summary contract deterministically. The\nproperty tests generate at most 24 records or lines, 32 bytes of query and 40\nbytes of message. The bounds describe the tested domain; they are not a proof\nabout every possible input.\n\nThe \\`mutants/ignore-malformed-filter.rs\\` and\n\\`mutants/keep-whitespace-message.rs\\` fixtures are intentional, compiling\nvariants of the summary and parser contracts. A maintainer verifier swaps only\nthese repository-authored fixtures into temporary extracted archives and\nconfirms that the focused tests reject them. The application never executes learner code, imported files,\nmanifests, or local Cargo commands. Downloading the archive is not completion\nevidence.\n\nProperty testing checks structured relations over a declared generator and\noracle. Fuzzing is a better fit for broad byte robustness and parser crash\ndiscovery. Neither tool removes the need to state the contract, inspect a\ncounterexample, and describe uncovered cases.\n",
+      "beforeSha256": "98da60c26c49a0f6e0b9050fe442610705b59e5fd9a060c792a1a38125b03f1a",
+      "successorSha256": "355b86efc87f24657220752fc6439574ab3997d7ec98d921372d32757bc153d8"
+    },
+    {
+      "registry": "projects",
+      "selector": "property-contracts",
+      "path": ["package", "files", "2", "solution"],
+      "before": "# Property contracts workshop\n\nThis repository-authored Rust 2024 package is a bounded Proptest workshop. It\nuses exactly \\`proptest = 1.11.0\\` as a development dependency and has no runtime\ndependency. The library models two pure domains: Mini grep line selection and\nLog Analyzer record classification.\n\n## Verification\n\nRun the following commands from this directory after fetching the locked\ndependency graph:\n\n    cargo fmt --all -- --check\n    cargo test --locked\n    cargo test replay_saved_regression --locked\n    cargo clippy --all-targets --locked -- -D warnings\n\nThe starter test file contains TODOs for strategy composition, properties,\nshrinking, replay, and the metamorphic relation. The solution test file\ncontains the completed bounded properties. The checked-in\n\\`proptest-regressions/property_contracts.txt\\` file records the\nrepository-authored witness for the shrinking exercise. The replay test\ndecodes that witness and checks the summary contract deterministically. The\nproperty tests generate at most 24 records or lines, 32 bytes of query and 40\nbytes of message. The bounds describe the tested domain; they are not a proof\nabout every possible input.\n\nThe \\`mutants/ignore-malformed-filter.rs\\` and\n\\`mutants/keep-whitespace-message.rs\\` fixtures are intentional, compiling\nvariants of the summary and parser contracts. A maintainer verifier swaps only\nthese repository-authored fixtures into temporary extracted archives and\nconfirms that the focused tests reject them. The application never executes learner code, imported files,\nmanifests, or local Cargo commands. Downloading the archive is not completion\nevidence.\n\nProperty testing checks structured relations over a declared generator and\noracle. Fuzzing is a better fit for broad byte robustness and parser crash\ndiscovery. Neither tool removes the need to state the contract, inspect a\ncounterexample, and describe uncovered cases.\n",
+      "beforeSha256": "98da60c26c49a0f6e0b9050fe442610705b59e5fd9a060c792a1a38125b03f1a",
+      "successorSha256": "355b86efc87f24657220752fc6439574ab3997d7ec98d921372d32757bc153d8"
+    },
+    {
+      "registry": "projects",
+      "selector": "ffi-buffer",
+      "path": ["package", "files", "2", "starter"],
+      "before": "# FFI buffer workshop\n\nThis package is a deliberately small Rust 2024 FFI boundary. Rust owns a\nnative buffer after a successful \\`ffi_buffer_create\\`, borrows its immutable\nview, and calls \\`ffi_buffer_destroy\\` exactly once from \\`Drop\\`.\n\n## Run it\n\nThe fixture needs a C compiler and archiver named by \\`CC\\` and \\`AR\\`, or the\nusual \\`cc\\` and \\`ar\\` on PATH. Rust 1.85.0 is the minimum supported toolchain.\n\n\\`\\`\\`sh\ncargo fmt --all -- --check\ncargo check --locked\ncargo test --locked\ncargo test --locked --test native_integration -- --test-threads=1\ncargo clippy --all-targets --locked -- -D warnings\n\\`\\`\\`\n\nThe C fixture rejects a buffer longer than 4096 bytes, a null non-empty input,\nand an input whose first byte is \\`0xff\\`. The last case is an intentional,\ndeterministic failure so the Rust wrapper test proves that native failure is\nreported instead of converted into a dangling owner.\n\nThe native fixture also exposes a deterministic release counter for the\nintegration test. Run that test with one test thread so the counter is scoped\nto its probe and a missing \\`Drop\\` call cannot pass accidentally.\n\n## Contract\n\nThe C side copies caller bytes during create. On success it returns one owned\nhandle. The handle remains valid until destroy, and the view pointer remains\nvalid while the Rust \\`Buffer\\` is borrowed. The Rust wrapper checks its input\nbound, rejects a null create result, checks the returned length, and keeps all\nraw pointers private.\n\nThe starter contains TODOs in the Rust declarations and wrapper. Complete it\nwithout weakening the tests or moving ownership into a caller-managed raw\npointer.\n\n## Limits\n\nThis is a teaching fixture, not a general allocator abstraction. It does not\npromise thread-safe mutation, transfer of a C handle to another allocator, or\nrecovery from a malicious native library that violates its declared ABI. The\nsafe API can check the documented bound and null result; it cannot prove that\narbitrary foreign code obeys the contract.\n",
+      "beforeSha256": "7f29c5f3b3b56a058d744106843cf3b62c3ce2b9d20be5155f147d27aff20874",
+      "successorSha256": "96ff3119c18e501196846aad6802779bb82fd9515b60348b3d59a64f5527de7a"
+    },
+    {
+      "registry": "projects",
+      "selector": "ffi-buffer",
+      "path": ["package", "files", "2", "solution"],
+      "before": "# FFI buffer workshop\n\nThis package is a deliberately small Rust 2024 FFI boundary. Rust owns a\nnative buffer after a successful \\`ffi_buffer_create\\`, borrows its immutable\nview, and calls \\`ffi_buffer_destroy\\` exactly once from \\`Drop\\`.\n\n## Run it\n\nThe fixture needs a C compiler and archiver named by \\`CC\\` and \\`AR\\`, or the\nusual \\`cc\\` and \\`ar\\` on PATH. Rust 1.85.0 is the minimum supported toolchain.\n\n\\`\\`\\`sh\ncargo fmt --all -- --check\ncargo check --locked\ncargo test --locked\ncargo test --locked --test native_integration -- --test-threads=1\ncargo clippy --all-targets --locked -- -D warnings\n\\`\\`\\`\n\nThe C fixture rejects a buffer longer than 4096 bytes, a null non-empty input,\nand an input whose first byte is \\`0xff\\`. The last case is an intentional,\ndeterministic failure so the Rust wrapper test proves that native failure is\nreported instead of converted into a dangling owner.\n\nThe native fixture also exposes a deterministic release counter for the\nintegration test. Run that test with one test thread so the counter is scoped\nto its probe and a missing \\`Drop\\` call cannot pass accidentally.\n\n## Contract\n\nThe C side copies caller bytes during create. On success it returns one owned\nhandle. The handle remains valid until destroy, and the view pointer remains\nvalid while the Rust \\`Buffer\\` is borrowed. The Rust wrapper checks its input\nbound, rejects a null create result, checks the returned length, and keeps all\nraw pointers private.\n\nThe starter contains TODOs in the Rust declarations and wrapper. Complete it\nwithout weakening the tests or moving ownership into a caller-managed raw\npointer.\n\n## Limits\n\nThis is a teaching fixture, not a general allocator abstraction. It does not\npromise thread-safe mutation, transfer of a C handle to another allocator, or\nrecovery from a malicious native library that violates its declared ABI. The\nsafe API can check the documented bound and null result; it cannot prove that\narbitrary foreign code obeys the contract.\n",
+      "beforeSha256": "7f29c5f3b3b56a058d744106843cf3b62c3ce2b9d20be5155f147d27aff20874",
+      "successorSha256": "96ff3119c18e501196846aad6802779bb82fd9515b60348b3d59a64f5527de7a"
+    },
+    {
+      "registry": "projects",
+      "selector": "ffi-buffer",
+      "path": ["package", "files", "3", "starter"],
+      "before": "# Safety ledger\n\n| Boundary | Assumption | Rust proof or containment |\n| --- | --- | --- |\n| \\`ffi_buffer_create\\` | The C ABI accepts a pointer/length pair and copies bytes before returning. | \\`from_bytes\\` passes a slice pointer and length, checks the maximum, and treats null as an error. |\n| \\`ffi_buffer_view\\` | A successful handle owns an immutable allocation until destroy. | \\`view\\` borrows through \\`&self\\`, checks null/length, and constructs one slice only after those checks. |\n| \\`ffi_buffer_destroy\\` | The handle was returned by create and has not been destroyed. | \\`NonNull\\` is stored in one non-\\`Copy\\` owner; \\`Drop\\` is the only release site. |\n| C layout | The opaque pointer is never dereferenced by Rust. | \\`sys::ffi_buffer_t\\` is an opaque \\`repr(C)\\` type and raw access stays in \\`sys\\`. |\n\nThe C fixture's sentinel failure is a test oracle, not an allocator guarantee.\nThe Rust wrapper still handles any null create result conservatively. A view\nwhose pointer and nonzero length disagree is reported as\n\\`BufferError::NativeInvariant\\` rather than passed to \\`from_raw_parts\\`.\n",
+      "beforeSha256": "90059ec4be87c5d376f18e4a71945b8a240e5bac8dd5298a85353f8547c68d5e",
+      "successorSha256": "e8b442e486e3ef27289a9a04437caf02c55f3021596d439d33e6c5b808993ec3"
+    },
+    {
+      "registry": "projects",
+      "selector": "ffi-buffer",
+      "path": ["package", "files", "3", "solution"],
+      "before": "# Safety ledger\n\n| Boundary | Assumption | Rust proof or containment |\n| --- | --- | --- |\n| \\`ffi_buffer_create\\` | The C ABI accepts a pointer/length pair and copies bytes before returning. | \\`from_bytes\\` passes a slice pointer and length, checks the maximum, and treats null as an error. |\n| \\`ffi_buffer_view\\` | A successful handle owns an immutable allocation until destroy. | \\`view\\` borrows through \\`&self\\`, checks null/length, and constructs one slice only after those checks. |\n| \\`ffi_buffer_destroy\\` | The handle was returned by create and has not been destroyed. | \\`NonNull\\` is stored in one non-\\`Copy\\` owner; \\`Drop\\` is the only release site. |\n| C layout | The opaque pointer is never dereferenced by Rust. | \\`sys::ffi_buffer_t\\` is an opaque \\`repr(C)\\` type and raw access stays in \\`sys\\`. |\n\nThe C fixture's sentinel failure is a test oracle, not an allocator guarantee.\nThe Rust wrapper still handles any null create result conservatively. A view\nwhose pointer and nonzero length disagree is reported as\n\\`BufferError::NativeInvariant\\` rather than passed to \\`from_raw_parts\\`.\n",
+      "beforeSha256": "90059ec4be87c5d376f18e4a71945b8a240e5bac8dd5298a85353f8547c68d5e",
+      "successorSha256": "e8b442e486e3ef27289a9a04437caf02c55f3021596d439d33e6c5b808993ec3"
+    },
+    {
+      "registry": "projects",
+      "selector": "miri-safety",
+      "path": ["package", "files", "3", "starter"],
+      "before": "# Warsztat bezpieczeństwa z Miri\n\nThis authored package is a small, dependency-free Rust 2024 fixture for the\nunsafe curriculum. The library keeps its public API safe and tests the\ncontracts for borrowed byte views, caller-selected disjoint mutable regions,\nsingle-value storage and short mutable reborrows.\n\nThe \\`fixtures/\\` crate contains four deliberately invalid programs. They are\ncompiled for diagnostics only and are interpreted by a pinned Miri nightly.\nThe verifier never executes their native binaries. A Miri failure is evidence\nthat the interpreter observed undefined behavior in the fixture; it is not a\nclaim that Miri proves every possible unsafe program safe.\n\nRun the authored checks from the repository with:\n\n\\`\\`\\`text\nnpm run content:miri -- --stable --fetch\n\\`\\`\\`\n\nThe command accepts no learner paths, source overrides, dependency overrides,\nor arbitrary toolchains.\n",
+      "beforeSha256": "76ce9f355d6173079ad8d051497e14d501acecf8a77503bd11174a3f9d8d9df7",
+      "successorSha256": "d5b438bee4473e87f24205152a9e119a01652152167881d8d37a4b0f70ae427e"
+    },
+    {
+      "registry": "projects",
+      "selector": "miri-safety",
+      "path": ["package", "files", "3", "solution"],
+      "before": "# Warsztat bezpieczeństwa z Miri\n\nThis authored package is a small, dependency-free Rust 2024 fixture for the\nunsafe curriculum. The library keeps its public API safe and tests the\ncontracts for borrowed byte views, caller-selected disjoint mutable regions,\nsingle-value storage and short mutable reborrows.\n\nThe \\`fixtures/\\` crate contains four deliberately invalid programs. They are\ncompiled for diagnostics only and are interpreted by a pinned Miri nightly.\nThe verifier never executes their native binaries. A Miri failure is evidence\nthat the interpreter observed undefined behavior in the fixture; it is not a\nclaim that Miri proves every possible unsafe program safe.\n\nRun the authored checks from the repository with:\n\n\\`\\`\\`text\nnpm run content:miri -- --stable --fetch\n\\`\\`\\`\n\nThe command accepts no learner paths, source overrides, dependency overrides,\nor arbitrary toolchains.\n",
+      "beforeSha256": "76ce9f355d6173079ad8d051497e14d501acecf8a77503bd11174a3f9d8d9df7",
+      "successorSha256": "d5b438bee4473e87f24205152a9e119a01652152167881d8d37a4b0f70ae427e"
+    },
+    {
+      "registry": "projects",
+      "selector": "miri-safety",
+      "path": ["package", "files", "4", "starter"],
+      "before": "# Safety ledger\n\nThe main crate has \\`#![forbid(unsafe_code)]\\`. Its contracts are deliberately\nsmall:\n\n- \\`ByteView\\` borrows an existing initialized slice without taking ownership or\n  extending its lifetime.\n- \\`split_regions\\` delegates the disjointness proof to the standard library and\n  returns no pair when the split is outside the slice.\n- \\`select_regions\\` validates two half-open ranges, rejects overlap before any\n  mutation, and preserves the caller's tuple order.\n- \\`Slot<T>\\` represents Empty/Full state and transfers each stored value once;\n  \\`MutSlot\\` can shorten only its outer borrow through a reborrow.\n\nThe four files under \\`fixtures/\\` are negative examples. Each one violates a\ndifferent memory rule and must be observed through Miri. They are kept outside\nthe library crate so an accidental native test run cannot make them part of a\nnormal package test.\n",
+      "beforeSha256": "4ce14d3c1c1e0845780d8ca2eac23cae68ed657924e65e6e306744af1d008cb8",
+      "successorSha256": "cb639b9a8aad2385ca01f92baa2a19f146cae7435bc0844317b35a491529d76b"
+    },
+    {
+      "registry": "projects",
+      "selector": "miri-safety",
+      "path": ["package", "files", "4", "solution"],
+      "before": "# Safety ledger\n\nThe main crate has \\`#![forbid(unsafe_code)]\\`. Its contracts are deliberately\nsmall:\n\n- \\`ByteView\\` borrows an existing initialized slice without taking ownership or\n  extending its lifetime.\n- \\`split_regions\\` delegates the disjointness proof to the standard library and\n  returns no pair when the split is outside the slice.\n- \\`select_regions\\` validates two half-open ranges, rejects overlap before any\n  mutation, and preserves the caller's tuple order.\n- \\`Slot<T>\\` represents Empty/Full state and transfers each stored value once;\n  \\`MutSlot\\` can shorten only its outer borrow through a reborrow.\n\nThe four files under \\`fixtures/\\` are negative examples. Each one violates a\ndifferent memory rule and must be observed through Miri. They are kept outside\nthe library crate so an accidental native test run cannot make them part of a\nnormal package test.\n",
+      "beforeSha256": "4ce14d3c1c1e0845780d8ca2eac23cae68ed657924e65e6e306744af1d008cb8",
+      "successorSha256": "cb639b9a8aad2385ca01f92baa2a19f146cae7435bc0844317b35a491529d76b"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "loop-values",
+      "id": "review-loop-values",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn returns_the_last_power_not_above_limit() {\n    assert_eq!(last_power_of_two(0), 0);\n    assert_eq!(last_power_of_two(1), 1);\n    assert_eq!(last_power_of_two(5), 4);\n    assert_eq!(last_power_of_two(32), 32);\n}\n\n#[test]\nfn handles_a_limit_between_powers() {\n    assert_eq!(last_power_of_two(33), 32);\n    assert_eq!(last_power_of_two(100), 64);\n}",
+      "beforeSha256": "50117185905268fa8139de4e7f1fa605370031c24fc21901ef0c2dd18904ade0",
+      "successorSha256": "8d201076efb1e7cfd008fb5a57b843f029c19b226e82599673134ced1f88471c"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "stack-heap",
+      "id": "review-stack-heap",
+      "path": ["prompt"],
+      "before": "Wiązanie Vec<u8> wskazuje bufor na stercie. Co przechowuje lokalnie i kto odpowiada za bufor?",
+      "beforeSha256": "445b1d6be0172466fe9c1c5fbb0bfd26fec0024f81172238cd653d1885c69b36",
+      "successorSha256": "e72df072a135f17900d9091d845a51a7ba2c620dea67f78dc837a3ec4fe51360"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "stack-heap",
+      "id": "review-stack-heap",
+      "path": ["solution"],
+      "before": "Wiązanie przechowuje metadane Vec, a jego właściciel odpowiada za usunięcie bufora na stercie.",
+      "beforeSha256": "a7570c2acb121ac7122a06e0f8bc4da29b6a7707ca6db5590fd423626154b716",
+      "successorSha256": "014ae2bd5f94f2d465bbc39dcaaba64e97579ce0003cf4a8559fdb1a3100167b"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "stack-heap",
+      "id": "review-stack-heap",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "metadata and owns the heap buffer",
+          "vec metadata; its owner drops the heap buffer",
+          "the owner drops the heap buffer",
+          "metadane i właściciel bufora na stercie",
+          "metadane Vec; właściciel zwalnia bufor na stercie",
+          "właściciel zwalnia bufor na stercie"
+        ],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "f009628e354a5ca35cc29dbf0563dc4ba452df258907a152a2a81ac192de4aca",
+      "successorSha256": "1d9c00f6bbab45204b01f3446d0b844a4ffc44ea68707876f89332442070b864"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "stack-heap",
+      "id": "review-stack-heap",
+      "path": ["evidenceKind"],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "scope-drop",
+      "id": "review-scope-drop",
+      "path": ["prompt"],
+      "before": "String powstaje w wewnętrznym bloku i nie jest przenoszony. Kiedy zostanie usunięty?",
+      "beforeSha256": "fffb9f931721c2dc47e190e95f8057a2696030bc87fb5cc37e3863513c3a46f9",
+      "successorSha256": "0f6f1d240047912cb7701845ec4bc1e0a2cf9063708c7e0dd8f083e1eeb52f4c"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "scope-drop",
+      "id": "review-scope-drop",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "at the end of the inner block",
+          "when the owner leaves the inner scope",
+          "at scope end",
+          "na końcu wewnętrznego bloku",
+          "gdy właściciel opuszcza wewnętrzny zakres",
+          "na końcu zakresu"
+        ],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "3cd83d69be9c0099966b8b2de27e7a8894fda6c2bf9174b4e1d9d073bf687a0d",
+      "successorSha256": "4b5d5f41b4772bcc2eb5a22fa3758b2844c6afe58da6c4a7b3eb0ed1e648dc99"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "scope-drop",
+      "id": "review-scope-drop",
+      "path": ["evidenceKind"],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "copy-semantics",
+      "id": "review-copy-semantics",
+      "path": ["prompt"],
+      "before": "Przewidź, czy oba wiązania zostaną wypisane w przykładzie z `(u8, bool)`.",
+      "beforeSha256": "bb1812d759d8a7cf871f362201f2350285ab906c47ba82e5ba6856fd98f064ea",
+      "successorSha256": "5c0142e3085b1b8be2b72d8b3b8f79eb73344866b30137711ff9b9cd5b70eba7"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "copy-semantics",
+      "id": "review-copy-semantics",
+      "path": ["solution"],
+      "before": "Oba wiązania pozostają poprawne, bo krotka zawiera wyłącznie typy Copy.",
+      "beforeSha256": "85a0c406369d8652645d92c563afe7b89f02884ec696519d96e94ad12a84735d",
+      "successorSha256": "f29633646dedc9ee1f8f77ae9c031206e592771bae4045728603d066b7433c1e"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "copy-semantics",
+      "id": "review-copy-semantics",
+      "path": ["evaluator", "feedback"],
+      "before": "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
+      "beforeSha256": "a75f2c6ff998ac392e64d287c1a9682acf477dd2965bc6fd12e479de6c6d1211",
+      "successorSha256": "ac099f534380588feb27fdb1ff613f4accebc73f92578a234c8ef7dc7db41ba3"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "function-ownership",
+      "id": "review-function-ownership",
+      "path": ["prompt"],
+      "before": "Sygnatura to `fn save(label: String)`. Co wywołanie robi z wiązaniem String wywołującego?",
+      "beforeSha256": "1ce7a36d382146ac96ccdb825889fc1f78ce8124a8f9b0295ebabfe09c8a23fe",
+      "successorSha256": "2cc709270d8adeff8a37745246a919de81905910e37c4f9aefd1abbd725f8f0f"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "function-ownership",
+      "id": "review-function-ownership",
+      "path": ["solution"],
+      "before": "Własność przechodzi do save, więc wywołujący nie użyje wiązania, jeśli funkcja jej nie zwróci.",
+      "beforeSha256": "28d96be7054290be32dcb9aa5c5eb54f65b466717bbb6a543783ffa6acd74e7f",
+      "successorSha256": "34ac81453540f732ebfea2a6b1abd725b5d9788d13c1b4eb1cf6d6926a203840"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "function-ownership",
+      "id": "review-function-ownership",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "moves ownership into save",
+          "the string moves into the function",
+          "caller cannot use it after the call",
+          "własność przechodzi do save",
+          "String zostaje przeniesiony do funkcji",
+          "wywołujący nie może go użyć po wywołaniu"
+        ],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "315d7eaa97889935f9a31f29cb7191d352449583257139c9ba585c200ae8041c",
+      "successorSha256": "768690810a1c0043b0863b8b87a96b9435319d006722bda35b0c9337882345c6"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "function-ownership",
+      "id": "review-function-ownership",
+      "path": ["evidenceKind"],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "struct-records",
+      "id": "review-struct-records",
+      "path": ["title"],
+      "before": "Powtórka: pole String",
+      "beforeSha256": "4d97e063d9c9b7fd384c05493300cc7ad6aa5b42868985415ca421ab7fbc7b24",
+      "successorSha256": "00a1976703e93dc89dc6913b22ab96ed2ed5233675c0c355fbfad70e8d9ba0a0"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "struct-records",
+      "id": "review-struct-records",
+      "path": ["prompt"],
+      "before": "Dlaczego `String` jest dobrym polem prostego rekordu przechowującego własną nazwę?",
+      "beforeSha256": "869e0900b60dc6710a54c93aa20def3da0f2158062c4f413fbfad450b361d97d",
+      "successorSha256": "f32329fad9558bd4cf7b94ad4cb187c34d873c06a4352b06132e307d68742eae"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "struct-records",
+      "id": "review-struct-records",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Bo rekord posiada bufor i może żyć dłużej niż funkcja tworząca.",
+          "String daje rekordowi własność tekstu.",
+          "the record owns the text"
+        ],
+        "feedback": "Wskaż właściciela bufora i to, że rekord może przeżyć funkcję tworzącą."
+      },
+      "beforeSha256": "887fa1b992bc1a21093f5e258e9f6aec7d5b8b6ac92391f9914d4745f2b41ac8",
+      "successorSha256": "0abc684f128e494c21035ca85578720e830f23af83a695e5f002a1daaad8a25b"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "struct-records",
+      "id": "review-struct-records",
+      "path": ["solution"],
+      "before": "String posiada tekst, więc rekord może przechowywać nazwę bez pożyczonego lifetime.",
+      "beforeSha256": "b131401d82526233d641310318be6708289a94804cf91db7432c31facdebec63",
+      "successorSha256": "07a2c8346d24260676d13c09af021b7abab3138b7365211b547c7c3d6bcb67b5"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "struct-records",
+      "id": "review-struct-records",
+      "path": ["code"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "2d9252b3770f6c9e72c6deedb17c4afb0fd7bc39d072736149d439bbec5207ad"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "struct-records",
+      "id": "review-struct-records",
+      "path": ["expectedStatus"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "68e7a69974a641064a6a5ae8b1a00997939a325ec585a49e9fe82b386a21726a"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "closure-capture-modes",
+      "id": "review-closure-capture",
+      "path": ["prompt"],
+      "before": "Napraw `mark_events`. Closure ma dopisać `value + offset` do logu dla każdego elementu, w kolejności. offset jest przejęty przez move, log jest mutowany, a wejście pozostaje pożyczone. Zachowaj API i obsłuż puste wejście.",
+      "beforeSha256": "ff8e2b3344874b80474f07e911eeec3df07c2ab3fbb4f8b0c380a605650cc67e",
+      "successorSha256": "de07ff57e773a45bf54a71fd31f0586196973154c5c287ac2031acf291695e67"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "closure-capture-modes",
+      "id": "review-closure-capture",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn capture_modes_keep_offset_and_append_in_order() {\n    let values = [-2, 0, 5];\n    let mut log = vec![100];\n    mark_events(&values, 3, &mut log);\n    assert_eq!(log, vec![100, 1, 3, 8]);\n    assert_eq!(values, [-2, 0, 5]);\n    let mut empty = Vec::new();\n    mark_events(&[], -7, &mut empty);\n    assert!(empty.is_empty());\n}",
+      "beforeSha256": "18e5044476fc80ee0f3b055175625197d435192764242dc0d0493cdba6e4cd8f",
+      "successorSha256": "fb08a5d0aad865a18e811bc85ad3d4487188697a25c048f8e9b6585af349a69c"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "guess-session-io",
+      "id": "review-guess-session-io",
+      "path": ["prompt"],
+      "before": "Napisz `announce_scanner`. Przyjmuje Write i identyfikator stanowiska 1..=99. Dla prawidłowego identyfikatora zapisuje dokładnie `SCANNER N READY\\n`, potem flushuje i zwraca Ok(()). Dla 0 lub wartości ponad 99 zwraca InvalidInput bez write ani flush. To nie jest sesja gry: nie czyta linii i nie ma limitu wejścia, lecz nadal sprawdza widoczność komunikatu przez flush.",
+      "beforeSha256": "50f5982a60e4a56f0e751f37fdf7bb6079ff749bb1924d0e89d302cba13efad7",
+      "successorSha256": "abed6098d0916e7fb24717be46a5462e8326036bbc02a81ef47e0bd32b9692eb"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "guess-session-io",
+      "id": "review-guess-session-io",
+      "path": ["evaluator", "tests"],
+      "before": "use std::io::{self, Write};\nstruct Probe {\n    text: Vec<u8>,\n    flushes: usize,\n}\nimpl Write for Probe {\n    fn write(&mut self, b: &[u8]) -> io::Result<usize> {\n        self.text.extend_from_slice(b);\n        Ok(b.len())\n    }\n    fn flush(&mut self) -> io::Result<()> {\n        self.flushes += 1;\n        Ok(())\n    }\n}\n#[test]\nfn valid_station_writes_exact_announcement_then_flushes() {\n    let mut probe = Probe {\n        text: Vec::new(),\n        flushes: 0,\n    };\n    announce_scanner(&mut probe, 7).unwrap();\n    assert_eq!(probe.text, b\"SCANNER 7 READY\\n\");\n    assert_eq!(probe.flushes, 1);\n}\n#[test]\nfn invalid_station_touches_no_output() {\n    let mut probe = Probe {\n        text: Vec::new(),\n        flushes: 0,\n    };\n    assert_eq!(\n        announce_scanner(&mut probe, 0).unwrap_err().kind(),\n        io::ErrorKind::InvalidInput\n    );\n    assert!(probe.text.is_empty());\n    assert_eq!(probe.flushes, 0);\n}\n",
+      "beforeSha256": "88c4fced7aa0c7b5de6cc21c7b5de8bd89f56f287441c3ce8d879446e197885c",
+      "successorSha256": "03967cc3eb88a1ba21874b31c14f5ccb5bdf957c23dbb7d7b2f749dd04253376"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "log-borrowed-records",
+      "id": "review-log-records",
+      "path": ["prompt"],
+      "before": "Zaimplementuj `parse_access` dla `u64|ACTION|DETAILS`. ACTION to dokładnie ALLOW albo DENY, DETAILS jest niepusty po trim i może zawierać kolejne `|`; zwróć pożyczony rekord i jawny błąd.",
+      "beforeSha256": "f73860cf8695314b98129e78a0436a6dbe6646b85eefcb0ec0604ce82f34ec71",
+      "successorSha256": "6332efdde2808b1a0b5259308c80e98ee9b05f01a72c6697b27afca003a3a6fe"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "log-borrowed-records",
+      "id": "review-log-records",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn access_contract_preserves_remainder_and_rejects_bad_action() {\n    let access = match parse_access(\"7|DENY|  powód |🙂\") { Ok(value) => value, Err(error) => panic!(\"{:?}\", error) };\n    assert_eq!(access, Access { at: 7, action: \"DENY\", details: \"  powód |🙂\" });\n    assert_eq!(parse_access(\"7|MAYBE|x\"), Err(AccessError::InvalidAction));\n}",
+      "beforeSha256": "9f0babc07332fc411d5aaecf53a9bd12809141e218524882966a617fd48a294f",
+      "successorSha256": "fc2e4a883f2856adfa6adddf0de4a8fc038d1ec91aa112b1914440d33ede7fea"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "log-deterministic-report",
+      "id": "review-log-report",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn renders_access_counts_in_a_fixed_order() {\n    assert_eq!(\n        access_report(&AccessCounts { allow: 1, deny: 2, malformed: 0 }),\n        \"ACCESS V1\\nALLOW 1\\nDENY 2\\nMALFORMED 0\\n\"\n    );\n}",
+      "beforeSha256": "0d94de0c6508fec6c9214d1360db741f91d69ae1f6ad5d23611c000c93f0092b",
+      "successorSha256": "f0ac17abe63abe64fb02340f3f651e7470e8fc41ee36f92a7244fd35b3a74adf"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "atomic-cas",
+      "id": "review-atomic-cas",
+      "path": ["prompt"],
+      "before": "Dokończ `raise_to`, aby ustawić `cell` na co najmniej `target` przez ograniczoną pętlę CAS. Zwróć `true` tylko po faktycznym zapisie, `false` gdy wartość już wystarcza lub próby się skończą. Nie obniżaj wartości i nie zawijaj.",
+      "beforeSha256": "64415d1965d21ca14c129ff03afbabfce68df2bbf8545a384e980f568f2d1fc9",
+      "successorSha256": "8442d6a4f67c2a0b1196dba93c5227c3f2ab326808ae1dd8c9f095ef911e2b4e"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "atomic-cas",
+      "id": "review-atomic-cas",
+      "path": ["evaluator", "forbiddenPatterns"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "607c56dbd05e3dc2593955749c7c151bec95f0fb76b2d7faa012ceb1933b31e4"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "atomic-limits",
+      "id": "review-atomic-limits",
+      "path": ["prompt"],
+      "before": "Dokończ `transfer_pair_if_current`, aby pod jednym Mutex sprawdzić oczekiwaną parę i wykonać transfer `amount` z lewego pola do prawego. Odrzuć nieaktualny snapshot, niedobór lub overflow bez częściowej zmiany; opisz, dlaczego dwa niezależne atomiki nie zastępują tej transakcji.",
+      "beforeSha256": "f12defa891885f1b9bcbe41c288e2c7cda3734d51ef6c24779ddadd6e1b0c495",
+      "successorSha256": "e160bf460cfd37c81f20b0870d10756d3876c9f25f96623c145ca70dcbc37bbd"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "loom-evidence",
+      "id": "review-loom-evidence",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn review_evidence_checks_value_and_conclusion() {\n    evidence_ok(&[Outcome::NotReady, Outcome::Published(5)], 5);\n    for outcomes in [vec![], vec![Outcome::NotReady], vec![Outcome::Published(4)], vec![Outcome::Inconsistent]] {\n        assert!(std::panic::catch_unwind(|| evidence_ok(&outcomes, 5)).is_err());\n    }\n}",
+      "beforeSha256": "00dad6e611eafac23f73ccc5841338bf04f8ed1c9246daf7b0ce5c1c5c76fc80",
+      "successorSha256": "d8fa2fb8804304a021ff87642e7f7ee35b61404dde3115616927f3473b90c527"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "api-trait-compatibility",
+      "id": "review-api-trait-compatibility",
+      "path": ["evaluator", "tests"],
+      "before": "struct InstalledAlarm {\n    active: bool,\n    note: String,\n}\n\nimpl Alarm for InstalledAlarm {\n    fn active(&self) -> bool { self.active }\n}\n\n#[test]\nfn review_preserves_old_alarm_impl_and_dyn_function_signature() {\n    let alarm = InstalledAlarm {\n        active: true,\n        note: String::from(\"bez pochodnych traitów\"),\n    };\n    let old_dyn_consumer: fn(&dyn Alarm) -> &'static str = dyn_state;\n\n    assert_eq!(old_dyn_consumer(&alarm), \"alarm\");\n    assert!(is_active(&alarm));\n    assert_eq!(alarm.note, \"bez pochodnych traitów\");\n}",
+      "beforeSha256": "35c42bde4dd987bade9478a636b05a039d537c04bf4c638498195fcbb30bcb3d",
+      "successorSha256": "1f09e45d56c748b66496f24e9dd70b4d8077b549f8573a18f6549a7600590d2a"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "dependency-graph-diagnosis",
+      "id": "dependency-graph-diagnosis-review",
+      "path": ["prompt"],
+      "before": "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct Dependency { name: &'static str, version: &'static str, source: &'static str, feature: &'static str }`, `#[derive(Debug, PartialEq, Eq)] enum Review { Pass, Hold(&'static str) }` oraz `fn review_graph(dependencies: &[Dependency]) -> Review`. Dwa wpisy `ring` z wersjami 0.17/0.16 i source registry/git mają dać `Hold(\"ring\")`; pojedynczy wpis ma dać `Pass`.",
+      "beforeSha256": "165bcaf07ac99b584a3de5d57d7ffc45376b99e886c9bb285b768f7a69531c73",
+      "successorSha256": "2a6a0c883cb7330b4bc21020c7636a9a4db99f636f682da7447bd9b273ebc918"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "dependency-graph-diagnosis",
+      "id": "dependency-graph-diagnosis-review",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn review_graph_reports_a_feature_selected_source_conflict() {\n    let dependencies = [Dependency { name: \"ring\", version: \"0.17\", source: \"registry\", feature: \"tls\" }, Dependency { name: \"ring\", version: \"0.16\", source: \"git\", feature: \"legacy\" }];\n    assert_eq!(review_graph(&dependencies), Review::Hold(\"ring\"));\n    assert_eq!(review_graph(&dependencies[..1]), Review::Pass);\n}",
+      "beforeSha256": "848d94466aaa78fdb7cfc2f8a9063dac818b0ec6c2744ba2daff86647398d8be",
+      "successorSha256": "80a9d1877414f98489bae6ec2cba4bc7beed95fb643fcea69f50da04a684c3a4"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "dependency-advisory-exceptions",
+      "id": "dependency-advisory-exceptions-review",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn review_advisory_requires_identity_reason_and_date() {\n    let record = ExceptionRecord { advisory: \"RUSTSEC-2026-0004\", package: \"ring\", owner: \"release\", reason: \"patch window\", expires_ymd: 20261015 };\n    assert!(within_window(&record, 20260918));\n    assert!(!within_window(&ExceptionRecord { advisory: \"\", package: \"ring\", owner: \"release\", reason: \"patch window\", expires_ymd: 20261015 }, 20260918));\n    assert!(!within_window(&ExceptionRecord { advisory: \"RUSTSEC-2026-0004\", package: \"ring\", owner: \"release\", reason: \"\", expires_ymd: 20261015 }, 20260918));\n    assert!(!within_window(&record, 20261016));\n}",
+      "beforeSha256": "7d6f6078801372ccf60dec6a5df945d64cef3053ab927f92af1c21f240b3679a",
+      "successorSha256": "b791293e8917a75725caacf6c0faa3c3393496bc0aa4ca38201fb349615d3896"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "dependency-release-dossier",
+      "id": "dependency-release-dossier-review",
+      "path": ["prompt"],
+      "before": "Zaimplementuj `#[derive(Debug, PartialEq, Eq)] struct ReleaseProof<'a> { manifest: &'a str, lock: &'a str, audit: &'a str, artifact: &'a str, config: &'a str, consumer: bool, publish: bool }`, `#[derive(Debug, PartialEq, Eq)] enum Outcome { Ship, Stop }` oraz `fn release(proof: &ReleaseProof<'_>) -> Outcome`. Kompletne dowody z `consumer = true` i `publish = false` dają `Ship`; pusty lock albo `publish = true` daje `Stop`.",
+      "beforeSha256": "f4143506e2ef8f7c842edea217f1df8006b5f2b761d0fd1399a212c21dc5ccb4",
+      "successorSha256": "80b4b5ace810f9b333d855a2e11c8661b8566188756ca9912ec881869590a8c3"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "dependency-release-dossier",
+      "id": "dependency-release-dossier-review",
+      "path": ["evaluator", "tests"],
+      "before": "#[test]\nfn review_dossier_stops_when_lock_evidence_is_missing() {\n    let proof = ReleaseProof { manifest: \"manifest\", lock: \"lock\", audit: \"audit\", artifact: \"archive\", config: \"deny\", consumer: true, publish: false };\n    assert_eq!(release(&proof), Outcome::Ship);\n    assert_eq!(release(&ReleaseProof { manifest: \"manifest\", lock: \"\", audit: \"audit\", artifact: \"archive\", config: \"deny\", consumer: true, publish: false }), Outcome::Stop);\n    assert_eq!(release(&ReleaseProof { manifest: \"manifest\", lock: \"lock\", audit: \"audit\", artifact: \"archive\", config: \"deny\", consumer: true, publish: true }), Outcome::Stop);\n}",
+      "beforeSha256": "d6fd6c804742fb909661ed0c289fc38054980fb213c3139ae381886e03c42005",
+      "successorSha256": "b03a8f78f7554eb06ee22e54d98553bc8869c038c48c84cb91097903c83500b3"
+    }
+  ]
+}

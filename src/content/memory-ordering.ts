@@ -1232,7 +1232,7 @@ fn evidence_ok(outcomes: &[Outcome], expected: usize) {
     tests: `#[test]
 fn review_evidence_checks_value_and_conclusion() {
     evidence_ok(&[Outcome::NotReady, Outcome::Published(5)], 5);
-    for outcomes in [vec![], vec![Outcome::NotReady], vec![Outcome::Published(4)], vec![Outcome::Inconsistent]] {
+    for outcomes in [vec![], vec![Outcome::NotReady], vec![Outcome::Published(4)], vec![Outcome::Published(5), Outcome::Published(4)], vec![Outcome::NotReady, Outcome::Published(5), Outcome::Inconsistent], vec![Outcome::Inconsistent]] {
         assert!(std::panic::catch_unwind(|| evidence_ok(&outcomes, 5)).is_err());
     }
 }`,

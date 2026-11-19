@@ -40,8 +40,12 @@ function captureRegistry(course: typeof currentCourse) {
 const projectA7ThenC1 = (course: typeof currentCourse) =>
   historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(course);
 
-const historicalBeforePerformanceInvestigation = (course: typeof currentCourse) =>
-  historicalBeforeA7Source(historicalBeforeA10ThenA9ThenCapstoneMaintenance(course));
+const historicalBeforePerformanceInvestigation = (
+  course: typeof currentCourse,
+) =>
+  historicalBeforeA7Source(
+    historicalBeforeA10ThenA9ThenCapstoneMaintenance(course),
+  );
 
 it("restores the genuine pre-A7 registry without masking unrelated state", () => {
   const projected = historicalBeforePerformanceInvestigation(currentCourse);
@@ -74,7 +78,11 @@ it("restores the genuine pre-A7 registry without masking unrelated state", () =>
   expect(projected.shortReviewExercises).toBe(
     currentCourse.shortReviewExercises,
   );
-  expect(projected.project).toBe(currentCourse.project);
+  expect(projected.project).toBe(
+    projected.projects.find(
+      (project) => project.id === currentCourse.project.id,
+    ),
+  );
   expect(projected.ownershipModule).toBe(currentCourse.ownershipModule);
   expect(projected.reviewExerciseForId).toBe(currentCourse.reviewExerciseForId);
 });
@@ -314,7 +322,8 @@ it("composes an independent real default registry through A7 and C1", () => {
   } as typeof currentCourse & {
     default: Record<string, unknown>;
   };
-  const projected = historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(synthetic);
+  const projected =
+    historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(synthetic);
   const projectedDefault = projected.default as Record<string, unknown>;
   const knownDefault = Object.fromEntries(
     registryKeys.map((key) => [key, projectedDefault[key]]),
@@ -363,7 +372,8 @@ it("keeps top-level and default-only mutations independent", () => {
   } as typeof currentCourse & {
     default: Record<string, unknown>;
   };
-  const projected = historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(synthetic);
+  const projected =
+    historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair(synthetic);
   const defaultLessons = (projected.default as Record<string, unknown>)
     .lessons as typeof currentCourse.lessons;
 

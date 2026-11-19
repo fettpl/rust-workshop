@@ -588,3 +588,76 @@ test("requires an explicit rating before scheduling a short probe", async ({
   ).toBeVisible();
   expect((await readStoredState(page)).review).toEqual(scheduledReview);
 });
+
+test("resumes a free-form review and schedules its explicit self-rating without coding credit", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "stack-heap";
+  const exercise = reviewExercises[conceptId];
+  if (exercise.evaluator?.kind !== "rubric")
+    throw new Error("Expected a self-assessed review");
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId,
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "Powtórka",
+    },
+  ];
+  const sessionId = "free-form-review";
+  state.reviewSession = {
+    sessionId,
+    conceptId,
+    mode: "challenge",
+    startedAt: now,
+    wasDue: true,
+  };
+  await seedState(page, state);
+  await expect(
+    page.getByRole("heading", { name: exercise.title }),
+  ).toBeVisible();
+  const answer =
+    "Lokalnie trzymam opis tekstu. Właściciel zwalnia bufor, gdy kończy swój zakres.";
+  await page.getByRole("textbox").fill(answer);
+  await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+  const checks = page.getByRole("checkbox");
+  await expect(checks).toHaveCount(exercise.evaluator.criteria.length);
+  await checks.first().check();
+  const good = page.getByRole("button", { name: "Good · Dobrze" });
+  await expect(good).toBeDisabled();
+  await expect
+    .poll(
+      async () =>
+        (await readStoredState(page)).steps[reviewSessionKey(sessionId)]
+          ?.rubricChecks.length,
+    )
+    .toBe(1);
+  await page.reload();
+  await expect(page.getByRole("textbox")).toHaveValue(answer);
+  await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+  await expect(checks.first()).toBeChecked();
+  for (let i = 1; i < (await checks.count()); i++) await checks.nth(i).check();
+  await page.getByRole("textbox").fill("  ");
+  await expect(good).toBeDisabled();
+  await page.getByRole("textbox").fill(answer);
+  await good.click();
+  await expect(page.getByText("Na dziś nic nie czeka.")).toBeVisible();
+  await expect
+    .poll(async () => (await readStoredState(page)).ratings.length)
+    .toBe(1);
+  const after = await readStoredState(page);
+  expect(after.reviewSession).toBeUndefined();
+  expect(after.review[0].dueAt).toBeGreaterThan(now);
+  expect(after.events.filter((event) => event.lessonId === "review")).toEqual([
+    expect.objectContaining({
+      kind: "self-rating",
+      evaluator: "rubric",
+      passed: true,
+      gate: false,
+      delayed: false,
+    }),
+  ]);
+});

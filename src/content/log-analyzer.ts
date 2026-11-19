@@ -234,7 +234,21 @@ fn preserves_a_sensor_note_with_unicode_and_separators() {
 fn distinguishes_bad_unit_and_empty_note() {
     assert_eq!(parse_reading("4|bar|ok"), Err(ReadingError::InvalidUnit));
     assert_eq!(parse_reading("4|C|   "), Err(ReadingError::EmptyNote));
-}`;
+}
+#[test]
+fn sensor_timestamp_has_strict_ascii_u64_grammar_and_inclusive_boundaries() {
+    for text in ["", "+1", "-1", " 1", "1 ", "١", "18446744073709551616"] {
+        assert_eq!(parse_reading(&format!("{text}|C|ok")), Err(ReadingError::InvalidTime));
+    }
+    for (text, expected) in [("0", 0), ("0001", 1), ("18446744073709551615", u64::MAX)] {
+        let line = format!("{text}|C|ok");
+        assert_eq!(parse_reading(&line).unwrap().at, expected);
+    }
+    for line in ["", "1", "1|C"] {
+        assert_eq!(parse_reading(line), Err(ReadingError::InvalidLine));
+    }
+}
+`;
 
 const streamStarter = String.raw`use std::io::{self, BufRead};
 
@@ -639,7 +653,14 @@ fn renders_access_counts_in_a_fixed_order() {
         access_report(&AccessCounts { allow: 1, deny: 2, malformed: 0 }),
         "ACCESS V1\nALLOW 1\nDENY 2\nMALFORMED 0\n"
     );
-}`;
+}
+#[test]
+fn recall_report_keeps_zero_counts_and_alternate_values() {
+    assert_eq!(access_report(&AccessCounts::default()), "ACCESS V1\nALLOW 0\nDENY 0\nMALFORMED 0\n");
+    assert_eq!(access_report(&AccessCounts { allow: 0, deny: 9, malformed: u64::MAX }),
+        "ACCESS V1\nALLOW 0\nDENY 9\nMALFORMED 18446744073709551615\n");
+}
+`;
 
 export const logAnalyzerCompetencies: Competency[] = [
   {
@@ -856,7 +877,7 @@ export const logAnalyzerLessons: Lesson[] = [
         "records-transfer",
         "modify",
         "Przenieś kontrakt na odczyt czujnika",
-        "Uzupełnij `parse_reading` dla nowej domeny. Rekord ma `at: u64`, `unit: &str` i `note: &str`; format to `AT|UNIT|NOTE`, jednostka to dokładnie `C` albo `kPa`, a notatka ma być niepusta po trim. Zachowaj wszystkie pozostałe znaki notatki i pożycz ją z wejścia.",
+        "Uzupełnij `parse_reading` dla nowej domeny. Rekord ma `at: u64`, `unit: &str` i `note: &str`; format to `AT|UNIT|NOTE`, AT to niepuste ASCII cyfry dziesiętnego u64 (0 i u64::MAX są poprawne; przepełnienie lub inna składnia daje InvalidTime), jednostka to dokładnie `C` albo `kPa`, a notatka ma być niepusta po trim. Brak pierwszego separatora daje InvalidLine; potem sprawdź AT, następnie obecność drugiego separatora (InvalidLine), jednostkę (InvalidUnit) i notatkę (EmptyNote). Zachowaj wszystkie pozostałe znaki notatki i pożycz ją z wejścia.",
         readingStarter,
         readingSolution,
         readingTests,
@@ -1234,7 +1255,7 @@ export const logAnalyzerReviewExercises: Record<string, LessonStep> = {
     "review-log-records",
     "apply",
     "Powtórka: wpis kontroli dostępu",
-    "Zaimplementuj `parse_access` dla `u64|ACTION|DETAILS`. ACTION to dokładnie ALLOW albo DENY, DETAILS jest niepusty po trim i może zawierać kolejne `|`; zwróć pożyczony rekord i jawny błąd.",
+    "Zaimplementuj `parse_access` dla `u64|ACTION|DETAILS`. Timestamp to niepuste ASCII cyfry u64, także 0 i u64::MAX; zła składnia i overflow dają InvalidTime. Brak pierwszego separatora daje InvalidLine; potem sprawdź timestamp, obecność drugiego separatora (InvalidLine), ACTION (dokładnie ALLOW albo DENY, inaczej InvalidAction) oraz DETAILS (niepuste po trim, inaczej EmptyDetails). Zachowaj cały DETAILS, także spacje, Unicode i kolejne `|`, jako widok oryginalnego wejścia.",
     String.raw`#[derive(Debug, PartialEq, Eq)]
 struct Access<'a> { at: u64, action: &'a str, details: &'a str }
 #[derive(Debug, PartialEq, Eq)]
@@ -1261,6 +1282,24 @@ fn access_contract_preserves_remainder_and_rejects_bad_action() {
     let access = match parse_access("7|DENY|  powód |🙂") { Ok(value) => value, Err(error) => panic!("{:?}", error) };
     assert_eq!(access, Access { at: 7, action: "DENY", details: "  powód |🙂" });
     assert_eq!(parse_access("7|MAYBE|x"), Err(AccessError::InvalidAction));
+}
+#[test]
+fn access_recall_validates_all_fields_and_preserves_the_original_view() {
+    for time in ["", "+7", "-7", " 7", "7 ", "٧", "18446744073709551616"] {
+        assert_eq!(parse_access(&format!("{time}|ALLOW|ok")), Err(AccessError::InvalidTime));
+    }
+    for (time, expected) in [("0", 0), ("0007", 7), ("18446744073709551615", u64::MAX)] {
+        let line = format!("{time}|ALLOW|  lokalne |🙂  ");
+        let access = parse_access(&line).unwrap();
+        assert_eq!(access.at, expected);
+        assert_eq!(access.action, "ALLOW");
+        assert_eq!(access.details, "  lokalne |🙂  ");
+        assert_eq!(access.details.as_ptr(), line.as_ptr().wrapping_add(time.len() + 7));
+    }
+    for line in ["", "7", "7|ALLOW"] {
+        assert_eq!(parse_access(line), Err(AccessError::InvalidLine));
+    }
+    assert_eq!(parse_access("7|ALLOW| \t"), Err(AccessError::EmptyDetails));
 }`,
     "transfer",
   ),

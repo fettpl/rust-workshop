@@ -730,9 +730,13 @@ This is a small authored Tokio fixture for admission policy, allowlisted telemet
   "`std`" +
   ` and Tokio types; it does not claim to configure a production tracing subscriber.
 
-Run the solution with:
+From the extracted directory containing Cargo.toml, use stable Rust supporting
+edition 2024 (minimum Rust 1.85.0). Fetch the locked Tokio dependency graph once;
+network access is needed if it is not already cached. Then the checks can run
+offline. Run the solution with:
 
 \`\`\`sh
+cargo fetch --locked
 cargo fmt --all -- --check
 cargo check --offline --locked --all-targets
 cargo test --offline --locked --no-fail-fast
@@ -812,7 +816,7 @@ export const serviceOperationsPackage: ProjectPackage = {
   description:
     "An authored Tokio Cargo package for bounded admission, allowlisted telemetry, readiness/drain, and evidence-first incident diagnosis.",
   instructions: [
-    "Rozpakuj starter i uruchom cargo fmt --all -- --check oraz cargo test --offline --locked.",
+    "Rozpakuj starter i otwórz katalog z Cargo.toml. Pobierz przypięte zależności przez cargo fetch --locked (sieć jest potrzebna, gdy nie ma ich w cache), potem uruchom cargo fmt --all -- --check oraz cargo test --offline --locked.",
     "Zaimplementuj politykę admission, sanitizację strukturalnych eventów i jednoznaczne accounting lifecycle według tests/operations_contract.rs.",
     "Zachowaj gotowy worker po timeout waitera; timeout nie jest dowodem ukończenia pracy.",
     "Przeczytaj THREAT_MODEL.md i RUNBOOK.md, a następnie uruchom cargo check oraz cargo clippy --offline --locked --all-targets -- -D warnings.",

@@ -265,6 +265,7 @@ fn old_implementer_dyn_consumer_and_unbounded_generic_stay_usable() {
 
     assert_eq!(old_dyn_consumer(&old), 7);
     assert_eq!(read_units(&old), 7);
+    assert_eq!(read_units::<dyn Meter>(&old), 7);
     assert_eq!(old.label(), "7 units");
     assert_eq!(total(&[&old, &fresh]), 12);
     assert_eq!(old.marker, "bez Clone i Debug");
@@ -312,6 +313,11 @@ fn independent_trait_contract_keeps_old_impl_dyn_and_plain_borrow() {
 
     assert_eq!(old_dyn_consumer(&old), 100);
     assert!(is_at_most(&old, 100));
+    assert!(!is_at_most(&old, 99));
+    assert!(is_at_most::<dyn Pulse>(&old, 101));
+    assert!(!is_at_most::<dyn Pulse>(&newer, 100));
+    assert!(!old.warning());
+    assert!(!Calibrated { value: -1 }.warning());
     assert!(newer.warning());
     assert_eq!(old.retained, "nie kopiuj mnie");
 }`;
@@ -351,6 +357,11 @@ fn review_preserves_old_alarm_impl_and_dyn_function_signature() {
 
     assert_eq!(old_dyn_consumer(&alarm), "alarm");
     assert!(is_active(&alarm));
+    assert!(is_active::<dyn Alarm>(&alarm));
+    let quiet = InstalledAlarm { active: false, note: String::from("cisza") };
+    assert_eq!(old_dyn_consumer(&quiet), "spokojnie");
+    assert!(!is_active(&quiet));
+    assert!(!is_active::<dyn Alarm>(&quiet));
     assert_eq!(alarm.note, "bez pochodnych traitów");
 }`;
 

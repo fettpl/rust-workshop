@@ -10,7 +10,7 @@ export const numberGuessingPackage: ProjectPackage = {
   instructions: [
     "Rozpakuj starter. Kompiluje się, lecz testy kontraktu celowo zatrzymują się na todo!.",
     "Zaimplementuj parser, stan Game i strumień play przed adapterem CLI.",
-    "Zachowaj rand 0.10.2, zwykły losowy sekret w normalnej grze oraz --secret wyłącznie dla powtarzalnego ćwiczenia.",
+    "Zachowaj rand 0.10.3, zwykły losowy sekret w normalnej grze oraz --secret wyłącznie dla powtarzalnego ćwiczenia.",
     "Uruchom cargo fmt --check, cargo check --locked, cargo test --locked, cargo test --doc --locked i cargo clippy --all-targets -- -D warnings.",
   ],
   revealStepRefs: [
@@ -62,7 +62,7 @@ export const numberGuessingProject: ProjectContract = {
     "Cargo.lock, fmt, check, test, doctest i clippy dla referencji.",
   ],
   constraints: [
-    "Rust 2024 oraz dokładnie rand 0.10.2 z thread_rng.",
+    "Rust 2024 oraz dokładnie rand 0.10.3 z thread_rng.",
     "Brak obietnicy kryptograficzności lub sekwencji seedowanej.",
     "Limit linii ogranicza adapter, nie dowolny BufRead dostarczony przez wywołującego.",
   ],

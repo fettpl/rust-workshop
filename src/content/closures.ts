@@ -905,7 +905,7 @@ export const closuresReviewExercises: Record<string, LessonStep> = {
     kind: "modify",
     title: "Powtórka: zanotuj zdarzenia",
     prompt:
-      "Napraw `mark_events`. Closure ma dopisać `value + offset` do logu dla każdego elementu, w kolejności. offset jest przejęty przez move, log jest mutowany, a wejście pozostaje pożyczone. Zachowaj API i obsłuż puste wejście.",
+      "Napraw `mark_events`. Closure ma dopisać `value + offset` do logu dla każdego elementu, w kolejności. offset jest przejęty przez move, log jest mutowany, a wejście pozostaje pożyczone. Zachowaj API i obsłuż puste wejście. Dziedzina obejmuje wejścia, dla których każda suma value + offset mieści się w i32.",
     code: `fn mark_events(values: &[i32], offset: i32, log: &mut Vec<i32>) {
     let add = move |value: i32| log.push(value + offset);
     for value in values { add(*value); }
@@ -924,6 +924,17 @@ fn capture_modes_keep_offset_and_append_in_order() {
     let mut empty = Vec::new();
     mark_events(&[], -7, &mut empty);
     assert!(empty.is_empty());
+}
+
+#[test]
+fn captures_zero_and_negative_offsets_without_losing_previous_events() {
+    let mut log = vec![9];
+    mark_events(&[i32::MIN, 0, i32::MAX], 0, &mut log);
+    assert_eq!(log, vec![9, i32::MIN, 0, i32::MAX]);
+    mark_events(&[i32::MIN + 1, 1, i32::MAX], -1, &mut log);
+    assert_eq!(log, vec![9, i32::MIN, 0, i32::MAX, i32::MIN, 0, i32::MAX - 1]);
+    mark_events(&[], i32::MAX, &mut log);
+    assert_eq!(log, vec![9, i32::MIN, 0, i32::MAX, i32::MIN, 0, i32::MAX - 1]);
 }`,
     error: "E0596",
     hints: [

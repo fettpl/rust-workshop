@@ -924,6 +924,20 @@ fn badge_range_is_checked_after_the_single_source_call() {
     );
     assert_eq!(calls.get(), 1);
 }
+
+#[test]
+fn shift_accepts_both_inclusive_boundaries_and_rejects_upper_overflow() {
+    for crew in [2, 9] {
+        for badge in [100, 999] {
+            assert_eq!(assign_shift_with(crew, &[], || badge), Ok(Shift { badge, crew }));
+        }
+    }
+    let calls = Cell::new(0);
+    assert_eq!(assign_shift_with(10, &[], || { calls.set(calls.get() + 1); 100 }), Err(ShiftError::Crew));
+    assert_eq!(calls.get(), 0);
+    assert_eq!(assign_shift_with(9, &[], || { calls.set(calls.get() + 1); 1000 }), Err(ShiftError::Badge));
+    assert_eq!(calls.get(), 1);
+}
 `;
 const laneReviewSolution = String.raw`#[derive(Debug, PartialEq, Eq)]
 pub enum SourceError {
@@ -1107,7 +1121,7 @@ export const guessingIoLessons: Lesson[] = [
         kind: "blank",
         title: "Odbiór komunikatu dyspozytora",
         prompt:
-          "Od pustej kartki napisz odbiornik `receive_notice`. Protokół ma w nagłówku napisać `NOTICE READY\n`, przed każdym odczytem `notice> ` i flush. Odczytaj jedną linię o limicie 64 bajtów przed LF, zwróć `Ok(Some(String))` dla poprawnego UTF-8, `Ok(None)` tylko dla EOF bez danych; CRLF normalizuj, usuwając CR wyłącznie wtedy, gdy nastąpiło po nim LF. Samotny CR przed EOF jest częścią tekstu komunikatu. W przeciwieństwie do gry nie ma parsowania poleceń ani pętli: pojedynczy komunikat bez LF jest prawidłowy, a każdy błąd I/O zostaje błędem.",
+          "Od pustej kartki napisz odbiornik `receive_notice`. Protokół ma w nagłówku napisać `NOTICE READY\n`, przed każdym odczytem `notice> ` i flush. Odczytaj jedną linię o limicie 64 surowych bajtów przed LF (wliczając CR), pozostawiając kolejną linię w readerze; zwróć `Ok(Some(String))` dla poprawnego UTF-8, `Ok(None)` tylko dla EOF bez danych; CRLF normalizuj, usuwając CR wyłącznie wtedy, gdy nastąpiło po nim LF. Samotny CR przed EOF jest częścią tekstu komunikatu. W przeciwieństwie do gry nie ma parsowania poleceń ani pętli: pojedynczy komunikat bez LF jest prawidłowy, a błędy odczytu, zapisu i flush przekaż wywołującemu bez zmian.",
         solution: String.raw`use std::io::{self, BufRead, Write};
 pub fn receive_notice<R: BufRead, W: Write>(
     reader: &mut R,
@@ -1202,6 +1216,91 @@ fn lone_cr_at_eof_is_payload_and_lf_only_removes_the_terminator() {
         let mut output = Vec::new();
         assert_eq!(receive_notice(&mut input, &mut output).unwrap().as_deref(), Some(expected));
     }
+}
+#[test]
+fn notice_flush_precedes_every_input_access() {
+    use std::cell::Cell;
+    use std::rc::Rc;
+    struct Writer { written: Vec<u8>, flushed: Rc<Cell<bool>> }
+    impl std::io::Write for Writer {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.written.extend_from_slice(bytes);
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            self.flushed.set(self.written == b"NOTICE READY\nnotice> ");
+            Ok(())
+        }
+    }
+    struct Reader { data: Cursor<Vec<u8>>, flushed: Rc<Cell<bool>> }
+    impl std::io::Read for Reader {
+        fn read(&mut self, out: &mut [u8]) -> std::io::Result<usize> {
+            assert!(self.flushed.get(), "prompt must be flushed before read");
+            std::io::Read::read(&mut self.data, out)
+        }
+    }
+    impl std::io::BufRead for Reader {
+        fn fill_buf(&mut self) -> std::io::Result<&[u8]> {
+            assert!(self.flushed.get(), "prompt must be flushed before fill_buf");
+            std::io::BufRead::fill_buf(&mut self.data)
+        }
+        fn consume(&mut self, count: usize) { std::io::BufRead::consume(&mut self.data, count); }
+    }
+    let flushed = Rc::new(Cell::new(false));
+    let mut reader = Reader { data: Cursor::new(b"alarm\nnext\n".to_vec()), flushed: Rc::clone(&flushed) };
+    let mut writer = Writer { written: Vec::new(), flushed };
+    assert_eq!(receive_notice(&mut reader, &mut writer).unwrap().as_deref(), Some("alarm"));
+    assert_eq!(reader.data.position(), 6, "the following notice remains unread");
+}
+#[test]
+fn notice_preserves_read_write_and_flush_errors() {
+    use std::io::{self, BufRead, Read, Write};
+    struct BrokenReader;
+    impl Read for BrokenReader {
+        fn read(&mut self, _: &mut [u8]) -> io::Result<usize> { Err(io::Error::new(io::ErrorKind::ConnectionReset, "notice read marker")) }
+    }
+    impl BufRead for BrokenReader {
+        fn fill_buf(&mut self) -> io::Result<&[u8]> { Err(io::Error::new(io::ErrorKind::ConnectionReset, "notice read marker")) }
+        fn consume(&mut self, _: usize) {}
+    }
+    struct BrokenWriter { fail_write: bool }
+    impl Write for BrokenWriter {
+        fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+            if self.fail_write { Err(io::Error::new(io::ErrorKind::BrokenPipe, "notice write marker")) } else { Ok(bytes.len()) }
+        }
+        fn flush(&mut self) -> io::Result<()> { Err(io::Error::new(io::ErrorKind::TimedOut, "notice flush marker")) }
+    }
+    let error = receive_notice(&mut BrokenReader, &mut Vec::new()).unwrap_err();
+    assert_eq!(error.kind(), io::ErrorKind::ConnectionReset);
+    assert_eq!(error.to_string(), "notice read marker");
+    for (fail_write, kind, marker) in [
+        (true, io::ErrorKind::BrokenPipe, "notice write marker"),
+        (false, io::ErrorKind::TimedOut, "notice flush marker"),
+    ] {
+        let mut reader = Cursor::new(b"alarm\n".as_slice());
+        let error = receive_notice(&mut reader, &mut BrokenWriter { fail_write }).unwrap_err();
+        assert_eq!(error.kind(), kind);
+        assert_eq!(error.to_string(), marker);
+        assert_eq!(reader.position(), 0, "output failure must precede input");
+    }
+}
+#[test]
+fn notice_counts_raw_bytes_before_normalizing_crlf_and_rejects_invalid_utf8() {
+    for suffix in [b"".as_slice(), b"\n".as_slice()] {
+        let mut bytes = vec![b'x'; 64];
+        bytes.extend_from_slice(suffix);
+        let mut reader = Cursor::new(bytes);
+        assert_eq!(receive_notice(&mut reader, &mut Vec::new()).unwrap().unwrap().len(), 64);
+    }
+    let mut exact_crlf = vec![b'x'; 63];
+    exact_crlf.extend_from_slice(b"\r\n");
+    assert_eq!(receive_notice(&mut Cursor::new(exact_crlf), &mut Vec::new()).unwrap().unwrap().len(), 63);
+    let mut excessive_crlf = vec![b'x'; 64];
+    excessive_crlf.extend_from_slice(b"\r\n");
+    let error = receive_notice(&mut Cursor::new(excessive_crlf), &mut Vec::new()).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
+    let error = receive_notice(&mut Cursor::new(vec![0xff, b'\n']), &mut Vec::new()).unwrap_err();
+    assert_eq!(error.kind(), std::io::ErrorKind::InvalidData);
 }
 #[test]
 fn over_limit_is_invalid_data() {
@@ -1362,7 +1461,7 @@ export const guessingIoReviewExercises: Record<string, LessonStep> = {
     kind: "apply",
     title: "Powtórka: gotowość skanera",
     prompt:
-      "Napisz `announce_scanner`. Przyjmuje Write i identyfikator stanowiska 1..=99. Dla prawidłowego identyfikatora zapisuje dokładnie `SCANNER N READY\\n`, potem flushuje i zwraca Ok(()). Dla 0 lub wartości ponad 99 zwraca InvalidInput bez write ani flush. To nie jest sesja gry: nie czyta linii i nie ma limitu wejścia, lecz nadal sprawdza widoczność komunikatu przez flush.",
+      "Napisz `announce_scanner`. Przyjmuje Write i identyfikator stanowiska 1..=99. Dla prawidłowego identyfikatora zapisuje dokładnie `SCANNER N READY` z końcowym LF, potem flushuje i zwraca Ok(()). Dla 0 lub wartości ponad 99 zwraca InvalidInput bez write ani flush. To nie jest sesja gry: nie czyta linii i nie ma limitu wejścia, lecz nadal sprawdza widoczność komunikatu przez flush. Zachowaj oryginalny błąd write lub flush; po błędzie write nie flushuj.",
     solution: String.raw`use std::io::{self, Write};
 pub fn announce_scanner<W: Write>(writer: &mut W, station: u8) -> io::Result<()> {
     if !(1..=99).contains(&station) {
@@ -1409,6 +1508,30 @@ fn invalid_station_touches_no_output() {
     );
     assert!(probe.text.is_empty());
     assert_eq!(probe.flushes, 0);
+}
+
+#[test]
+fn scanner_preserves_original_output_error_and_skips_flush_after_write_failure() {
+    struct Broken { fail_write: bool, flushes: usize }
+    impl Write for Broken {
+        fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+            if self.fail_write { Err(io::Error::new(io::ErrorKind::BrokenPipe, "scanner write marker")) } else { Ok(bytes.len()) }
+        }
+        fn flush(&mut self) -> io::Result<()> {
+            self.flushes += 1;
+            Err(io::Error::new(io::ErrorKind::TimedOut, "scanner flush marker"))
+        }
+    }
+    for (fail_write, kind, message, flushes) in [
+        (true, io::ErrorKind::BrokenPipe, "scanner write marker", 0),
+        (false, io::ErrorKind::TimedOut, "scanner flush marker", 1),
+    ] {
+        let mut writer = Broken { fail_write, flushes: 0 };
+        let error = announce_scanner(&mut writer, 99).unwrap_err();
+        assert_eq!(error.kind(), kind);
+        assert_eq!(error.to_string(), message);
+        assert_eq!(writer.flushes, flushes);
+    }
 }
 `,
     hints: [
