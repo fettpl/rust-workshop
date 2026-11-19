@@ -44,6 +44,7 @@ function sourceFor(id: string, solution: string) {
     [disjointRangesPrimaryStepId]: unsafeMiriAssessmentSources.disjointRanges,
     [slotLazyInitPrimaryStepId]: unsafeMiriAssessmentSources.slotLazyInit,
     [mutSlotWithMutPrimaryStepId]: unsafeMiriAssessmentSources.mutSlotWithMut,
+    "mut-slot-pair-reborrow-transfer": unsafeMiriAssessmentSources.mutSlotPair,
     "slot-state-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-contract-gate": unsafeMiriAssessmentSources.slotState,
     "slot-state-blank": unsafeMiriAssessmentSources.slotState,

@@ -1,3 +1,10 @@
+import {
+  admissionBatchTransfer,
+  telemetryReportsTransfer,
+  lifecycleReplayTransfer,
+  incidentTimelineTransfer,
+  serviceOperationsTransferControls,
+} from "./service-operations-transfer";
 import type {
   Competency,
   Concept,
@@ -581,6 +588,12 @@ export const serviceOperationsAssessmentSources: Record<
   string,
   { equivalent: string; mutant: string }
 > = {
+  ...Object.fromEntries(
+    serviceOperationsTransferControls.map(({ step, equivalent, mutants }) => [
+      step.id,
+      { equivalent, mutant: mutants[0] },
+    ]),
+  ),
   "trust-admission-gate": {
     equivalent: trustAdmissionEquivalent,
     mutant: trustAdmissionMutant,
@@ -745,6 +758,7 @@ fn main() { println!("{}", admit(true, 4, 4)); }`,
         solution: admissionSlotSolution,
         tests: admissionSlotTests,
       }),
+      admissionBatchTransfer,
     ],
     misconceptions: [
       "Limit pojemności sam w sobie jest autoryzacją.",
@@ -838,6 +852,7 @@ fn main() { println!("{}", selected(&[("edge", 7), ("secret", 7), ("edge", 8)], 
         solution: telemetryCountSolution,
         tests: telemetryCountTests,
       }),
+      telemetryReportsTransfer,
     ],
     misconceptions: [
       "Właściwy correlation ID wystarcza.",
@@ -934,6 +949,7 @@ fn main() { println!("{} {}", drain_complete("draining", 2, 1), drain_complete("
         solution: readinessSolution,
         tests: readinessTests,
       }),
+      lifecycleReplayTransfer,
     ],
     misconceptions: [
       "Ready oznacza, że można już kończyć proces.",
@@ -1023,6 +1039,7 @@ fn main() { println!("{}", label(Some(true), Some(1), Some(1), None)); }`,
         solution: evidenceDecisionSolution,
         tests: evidenceDecisionTests,
       }),
+      incidentTimelineTransfer,
     ],
     misconceptions: [
       "Brak telemetryki oznacza zdrowie.",
@@ -1088,7 +1105,7 @@ export const serviceOperationsModule: CourseModule = {
   lessonIds: serviceOperationsLessons.map((lesson) => lesson.id),
   exitGate: [
     "Osiem niezależnych bramek sprawdza bounded trust/admission, allowlisted correlation, accounting/readiness/drain oraz diagnozę z przypadkami InsufficientEvidence.",
-    "Cztery blank-page tasks i cztery retrievals używają deterministycznych, standardowych bibliotek Rust; rozwiązania są weryfikowane przez stałe testy i mutanty.",
+    "Osiem blank-page tasks i cztery retrievals używają deterministycznych, standardowych bibliotek Rust; cztery nowe zadania przenoszą kontrakty do partii żądań, raportów wielu incydentów i osi aktualizacji stanu. Rozwiązania są weryfikowane przez stałe testy i mutanty.",
   ],
   projectConnection:
     "Moduł przygotowuje decyzje do przyszłego bounded service i incident drill. Nie uruchamia projektu Cargo, kodu ucznia ani zewnętrznego systemu telemetrycznego. Zakładasz lokalny serwis sieciowy Tokio i jego cykl admission; możesz od razu przejść do zaufania, telemetryki i kontrolowanego drenu.",
@@ -1102,6 +1119,10 @@ export const serviceOperationsModule: CourseModule = {
         {
           lessonId: "service-trust-admission",
           stepId: "trust-admission-blank",
+        },
+        {
+          lessonId: "service-trust-admission",
+          stepId: "trust-admission-batch-transfer",
         },
       ],
     },
@@ -1117,6 +1138,10 @@ export const serviceOperationsModule: CourseModule = {
           lessonId: "service-trust-admission",
           stepId: "trust-admission-recall",
         },
+        {
+          lessonId: "service-trust-admission",
+          stepId: "trust-admission-batch-transfer",
+        },
       ],
     },
     {
@@ -1130,6 +1155,10 @@ export const serviceOperationsModule: CourseModule = {
         {
           lessonId: "service-correlated-telemetry",
           stepId: "telemetry-correlation-blank",
+        },
+        {
+          lessonId: "service-correlated-telemetry",
+          stepId: "telemetry-correlation-reports-transfer",
         },
       ],
     },
@@ -1145,6 +1174,10 @@ export const serviceOperationsModule: CourseModule = {
           lessonId: "service-correlated-telemetry",
           stepId: "telemetry-correlation-recall",
         },
+        {
+          lessonId: "service-correlated-telemetry",
+          stepId: "telemetry-correlation-reports-transfer",
+        },
       ],
     },
     {
@@ -1155,6 +1188,10 @@ export const serviceOperationsModule: CourseModule = {
         {
           lessonId: "service-readiness-drain",
           stepId: "readiness-drain-blank",
+        },
+        {
+          lessonId: "service-readiness-drain",
+          stepId: "readiness-drain-replay-transfer",
         },
       ],
     },
@@ -1169,6 +1206,10 @@ export const serviceOperationsModule: CourseModule = {
         {
           lessonId: "service-readiness-drain",
           stepId: "readiness-drain-recall",
+        },
+        {
+          lessonId: "service-readiness-drain",
+          stepId: "readiness-drain-replay-transfer",
         },
       ],
     },
@@ -1185,6 +1226,10 @@ export const serviceOperationsModule: CourseModule = {
           lessonId: "service-incident-diagnosis",
           stepId: "incident-diagnosis-blank",
         },
+        {
+          lessonId: "service-incident-diagnosis",
+          stepId: "incident-diagnosis-timeline-transfer",
+        },
       ],
     },
     {
@@ -1198,6 +1243,10 @@ export const serviceOperationsModule: CourseModule = {
         {
           lessonId: "service-incident-diagnosis",
           stepId: "incident-diagnosis-recall",
+        },
+        {
+          lessonId: "service-incident-diagnosis",
+          stepId: "incident-diagnosis-timeline-transfer",
         },
       ],
     },

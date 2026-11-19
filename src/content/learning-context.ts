@@ -4,12 +4,14 @@ import {
   evidencePolicyForConcepts,
   deriveConceptMastery,
   independentCodingTaskIds,
+  hasEquivalentSolutionReveal,
   delayedReviewEligibility,
   gateRecovery,
   moduleGate,
 } from "@/engine/learning";
 import {
   revealProjectPackageVariant,
+  revealAuthoredStepSolutions,
   type PackageVariant,
 } from "@/domain/project-package";
 import type {
@@ -211,7 +213,7 @@ export function assistanceForLessonStep(
   const current = state.steps[stepKey(lesson.id, step.id)];
   const flags = {
     hints: current?.hints ?? 0,
-    revealed: current?.revealed ?? false,
+    revealed: Boolean(current?.revealed) || hasEquivalentSolutionReveal(state, { lessonId: lesson.id, stepId: step.id }, lessons),
   };
   const family = step.evidence?.codingTaskId;
   if (
@@ -323,8 +325,22 @@ export function recordCourseEvidence(
 export function recordCourseLessonExposure(
   state: UserState,
   exposure: LessonExposure,
+  source: "exposure" | "supplied-solution" = "exposure",
 ): UserState {
-  return recordLessonExposure(state, exposure, courseEvidencePolicy);
+  return recordLessonExposure(state, exposure, courseEvidencePolicy, source);
+}
+
+/** Attribute a complete prerequisite implementation only when its authored source is displayed. */
+export function recordSuppliedSolutions(
+  state: UserState,
+  source: LessonStep,
+  variant: "code" | "solution",
+  now: number,
+): UserState {
+  const refs = source.suppliedSolutions?.[variant];
+  return refs?.length
+    ? revealAuthoredStepSolutions(state, refs, lessons, now, courseEvidencePolicy)
+    : state;
 }
 
 /** Course boundary: expose only the refs belonging to the requested archive variant. */

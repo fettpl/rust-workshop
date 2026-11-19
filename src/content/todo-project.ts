@@ -8,6 +8,8 @@ import type {
   Source,
 } from "@/domain/types";
 
+import { importTodoCommand, editTodoBoard, replayTodoSession } from "./todo-transfer";
+
 const reviewedAt = "2026-09-12";
 
 const parserContract =
@@ -322,6 +324,11 @@ fn lists_empty_order_duplicates_and_unicode_exactly() {
 }
 `;
 
+const sessionComponents = [
+  ...["parser-debug", "parser-add-gate"].map((stepId) => ({ lessonId: "todo-command-parser", stepId })),
+  ...["state-debug", "state-add-done-gate", "state-list-gate"].map((stepId) => ({ lessonId: "todo-state-invariants", stepId })),
+];
+
 const fullSessionSolution = `${parserSolution}
 
 ${stateImplementation}
@@ -474,7 +481,6 @@ function runStep(
   title: string,
   prompt: string,
   code: string,
-  solution: string,
   expected: string,
   evidenceKind: LessonStep["evidenceKind"],
 ): LessonStep {
@@ -484,7 +490,7 @@ function runStep(
     title,
     prompt,
     code,
-    solution,
+    solution: code,
     evaluator: { kind: "exact-output", expected },
     expectedStatus: "success",
     evidenceKind,
@@ -499,6 +505,7 @@ function testStep(
   solution: string,
   tests: string,
   evidenceKind: LessonStep["evidenceKind"],
+  suppliedSolutions?: LessonStep["suppliedSolutions"],
 ): LessonStep {
   return {
     id,
@@ -507,6 +514,7 @@ function testStep(
     prompt,
     code: starter,
     solution,
+    ...(suppliedSolutions && { suppliedSolutions }),
     evaluator: {
       kind: "tests",
       tests,
@@ -532,39 +540,54 @@ function testStep(
   };
 }
 
-const parserRunStarter = `${parserSolution}
+const parserExample = `fn split_request(line: &str) -> (&str, &str) {
+    let clean = line.trim();
+    match clean.split_once(' ') {
+        Some((verb, argument)) => (verb, argument.trim()),
+        None => (clean, ""),
+    }
+}
+
 fn main() {
-    println!("{:?}", parse_command(" add żółć "));
-    println!("{:?}", parse_command("done 0007"));
-    println!("{:?}", parse_command("list now"));
-}`;
-const parserRunSolution = `${parserSolution}
-fn main() {
-    println!("{:?}", parse_command(" add żółć "));
-    println!("{:?}", parse_command("done 0007"));
-    println!("{:?}", parse_command("list now"));
+    for line in [" add  żółć  ", "done 0007", "list now"] {
+        let (verb, argument) = split_request(line);
+        println!("{verb} | {argument}");
+    }
 }`;
 
-const stateRunStarter = `${stateSolution}
+const stateExample = `struct Queue {
+    titles: Vec<String>,
+}
+
+impl Queue {
+    fn push(&mut self, title: String) -> Result<usize, &'static str> {
+        if title.trim().is_empty() {
+            return Err("pusty tytuł");
+        }
+        self.titles.push(title);
+        Ok(self.titles.len())
+    }
+}
+
 fn main() {
-    let mut todo = Todo::new();
-    println!("{:?}", todo.apply(Command::Add(String::from("naprawić parser"))));
-    println!("{:?}", todo.apply(Command::List));
-}`;
-const stateRunSolution = `${stateSolution}
-fn main() {
-    let mut todo = Todo::new();
-    println!("{:?}", todo.apply(Command::Add(String::from("naprawić parser"))));
-    println!("{:?}", todo.apply(Command::List));
+    let mut queue = Queue { titles: Vec::new() };
+    println!("{:?}", queue.push(String::from("raport")));
+    println!("{:?}", queue.push(String::from(" ")));
+    println!("w kolejce: {}", queue.titles.len());
 }`;
 
-const sessionRunStarter = `${fullSessionSolution}
-fn main() {
-    println!("{:?}", run_session(&["add jeden", "done 1", "list"]));
-}`;
-const sessionRunSolution = `${fullSessionSolution}
-fn main() {
-    println!("{:?}", run_session(&["add jeden", "done 1", "list"]));
+const sessionExample = `fn main() {
+    let mut accepted = 0;
+    let mut results = Vec::new();
+    for line in ["7", "błąd", "12"] {
+        let result = match line.parse::<u8>() {
+            Ok(value) => { accepted += 1; Ok(value) }
+            Err(_) => Err("liczba"),
+        };
+        results.push(result);
+    }
+    println!("{results:?}");
+    println!("przyjęte: {accepted}");
 }`;
 
 export const todoLessons: Lesson[] = [
@@ -605,11 +628,10 @@ export const todoLessons: Lesson[] = [
       runStep(
         "parser-run",
         "Uruchom kontrakt",
-        "Obserwuj trzy wyniki Debug. trim zwraca pożyczony tekst bez brzegowych białych znaków, split_once dzieli go na dwie części przy pierwszym separatorze, a contains sprawdza obecność znaku. is_ascii_digit rozpoznaje cyfry 0–9. Zapis Ok(value) if value > 0 to wzorzec z dodatkowym warunkiem. derive(Debug, PartialEq, Eq) pozwala wypisać i porównywać nasze enumy. " +
+        "Uruchom podział linii na czasownik i argument. Porównaj pierwszą zwykłą spację z tabulatorem, zmieniając wejście. W następnym zadaniu zdecydujesz jeszcze, które polecenia są poprawne, kiedy zwrócić błąd i jak zbudować Command. " +
           parserContract,
-        parserRunStarter,
-        parserRunSolution,
-        'Ok(Add("żółć"))\nOk(Done(7))\nErr(Unknown)\n',
+        parserExample,
+        "add | żółć\ndone | 0007\nlist | now\n",
         "exposure",
       ),
       choiceStep(
@@ -689,6 +711,7 @@ export const todoLessons: Lesson[] = [
         },
         "recall",
       ),
+      importTodoCommand,
     ],
     misconceptions: [
       "Tabulator jest separatorem tylko dlatego, że wygląda jak odstęp.",
@@ -753,11 +776,10 @@ export const todoLessons: Lesson[] = [
       runStep(
         "state-run",
         "Uruchom operacje na stanie",
-        "Zobacz, że Add zwraca numer 1, a List pokazuje znacznik i końcowy znak nowej linii. format! tworzy String tak jak println! formatuje wydruk. Pętla while powtarza blok, dopóki warunek jest prawdziwy; index += 1 zwiększa indeks i pozwala zakończyć przejście przez listę. " +
+        "Obserwuj kolejkę: po udanym dodaniu zapisuje tytuł, a po odrzuceniu pustego tytułu zachowuje długość. Porównaj to z wymaganiami Todo, gdzie dochodzą identyfikatory, oznaczanie wykonania i format listy. " +
           stateContract,
-        stateRunStarter,
-        stateRunSolution,
-        'Ok("added 1")\nOk("1 [ ] naprawić parser\\n")\n',
+        stateExample,
+        'Ok(1)\nErr("pusty tytuł")\nw kolejce: 1\n',
         "exposure",
       ),
       choiceStep(
@@ -847,6 +869,7 @@ export const todoLessons: Lesson[] = [
         },
         "recall",
       ),
+      editTodoBoard,
     ],
     misconceptions: [
       "NotFound i InvalidId są tym samym, bo oba kończą się Err.",
@@ -908,11 +931,10 @@ export const todoLessons: Lesson[] = [
       runStep(
         "session-run",
         "Uruchom tolerancyjną sesję",
-        "Obserwuj wektor wyników: każda linia ma własny Result, a List widzi poprzednią zmianę. " +
+        "W serii odczytów jedna błędna liczba trafia do wektora jako Err. Sprawdź, co dzieje się z następnym odczytem i licznikiem sukcesów. W sesji Todo samodzielnie połączysz parser z mutacją stanu oraz wybierzesz, kiedy przerwać przetwarzanie. " +
           sessionContract,
-        sessionRunStarter,
-        sessionRunSolution,
-        '[Ok("added 1"), Ok("done 1"), Ok("1 [x] jeden\\n")]\n',
+        sessionExample,
+        '[Ok(7), Err("liczba"), Ok(12)]\nprzyjęte: 2\n',
         "exposure",
       ),
       choiceStep(
@@ -939,12 +961,13 @@ export const todoLessons: Lesson[] = [
       testStep(
         "session-debug",
         "Napraw składanie sesji",
-        "Starter ma poprawny parser i stan, ale zwraca puste sukcesy. Napraw run_session: przekaż każdą linię do parsera, a poprawne polecenie do Todo. Nie używaj unwrap ani expect. " +
+        "Starter zawiera rozwiązania wcześniejszych ćwiczeń parsera i stanu. Po otwarciu kodu te ćwiczenia będą oznaczone jako odsłonięte. Funkcje sesji zwracają na razie puste sukcesy. Napraw run_session: przekaż każdą linię do parsera, a poprawne polecenie do Todo. Nie używaj unwrap ani expect. " +
           sessionContract,
         sessionStarter,
         fullSessionSolution,
         sessionDebugTests,
         "fix",
+        { code: sessionComponents, solution: sessionComponents },
       ),
       testStep(
         "session-run-gate",
@@ -955,6 +978,7 @@ export const todoLessons: Lesson[] = [
         fullSessionSolution,
         sessionTests,
         "transfer",
+        { code: sessionComponents, solution: sessionComponents },
       ),
       testStep(
         "session-strict-gate",
@@ -965,6 +989,7 @@ export const todoLessons: Lesson[] = [
         fullSessionSolution,
         strictTests,
         "transfer",
+        { code: sessionComponents, solution: sessionComponents },
       ),
       choiceStep(
         "session-recall",
@@ -999,6 +1024,7 @@ export const todoLessons: Lesson[] = [
           "\n\nObie funkcje sesji przyjmują wycinek pożyczonych linii tekstu. run_session zwraca wektor wyników operacji, a run_strict_session pojedynczy wynik. " +
           sessionContract +
           " Nie używaj unwrap ani expect do obsługi wejścia. Terminal i pliki dołączymy w kolejnym etapie.",
+        suppliedSolutions: { solution: sessionComponents },
         solution: fullSessionSolution,
         evaluator: {
           kind: "tests",
@@ -1009,6 +1035,7 @@ export const todoLessons: Lesson[] = [
         evidenceKind: "assessment",
         evidenceGate: true,
       },
+      replayTodoSession,
     ],
     misconceptions: [
       "Ścisła sesja musi cofnąć stan, bo zatrzymała się na błędzie.",
@@ -1176,6 +1203,7 @@ export const todoModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-command-parser", stepId: "parser-debug" },
         { lessonId: "todo-command-parser", stepId: "parser-add-gate" },
+        { lessonId: "todo-command-parser", stepId: importTodoCommand.id },
       ],
     },
     {
@@ -1185,6 +1213,7 @@ export const todoModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-state-invariants", stepId: "state-add-done-gate" },
         { lessonId: "todo-session-project", stepId: "session-blank" },
+        { lessonId: "todo-state-invariants", stepId: editTodoBoard.id },
       ],
     },
     {
@@ -1194,6 +1223,7 @@ export const todoModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-state-invariants", stepId: "state-list-gate" },
         { lessonId: "todo-session-project", stepId: "session-blank" },
+        { lessonId: "todo-state-invariants", stepId: editTodoBoard.id },
       ],
     },
     {
@@ -1202,6 +1232,7 @@ export const todoModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-session-project", stepId: "session-run-gate" },
         { lessonId: "todo-session-project", stepId: "session-blank" },
+        { lessonId: "todo-session-project", stepId: replayTodoSession.id },
       ],
     },
     {
@@ -1211,6 +1242,7 @@ export const todoModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-session-project", stepId: "session-strict-gate" },
         { lessonId: "todo-session-project", stepId: "session-blank" },
+        { lessonId: "todo-session-project", stepId: replayTodoSession.id },
       ],
     },
   ],

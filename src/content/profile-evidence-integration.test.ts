@@ -40,10 +40,10 @@ it("registers profile lessons with independent gates, blanks, and retrievals", (
     moduleLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(8);
+  ).toHaveLength(12);
   expect(
     profileEvidenceModule.gateCriteria!.every(
-      (criterion) => criterion.taskRefs.length === 2,
+      (criterion) => [2, 3].includes(criterion.taskRefs.length),
     ),
   ).toBe(true);
 
@@ -56,7 +56,7 @@ it("registers profile lessons with independent gates, blanks, and retrievals", (
         (step) => step.kind === "recall" && step.evaluator?.kind === "tests",
       ),
     ).toHaveLength(1);
-    expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(2);
+    expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(3);
     expect(reviewExercises[lesson.conceptIds[0]]?.evaluator?.kind).toBe(
       "tests",
     );
@@ -65,21 +65,21 @@ it("registers profile lessons with independent gates, blanks, and retrievals", (
   const refs = profileEvidenceModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(24);
-  expect(new Set(refs).size).toBe(22);
+  expect(refs).toHaveLength(31);
+  expect(new Set(refs).size).toBe(26);
   expect(
     profileEvidenceModule.gateCriteria!.map((criterion) =>
       criterion.taskRefs.map((ref) => ref.stepId),
     ),
   ).toEqual([
-    ["instruction-gate", "instruction-blank"],
-    ["instruction-budget-gate", "instruction-recall"],
-    ["allocation-gate", "allocation-recall"],
+    ["instruction-gate", "instruction-blank", "instruction-batch-budget-transfer"],
+    ["instruction-budget-gate", "instruction-recall", "instruction-batch-budget-transfer"],
+    ["allocation-gate", "allocation-recall", "allocation-site-bytes-transfer"],
     ["allocation-count-gate", "allocation-blank"],
-    ["transfer-gate", "transfer-recall"],
-    ["transfer-budget-gate", "transfer-blank"],
-    ["decision-gate", "decision-recall"],
-    ["decision-evidence-gate", "decision-blank"],
+    ["transfer-gate", "transfer-recall", "optimization-trial-batch-transfer"],
+    ["transfer-budget-gate", "transfer-blank", "optimization-trial-batch-transfer"],
+    ["decision-gate", "decision-recall", "profile-regression-batch-transfer"],
+    ["decision-evidence-gate", "decision-blank", "profile-regression-batch-transfer"],
     ["allocation-scope-gate", "allocation-scope-blank"],
     ["allocation-scope-error-gate", "allocation-scope-blank"],
     ["allocation-comparison-gate", "allocation-comparison-blank"],
@@ -158,7 +158,7 @@ it("executes every profile fixture with deterministic authored tests", () => {
     lesson.steps.filter((step) => step.evaluator?.kind === "tests"),
   );
   codingSteps.push(...Object.values(profileEvidenceReviewExercises));
-  expect(codingSteps).toHaveLength(20);
+  expect(codingSteps).toHaveLength(24);
   for (const step of codingSteps) {
     expect(step.solution, step.id).toBeTruthy();
     if (step.evaluator?.kind !== "tests") continue;

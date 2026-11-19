@@ -53,9 +53,9 @@ it("keeps four unsafe FFI lessons with explicit executable contracts", () => {
     expect(lesson.steps.some((step) => step.kind === "predict")).toBe(true);
     expect(lesson.steps.some((step) => step.kind === "run")).toBe(true);
     expect(lesson.steps.some((step) => step.kind === "explain")).toBe(true);
-    expect(lesson.steps.filter((step) => step.evidenceGate).length).toBe(2);
+    expect(lesson.steps.filter((step) => step.evidenceGate).length).toBe(3);
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
-      1,
+      lesson.id === "unsafe-ffi-owned-handle" ? 1 : 2,
     );
     expect(
       lesson.steps.filter(
@@ -164,7 +164,7 @@ it("uses each gate and blank as an independent module criterion", () => {
   );
   expect(
     unsafeFfiModule.gateCriteria?.every(
-      (criterion) => criterion.taskRefs.length === 2,
+      (criterion) => criterion.taskRefs.length === 3,
     ),
   ).toBe(true);
 });

@@ -1,3 +1,4 @@
+import { appendPerformanceRecoverySteps, addPerformanceRecoveryRefs } from "./performance-recovery-practice";
 import type {
   Competency,
   Concept,
@@ -527,7 +528,7 @@ fn evidence_interpretation_requires_both_budget_and_baseline() {
     ] { assert_eq!(explain(evidence), alternative_explain(evidence)); }
 }`;
 
-export const performanceEvidenceLessons: Lesson[] = [
+export const performanceEvidenceLessons: Lesson[] = appendPerformanceRecoverySteps([
   {
     id: "performance-measured-workload",
     moduleId: "performance-evidence",
@@ -1118,7 +1119,7 @@ fn main() { println!("{} {}", keep(10, 10, 10), keep(10, 11, 10)); }`,
       "To opcjonalna praktyka planowania i samooceny; nie tworzy nowej bramki ani samodzielnego zaliczenia.",
     sourceIds: ["performance-benchmarking-book", "profile-criterion"],
   },
-];
+]);
 
 export const performanceEvidenceReviewExercises: Record<string, LessonStep> = {
   "measured-workload-contract": coding({
@@ -1163,7 +1164,7 @@ export const performanceEvidenceReviewExercises: Record<string, LessonStep> = {
   }),
 };
 
-export const performanceEvidenceModule: CourseModule = {
+export const performanceEvidenceModule: CourseModule = addPerformanceRecoveryRefs({
   id: "performance-evidence",
   title: "Performance Evidence: workload, pamięć i decyzje",
   whyItMatters:
@@ -1267,4 +1268,4 @@ export const performanceEvidenceModule: CourseModule = {
       ],
     },
   ],
-};
+});

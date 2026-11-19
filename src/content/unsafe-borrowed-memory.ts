@@ -36,7 +36,6 @@ import {
   borrowedBytesSoundnessTests,
   borrowedTextReviewMutant,
   borrowedTextReviewTests,
-  compileFailLifetime,
   cellMarkerBlankCanonical,
   cellMarkerBlankEquivalent,
   invariantBorrowCanonical,
@@ -312,7 +311,12 @@ const simpleRun = String.raw`fn main(){let owner=[1_u8,2,3];let view=&owner[..];
 const partitionRun = String.raw`fn main(){let mut input=[1_u8,2,3];let (left,right)=input.split_at_mut(1);assert_eq!(left.len(),1);assert_eq!(right.len(),2);println!("parts=1+2");}`;
 const slotRun = String.raw`fn main(){let mut state=None;state=Some("live");assert!(state.is_some());println!("state=full");}`;
 const autoTraitRun = String.raw`fn assert_send<T:Send>(){}fn assert_sync<T:Sync>(){}fn main(){assert_send::<u8>();assert_sync::<u8>();println!("bounds=send-sync");}`;
-const invariantCompile = `${borrowedBytesCanonical}\n\n${compileFailLifetime}\n\n${invariantBorrowCanonical}`;
+const lifetimeClient = `fn escape<'a>() -> &'a [u8] {
+    let value = 7_u8;
+    std::slice::from_ref(&value)
+}
+
+fn main() { let _view = escape(); }`;
 
 export const unsafeBorrowedMemoryLessons: Lesson[] = [
   {
@@ -722,8 +726,8 @@ export const unsafeBorrowedMemoryLessons: Lesson[] = [
       }),
       compileFail(
         "unsafe-borrowed-auto-traits-compile-fail",
-        "Uruchom compile-fail klienta safe API; musi odrzucić próbę lifetime escape.",
-        invariantCompile,
+        "Uruchom klienta bezpiecznego API std::slice::from_ref. Nawet gdy u8 implementuje Send i Sync, widok lokalnej wartości nie może przeżyć wywołania funkcji. Sprawdź, do czego odnosi się E0515.",
+        lifetimeClient,
       ),
       coding({
         id: "unsafe-borrowed-auto-traits-soundness-transfer",

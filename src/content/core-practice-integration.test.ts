@@ -1,3 +1,5 @@
+import { restoreIndependentPracticeLessons } from "./workshop-assessment-repair-compatibility-fixture";
+import { matchesRegistryValue } from "./file-schema-evolution-compatibility-fixture";
 import { historicalBeforeSendHandoff } from "./async-lending-send-compatibility-fixture";
 import { historicalBeforeCancellationTransfer } from "./async-lending-cancel-compatibility-fixture";
 import { historicalBeforeDocumentationRepair } from "./documentation-guided-repair-compatibility-fixture";
@@ -198,7 +200,7 @@ it("appends the bounded practices and their reviews with unique, resolvable regi
   expect(course.lessons.slice(legacy.lessons.length)).toEqual([
     ...coreConversionsLessons,
     ...coreCheckedConversionsLessons,
-    ...nestedPatternLessons,
+    ...restoreIndependentPracticeLessons(nestedPatternLessons, new Map(), matchesRegistryValue),
     functionOwnershipCalibrationLesson,
     sharedBorrowCalibrationLesson,
   ]);

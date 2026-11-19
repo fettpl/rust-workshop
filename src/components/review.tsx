@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { ArrowRight, Eye, Clock, Check, RotateCcw } from "lucide-react";
 import { useClock } from "./use-clock";
 import { useLearning } from "./learning-provider";
+import { useSuppliedSolutionExposure } from "./use-supplied-solution-exposure";
 import { CompilerOutput } from "./compiler-output";
 import { LearningText } from "./learning-text";
 import { concepts, lessons } from "@/content/course";
@@ -138,6 +139,10 @@ export function ReviewView() {
   const isManifest = evaluator?.kind === "manifest-contract";
   const { executable, editable } = stepInteraction(step);
   const code = progress.code ?? step?.code ?? "";
+  const suppliedCodeRef = useSuppliedSolutionExposure<HTMLElement>(
+    step, "code", executable || isManifest ? code : step?.code,
+    mode === "challenge" && !unavailable,
+  );
   const lastAttempt = progress.attempts.at(-1);
   const lastRun = [...progress.attempts]
     .reverse()
@@ -514,7 +519,7 @@ export function ReviewView() {
         Najpierw przywołaj zasadę. Potem sprawdź ją na małym, nowym przykładzie.
       </p>
       {concept && session ? (
-        <section className="review-session">
+        <section className="review-session" ref={suppliedCodeRef}>
           {!unavailable && (
             <button
               className="text-button"

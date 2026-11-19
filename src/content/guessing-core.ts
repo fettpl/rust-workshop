@@ -5,6 +5,7 @@ import type {
   LessonStep,
   Source,
 } from "@/domain/types";
+import { scoreRoundTransfer } from "./domain-gate-recovery";
 
 const reviewedAt = "2026-09-13";
 
@@ -1203,19 +1204,22 @@ fn main() {
           "Po odjęciu próby najpierw sprawdź zgodność z sekretem, dopiero potem remaining == 0.",
         ],
       }),
-      exercise({
-        id: "guess-round-state-blank",
-        kind: "blank",
-        title: "Dwufazowa rezerwacja limitu",
-        prompt:
-          "Od pustej kartki zdefiniuj porównywalny `QuotaError` z Capacity, Units, Pending, NoPending, WrongTicket, Finished i TokenExhausted oraz `Quota`. Konstruktor new przyjmuje pojemność 1..=20. Metoda begin rozpoczyna rezerwację jednostek, confirm zatwierdza ją, a cancel anuluje. Obserwatory remaining i has_pending pokazują pozostałe jednostki oraz istnienie rezerwacji. Może istnieć tylko jedna rezerwacja naraz i od razu blokuje units; confirm utrzymuje ubytek, cancel go zwraca. Zły ticket oraz błąd nie mogą usunąć rezerwacji. Ticket ma rosnąć dla kolejnych begin; po wydaniu 255 następna próba zwraca TokenExhausted zamiast zawijać i ponownie wydawać istniejący ticket.",
-        solution: quotaBlankSolution,
-        tests: quotaBlankTests,
-        hints: [
-          "Pending przechowuje zarówno ticket, jak i liczbę zablokowanych jednostek.",
-          "Nie usuwaj Pending zanim nie porównasz ticketu; inaczej zły klient mógłby anulować cudzą rezerwację.",
-        ],
-      }),
+      {
+        ...exercise({
+          id: "guess-round-state-blank",
+          kind: "blank",
+          title: "Dwufazowa rezerwacja limitu",
+          prompt:
+            "Od pustej kartki zdefiniuj porównywalny `QuotaError` z Capacity, Units, Pending, NoPending, WrongTicket, Finished i TokenExhausted oraz `Quota`. Konstruktor new przyjmuje pojemność 1..=20. Metoda begin rozpoczyna rezerwację jednostek, confirm zatwierdza ją, a cancel anuluje. Obserwatory remaining i has_pending pokazują pozostałe jednostki oraz istnienie rezerwacji. Może istnieć tylko jedna rezerwacja naraz i od razu blokuje units; confirm utrzymuje ubytek, cancel go zwraca. Zły ticket oraz błąd nie mogą usunąć rezerwacji. Ticket ma rosnąć dla kolejnych begin; po wydaniu 255 następna próba zwraca TokenExhausted zamiast zawijać i ponownie wydawać istniejący ticket.",
+          solution: quotaBlankSolution,
+          tests: quotaBlankTests,
+          hints: [
+            "Pending przechowuje zarówno ticket, jak i liczbę zablokowanych jednostek.",
+            "Nie usuwaj Pending zanim nie porównasz ticketu; inaczej zły klient mógłby anulować cudzą rezerwację.",
+          ],
+        }),
+        evidenceGate: false,
+      },
       choice(
         "guess-round-state-recall",
         "recall",
@@ -1233,6 +1237,7 @@ fn main() {
           "Limit wiąże tylko ważne zgadnięcia.",
         ],
       ),
+      scoreRoundTransfer,
     ],
     misconceptions: [
       "Zerowy remaining automatycznie oznacza Lost nawet przy poprawnym zgadnięciu.",

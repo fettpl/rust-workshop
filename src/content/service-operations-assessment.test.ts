@@ -37,7 +37,7 @@ const retrievalIds = [
 ];
 
 it("covers every Service Operations coding task with an equivalent and mutant", () => {
-  expect(serviceOperationsAssessmentFixtures).toHaveLength(20);
+  expect(serviceOperationsAssessmentFixtures).toHaveLength(24);
   expect(
     serviceOperationsAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());

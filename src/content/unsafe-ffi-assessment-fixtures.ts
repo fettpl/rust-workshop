@@ -11,13 +11,21 @@ export interface UnsafeFfiAssessmentFixture {
 }
 
 const sourceFor = (id: string, solution: string) => {
-  const source = id.includes("checked-view")
-    ? unsafeFfiAssessmentSources.checkedView
-    : id.includes("split-regions")
-      ? unsafeFfiAssessmentSources.splitRegions
-      : id.includes("raw-record")
-        ? unsafeFfiAssessmentSources.rawRecord
-        : unsafeFfiAssessmentSources.ownedHandle;
+  const transferSources = {
+    "checked-view-prefix-transfer": unsafeFfiAssessmentSources.checkedPrefix,
+    "split-envelope-transfer": unsafeFfiAssessmentSources.splitEnvelope,
+    "raw-header-transfer": unsafeFfiAssessmentSources.rawHeader,
+    "owned-pair-transfer": unsafeFfiAssessmentSources.ownedPair,
+  };
+  const source =
+    transferSources[id as keyof typeof transferSources] ??
+    (id.includes("checked-view")
+      ? unsafeFfiAssessmentSources.checkedView
+      : id.includes("split-regions")
+        ? unsafeFfiAssessmentSources.splitRegions
+        : id.includes("raw-record")
+          ? unsafeFfiAssessmentSources.rawRecord
+          : unsafeFfiAssessmentSources.ownedHandle);
   return {
     equivalent:
       solution.replace(/\s+/g, "") === source.canonical.replace(/\s+/g, "")

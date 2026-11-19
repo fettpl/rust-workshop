@@ -122,6 +122,8 @@ export interface StepEvidenceDefinition {
   codingTaskId?: string;
 }
 export interface LessonStep {
+  /** Complete solutions to other tasks supplied by this authored code or reference implementation. */
+  suppliedSolutions?: { code?: ModuleGateTaskRef[]; solution?: ModuleGateTaskRef[] };
   evidence?: StepEvidenceDefinition;
   id: string;
   kind: StepKind;

@@ -1,3 +1,4 @@
+import { performancePracticeFixtures } from "./performance-recovery-fixtures";
 import {
   performanceEvidenceLessons,
   performanceEvidenceReviewExercises,
@@ -121,6 +122,8 @@ const assessments = [
 
 export const performanceEvidenceAssessmentFixtures: PerformanceEvidenceFixture[] =
   assessments.map((step) => {
+    const transfer = performancePracticeFixtures.find((fixture) => fixture.id === step.id);
+    if (transfer) return transfer;
     const sourceKey = step.id.includes("workload")
       ? step.id.includes("budget") ||
         step.id === "workload-recall" ||

@@ -825,19 +825,19 @@ fn is_done(record: &Record) -> bool {
         kind: "run",
         title: "Wywołaj metody przez kropkę",
         prompt:
-          "Uruchom kod i zobacz, że `new` jest funkcją powiązaną, a `summary` i `add` są metodami instancji. Zapis `Self { label, value: 0 }` korzysta ze skrótu pola: lokalne `label` zasila pole o tej samej nazwie.",
-        code: `struct Counter {
+          "Uruchom kod i zobacz, że `new` jest funkcją powiązaną, a `summary` i `set` są metodami instancji. Zapis `Self { label, value }` korzysta ze skrótu pola: lokalne `label` i `value` zasilają pola o tych samych nazwach. `set` zastępuje stan; późniejszy licznik ma dodawać zmianę do stanu.",
+        code: `struct Gauge {
     label: String,
     value: i32,
 }
 
-impl Counter {
-    fn new(label: String) -> Self {
-        Self { label, value: 0 }
+impl Gauge {
+    fn new(label: String, value: i32) -> Self {
+        Self { label, value }
     }
 
-    fn add(&mut self, amount: i32) {
-        self.value += amount;
+    fn set(&mut self, value: i32) {
+        self.value = value;
     }
 
     fn summary(&self) -> String {
@@ -846,22 +846,22 @@ impl Counter {
 }
 
 fn main() {
-    let mut counter = Counter::new(String::from("build"));
-    counter.add(2);
+    let mut counter = Gauge::new(String::from("build"), 8);
+    counter.set(2);
     println!("{}", counter.summary());
 }`,
-        solution: `struct Counter {
+        solution: `struct Gauge {
     label: String,
     value: i32,
 }
 
-impl Counter {
-    fn new(label: String) -> Self {
-        Self { label, value: 0 }
+impl Gauge {
+    fn new(label: String, value: i32) -> Self {
+        Self { label, value }
     }
 
-    fn add(&mut self, amount: i32) {
-        self.value += amount;
+    fn set(&mut self, value: i32) {
+        self.value = value;
     }
 
     fn summary(&self) -> String {
@@ -870,16 +870,16 @@ impl Counter {
 }
 
 fn main() {
-    let mut counter = Counter::new(String::from("build"));
-    counter.add(2);
+    let mut counter = Gauge::new(String::from("build"), 8);
+    counter.set(2);
     println!("{}", counter.summary());
 }`,
         evaluator: { kind: "exact-output", expected: "build: 2\n" },
         evidenceKind: "exposure",
         expectedStatus: "success",
         hints: [
-          "`Counter::new` nie ma instancji, ale zwraca Self.",
-          "Po utworzeniu potrzebujesz mut na bindingu, aby wywołać add.",
+          "`Gauge::new` nie ma instancji, ale zwraca Self.",
+          "Po utworzeniu potrzebujesz mut na bindingu, aby wywołać set.",
         ],
       },
       {

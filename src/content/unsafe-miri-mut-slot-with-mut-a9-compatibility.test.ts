@@ -96,7 +96,7 @@ it("restores the A9 prompt across all 15 registries without mutating input", () 
   expect(projected.project).toBe(
     projected.projects.find((project) => project.id === input.project.id),
   );
-  expect(projected.ownershipModule).toBe(input.ownershipModule);
+  expect(projected.ownershipModule).toBe(projected.modules.find((module) => module.id === "ownership"));
   expect(projected.reviewExerciseForId).toBe(input.reviewExerciseForId);
   expect(projected.default).not.toBe(input.default);
 

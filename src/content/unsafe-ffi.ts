@@ -224,6 +224,265 @@ function gate(options: {
   };
 }
 
+const checkedPrefixTransfer: LessonStep = {
+  ...gate({
+    id: "checked-view-prefix-transfer",
+    kind: "blank",
+    title: "Pożycz ograniczony prefiks bufora C",
+    prompt:
+      "Od pustej kartki napisz `unsafe fn checked_prefix<'a>(raw: *const u8, available: usize, requested: usize) -> Option<&'a [u8]>`. Najpierw odrzuć requested > available przez None, bez dotykania pamięci. Dla requested == 0 zwróć Some(&[]), także przy null i available == 0. W pozostałych poprawnych przypadkach pożycz dokładnie requested pierwszych bajtów bez kopiowania. # Safety: jeśli available > 0, caller zapewnia niezerowy, wyrównany adres available zainicjalizowanych bajtów w jednej żywej alokacji, available <= isize::MAX, koniec adresu bez zawijania oraz ważność i brak mutowalnego aliasowania przez całe 'a. Jeśli available == 0, raw może być null i nie jest dereferencjonowany. Ten kontrakt pozwala odrzucić zbyt duże requested przy ważnym buforze; nie weryfikuje ważności obcego adresu. Testy używają tylko ważnych alokacji albo dozwolonego pustego null.",
+    solution: String.raw`/// # Safety
+/// For available > 0, raw addresses available initialized bytes in one live allocation,
+/// is non-null and aligned, available <= isize::MAX, and the end address does not wrap.
+/// The allocation stays valid without mutable aliasing throughout the returned lifetime.
+/// For available == 0, raw may be null and is never dereferenced.
+unsafe fn checked_prefix<'a>(raw: *const u8, available: usize, requested: usize) -> Option<&'a [u8]> {
+    if requested > available { return None; }
+    if requested == 0 { return Some(&[]); }
+    if raw.is_null() { return None; }
+    Some(unsafe { std::slice::from_raw_parts(raw, requested) })
+}`,
+    tests: String.raw`#[test]
+fn prefixes_preserve_the_original_allocation_and_requested_length() {
+    let bytes = [7_u8, 0, 255, 9];
+    for requested in 1..=bytes.len() {
+        let view = unsafe { checked_prefix(bytes.as_ptr(), bytes.len(), requested) }.unwrap();
+        assert_eq!(view, &bytes[..requested]);
+        assert_eq!(view.as_ptr(), bytes.as_ptr());
+    }
+}
+
+#[test]
+fn rejects_excess_length_before_touching_memory_and_allows_empty_null() {
+    let bytes = [3_u8, 4, 5];
+    assert_eq!(unsafe { checked_prefix(bytes.as_ptr(), bytes.len(), bytes.len() + 1) }, None);
+    assert_eq!(unsafe { checked_prefix(bytes.as_ptr(), bytes.len(), usize::MAX) }, None);
+    assert_eq!(unsafe { checked_prefix(bytes.as_ptr(), bytes.len(), 0) }, Some(&[][..]));
+    assert_eq!(unsafe { checked_prefix(std::ptr::null(), 0, 0) }, Some(&[][..]));
+    assert_eq!(unsafe { checked_prefix(std::ptr::null(), 0, 1) }, None);
+}`,
+    evidenceGate: true,
+  }),
+  evidence: {
+    version: 1,
+    conceptIds: ["unsafe-ffi-checked-view-contract"],
+    codingTaskId: "unsafe-ffi/bounded-prefix-v1",
+  },
+};
+
+const splitEnvelopeTransfer: LessonStep = {
+  ...gate({
+    id: "split-envelope-transfer",
+    kind: "blank",
+    title: "Rozdziel nagłówek, treść i trailer",
+    prompt:
+      "Napisz `#[derive(Debug, PartialEq, Eq)] enum RegionsError { Outside }` oraz `fn split_envelope(buffer: &mut [u8], header: usize, trailer: usize) -> Result<(&mut [u8], &mut [u8], &mut [u8]), RegionsError>`. Zwróć kolejno pierwsze header bajtów, środkową treść i ostatnie trailer bajtów jako trzy rozłączne mutowalne pożyczki. Odrzuć przez Outside tylko overflow sumy header + trailer albo sumę większą od długości. Równość jest poprawna i daje pustą treść; zero jest dozwolone dla każdej części, także pustego bufora. Przy błędzie nie zmieniaj danych. Użyj bezpiecznego split_at_mut bez raw pointerów i unsafe.",
+    solution: String.raw`#[derive(Debug, PartialEq, Eq)]
+enum RegionsError { Outside }
+
+fn split_envelope(buffer: &mut [u8], header: usize, trailer: usize) -> Result<(&mut [u8], &mut [u8], &mut [u8]), RegionsError> {
+    let Some(edges) = header.checked_add(trailer) else { return Err(RegionsError::Outside) };
+    if edges > buffer.len() { return Err(RegionsError::Outside); }
+    let body_len = buffer.len() - edges;
+    let (head, remaining) = buffer.split_at_mut(header);
+    let (body, tail) = remaining.split_at_mut(body_len);
+    Ok((head, body, tail))
+}`,
+    tests: String.raw`#[test]
+fn all_three_regions_mutate_independently_in_the_original_buffer() {
+    let mut bytes = [1_u8, 2, 3, 4, 5, 6];
+    {
+        let (header, body, trailer) = split_envelope(&mut bytes, 2, 1).unwrap();
+        assert_eq!(header, &[1, 2]);
+        assert_eq!(body, &[3, 4, 5]);
+        assert_eq!(trailer, &[6]);
+        header[1] = 20;
+        body[0] = 30;
+        trailer[0] = 60;
+    }
+    assert_eq!(bytes, [1, 20, 30, 4, 5, 60]);
+}
+
+#[test]
+fn accepts_empty_sections_equal_boundaries_and_rejects_overflow_without_mutation() {
+    let mut bytes = [7_u8, 8, 9];
+    assert_eq!(split_envelope(&mut bytes, 1, 2), Ok((&mut [7][..], &mut [][..], &mut [8, 9][..])));
+    assert_eq!(split_envelope(&mut bytes, 0, 0), Ok((&mut [][..], &mut [7, 8, 9][..], &mut [][..])));
+    assert_eq!(split_envelope(&mut bytes, 3, 0), Ok((&mut [7, 8, 9][..], &mut [][..], &mut [][..])));
+    assert_eq!(split_envelope(&mut [], 0, 0), Ok((&mut [][..], &mut [][..], &mut [][..])));
+    assert_eq!(split_envelope(&mut bytes, 2, 2), Err(RegionsError::Outside));
+    assert_eq!(split_envelope(&mut bytes, usize::MAX, 1), Err(RegionsError::Outside));
+    assert_eq!(bytes, [7, 8, 9]);
+}`,
+    evidenceGate: true,
+  }),
+  evidence: {
+    version: 1,
+    conceptIds: ["unsafe-ffi-split-regions-contract"],
+    codingTaskId: "unsafe-ffi/three-region-envelope-v1",
+  },
+};
+
+const rawHeaderTransfer: LessonStep = {
+  ...gate({
+    id: "raw-header-transfer",
+    kind: "blank",
+    title: "Zwaliduj nowy nagłówek C",
+    prompt:
+      "Zdefiniuj `#[repr(C)] struct RawHeader { version: u8, flags: u16, length: u32 }`, porównywalne przez Debug, PartialEq i Eq `struct Header { urgent: bool, encrypted: bool, payload_len: u32 }` oraz `enum HeaderError { Version(u8), Flags(u16) }`. `fn decode_header(raw: RawHeader) -> Result<Header, HeaderError>` najpierw wymaga version == 3, potem odrzuca każdy bit flags spoza maski 0b0101. Błąd zachowuje pełną oryginalną wartość. Bit 0 oznacza urgent, bit 2 encrypted; length przenieś bez zmian, także 0 i u32::MAX. Układ RawHeader to offsety version=0, flags=2, length=4, rozmiar 8 i wyrównanie 4. Nie używaj transmute ani odczytu nieważnej pamięci: fixture tworzy poprawnie zainicjalizowane wartości Rust.",
+    solution: String.raw`#[repr(C)]
+struct RawHeader { version: u8, flags: u16, length: u32 }
+
+#[derive(Debug, PartialEq, Eq)]
+struct Header { urgent: bool, encrypted: bool, payload_len: u32 }
+
+#[derive(Debug, PartialEq, Eq)]
+enum HeaderError { Version(u8), Flags(u16) }
+
+fn decode_header(raw: RawHeader) -> Result<Header, HeaderError> {
+    if raw.version != 3 { return Err(HeaderError::Version(raw.version)); }
+    if raw.flags & !0b0101 != 0 { return Err(HeaderError::Flags(raw.flags)); }
+    Ok(Header { urgent: raw.flags & 1 != 0, encrypted: raw.flags & 4 != 0, payload_len: raw.length })
+}`,
+    tests: String.raw`#[test]
+fn header_layout_and_all_defined_flag_combinations_match_the_c_contract() {
+    assert_eq!(std::mem::offset_of!(RawHeader, version), 0);
+    assert_eq!(std::mem::offset_of!(RawHeader, flags), 2);
+    assert_eq!(std::mem::offset_of!(RawHeader, length), 4);
+    assert_eq!(std::mem::size_of::<RawHeader>(), 8);
+    assert_eq!(std::mem::align_of::<RawHeader>(), 4);
+    for length in [0, 17, u32::MAX] {
+        for flags in [0, 1, 4, 5] {
+            assert_eq!(decode_header(RawHeader { version: 3, flags, length }), Ok(Header {
+                urgent: flags & 1 != 0, encrypted: flags & 4 != 0, payload_len: length,
+            }));
+        }
+    }
+}
+
+#[test]
+fn unknown_versions_precede_flags_and_every_reserved_bit_is_rejected() {
+    for version in 0..=u8::MAX {
+        if version != 3 {
+            assert_eq!(decode_header(RawHeader { version, flags: u16::MAX, length: 0 }), Err(HeaderError::Version(version)));
+        }
+    }
+    for flags in 0..=u16::MAX {
+        if flags & !0b0101 != 0 {
+            assert_eq!(decode_header(RawHeader { version: 3, flags, length: 9 }), Err(HeaderError::Flags(flags)));
+        }
+    }
+}`,
+    evidenceGate: true,
+  }),
+  evidence: {
+    version: 1,
+    conceptIds: ["unsafe-ffi-repr-c-record-contract"],
+    codingTaskId: "unsafe-ffi/versioned-header-v1",
+  },
+};
+
+const ownedPairFixture = String.raw`use std::ptr::NonNull;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+static PAIR_RELEASES: AtomicUsize = AtomicUsize::new(0);
+static PAIR_ALLOCATIONS: AtomicUsize = AtomicUsize::new(0);
+
+unsafe extern "C" fn fixture_pair_alloc(value: u16) -> *mut u16 {
+    PAIR_ALLOCATIONS.fetch_add(1, Ordering::SeqCst);
+    Box::into_raw(Box::new(value))
+}
+
+/// # Safety
+/// raw is a live allocation returned by fixture_pair_alloc, released exactly once.
+unsafe extern "C" fn fixture_pair_release(raw: *mut u16) {
+    PAIR_RELEASES.fetch_add(1, Ordering::SeqCst);
+    unsafe { drop(Box::from_raw(raw)); }
+}`;
+
+const ownedPairStarter = `${ownedPairFixture}
+
+struct OwnedPair { first: NonNull<u16>, second: NonNull<u16> }
+
+impl OwnedPair {
+    fn new(_first: u16, _second: u16) -> Self { todo!("allocate two owned handles") }
+    fn borrow(&self) -> (&u16, &u16) { todo!("borrow both without releasing") }
+}
+
+impl Drop for OwnedPair {
+    fn drop(&mut self) {}
+}`;
+
+const ownedPairTransfer: LessonStep = {
+  ...gate({
+    id: "owned-pair-transfer",
+    kind: "apply",
+    title: "Zachowaj dwie własności ABI w jednym RAII",
+    prompt:
+      "Napraw OwnedPair. Zaufany fixture ABI jest dostarczony: fixture_pair_alloc(u16) tworzy osobną, niezerową i wyrównaną alokację u16 oraz zwiększa PAIR_ALLOCATIONS; fixture_pair_release(*mut u16) zwalnia ją i zwiększa PAIR_RELEASES. `OwnedPair::new(first: u16, second: u16) -> Self` przejmuje dokładnie dwa uchwyty przez dwa wywołania allocator-a. Zachowaj dostarczone funkcje ABI i ich liczniki. `borrow(&self) -> (&u16, &u16)` pożycza oryginalne wartości w tej kolejności, bez zwalniania lub kopii. Drop zwalnia każdy z dwóch uchwytów dokładnie raz. Przeniesienie wrappera i borrow nie alokują ponownie: jedna para daje 2 alokacje, dwie pary 4. Nie implementuj Copy/Clone ani ręcznej metody zwalniania; układ prywatnych pól możesz zmienić. Test jest serializowany i używa tylko wewnętrznie utworzonych ważnych alokacji. To deterministyczny model własności ABI, nie integracja z zewnętrzną biblioteką C.",
+    code: ownedPairStarter,
+    solution: `${ownedPairFixture}
+
+struct OwnedPair { first: NonNull<u16>, second: NonNull<u16> }
+
+impl OwnedPair {
+    fn new(first: u16, second: u16) -> Self {
+        let first = NonNull::new(unsafe { fixture_pair_alloc(first) }).expect("trusted first allocation");
+        let second = NonNull::new(unsafe { fixture_pair_alloc(second) }).expect("trusted second allocation");
+        Self { first, second }
+    }
+    fn borrow(&self) -> (&u16, &u16) {
+        unsafe { (self.first.as_ref(), self.second.as_ref()) }
+    }
+}
+
+impl Drop for OwnedPair {
+    fn drop(&mut self) {
+        unsafe {
+            fixture_pair_release(self.first.as_ptr());
+            fixture_pair_release(self.second.as_ptr());
+        }
+    }
+}`,
+    tests: String.raw`#[test]
+fn pair_owns_borrows_moves_and_releases_each_original_handle_once() {
+    PAIR_RELEASES.store(0, Ordering::SeqCst);
+    PAIR_ALLOCATIONS.store(0, Ordering::SeqCst);
+    let pair = OwnedPair::new(0, u16::MAX);
+    assert_eq!(PAIR_ALLOCATIONS.load(Ordering::SeqCst), 2);
+    let pointers = {
+        let (first, second) = pair.borrow();
+        assert_eq!((*first, *second), (0, u16::MAX));
+        assert_ne!(first as *const u16, second as *const u16);
+        (first as *const u16, second as *const u16)
+    };
+    assert_eq!(PAIR_RELEASES.load(Ordering::SeqCst), 0);
+    assert_eq!(PAIR_ALLOCATIONS.load(Ordering::SeqCst), 2);
+    let relocated = pair;
+    let (first, second) = relocated.borrow();
+    assert_eq!((first as *const u16, second as *const u16), pointers);
+    assert_eq!((*first, *second), (0, u16::MAX));
+    assert_eq!(PAIR_ALLOCATIONS.load(Ordering::SeqCst), 2);
+    let other = OwnedPair::new(21, 34);
+    assert_eq!(PAIR_ALLOCATIONS.load(Ordering::SeqCst), 4);
+    assert_eq!((*other.borrow().0, *other.borrow().1), (21, 34));
+    assert_eq!(PAIR_ALLOCATIONS.load(Ordering::SeqCst), 4);
+    drop(relocated);
+    assert_eq!(PAIR_RELEASES.load(Ordering::SeqCst), 2);
+    assert_eq!((*other.borrow().0, *other.borrow().1), (21, 34));
+    drop(other);
+    assert_eq!(PAIR_RELEASES.load(Ordering::SeqCst), 4);
+    assert_eq!(PAIR_ALLOCATIONS.load(Ordering::SeqCst), 4);
+}`,
+    evidenceGate: true,
+  }),
+  evidence: {
+    version: 1,
+    conceptIds: ["unsafe-ffi-owned-handle-contract"],
+    codingTaskId: "unsafe-ffi/owned-abi-pair-v1",
+  },
+};
+
 const checkedViewStarter = String.raw`/// # Safety
 /// For len > 0, raw must be non-null, aligned, and point to len initialized bytes
 /// in one live allocation; len must be <= isize::MAX and raw.add(len) must not wrap.
@@ -513,18 +772,20 @@ impl OwnedHandle {
 impl Drop for OwnedHandle { fn drop(&mut self) { } }`;
 
 const checkedViewRun = String.raw`/// # Safety
-/// For len > 0, raw must be non-null, aligned, and point to len initialized bytes
-/// in one live allocation; len must be <= isize::MAX and raw.add(len) must not wrap.
-/// The allocation remains valid and unaliased for the returned lifetime.
-/// For len == 0, raw may be null and no dereference occurs.
-unsafe fn checked_view<'a>(raw: *const u8, len: usize) -> Option<&'a [u8]> {
-    if len == 0 { return Some(&[]); }
-    if raw.is_null() { return None; }
-    Some(unsafe { std::slice::from_raw_parts(raw, len) })
+/// For len > 0, raw points to len initialized bytes in one live allocation.
+/// Offsets up to len are valid, len <= isize::MAX, and no write aliases the reads.
+/// For len == 0, raw may be null; no pointer is dereferenced.
+unsafe fn copy_bytes(raw: *const u8, len: usize) -> Option<Vec<u8>> {
+    if len > 0 && raw.is_null() { return None; }
+    let mut owned = Vec::with_capacity(len);
+    for index in 0..len {
+        owned.push(unsafe { raw.add(index).read() });
+    }
+    Some(owned)
 }
 fn main() {
     let bytes = [7_u8, 8, 9];
-    println!("{:?} {:?}", unsafe { checked_view(bytes.as_ptr(), 2) }.unwrap(), unsafe { checked_view(std::ptr::null(), 0) }.unwrap());
+    println!("{:?} {:?}", unsafe { copy_bytes(bytes.as_ptr(), 2) }.unwrap(), unsafe { copy_bytes(std::ptr::null(), 0) }.unwrap());
 }`;
 
 const splitRegionsRun = String.raw`fn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), &'static str> {
@@ -598,7 +859,7 @@ export const unsafeFfiLessons: Lesson[] = [
       run(
         "checked-view-run",
         "Uruchom bezpieczną granicę",
-        "Zobacz wynik dla ważnego adresu i pustego widoku z null.",
+        "Zobacz kopiowanie bajtów z ważnego adresu i pustego null. copy_bytes oddaje własny Vec, więc nie wiąże lifetime wyniku z pamięcią źródłową. W zadaniu głównym checked_view ma oddać pożyczony wycinek bez kopiowania.",
         checkedViewRun,
         "[7, 8] []\n",
       ),
@@ -653,6 +914,7 @@ export const unsafeFfiLessons: Lesson[] = [
         solution: checkedViewEquivalent,
         tests: checkedViewReviewTests,
       }),
+      checkedPrefixTransfer,
     ],
     misconceptions: [
       "Każdy null musi być dereferencjonowany, aby zwrócić pusty slice.",
@@ -755,6 +1017,7 @@ export const unsafeFfiLessons: Lesson[] = [
         solution: splitRegionsEquivalent,
         tests: splitRegionsReviewTests,
       }),
+      splitEnvelopeTransfer,
     ],
     misconceptions: [
       "`mid == len` jest zawsze błędem, bo prawa strona musi mieć element.",
@@ -857,6 +1120,7 @@ export const unsafeFfiLessons: Lesson[] = [
         solution: rawRecordEquivalent,
         tests: rawRecordReviewTests,
       }),
+      rawHeaderTransfer,
     ],
     misconceptions: [
       "`repr(C)` automatycznie waliduje wartości tagu i flag.",
@@ -959,6 +1223,7 @@ export const unsafeFfiLessons: Lesson[] = [
         solution: ownedHandleEquivalent,
         tests: ownedHandleReviewTests,
       }),
+      ownedPairTransfer,
     ],
     misconceptions: [
       "`borrow()` powinno zwolnić zasób, bo zna jego adres.",
@@ -1039,6 +1304,10 @@ export const unsafeFfiModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-ffi-checked-view", stepId: "checked-view-gate" },
         { lessonId: "unsafe-ffi-checked-view", stepId: "checked-view-blank" },
+        {
+          lessonId: "unsafe-ffi-checked-view",
+          stepId: "checked-view-prefix-transfer",
+        },
       ],
     },
     {
@@ -1047,6 +1316,10 @@ export const unsafeFfiModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-ffi-split-regions", stepId: "split-regions-gate" },
         { lessonId: "unsafe-ffi-split-regions", stepId: "split-regions-blank" },
+        {
+          lessonId: "unsafe-ffi-split-regions",
+          stepId: "split-envelope-transfer",
+        },
       ],
     },
     {
@@ -1055,20 +1328,120 @@ export const unsafeFfiModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-ffi-raw-record", stepId: "raw-record-gate" },
         { lessonId: "unsafe-ffi-raw-record", stepId: "raw-record-blank" },
+        { lessonId: "unsafe-ffi-raw-record", stepId: "raw-header-transfer" },
       ],
     },
     {
       id: "unsafe-ffi-owned-handle-gate",
-      label: "RAII wrapper pożycza wartość i wykonuje dokładnie jeden release.",
+      label:
+        "RAII wrapper pożycza wartości i wykonuje dokładnie jeden release każdego posiadanego zasobu.",
       taskRefs: [
         { lessonId: "unsafe-ffi-owned-handle", stepId: "owned-handle-gate" },
         { lessonId: "unsafe-ffi-owned-handle", stepId: "owned-handle-blank" },
+        { lessonId: "unsafe-ffi-owned-handle", stepId: "owned-pair-transfer" },
       ],
     },
   ],
 };
 
 export const unsafeFfiAssessmentSources = {
+  checkedPrefix: {
+    canonical: checkedPrefixTransfer.solution!,
+    equivalent: String.raw`/// # Safety
+/// raw covers available initialized bytes in one live allocation for the returned lifetime;
+/// it is non-null for available > 0, aligned, has a non-wrapping end and available <= isize::MAX.
+/// No mutable access aliases the returned view; null is permitted when available == 0.
+unsafe fn checked_prefix<'a>(raw: *const u8, available: usize, requested: usize) -> Option<&'a [u8]> {
+    match requested.cmp(&available) {
+        std::cmp::Ordering::Greater => None,
+        _ if requested == 0 => Some(&[]),
+        _ if raw.is_null() => None,
+        _ => Some(unsafe { std::slice::from_raw_parts(raw, requested) }),
+    }
+}`,
+    mutant: checkedPrefixTransfer.solution!.replace(
+      "if requested == 0 { return Some(&[]); }",
+      "if requested == 0 { return None; }",
+    ),
+  },
+  splitEnvelope: {
+    canonical: splitEnvelopeTransfer.solution!,
+    equivalent: String.raw`#[derive(Debug, PartialEq, Eq)]
+enum RegionsError { Outside }
+
+fn split_envelope(buffer: &mut [u8], header: usize, trailer: usize) -> Result<(&mut [u8], &mut [u8], &mut [u8]), RegionsError> {
+    let length = buffer.len();
+    match header.checked_add(trailer) {
+        Some(total) if total <= length => {},
+        _ => return Err(RegionsError::Outside),
+    }
+    let (prefix, tail) = buffer.split_at_mut(length - trailer);
+    let (head, body) = prefix.split_at_mut(header);
+    Ok((head, body, tail))
+}`,
+    mutant: splitEnvelopeTransfer.solution!.replace(
+      "if edges > buffer.len()",
+      "if edges >= buffer.len()",
+    ),
+  },
+  rawHeader: {
+    canonical: rawHeaderTransfer.solution!,
+    equivalent: String.raw`#[repr(C)]
+struct RawHeader { version: u8, flags: u16, length: u32 }
+#[derive(Debug, PartialEq, Eq)]
+struct Header { urgent: bool, encrypted: bool, payload_len: u32 }
+#[derive(Debug, PartialEq, Eq)]
+enum HeaderError { Version(u8), Flags(u16) }
+
+fn decode_header(raw: RawHeader) -> Result<Header, HeaderError> {
+    match raw.version {
+        3 => {},
+        other => return Err(HeaderError::Version(other)),
+    }
+    let (urgent, encrypted) = match raw.flags {
+        0 => (false, false),
+        1 => (true, false),
+        4 => (false, true),
+        5 => (true, true),
+        other => return Err(HeaderError::Flags(other)),
+    };
+    Ok(Header { urgent, encrypted, payload_len: raw.length })
+}`,
+    mutant: rawHeaderTransfer.solution!.replace(
+      "if raw.flags & !0b0101 != 0",
+      "if raw.flags & !0b1111 != 0",
+    ),
+  },
+  ownedPair: {
+    canonical: ownedPairTransfer.solution!,
+    equivalent: `${ownedPairFixture}
+
+struct OwnedPair([NonNull<u16>; 2]);
+
+impl OwnedPair {
+    fn new(first: u16, second: u16) -> Self {
+        let handles = [unsafe { fixture_pair_alloc(first) }, unsafe { fixture_pair_alloc(second) }];
+        Self(handles.map(|raw| NonNull::new(raw).expect("trusted allocation")))
+    }
+    fn borrow(&self) -> (&u16, &u16) {
+        let [first, second] = &self.0;
+        unsafe { (first.as_ref(), second.as_ref()) }
+    }
+}
+
+impl Drop for OwnedPair {
+    fn drop(&mut self) {
+        for handle in self.0 {
+            unsafe { fixture_pair_release(handle.as_ptr()); }
+        }
+    }
+}`,
+    // A finite omitted release is the only negative ownership behavior executed here.
+    mutant: ownedPairTransfer.solution!.replace(
+      "fixture_pair_release(self.second.as_ptr());",
+      "// Intentionally omit the second release; never double-free either pointer.",
+    ),
+  },
   checkedView: {
     canonical: checkedViewSolution,
     equivalent: checkedViewEquivalent,

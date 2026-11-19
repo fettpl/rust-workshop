@@ -1,4 +1,5 @@
 /** Test-only reversal of the reviewed Tokio shutdown gate splits. */
+import { restoreIndependentPracticeRegistry } from "./workshop-assessment-repair-compatibility-fixture";
 import type { CourseModule } from "../domain/types";
 import regressionDelta from "./fixtures/regression-skills-delta.json";
 import rangeDelta from "./fixtures/foundations-range-gate-delta.json";
@@ -72,7 +73,7 @@ export function restoreRegressionSkillsModules(
   matches: (value: unknown, expected: string) => boolean,
 ): CourseModule[] {
   return restoreCriterion(
-    modules,
+    restoreIndependentPracticeRegistry(modules, "modules", replacements, matches),
     replacements,
     matches,
     regressionDelta.module,

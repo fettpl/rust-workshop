@@ -59,12 +59,14 @@ describe("collections, errors and Todo learning path", () => {
     const stage = course.modules.find((item) => item.id === "todo-project")!;
     let state = createInitialState();
     const pass = (lessonId: string, stepId: string, revealed = false) => {
+      const lesson = course.lessons.find((item) => item.id === lessonId)!;
+      const step = lesson.steps.find((item) => item.id === stepId)!;
       state = recordEvidence(state, {
         id: `${lessonId}/${stepId}/${revealed}`,
-        conceptIds: [],
+        conceptIds: lesson.conceptIds,
         lessonId,
         stepId,
-        kind: "transfer",
+        kind: step.evidenceKind,
         evaluator: "tests",
         gate: true,
         passed: true,
@@ -76,6 +78,7 @@ describe("collections, errors and Todo learning path", () => {
     pass("todo-command-parser", "parser-add-gate");
     pass("todo-state-invariants", "state-add-done-gate");
     pass("todo-session-project", "session-run-gate");
+    const unassisted = state;
     pass("todo-session-project", "session-blank", true);
     expect(moduleGate(state, course.lessons, stage).passed).toBe(false);
     expect(
@@ -83,6 +86,11 @@ describe("collections, errors and Todo learning path", () => {
         (item) => !item.passed,
       ),
     ).toHaveLength(2);
+    pass("todo-state-invariants", "state-list-gate");
+    pass("todo-session-project", "session-strict-gate");
+    // The blank exposes the same complete session implementation as strict mode.
+    expect(moduleGate(state, course.lessons, stage).passed).toBe(false);
+    state = unassisted;
     pass("todo-state-invariants", "state-list-gate");
     pass("todo-session-project", "session-strict-gate");
     expect(moduleGate(state, course.lessons, stage).passed).toBe(true);

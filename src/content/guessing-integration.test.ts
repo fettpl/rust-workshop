@@ -10,6 +10,7 @@ import {
   stepKey,
 } from "../persistence/state";
 import { moduleGate, recordEvidence } from "../engine/learning";
+import { evidenceForLessonStep } from "./learning-context";
 
 describe("Number Guessing+ extends the existing portfolio project", () => {
   it("preserves the original project lessons and their saved step order", () => {
@@ -40,8 +41,12 @@ describe("Number Guessing+ extends the existing portfolio project", () => {
     const positions = previous.map(([id, stepIds]) => {
       const index = lessons.findIndex((lesson) => lesson.id === id);
       expect(index).toBeGreaterThanOrEqual(0);
-      expect(lessons[index].steps.slice(0, stepIds.length).map((step) => step.id)).toEqual(stepIds);
-      expect(lessons[index].steps.slice(stepIds.length).map((step) => step.id)).toEqual(
+      expect(
+        lessons[index].steps.slice(0, stepIds.length).map((step) => step.id),
+      ).toEqual(stepIds);
+      expect(
+        lessons[index].steps.slice(stepIds.length).map((step) => step.id),
+      ).toEqual(
         id === "number-guessing-transfer" ? ["project-own-boundary-test"] : [],
       );
       return project.lessonIds!.indexOf(id);
@@ -127,7 +132,7 @@ describe("Number Guessing+ extends the existing portfolio project", () => {
         id: `guessing-independent/${step.id}`,
         lessonId: lesson.id,
         stepId: step.id,
-        conceptIds: lesson.conceptIds,
+        ...evidenceForLessonStep(lesson, step),
         kind: step.evidenceKind,
         evaluator: "tests",
         gate: true,

@@ -41,7 +41,13 @@ export const guessingModule: CourseModule = {
     label,
     taskRefs: [
       { lessonId, stepId: `${lessonId}-gate` },
-      { lessonId, stepId: `${lessonId}-blank` },
+      {
+        lessonId,
+        stepId:
+          lessonId === "guess-round-state"
+            ? "guess-round-score-transfer"
+            : `${lessonId}-blank`,
+      },
     ],
   })),
 };

@@ -1484,10 +1484,12 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .filter({ hasText: performanceTitle })
       .click();
     await page.locator(".gate-action").first().click();
-    await page
-      .getByLabel("Kroki lekcji")
-      .getByRole("button", { name: /Od pustej kartki/ })
-      .click();
+    const { lessons } = await tsImport("../src/content/course.ts", import.meta.url);
+    const workloadSteps = lessons.find((lesson) => lesson.id === "performance-measured-workload").steps;
+    const workloadIndex = workloadSteps.findIndex((step) => step.id === "workload-blank");
+    expect(workloadIndex).toBeGreaterThanOrEqual(0);
+    await page.getByLabel("Kroki lekcji").getByRole("button").nth(workloadIndex).click();
+    await expect(page.locator(".task-pane h1")).toHaveText(workloadSteps[workloadIndex].title);
     const performanceEditor = page.getByRole("textbox", {
       name: "Kod Rust",
       exact: true,

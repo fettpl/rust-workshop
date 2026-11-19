@@ -19,8 +19,8 @@ const assessments = [
 ];
 
 it("covers each performance coding task with an equivalent and a mutant", () => {
-  expect(assessments).toHaveLength(20);
-  expect(performanceEvidenceAssessmentFixtures).toHaveLength(20);
+  expect(assessments).toHaveLength(24);
+  expect(performanceEvidenceAssessmentFixtures).toHaveLength(24);
   expect(
     performanceEvidenceAssessmentFixtures.map((fixture) => fixture.id).sort(),
   ).toEqual(assessments.map((step) => step.id).sort());

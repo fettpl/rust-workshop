@@ -204,7 +204,9 @@ function codingTaskId(
 function authoredEvidenceKind(
   step: Lesson["steps"][number] | undefined,
 ): EvidenceEvent["kind"] | undefined {
-  return step?.evaluator?.kind === "rubric" ? "self-rating" : step?.evidenceKind;
+  return step?.evaluator?.kind === "rubric"
+    ? "self-rating"
+    : step?.evidenceKind;
 }
 
 function definitionForStep(
@@ -217,24 +219,112 @@ function definitionForStep(
     : undefined;
 }
 
+function equivalentSolutionPeers(
+  lessons: readonly Lesson[],
+  ref: ModuleGateTaskRef,
+): ModuleGateTaskRef[] {
+  const lesson = lessons.find((candidate) => candidate.id === ref.lessonId);
+  const step = lesson?.steps.find((candidate) => candidate.id === ref.stepId);
+  if (!step || !VERIFIED_CODING_EVALUATORS.has(step.evaluator?.kind ?? ""))
+    return [];
+  const solution = step.solution?.trim();
+  return lessons.flatMap((source) =>
+    source.steps.flatMap((candidate) => {
+      if (source.id === ref.lessonId && candidate.id === ref.stepId) return [];
+      const suppliesSolution = candidate.suppliedSolutions?.solution?.some(
+        (target) =>
+          target.lessonId === ref.lessonId && target.stepId === ref.stepId,
+      );
+      const sameImplementation =
+        source.moduleId === lesson?.moduleId &&
+        !!solution &&
+        candidate.solution?.trim() === solution &&
+        VERIFIED_CODING_EVALUATORS.has(candidate.evaluator?.kind ?? "");
+      return suppliesSolution || sameImplementation
+        ? [{ lessonId: source.id, stepId: candidate.id }]
+        : [];
+    }),
+  );
+}
+
+function hasRevealedRef(
+  state: UserState,
+  ref: ModuleGateTaskRef,
+  at: number,
+): boolean {
+  return (
+    (at === Infinity &&
+      state.steps[`${ref.lessonId}:${ref.stepId}`]?.revealed === true) ||
+    state.events.some(
+      (event) =>
+        eventForRef(event, ref) &&
+        event.at <= at &&
+        event.revealed &&
+        // Legacy exposure.revealed also represented hint clicks. Only an actual
+        // submission or an explicitly supplied implementation discloses a peer.
+        (event.kind !== "exposure" ||
+          event.id.startsWith("supplied-solution:")),
+    )
+  );
+}
+
+/** Exact or explicitly authored implementations share solution reveals, not hints.
+ * Finite timestamps protect earlier credit from untimed current progress flags.
+ */
+export function hasEquivalentSolutionReveal(
+  state: UserState,
+  ref: ModuleGateTaskRef,
+  lessons: readonly Lesson[],
+  at = Infinity,
+): boolean {
+  return equivalentSolutionPeers(lessons, ref).some((peer) =>
+    hasRevealedRef(state, peer, at),
+  );
+}
+
+function hasCriterionComponentAssistance(
+  state: UserState,
+  criterion: ModuleGateCriterion,
+  ref: ModuleGateTaskRef,
+  lessons: readonly Lesson[],
+  at = Infinity,
+): boolean {
+  const supplied = stepForRef(lessons, ref)?.suppliedSolutions;
+  return [...(supplied?.code ?? []), ...(supplied?.solution ?? [])].some(
+    (component) =>
+      criterion.taskRefs.some(
+        (target) =>
+          target.lessonId === component.lessonId &&
+          target.stepId === component.stepId,
+      ) && hasRevealedRef(state, component, at),
+  );
+}
+
 function isIndependentTaskSuccess(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
   allowLegacyOrdinaryV1 = false,
+  history: readonly EvidenceEvent[] = [],
 ): boolean {
-  if (!isIndependentSuccess(event)) return false;
+  if (
+    !step ||
+    !isIndependentSuccess(event) ||
+    event.kind !== authoredEvidenceKind(step) ||
+    (event.evaluator !== undefined &&
+      event.evaluator !== step.evaluator?.kind) ||
+    history.some(
+      (prior) =>
+        eventForRef(prior, event) &&
+        prior.at <= event.at &&
+        (prior.hints > 0 || prior.revealed),
+    )
+  )
+    return false;
   const legacyOrdinaryV1 =
     allowLegacyOrdinaryV1 &&
     step?.evidence?.version === 1 &&
     step.evidence.codingTaskId === undefined &&
     event.evidenceVersion === undefined;
-  if (
-    legacyOrdinaryV1 &&
-    (event.kind !== authoredEvidenceKind(step) ||
-      (event.evaluator !== undefined &&
-        event.evaluator !== step?.evaluator?.kind))
-  )
-    return false;
   if (
     step?.evidence &&
     !legacyOrdinaryV1 &&
@@ -788,12 +878,13 @@ export function recordLessonExposure(
   state: UserState,
   exposure: LessonExposure,
   policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
+  source: "exposure" | "supplied-solution" = "exposure",
 ): UserState {
   const revealed = exposure.revealed === true;
   return recordEvidence(
     state,
     {
-      id: `exposure:${exposure.lessonId}:${exposure.stepId}:${exposure.at}:${revealed ? "revealed" : "opened"}`,
+      id: `${source}:${exposure.lessonId}:${exposure.stepId}:${exposure.at}:${revealed ? "revealed" : "opened"}`,
       conceptIds: exposure.conceptIds,
       lessonId: exposure.lessonId,
       stepId: exposure.stepId,
@@ -924,6 +1015,15 @@ function creditedGateTasks(
           event,
           step,
           criterion.requiredIndependentCodingTasks === undefined,
+          state.events,
+        ) &&
+        !hasEquivalentSolutionReveal(state, ref, lessons, event.at) &&
+        !hasCriterionComponentAssistance(
+          state,
+          criterion,
+          ref,
+          lessons,
+          event.at,
         )
       ) {
         ids.add(`${ref.lessonId}:${ref.stepId}`);
@@ -964,11 +1064,14 @@ export function gateRecovery(
     if (supplementaryPassed(state, criterion)) return { status: "complete" };
     return { status: "available", task: criterion.supplementaryStepRefs![0] };
   }
-  const task = criterion.taskRefs.find((ref) => {
+  const eligible = criterion.taskRefs.filter((ref) => {
     const progress = state.steps[`${ref.lessonId}:${ref.stepId}`];
     if (
       progress?.hints ||
       progress?.revealed ||
+      hasEquivalentSolutionReveal(state, ref, lessons) ||
+      (criterion.requiredIndependentCodingTasks === undefined &&
+        hasCriterionComponentAssistance(state, criterion, ref, lessons)) ||
       state.events.some(
         (event) =>
           eventForRef(event, ref) && (event.hints > 0 || event.revealed),
@@ -993,18 +1096,16 @@ export function gateRecovery(
         )
       );
     }
-    return (
-      !progress?.completed || stepForRef(lessons, ref)?.evidence !== undefined
-    );
+    return true;
   });
+  // Counted families can be retried even when an older draft is marked complete.
+  const task =
+    criterion.requiredIndependentCodingTasks !== undefined
+      ? eligible[0]
+      : (eligible.find(
+          (ref) => !state.steps[`${ref.lessonId}:${ref.stepId}`]?.completed,
+        ) ?? eligible[0]);
   if (task) return { status: "available", task };
-  // Preserve existing uncounted practice navigation; counted recovery must never
-  // pretend a credited or assisted task is a fresh independent variant.
-  if (
-    criterion.requiredIndependentCodingTasks === undefined &&
-    criterion.taskRefs[0]
-  )
-    return { status: "available", task: criterion.taskRefs[0] };
   return { status: "exhausted" };
 }
 
@@ -1036,7 +1137,8 @@ export function moduleGate(
         (event) =>
           event.lessonId === lesson.id &&
           event.stepId === step.id &&
-          isIndependentTaskSuccess(event, step, true),
+          isIndependentTaskSuccess(event, step, true, state.events) &&
+          !hasEquivalentSolutionReveal(state, event, lessons, event.at),
       );
       criteria.push({ label: `${lesson.title}: ${step.title}`, passed });
     }

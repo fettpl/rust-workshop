@@ -543,14 +543,18 @@ export const macrosAsApiLessons: Lesson[] = [
       runStep(
         "macros-exactly-once-run",
         "Uruchom odczyt",
-        "Uruchom przykład z dwoma odczytami i porównaj wydruk. To obserwacja pliku przeglądarkowego, nie test granicy osobnego crate.",
-        `${macroPrelude}
+        "Uruchom dwa pojedyncze wywołania print_reading! i porównaj wydruk. Makro wypisuje jedną parę; zadanie główne ma zebrać wiele par do Vec<Reading>. To obserwacja pliku przeglądarkowego, nie test granicy osobnego crate.",
+        `macro_rules! print_reading {
+    ($name:expr => $value:expr) => {{
+        let captured_name = $name;
+        let captured_value = $value;
+        println!("{}={}", captured_name, captured_value);
+    }};
+}
 
 fn main() {
-    let readings = metric_readings!("cpu" => 7, "queue" => 3,);
-    for reading in readings {
-        println!("{}={}", reading.name, reading.value);
-    }
+    print_reading!("cpu" => 7);
+    print_reading!("queue" => 3);
 }`,
         "cpu=7\nqueue=3\n",
       ),
@@ -683,14 +687,20 @@ fn main() {
       runStep(
         "macros-repetition-grammar-run",
         "Uruchom cztery kształty",
-        "Uruchom wywołania puste, pojedyncze, wieloelementowe i z przecinkiem końcowym. Zauważ, że są to osobne przypadki gramatyki.",
-        `${macroPrelude}
+        "Uruchom count_labels! dla wywołań pustych, pojedynczych, wieloelementowych i z przecinkiem końcowym. To makro zlicza identyfikatory; zadanie główne ma przetwarzać pary wyrażeń. Zauważ, że są to osobne przypadki gramatyki.",
+        `macro_rules! count_labels {
+    ($( $label:ident ),* $(,)?) => {{
+        let mut count = 0usize;
+        $( let _ = stringify!($label); count += 1; )*
+        count
+    }};
+}
 
 fn main() {
-    println!("{}", metric_readings!().len());
-    println!("{}", metric_readings!("one" => 1).len());
-    println!("{}", metric_readings!("a" => 1, "b" => 2).len());
-    println!("{}", metric_readings!("tail" => 3,).len());
+    println!("{}", count_labels!());
+    println!("{}", count_labels!(one));
+    println!("{}", count_labels!(a, b));
+    println!("{}", count_labels!(tail,));
 }`,
         "0\n1\n2\n1\n",
       ),
@@ -819,12 +829,23 @@ fn main() {
       runStep(
         "macros-exported-paths-2024-run",
         "Uruchom stały limit",
-        "Uruchom wywołanie z `const { 7 }`. Ten plik jest modelem kompilacji Rust 2024; zewnętrzny klient i MSRV należą do osobnego verifiera.",
-        `${macroPrelude}
+        "Uruchom limit_text! z `const { 7 }` i lokalnym cieniem funkcji format_limit. Makro oddaje tekst przez publiczny helper; zadanie główne zbuduje kolekcję Reading. Ten plik jest modelem kompilacji Rust 2024; zewnętrzny klient i MSRV należą do osobnego verifiera.",
+        `pub fn format_limit(value: i32) -> String {
+    format!("limit={value}")
+}
+
+#[macro_export]
+macro_rules! limit_text {
+    ($value:expr) => { $crate::format_limit($value) };
+}
+
+mod caller {
+    fn format_limit(_: i32) -> String { String::from("local shadow") }
+    pub fn show() -> String { crate::limit_text!(const { 7 }) }
+}
 
 fn main() {
-    let reading = metric_readings!("limit" => const { 7 },);
-    println!("{}={}", reading[0].name, reading[0].value);
+    println!("{}", caller::show());
 }`,
         "limit=7\n",
       ),
@@ -1003,6 +1024,9 @@ export const macrosAsApiModule: CourseModule = {
     taskRefs: [
       { lessonId: lesson.id, stepId: `${lesson.id}-gate` },
       { lessonId: lesson.id, stepId: `${lesson.id}-blank` },
+      ...(lesson.id === "macros-exactly-once"
+        ? [{ lessonId: "macros-repetition-grammar", stepId: "macros-repetition-grammar-blank" }]
+        : []),
     ],
   })),
 };

@@ -6,6 +6,7 @@ import type {
   LessonStep,
   Source,
 } from "@/domain/types";
+import { boxTreeSummaryTransfer } from "./domain-gate-recovery";
 
 const reviewedAt = "2026-09-12";
 
@@ -676,7 +677,7 @@ export const boxedValuesLessons: Lesson[] = [
           "Parametr `ticket` już jest właścicielem wartości, której potrzebuje wynik.",
           "Wynik powinien opakować ten sam parametr T; zastępcza wartość zmieniłaby dane i tożsamość adresu.",
         ],
-        gate: true,
+        gate: false,
       }),
       coding({
         id: "box-list-gate",
@@ -710,6 +711,7 @@ export const boxedValuesLessons: Lesson[] = [
           "To kontrakt potrzebny do przerwania rekurencji rozmiaru i bezpiecznego zwolnienia wartości.",
         ],
       ),
+      boxTreeSummaryTransfer,
     ],
     misconceptions: [
       "Rust automatycznie ogranicza głębokość rekurencyjnego typu.",
@@ -719,7 +721,7 @@ export const boxedValuesLessons: Lesson[] = [
     transferTask:
       "Zaprojektuj mały enum z wariantem końcowym i jednym polem `Box`, a następnie przenieś przez funkcję wartość, która nie implementuje Clone.",
     evidenceGate:
-      "Dwie niezależne implementacje testują generyczne przeniesienie danych bez Clone oraz przejście po ograniczonej liczbie węzłów Chain.",
+      "Bramka wymaga przejścia po rekurencyjnym Chain albo przeniesienia liści drzewa z Box bez Clone. Samo opakowanie Ticket w Box pozostaje ćwiczeniem własności.",
     sourceIds: [
       "boxed-values-book-box",
       "boxed-values-std-box",
@@ -1161,8 +1163,8 @@ export const boxedValuesModule: CourseModule = {
       label:
         "Box przerywa rekurencję i zachowuje własność bez kopiowania danych.",
       taskRefs: [
-        { lessonId: "box-recursive", stepId: "box-move-gate" },
         { lessonId: "box-recursive", stepId: "box-list-gate" },
+        { lessonId: "box-recursive", stepId: "box-tree-summary-transfer" },
       ],
     },
     {

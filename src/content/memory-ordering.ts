@@ -6,6 +6,7 @@ import type {
   LessonStep,
   Source,
 } from "@/domain/types";
+import { publicationReportTransfer } from "./domain-gate-recovery";
 
 const reviewedAt = "2026-09-12";
 
@@ -1049,8 +1050,9 @@ export const memoryOrderingLessons: Lesson[] = [
           "W tablicach read/write/saved zachowaj stan obu wątków; przed Write sprawdź własny Read i overflow checked_add.",
           "Mały interpreter SC ma sześć legalnych kolejności, lecz każdą akcję harmonogramu wykonuje deterministycznie i odrzuca błędne dane.",
         ],
-        gate: true,
+        gate: false,
       }),
+      publicationReportTransfer,
     ],
     misconceptions: [
       "Milion przebiegów stress testu obejmuje wszystkie możliwe przeploty.",
@@ -1061,7 +1063,7 @@ export const memoryOrderingLessons: Lesson[] = [
     transferTask:
       "Zdefiniuj sześć legalnych harmonogramów dwóch wątków, odtwórz je w małym interpreterze SC i osobno wskaż, które atomiki, Arc i thread przełączysz na Loom w Cargo test.",
     evidenceGate:
-      "loom-evidence-assertions-gate wymaga asercji na rzeczywistym payloadzie i odrzuca pusty/inconclusive wynik, a loom-evidence-small-model-blank odtwarza sześć legalnych przeplotów SC oraz odrzuca duplikaty, błędne ID, niepełność i overflow bez przekroczenia czasu.",
+      "Bramka wymaga odrzucenia pustego, nierozstrzygającego, błędnego lub sprzecznego dowodu publikacji: w pojedynczym modelu albo osobno dla każdego raportu partii. Interpreter sześciu przeplotów SC pozostaje niezależnym ćwiczeniem modelowania.",
     sourceIds: [
       "memory-ordering-loom-guide",
       "memory-ordering-loom-atomic-usize",
@@ -1302,7 +1304,7 @@ export const memoryOrderingModule: CourseModule = {
         { lessonId: "loom-evidence", stepId: "loom-evidence-assertions-gate" },
         {
           lessonId: "loom-evidence",
-          stepId: "loom-evidence-small-model-blank",
+          stepId: "loom-evidence-publication-report-transfer",
         },
       ],
     },

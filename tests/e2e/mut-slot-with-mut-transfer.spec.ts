@@ -374,8 +374,17 @@ test("with_mut model and primary preserve the old v2 prefix and mobile state", a
       courseEvidencePolicy,
     ),
   ).toEqual([oldFamily]);
-  expect(afterReveal.steps[oldKey]).toEqual(before.steps[oldKey]);
-  expect(afterReveal.steps[blankKey]).toEqual(before.steps[blankKey]);
+  for (const ref of [oldGate, oldBlank]) {
+    const key = stepKey(lesson.id, ref.id);
+    expect(afterReveal.steps[key]).toEqual({ ...before.steps[key], revealed: true });
+    const disclosures = afterReveal.events.filter((event) =>
+      event.lessonId === lesson.id && event.stepId === ref.id &&
+      event.kind === "exposure" && event.id.startsWith("supplied-solution:"),
+    );
+    expect(disclosures).toHaveLength(1);
+    expect(disclosures[0]).toMatchObject({ gate: false, revealed: true });
+    expect(disclosures[0].at).toBeGreaterThan(oldEvent.at);
+  }
 
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.getByRole("button", { name: "Projekt", exact: true }).click();

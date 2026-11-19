@@ -67,7 +67,11 @@ for (const moduleId of [
     });
     const stage = modules.find((item) => item.id === moduleId)!;
     expect(stage).toBeDefined();
-    const [first, fresh] = stage.gateCriteria![0].taskRefs;
+    const [first, originalBlank, transfer] = stage.gateCriteria![0].taskRefs;
+    const fresh =
+      ["performance-evidence", "profile-evidence", "unsafe-ffi-contracts"].includes(moduleId)
+        ? transfer
+        : originalBlank;
     const lesson = lessons.find((item) => item.id === first.lessonId)!;
     const step = lesson.steps.find((item) => item.id === first.stepId)!;
     const blank = lesson.steps.find((item) => item.id === fresh.stepId)!;
@@ -86,7 +90,11 @@ for (const moduleId of [
           .find((item) => item.id === batchRef.lessonId)!
           .steps.find((item) => item.id === batchRef.stepId)!
       : undefined;
-    expect(blank.kind).toBe("blank");
+    if (fresh === transfer && transfer) {
+      expect(blank.solution).toBeTruthy();
+      expect(blank.solution).not.toBe(step.solution);
+    }
+    expect(blank.kind).toBe(moduleId === "profile-evidence" ? "apply" : "blank");
     expect(blank.code).toBeUndefined();
     await page.goto("/");
     await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();

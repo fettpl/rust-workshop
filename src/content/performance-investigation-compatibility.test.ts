@@ -83,7 +83,7 @@ it("restores the genuine pre-A7 registry without masking unrelated state", () =>
       (project) => project.id === currentCourse.project.id,
     ),
   );
-  expect(projected.ownershipModule).toBe(currentCourse.ownershipModule);
+  expect(projected.ownershipModule).toBe(projected.modules.find((module) => module.id === "ownership"));
   expect(projected.reviewExerciseForId).toBe(currentCourse.reviewExerciseForId);
 });
 

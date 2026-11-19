@@ -339,22 +339,10 @@ fn runs_two_local_stages_with_a_runtime_context_and_propagates_the_value() {
     assert_eq!(label, "żółw");
 }`;
 
-const spawnRun = `use std::future::Future;
-use tokio::task::JoinHandle;
-
-fn spawn_pair<F, G, T, U>(first: F, second: G) -> (JoinHandle<T>, JoinHandle<U>)
-where
-    F: Future<Output = T> + Send + 'static,
-    G: Future<Output = U> + Send + 'static,
-    T: Send + 'static,
-    U: Send + 'static,
-{
-    (tokio::spawn(first), tokio::spawn(second))
-}
-
-#[tokio::main(flavor = "current_thread")]
+const spawnRun = `#[tokio::main(flavor = "current_thread")]
 async fn main() {
-    let (left, right) = spawn_pair(async { "left" }, async { "right" });
+    let left = tokio::spawn(async { "left" });
+    let right = tokio::spawn(async { "right" });
     println!("left={} right={}", left.await.unwrap(), right.await.unwrap());
 }`;
 
@@ -1055,7 +1043,7 @@ export const tokioRuntimeLessons: Lesson[] = [
       tokioRun(
         "tokio-spawn-join-run",
         "Odbierz dwa wyniki w swojej kolejności",
-        "Kod awaituje najpierw lewy uchwyt, potem prawy. Stabilny tekst opisuje tę kolejność odbioru, a nie kolejność wykonania dzieci.",
+        "Przykład tworzy dwa konkretne zadania bez helpera generycznego. Kod awaituje najpierw lewy uchwyt, potem prawy. Stabilny tekst opisuje tę kolejność odbioru, a nie kolejność wykonania dzieci. W zadaniu głównym zapiszesz helper dla dowolnych dwóch Future i różnych typów wyników.",
         spawnRun,
         "left=left right=right\n",
       ),

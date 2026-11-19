@@ -625,10 +625,10 @@ export const foundationsLessons: Lesson[] = [
         kind: "run",
         title: "Wywołaj funkcję",
         prompt:
-          "Uruchom funkcję z dwoma parametrami i sprawdź wynik. Zauważ brak średnika przy ostatnim wyrażeniu w add.",
-        code: 'fn add(left: i32, right: i32) -> i32 {\n    left + right\n}\n\nfn main() {\n    println!("{}", add(2, 3));\n}',
+          "Uruchom funkcję z dwoma parametrami i sprawdź wynik. Zauważ brak średnika przy ostatnim wyrażeniu w multiply.",
+        code: 'fn multiply(left: i32, right: i32) -> i32 {\n    left * right\n}\n\nfn main() {\n    println!("{}", multiply(1, 5));\n}',
         solution:
-          'fn add(left: i32, right: i32) -> i32 {\n    left + right\n}\n\nfn main() {\n    println!("{}", add(2, 3));\n}',
+          'fn multiply(left: i32, right: i32) -> i32 {\n    left * right\n}\n\nfn main() {\n    println!("{}", multiply(1, 5));\n}',
         evaluator: { kind: "exact-output", expected: "5\n" },
         evidenceKind: "exposure",
         expectedStatus: "success",
@@ -1132,10 +1132,9 @@ fn zmiana_stawki() {
         kind: "run",
         title: "Uruchom wiele przypadków",
         prompt:
-          "Uruchom kompletną implementację z czterema wynikami. Wejścia mieszczą się w zakresie -1000..=1000; porównaj cały wynik, nie tylko jeden przypadek.",
-        code: 'fn score(correct: i32, attempted: i32) -> i32 {\n    if attempted <= 0 {\n        0\n    } else if correct <= 0 {\n        0\n    } else if correct >= attempted {\n        100\n    } else {\n        correct * 100 / attempted\n    }\n}\n\nfn main() {\n    println!("{}", score(0, 0));\n    println!("{}", score(0, 5));\n    println!("{}", score(3, 3));\n    println!("{}", score(2, 4));\n}',
-        solution:
-          'fn score(correct: i32, attempted: i32) -> i32 {\n    if attempted <= 0 {\n        0\n    } else if correct <= 0 {\n        0\n    } else if correct >= attempted {\n        100\n    } else {\n        correct * 100 / attempted\n    }\n}\n\nfn main() {\n    println!("{}", score(0, 0));\n    println!("{}", score(0, 5));\n    println!("{}", score(3, 3));\n    println!("{}", score(2, 4));\n}',
+          "Uruchom cztery przypadki innej reguły: remaining_points oblicza pozostały budżet przez odejmowanie. Gdy total <= 0 lub used >= total, oddaje 0; gdy used <= 0, oddaje cały total; w pozostałych przypadkach oddaje total - used. Oba wejścia mieszczą się w zakresie -1000..=1000. Porównaj wszystkie wyniki. W zadaniu score trzeba samodzielnie obliczać procent, a nie pozostały budżet.",
+        code: "fn remaining_points(total: i32, used: i32) -> i32 {\n    if total <= 0 || used >= total {\n        0\n    } else if used <= 0 {\n        total\n    } else {\n        total - used\n    }\n}\n\nfn main() {\n    println!(\"{}\", remaining_points(0, 0));\n    println!(\"{}\", remaining_points(5, 5));\n    println!(\"{}\", remaining_points(100, 0));\n    println!(\"{}\", remaining_points(80, 30));\n}",
+        solution: "fn remaining_points(total: i32, used: i32) -> i32 {\n    if total <= 0 || used >= total {\n        0\n    } else if used <= 0 {\n        total\n    } else {\n        total - used\n    }\n}\n\nfn main() {\n    println!(\"{}\", remaining_points(0, 0));\n    println!(\"{}\", remaining_points(5, 5));\n    println!(\"{}\", remaining_points(100, 0));\n    println!(\"{}\", remaining_points(80, 30));\n}",
         evaluator: { kind: "exact-output", expected: "0\n0\n100\n50\n" },
         evidenceKind: "project",
         expectedStatus: "success",

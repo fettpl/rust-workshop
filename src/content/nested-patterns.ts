@@ -49,6 +49,28 @@ fn describe(reading: &Reading) -> &'static str {
     }
 }`;
 
+// The worked model nests Option inside a variant; repair reverses that nesting.
+const readingObservation = `#[derive(Debug, PartialEq)]
+enum ReadingState {
+    Ready { value: Option<i32> },
+    Failed,
+}
+
+#[derive(Debug, PartialEq)]
+struct Reading {
+    label: String,
+    state: ReadingState,
+}
+
+fn describe(reading: &Reading) -> &'static str {
+    match &reading.state {
+        ReadingState::Ready { value: Some(value) } if *value > 0 => "ready",
+        ReadingState::Ready { value: Some(_) } => "ready-nonpositive",
+        ReadingState::Ready { value: None } => "missing",
+        ReadingState::Failed => "failed",
+    }
+}`;
+
 const readingTests = `#[test]
 fn reading_cases_and_borrow_preservation() {
     let mut cases = vec![
@@ -301,30 +323,30 @@ export const nestedPatternLessons: Lesson[] = [
         kind: "run",
         title: "Uruchom klasyfikację",
         prompt:
-          "Uruchom kod i porównaj `missing`, `ready-nonpositive`, `failed` oraz `ready`. Zwróć uwagę, że zero i liczba ujemna są obecnymi, lecz niegotowymi odczytami.",
-        code: `${readingSolution}
+          "Uruchom kod i porównaj `missing`, `ready-nonpositive`, `failed` oraz `ready`. Tutaj Option jest polem wewnątrz Ready; w zadaniu naprawczym Option obejmie cały stan. Porównaj te dwa zagnieżdżenia. Zwróć uwagę, że zero i liczba ujemna są obecnymi, lecz niegotowymi odczytami.",
+        code: `${readingObservation}
 
 fn main() {
     let readings = [
-        Reading { label: "none".to_owned(), state: None },
-        Reading { label: "zero".to_owned(), state: Some(ReadingState::Ready { value: 0 }) },
-        Reading { label: "negative".to_owned(), state: Some(ReadingState::Ready { value: -3 }) },
-        Reading { label: "failed".to_owned(), state: Some(ReadingState::Failed) },
-        Reading { label: "positive".to_owned(), state: Some(ReadingState::Ready { value: 7 }) },
+        Reading { label: "none".to_owned(), state: ReadingState::Ready { value: None } },
+        Reading { label: "zero".to_owned(), state: ReadingState::Ready { value: Some(0) } },
+        Reading { label: "negative".to_owned(), state: ReadingState::Ready { value: Some(-3) } },
+        Reading { label: "failed".to_owned(), state: ReadingState::Failed },
+        Reading { label: "positive".to_owned(), state: ReadingState::Ready { value: Some(7) } },
     ];
     for reading in &readings {
         println!("{}: {}", reading.label, describe(reading));
     }
 }`,
-        solution: `${readingSolution}
+        solution: `${readingObservation}
 
 fn main() {
     let readings = [
-        Reading { label: "none".to_owned(), state: None },
-        Reading { label: "zero".to_owned(), state: Some(ReadingState::Ready { value: 0 }) },
-        Reading { label: "negative".to_owned(), state: Some(ReadingState::Ready { value: -3 }) },
-        Reading { label: "failed".to_owned(), state: Some(ReadingState::Failed) },
-        Reading { label: "positive".to_owned(), state: Some(ReadingState::Ready { value: 7 }) },
+        Reading { label: "none".to_owned(), state: ReadingState::Ready { value: None } },
+        Reading { label: "zero".to_owned(), state: ReadingState::Ready { value: Some(0) } },
+        Reading { label: "negative".to_owned(), state: ReadingState::Ready { value: Some(-3) } },
+        Reading { label: "failed".to_owned(), state: ReadingState::Failed },
+        Reading { label: "positive".to_owned(), state: ReadingState::Ready { value: Some(7) } },
     ];
     for reading in &readings {
         println!("{}: {}", reading.label, describe(reading));

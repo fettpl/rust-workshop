@@ -1,3 +1,4 @@
+import { appendPerformanceRecoverySteps, addPerformanceRecoveryRefs } from "./performance-recovery-practice";
 import type {
   Competency,
   Concept,
@@ -190,9 +191,11 @@ function coding(options: {
   solution: string;
   tests: string;
   gate?: boolean;
+  suppliedSolutions?: LessonStep["suppliedSolutions"];
 }): LessonStep {
   return {
     id: options.id,
+    ...(options.suppliedSolutions ? { suppliedSolutions: options.suppliedSolutions } : {}),
     kind: options.kind,
     title: options.title,
     prompt: options.prompt,
@@ -714,7 +717,7 @@ fn decision_checks_functional_correctness_before_cost() {
     }
 }`;
 
-export const profileEvidenceLessons: Lesson[] = [
+export const profileEvidenceLessons: Lesson[] = appendPerformanceRecoverySteps([
   {
     id: "profile-instruction-cost",
     moduleId: "profile-evidence",
@@ -756,6 +759,7 @@ export const profileEvidenceLessons: Lesson[] = [
       ),
       coding({
         id: "instruction-gate",
+        suppliedSolutions: { solution: [{ lessonId: "profile-instruction-cost", stepId: "instruction-blank" }] },
         kind: "modify",
         title: "Policz ślad",
         prompt:
@@ -778,6 +782,7 @@ export const profileEvidenceLessons: Lesson[] = [
       }),
       coding({
         id: "instruction-blank",
+        suppliedSolutions: { solution: [{ lessonId: "profile-instruction-cost", stepId: "instruction-gate" }] },
         kind: "blank",
         title: "Blank page: rekord instrukcji",
         prompt:
@@ -1088,7 +1093,7 @@ export const profileEvidenceLessons: Lesson[] = [
       "Bramki sprawdzają równość progu, stabilny powód oraz pierwszeństwo poprawności funkcjonalnej.",
     sourceIds: ["profile-rust-performance-book", "profile-criterion"],
   },
-];
+]);
 
 export const profileEvidenceReviewExercises: Record<string, LessonStep> = {
   "instruction-cost-record": coding({
@@ -1132,7 +1137,7 @@ export const profileEvidenceReviewExercises: Record<string, LessonStep> = {
   }),
 };
 
-export const profileEvidenceModule: CourseModule = {
+export const profileEvidenceModule: CourseModule = addPerformanceRecoveryRefs({
   id: "profile-evidence",
   title: "Profilowanie i dowody kosztu",
   whyItMatters:
@@ -1261,7 +1266,7 @@ export const profileEvidenceModule: CourseModule = {
       ],
     },
   ],
-};
+});
 
 export const profileEvidenceExtendedLessons = runtimeAllocationEvidenceLessons;
 export const profileEvidenceExtendedConcepts = runtimeAllocationEvidenceConcepts;

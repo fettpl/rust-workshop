@@ -1,4 +1,4 @@
-import type { Lesson, ProjectPackage, UserState } from "./types";
+import type { Lesson, ModuleGateTaskRef, ProjectPackage, UserState } from "./types";
 import { createStepProgress, stepKey } from "../persistence/state";
 import { recordLessonExposure, type EvidencePolicy } from "../engine/learning";
 
@@ -139,6 +139,16 @@ export function revealProjectPackageVariant(
     variant === "starter"
       ? (project.starterRevealStepRefs ?? [])
       : [...project.revealStepRefs, ...(project.starterRevealStepRefs ?? [])];
+  return revealAuthoredStepSolutions(state, refs, lessons, now, policy);
+}
+
+export function revealAuthoredStepSolutions(
+  state: UserState,
+  refs: readonly ModuleGateTaskRef[],
+  lessons: readonly Lesson[],
+  now: number,
+  policy?: EvidencePolicy,
+): UserState {
   const uniqueRefs = Array.from(
     new Map(refs.map((ref) => [`${ref.lessonId}:${ref.stepId}`, ref])).values(),
   );
@@ -148,11 +158,18 @@ export function revealProjectPackageVariant(
     const step = lesson?.steps.find((candidate) => candidate.id === ref.stepId);
     if (!lesson || !step)
       throw new Error(
-        `Unknown ${variant} exposure reference: ${ref.lessonId}:${ref.stepId}`,
+        `Unknown solution exposure reference: ${ref.lessonId}:${ref.stepId}`,
       );
     {
       const key = stepKey(lesson.id, step.id);
-      if (next.steps[key]?.revealed) continue;
+      if (
+        next.steps[key]?.revealed &&
+        next.events.some((event) =>
+          event.lessonId === ref.lessonId && event.stepId === ref.stepId &&
+          event.at <= now && event.kind === "exposure" && event.revealed &&
+          event.id.startsWith("supplied-solution:")
+        )
+      ) continue;
       next = recordLessonExposure(
         {
           ...next,
@@ -172,6 +189,7 @@ export function revealProjectPackageVariant(
           revealed: true,
         },
         policy,
+        "supplied-solution",
       );
     }
   }

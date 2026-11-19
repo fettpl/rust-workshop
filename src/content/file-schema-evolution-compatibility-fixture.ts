@@ -3,6 +3,8 @@ import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
 import {
+  restoreIndependentPracticeLessons,
+  restoreIndependentPracticeRegistry,
   restoreWorkshopAssessmentLessons,
   restoreCurriculumRecoveryRegistry,
   restoreCurriculumRecoveryLessons,
@@ -439,9 +441,11 @@ function collectAdditions(
   }
 }
 
-/** Reverses only this reviewed batch, for tests isolating an earlier maintenance layer. */
-export function historicalBeforeCurriculumRecovery<T extends typeof Course>(
+/** Visit the public registries and their default namespace without breaking shared references. */
+function projectMaintenanceBatch<T extends typeof Course>(
   course: T,
+  restoreLessons: typeof restoreIndependentPracticeLessons,
+  restoreRegistry: typeof restoreIndependentPracticeRegistry,
 ): T {
   const input = course as unknown as Registry;
   const defaultRegistry = input.default;
@@ -469,12 +473,12 @@ export function historicalBeforeCurriculumRecovery<T extends typeof Course>(
         continue;
       const restored =
         key === "lessons"
-          ? restoreCurriculumRecoveryLessons(
+          ? restoreLessons(
               current as typeof Course.lessons,
               replacements,
               matches,
             )
-          : restoreCurriculumRecoveryRegistry(
+          : restoreRegistry(
               current,
               key,
               replacements,
@@ -488,6 +492,14 @@ export function historicalBeforeCurriculumRecovery<T extends typeof Course>(
     replacements.set(registry, Object.create(Object.getPrototypeOf(registry)));
   for (const registry of registries) copyRegistry(registry, replacements);
   return replacements.get(input) as T;
+}
+
+export function historicalBeforeIndependentPractice<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreIndependentPracticeLessons, restoreIndependentPracticeRegistry);
+}
+
+export function historicalBeforeCurriculumRecovery<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreCurriculumRecoveryLessons, restoreCurriculumRecoveryRegistry);
 }
 
 /** Removes the complete authored A12 successor or returns the input unchanged. */

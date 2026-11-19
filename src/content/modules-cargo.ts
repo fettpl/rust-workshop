@@ -387,27 +387,24 @@ const seatSolution = `mod booking {
         pub fn number(&self) -> u8 { self.number }
     }
 }`;
-const seatRun = `${seatSolution}
-fn main() {
-    match crate::booking::Seat::new(8) {
-        Ok(seat) => println!("miejsce {}", seat.number()),
-        Err(error) => println!("{:?}", error),
+// A small public API over two named seats, before the learner validates a whole range.
+const exampleSeats = `mod booking {
+    pub struct Seat { number: u8 }
+    impl Seat {
+        pub fn aisle() -> Seat { Seat { number: 3 } }
+        pub fn window() -> Seat { Seat { number: 8 } }
+        pub fn number(&self) -> u8 { self.number }
     }
-    println!("limit {}", crate::booking::limit());
-    println!("odrzucono: {}", crate::booking::Seat::new(0).is_err());
 }`;
-const seatBroken = `${seatSolution}
-fn chosen() -> u8 {
-    match crate::booking::Seat::new(3) {
-        Ok(seat) => seat.number,
-        Err(_) => 0,
-    }
-}
+const seatRun = `${exampleSeats}
+fn main() {
+    println!("przejście: {}", crate::booking::Seat::aisle().number());
+    println!("okno: {}", crate::booking::Seat::window().number());
+}`;
+const seatBroken = `${exampleSeats}
+fn chosen() -> u8 { crate::booking::Seat::aisle().number }
 fn main() { println!("{}", chosen()); }`;
-const seatRepair = seatBroken.replace(
-  "Ok(seat) => seat.number,",
-  "Ok(seat) => seat.number(),",
-);
+const seatRepair = seatBroken.replace("aisle().number }", "aisle().number() }");
 const seatStarter = seatSolution.replace(
   "if number == 0 || number > self::limit()",
   "if number > self::limit()",
@@ -512,12 +509,15 @@ const formatsSolution = `mod formats {
         format!("{} | {}", input(text), output(text))
     }
 }`;
-const importsRun = `${formatsSolution}
-use crate::formats::{incoming_label, outgoing_label};
+const importsRun = `mod catalogue {
+    mod books {
+        pub fn title() -> &'static str { "Atlas" }
+    }
+    pub use self::books::title as book_title;
+}
 fn main() {
-    println!("{}", incoming_label("  paczka  "));
-    println!("{}", outgoing_label("  paczka  "));
-    println!("{}", crate::formats::pair("  paczka  "));
+    use crate::catalogue::book_title as selected;
+    println!("książka: {}", selected());
 }`;
 const formatsTests = `#[test]
 fn public_names_and_composed_result_match() {
@@ -608,11 +608,32 @@ const dispatchStarter = dispatchSolution
     'Err(ParcelError::Multiline) => String::from("jedna linia")',
     'Err(ParcelError::Multiline) => String::from("brak etykiety")',
   );
-const dispatchRun = String.raw`${dispatchSolution}
+const dispatchRun = `mod stock {
+    mod model {
+        pub struct Stock { available: u8 }
+        impl Stock {
+            pub fn new(available: u8) -> Self { Self { available } }
+            pub fn take(&mut self) -> Option<u8> {
+                self.available = self.available.checked_sub(1)?;
+                Some(self.available)
+            }
+        }
+    }
+    pub use self::model::Stock;
+}
+mod desk {
+    use crate::stock::Stock;
+    pub fn report(stock: &mut Stock) {
+        match stock.take() {
+            Some(n) => println!("pozostało: {n}"),
+            None => println!("brak"),
+        }
+    }
+}
 fn main() {
-    println!("{}", crate::desk::receipt("  Szkło  "));
-    println!("{}", crate::desk::receipt(" "));
-    println!("{}", crate::desk::receipt("a\nb"));
+    let mut stock = crate::stock::Stock::new(1);
+    crate::desk::report(&mut stock);
+    crate::desk::report(&mut stock);
 }`;
 const dispatchTests = String.raw`#[test]
 fn public_api_and_client_keep_validation_results() {
@@ -861,9 +882,9 @@ fn repaired_path_handles_more_than_one_label() {
       run(
         "visibility-run",
         "Uruchom kontrolowaną konstrukcję",
-        "Wcześniej pola struct można było wypełniać w tym samym module. Po umieszczeniu typu w booking potrzebujemy granicy: element bez pub jest dostępny w module, który go definiuje, i jego potomkach. Rodzic nie dostaje dostępu do prywatnego wnętrza dziecka. pub struct Seat udostępnia nazwę typu, ale pole number pozostaje prywatne. Publiczne Seat::new sprawdza numer przed zbudowaniem wartości, dlatego nazywamy je konstruktorem z walidacją; new to zwykła wybrana przez nas nazwa funkcji skojarzonej, nie specjalne słowo Rust. Publiczna metoda number pożycza &self i zwraca Copy liczby. Zapis Seat { number } jest skrótem Seat { number: number }. pub(crate) przy limit pozwala użyć pomocnika w bieżącym crate. Nie daje dostępu innemu crate. Publiczny enum SeatError udostępnia też swój wariant Outside. is_err() sprawdza, czy Result jest Err. Uruchom: poprawne miejsce 8 powstaje, zero jest odrzucone.",
+        "Moduł booking wybiera numery dwóch miejsc oznaczonych jako przejście i okno. Poza nim możesz utworzyć Seat przez publiczne funkcje skojarzone i odczytać numer metodą number(). Pole pozostaje prywatne. W zadaniu rozbudujesz ten pomysł: konstruktor przyjmie numer od klienta i zwróci Result po sprawdzeniu zakresu.",
         seatRun,
-        "miejsce 8\nlimit 8\nodrzucono: true\n",
+        "przejście: 3\nokno: 8\n",
       ),
       choose(
         "visibility-predict",
@@ -884,7 +905,7 @@ fn repaired_path_handles_more_than_one_label() {
       compilerError(
         "visibility-error",
         "Odczytaj E0616",
-        "Uruchom próbę odczytu seat.number spoza booking. Kompilator zgłosi E0616: pole number jest prywatne. To celowa ochrona danych. Publiczna metoda number() daje odczyt bez udostępniania samego pola do zapisu.",
+        "Uruchom próbę odczytu prywatnego pola number spoza booking. Kompilator zgłosi E0616: pole number jest prywatne. To celowa ochrona danych. Publiczna metoda number() daje odczyt bez udostępniania samego pola do zapisu.",
         seatBroken,
         seatRepair,
         "E0616",
@@ -894,7 +915,7 @@ fn repaired_path_handles_more_than_one_label() {
         kind: "debug",
         title: "Użyj API zamiast pola",
         prompt:
-          "Napraw chosen: odczytaj numer poprawnego Seat przez istniejącą publiczną metodę. Zachowaj prywatne pole i konstruktor. Wynik chosen pozostaje liczbą 3. Nie dodawaj pub do number.",
+          "Napraw chosen: odczytaj numer miejsca przy przejściu przez istniejącą publiczną metodę. Zachowaj prywatne pole i publiczne API. Wynik chosen pozostaje liczbą 3. Nie dodawaj pub do number.",
         code: seatBroken,
         solution: seatRepair,
         error: "E0616",
@@ -1008,10 +1029,10 @@ fn repaired_path_handles_more_than_one_label() {
     steps: [
       run(
         "imports-run",
-        "Uruchom dwa formaty",
-        "Długie ścieżki są jednoznaczne, lecz przy wielu wywołaniach przydaje się lokalna nazwa. use path::name wprowadza nazwę do bieżącego zakresu; niczego nie kopiuje i nie wywołuje. as input nadaje alias, więc dwie różne funkcje label mogą współistnieć w pair jako input i output. use można umieścić także wewnątrz funkcji. Zapis use crate::formats::{incoming_label, outgoing_label} skraca dwa importy o wspólnym początku. pub use jest re-eksportem: klient widzi nazwę formats::incoming_label, chociaż definicja pozostaje w prywatnym incoming. Funkcja w środku musi być publiczna, lecz moduł zawierający implementację może zostać prywatny. Uruchom i porównaj wywołania przez re-eksport z lokalnymi aliasami.",
+        "Uruchom funkcję przez re-eksport i alias",
+        "Porównaj dwie nazwy tej samej funkcji: pub use udostępnia title z prywatnego modułu books pod publiczną nazwą book_title, a use w main nadaje jej lokalny alias selected. W ćwiczeniu zastosujesz re-eksport i aliasy do dwóch różnych funkcji o tej samej nazwie.",
         importsRun,
-        "IN:paczka\nOUT:paczka\nIN:paczka | OUT:paczka\n",
+        "książka: Atlas\n",
       ),
       choose(
         "imports-predict",
@@ -1168,10 +1189,9 @@ fn child_scope_uses_the_existing_function() {
       run(
         "cargo-run",
         "Uruchom API i jego klienta",
-        "Cargo zarządza pakietem: katalogiem z manifestem Cargo.toml opisującym m.in. nazwę, wersję, edycję i zależności. Target to wynik, który Cargo może zbudować, np. bibliotekę lub program. Konwencjonalnie src/lib.rs jest korzeniem crate biblioteki, a src/main.rs korzeniem osobnego crate programu. Pakiet może mieć jedną bibliotekę i wiele programów, np. z src/bin/, ale potrzebuje co najmniej jednego targetu biblioteki lub programu. Poniższy przykład nadal jest jednym źródłem i jednym crate. dispatch reprezentuje granicę API, a desk jest klientem używającym tylko jej publicznych nazw. To przygotowanie do rozdzielenia kodu, nie uruchomienie Cargo w przeglądarce. Metoda label(&self) -> &str pożycza tekst pola; Rust wiąże użyteczność tego widoku z pożyczką obiektu. Najpierw uruchom wyniki poprawnej etykiety i dwóch różnych błędów. " +
-          dispatchContract,
+        "Cargo zarządza pakietem: katalogiem z manifestem Cargo.toml opisującym m.in. nazwę, wersję, edycję i zależności. Target to wynik, który Cargo może zbudować, np. bibliotekę lub program. Konwencjonalnie src/lib.rs jest korzeniem crate biblioteki, a src/main.rs korzeniem osobnego crate programu. Pakiet może mieć jedną bibliotekę i wiele programów, np. z src/bin/, ale potrzebuje co najmniej jednego targetu biblioteki lub programu. Poniższy przykład nadal jest jednym źródłem i jednym crate. stock udostępnia typ Stock przez pub use, a desk korzysta wyłącznie z jego publicznej metody. Uruchom dwa pobrania ostatniej sztuki i sprawdź, jak klient reaguje na brak zapasu. W projekcie zastosujesz taki podział do rejestracji przesyłek.",
         dispatchRun,
-        "przyjęto: Szkło\nbrak etykiety\njedna linia\n",
+        "pozostało: 0\nbrak\n",
       ),
       choose(
         "cargo-predict",

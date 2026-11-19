@@ -13,6 +13,7 @@ import {
   TestTube2,
 } from "lucide-react";
 import { useLearning } from "./learning-provider";
+import { useSuppliedSolutionExposure } from "./use-supplied-solution-exposure";
 import {
   concepts,
   lessons,
@@ -37,6 +38,7 @@ import {
   assistanceForLessonStep,
   courseEvidenceSummary,
   recordCourseLessonExposure,
+  recordSuppliedSolutions,
   courseGateRecovery,
 } from "@/content/learning-context";
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
@@ -157,6 +159,10 @@ export function LessonWorkspace() {
   const key = stepKey(lesson.id, step.id);
   const progress = state.steps[key] ?? createStepProgress(step.code);
   const code = progress.code ?? step.code ?? "";
+  const suppliedCodeRef = useSuppliedSolutionExposure(step, "code", code);
+  const suppliedSolutionRef = useSuppliedSolutionExposure<HTMLElement>(
+    step, "solution", progress.revealed ? step.solution : undefined,
+  );
   const lastAttempt = progress.attempts.at(-1);
   const lastRun = [...progress.attempts].reverse().find((a) => a.result);
   const result = lastRun?.result;
@@ -200,7 +206,7 @@ export function LessonWorkspace() {
   }, [key, lessonId, stepId, exposureConceptIds, update]);
   function patch(values: Partial<StepProgress>) {
     update((s) => {
-      const next = {
+      let next = {
         ...s,
         steps: {
           ...s.steps,
@@ -210,6 +216,9 @@ export function LessonWorkspace() {
           },
         },
       };
+      if (values.revealed && step.solution) {
+        next = recordSuppliedSolutions(next, step, "solution", Date.now());
+      }
       return values.hints !== undefined ||
         values.revealed ||
         values.traceIndex !== undefined
@@ -219,7 +228,7 @@ export function LessonWorkspace() {
             conceptIds: exposureConceptIds,
             at: Date.now(),
             revealed: Boolean(values.revealed || values.hints),
-          })
+          }, values.revealed === true ? "supplied-solution" : "exposure")
         : next;
     });
   }
@@ -506,6 +515,7 @@ export function LessonWorkspace() {
       )}
       <div className={`workspace-grid ${!hasCode ? "concept-workspace" : ""}`}>
         <section
+          ref={suppliedSolutionRef}
           className="task-pane workspace-panel-lesson"
           id="workspace-panel-lesson"
           role={hasCode ? "tabpanel" : undefined}
@@ -872,7 +882,7 @@ export function LessonWorkspace() {
                   )}
                 </div>
               </div>
-              <div className="editor-wrap">
+              <div className="editor-wrap" ref={suppliedCodeRef}>
                 <CodeEditor
                   language={step.editorMode}
                   code={code}

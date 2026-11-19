@@ -419,7 +419,8 @@ export function validateContent(content: ContentBundle): string[] {
       lesson.sessionStops.length >= 2;
     const mutSlotWithMutBridge =
       lesson.id === "unsafe-miri-mut-slot" &&
-      lesson.steps.length === 10 &&
+      (lesson.steps.length === 10 ||
+        (lesson.steps.length === 11 && lesson.steps[10]?.id === "mut-slot-pair-reborrow-transfer")) &&
       lesson.steps[8]?.id === "mut-slot-with-mut-model" &&
       lesson.steps[9]?.id === "mut-slot-with-mut-transfer" &&
       Array.isArray(lesson.sessionStops) &&
@@ -431,7 +432,7 @@ export function validateContent(content: ContentBundle): string[] {
       !mutSlotWithMutBridge
     )
       errors.push(
-        `lesson ${lesson.id} must have 5-9 steps (approved append bridges permit only the authored 10-step MutSlot or 11-step pattern shapes)`,
+        `lesson ${lesson.id} must have 5-9 steps (approved append bridges permit only the authored MutSlot and pattern extensions)`,
       );
     if (!lesson.transferTask.trim())
       errors.push(`lesson ${lesson.id} is missing transferTask`);
@@ -612,6 +613,26 @@ export function validateContent(content: ContentBundle): string[] {
         errors.push(`step ${stepKey} has empty ordering evaluator`);
       if (evaluator?.kind === "rubric" && evaluator.criteria.length === 0)
         errors.push(`step ${stepKey} has empty rubric evaluator`);
+    }
+  }
+  for (const source of [
+    ...stepsByRef.values(),
+    ...Object.values(content.reviewExercises),
+    ...Object.values(delayedReviewExercises),
+  ]) {
+    for (const variant of ["code", "solution"] as const) {
+      const refs = source.suppliedSolutions?.[variant];
+      if (!refs?.length) continue;
+      if (!source[variant]?.trim())
+        errors.push(`${source.id} declares supplied solutions without ${variant}`);
+      for (const ref of refs) {
+        const key = `${ref.lessonId}/${ref.stepId}`;
+        const target = stepsByRef.get(key);
+        if (!target?.solution)
+          errors.push(`${source.id} supplies an unknown solution: ${key}`);
+        else if (target === source)
+          errors.push(`${source.id} declares its own solution as a prerequisite`);
+      }
     }
   }
   checkAcyclic(lessonGraph, "lesson", errors);

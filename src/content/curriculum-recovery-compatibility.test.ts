@@ -1,7 +1,8 @@
 import { expect, it } from "vitest";
-import * as course from "./course";
+import * as rawCourse from "./course";
 import delta from "./fixtures/curriculum-recovery-nov19-delta.json";
 import {
+  historicalBeforeIndependentPractice,
   historicalBeforeA12,
   historicalBeforeCurriculumRecovery,
   hashRegistryValue,
@@ -11,6 +12,8 @@ import {
   restoreCurriculumRecoveryLessons,
   restoreCurriculumRecoveryRegistry,
 } from "./workshop-assessment-repair-compatibility-fixture";
+
+const course = historicalBeforeIndependentPractice(rawCourse);
 
 it("reverses the complete November recovery before existing historical projections", () => {
   const previous = historicalBeforeA12(course);
@@ -206,4 +209,16 @@ it("removes the exact new code field while preserving absence and any later code
       matchesRegistryValue(restored["struct-records"], hashRegistryValue(old)),
     ).toBe(false);
   }
+});
+
+it("restores all six catalog registries to the audited 02b6126 predecessor", async () => {
+  const { baseline } = await import("./fixtures/independent-practice-delta.json");
+  expect(baseline.sha).toBe("02b6126");
+  for (const key of [
+    "lessons", "modules", "projects", "reviewExercises", "shortReviewExercises", "delayedReviewExercises",
+  ] as const) {
+    expect(hashRegistryValue(course[key]), key).toBe(baseline[`${key}Sha256`]);
+  }
+  expect(course.ownershipModule).toBe(course.modules.find((module) => module.id === "ownership"));
+  expect(historicalBeforeIndependentPractice(course)).toBe(course);
 });

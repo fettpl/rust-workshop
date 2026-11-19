@@ -388,7 +388,6 @@ export function CourseMap() {
   );
   const exhaustedCriteria = (selectedModule.gateCriteria ?? []).filter(
     (criterion) =>
-      criterion.requiredIndependentCodingTasks !== undefined &&
       courseGateRecovery(state, criterion, lessons).status === "exhausted",
   );
   const fallbackRecoveryLesson =
@@ -581,7 +580,6 @@ export function CourseMap() {
               contract && courseNextGateTask(state, contract, lessons);
             const exhausted =
               contract &&
-              contract.requiredIndependentCodingTasks !== undefined &&
               courseGateRecovery(state, contract, lessons).status ===
                 "exhausted";
             const targetLesson =

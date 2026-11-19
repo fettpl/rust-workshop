@@ -948,11 +948,18 @@ export const iteratorsLessons: Lesson[] = [
       run(
         "contracts-run",
         "Uruchom własne next",
-        "Uruchom przykład. Zobacz, że Iterator oddaje Option<Item>, a explicitne ponowne next po None pozostaje None, bo tak zaprojektowano ten finite iterator.",
-        `${positionsSolution}
+        "Uruchom StackDrain, który oddaje posiadane elementy od końca wektora przez pop. Iterator oddaje Option<Item>; pusty wektor daje None także przy dalszych wywołaniach. Zadanie z pustej kartki ma samodzielnie generować kolejne pozycje od zera, zamiast opróżniać gotowy wektor.",
+        `struct StackDrain<T> { remaining: Vec<T> }
+
+impl<T> Iterator for StackDrain<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        self.remaining.pop()
+    }
+}
 
 fn main() {
-    let mut positions = positions(3);
+    let mut positions = StackDrain { remaining: vec![2, 1, 0] };
     println!("{:?} {:?} {:?} {:?} {:?}", positions.next(), positions.next(), positions.next(), positions.next(), positions.next());
 }`,
         "Some(0) Some(1) Some(2) None None\n",

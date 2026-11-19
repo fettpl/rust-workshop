@@ -497,16 +497,16 @@ serde = { version = "1.0.229", default-features = false }
 `;
 
 const packageObservation = String.raw`[package]
-name = "signal-kit"
-version = "0.3.0"
+name = "trace-report"
+version = "0.1.0"
 edition = "2024"
 rust-version = "1.85.0"
-description = "A signal library for package rehearsal."
+description = "A local trace report package."
 license = "MIT"
-repository = "https://example.invalid/signal-kit"
+repository = "https://example.invalid/trace-report"
 readme = "README.md"
 publish = false
-include = ["Cargo.toml", "README.md", "src/**", "tests/**"]
+exclude = ["scratch/**", "notes/**"]
 
 [lib]
 path = "src/lib.rs"
@@ -672,10 +672,10 @@ export const cargoReleaseLessons: Lesson[] = [
         "cargo-package-rehearsal-observe",
         "observe",
         "Obserwacja: lista pakietu",
-        'Dla standalone `signal-kit` z `include = ["Cargo.toml", "README.md", "src/**", "tests/**"]` później wybierz `cargo package --list`. Co jest właściwym dowodem?',
+        'Dla standalone `trace-report` z `exclude = ["scratch/**", "notes/**"]` później wybierz `cargo package --list`. Co jest właściwym dowodem?',
         [
           "Output `cargo package --list` jest źródłem prawdy o członkostwie; Cargo może dodać Cargo.lock i wygenerować znormalizowane Cargo.toml obok Cargo.toml.orig",
-          "Sama tablica include dowodzi, że archiwum już istnieje i nie zawiera plików generowanych",
+          "Sama tablica exclude dowodzi, że archiwum już istnieje i nie zawiera plików generowanych",
           "`publish = false` sprawia, że Cargo nie może przygotować lokalnej listy",
         ],
         0,
@@ -684,7 +684,7 @@ export const cargoReleaseLessons: Lesson[] = [
           "Cargo może dodać pliki związane z pakowaniem i normalizacją, więc manifest sam nie wystarcza.",
           "publish=false blokuje publikację, lecz rehearsal i listowanie są osobnymi operacjami.",
         ],
-        { code: packageObservation, editorFile: "signal-kit/Cargo.toml" },
+        { code: packageObservation, editorFile: "trace-report/Cargo.toml" },
       ),
       choice(
         "cargo-package-rehearsal-explain",

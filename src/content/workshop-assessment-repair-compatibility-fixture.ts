@@ -1,3 +1,4 @@
+import practiceDelta from "./fixtures/independent-practice-delta.json";
 /** Test-only reversal of the reviewed November assessment repairs. */
 import type { Lesson } from "../domain/types";
 import curriculumRecoveryDelta from "./fixtures/curriculum-recovery-nov19-delta.json";
@@ -217,6 +218,35 @@ function restoreReviewedLessons(
   return result;
 }
 
+// Repeated worked examples share their predecessor value in the fixture.
+const beforeValues: Record<string, unknown> = practiceDelta.beforeValues;
+function withPredecessor<T extends { beforeSha256: string | null }>(entry: T) {
+  return { ...entry, before: entry.beforeSha256 === null ? null : beforeValues[entry.beforeSha256] };
+}
+const practiceLessons = {
+  ...practiceDelta,
+  restorations: practiceDelta.restorations.map(withPredecessor),
+  lessonRestorations: practiceDelta.lessonRestorations.map(withPredecessor),
+};
+const practiceRegistries = practiceDelta.registries.map(withPredecessor);
+
+export function restoreIndependentPracticeLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, practiceLessons);
+}
+
+export function restoreIndependentPracticeRegistry<T extends object>(
+  registry: T,
+  name: string,
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): T {
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, practiceRegistries);
+}
+
 /** Restores this batch first, so all older projections still see their authored successors. */
 export function restoreCurriculumRecoveryLessons(
   lessons: Lesson[],
@@ -224,7 +254,7 @@ export function restoreCurriculumRecoveryLessons(
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
   return restoreReviewedLessons(
-    lessons,
+    restoreIndependentPracticeLessons(lessons, replacements, matches),
     replacements,
     matches,
     curriculumRecoveryDelta,
@@ -247,7 +277,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   name: string,
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
-  entries: readonly RegistryRestoration[] = curriculumRecoveryDelta.registries,
+  entries: readonly RegistryRestoration[] = [...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
   for (const entry of entries.filter(

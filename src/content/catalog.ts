@@ -969,7 +969,7 @@ export const lessons: Lesson[] = [
         evidenceKind: "fix",
         expectedStatus: "compile-error",
         expectedError: "E0382",
-        evidenceGate: true,
+        evidenceGate: false,
         hints: [
           "Znajdź przypisanie first do second.",
           "Usuń użycie first po move.",
@@ -1197,6 +1197,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "function-error",
+        suppliedSolutions: { solution: [{ lessonId: "number-guessing-transfer", stepId: "project-error" }] },
         evidence: { version: 2, conceptIds: ["function-ownership"] },
         kind: "debug",
         title: "Właściciel nie wraca do wywołującego",
@@ -1566,6 +1567,7 @@ export const lessons: Lesson[] = [
       },
       {
         id: "project-error",
+        suppliedSolutions: { solution: [{ lessonId: "functions-and-ownership", stepId: "function-error" }] },
         evidence: {
           version: 2,
           conceptIds: [
@@ -2400,7 +2402,7 @@ export const ownershipModule: CourseModule = {
       id: "moved-value-repair",
       label: "Naprawa użycia przeniesionej wartości",
       taskRefs: [
-        { lessonId: "move-copy-discovery", stepId: "move-error" },
+        { lessonId: "blank-page-repair", stepId: "blank-error" },
         { lessonId: "scenario-assessment", stepId: "assessment-repair" },
       ],
     },
@@ -2418,6 +2420,7 @@ export const ownershipModule: CourseModule = {
       taskRefs: [
         { lessonId: "functions-and-ownership", stepId: "function-error" },
         { lessonId: "number-guessing-transfer", stepId: "project-error" },
+        { lessonId: "function-ownership-calibration", stepId: "function-is-empty-text" },
       ],
     },
     {

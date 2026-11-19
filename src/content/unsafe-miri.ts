@@ -894,6 +894,72 @@ const mutSlotRun = String.raw`struct MutSlot<'a, T> { value: &'a mut T }
 impl<'a, T> MutSlot<'a, T> { fn new(value: &'a mut T) -> Self { Self { value } } fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> { MutSlot { value: &mut *self.value } } }
 fn main() { let mut value = 4; let mut slot = MutSlot::new(&mut value); *slot.reborrow().value += 2; println!("{}", value); }`;
 
+const mutSlotPairTransfer = coding({
+  id: "mut-slot-pair-reborrow-transfer",
+  kind: "blank",
+  title: "Odtwórz krótki reborrow mutowalnej pary",
+  prompt:
+    "Od pustej kartki zdefiniuj `struct PairSlot<'a, T> { values: &'a mut (T, T) }`. Dodaj `new(values: &'a mut (T, T)) -> Self`, `get(&self) -> (&T, &T)`, `get_mut(&mut self) -> (&mut T, &mut T)`, `swap(&mut self)` oraz `reborrow<'short>(&'short mut self) -> PairSlot<'short, T>`. swap zamienia elementy oryginalnej pary, a get/get_mut zachowują ich kolejność i pochodzenie. Krótkie dziecko może zmienić oba elementy, po zakończeniu jego zakresu rodzic nadal działa. Nie przejmuj ani nie kopiuj danych; T nie wymaga Copy, Clone ani 'static. Lifetime dostępu można skrócić, ale T pozostaje niezmiennicze przez &mut. Użyj wyłącznie bezpiecznego Rust bez raw pointerów i unsafe. Dostarczone testy sprawdzają zachowanie i własność; nie oceniają jakości własnych dodatkowych testów.",
+  solution: String.raw`struct PairSlot<'a, T> { values: &'a mut (T, T) }
+
+impl<'a, T> PairSlot<'a, T> {
+    fn new(values: &'a mut (T, T)) -> Self { Self { values } }
+    fn get(&self) -> (&T, &T) { (&self.values.0, &self.values.1) }
+    fn get_mut(&mut self) -> (&mut T, &mut T) { (&mut self.values.0, &mut self.values.1) }
+    fn swap(&mut self) { std::mem::swap(&mut self.values.0, &mut self.values.1); }
+    fn reborrow<'short>(&'short mut self) -> PairSlot<'short, T> {
+        PairSlot { values: &mut *self.values }
+    }
+}`,
+  tests: String.raw`#[test]
+fn short_child_mutates_both_original_elements_then_parent_remains_usable() {
+    let mut values = (String::from("left"), String::from("right"));
+    let mut parent = PairSlot::new(&mut values);
+    {
+        let mut child = parent.reborrow();
+        let (first, second) = child.get_mut();
+        first.push_str("-a");
+        second.push_str("-b");
+        child.swap();
+        assert_eq!(child.get(), (&String::from("right-b"), &String::from("left-a")));
+    }
+    parent.swap();
+    parent.get_mut().0.push('!');
+    assert_eq!(parent.get(), (&String::from("left-a!"), &String::from("right-b")));
+    assert_eq!(values, (String::from("left-a!"), String::from("right-b")));
+}
+
+#[test]
+fn accepts_non_clone_tokens_and_preserves_their_original_buffers() {
+    struct Token(String);
+    let first = Token(String::from("żółć"));
+    let second = Token(String::from("🙂"));
+    let pointers = (first.0.as_ptr(), second.0.as_ptr());
+    let mut values = (first, second);
+    let mut parent = PairSlot::new(&mut values);
+    parent.reborrow().swap();
+    let (first, second) = parent.get();
+    assert_eq!((first.0.as_ptr(), second.0.as_ptr()), (pointers.1, pointers.0));
+    assert_eq!((&first.0, &second.0), (&String::from("🙂"), &String::from("żółć")));
+}
+
+#[test]
+fn inner_borrows_need_no_static_or_extra_copy_bounds() {
+    let owner = String::from("local");
+    let other = String::from("other");
+    let mut values = (owner.as_str(), other.as_str());
+    let mut parent = PairSlot::new(&mut values);
+    {
+        let mut child = parent.reborrow();
+        child.swap();
+        assert_eq!(child.get(), (&"other", &"local"));
+    }
+    parent.swap();
+    assert_eq!(values, ("local", "other"));
+}`,
+  gate: true,
+});
+
 export const unsafeMiriLessons: Lesson[] = [
   {
     id: "unsafe-miri-byte-view",
@@ -1086,7 +1152,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "recall",
         title: "Retrieval: granice regionów",
         prompt:
-          "Odtwórz `split_regions` z pamięci i przetestuj `0`, `len` oraz `len + 1`.",
+          "Odtwórz `split_regions` z pamięci. Dostarczone testy sprawdzają `0`, `len` oraz `len + 1`; własne dodatkowe asercje oceniasz samodzielnie.",
         code: regionsRecallStarter,
         solution: regionsRecallSolution,
         tests: regionsRecallTests,
@@ -1190,7 +1256,7 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "recall",
         title: "Retrieval: Empty, Full i Drop",
         prompt:
-          "Odtwórz z pamięci Slot<T> i test z DropProbe, który odróżnia drop wartości po take od drop przez destruktor slotu.",
+          "Odtwórz z pamięci Slot<T>. Dostarczony test z DropProbe odróżnia drop wartości po take od drop przez destruktor slotu. Automatyczna ocena sprawdza zachowanie Slot<T>, nie obecność ani jakość napisanego przez Ciebie testu; własne dodatkowe asercje oceniasz samodzielnie.",
         code: slotRecallStarter,
         solution: slotRecallSolution,
         tests: slotRecallTests,
@@ -1301,12 +1367,13 @@ export const unsafeMiriLessons: Lesson[] = [
         kind: "recall",
         title: "Retrieval: reborrow kontra variance",
         prompt:
-          "Odtwórz MutSlot, krótkie reborrow i wyjaśnienie, dlaczego nie można skrócić lifetime wewnętrznej referencji przez zapis do `&mut T`.",
+          "Odtwórz MutSlot i krótkie reborrow. Dostarczone testy sprawdzają zachowanie pożyczek. Wyjaśnij też własnymi słowami, dlaczego nie można skrócić lifetime wewnętrznej referencji przez zapis do `&mut T`; prawdziwość tego wyjaśnienia oceniasz samodzielnie.",
         code: mutSlotRecallStarter,
         solution: mutSlotRecallSolution,
         tests: mutSlotRecallTests,
       }),
       ...mutSlotWithMutSteps,
+      mutSlotPairTransfer,
     ],
     sessionStops: [mutSlotWithMutSessionStop],
     misconceptions: [
@@ -1382,6 +1449,54 @@ mutSlotWithMutPrimary.evidence = {
   conceptIds: ["unsafe-miri-mut-slot-variance-contract"],
   codingTaskId: mutSlotWithMutFamily,
 };
+mutSlotPairTransfer.evidence = {
+  version: 2,
+  conceptIds: ["unsafe-miri-mut-slot-variance-contract"],
+  codingTaskId: "unsafe-miri/mutable-pair-reborrow-v1",
+};
+
+const suppliedMutSlotRefs = [
+  { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-gate" },
+  { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-blank" },
+  { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-contract-gate" },
+  { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-recall" },
+];
+for (const id of ["mut-slot-with-mut-model", mutSlotWithMutPrimaryStepId]) {
+  unsafeMiriLessons
+    .find((lesson) => lesson.id === "unsafe-miri-mut-slot")!
+    .steps.find((step) => step.id === id)!.suppliedSolutions = {
+    code: suppliedMutSlotRefs,
+    solution: suppliedMutSlotRefs,
+  };
+}
+
+// These forms have distinct source text but supply each other's complete
+// authored contract. Preserve their historical identities and evidence classes.
+for (const [lessonId, firstId, secondId] of [
+  ["unsafe-miri-byte-view", "byte-view-contract-gate", "byte-view-recall"],
+  [
+    "unsafe-miri-disjoint-regions",
+    "disjoint-regions-contract-gate",
+    "disjoint-regions-recall",
+  ],
+  ["unsafe-miri-mut-slot", "mut-slot-contract-gate", "mut-slot-recall"],
+  ["unsafe-miri-slot-state", "slot-state-contract-gate", "slot-state-recall"],
+] as const) {
+  const lesson = unsafeMiriLessons.find((lesson) => lesson.id === lessonId)!;
+  const primaryIds = [
+    firstId,
+    firstId.replace("-contract-gate", "-gate"),
+    firstId.replace("-contract-gate", "-blank"),
+  ];
+  for (const id of primaryIds) {
+    lesson.steps.find((step) => step.id === id)!.suppliedSolutions = {
+      solution: [{ lessonId, stepId: secondId }],
+    };
+  }
+  lesson.steps.find((step) => step.id === secondId)!.suppliedSolutions = {
+    solution: primaryIds.map((stepId) => ({ lessonId, stepId })),
+  };
+}
 
 export const unsafeMiriReviewExercises: Record<string, LessonStep> = {
   "unsafe-miri-byte-view-contract": coding({
@@ -1520,6 +1635,10 @@ export const unsafeMiriModule: CourseModule = {
           stepId: "byte-view-contract-gate",
         },
         { lessonId: "unsafe-miri-byte-view", stepId: "byte-view-recall" },
+        {
+          lessonId: "unsafe-miri-byte-view",
+          stepId: "byte-view-initialized-prefix",
+        },
       ],
     },
     {
@@ -1534,6 +1653,10 @@ export const unsafeMiriModule: CourseModule = {
           lessonId: "unsafe-miri-disjoint-regions",
           stepId: "disjoint-regions-recall",
         },
+        {
+          lessonId: "unsafe-miri-disjoint-regions",
+          stepId: disjointRangesPrimaryStepId,
+        },
       ],
     },
     {
@@ -1545,6 +1668,10 @@ export const unsafeMiriModule: CourseModule = {
           stepId: "slot-state-contract-gate",
         },
         { lessonId: "unsafe-miri-slot-state", stepId: "slot-state-recall" },
+        {
+          lessonId: "unsafe-miri-slot-state",
+          stepId: slotLazyInitPrimaryStepId,
+        },
       ],
     },
     {
@@ -1553,12 +1680,43 @@ export const unsafeMiriModule: CourseModule = {
       taskRefs: [
         { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-contract-gate" },
         { lessonId: "unsafe-miri-mut-slot", stepId: "mut-slot-recall" },
+        {
+          lessonId: "unsafe-miri-mut-slot",
+          stepId: "mut-slot-pair-reborrow-transfer",
+        },
       ],
     },
   ],
 };
 
 export const unsafeMiriAssessmentSources = {
+  mutSlotPair: {
+    canonical: mutSlotPairTransfer.solution!,
+    equivalent: String.raw`struct PairSlot<'a, T> { values: &'a mut (T, T) }
+
+impl<'a, T> PairSlot<'a, T> {
+    fn new(values: &'a mut (T, T)) -> Self { PairSlot { values } }
+    fn get(&self) -> (&T, &T) {
+        let (first, second) = &*self.values;
+        (first, second)
+    }
+    fn get_mut(&mut self) -> (&mut T, &mut T) {
+        let (first, second) = &mut *self.values;
+        (first, second)
+    }
+    fn swap(&mut self) {
+        let (first, second) = self.get_mut();
+        std::mem::swap(first, second);
+    }
+    fn reborrow<'short>(&'short mut self) -> PairSlot<'short, T> {
+        PairSlot::new(&mut *self.values)
+    }
+}`,
+    mutant: mutSlotPairTransfer.solution!.replace(
+      "std::mem::swap(&mut self.values.0, &mut self.values.1);",
+      "let _ = &self.values;",
+    ),
+  },
   byteView: {
     canonical: byteViewSolution,
     equivalent: byteViewEquivalent,

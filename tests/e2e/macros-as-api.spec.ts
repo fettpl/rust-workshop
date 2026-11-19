@@ -55,7 +55,7 @@ test.describe("macros-as-api production contracts", () => {
       });
 
       const primaryRef = criterion.taskRefs[0];
-      const blankRef = criterion.taskRefs[1];
+      const blankRef = criterion.taskRefs.at(-1)!;
       const primaryLesson = lessons.find(
         (lesson) => lesson.id === primaryRef.lessonId,
       )!;
@@ -69,6 +69,7 @@ test.describe("macros-as-api production contracts", () => {
         (step) => step.id === blankRef.stepId,
       )!;
       expect(primary.kind).toBe("modify");
+      expect(blank.solution?.trim()).not.toBe(primary.solution?.trim());
       expect(blank.kind).toBe("blank");
       expect(blank.code).toBeUndefined();
 

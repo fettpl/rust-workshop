@@ -339,7 +339,8 @@ describe("curriculum content contract", () => {
             lesson.steps.length === 11 &&
             lesson.sessionStops?.length === 2) ||
           (lesson.id === "unsafe-miri-mut-slot" &&
-            lesson.steps.length === 10 &&
+            lesson.steps.length === 11 &&
+            lesson.steps[10]?.id === "mut-slot-pair-reborrow-transfer" &&
             lesson.steps[8]?.id === "mut-slot-with-mut-model" &&
             lesson.steps[9]?.id === "mut-slot-with-mut-transfer" &&
             lesson.sessionStops?.length === 1 &&
@@ -357,7 +358,7 @@ describe("curriculum content contract", () => {
     expect(project.adversarialInject.toLowerCase()).toContain("clone");
   });
 
-  it("admits only the authored ten-step MutSlot append shape", () => {
+  it("admits the historical and current authored MutSlot append shapes", () => {
     const mutSlot = lessons.find(
       (lesson) => lesson.id === "unsafe-miri-mut-slot",
     )!;
@@ -370,6 +371,10 @@ describe("curriculum content contract", () => {
       }).filter((error) => error.includes("steps"));
 
     expect(sizeErrors(mutSlot)).toEqual([]);
+    expect(sizeErrors({ ...mutSlot, steps: mutSlot.steps.slice(0, 10) })).toEqual([]);
+    expect(sizeErrors({
+      ...mutSlot, steps: [...mutSlot.steps.slice(0, 10), { ...mutSlot.steps[10], id: "unrelated-transfer" }],
+    })).not.toEqual([]);
     expect(sizeErrors({ ...mutSlot, sessionStops: undefined })).not.toEqual([]);
     expect(
       sizeErrors({
@@ -929,6 +934,7 @@ describe("session-stop authored metadata validation", () => {
       "parser-add-gate",
       "parser-transfer",
       "parser-recall",
+      "todo-import-command",
     ],
     "todo-state-invariants": [
       "state-predict",
@@ -939,6 +945,7 @@ describe("session-stop authored metadata validation", () => {
       "state-list-gate",
       "state-transfer",
       "state-recall",
+      "todo-board-edits",
     ],
     "todo-session-project": [
       "session-predict",
@@ -949,6 +956,7 @@ describe("session-stop authored metadata validation", () => {
       "session-strict-gate",
       "session-recall",
       "session-blank",
+      "todo-session-replay",
     ],
     "todo-storage-format": [
       "format-predict",
@@ -1273,4 +1281,11 @@ describe("ownership evidence authoring validation", () => {
       validateContent(copy).some((error) => error.includes("counted gate")),
     ).toBe(true);
   });
+});
+
+it("rejects a review scaffold that discloses an unknown task", () => {
+  const key = "struct-records";
+  const review = { ...reviewExercises[key], suppliedSolutions: { code: [{ lessonId: "missing", stepId: "task" }] } };
+  const errors = validateContent({ ...bundle, reviewExercises: { ...reviewExercises, [key]: review } });
+  expect(errors).toContain("review-struct-records supplies an unknown solution: missing/task");
 });

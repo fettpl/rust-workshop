@@ -681,6 +681,10 @@ fn main() {
       },
       {
         id: "propagate-modify",
+        suppliedSolutions: {
+          code: [{ lessonId: "propagation-and-errors", stepId: "propagate-debug" }],
+          solution: [{ lessonId: "propagation-and-errors", stepId: "propagate-debug" }],
+        },
         kind: "modify",
         title: "Nie gub propagowanego błędu",
         prompt:
@@ -815,6 +819,37 @@ fn main() {
             "Po napotkaniu Err operator ? zwraca ten błąd z bieżącej funkcji.",
         },
         evidenceKind: "recall",
+      },
+      {
+        id: "propagate-import-fault",
+        kind: "blank",
+        title: "Dodaj numer wiersza do błędu importu",
+        prompt: "Klient dostarcza listę wyników analizatora. Zdefiniuj porównywalne i wypisywalne przez Debug enum Fault { Syntax(String), Outside(i32) } oraz struct LineFault { line: usize, cause: Fault }. Zaimplementuj fn import_values(input: Vec<Result<i32, Fault>>) -> Result<Vec<i32>, LineFault>. Sukces zwraca wszystkie liczby w kolejności, także duplikaty. Pierwszy błąd kończy import. Przenieś jego oryginalny wariant i zawartość do cause, a w line podaj numer wiersza liczony od 1. Puste wejście daje pusty Vec. Nie potrzebujesz parsera ani ponownego klasyfikowania przyczyny.",
+        solution: `#[derive(Debug, PartialEq)]
+enum Fault { Syntax(String), Outside(i32) }
+
+#[derive(Debug, PartialEq)]
+struct LineFault { line: usize, cause: Fault }
+
+fn import_values(input: Vec<Result<i32, Fault>>) -> Result<Vec<i32>, LineFault> {
+    let mut values = Vec::new();
+    for (index, item) in input.into_iter().enumerate() {
+        let value = item.map_err(|cause| LineFault { line: index + 1, cause })?;
+        values.push(value);
+    }
+    Ok(values)
+}`,
+        evaluator: { kind: "tests", tests: `#[test]
+fn retains_values_or_the_first_typed_cause_and_its_position() {
+    assert_eq!(import_values(vec![]), Ok(vec![]));
+    assert_eq!(import_values(vec![Ok(3), Ok(-1), Ok(3)]), Ok(vec![3, -1, 3]));
+    assert_eq!(import_values(vec![Ok(0), Err(Fault::Syntax(String::from("żółć"))), Err(Fault::Outside(-9))]),
+        Err(LineFault { line: 2, cause: Fault::Syntax(String::from("żółć")) }));
+    assert_eq!(import_values(vec![Err(Fault::Outside(i32::MIN)), Ok(1)]),
+        Err(LineFault { line: 1, cause: Fault::Outside(i32::MIN) }));
+}` },
+        hints: ["Numer wiersza dołącz w miejscu obsługi pojedynczego wyniku.", "map_err pozwala opakować przyczynę, a ? przekazać ją do wywołującego."],
+        evidenceKind: "assessment", evidenceGate: true,
       },
     ],
     misconceptions: [
@@ -1185,6 +1220,7 @@ export const errorsModule: CourseModule = {
       taskRefs: [
         { lessonId: "propagation-and-errors", stepId: "propagate-debug" },
         { lessonId: "propagation-and-errors", stepId: "propagate-modify" },
+        { lessonId: "propagation-and-errors", stepId: "propagate-import-fault" },
       ],
     },
     {

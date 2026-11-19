@@ -582,6 +582,7 @@ function tested(
   tests: string,
   evidenceKind: LessonStep["evidenceKind"],
   hints: [string, string],
+  suppliedSolutions?: LessonStep["suppliedSolutions"],
 ): LessonStep {
   return {
     id,
@@ -599,8 +600,32 @@ function tested(
     evidenceKind,
     evidenceGate: true,
     hints,
+    ...(suppliedSolutions ? { suppliedSolutions } : {}),
   };
 }
+
+const todoModelRefs = [
+  { lessonId: "todo-command-parser", stepId: "parser-debug" },
+  { lessonId: "todo-command-parser", stepId: "parser-add-gate" },
+  { lessonId: "todo-state-invariants", stepId: "state-debug" },
+  { lessonId: "todo-state-invariants", stepId: "state-add-done-gate" },
+  { lessonId: "todo-state-invariants", stepId: "state-list-gate" },
+];
+const todoCodecRefs = [
+  ...todoModelRefs,
+  { lessonId: "todo-storage-format", stepId: "format-debug" },
+];
+const notebookCodecRefs = [
+  { lessonId: "todo-storage-format", stepId: "format-gate" },
+];
+const todoStorageRefs = [
+  ...todoCodecRefs,
+  { lessonId: "todo-file-persistence", stepId: "file-debug" },
+];
+const notebookStorageRefs = [
+  ...notebookCodecRefs,
+  { lessonId: "todo-file-persistence", stepId: "file-gate" },
+];
 
 const formatHints: [string, string] = [
   "Nie wywołuj trim na całym wierszu. Rozdziel pierwszy separator określony w kontrakcie, a jego prawą stronę zachowaj bez zmian.",
@@ -814,13 +839,14 @@ export const ioLessons: Lesson[] = [
         "format-debug",
         "debug",
         "Napraw utratę stanu",
-        "Starter zawsze zapisuje sam nagłówek i zawsze odczytuje pustą listę. Zastąp obie funkcje pełnym kodowaniem i dekodowaniem. W tym jednoplikowym ćwiczeniu pola Task i Todo są dostępne lokalnie; eksport Cargo używa modułów i pub(crate). Bez unwrap i expect. " +
+        "Starter zawsze zapisuje sam nagłówek i zawsze odczytuje pustą listę. Zastąp obie funkcje pełnym kodowaniem i dekodowaniem. Parser i model Todo są już kompletnymi rozwiązaniami wcześniejszych zadań parsera oraz stanu. Po obejrzeniu startera ich ponowne użycie jest praktyką z dostarczonym rozwiązaniem; samodzielnie budujesz kodek. W tym jednoplikowym ćwiczeniu pola Task i Todo są dostępne lokalnie; eksport Cargo używa modułów i pub(crate). Bez unwrap i expect. " +
           formatContract,
         formatStarter,
         formatSolution,
         formatTests("  żółć\\t🙂  ", "e\\u{301} / 1\\t| x"),
         "fix",
         formatHints,
+        { code: todoModelRefs, solution: todoModelRefs },
       ),
       tested(
         "format-gate",
@@ -959,7 +985,7 @@ export const ioLessons: Lesson[] = [
         "file-debug",
         "debug",
         "Przywróć prawdziwy odczyt i zapis",
-        "Starter zgłasza sukces, choć nie dotyka systemu plików. Zaimplementuj load i save. Dostarczony kodek pozostaw zgodny z poprzednią lekcją. std::fs::{self, File} skraca ścieżki nazw; do write_all potrzebujesz use std::io::Write. Opakowuj błędy za pomocą match, bez własnego From, unwrap, expect i closures. " +
+        "Starter zgłasza sukces, choć nie dotyka systemu plików. Zaimplementuj load i save. Dostarczony kodek jest pełnym rozwiązaniem wcześniejszego zadania formatu Todo; pozostaw go bez zmian. Po obejrzeniu tego startera ponowne użycie kodeka jest praktyką z dostarczonym rozwiązaniem. std::fs::{self, File} skraca ścieżki nazw; do write_all potrzebujesz use std::io::Write. Opakowuj błędy za pomocą match, bez własnego From, unwrap, expect i closures. " +
           persistenceContract +
           " " +
           sandboxNote,
@@ -968,12 +994,13 @@ export const ioLessons: Lesson[] = [
         persistenceTests("debug", "  żółć\\t🙂  "),
         "fix",
         storageHints,
+        { code: todoCodecRefs, solution: todoCodecRefs },
       ),
       tested(
         "file-gate",
         "modify",
         "Zapisz notatnik z innym kontraktem",
-        "Połącz gotowy kodek notatnika z plikami. Publiczne funkcje i błędy są inne, a własny plik roboczy ma przyrostek .pending. Testy wymagają pełnego odczytu i zapisu, zachowania danych oraz wszystkich ścieżek błędów opisanych niżej. " +
+        "Połącz gotowy kodek notatnika z plikami. Starter zawiera pełne rozwiązanie wcześniejszego zadania formatu notatnika; powrót do tego kodeka po obejrzeniu startera jest praktyką z dostarczonym rozwiązaniem. Publiczne funkcje i błędy są inne, a własny plik roboczy ma przyrostek .pending. Testy wymagają pełnego odczytu i zapisu, zachowania danych oraz wszystkich ścieżek błędów opisanych niżej. " +
           notebookStorageContract +
           " " +
           sandboxNote,
@@ -985,6 +1012,7 @@ export const ioLessons: Lesson[] = [
           "Użyj open_notebook i save_notebook z NotebookStorageError; sam kod load/save dla Todo ma niewłaściwy kontrakt.",
           "Dopisz .pending do całej ścieżki. Zastany plik należy zachować, a cel zamieniać dopiero po write_all, sync_all i drop.",
         ],
+        { code: notebookCodecRefs, solution: notebookCodecRefs },
       ),
       choose(
         "file-observe",
@@ -1115,7 +1143,7 @@ export const ioLessons: Lesson[] = [
         "cli-debug",
         "debug",
         "Połącz granice bez fałszywych sukcesów",
-        "Starter execute zawsze zwraca pusty sukces. Parser, Todo, kodek i pliki są już dostarczone; połącz je w odpowiedniej kolejności. Dopasowanie match &command pożycza polecenie, więc później nadal można przekazać je przez move do apply. Użyj konkretnych wariantów AppError, bez unwrap i expect. " +
+        "Starter execute zawsze zwraca pusty sukces. Parser, Todo, kodek i pliki są już dostarczone; połącz je w odpowiedniej kolejności. Kodek oraz load/save są pełnymi rozwiązaniami wcześniejszych zadań formatu i plików Todo. Po obejrzeniu startera ponowne użycie tych komponentów jest praktyką z dostarczonym rozwiązaniem; samodzielne pozostaje połączenie granic w execute. Dopasowanie match &command pożycza polecenie, więc później nadal można przekazać je przez move do apply. Użyj konkretnych wariantów AppError, bez unwrap i expect. " +
           commandContract +
           " " +
           sandboxNote,
@@ -1124,12 +1152,13 @@ export const ioLessons: Lesson[] = [
         commandTests("debug", "żółć\\t🙂"),
         "fix",
         appHints,
+        { code: todoStorageRefs, solution: todoStorageRefs },
       ),
       tested(
         "cli-gate",
         "assessment",
         "Zbuduj granicę programu notatnika",
-        "Klient zmienił domenę na notatki: note/archive/show, inne wyniki, format i przyrostek pliku roboczego. Zaimplementuj execute_note; dostarczone funkcje dziedzinowe i plikowe są poprawne. Testy obejmują ponowny odczyt, duplikaty, powtórne archiwizowanie, odczyt przy zajętym .pending oraz błędy przed i po zmianie pamięci. " +
+        "Klient zmienił domenę na notatki: note/archive/show, inne wyniki, format i przyrostek pliku roboczego. Zaimplementuj execute_note; dostarczone funkcje dziedzinowe i plikowe są poprawne. Kodek oraz open_notebook/save_notebook są pełnymi rozwiązaniami wcześniejszych zadań formatu i plików notatnika. Po obejrzeniu startera ponowne użycie tych komponentów jest praktyką z dostarczonym rozwiązaniem; samodzielne pozostaje execute_note. Testy obejmują ponowny odczyt, duplikaty, powtórne archiwizowanie, odczyt przy zajętym .pending oraz błędy przed i po zmianie pamięci. " +
           notebookCommandContract +
           " " +
           sandboxNote,
@@ -1141,6 +1170,7 @@ export const ioLessons: Lesson[] = [
           "Rozpoznaj Note i Archive jako operacje zapisujące; Show jest tylko odczytem.",
           "Zachowaj kolejność parser → open_notebook → apply → save_notebook → sukces, opakowując błędy w NotebookError.",
         ],
+        { code: notebookStorageRefs, solution: notebookStorageRefs },
       ),
       choose(
         "cli-recall",
@@ -1234,6 +1264,7 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       notebookTestFormat(formatTests("  analiza|λ  ", "e\\u{301} / 🙂")),
       "transfer",
       formatHints,
+      { solution: notebookCodecRefs },
     ),
     evidenceGate: false,
     evidence: { version: 1, conceptIds: ["io-format-roundtrip"] },
@@ -1244,7 +1275,7 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       "review-io-files",
       "modify",
       "Przywróć zapis notatnika",
-      "Odtwórz odczyt i zapis na podstawie ich kontraktu. " +
+      "Odtwórz odczyt i zapis na podstawie ich kontraktu. Starter dostarcza pełny kodek wcześniejszego zadania notatnika; powrót do tego kodeka po obejrzeniu startera jest praktyką z dostarczonym rozwiązaniem. " +
         notebookStorageContract +
         " " +
         sandboxNote,
@@ -1253,6 +1284,7 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       notebookTestFormat(persistenceTests("notebook-review", "  powtórka|Ω  ")),
       "transfer",
       storageHints,
+      { code: notebookCodecRefs, solution: notebookStorageRefs },
     ),
     evidenceGate: false,
     evidence: { version: 1, conceptIds: ["io-safe-persistence"] },
@@ -1263,7 +1295,7 @@ export const ioReviewExercises: Record<string, LessonStep> = {
       "review-io-command",
       "modify",
       "Kiedy można potwierdzić notatkę?",
-      "Odtwórz execute_note i granicę potwierdzenia zapisu. " +
+      "Odtwórz execute_note i granicę potwierdzenia zapisu. Starter dostarcza pełny kodek oraz odczyt/zapis wcześniejszych zadań notatnika; ich ponowne użycie po obejrzeniu startera jest praktyką z dostarczonym rozwiązaniem. " +
         notebookCommandContract +
         " " +
         sandboxNote,
@@ -1275,6 +1307,13 @@ export const ioReviewExercises: Record<string, LessonStep> = {
         "Pożycz NoteCommand, aby rozpoznać operację zapisującą przed przekazaniem jej do apply.",
         "Kolejność to parse_note → open_notebook → apply → ewentualne save_notebook → sukces; błędy opakuj w NotebookError.",
       ],
+      {
+        code: notebookStorageRefs,
+        solution: [
+          ...notebookStorageRefs,
+          { lessonId: "todo-terminal-cli", stepId: "cli-gate" },
+        ],
+      },
     ),
     evidenceGate: false,
     evidence: { version: 1, conceptIds: ["io-terminal-boundary"] },

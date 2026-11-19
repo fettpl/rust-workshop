@@ -420,44 +420,78 @@ fn zero_empty_and_oversized_maximums_are_fused() {
 }
 `;
 
-const observationRows = `${rowSolution}
-impl<T> RowLender<T> { fn into_rows(self) -> Vec<Vec<T>> { self.rows } }
-fn main() {
-    let mut lender = RowLender::new(vec![vec![String::from("A")], Vec::new(), vec![String::from("Łódź")]]);
-    { let row = lender.next().unwrap(); row[0].push('!'); }
-    { let row = lender.next().unwrap(); println!("pusty: {}", row.is_empty()); }
-    { let row = lender.next().unwrap(); println!("ostatni: {}", row[0]); }
-    println!("koniec: {:?}", lender.next().is_none());
-    println!("końcowe: {:?}", lender.into_rows());
+// Worked producers have different state/behavior from the assessed row/window APIs.
+const singleRowObservation = `${lendingTrait}
+struct SingleRowLender<T> { row: Vec<T>, yielded: bool }
+impl<T> SingleRowLender<T> {
+    fn new(row: Vec<T>) -> Self { Self { row, yielded: false } }
+    fn into_row(self) -> Vec<T> { self.row }
+}
+impl<T> LendingIterator for SingleRowLender<T> {
+    type Item<'a> = &'a mut [T] where Self: 'a;
+    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {
+        if self.yielded { return None; }
+        self.yielded = true;
+        Some(self.row.as_mut_slice())
+    }
 }
 `;
 
-const rejectedLoan = `${rowSolution}
+const observationRows = `${singleRowObservation}
 fn main() {
-    let mut lender = RowLender::new(vec![vec![String::from("A")], vec![String::from("B")]]);
+    let mut first = SingleRowLender::new(vec![String::from("A")]);
+    let mut empty = SingleRowLender::<String>::new(Vec::new());
+    let mut last = SingleRowLender::new(vec![String::from("Łódź")]);
+    { let row = first.next().unwrap(); row[0].push('!'); }
+    { let row = empty.next().unwrap(); println!("pusty: {}", row.is_empty()); }
+    { let row = last.next().unwrap(); println!("ostatni: {}", row[0]); }
+    println!("koniec: {:?}", last.next().is_none());
+    println!("końcowe: {:?}", vec![first.into_row(), empty.into_row(), last.into_row()]);
+}
+`;
+
+const rejectedLoan = `${singleRowObservation}
+fn main() {
+    let mut lender = SingleRowLender::new(vec![String::from("A")]);
     let first = lender.next().unwrap();
     let _second = lender.next();
     println!("{}", first.len());
 }
 `;
 
-const windowsObservation = `${windowsSolution}
+const suffixObservation = `${lendingTrait}
+struct SuffixesMut<'data, T> { data: &'data mut [T], position: usize }
+impl<'data, T> SuffixesMut<'data, T> {
+    fn new(data: &'data mut [T]) -> Self { Self { data, position: 0 } }
+}
+impl<T> LendingIterator for SuffixesMut<'_, T> {
+    type Item<'a> = &'a mut [T] where Self: 'a;
+    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {
+        if self.position >= self.data.len() { return None; }
+        let start = self.position;
+        self.position += 1;
+        self.data.get_mut(start..)
+    }
+}
+`;
+
+const windowsObservation = `${suffixObservation}
 fn main() {
     let data = [1, 2, 3, 4];
     for window in data.windows(3) { println!("niemutowalne: {window:?}"); }
     let mut separate = [1, 2, 3, 4];
     for value in separate.iter_mut() { *value += 100; }
     println!("niepokrywające mutable: {separate:?}");
-    let mut data = [1, 2, 3, 4]; let mut lender = WindowsMut::new(&mut data, 3).unwrap();
-    { let window = lender.next().unwrap(); window[1] += 10; }
-    { let window = lender.next().unwrap(); println!("nakłada się: {window:?}"); }
+    let mut data = [1, 2, 3, 4]; let mut lender = SuffixesMut::new(&mut data);
+    { let suffix = lender.next().unwrap(); suffix[1] += 10; }
+    { let suffix = lender.next().unwrap(); println!("nakłada się: {suffix:?}"); }
     println!("dane: {data:?}");
 }
 `;
 
-const rejectedWindowLoan = `${windowsSolution}
+const rejectedWindowLoan = `${suffixObservation}
 fn main() {
-    let mut data = [1, 2, 3]; let mut lender = WindowsMut::new(&mut data, 2).unwrap();
+    let mut data = [1, 2, 3]; let mut lender = SuffixesMut::new(&mut data);
     let first = lender.next().unwrap(); let _second = lender.next(); println!("{}", first.len());
 }
 `;
@@ -609,7 +643,7 @@ export const gatProducerLessons: Lesson[] = [
       run(
         "receiver-run",
         "Użyj wiersza, zwolnij pożyczkę",
-        "Obserwacja przechodzi przez wiersz, pusty wiersz i kolejny wiersz. Każdą pożyczkę zamyka przed następnym `next`.",
+        "Trzy osobne SingleRowLender oddają po jednym wierszu, w tym pustym. Każdy producer kończy się po jednej pożyczce. Zadanie główne wymaga jednego RowLender przechodzącego przez wiele wierszy.",
         observationRows,
         'pusty: true\nostatni: Łódź\nkoniec: true\nkońcowe: [["A!"], [], ["Łódź"]]\n',
       ),
@@ -618,7 +652,7 @@ export const gatProducerLessons: Lesson[] = [
         "Zobacz E0499",
         "Pierwszy mutable view pozostaje żywy podczas drugiego `next`. Uruchom kod i odczytaj rzeczywisty błąd wielokrotnej pożyczki.",
         rejectedLoan,
-        rowSolution,
+        singleRowObservation,
         "E0499",
       ),
       choice(
@@ -740,16 +774,16 @@ export const gatProducerLessons: Lesson[] = [
       run(
         "windows-run",
         "Porównaj shared i lending",
-        "Najpierw zwykłe `slice::windows`, potem dwa sekwencyjne mutable okna. Zwróć uwagę na wspólny element.",
+        "Najpierw zwykłe slice::windows, potem dwa sekwencyjne sufiksy mutable z SuffixesMut. Sufiksy maleją, lecz obejmują wspólne elementy; w zadaniu głównym WindowsMut ma oddawać okna stałej szerokości.",
         windowsObservation,
         "niemutowalne: [1, 2, 3]\nniemutowalne: [2, 3, 4]\nniepokrywające mutable: [101, 102, 103, 104]\nnakłada się: [12, 3, 4]\ndane: [1, 12, 3, 4]\n",
       ),
       observe(
         "windows-discover",
         "Sprawdź E0499 dla okien",
-        "Zostaw pierwsze okno żywe podczas drugiego pollu. Ten przykład powinien zakończyć się E0499.",
+        "Zostaw pierwszy sufiks żywy podczas drugiego next. Ten przykład z SuffixesMut powinien zakończyć się E0499; ta sama granica pożyczki dotyczy późniejszych okien stałej szerokości.",
         rejectedWindowLoan,
-        windowsSolution,
+        suffixObservation,
         "E0499",
       ),
       choice(

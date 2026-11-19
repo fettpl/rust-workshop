@@ -45,7 +45,7 @@ const lessonIds = [
   "unsafe-miri-mut-slot",
 ];
 
-it("registers exactly four Miri lessons with eight rubric gates, sixteen evidence gates, and independent retrievals", () => {
+it("registers exactly four Miri lessons with eight rubric gates, seventeen evidence gates, and independent retrievals", () => {
   expect(unsafeMiriLessons.map((lesson) => lesson.id)).toEqual(lessonIds);
   expect(unsafeMiriModule.lessonIds).toEqual(lessonIds);
   expect(unsafeMiriModule.prerequisites).toEqual(["unsafe-ffi-contracts"]);
@@ -54,11 +54,11 @@ it("registers exactly four Miri lessons with eight rubric gates, sixteen evidenc
     unsafeMiriLessons.flatMap((lesson) =>
       lesson.steps.filter((step) => step.evidenceGate),
     ),
-  ).toHaveLength(16);
+  ).toHaveLength(17);
 
   for (const lesson of unsafeMiriLessons) {
     expect(lesson.steps.filter((step) => step.kind === "blank")).toHaveLength(
-      1,
+      lesson.id === "unsafe-miri-mut-slot" ? 2 : 1,
     );
     expect(
       lesson.steps.filter(
@@ -66,13 +66,7 @@ it("registers exactly four Miri lessons with eight rubric gates, sixteen evidenc
       ),
     ).toHaveLength(1);
     expect(lesson.steps.filter((step) => step.evidenceGate)).toHaveLength(
-      lesson.id === "unsafe-miri-byte-view"
-        ? 4
-        : lesson.id === "unsafe-miri-disjoint-regions"
-          ? 4
-          : lesson.id === "unsafe-miri-slot-state"
-            ? 4
-          : 4,
+      lesson.id === "unsafe-miri-mut-slot" ? 5 : 4,
     );
     const blank = lesson.steps.find((step) => step.kind === "blank")!;
     expect(blank.evidenceGate).toBe(true);
@@ -105,8 +99,8 @@ it("registers exactly four Miri lessons with eight rubric gates, sixteen evidenc
   const refs = unsafeMiriModule.gateCriteria!.flatMap((criterion) =>
     criterion.taskRefs.map((ref) => `${ref.lessonId}/${ref.stepId}`),
   );
-  expect(refs).toHaveLength(20);
-  expect(new Set(refs).size).toBe(20);
+  expect(refs).toHaveLength(24);
+  expect(new Set(refs).size).toBe(21);
   expect(modules.findIndex((module) => module.id === unsafeMiriModule.id)).toBe(
     modules.findIndex((module) => module.id === "unsafe-ffi-contracts") + 1,
   );
@@ -126,7 +120,7 @@ it("appends the with_mut callback family after the exact eight-step MutSlot pref
     "mut-slot-blank",
     "mut-slot-recall",
   ]);
-  expect(lesson.steps.slice(-2).map((step) => step.id)).toEqual(
+  expect(lesson.steps.slice(8, 10).map((step) => step.id)).toEqual(
     mutSlotWithMutSteps.map((step) => step.id),
   );
   const primary = lesson.steps.find(
