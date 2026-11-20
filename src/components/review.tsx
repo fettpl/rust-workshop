@@ -8,12 +8,13 @@ import { useSuppliedSolutionExposure } from "./use-supplied-solution-exposure";
 import { CompilerOutput } from "./compiler-output";
 import { LearningText } from "./learning-text";
 import { concepts, lessons } from "@/content/course";
-import { dueReviews, rateReview } from "@/engine/learning";
+import { rateReview } from "@/engine/learning";
 import {
   recordCourseEvidence,
   evidenceForReview,
   assistanceForReviewSession,
   courseMastery,
+  courseReviewQueue,
   courseEvidenceSummary,
   recordCourseLessonExposure,
   resolveReviewExercise,
@@ -86,6 +87,7 @@ function successfulProbeSession(
     progress?.completed &&
     attempt?.passed &&
     attempt.code !== undefined &&
+    attempt.code === (progress.code ?? step.step.code) &&
     attempt.result?.status === "success",
   );
 }
@@ -107,12 +109,9 @@ export function ReviewView() {
   const [mode, setMode] = useState<"card" | "challenge">(
     () => state.reviewSession?.mode ?? "card",
   );
-  const due = dueReviews(state, clock);
+  const { due, upcoming } = courseReviewQueue(state, clock);
   const concept = concepts.find((c) => c.id === selected);
   const ownershipScope = concept ? ownershipConceptIds.has(concept.id) : false;
-  const upcoming = state.review
-    .filter((item) => item.dueAt > clock)
-    .sort((a, b) => a.dueAt - b.dueAt);
   const session =
     state.reviewSession?.conceptId === selected
       ? state.reviewSession
@@ -132,7 +131,7 @@ export function ReviewView() {
   const awaitingProbeRating = Boolean(
     session && successfulProbeSession(state, session),
   );
-  const unavailable = resolution?.status === "unavailable";
+  const unavailable = !concept || resolution?.status === "unavailable";
   const evaluator = step?.evaluator;
   const isManifest = evaluator?.kind === "manifest-contract";
   const { executable, editable } = stepInteraction(step);
@@ -203,7 +202,7 @@ export function ReviewView() {
     }));
   }
   function returnToQueue() {
-    if (session && awaitingProbeRating) {
+    if (session && (completed || unavailable)) {
       update((current) => {
         if (current.reviewSession?.sessionId !== session.sessionId)
           return current;
@@ -214,15 +213,6 @@ export function ReviewView() {
     }
     setSelected(null);
     setExecutionMessage("");
-  }
-  function discardUnavailableSession() {
-    setSelected(null);
-    setExecutionMessage("");
-    update((current) => {
-      const next = { ...current };
-      delete next.reviewSession;
-      return next;
-    });
   }
   function patch(values: Partial<StepProgress>) {
     if (!session || pending || completed) return;
@@ -514,12 +504,12 @@ export function ReviewView() {
       <p className="lede">
         Najpierw przywołaj zasadę. Potem sprawdź ją na małym, nowym przykładzie.
       </p>
-      {concept && session ? (
+      {session ? (
         <section className="review-session" ref={suppliedCodeRef}>
           {!unavailable && (
             <button
               className="text-button"
-              disabled={pending || (completed && !isPracticeProbe)}
+              disabled={pending}
               onClick={returnToQueue}
             >
               ← Do kolejki
@@ -533,7 +523,7 @@ export function ReviewView() {
                 jest już dostępna. Możesz wrócić do kolejki i wybrać bieżące
                 ćwiczenie.
               </p>
-              <button className="primary" onClick={discardUnavailableSession}>
+              <button className="primary" onClick={returnToQueue}>
                 Do kolejki
               </button>
             </div>
@@ -660,8 +650,10 @@ export function ReviewView() {
                       )}
                       {lastRun?.code !== undefined && lastRun.code !== code && (
                         <p className="footnote" role="status">
-                          Output pochodzi z poprzedniej wersji kodu. Uruchom
-                          ponownie po zmianach.
+                          Output pochodzi z poprzedniej wersji kodu.{" "}
+                          {completed
+                            ? "Nową próbę możesz rozpocząć z kolejki."
+                            : "Uruchom ponownie po zmianach."}
                         </p>
                       )}
                       {lastAttempt && step.explanation && (

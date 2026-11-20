@@ -33,7 +33,7 @@ import { ReviewView } from "./review";
 import { Journal, SettingsView } from "./personal";
 import type { View } from "@/domain/types";
 import { lessons, modules } from "@/content/course";
-import { dueReviews } from "@/engine/learning";
+import { courseReviewQueue } from "@/content/learning-context";
 import {
   createSaveStatusAnnouncer,
   type SaveAnnouncementEvent,
@@ -94,7 +94,7 @@ function AppShell() {
     (lesson) => lesson.moduleId === currentModule.id,
   );
   const focus = state.resume.focus && view === "lesson";
-  const due = dueReviews(state, now).length;
+  const due = courseReviewQueue(state, now).due.length;
   useEffect(() => {
     const announcer = createSaveStatusAnnouncer(
       (event: SaveAnnouncementEvent) => {

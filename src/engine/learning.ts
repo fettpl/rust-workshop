@@ -1084,7 +1084,7 @@ export function rateReview(
   return next;
 }
 
-export function dueReviews(state: UserState, now: number): ReviewItem[] {
+export function dueReviews(state: Pick<UserState, "review">, now: number): ReviewItem[] {
   return state.review
     .filter((item) => item.dueAt <= now)
     .sort((a, b) => a.dueAt - b.dueAt || a.conceptId.localeCompare(b.conceptId))

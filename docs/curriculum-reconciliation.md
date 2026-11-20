@@ -329,3 +329,9 @@ A restored Vec exercise could count as independent in competency and mastery aft
 New lesson records distinguish each hint level from a solution reveal. Older generic lesson help counts as at least one hint when its depth is unknown. Reviews match reminders to the exercise and session, including the historical concept-based identifier. Within a single millisecond the order of journal entries determines whether contact preceded recall. Restoring a save keeps the original events.
 
 The local audit checked a hint before and after an otherwise independent submission for all 566 task references across 240 criteria. After prior help, all 566 recommendations pointed to a task with no saved assistance. A later hint preserved every previously credited task–concept pair in the sweep.
+
+### Resuming reviews after a course update
+
+An imported review can refer to a concept or exercise absent from the installed course. The dashboard, navigation badge and review queue count currently available concepts. The original schedule stays in the export. A learner can dismiss an unavailable session, keep its draft and history, and open a current exercise.
+
+Completed reviews can return to the queue even if the save has no matching compiler result. Leaving the result creates no evidence or rating. A short coding probe offers its rating only when the last successful attempt ran the displayed code. Regression coverage includes those recovery paths in the browser and the due boundary for every current concept.

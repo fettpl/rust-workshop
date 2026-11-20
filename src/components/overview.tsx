@@ -22,13 +22,13 @@ import {
 } from "@/content/course";
 import {
   courseMastery,
+  courseReviewQueue,
   courseEvidenceSummary,
   courseCompetencyProgress,
   courseGateRecovery,
   courseModuleGate,
   courseNextGateTask,
 } from "@/content/learning-context";
-import { dueReviews } from "@/engine/learning";
 import { stepKey } from "@/persistence/state";
 import {
   Eyebrow,
@@ -89,7 +89,7 @@ export function Dashboard() {
   const { state, update } = useLearning();
   const lesson =
     lessons.find((l) => l.id === state.resume.lessonId) ?? lessons[0];
-  const due = dueReviews(state, now);
+  const { due } = courseReviewQueue(state, now);
 
   const difficult = concepts
     .filter((c) =>

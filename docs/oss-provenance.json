@@ -1145,12 +1145,12 @@
     },
     {
       "path": "src/content/learning-context.test.ts",
-      "sha256": "f21340e5c40ab25f1f18ec9a2f9f7cf46520237acda7a60e073ba13dce9e9383",
+      "sha256": "d1d95651b19433da6c3b215aa1765b20b186387e38dc8d79876b22a1483a8122",
       "group": "course"
     },
     {
       "path": "src/content/learning-context.ts",
-      "sha256": "7a6d69c429dee7a59d3142bb101516b5332504cfa2f219e643c3aa5116d4de41",
+      "sha256": "de85446391653a87f7526df22762ac51e4048de48fbafecf216f40122e87e506",
       "group": "course"
     },
     {

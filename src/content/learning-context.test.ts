@@ -13,6 +13,7 @@ import {
   evidenceForLessonStep,
   evidenceForReview,
   courseMastery,
+  courseReviewQueue,
   courseEvidenceSummary,
   courseCompetencyProgress,
   assistanceForLessonStep,
@@ -48,6 +49,30 @@ const rustEvent = (overrides: Partial<EvidenceEvent> = {}): EvidenceEvent => ({
 });
 
 describe("course learning context", () => {
+  it("preserves every current review at its due boundary and retains unavailable imported items for export", () => {
+    const now = 2 * DAY;
+    const state = createInitialState();
+    state.review = [...concepts.map((concept) => concept.id), "retired-concept"].map(
+      (conceptId, index) => ({
+        conceptId,
+        dueAt: index % 2 === 0 ? now : now + DAY,
+        intervalDays: 1,
+        attempts: 1,
+        reason: "scheduled",
+      }),
+    );
+    const original = exportState(state);
+    const restored = importState(original);
+    const { due, upcoming } = courseReviewQueue(restored, now);
+    expect(due.every((item) => item.dueAt === now)).toBe(true);
+    expect(upcoming.every((item) => item.dueAt === now + DAY)).toBe(true);
+    expect([...due, ...upcoming].map((item) => item.conceptId).sort()).toEqual(
+      concepts.map((concept) => concept.id).sort(),
+    );
+    expect(courseReviewQueue(restored, now + DAY).due).toHaveLength(concepts.length);
+    expect(restored.review).toEqual(state.review);
+  });
+
   it("uses authored policy and does not let a manifest evaluator prove a Rust concept", () => {
     const state = recordCourseEvidence(
       createInitialState(),

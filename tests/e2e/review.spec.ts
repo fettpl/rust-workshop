@@ -260,6 +260,212 @@ test("restores a journaled reminder when a legacy review session has no step fla
   expect((await readStoredState(page)).review[0].intervalDays).toBe(2);
 });
 
+test("an unavailable restored concept can be dismissed without losing its history", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "retired-concept";
+  const sessionId = "retired-session";
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: true,
+  };
+  const key = reviewSessionKey(sessionId);
+  state.steps[key] = { ...createStepProgress(), answer: "Mój zapis", hints: 1 };
+  state.events = [
+    {
+      id: "old-hint",
+      lessonId: "review",
+      stepId: conceptId + ":" + sessionId,
+      conceptIds: [conceptId],
+      kind: "exposure",
+      at,
+      passed: true,
+      hints: 1,
+      revealed: false,
+      gate: false,
+    },
+  ];
+  state.review = [
+    { conceptId, dueAt: at, intervalDays: 1, attempts: 1, reason: "due" },
+  ];
+  await seedState(page, state);
+  await expect(
+    page.getByText("Ta powtórka nie jest dostępna w tej wersji."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Do kolejki", exact: true }).click();
+  await waitForPersistedQueue(page, state.review);
+  const saved = await readStoredState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events).toEqual(state.events);
+  expect(saved.ratings).toEqual([]);
+  await page.reload();
+  await expect(page.getByText("Na dziś nic nie czeka.")).toBeVisible();
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Semantyka move" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: przeniesiony String" }),
+  ).toBeVisible();
+});
+
+test("review counts and upcoming rows include only available restored concepts", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  state.resume.view = "dashboard";
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId: "retired-due",
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "old",
+    },
+    {
+      conceptId: "move-semantics",
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "due",
+    },
+    {
+      conceptId: "retired-later",
+      dueAt: now + DAY,
+      intervalDays: 2,
+      attempts: 1,
+      reason: "old",
+    },
+    {
+      conceptId: "stack-heap",
+      dueAt: now + DAY,
+      intervalDays: 2,
+      attempts: 1,
+      reason: "later",
+    },
+  ];
+  await seedState(page, state);
+  await expect(page.locator(".review-teaser h2")).toHaveText(
+    "1 krótka powtórka",
+  );
+  await expect(
+    page
+      .getByRole("button", { name: /Powtórki/ })
+      .filter({ has: page.locator(".count") })
+      .locator(".count"),
+  ).toHaveText("1");
+  await page.getByRole("button", { name: "Otwórz powtórki" }).click();
+  await expect(page.locator(".review-queue .count")).toHaveText("1");
+  await expect(page.locator(".review-row")).toHaveCount(1);
+  await expect(page.locator(".upcoming time")).toHaveCount(1);
+  expect((await readStoredState(page)).review).toEqual(state.review);
+});
+
+test("a restored completed challenge without a runner result can return to the queue", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "ownership-repair";
+  const sessionId = "partial-result";
+  const key = reviewSessionKey(sessionId);
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: true,
+  };
+  state.steps[key] = { ...createStepProgress("// mój kod"), completed: true };
+  state.review = [
+    { conceptId, dueAt: at, intervalDays: 1, attempts: 1, reason: "due" },
+  ];
+  await seedState(page, state);
+  await expect(
+    page.getByRole("button", { name: "Uruchom testy" }),
+  ).toBeDisabled();
+  const back = page.getByRole("button", { name: "← Do kolejki" });
+  await expect(back).toBeEnabled();
+  await back.click();
+  await waitForPersistedQueue(page, state.review);
+  const saved = await readStoredState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events).toEqual([]);
+  expect(saved.ratings).toEqual([]);
+  await page.locator(".review-row").click();
+  await expect(
+    page.getByRole("button", { name: "Uruchom testy" }),
+  ).toBeEnabled();
+});
+
+test("a restored short probe cannot rate a different draft using its previous run", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "io-format-roundtrip";
+  const exercise = shortReviewExercises[conceptId];
+  const sessionId = "stale-probe";
+  const key = reviewSessionKey(sessionId);
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    exerciseId: exercise.id,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: false,
+  };
+  state.review = [
+    {
+      conceptId,
+      dueAt: at + 3 * DAY,
+      intervalDays: 3,
+      attempts: 1,
+      reason: "later",
+    },
+  ];
+  state.steps[key] = {
+    ...createStepProgress("// zmieniony szkic"),
+    completed: true,
+    attempts: [
+      {
+        at,
+        code: exercise.solution,
+        passed: true,
+        feedback: "OK",
+        result: {
+          status: "success",
+          stdout: "",
+          stderr: "",
+          diagnostics: [],
+          durationMs: 4,
+          tests: { passed: 1, failed: 0 },
+        },
+      },
+    ],
+  };
+  await seedState(page, state);
+  await expect(page.getByRole("textbox", { name: "Kod Rust" })).toHaveValue(
+    "// zmieniony szkic",
+  );
+  await expect(
+    page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
+  ).toHaveCount(0);
+  await expect(page.getByText(/Nową próbę możesz rozpocząć z kolejki/)).toBeVisible();
+  await page.getByRole("button", { name: "← Do kolejki" }).click();
+  await waitForPersistedQueue(page, state.review);
+  const saved = await readStoredState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events).toEqual([]);
+  expect(saved.ratings).toEqual([]);
+});
+
 test("resumes an unfinished review answer after reload", async ({ page }) => {
   const state = readyReviewState();
   const sessionId = "unfinished-review";

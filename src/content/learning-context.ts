@@ -1,4 +1,5 @@
 import {
+  dueReviews,
   recordEvidence,
   recordLessonExposure,
   evidencePolicyForConcepts,
@@ -131,6 +132,17 @@ export const courseEvidencePolicy = {
     return definition;
   },
 };
+
+const currentReviewConceptIds = new Set(concepts.map((concept) => concept.id));
+
+/** Keep retired concepts in saved history while showing only actionable reviews. */
+export function courseReviewQueue(state: UserState, now: number) {
+  const review = state.review.filter((item) => currentReviewConceptIds.has(item.conceptId));
+  return {
+    due: dueReviews({ review }, now),
+    upcoming: review.filter((item) => item.dueAt > now).sort((a, b) => a.dueAt - b.dueAt),
+  };
+}
 
 export function reviewExerciseIdForSelection(
   conceptId: string,
