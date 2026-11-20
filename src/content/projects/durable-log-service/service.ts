@@ -1502,7 +1502,7 @@ fn wait_with_watchdog(child: &mut Child) -> std::process::ExitStatus {
 }
 
 fn run_client(args: &[String]) -> std::process::ExitStatus {
-    let mut child = Command::new(client_binary())
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ingest-client"))
         .args(args)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
@@ -1579,14 +1579,6 @@ fn wait_for_count(path: &std::path::Path, expected: u64, child: &mut Child) {
         }
         thread::yield_now();
     }
-}
-
-fn client_binary() -> std::path::PathBuf {
-    let mut path = std::env::current_exe().unwrap();
-    path.pop();
-    path.pop();
-    path.push("ingest-client");
-    path
 }
 
 #[test]

@@ -829,6 +829,11 @@
       "sha256": "9d499177fc9f6871e8d6a5242f24ce520f384ff106d0d1b74274b211bdf4d3f5"
     },
     {
+      "path": "src/content/fixtures/capstone-process-path-delta.json",
+      "sha256": "63791378d926391110e90bb68c41a1e121ff6bb898de1972b8117dde4c33a5fc",
+      "group": "course"
+    },
+    {
       "path": "src/content/fixtures/collections-event-report-delta.json",
       "sha256": "9a1d62985a7d64941b2144bd7ad7ad6418af16f1b389dea6c578bd9fb62f1a3d",
       "group": "course"
@@ -1485,7 +1490,7 @@
     },
     {
       "path": "src/content/projects/durable-log-service/service.ts",
-      "sha256": "43584cf50bf79fbbb60f69278861f2621247c0f827549809571f4f4167d680e2",
+      "sha256": "290b0b62cc6ea0356dd41e063f96c6c52a46a288de0a8f7855c348f0ba323000",
       "group": "course"
     },
     {
@@ -2350,7 +2355,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "a49420be43dec01b45b36241098b4ea354f5d61563c9ef124787e20595f74216",
+      "sha256": "10cf3ed99f18c6a59ec43044ba54314b8858edc5f4fa6d7b4d0903edd95195fa",
       "group": "course"
     },
     {

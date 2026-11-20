@@ -1,3 +1,4 @@
+import capstoneProcessPathDelta from "./fixtures/capstone-process-path-delta.json";
 import repositoryLinksDelta from "./fixtures/oss-repository-links-delta.json";
 import answerCaseDelta from "./fixtures/answer-case-delta.json";
 import explanationEvaluationDelta from "./fixtures/explanation-evaluation-delta.json";
@@ -227,10 +228,11 @@ function restoreReviewedLessons(
 }
 
 // Repeated worked examples share their predecessor value in the fixture.
-const beforeValues: Record<string, unknown> = { ...repositoryLinksDelta.beforeValues, ...multiArchivesDelta.beforeValues, ...projectArchivesDelta.beforeValues, ...crossModuleDelta.beforeValues, ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
+const beforeValues: Record<string, unknown> = { ...capstoneProcessPathDelta.beforeValues, ...repositoryLinksDelta.beforeValues, ...multiArchivesDelta.beforeValues, ...projectArchivesDelta.beforeValues, ...crossModuleDelta.beforeValues, ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
 function withPredecessor<T extends { beforeSha256: string | null }>(entry: T) {
   return { ...entry, before: entry.beforeSha256 === null ? null : beforeValues[entry.beforeSha256] };
 }
+const capstoneProcessRegistries = capstoneProcessPathDelta.registries.map(withPredecessor);
 const repositoryLinkLessons = { ...repositoryLinksDelta, restorations: repositoryLinksDelta.restorations.map(withPredecessor) };
 const repositoryLinkRegistries = repositoryLinksDelta.registries.map(withPredecessor);
 const practiceLessons = {
@@ -422,7 +424,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   entries: readonly RegistryRestoration[] = [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
-  for (const entry of [...repositoryLinkRegistries, ...answerCaseDelta.registries, ...entries].filter(
+  for (const entry of [...capstoneProcessRegistries, ...repositoryLinkRegistries, ...answerCaseDelta.registries, ...entries].filter(
     (item) =>
       item.registry === name ||
       (name === "reviewExercisesById" && item.registry === "reviewExercises"),
