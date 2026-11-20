@@ -7,6 +7,7 @@ import {
   hasEquivalentSolutionReveal,
   hasExternalSolutionHelp,
   hasRecordedSuppliedSolution,
+  journalTaskAssistance,
   hasComponentSolutionReveal,
   isIndependentSuccess,
   delayedReviewEligibility,
@@ -26,8 +27,10 @@ import type {
   Lesson,
   LessonStep,
   ProjectPackage,
+  ReviewSession,
   UserState,
 } from "@/domain/types";
+import { reviewEventStepId, reviewSessionKey } from "@/engine/review-session";
 import { stepKey } from "@/persistence/state";
 import { competencyProgress, nextGateTask } from "@/engine/progress";
 import {
@@ -95,6 +98,10 @@ function isHistoricalAnswerReview(
 
 export const courseEvidencePolicy = {
   disclosureLessons: lessons,
+  reviewAttemptKey: (stepId: string) => {
+    const exercise = currentStep("review", stepId);
+    return exercise && exercise.id + stepId.slice(stepId.indexOf(":"));
+  },
   ...evidencePolicyForConcepts(concepts),
   definitionForTask: (lessonId: string, stepId: string) =>
     currentStep(lessonId, stepId)?.evidence,
@@ -217,23 +224,19 @@ export function assistanceForLessonStep(
 ): Pick<EvidenceEvent, "hints" | "revealed"> {
   const current = state.steps[stepKey(lesson.id, step.id)];
   const ref = { lessonId: lesson.id, stepId: step.id };
-  const flags = {
-    hints: current?.hints ?? 0,
-    revealed:
-      Boolean(current?.revealed) ||
-      hasRecordedSuppliedSolution(state.events, ref, lessons) ||
-      hasEquivalentSolutionReveal(
-        state,
-        { lessonId: lesson.id, stepId: step.id },
-        lessons,
-      ),
-  };
-  const family = step.evidence?.codingTaskId;
-  if (
-    !family?.trim() ||
-    !["fix", "transfer", "project", "assessment"].includes(step.evidenceKind)
-  )
-    return flags;
+  const family = ["fix", "transfer", "project", "assessment"].includes(step.evidenceKind)
+    ? step.evidence?.codingTaskId
+    : undefined;
+  const flags = journalTaskAssistance(state.events, ref, {
+    family,
+    definitionForTask: (lessonId, stepId) =>
+      lessonId === "review" ? undefined : currentStep(lessonId, stepId)?.evidence,
+  });
+  flags.hints = Math.max(flags.hints, current?.hints ?? 0);
+  flags.revealed ||= Boolean(current?.revealed) ||
+    hasRecordedSuppliedSolution(state.events, ref, lessons) ||
+    hasEquivalentSolutionReveal(state, ref, lessons);
+  if (!family) return flags;
   flags.revealed ||= hasExternalSolutionHelp(
     state,
     { lessonId: lesson.id, stepId: step.id },
@@ -249,6 +252,19 @@ export function assistanceForLessonStep(
   }
   return flags;
 }
+export function assistanceForReviewSession(state: UserState, session: ReviewSession) {
+  const current = state.steps[reviewSessionKey(session.sessionId)];
+  const history = journalTaskAssistance(
+    state.events,
+    { lessonId: "review", stepId: reviewEventStepId(session) },
+    { reviewAttemptKey: courseEvidencePolicy.reviewAttemptKey },
+  );
+  return {
+    hints: Math.max(current?.hints ?? 0, history.hints),
+    revealed: Boolean(current?.revealed || history.revealed),
+  };
+}
+
 export function evidenceForReview(
   conceptId: string,
   step: LessonStep,

@@ -214,6 +214,52 @@ test("does not expose rating controls after a completed review challenge", async
   ).toHaveCount(0);
 });
 
+test("restores a journaled reminder when a legacy review session has no step flags", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "move-semantics";
+  const sessionId = "recovered-reminder";
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: true,
+  };
+  state.review = [
+    { conceptId, dueAt: at, intervalDays: 2, attempts: 1, reason: "due" },
+  ];
+  state.events = [
+    {
+      id: "dated-reminder",
+      lessonId: "review",
+      stepId: reviewExercises[conceptId].id + ":" + sessionId,
+      conceptIds: [conceptId],
+      kind: "exposure",
+      at,
+      hints: 0,
+      revealed: true,
+      passed: true,
+      gate: false,
+    },
+  ];
+  await seedState(page, state);
+  await page.getByRole("textbox").fill("moved");
+  await page.getByRole("button", { name: "Sprawdź" }).click();
+  await expect
+    .poll(async () => (await readStoredState(page)).events.at(-1))
+    .toMatchObject({
+      lessonId: "review",
+      stepId: conceptId + ":" + sessionId,
+      kind: "recall",
+      passed: true,
+      revealed: true,
+    });
+  expect((await readStoredState(page)).review[0].intervalDays).toBe(2);
+});
+
 test("resumes an unfinished review answer after reload", async ({ page }) => {
   const state = readyReviewState();
   const sessionId = "unfinished-review";

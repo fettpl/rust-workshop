@@ -321,3 +321,11 @@ The map audit covered both variants of all 16 projects. It checked every ordered
 Todo I/O had a dependency between practice routes. After reading the Todo archive, opening the notebook CLI exercise supplied the notebook codec and storage implementation. A learner who started with the CLI lost the remaining independent route for two criteria. The storage-format lesson now also offers a byte-length-prefixed UTF-8 round trip. The file-persistence lesson offers conditional replacement of an on-disk text file, with explicit handling for a stale draft and an existing staging file. Both exercises can be completed after viewing the notebook implementation.
 
 Imported attempts on an equivalent Service Operations exercise now use the same dated disclosure when deriving independent competency credit as when grading the module gate. A completed delayed recall also retains its credit when an import lists older evidence after the recall. Timestamps determine the history preceding a submission, with journal order breaking ties at the same millisecond.
+
+### Assistance history after `8fca024`
+
+A restored Vec exercise could count as independent in competency and mastery after the learner had already used a hint on that task. The module gate correctly required another variant. These views now use the dated history of help. A hint after an independent pass preserves its credit. A hint before a pass follows the exercise and aliases of its assessed coding contract. A different contract remains available for independent practice.
+
+New lesson records distinguish each hint level from a solution reveal. Older generic lesson help counts as at least one hint when its depth is unknown. Reviews match reminders to the exercise and session, including the historical concept-based identifier. Within a single millisecond the order of journal entries determines whether contact preceded recall. Restoring a save keeps the original events.
+
+The local audit checked a hint before and after an otherwise independent submission for all 566 task references across 240 criteria. After prior help, all 566 recommendations pointed to a task with no saved assistance. A later hint preserved every previously credited task–concept pair in the sweep.

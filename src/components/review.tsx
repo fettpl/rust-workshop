@@ -12,6 +12,7 @@ import { dueReviews, rateReview } from "@/engine/learning";
 import {
   recordCourseEvidence,
   evidenceForReview,
+  assistanceForReviewSession,
   courseMastery,
   courseEvidenceSummary,
   recordCourseLessonExposure,
@@ -22,6 +23,7 @@ import {
 } from "@/content/learning-context";
 import {
   reviewSessionFinished,
+  reviewEventStepId,
   reviewSessionKey,
   startReviewSession,
 } from "@/engine/review-session";
@@ -69,10 +71,6 @@ function RatingButtons({
       ))}
     </div>
   );
-}
-
-function reviewEventStepId(session: ReviewSession): string {
-  return (session.exerciseId ?? session.conceptId) + ":" + session.sessionId;
 }
 
 function successfulProbeSession(
@@ -325,8 +323,7 @@ export function ReviewView() {
         stepId: reviewEventStepId(session),
         kind: rubric ? "self-rating" : probe ? "exposure" : "recall",
         passed: outcome.passed,
-        hints: 0,
-        revealed: current.revealed,
+        ...assistanceForReviewSession(s, session),
         at: now,
         delayed: !rubric && !probe && session.wasDue,
         gate: false,
@@ -437,8 +434,7 @@ export function ReviewView() {
         stepId: reviewEventStepId(session),
         kind: probe ? "exposure" : "recall",
         passed: outcome.passed,
-        hints: 0,
-        revealed: current.revealed,
+        ...assistanceForReviewSession(s, session),
         at: Date.now(),
         delayed: probe ? false : session.wasDue,
         gate: false,

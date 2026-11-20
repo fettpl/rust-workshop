@@ -158,6 +158,7 @@ export function LessonWorkspace() {
       : undefined;
   const key = stepKey(lesson.id, step.id);
   const progress = state.steps[key] ?? createStepProgress(step.code);
+  const assistance = assistanceForLessonStep(state, lesson, step);
   const code = progress.code ?? step.code ?? "";
   const suppliedCodeRef = useSuppliedSolutionExposure(step, "code", code);
   const suppliedSolutionRef = useSuppliedSolutionExposure<HTMLElement>(
@@ -227,7 +228,8 @@ export function LessonWorkspace() {
             stepId,
             conceptIds: exposureConceptIds,
             at: Date.now(),
-            revealed: Boolean(values.revealed || values.hints),
+            hints: values.hints,
+            revealed: values.revealed,
           }, values.revealed === true ? "supplied-solution" : "exposure")
         : next;
     });
@@ -593,12 +595,10 @@ export function LessonWorkspace() {
               zadania.
             </p>
           )}
-          {(assistanceForLessonStep(state, lesson, step).hints >
-            progress.hints ||
-            (assistanceForLessonStep(state, lesson, step).revealed &&
-              !progress.revealed)) && (
+          {(assistance.hints > progress.hints ||
+            (assistance.revealed && !progress.revealed)) && (
             <p className="footnote">
-              Ten sam kontrakt ma zapisaną pomoc w innym kroku. Bieżąca próba
+              Historia tego zadania zawiera podpowiedź lub odsłonięcie. Bieżąca próba
               zachowa te podpowiedzi lub odsłonięcie; nadal możesz ukończyć
               zadanie i ćwiczyć.
             </p>

@@ -321,7 +321,7 @@ for (const moduleId of [
     ).toHaveCount(0);
     if (moduleId === "async-lending-contracts") {
       await expect(page.locator(".task-pane")).toContainText(
-        "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+        "Historia tego zadania zawiera podpowiedź lub odsłonięcie",
       );
       await expect(page.locator(".task-pane")).toContainText(
         "samodzielne zadania kodowe 1/2",

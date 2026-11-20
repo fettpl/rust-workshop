@@ -1485,7 +1485,7 @@ for (const flags of [
     await mockTests(page);
     await seedState(page, state);
     await expect(page.locator(".task-pane")).toContainText(
-      "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+      "Historia tego zadania zawiera podpowiedź lub odsłonięcie",
     );
     await editor(page).fill(target.step.solution!);
     await runTests(page);

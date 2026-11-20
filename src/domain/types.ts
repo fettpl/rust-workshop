@@ -255,6 +255,7 @@ export interface LessonExposure {
   stepId: string;
   at: number;
   revealed?: boolean;
+  hints?: number;
 }
 export interface MasteryRecord {
   level: MasteryLevel;

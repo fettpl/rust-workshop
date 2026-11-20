@@ -17,6 +17,7 @@ export type EvidenceArtifact = "rust-code" | "manifest";
 
 export interface EvidencePolicy {
   disclosureLessons?: readonly Lesson[];
+  reviewAttemptKey?(stepId: string): string | undefined;
   artifactForConcept(conceptId: string): EvidenceArtifact;
   calibrationForConcept?(
     conceptId: string,
@@ -232,26 +233,64 @@ export function hasRecordedSuppliedSolution(
   );
 }
 
-/** Read an imported submission in chronological context without rewriting the journal. */
+/** Count help recorded for this task, including aliases of an assessed coding family. */
+export function journalTaskAssistance(
+  events: readonly EvidenceEvent[],
+  ref: ModuleGateTaskRef,
+  options: {
+    family?: string;
+    definitionForTask?: EvidencePolicy["definitionForTask"];
+    reviewAttemptKey?: EvidencePolicy["reviewAttemptKey"];
+    through?: number;
+  } = {},
+): Pick<EvidenceEvent, "hints" | "revealed"> {
+  const { family, definitionForTask, reviewAttemptKey, through = Infinity } = options;
+  const reviewKey = ref.lessonId === "review" ? reviewAttemptKey?.(ref.stepId) : undefined;
+  let hints = 0;
+  let revealed = false;
+  for (const event of events) {
+    if (event.at > through || (!event.hints && !event.revealed)) continue;
+    if (
+      !eventForRef(event, ref) &&
+      !(reviewKey && event.lessonId === "review" && reviewAttemptKey?.(event.stepId) === reviewKey) &&
+      !(family && definitionForTask?.(event.lessonId, event.stepId)?.codingTaskId === family)
+    ) continue;
+    // Older lesson clients stored a hint as a generic revealed exposure.
+    // Only the supplied-solution source identifies an actual lesson solution.
+    const legacyHint =
+      event.kind === "exposure" && event.lessonId !== "review" &&
+      event.revealed && !event.id.startsWith("supplied-solution:");
+    hints = Math.max(hints, event.hints, legacyHint ? 1 : 0);
+    revealed ||= event.revealed && !legacyHint;
+  }
+  return { hints, revealed };
+}
+
+/** Read a submission in chronological context without rewriting the journal. */
 export function observedSubmission(
   state: UserState,
   index: number,
   policy?: EvidencePolicy,
 ): EvidenceEvent {
   const event = state.events[index];
+  if (!isIndependentSuccess(event)) return event;
+  const history = eventsBeforeSubmission(state.events, index);
+  const family = CODING_KINDS.has(event.kind)
+    ? policy?.definitionForTask?.(event.lessonId, event.stepId)?.codingTaskId
+    : undefined;
+  const help = journalTaskAssistance(history, event, {
+    family,
+    definitionForTask: policy?.definitionForTask,
+    reviewAttemptKey: policy?.reviewAttemptKey,
+  });
   const catalog = policy?.disclosureLessons;
-  if (!catalog || !isIndependentSuccess(event)) return event;
-  const prior = {
-    ...state,
-    events: eventsBeforeSubmission(state.events, index),
-  };
-  // Archives record the supplied lesson task itself. Older lesson exports may
-  // instead retain only the source that contained that implementation.
-  return hasRecordedSuppliedSolution(prior.events, event, catalog) ||
-    hasEquivalentSolutionReveal(prior, event, catalog, event.at) ||
-    hasExternalSolutionHelp(prior, event, catalog, event.at)
-    ? { ...event, revealed: true }
-    : event;
+  if (!help.revealed && catalog) {
+    const prior = { ...state, events: history };
+    help.revealed = hasRecordedSuppliedSolution(history, event, catalog) ||
+      hasEquivalentSolutionReveal(prior, event, catalog, event.at) ||
+      hasExternalSolutionHelp(prior, event, catalog, event.at);
+  }
+  return help.hints || help.revealed ? { ...event, ...help } : event;
 }
 
 function hasTaskAssistance(
@@ -260,20 +299,12 @@ function hasTaskAssistance(
   prior: readonly EvidenceEvent[],
   definitionForTask?: EvidencePolicy["definitionForTask"],
 ): boolean {
-  return prior.some((event) => {
-    if (event.at > candidate.at || (event.hints === 0 && !event.revealed))
-      return false;
-    if (
-      event.lessonId === candidate.lessonId &&
-      event.stepId === candidate.stepId
-    )
-      return true;
-    const historical = definitionForTask?.(event.lessonId, event.stepId);
-    return (
-      !!definition.codingTaskId &&
-      historical?.codingTaskId === definition.codingTaskId
-    );
+  const help = journalTaskAssistance(prior, candidate, {
+    family: definition.codingTaskId,
+    definitionForTask,
+    through: candidate.at,
   });
+  return help.hints > 0 || help.revealed;
 }
 
 // One qualification boundary for selectors, competency counts and counted gates.
@@ -566,7 +597,7 @@ function hasVerifiedRetention(
   ratings: UserState["ratings"],
   policy: EvidencePolicy,
 ): boolean {
-  return events.some((candidate) => {
+  return events.some((candidate, index) => {
     if (
       !candidate.conceptIds.includes(conceptId) ||
       !eventMatchesConceptArtifact(candidate, conceptId, policy) ||
@@ -577,7 +608,7 @@ function hasVerifiedRetention(
       candidate.revealed
     )
       return false;
-    const prior = events.filter((event) => event.at < candidate.at);
+    const prior = eventsBeforeSubmission(events, index);
     const priorStrong = strongEvidence(prior, conceptId, policy);
     const latestPriorEvent = prior
       .filter(
@@ -756,7 +787,8 @@ function isCalibratedRecall(
   )
     return false;
   const prior = eventsBeforeSubmission(state.events, index);
-  if (hasTaskAssistance(candidate, { ...definition, codingTaskId: undefined }, prior))
+  const help = journalTaskAssistance(prior, candidate, { reviewAttemptKey: policy.reviewAttemptKey });
+  if (help.hints || help.revealed)
     return false;
   if (
     independentCodingTaskIds({ ...state, events: prior }, conceptId, policy)
@@ -953,7 +985,9 @@ export function recordEvidence(
       queueSuccess(
         next.review,
         conceptId,
-        event,
+        event.kind === "recall" && event.delayed && !calibration
+          ? observedSubmission(next, next.events.length - 1, policy)
+          : event,
         calibration
           ? isCalibratedRecall(
               next,
@@ -980,16 +1014,18 @@ export function recordLessonExposure(
   source: "exposure" | "supplied-solution" = "exposure",
 ): UserState {
   const revealed = exposure.revealed === true;
+  const hints = exposure.hints ?? 0;
+  const contact = revealed ? "revealed" : hints ? `hint-${hints}` : "opened";
   return recordEvidence(
     state,
     {
-      id: `${source}:${exposure.lessonId}:${exposure.stepId}:${exposure.at}:${revealed ? "revealed" : "opened"}`,
+      id: `${source}:${exposure.lessonId}:${exposure.stepId}:${exposure.at}:${contact}`,
       conceptIds: exposure.conceptIds,
       lessonId: exposure.lessonId,
       stepId: exposure.stepId,
       kind: "exposure",
       passed: true,
-      hints: 0,
+      hints,
       revealed,
       at: exposure.at,
       gate: false,

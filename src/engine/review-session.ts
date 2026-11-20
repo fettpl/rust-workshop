@@ -1,5 +1,9 @@
 import type { ReviewSession, UserState } from "@/domain/types";
 
+export function reviewEventStepId(session: ReviewSession): string {
+  return (session.exerciseId ?? session.conceptId) + ":" + session.sessionId;
+}
+
 export function reviewSessionKey(sessionId: string): string {
   return `review:${sessionId}`;
 }

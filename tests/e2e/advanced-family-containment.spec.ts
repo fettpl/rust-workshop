@@ -180,7 +180,7 @@ for (const assistance of assistanceCases) {
     await page.reload();
 
     await expect(page.locator(".task-pane")).toContainText(
-      "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+      "Historia tego zadania zawiera podpowiedź lub odsłonięcie",
     );
     await expect(page.locator(".task-pane")).toContainText(
       "Bieżący kontrakt: wersja 2",
@@ -580,7 +580,7 @@ for (const item of asyncTransferCases) {
       await expect(page.locator(".task-pane h1")).toHaveText(oldStep.title);
       if (helped) {
         await expect(page.locator(".task-pane")).toContainText(
-          "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+          "Historia tego zadania zawiera podpowiedź lub odsłonięcie",
         );
         await page
           .getByRole("button", { name: stage.title, exact: true })
@@ -769,7 +769,7 @@ for (const item of asyncTransferCases) {
       .click();
     await expect(page.locator(".task-pane h1")).toHaveText(blank.title);
     await expect(page.locator(".task-pane")).not.toContainText(
-      "Ten sam kontrakt ma zapisaną pomoc w innym kroku",
+      "Historia tego zadania zawiera podpowiedź lub odsłonięcie",
     );
     await expect(
       page.getByText("ROZWIĄZANIE DO PORÓWNANIA", { exact: true }),
