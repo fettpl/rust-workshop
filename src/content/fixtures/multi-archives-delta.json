@@ -1,0 +1,80 @@
+{
+  "baseline": {
+    "sha": "96ca8d5",
+    "lessonsSha256": "97509cec57dd0e355fb40547b68972b6bb53075cd1775f1e1047f9898be56442",
+    "modulesSha256": "d83035a864f24cb55bb7b4f5e3d681d361c1ce51b4fb90d1a9cdef591ec91e6e",
+    "projectsSha256": "c11e44934a9c275a2b049babac8f651547e7ca3ee98962bae21d6b1bf8178d10",
+    "reviewExercisesSha256": "e5fdf11799b2c8dba9f38ae7f9cca70507c4df878bd7ff3b113eaee1a6b9d23b",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [],
+  "lessonRestorations": [
+    {
+      "lessonId": "todo-storage-format",
+      "path": ["evidenceGate"],
+      "beforeSha256": "c880ddb2b2bf7a5e112f422e861c79179506c5c872b89d144b08e7e9323a56fb",
+      "successorSha256": "89e467e1a2979cdea4c0ca11e33dea45545595d7b4a095ca2399b333a64264e8"
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "path": ["evidenceGate"],
+      "beforeSha256": "43d50f037d808b81ceb622f9ab2271edcb66ccb58afcff0929dfc90d549044fd",
+      "successorSha256": "6f6971b5500c86580ad2a1c2cfdd171a53601a18c75506173e8e57666ec3e1ef"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "todo-storage-format",
+      "index": 7,
+      "id": "format-length-prefixed-texts",
+      "successorSha256": "f32db66a97cb78838825db816fb93be3be3343622e7e3b4ccf3cb99458a8057e"
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "index": 7,
+      "id": "file-replace-current-text",
+      "successorSha256": "e7193d3d455ab14ca637f19104a9ece287c414c6c4917501f129a7f2ce9f92dc"
+    }
+  ],
+  "registries": [
+    {
+      "registry": "modules",
+      "selector": "todo-io",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "98303f6bbf0557f3819a155b20974a2db764ebbdf460e3d9c32783c8e4733ecd",
+      "successorSha256": "b78a04e1f19c6b33f56cfff90d812a8e59f36fd59206cd3108e85a214ab3d11e"
+    },
+    {
+      "registry": "modules",
+      "selector": "todo-io",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "d1c3430fb95c10b240b1390588acd58db357197a7e99607a270b99ba71ea3f4e",
+      "successorSha256": "48dec73b6c428874f97bd8a9152a689588bda07a3dd85f429c70962ddc326d44"
+    }
+  ],
+  "beforeValues": {
+    "c880ddb2b2bf7a5e112f422e861c79179506c5c872b89d144b08e7e9323a56fb": "Obie funkcje przechodzą pełne testy poprawnych i niepoprawnych rekordów; dwa warianty zadania sprawdzają tę samą kompetencję.",
+    "43d50f037d808b81ceb622f9ab2271edcb66ccb58afcff0929dfc90d549044fd": "Dwa pełne zestawy testów używają rzeczywistych plików i potwierdzają round trip oraz zachowanie danych na ścieżkach błędów.",
+    "98303f6bbf0557f3819a155b20974a2db764ebbdf460e3d9c32783c8e4733ecd": [
+      {
+        "lessonId": "todo-storage-format",
+        "stepId": "format-debug"
+      },
+      {
+        "lessonId": "todo-storage-format",
+        "stepId": "format-gate"
+      }
+    ],
+    "d1c3430fb95c10b240b1390588acd58db357197a7e99607a270b99ba71ea3f4e": [
+      {
+        "lessonId": "todo-file-persistence",
+        "stepId": "file-debug"
+      },
+      {
+        "lessonId": "todo-file-persistence",
+        "stepId": "file-gate"
+      }
+    ]
+  }
+}

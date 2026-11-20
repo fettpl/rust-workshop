@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import type { EvidenceEvent, LessonStep } from "../domain/types";
+import { lengthPrefixedTexts, replaceCurrentFile } from "./todo-io-archive-practice";
 import { appendHiddenTests } from "../runner";
 import {
   createInitialState,
@@ -127,6 +128,7 @@ function nativeStatus(source: string, task: LessonStep) {
     expect(compiled.error).toBeUndefined();
     expect(compiled.status, compiled.stderr).toBe(0);
     const run = spawnSync(binary, ["--test-threads=1"], {
+      env: { ...process.env, TMPDIR: directory, TMP: directory, TEMP: directory },
       encoding: "utf8",
       timeout: 8_000,
     });
@@ -373,3 +375,24 @@ it.each(upstreamSources)(
     }
   },
 );
+
+it.each([
+  [lengthPrefixedTexts, [
+    ["item.len()", "item.chars().count()"],
+    ["header.len() > 1", "header.len() > 100"],
+    ["items.push(rest.get(..n)?.to_owned());", "if rest.get(..n).is_none() { return Some(items); } items.push(rest.get(..n)?.to_owned());"],
+  ]],
+  [replaceCurrentFile, [
+    ["fs::read_to_string(path)? != expected", "fs::read_to_string(path)?.trim_end() != expected.trim_end()"],
+    [".create_new(true)", ".create(true).truncate(true)"],
+    ["fs::rename(&pending, path)", "fs::copy(&pending, path).and_then(|_| fs::remove_file(&pending))"],
+  ]],
+] as const)("executes $0.id and rejects compiling violations of its independent contract", (task, substitutions) => {
+  const reference = task.solution!;
+  expect(nativeStatus(reference, task)).toBe(0);
+  for (const [from, to] of substitutions) {
+    const mutant = reference.replace(from, to);
+    expect(mutant, from).not.toBe(reference);
+    expect(nativeStatus(mutant, task), from).toBe(101);
+  }
+});

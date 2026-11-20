@@ -1,3 +1,4 @@
+import { lengthPrefixedTexts, replaceCurrentFile } from "./todo-io-archive-practice";
 import type {
   Competency,
   Concept,
@@ -898,6 +899,7 @@ export const ioLessons: Lesson[] = [
         ],
         "recall",
       ),
+      lengthPrefixedTexts,
     ],
     misconceptions: [
       "Do zapisu można bez zastanowienia wykorzystać wynik List.",
@@ -907,7 +909,7 @@ export const ioLessons: Lesson[] = [
     transferTask:
       "Zaprojektuj round trip notatnika z inną wersją, separatorem i słownymi statusami archiwizacji.",
     evidenceGate:
-      "Obie funkcje przechodzą pełne testy poprawnych i niepoprawnych rekordów; dwa warianty zadania sprawdzają tę samą kompetencję.",
+      "Obie funkcje przechodzą pełne testy poprawnych i niepoprawnych rekordów; dodatkowa próba z długością pól wymaga także sprawdzenia granic UTF-8.",
     sessionStops: [
       {
         afterStepId: "format-explain",
@@ -1049,6 +1051,7 @@ export const ioLessons: Lesson[] = [
         ],
         "recall",
       ),
+      replaceCurrentFile,
     ],
     misconceptions: [
       "Każdy błąd load oznacza pustą listę.",
@@ -1059,7 +1062,7 @@ export const ioLessons: Lesson[] = [
     transferTask:
       "Przenieś zapis do innego katalogu i odtwórz przypadek konfliktu z istniejącym plikiem tymczasowym.",
     evidenceGate:
-      "Dwa pełne zestawy testów używają rzeczywistych plików i potwierdzają round trip oraz zachowanie danych na ścieżkach błędów.",
+      "Testy używają rzeczywistych plików i potwierdzają round trip oraz zachowanie danych na ścieżkach błędów.",
     sessionStops: [
       {
         afterStepId: "file-explain",
@@ -1348,6 +1351,7 @@ export const ioModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-storage-format", stepId: "format-debug" },
         { lessonId: "todo-storage-format", stepId: "format-gate" },
+        { lessonId: "todo-storage-format", stepId: lengthPrefixedTexts.id },
       ],
     },
     {
@@ -1357,6 +1361,7 @@ export const ioModule: CourseModule = {
       taskRefs: [
         { lessonId: "todo-file-persistence", stepId: "file-debug" },
         { lessonId: "todo-file-persistence", stepId: "file-gate" },
+        { lessonId: "todo-file-persistence", stepId: replaceCurrentFile.id },
       ],
     },
     {

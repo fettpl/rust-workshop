@@ -964,6 +964,7 @@ describe("session-stop authored metadata validation", () => {
       "format-gate",
       "format-observe",
       "format-recall",
+      "format-length-prefixed-texts",
     ],
     "todo-file-persistence": [
       "file-predict",
@@ -973,6 +974,7 @@ describe("session-stop authored metadata validation", () => {
       "file-gate",
       "file-observe",
       "file-recall",
+      "file-replace-current-text",
     ],
     "todo-terminal-cli": [
       "cli-predict",

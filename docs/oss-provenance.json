@@ -490,7 +490,7 @@
     },
     {
       "path": "src/content/content-validation.test.ts",
-      "sha256": "0735951b635162bc8d2460f943b203fff47444f2ba2c2bc77970b0ca98fd6d54",
+      "sha256": "0f28d8dc95aa69e66f47881c196ed7de2618439f8300d18df7338334cb389ef3",
       "group": "course"
     },
     {
@@ -580,7 +580,7 @@
     },
     {
       "path": "src/content/curriculum-recovery-compatibility.test.ts",
-      "sha256": "94920b42c9aece14aaa3d8758caf211d1b5e1181eddd1420772b455e5e7bc0a9",
+      "sha256": "9230463cfe372d9bcbea12f2e685491641a331ee78d2737eafebea222327b2f7",
       "group": "course"
     },
     {
@@ -760,7 +760,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "8b246c0618b6f6309d7dd0e336b32c18590d2e8b9a6bf499b58d45ed348f456e",
+      "sha256": "6fa1234cf5fc755af7f2012f9ed5e34fff71edd90f7dca3336057910f0820e4c",
       "group": "course"
     },
     {
@@ -780,7 +780,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-metadata.test.ts",
-      "sha256": "f13ccf040b343ff0bc9035e4c05246478dc1663a8d5948cef0ac93f71e49ff32",
+      "sha256": "156c268614fabb1feef5d80f4dac3dcd55c61cab9276438a169a5615a89fdd5a",
       "group": "course"
     },
     {
@@ -876,6 +876,11 @@
     {
       "path": "src/content/fixtures/m11-m10-identity.json",
       "sha256": "2ef586f7b67f8f83621c1e53c3b4bfdddec9dc89c1af4612ed702f978607c563",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/multi-archives-delta.json",
+      "sha256": "77bbfe1a6b06294aab3d58886d2b16448497a87cdef0eb8050824a9e6225d367",
       "group": "course"
     },
     {
@@ -1130,7 +1135,7 @@
     },
     {
       "path": "src/content/io.ts",
-      "sha256": "3bdbe509b66ec7119385f1febad314eb59c768318144c70b1820eb9a32ae0fd2",
+      "sha256": "c92310cc2f6e5b7085cafdc4a8ee6781a1665429b562e0fd0b021f7038524325",
       "group": "course"
     },
     {
@@ -1949,8 +1954,13 @@
       "group": "course"
     },
     {
+      "path": "src/content/todo-io-archive-practice.ts",
+      "sha256": "a9ebd49b145fb47f3dc3fca71681f8becf163bb7b976176367aae45ddf13f5f8",
+      "group": "course"
+    },
+    {
       "path": "src/content/todo-io-supplied-solutions.test.ts",
-      "sha256": "e9ed8e3b7dae6d348e6f4b0f06a1b66706d1b1e58a23b5c244b3e147e1a5db59",
+      "sha256": "01614329d35ae32d122edc274997f19c0abefe99e428324cf2f161e6a7608599",
       "group": "course"
     },
     {
@@ -2310,7 +2320,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "35bde6efd5beb7c0f814d18f128e0165cd0f7bf01a7ef5c5231c69906707a667",
+      "sha256": "0a15c6dfefc53a1a2dfe6b4fccd242a9e7321bf7fdad15c5f8e7300c9f07bfed",
       "group": "course"
     },
     {

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules, projects } from "../../src/content/course";
 import {
   createInitialState,
   createStepProgress,
@@ -322,5 +322,89 @@ test("an actual FFI coach reveal sends Miri course-map recovery to the fresh ran
   );
   await page.reload();
   await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
+  await expect(page.locator(".revealed-solution")).toHaveCount(0);
+});
+
+test("two project solutions and a later CLI starter preserve an earlier format pass and a fresh persistence route", async ({
+  page,
+}) => {
+  const stage = modules.find((m) => m.id === "todo-io")!;
+  const [format, persistence, cli] = stage.gateCriteria!;
+  const lesson = lessons.find((l) => l.id === "todo-storage-format")!;
+  const step = lesson.steps.find((s) => s.id === "format-debug")!;
+  const state = ready(lesson.id);
+  state.events.push({
+    id: "previous-format-success",
+    lessonId: lesson.id,
+    stepId: step.id,
+    ...evidenceForLessonStep(lesson, step),
+    at: 100,
+    passed: true,
+    evaluator: "tests",
+    kind: step.evidenceKind,
+    gate: true,
+    hints: 0,
+    revealed: false,
+  });
+  state.steps[stepKey(lesson.id, step.id)] = {
+    ...createStepProgress(step.code),
+    completed: true,
+  };
+  await seed(page, state);
+  await page.getByRole("button", { name: "Projekt", exact: true }).click();
+  for (const id of ["log-analyzer-project", "todo-command-session"]) {
+    const project = projects.find((p) => p.id === id)!;
+    await page
+      .getByRole("navigation", { name: "Wybierz projekt" })
+      .getByRole("button", { name: project.title })
+      .click();
+    const panel = page.getByRole("region", { name: "Pakiet Cargo" });
+    await expect(
+      panel.getByRole("button", { name: "Pliki startowe" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await panel
+      .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
+      .click();
+    await expect(
+      panel.getByRole("link", { name: "Pobierz rozwiązanie" }),
+    ).toBeVisible();
+  }
+  async function openMap() {
+    await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
+    await page
+      .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
+      .fill(stage.title);
+    await page
+      .locator(".module-picker > button")
+      .filter({ hasText: stage.title })
+      .click();
+  }
+  const row = (label: string) =>
+    page.locator(".gate-panel li").filter({ hasText: label });
+  await openMap();
+  await row(cli.label)
+    .getByRole("button", { name: "Sprawdź w zadaniu" })
+    .click();
+  await expect(
+    page.getByRole("textbox", { name: "Kod Rust", exact: true }),
+  ).toHaveValue(/fn pack/);
+  await expect(page.locator(".save-status")).toHaveText(
+    "Zapisano na tym urządzeniu",
+  );
+  await page.reload();
+  await openMap();
+  await expect(row(format.label).getByLabel("Potwierdzone")).toBeVisible();
+  await expect(
+    row(persistence.label).getByLabel("Do sprawdzenia"),
+  ).toBeVisible();
+  await row(persistence.label)
+    .getByRole("button", { name: "Sprawdź w zadaniu" })
+    .click();
+  await expect(page.locator(".task-pane h1")).toHaveText(
+    "Zapisz poprawkę tylko dla odczytanej wersji",
+  );
+  await expect(
+    page.getByRole("textbox", { name: "Kod Rust", exact: true }),
+  ).toHaveValue("");
   await expect(page.locator(".revealed-solution")).toHaveCount(0);
 });

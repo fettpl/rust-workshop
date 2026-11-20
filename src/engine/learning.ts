@@ -248,6 +248,7 @@ export function observedSubmission(
   // Archives record the supplied lesson task itself. Older lesson exports may
   // instead retain only the source that contained that implementation.
   return hasRecordedSuppliedSolution(prior.events, event, catalog) ||
+    hasEquivalentSolutionReveal(prior, event, catalog, event.at) ||
     hasExternalSolutionHelp(prior, event, catalog, event.at)
     ? { ...event, revealed: true }
     : event;
@@ -751,17 +752,12 @@ function isCalibratedRecall(
     candidate.evaluator !== "tests" ||
     candidate.kind !== "recall" ||
     candidate.delayed !== true ||
-    !isIndependentSuccess(candidate) ||
-    hasTaskAssistance(
-      candidate,
-      { ...definition, codingTaskId: undefined },
-      state.events.slice(0, index),
-    )
+    !isIndependentSuccess(candidate)
   )
     return false;
-  const prior = state.events
-    .slice(0, index)
-    .filter((event) => event.at <= candidate.at);
+  const prior = eventsBeforeSubmission(state.events, index);
+  if (hasTaskAssistance(candidate, { ...definition, codingTaskId: undefined }, prior))
+    return false;
   if (
     independentCodingTaskIds({ ...state, events: prior }, conceptId, policy)
       .length < required

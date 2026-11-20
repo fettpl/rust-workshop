@@ -1,3 +1,4 @@
+import multiArchivesDelta from "./fixtures/multi-archives-delta.json";
 import projectArchivesDelta from "./fixtures/project-archives-delta.json";
 import crossModuleDelta from "./fixtures/cross-module-delta.json";
 import allVariantsDelta from "./fixtures/all-variants-delta.json";
@@ -223,7 +224,7 @@ function restoreReviewedLessons(
 }
 
 // Repeated worked examples share their predecessor value in the fixture.
-const beforeValues: Record<string, unknown> = { ...projectArchivesDelta.beforeValues, ...crossModuleDelta.beforeValues, ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
+const beforeValues: Record<string, unknown> = { ...multiArchivesDelta.beforeValues, ...projectArchivesDelta.beforeValues, ...crossModuleDelta.beforeValues, ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
 function withPredecessor<T extends { beforeSha256: string | null }>(entry: T) {
   return { ...entry, before: entry.beforeSha256 === null ? null : beforeValues[entry.beforeSha256] };
 }
@@ -233,6 +234,30 @@ const practiceLessons = {
   lessonRestorations: practiceDelta.lessonRestorations.map(withPredecessor),
 };
 const practiceRegistries = practiceDelta.registries.map(withPredecessor);
+
+const multiArchivesLessons = {
+  ...multiArchivesDelta,
+  restorations: multiArchivesDelta.restorations.map(withPredecessor),
+  lessonRestorations: multiArchivesDelta.lessonRestorations.map(withPredecessor),
+};
+const multiArchivesRegistries = multiArchivesDelta.registries.map(withPredecessor);
+
+export function restoreMultiArchivesLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(lessons, replacements, matches, multiArchivesLessons);
+}
+
+export function restoreMultiArchivesRegistry<T extends object>(
+  registry: T,
+  name: string,
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): T {
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, multiArchivesRegistries);
+}
 
 const projectArchivesLessons = {
   ...projectArchivesDelta,
@@ -246,7 +271,7 @@ export function restoreProjectArchivesLessons(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  return restoreReviewedLessons(lessons, replacements, matches, projectArchivesLessons);
+  return restoreReviewedLessons(restoreMultiArchivesLessons(lessons, replacements, matches), replacements, matches, projectArchivesLessons);
 }
 
 export function restoreProjectArchivesRegistry<T extends object>(
@@ -255,7 +280,7 @@ export function restoreProjectArchivesRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, projectArchivesRegistries);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...multiArchivesRegistries, ...projectArchivesRegistries]);
 }
 
 const crossModuleLessons = {
@@ -279,7 +304,7 @@ export function restoreCrossModuleRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...projectArchivesRegistries, ...crossModuleRegistries]);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries]);
 }
 
 const allVariantsLessons = {
@@ -303,7 +328,7 @@ export function restoreAllVariantsRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries]);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries]);
 }
 
 const remainingLessons = {
@@ -327,7 +352,7 @@ export function restoreRemainingCriteriaRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries]);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries]);
 }
 
 export function restoreIndependentPracticeLessons(
@@ -344,7 +369,7 @@ export function restoreIndependentPracticeRegistry<T extends object>(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): T {
-  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries]);
+  return restoreCurriculumRecoveryRegistry(registry, name, replacements, matches, [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries]);
 }
 
 /** Restores this batch first, so all older projections still see their authored successors. */
@@ -377,7 +402,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   name: string,
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
-  entries: readonly RegistryRestoration[] = [...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
+  entries: readonly RegistryRestoration[] = [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
   for (const entry of entries.filter(

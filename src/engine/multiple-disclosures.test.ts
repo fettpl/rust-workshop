@@ -131,7 +131,7 @@ it("covers every multi-disclosure subset in the current gate catalog", () => {
       (sum, { criterion }) => sum + subsets(criterion.taskRefs).length,
       0,
     ),
-  ).toBe(528);
+  ).toBe(534);
 });
 
 it.each(cases)(

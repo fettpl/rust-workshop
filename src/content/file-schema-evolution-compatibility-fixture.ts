@@ -5,6 +5,8 @@ import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
 import recoveryDelta from "./fixtures/recovery-practice-delta.json";
 import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
 import {
+  restoreMultiArchivesLessons,
+  restoreMultiArchivesRegistry,
   restoreProjectArchivesLessons,
   restoreProjectArchivesRegistry,
   restoreCrossModuleLessons,
@@ -503,6 +505,10 @@ function projectMaintenanceBatch<T extends typeof Course>(
     replacements.set(registry, Object.create(Object.getPrototypeOf(registry)));
   for (const registry of registries) copyRegistry(registry, replacements);
   return replacements.get(input) as T;
+}
+
+export function historicalBeforeMultiArchives<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreMultiArchivesLessons, restoreMultiArchivesRegistry);
 }
 
 export function historicalBeforeProjectArchives<T extends typeof Course>(course: T): T {
