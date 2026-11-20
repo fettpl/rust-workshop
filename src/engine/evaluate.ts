@@ -24,42 +24,76 @@ function result(input: EvaluationInput): RunResult | undefined {
   return input.result;
 }
 
-/** Remove Rust comments while retaining literals, so constraints cannot be bypassed by comments. */
-function withoutComments(source: string): string {
+/** Mask comments and literals before applying the authored syntax guards.
+ * These guards recognize token sequences, not Rust semantics; runner results
+ * remain the evidence for compilation and behavior.
+ */
+function guardCode(source: string): string {
   let out = "";
   let i = 0;
-  let quote: "string" | "char" | null = null;
   while (i < source.length) {
-    const current = source[i];
-    const next = source[i + 1];
-    if (!quote && current === "/" && next === "/") {
-      i += 2;
-      while (i < source.length && source[i] !== "\n") i += 1;
-      out += "\n";
-      continue;
-    }
-    if (!quote && current === "/" && next === "*") {
-      i += 2;
-      while (i < source.length && !(source[i] === "*" && source[i + 1] === "/"))
-        i += 1;
-      i += 2;
+    if (source.startsWith("//", i)) {
+      const end = source.indexOf("\n", i + 2);
+      i = end === -1 ? source.length : end;
       out += " ";
-      continue;
+    } else if (source.startsWith("/*", i)) {
+      let depth = 1;
+      i += 2;
+      while (i < source.length && depth > 0) {
+        if (source.startsWith("/*", i)) {
+          depth += 1;
+          i += 2;
+        } else if (source.startsWith("*/", i)) {
+          depth -= 1;
+          i += 2;
+        } else i += 1;
+      }
+      out += " ";
+    } else {
+      const raw = /^(?:br|cr|r)(#*)"/.exec(source.slice(i));
+      const character =
+        source[i] === "'"
+          ? /^'(?:\\(?:u\{[0-9a-fA-F_]+\}|x[0-9a-fA-F]{2}|[^\r\n])|[^'\\\r\n])'/u.exec(
+              source.slice(i),
+            )
+          : null;
+      if (raw) {
+        const end = source.indexOf(`"${raw[1]}`, i + raw[0].length);
+        i = end === -1 ? source.length : end + raw[1].length + 1;
+        out += " ";
+      } else if (source[i] === '"') {
+        i += 1;
+        while (i < source.length) {
+          if (source[i] === "\\") i += 2;
+          else if (source[i++] === '"') break;
+        }
+        out += " ";
+      } else if (character) {
+        i += character[0].length;
+        out += " ";
+      } else out += source[i++];
     }
-    if (!quote && (current === '"' || current === "'"))
-      quote = current === '"' ? "string" : "char";
-    else if (
-      quote &&
-      ((quote === "string" && current === '"') ||
-        (quote === "char" && current === "'")) &&
-      source[i - 1] !== "\\"
-    )
-      quote = null;
-    out += current;
-    if (current === "\\" && quote && i + 1 < source.length) out += source[++i];
-    i += 1;
   }
   return out;
+}
+
+const rustKeywords = new Set(
+  "as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while abstract become box do final gen macro override priv typeof unsized virtual yield try".split(
+    " ",
+  ),
+);
+
+function tokenSequence(source: string): string {
+  const tokens =
+    source.match(
+      /(?:r#)?[\p{ID_Start}_][\p{ID_Continue}]*|[0-9][0-9a-zA-Z_]*|[^\s]/gu,
+    ) ?? [];
+  const normalized = tokens.map((token) =>
+    token.startsWith("r#") && !rustKeywords.has(token.slice(2))
+      ? token.slice(2)
+      : token,
+  );
+  return normalized.length ? `\0${normalized.join("\0")}\0` : "";
 }
 
 function parsedOrdering(answer: string | undefined): string[] | undefined {
@@ -80,7 +114,7 @@ function parsedOrdering(answer: string | undefined): string[] | undefined {
 }
 
 function normalizedGuardSource(source: string): string {
-  return withoutComments(source).replace(/\s+/g, "");
+  return tokenSequence(guardCode(source));
 }
 
 function missingRequiredPattern(
@@ -88,7 +122,7 @@ function missingRequiredPattern(
   patterns: string[] | undefined,
 ): string | undefined {
   return patterns?.find((pattern) => {
-    const normalized = pattern.replace(/\s+/g, "");
+    const normalized = tokenSequence(pattern);
     return normalized.length === 0 || !source.includes(normalized);
   });
 }
@@ -98,7 +132,7 @@ function forbiddenPattern(
   patterns: string[] | undefined,
 ): string | undefined {
   return patterns?.find((pattern) => {
-    const normalized = pattern.replace(/\s+/g, "");
+    const normalized = tokenSequence(pattern);
     return normalized.length > 0 && source.includes(normalized);
   });
 }
@@ -207,10 +241,12 @@ export function evaluate(
     }
     case "answer": {
       if (input.answer === undefined) return missing(evaluator.kind);
+      const normalize = (answer: string) =>
+        evaluator.caseSensitive
+          ? answer.trim()
+          : answer.trim().toLocaleLowerCase();
       const passed = evaluator.accepted.some(
-        (accepted) =>
-          accepted.trim().toLocaleLowerCase() ===
-          input.answer!.trim().toLocaleLowerCase(),
+        (accepted) => normalize(accepted) === normalize(input.answer!),
       );
       return {
         passed,

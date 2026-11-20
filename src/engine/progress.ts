@@ -50,6 +50,10 @@ export function competencyProgress(
         : undefined;
       return taskId ? [taskId] : [];
     });
+    const ordinaryTaskKey =
+      event.lessonId === "review" && policy?.reviewTaskKey
+        ? policy.reviewTaskKey(event.stepId)
+        : stepKey(event.lessonId, event.stepId);
     // An accepted calibrated family is one task even when its exact subset
     // also supports an uncalibrated concept in this competency.
     const taskIds =
@@ -66,7 +70,9 @@ export function competencyProgress(
                     )
                   : isIndependentSuccess(event)),
             )
-          ? [stepKey(event.lessonId, event.stepId)]
+          ? ordinaryTaskKey
+            ? [ordinaryTaskKey]
+            : []
           : [];
     return taskIds.length > 0 ? [{ event, taskIds }] : [];
   });

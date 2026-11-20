@@ -412,6 +412,7 @@ fn main() {
         prompt: "Wpisz dwa warianty Result<T, E>, oddzielając je przecinkiem.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["Ok, Err", "Ok,Err", "Err, Ok", "Err,Ok"],
           feedback: "Ok niesie sukces, a Err opisuje niepowodzenie.",
         },
@@ -814,7 +815,8 @@ fn main() {
           "Wpisz słowo, które oznacza wczesny zwrot błędu przez operator ?.",
         evaluator: {
           kind: "answer",
-          accepted: ["Err", "err"],
+          caseSensitive: true,
+          accepted: ["Err"],
           feedback:
             "Po napotkaniu Err operator ? zwraca ten błąd z bieżącej funkcji.",
         },
@@ -1117,7 +1119,8 @@ fn main() {
           "Wpisz nazwę typu, który pozwala zwrócić sukces albo błąd wywołującemu.",
         evaluator: {
           kind: "answer",
-          accepted: ["Result", "result"],
+          caseSensitive: true,
+          accepted: ["Result"],
           feedback:
             "Result zachowuje Ok lub Err i pozwala wywołującemu podjąć decyzję.",
         },

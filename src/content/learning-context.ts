@@ -1,3 +1,4 @@
+import { answerProgressKey, hadAnswerHelp, receivedChoiceFeedback } from "@/engine/step-interaction";
 import {
   dueReviews,
   recordEvidence,
@@ -9,6 +10,7 @@ import {
   hasExternalSolutionHelp,
   hasRecordedSuppliedSolution,
   journalTaskAssistance,
+  hasLegacyConceptAttribution,
   hasComponentSolutionReveal,
   isIndependentSuccess,
   delayedReviewEligibility,
@@ -97,8 +99,52 @@ function isHistoricalAnswerReview(
   );
 }
 
+// Full authored references may be shared by otherwise unrelated concepts.
+// This index describes contact only; it never relabels saved evidence.
+const reviewSolutionConcepts = new Map<string, Set<string>>();
+for (const registry of [reviewExercises, shortReviewExercises, delayedReviewExercises]) {
+  for (const [conceptId, step] of Object.entries(registry)) {
+    const solution = step.solution?.trim();
+    if (!solution) continue;
+    const ids = reviewSolutionConcepts.get(solution) ?? new Set<string>();
+    for (const id of step.evidence?.conceptIds ?? [conceptId]) ids.add(id);
+    reviewSolutionConcepts.set(solution, ids);
+  }
+}
+
+function exactReviewSolutionContact(event: EvidenceEvent): readonly string[] {
+  const visibleCode = event.kind === "exposure" && event.id.startsWith("visible-authored-code:");
+  const shownSolution = event.kind === "exposure" && event.revealed &&
+    event.id.startsWith("supplied-solution:");
+  if (!visibleCode && !shownSolution) return [];
+  const step = currentStep(event.lessonId, event.stepId);
+  if (!step) return [];
+  const text = (visibleCode ? step.code : step.solution)?.trim();
+  return text ? [...(reviewSolutionConcepts.get(text) ?? [])] : [];
+}
+
 export const courseEvidencePolicy = {
+  contactConceptIdsForEvent: exactReviewSolutionContact,
   disclosureLessons: lessons,
+  reviewStep: (stepId: string) => currentStep("review", stepId),
+  legacyAttributionForEvent: (event: EvidenceEvent) => {
+    const step = currentStep(event.lessonId, event.stepId);
+    if (!step ||
+        (event.evaluator !== undefined && event.evaluator !== step.evaluator?.kind) ||
+        (step.evaluator?.kind === "manifest-contract" && event.evaluator !== "manifest-contract")) return false;
+    if (event.lessonId === "review") {
+      const conceptId = Object.entries(reviewExercises).find(([, authored]) => authored === step)?.[0];
+      return event.kind === "recall" && event.gate !== true &&
+        conceptId !== undefined &&
+        hasLegacyConceptAttribution(event, step, [conceptId]);
+    }
+    const lesson = lessons.find((lesson) => lesson.id === event.lessonId);
+    const authoredKind = step.evaluator?.kind === "rubric" ? "self-rating" : step.evidenceKind;
+    return lesson !== undefined && event.kind === authoredKind &&
+      (!step.evidence || (step.evidence.version === 1 && !step.evidence.codingTaskId)) &&
+      hasLegacyConceptAttribution(event, step, lesson.conceptIds);
+  },
+  reviewTaskKey: (stepId: string) => currentStep("review", stepId)?.id,
   reviewAttemptKey: (stepId: string) => {
     const exercise = currentStep("review", stepId);
     return exercise && exercise.id + stepId.slice(stepId.indexOf(":"));
@@ -244,7 +290,7 @@ export function assistanceForLessonStep(
     definitionForTask: (lessonId, stepId) =>
       lessonId === "review" ? undefined : currentStep(lessonId, stepId)?.evidence,
   });
-  flags.hints = Math.max(flags.hints, current?.hints ?? 0);
+  flags.hints = Math.max(flags.hints, current?.hints ?? 0, hadAnswerHelp(step, current) ? 1 : 0);
   flags.revealed ||= Boolean(current?.revealed) ||
     hasRecordedSuppliedSolution(state.events, ref, lessons) ||
     hasEquivalentSolutionReveal(state, ref, lessons);
@@ -272,7 +318,11 @@ export function assistanceForReviewSession(state: UserState, session: ReviewSess
     { reviewAttemptKey: courseEvidencePolicy.reviewAttemptKey },
   );
   return {
-    hints: Math.max(current?.hints ?? 0, history.hints),
+    hints: Math.max(
+      current?.hints ?? 0,
+      history.hints,
+      hadAnswerHelp(currentStep("review", reviewEventStepId(session)), current) ? 1 : 0,
+    ),
     revealed: Boolean(current?.revealed || history.revealed),
   };
 }
@@ -367,7 +417,19 @@ export function recordCourseEvidence(
   state: UserState,
   event: EvidenceEvent,
 ): UserState {
-  if (!isIndependentSuccess(event)) return recordEvidence(state, event, courseEvidencePolicy);
+  if (!isIndependentSuccess(event)) {
+    const recorded = recordEvidence(state, event, courseEvidencePolicy);
+    if (recorded === state || event.passed || event.evaluator !== "choice") return recorded;
+    const attempt = state.steps[answerProgressKey(event)]?.attempts.at(-1);
+    if (!receivedChoiceFeedback(currentStep(event.lessonId, event.stepId), attempt)) return recorded;
+    return recordCourseLessonExposure(recorded, {
+      lessonId: event.lessonId,
+      stepId: event.stepId,
+      conceptIds: event.conceptIds,
+      at: event.at,
+      hints: 1,
+    });
+  }
   const supplied = currentStep(event.lessonId, event.stepId)?.suppliedSolutions;
   if (!supplied) return recordEvidence(state, event, courseEvidencePolicy);
   if (state.events.some((existing) => existing.id === event.id)) return state;
@@ -401,6 +463,46 @@ export function recordCourseLessonExposure(
   return recordLessonExposure(state, exposure, courseEvidencePolicy, source);
 }
 
+/** A full reference shown again is new contact, without new coding proof. */
+export function suppliesExactReviewSolution(source: LessonStep, variant: "code" | "solution"): boolean {
+  const text = source[variant]?.trim();
+  return Boolean(text && reviewSolutionConcepts.has(text));
+}
+
+export function recordExactReviewSolutionContact(
+  state: UserState, source: LessonStep, variant: "code" | "solution", now: number,
+  eventCountBeforeDisplay?: number,
+): UserState {
+  if (!suppliesExactReviewSolution(source, variant)) return state;
+  // A reveal action may already have journaled this exact display. Compare the
+  // episode's append boundary, never elapsed time; a later display gets a new boundary.
+  if (eventCountBeforeDisplay !== undefined &&
+      Number.isInteger(eventCountBeforeDisplay) && eventCountBeforeDisplay >= 0 &&
+      eventCountBeforeDisplay <= state.events.length &&
+      state.events.slice(eventCountBeforeDisplay).some((event) =>
+        event.kind === "exposure" && currentStep(event.lessonId, event.stepId) === source &&
+        (variant === "solution"
+          ? event.revealed && event.id.startsWith("supplied-solution:")
+          : event.id.startsWith("visible-authored-code:")),
+      )) return state;
+  const lesson = lessons.find((lesson) => lesson.steps.includes(source));
+  const reviewEntry = lesson ? undefined : Object.entries(reviewExercises).find(([, step]) => step === source)
+    ?? Object.entries(shortReviewExercises).find(([, step]) => step === source)
+    ?? Object.entries(delayedReviewExercises).find(([, step]) => step === source);
+  if (!lesson && !reviewEntry) return state;
+  const lessonId = lesson?.id ?? "review";
+  const stepId = lesson ? source.id : `${source.id}:visible-reference`;
+  const conceptIds = source.evidence?.conceptIds ?? lesson?.conceptIds ?? [reviewEntry![0]];
+  if (variant === "solution") return recordCourseLessonExposure(
+    state, { lessonId, stepId, conceptIds, at: now, revealed: true }, "supplied-solution",
+  );
+  return recordCourseEvidence(state, {
+    id: `visible-authored-code:${lessonId}:${stepId}:${now}`,
+    lessonId, stepId, conceptIds, at: now, kind: "exposure", passed: true,
+    hints: 0, revealed: false, gate: false,
+  });
+}
+
 /** Attribute a complete prerequisite implementation only when its authored source is displayed. */
 export function recordSuppliedSolutions(
   state: UserState,
@@ -422,12 +524,15 @@ export function revealCourseProjectPackageVariant(
   variant: PackageVariant,
   now: number,
 ): UserState {
-  return revealProjectPackageVariant(
-    state,
-    project,
-    lessons,
-    variant,
-    now,
-    courseEvidencePolicy,
+  let next = revealProjectPackageVariant(
+    state, project, lessons, variant, now, courseEvidencePolicy,
   );
+  const refs = variant === "starter"
+    ? project.starterRevealStepRefs ?? []
+    : [...project.revealStepRefs, ...(project.starterRevealStepRefs ?? [])];
+  for (const ref of refs) {
+    const source = currentStep(ref.lessonId, ref.stepId);
+    if (source) next = recordExactReviewSolutionContact(next, source, "solution", now);
+  }
+  return next;
 }

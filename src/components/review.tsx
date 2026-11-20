@@ -24,6 +24,7 @@ import {
 } from "@/content/learning-context";
 import {
   reviewSessionFinished,
+  reviewSessionRated,
   reviewEventStepId,
   reviewSessionKey,
   startReviewSession,
@@ -128,8 +129,9 @@ export function ReviewView() {
     ? reviewPurposeForExercise(session.conceptId, session.exerciseId)
     : "neutral";
   const isPracticeProbe = reviewPurpose === "practice-probe";
+  const rated = Boolean(session && reviewSessionRated(state, session));
   const awaitingProbeRating = Boolean(
-    session && successfulProbeSession(state, session),
+    session && !rated && successfulProbeSession(state, session),
   );
   const unavailable = !concept || resolution?.status === "unavailable";
   const evaluator = step?.evaluator;
@@ -151,7 +153,7 @@ export function ReviewView() {
     lastAttempt.result &&
     lastAttempt.code === code,
   );
-  const completed = Boolean(progress.completed);
+  const completed = Boolean(progress.completed || rated);
 
   function start(
     id: string,
@@ -161,7 +163,8 @@ export function ReviewView() {
     if (
       state.reviewSession &&
       (!reviewSessionFinished(state, state.reviewSession) ||
-        successfulProbeSession(state, state.reviewSession))
+        (successfulProbeSession(state, state.reviewSession) &&
+          !reviewSessionRated(state, state.reviewSession)))
     ) {
       setSelected(state.reviewSession.conceptId);
       setMode(state.reviewSession.mode);
@@ -285,7 +288,7 @@ export function ReviewView() {
     update((s) => {
       if (s.reviewSession?.sessionId !== session.sessionId) return s;
       const current = s.steps[key] ?? createStepProgress();
-      if (current.completed) return s;
+      if (current.completed || reviewSessionRated(s, session)) return s;
       let next = {
         ...s,
         steps: {
@@ -339,6 +342,15 @@ export function ReviewView() {
     )
       return;
     const requestGeneration = generation();
+    const canRecord = (currentState: typeof state) => {
+      const saved = currentState.steps[key];
+      return (
+        currentState.reviewSession?.sessionId === session.sessionId &&
+        !saved?.completed &&
+        !reviewSessionRated(currentState, session) &&
+        (saved?.code ?? step.code ?? "") === code
+      );
+    };
     setPending(true);
     setExecutionMessage("");
     const tests = evaluator.kind === "tests" ? evaluator.tests : undefined;
@@ -369,6 +381,7 @@ export function ReviewView() {
         "Problem z wykonaniem — ta próba nie wpływa na mastery ani termin powtórki.",
       );
       update((s) => {
+        if (!canRecord(s)) return s;
         const current = s.steps[key] ?? createStepProgress(step.code);
         return {
           ...s,
@@ -396,6 +409,7 @@ export function ReviewView() {
     const outcome = evaluate(evaluator, { result: output, code });
     const probe = step.reviewPurpose === "practice-probe";
     update((s) => {
+      if (!canRecord(s)) return s;
       const current = s.steps[key] ?? createStepProgress(step.code);
       const next = {
         ...s,
@@ -461,9 +475,11 @@ export function ReviewView() {
       (!canRateProbe && !canRateCard)
     )
       return;
-    let applied = canRateCard;
+    let applied = false;
     update((s) => {
       const currentSession = s.reviewSession;
+      if (!currentSession || currentSession.sessionId !== session?.sessionId ||
+          reviewSessionRated(s, currentSession)) return s;
       if (isPracticeProbe) {
         if (
           !currentSession ||
@@ -473,8 +489,8 @@ export function ReviewView() {
           !successfulProbeSession(s, currentSession)
         )
           return s;
-        applied = true;
       }
+      applied = true;
       const next = rateReview(s, concept.id, rating, Date.now());
       delete next.reviewSession;
       return next;
@@ -563,6 +579,9 @@ export function ReviewView() {
                       : "Dla tego kontraktu liczą się tylko opisane rodziny primary. Gate i blank mogą dzielić rodzinę; pomoc lub wyczerpanie rodziny nie tworzy nowego wariantu. Ta powtórka pozostaje osobnym recall i nie dodaje rodziny primary."}
                   </p>
                 </>
+              )}
+              {rated && (
+                <p role="status">Ta powtórka ma już zapisaną ocenę. Wróć do kolejki, aby rozpocząć nowe ćwiczenie.</p>
               )}
               <div className="segmented">
                 <button

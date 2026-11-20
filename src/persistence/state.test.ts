@@ -162,6 +162,17 @@ describe("state persistence", () => {
     });
   });
 
+  it("preserves the optional v2 route preference during migration", () => {
+    const state = createInitialState();
+    const migrated = migrateState({
+      ...state,
+      schemaVersion: 2,
+      routePreference: "advanced-saved-route",
+      onboarding: { ...state.onboarding, background: "python" },
+    });
+    expect(migrated.routePreference).toBe("advanced-saved-route");
+  });
+
   it("migrates v1 state without losing drafts, notes or bookmarks", () => {
     const migrated = migrateState({
       schemaVersion: 1,

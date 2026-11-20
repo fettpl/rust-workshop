@@ -1,3 +1,4 @@
+import { answerProgressKey, hadAnswerHelp } from "./step-interaction";
 import type {
   Concept,
   CourseModule,
@@ -18,6 +19,12 @@ export type EvidenceArtifact = "rust-code" | "manifest";
 export interface EvidencePolicy {
   disclosureLessons?: readonly Lesson[];
   reviewAttemptKey?(stepId: string): string | undefined;
+  /** Registered exercise identity, excluding the session suffix. */
+  reviewTaskKey?(stepId: string): string | undefined;
+  legacyAttributionForEvent?(event: EvidenceEvent): boolean;
+  reviewStep?(stepId: string): Lesson["steps"][number] | undefined;
+  /** Additional dated contact from an authored reference; never evidence credit. */
+  contactConceptIdsForEvent?(event: EvidenceEvent): readonly string[];
   artifactForConcept(conceptId: string): EvidenceArtifact;
   calibrationForConcept?(
     conceptId: string,
@@ -135,7 +142,7 @@ function hasCurrentAttribution(
     !calibratedClaim &&
     !(policy.definitionForEvent && event.evidenceVersion !== undefined)
   )
-    return true;
+    return policy.legacyAttributionForEvent?.(event) ?? true;
   const definition = policy.definitionForEvent?.(event);
   return (
     matchesDefinition(event, definition) &&
@@ -284,6 +291,13 @@ export function observedSubmission(
     reviewAttemptKey: policy?.reviewAttemptKey,
   });
   const catalog = policy?.disclosureLessons;
+  const saved = state.steps[answerProgressKey(event)];
+  if (saved?.attempts.length) {
+    const step = event.lessonId === "review"
+      ? policy?.reviewStep?.(event.stepId)
+      : catalog && stepForRef(catalog, event);
+    if (hadAnswerHelp(step, saved, event.at)) help.hints = Math.max(help.hints, 1);
+  }
   if (!help.revealed && catalog) {
     const prior = { ...state, events: history };
     help.revealed = hasRecordedSuppliedSolution(history, event, catalog) ||
@@ -434,14 +448,31 @@ function hasCriterionComponentAssistance(
   );
 }
 
+export function hasLegacyConceptAttribution(
+  event: EvidenceEvent,
+  step: Lesson["steps"][number],
+  lessonConceptIds: readonly string[],
+): boolean {
+  // Earlier clients submitted the entire lesson vector; later clients used the
+  // authored step subset. Neither contract accepted arbitrary or duplicate IDs.
+  return [lessonConceptIds, step.evidence?.conceptIds].some((expected) =>
+    expected !== undefined && expected.length > 0 &&
+    event.conceptIds.length === expected.length &&
+    new Set(event.conceptIds).size === event.conceptIds.length &&
+    event.conceptIds.every((id) => expected.includes(id)),
+  );
+}
+
 function isIndependentTaskSuccess(
   event: EvidenceEvent,
   step: Lesson["steps"][number] | undefined,
   allowLegacyOrdinaryV1 = false,
   history: readonly EvidenceEvent[] = [],
+  lessonConceptIds: readonly string[] = [],
 ): boolean {
   if (
     !step ||
+    (!step.evidence && event.evidenceVersion !== undefined) ||
     !isIndependentSuccess(event) ||
     event.kind !== authoredEvidenceKind(step) ||
     (event.evaluator !== undefined &&
@@ -459,6 +490,8 @@ function isIndependentTaskSuccess(
     step?.evidence?.version === 1 &&
     step.evidence.codingTaskId === undefined &&
     event.evidenceVersion === undefined;
+  if ((!step.evidence || legacyOrdinaryV1) &&
+      !hasLegacyConceptAttribution(event, step, lessonConceptIds)) return false;
   if (
     step?.evidence &&
     !legacyOrdinaryV1 &&
@@ -534,6 +567,7 @@ function strongEvidence(
       event.hints !== 0 ||
       event.revealed ||
       event.kind === "self-rating" ||
+      event.kind === "exposure" ||
       event.evaluator === "rubric"
     )
       return false;
@@ -591,63 +625,70 @@ function passedEvidence(
   );
 }
 
+function isVerifiedRetentionRecall(
+  events: EvidenceEvent[],
+  index: number,
+  conceptId: string,
+  ratings: UserState["ratings"],
+  policy: EvidencePolicy,
+): boolean {
+  const candidate = events[index];
+  if (
+    candidate.kind !== "recall" ||
+    candidate.delayed !== true ||
+    !isIndependentSuccess(candidate, conceptId, policy)
+  )
+    return false;
+  const prior = eventsBeforeSubmission(events, index);
+  const priorStrong = strongEvidence(prior, conceptId, policy);
+  const latestPriorEvent = prior
+    .filter(
+      (event) =>
+        isConceptContact(event, conceptId, policy) &&
+        eventMatchesConceptArtifact(event, conceptId, policy),
+    )
+    .reduce<number | undefined>(
+      (latest, event) =>
+        latest === undefined ? event.at : Math.max(latest, event.at),
+      undefined,
+    );
+  const latestPriorRating = ratings
+    .filter(
+      (rating) => rating.conceptId === conceptId && rating.at <= candidate.at,
+    )
+    .reduce<number | undefined>(
+      (latest, rating) =>
+        latest === undefined ? rating.at : Math.max(latest, rating.at),
+      undefined,
+    );
+  const latestPriorEvidence = [latestPriorEvent, latestPriorRating].reduce<
+    number | undefined
+  >(
+    (latest, at) =>
+      at === undefined
+        ? latest
+        : latest === undefined
+          ? at
+          : Math.max(latest, at),
+    undefined,
+  );
+  return (
+    priorStrong.length >= 2 &&
+    hasVerifiedCodingEvidence(prior, conceptId, policy) &&
+    latestPriorEvidence !== undefined &&
+    candidate.at - latestPriorEvidence > DAY
+  );
+}
+
 function hasVerifiedRetention(
   events: EvidenceEvent[],
   conceptId: string,
   ratings: UserState["ratings"],
   policy: EvidencePolicy,
 ): boolean {
-  return events.some((candidate, index) => {
-    if (
-      !candidate.conceptIds.includes(conceptId) ||
-      !eventMatchesConceptArtifact(candidate, conceptId, policy) ||
-      !candidate.passed ||
-      candidate.kind !== "recall" ||
-      candidate.delayed !== true ||
-      candidate.hints !== 0 ||
-      candidate.revealed
-    )
-      return false;
-    const prior = eventsBeforeSubmission(events, index);
-    const priorStrong = strongEvidence(prior, conceptId, policy);
-    const latestPriorEvent = prior
-      .filter(
-        (event) =>
-          event.conceptIds.includes(conceptId) &&
-          eventMatchesConceptArtifact(event, conceptId, policy),
-      )
-      .reduce<number | undefined>(
-        (latest, event) =>
-          latest === undefined ? event.at : Math.max(latest, event.at),
-        undefined,
-      );
-    const latestPriorRating = ratings
-      .filter(
-        (rating) => rating.conceptId === conceptId && rating.at < candidate.at,
-      )
-      .reduce<number | undefined>(
-        (latest, rating) =>
-          latest === undefined ? rating.at : Math.max(latest, rating.at),
-        undefined,
-      );
-    const latestPriorEvidence = [latestPriorEvent, latestPriorRating].reduce<
-      number | undefined
-    >(
-      (latest, at) =>
-        at === undefined
-          ? latest
-          : latest === undefined
-            ? at
-            : Math.max(latest, at),
-      undefined,
-    );
-    return (
-      priorStrong.length >= 2 &&
-      hasVerifiedCodingEvidence(prior, conceptId, policy) &&
-      latestPriorEvidence !== undefined &&
-      candidate.at - latestPriorEvidence > DAY
-    );
-  });
+  return events.some((_, index) =>
+    isVerifiedRetentionRecall(events, index, conceptId, ratings, policy),
+  );
 }
 
 function deriveMastery(
@@ -689,7 +730,7 @@ function deriveMastery(
   return {
     level: previous ?? "new",
     reason: previous
-      ? "Dotychczasowy poziom zachowany po nieudanej próbie."
+      ? "Zapisany poziom historyczny; brak bieżących zweryfikowanych dowodów."
       : "Brak zweryfikowanych dowodów.",
   };
 }
@@ -734,14 +775,20 @@ export function independentCodingTaskIds(
   ];
 }
 
+function isConceptContact(event: EvidenceEvent, conceptId: string, policy: EvidencePolicy): boolean {
+  return event.conceptIds.includes(conceptId) ||
+    policy.contactConceptIdsForEvent?.(event).includes(conceptId) === true;
+}
+
 export function hasQuietInterval(
   state: UserState,
   conceptId: string,
   at: number,
+  policy: EvidencePolicy = DEFAULT_EVIDENCE_POLICY,
 ): boolean {
   const contact = [
     ...state.events
-      .filter((event) => event.conceptIds.includes(conceptId) && event.at <= at)
+      .filter((event) => isConceptContact(event, conceptId, policy) && event.at <= at)
       .map((event) => event.at),
     ...state.ratings
       .filter((rating) => rating.conceptId === conceptId && rating.at <= at)
@@ -763,9 +810,12 @@ export function delayedReviewEligibility(
   return Boolean(
     calibration &&
     due &&
-    independentCodingTaskIds(state, conceptId, policy).length >=
-      calibration.minimumCodingTasks &&
-    hasQuietInterval(state, conceptId, now),
+    independentCodingTaskIds(
+      { ...state, events: state.events.filter((event) => event.at <= now) },
+      conceptId,
+      policy,
+    ).length >= calibration.minimumCodingTasks &&
+    hasQuietInterval(state, conceptId, now, policy),
   );
 }
 
@@ -797,7 +847,7 @@ function isCalibratedRecall(
     return false;
   // Include legacy and neutral contact, and preceding same-millisecond events.
   // Queue dates and cached timestamps are not evidence of learner contact.
-  return hasQuietInterval({ ...state, events: prior }, conceptId, candidate.at);
+  return hasQuietInterval({ ...state, events: prior }, conceptId, candidate.at, policy);
 }
 
 function hasCalibratedRetention(
@@ -818,20 +868,27 @@ export function deriveConceptMastery(
 ): MasteryRecord {
   const calibration = policy.calibrationForConcept?.(conceptId);
   const relevant = state.events.flatMap((event, index) =>
-    event.conceptIds.includes(conceptId) ? [observedSubmission(state, index, policy)] : []
+    isConceptContact(event, conceptId, policy) ? [observedSubmission(state, index, policy)] : []
   );
   if (!calibration) {
+    const historical = state.mastery[conceptId]?.level;
+    const derived = deriveMastery(
+      relevant,
+      conceptId,
+      policy.disclosureLessons ? undefined : historical,
+      state.ratings,
+      policy,
+    );
     return {
-      ...deriveMastery(
-        relevant,
-        conceptId,
-        state.mastery[conceptId]?.level,
-        state.ratings,
-        policy,
-      ),
+      ...derived,
+      ...(policy.disclosureLessons && derived.level === "new" &&
+          historical && historical !== "new"
+        ? { reason: "Historia zapisanego poziomu pozostaje zachowana; bieżące potwierdzenie wymaga zweryfikowanych dowodów." }
+        : {}),
       updatedAt: state.mastery[conceptId]?.updatedAt ?? 0,
     };
   }
+
   const updatedAt = Math.max(
     0,
     ...relevant.map((event) => event.at),
@@ -919,7 +976,7 @@ function queueSuccess(
   review: ReviewItem[],
   conceptId: string,
   event: EvidenceEvent,
-  verifiedRecallOverride?: boolean,
+  verifiedRecall: boolean,
 ): void {
   const existing = review.find((item) => item.conceptId === conceptId);
   if (!existing) {
@@ -932,12 +989,6 @@ function queueSuccess(
     });
     return;
   }
-  const verifiedRecall =
-    verifiedRecallOverride ??
-    (event.kind === "recall" &&
-      event.delayed === true &&
-      event.hints === 0 &&
-      !event.revealed);
   if (verifiedRecall) {
     existing.intervalDays = Math.max(1, existing.intervalDays * 2);
     existing.dueAt = event.at + existing.intervalDays * DAY;
@@ -961,8 +1012,11 @@ export function recordEvidence(
   if (state.events.some((existing) => existing.id === event.id)) return state;
   const next = copyState(state);
   next.events.push({ ...event, conceptIds: [...event.conceptIds] });
+  let observedEvents: EvidenceEvent[] | undefined;
   for (const conceptId of event.conceptIds) {
     if (!eventMatchesConceptArtifact(event, conceptId, policy)) continue;
+    if (event.kind === "exposure" && !event.passed &&
+        !hasCurrentAttribution(event, policy)) continue;
     const calibration = policy.calibrationForConcept?.(conceptId);
     if (
       calibration &&
@@ -996,7 +1050,17 @@ export function recordEvidence(
               policy,
               calibration.minimumCodingTasks,
             )
-          : undefined,
+          : event.kind === "recall" &&
+              event.delayed === true &&
+              isVerifiedRetentionRecall(
+                (observedEvents ??= next.events.map((_, index) =>
+                  observedSubmission(next, index, policy),
+                )),
+                next.events.length - 1,
+                conceptId,
+                next.ratings,
+                policy,
+              ),
       );
   }
   for (const conceptId of event.conceptIds) {
@@ -1084,7 +1148,10 @@ export function rateReview(
   return next;
 }
 
-export function dueReviews(state: Pick<UserState, "review">, now: number): ReviewItem[] {
+export function dueReviews(
+  state: Pick<UserState, "review">,
+  now: number,
+): ReviewItem[] {
   return state.review
     .filter((item) => item.dueAt <= now)
     .sort((a, b) => a.dueAt - b.dueAt || a.conceptId.localeCompare(b.conceptId))
@@ -1109,19 +1176,21 @@ function eventForRef(event: EvidenceEvent, ref: ModuleGateTaskRef): boolean {
 function supplementaryPassed(
   state: UserState,
   criterion: ModuleGateCriterion,
+  lessons: readonly Lesson[],
 ): boolean {
-  return (
-    !criterion.supplementaryStepRefs?.length ||
-    criterion.supplementaryStepRefs.some((ref) =>
-      state.events.some(
-        (event) =>
-          eventForRef(event, ref) &&
-          event.passed &&
-          event.kind === "self-rating" &&
-          event.evaluator === "rubric",
-      ),
-    )
-  );
+  return !criterion.supplementaryStepRefs?.length ||
+    criterion.supplementaryStepRefs.some((ref) => {
+      const lesson = lessons.find((lesson) => lesson.id === ref.lessonId);
+      const step = lesson?.steps.find((step) => step.id === ref.stepId);
+      if (!lesson || !step || step.evaluator?.kind !== "rubric") return false;
+      return state.events.some((event) =>
+        eventForRef(event, ref) && event.passed &&
+        event.kind === "self-rating" && event.evaluator === "rubric" &&
+        (event.evidenceVersion === undefined
+          ? hasLegacyConceptAttribution(event, step, lesson.conceptIds)
+          : matchesDefinition(event, definitionForStep(event, step))),
+      );
+    });
 }
 
 function creditedGateTasks(
@@ -1141,7 +1210,11 @@ function creditedGateTasks(
       if (!eventForRef(event, ref)) continue;
       const history = eventsBeforeSubmission(state.events, index);
       const prior = { ...state, events: history };
-      if (hasExternalSolutionHelp(prior, ref, disclosureLessons, event.at))
+      if (
+        hadAnswerHelp(step, state.steps[`${ref.lessonId}:${ref.stepId}`], event.at) ||
+        hasExternalSolutionHelp(prior, ref, disclosureLessons, event.at) ||
+        hasEquivalentSolutionReveal(prior, ref, disclosureLessons, event.at)
+      )
         continue;
       if (criterion.requiredIndependentCodingTasks !== undefined) {
         const id = codingTaskId(
@@ -1154,13 +1227,15 @@ function creditedGateTasks(
         continue;
       }
       if (
-        isIndependentTaskSuccess(event, step, true, history) &&
+        isIndependentTaskSuccess(
+          event, step, true, history,
+          lessons.find((lesson) => lesson.id === ref.lessonId)?.conceptIds,
+        ) &&
         !(
           step?.evidence?.codingTaskId &&
           CODING_KINDS.has(event.kind) &&
           hasTaskAssistance(event, step.evidence, history, resolveDefinition)
         ) &&
-        !hasEquivalentSolutionReveal(prior, ref, disclosureLessons, event.at) &&
         !hasCriterionComponentAssistance(
           prior,
           criterion,
@@ -1206,12 +1281,15 @@ export function gateRecovery(
   );
   const required = criterion.requiredIndependentCodingTasks ?? 1;
   if (credited.size >= required) {
-    if (supplementaryPassed(state, criterion)) return { status: "complete" };
+    if (supplementaryPassed(state, criterion, lessons))
+      return { status: "complete" };
     return { status: "available", task: criterion.supplementaryStepRefs![0] };
   }
   const eligible = criterion.taskRefs.filter((ref) => {
     const progress = state.steps[`${ref.lessonId}:${ref.stepId}`];
+    const step = stepForRef(lessons, ref);
     if (
+      hadAnswerHelp(step, progress) ||
       progress?.hints ||
       progress?.revealed ||
       hasExternalSolutionHelp(state, ref, disclosureLessons) ||
@@ -1229,7 +1307,6 @@ export function gateRecovery(
       )
     )
       return false;
-    const step = stepForRef(lessons, ref);
     const family = step?.evidence?.codingTaskId;
     if (step?.evidence && family && CODING_KINDS.has(step.evidenceKind)) {
       if (
@@ -1282,7 +1359,7 @@ export function moduleGate(
           definitionForTask,
           disclosureLessons,
         ).size >= (criterion.requiredIndependentCodingTasks ?? 1) &&
-        supplementaryPassed(state, criterion),
+        supplementaryPassed(state, criterion, lessons),
     }));
     return {
       criteria,
@@ -1302,7 +1379,8 @@ export function moduleGate(
           events: eventsBeforeSubmission(state.events, index),
         };
         return (
-          isIndependentTaskSuccess(event, step, true, prior.events) &&
+          isIndependentTaskSuccess(event, step, true, prior.events, lesson.conceptIds) &&
+          !hadAnswerHelp(step, state.steps[`${lesson.id}:${step.id}`], event.at) &&
           !hasExternalSolutionHelp(prior, event, disclosureLessons, event.at) &&
           !hasEquivalentSolutionReveal(
             prior,

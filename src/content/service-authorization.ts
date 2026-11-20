@@ -232,11 +232,6 @@ export const serviceAuthorizationLessons: Lesson[] = specs.map((spec) => {
         kind: "observe",
         title: "Prześledź dane i wynik",
         prompt: spec.trace,
-        evaluator: {
-          kind: "answer",
-          accepted: ["Prześledzony model"],
-          feedback: "Porównaj niezmienniki z literalnymi wynikami tabeli.",
-        },
         evidenceKind: "exposure",
         evidence: { version: 2, conceptIds: [conceptId] },
       },

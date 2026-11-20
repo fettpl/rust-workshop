@@ -60,7 +60,20 @@ it.each(archives)(
             ...firstState.events,
             ...secondOnly.events.filter((event) => !firstKeys.has(key(event))),
           ]);
-          expect(open(combined, first, a, 30)).toBe(combined);
+          const reopened = open(combined, first, a, 30);
+          expect(reopened.events.slice(0, combined.events.length)).toEqual(
+            combined.events,
+          );
+          expect(
+            reopened.events
+              .slice(combined.events.length)
+              .every(
+                (event) =>
+                  event.kind === "exposure" &&
+                  event.gate === false &&
+                  event.at === 30,
+              ),
+          ).toBe(true);
         }
       }
     }

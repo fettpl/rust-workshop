@@ -1,3 +1,5 @@
+import answerCaseDelta from "./fixtures/answer-case-delta.json";
+import explanationEvaluationDelta from "./fixtures/explanation-evaluation-delta.json";
 import multiArchivesDelta from "./fixtures/multi-archives-delta.json";
 import projectArchivesDelta from "./fixtures/project-archives-delta.json";
 import crossModuleDelta from "./fixtures/cross-module-delta.json";
@@ -242,12 +244,23 @@ const multiArchivesLessons = {
 };
 const multiArchivesRegistries = multiArchivesDelta.registries.map(withPredecessor);
 
+export function restoreExplanationEvaluationLessons(
+  lessons: Lesson[],
+  replacements: Map<unknown, unknown>,
+  matches: (value: unknown, expected: string) => boolean,
+): Lesson[] {
+  return restoreReviewedLessons(
+    restoreReviewedLessons(lessons, replacements, matches, answerCaseDelta),
+    replacements, matches, explanationEvaluationDelta,
+  );
+}
+
 export function restoreMultiArchivesLessons(
   lessons: Lesson[],
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
-  return restoreReviewedLessons(lessons, replacements, matches, multiArchivesLessons);
+  return restoreReviewedLessons(restoreExplanationEvaluationLessons(lessons, replacements, matches), replacements, matches, multiArchivesLessons);
 }
 
 export function restoreMultiArchivesRegistry<T extends object>(
@@ -405,7 +418,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   entries: readonly RegistryRestoration[] = [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
-  for (const entry of entries.filter(
+  for (const entry of [...answerCaseDelta.registries, ...entries].filter(
     (item) =>
       item.registry === name ||
       (name === "reviewExercisesById" && item.registry === "reviewExercises"),

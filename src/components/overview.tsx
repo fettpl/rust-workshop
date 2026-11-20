@@ -29,6 +29,7 @@ import {
   courseModuleGate,
   courseNextGateTask,
 } from "@/content/learning-context";
+import { courseNoteKey } from "@/content/course-notes";
 import { stepKey } from "@/persistence/state";
 import {
   Eyebrow,
@@ -51,30 +52,27 @@ import {
 export function useOpenLesson() {
   const { update } = useLearning();
   return (id: string, stepIndex?: number) =>
-    update((s) => ({
-      ...s,
-      resume: {
-        ...s.resume,
-        view: "lesson",
-        lessonId: id,
-        stepIndex:
-          stepIndex ??
-          (s.resume.lessonId === id
-            ? s.resume.stepIndex
-            : Math.max(
-                0,
-                lessons
-                  .find((lesson) => lesson.id === id)
-                  ?.steps.findIndex(
-                    (step) => !s.steps[stepKey(id, step.id)]?.completed,
-                  ) ?? 0,
-              )),
-        panel:
-          stepIndex === undefined && s.resume.lessonId === id
-            ? s.resume.panel
-            : "lesson",
-      },
-    }));
+    update((s) => {
+      const lesson = lessons.find((entry) => entry.id === id);
+      const resumeHere =
+        s.resume.lessonId === id && !!lesson?.steps[s.resume.stepIndex];
+      return {
+        ...s,
+        resume: {
+          ...s.resume,
+          view: "lesson",
+          lessonId: id,
+          stepIndex:
+            stepIndex ??
+            (resumeHere
+              ? s.resume.stepIndex
+              : Math.max(0, lesson?.steps.findIndex(
+                  (step) => !s.steps[stepKey(id, step.id)]?.completed,
+                ) ?? 0)),
+          panel: stepIndex === undefined && resumeHere ? s.resume.panel : "lesson",
+        },
+      };
+    });
 }
 function lessonProgress(
   lesson: Lesson,
@@ -84,11 +82,36 @@ function lessonProgress(
     (step) => steps[stepKey(lesson.id, step.id)]?.completed,
   ).length;
 }
+export function UnavailableLesson({ standalone = false }: { standalone?: boolean }) {
+  const { update } = useLearning();
+  const Heading = standalone ? "h1" : "h2";
+  return (
+    <section className="continue-panel">
+      <div className="continue-copy">
+        <Heading>Zapisany krok jest niedostępny</Heading>
+        <p>
+          Wybierz zadanie z obecnej wersji kursu. Wcześniejsze notatki i wyniki
+          znajdziesz w swoim zapisie.
+        </p>
+        <button
+          className="primary"
+          onClick={() => update((state) => ({
+            ...state,
+            resume: { ...state.resume, view: "course" },
+          }))}
+        >
+          Wybierz lekcję na mapie
+        </button>
+      </div>
+    </section>
+  );
+}
+
 export function Dashboard() {
   const now = useClock();
   const { state, update } = useLearning();
-  const lesson =
-    lessons.find((l) => l.id === state.resume.lessonId) ?? lessons[0];
+  const savedLesson = lessons.find((l) => l.id === state.resume.lessonId);
+  const lesson = savedLesson ?? lessons[0];
   const { due } = courseReviewQueue(state, now);
 
   const difficult = concepts
@@ -147,6 +170,7 @@ export function Dashboard() {
           </h1>
         </div>
       </div>
+      {savedLesson?.steps[state.resume.stepIndex] ? (
       <section className="continue-panel" aria-labelledby="continue-title">
         <div className="continue-copy">
           <span className="lesson-index">
@@ -201,6 +225,7 @@ export function Dashboard() {
           </ol>
         </div>
       </section>
+      ) : <UnavailableLesson />}
       {state.diagnostic.recommendation && (
         <p className="diagnostic-recommendation">
           <strong>Twój punkt startowy:</strong>{" "}
@@ -710,6 +735,7 @@ export function ProjectView() {
 function ProjectDetails({ project }: { project: ProjectContract }) {
   const { state, update } = useLearning();
   const open = useOpenLesson();
+  const noteKey = courseNoteKey("project", project.id);
   const projectLessonIds = project.lessonIds ?? [
     project.lessonId,
     project.adversarialLessonId,
@@ -814,11 +840,11 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
         <label>
           Twoje obserwacje
           <textarea
-            value={state.notes[project.id] ?? ""}
+            value={state.notes[noteKey] ?? state.notes[project.id] ?? ""}
             onChange={(e) =>
               update((s) => ({
                 ...s,
-                notes: { ...s.notes, [project.id]: e.target.value },
+                notes: { ...s.notes, [noteKey]: e.target.value },
               }))
             }
             placeholder="Który błąd zmienił Twój model myślenia?"
@@ -829,19 +855,21 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
             key={concept.id}
             className="text-button"
             onClick={() =>
-              update((s) => ({
-                ...s,
-                review: [
-                  ...s.review.filter((r) => r.conceptId !== concept.id),
-                  {
-                    conceptId: concept.id,
-                    dueAt: Date.now(),
-                    intervalDays: 0,
-                    attempts: 0,
-                    reason: "Niepewność zaznaczona w retrospektywie projektu",
-                  },
-                ],
-              }))
+              update((s) => {
+                const now = Date.now();
+                const previous = s.review.find((item) => item.conceptId === concept.id);
+                const reminder = {
+                  ...(previous ?? { conceptId: concept.id, intervalDays: 0, attempts: 0 }),
+                  dueAt: Math.min(now, previous?.dueAt ?? now),
+                  reason: "Niepewność zaznaczona w retrospektywie projektu",
+                };
+                return {
+                  ...s,
+                  review: previous
+                    ? s.review.map((item) => (item === previous ? reminder : item))
+                    : [...s.review, reminder],
+                };
+              })
             }
           >
             <Bookmark size={16} />

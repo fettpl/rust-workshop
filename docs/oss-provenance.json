@@ -150,7 +150,7 @@
     },
     {
       "path": "src/content/async-lending-boundaries.ts",
-      "sha256": "31cb4a66946709f34d0ae730805269afee5df0a8b3ad94e262eee8879c16ee0c",
+      "sha256": "d1709e5668692f0a41ea4a3d1ee38063fb8c1ed67f9ce3847dc8e2dde64f424f",
       "group": "course"
     },
     {
@@ -165,7 +165,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-compatibility.test.ts",
-      "sha256": "cdf205ece49a42c9057cf6c4d39fd22a90e752f79210a6166eddf837352fa8c9",
+      "sha256": "9f11fb54b4c13f9bafe2d61ca774c980fb7d34cfd0a2baace4e2e01cf581d3b8",
       "group": "course"
     },
     {
@@ -190,7 +190,7 @@
     },
     {
       "path": "src/content/async-lending-core.ts",
-      "sha256": "02f093e70c16b0ce916a1ecd3eba694ec18ef7c9415eb0e21a6d7ac0b41c3a3b",
+      "sha256": "2ba6f9b9669b61bd52807c2b8e30d3cb636e0c1787b22898c8410c1c2e331d93",
       "group": "course"
     },
     {
@@ -235,7 +235,7 @@
     },
     {
       "path": "src/content/async-lending-send-compatibility.test.ts",
-      "sha256": "06edd95728bcbd3768c7c9d51eed2a3a245cee3ae4b0e3344476ad5e4ad0fadd",
+      "sha256": "cd0d07caaf5b2412606572bf776ea1f2c1c6f46ea0c3197eba48a2ae59777767",
       "group": "course"
     },
     {
@@ -385,7 +385,7 @@
     },
     {
       "path": "src/content/capstone-integration.ts",
-      "sha256": "394173a5fe40fc2a5d62009a283640440252f6d41dc87f7e4e3a0174b4a9c08f",
+      "sha256": "bc632f3c54481d33a733cbaebbbea186ddeba96cf64c857b9945c88952f68370",
       "group": "course"
     },
     {
@@ -450,7 +450,7 @@
     },
     {
       "path": "src/content/catalog.ts",
-      "sha256": "1c18487756a5d100c1abbcaa77322071848c2363d6986758e79d239e662e2f57",
+      "sha256": "3cab877c1e07f2b42265ecaebf9a560bb45790b7c370b299dbe11877e5b5cadb",
       "group": "course"
     },
     {
@@ -566,6 +566,11 @@
     {
       "path": "src/content/counted-required-domain.test.ts",
       "sha256": "4f6fd6da18c72338c2418cad6c8966b0d43527cdffd9d234bfb442031b36a3bc",
+      "group": "course"
+    },
+    {
+      "path": "src/content/course-notes.ts",
+      "sha256": "b3f9762e9edc98490d4d72397672e0ada68e68fe6e80dc13929bc748168c740b",
       "group": "course"
     },
     {
@@ -690,7 +695,7 @@
     },
     {
       "path": "src/content/error-handling.ts",
-      "sha256": "33d4d2bd515511491ad4da730633fbca52b793310dd081283a99460ad54dabb1",
+      "sha256": "6be226ae04dc922daab16f10971c0bed2f7dad894598a8557bffc8ddfcc41351",
       "group": "course"
     },
     {
@@ -711,6 +716,11 @@
     {
       "path": "src/content/expansion.test.ts",
       "sha256": "1348ea79f7d1809f564039c23091fdadf8f0ebeae944be9aa59752aeff79ef2a",
+      "group": "course"
+    },
+    {
+      "path": "src/content/explanation-evaluation-compatibility.test.ts",
+      "sha256": "af51487ba943e4798719eb5e464625483ed5e61601f3db38f655d7f85e580722",
       "group": "course"
     },
     {
@@ -785,12 +795,17 @@
     },
     {
       "path": "src/content/file-schema-evolution.ts",
-      "sha256": "1b761906774c7563b738fd775aae88cc0b0856fa331a3f62a9a2f29f1cf33b36",
+      "sha256": "2d65e78719d1bf4deaf3a5c022e4669d98a6f8abb623880cf3f45b8fcfd3c518",
       "group": "course"
     },
     {
       "path": "src/content/fixtures/all-variants-delta.json",
       "sha256": "e06732db63677af012e062ae896e7565bcb87e99a3e2d54e200962d9316ba05f",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/answer-case-delta.json",
+      "sha256": "455285ea2e9778dd59149b73f5dd57b815c430e5f753e1d39ddb6fe528701005",
       "group": "course"
     },
     {
@@ -836,6 +851,11 @@
     {
       "path": "src/content/fixtures/existing-contract-pre-c1-projection.json",
       "sha256": "d49d21164e4c1d1d9c325423cc5051785f9aa181163bb44ca53f26d567b1002b",
+      "group": "course"
+    },
+    {
+      "path": "src/content/fixtures/explanation-evaluation-delta.json",
+      "sha256": "55dcd6e68767039d92705ad5d5299247e1e65d760dea239de7f5ee2987b89756",
       "group": "course"
     },
     {
@@ -965,7 +985,7 @@
     },
     {
       "path": "src/content/foundations.ts",
-      "sha256": "bfcacf3b36f3bf43e7cfc3e00427b623d4e0dd184f01e3278f7901f1d26f2a47",
+      "sha256": "6162d30ea999ede4a5ade6f74eb6732da1b09ac11e9e81ac90fdd941a233dbc1",
       "group": "course"
     },
     {
@@ -1145,12 +1165,12 @@
     },
     {
       "path": "src/content/learning-context.test.ts",
-      "sha256": "d1d95651b19433da6c3b215aa1765b20b186387e38dc8d79876b22a1483a8122",
+      "sha256": "e9e40a62d2fd7c43dd9615b54c7a95ea915efb1f1788a25e0be77a914a331f2c",
       "group": "course"
     },
     {
       "path": "src/content/learning-context.ts",
-      "sha256": "de85446391653a87f7526df22762ac51e4048de48fbafecf216f40122e87e506",
+      "sha256": "134903d4e88ffc425433093be2112389d16641f0fcf05edbac3f5304d26dff90",
       "group": "course"
     },
     {
@@ -1250,12 +1270,12 @@
     },
     {
       "path": "src/content/modeling-records.ts",
-      "sha256": "bb4d7afd3cb58ae1fc61a5c7679b3c9ae6aa0654285f01421fc6f56ffe660b33",
+      "sha256": "69840be6ab8e27ccacf9196936fd902fd96150693dd909136d8fec68ccf7284c",
       "group": "course"
     },
     {
       "path": "src/content/modeling-variants.ts",
-      "sha256": "a6b5fdefc91d3eba3cfebb056c6a223a461da65ce220bbc784635217c36d1255",
+      "sha256": "eef483e2cb7be794c9e58514271207f1f6216da644f42effebc7bb105594cfed",
       "group": "course"
     },
     {
@@ -1281,6 +1301,11 @@
     {
       "path": "src/content/nested-patterns.ts",
       "sha256": "8416b0aa27ef95821f4d022334f3e164dfe121cc1e9f27d2bba65bd81e7dd4d2",
+      "group": "course"
+    },
+    {
+      "path": "src/content/observation-validation.test.ts",
+      "sha256": "0ce57ce62141cfa2b3f3f67077f3c8ab2fa6464fdb2188a96b072b61cfcc84cf",
       "group": "course"
     },
     {
@@ -1825,7 +1850,7 @@
     },
     {
       "path": "src/content/service-authorization.ts",
-      "sha256": "b6442e2928e2894531a81b88dd09cb1e2622fdd6c9a8e58e0099c4279ad42dfb",
+      "sha256": "4c2400e646bdb9a15a18b54ac593f0fd24d5f981cf250d96e4ed9925827bef14",
       "group": "course"
     },
     {
@@ -1855,7 +1880,7 @@
     },
     {
       "path": "src/content/service-client-retry.ts",
-      "sha256": "fa6fe28f9f6c112c5acdb2fd0b47db143169f353f13db015082ea78df83945a7",
+      "sha256": "a55decd0bc61f6ebddcfb880ecabc8ff5e01680ca87e54d0a39b6389d77be8e9",
       "group": "course"
     },
     {
@@ -2310,7 +2335,7 @@
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "bfda64e0f0903800d1e461fce8388904028baf1487333e86ffadd68ef9a2535b",
+      "sha256": "6800919b967cf88d45c0149bf0f611fa5b0ec4fbc9d4b2fbf11ce11843870dcb",
       "group": "course"
     },
     {
@@ -2320,7 +2345,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "0a15c6dfefc53a1a2dfe6b4fccd242a9e7321bf7fdad15c5f8e7300c9f07bfed",
+      "sha256": "520d0b0fed91e6673fc7a1926d922d4205cbf1bf776eed6371984ac2b74d593b",
       "group": "course"
     },
     {

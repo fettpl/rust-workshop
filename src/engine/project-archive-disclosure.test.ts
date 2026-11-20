@@ -46,7 +46,20 @@ it.each(archives)(
       expect(state.events).toHaveLength(
         new Set(refs.map((ref) => ref.lessonId + ":" + ref.stepId)).size,
       );
-      expect(reveal(state, 11)).toBe(state);
+      const redisplayed = reveal(state, 11);
+      expect(redisplayed.events.slice(0, state.events.length)).toEqual(
+        state.events,
+      );
+      expect(
+        redisplayed.events
+          .slice(state.events.length)
+          .every(
+            (event) =>
+              event.kind === "exposure" &&
+              event.gate === false &&
+              event.at === 11,
+          ),
+      ).toBe(true);
       for (const ref of refs) {
         expect(state.events).toContainEqual(
           expect.objectContaining({

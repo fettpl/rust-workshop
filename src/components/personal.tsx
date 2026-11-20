@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Download,
   Upload,
@@ -17,8 +17,8 @@ import {
   createInitialState,
   MAX_IMPORT_BYTES,
 } from "@/persistence/state";
-import { lessons, concepts, sources, projects } from "@/content/course";
-import { studySessionNoteTitle } from "@/domain/study-session-practice";
+import { lessons, concepts, sources } from "@/content/course";
+import { courseNoteTitle } from "@/content/course-notes";
 import { courseMastery } from "@/content/learning-context";
 import { useOpenLesson } from "./overview";
 import { Eyebrow, MasteryBadge } from "./ui";
@@ -78,13 +78,10 @@ export function Journal() {
           entries.map(([id, note]) => (
             <div className="journal-entry" key={id}>
               <h3>
-                {studySessionNoteTitle(id) ??
-                  lessons.find((l) => l.id === id)?.title ??
-                  projects.find((project) => project.id === id)?.title ??
-                  (id === "personal" ? "Luźne myśli" : id)}
+                {courseNoteTitle(id)}
               </h3>
               <label className="sr-only" htmlFor={`note-${id}`}>
-                Notatka {studySessionNoteTitle(id) ?? id}
+                Notatka {courseNoteTitle(id)}
               </label>
               <textarea
                 id={`note-${id}`}
@@ -124,6 +121,7 @@ export function SettingsView() {
   const { state, update, replace, storageError } = useLearning();
   const [message, setMessage] = useState("");
   const [candidate, setCandidate] = useState<UserState | null>(null);
+  const uploadRequest = useRef(0);
   function download() {
     try {
       const blob = new Blob([exportState(state)], { type: "application/json" });
@@ -142,14 +140,19 @@ export function SettingsView() {
   }
   async function upload(file?: File) {
     if (!file) return;
+    const request = ++uploadRequest.current;
+    setCandidate(null);
+    setMessage("Sprawdzanie pliku…");
     try {
       if (file.size > MAX_IMPORT_BYTES) throw new Error("too big");
       const imported = importState(await file.text());
+      if (request !== uploadRequest.current) return;
       setCandidate(imported);
       setMessage(
         "Plik sprawdzony. Możesz teraz zatwierdzić zastąpienie bieżącego postępu.",
       );
     } catch {
+      if (request !== uploadRequest.current) return;
       setCandidate(null);
       setMessage(
         "Plik ma niepoprawny format, nieobsługiwaną wersję lub przekracza limit 20 MB. Bieżące dane pozostały bez zmian.",

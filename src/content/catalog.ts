@@ -801,7 +801,7 @@ export const lessons: Lesson[] = [
         kind: "explain",
         title: "Nazwij sprzątanie",
         prompt:
-          "Po przejściu śladu: jakie zdarzenie zwalnia bufor String, gdy właściciel opuszcza zakres?",
+          "Po przejściu śladu: podaj termin z Rust oznaczający sprzątanie wartości i jej własnego bufora, gdy aktualny właściciel opuszcza zakres. Wpisz samą nazwę operacji.",
         evaluator: {
           kind: "answer",
           accepted: ["drop", "drop at scope end"],
@@ -842,6 +842,7 @@ export const lessons: Lesson[] = [
         solution: "outer — jego zakres jeszcze się nie zakończył.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["outer"],
           feedback:
             "Porównaj zakresy obu nazw. Klamra w linii 5 zamyka tylko blok wewnętrzny.",
@@ -861,6 +862,7 @@ export const lessons: Lesson[] = [
           'fn main() {\n    let saved = {\n        let local = String::from("zostaje");\n        let temporary = String::from("chwila");\n        println!("{temporary}");\n        local\n    };\n    println!("{saved}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["chwila\nzostaje"],
           feedback:
             "temporary jest odczytane wewnątrz, a local przenosi własność do saved, które pozostaje dostępne po bloku.",
@@ -986,6 +988,7 @@ export const lessons: Lesson[] = [
           'fn main() {\n    let first = String::from("rust");\n    let second = first;\n    println!("{second}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["rust"],
           feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
         },
@@ -1003,6 +1006,7 @@ export const lessons: Lesson[] = [
           'fn main() {\n    let first = 7;\n    let second = first;\n    println!("{first} {second}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["7 7"],
           feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
         },
@@ -1108,6 +1112,7 @@ export const lessons: Lesson[] = [
           'fn double(n: i32) -> i32 { n * 2 }\nfn uppercase_owned(text: String) -> String { text.to_uppercase() }\nfn main() {\n    let number = 7;\n    let doubled = double(number);\n    let label = String::from("rust");\n    let upper = uppercase_owned(label);\n    println!("{number} {doubled} {upper}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["7 14 RUST"],
           feedback:
             "i32 zachowuje oba użyteczne wiązania dzięki Copy. String przechodzi do funkcji; upper posiada zwrócony wynik.",
@@ -1189,6 +1194,7 @@ export const lessons: Lesson[] = [
           'fn main() {\n    let message = String::from("hello");\n    show(message);\n}\n\nfn show(text: String) {\n    println!("{text}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["hello"],
           feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
         },
@@ -1339,6 +1345,7 @@ export const lessons: Lesson[] = [
           'fn main() {\n    let message = String::from("ready");\n    let length = count(&message);\n    println!("{message} {length}");\n}\n\nfn count(text: &String) -> usize {\n    text.len()\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["ready 5"],
           feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
         },
@@ -2128,6 +2135,7 @@ export const lessons: Lesson[] = [
           "Para (u8, bool) składa się z dwóch typów Copy. Przewidź dokładny output, zanim uruchomisz kod. Zapisz oba nawiasy i wartości.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["(8, true) (8, true)"],
           feedback:
             "Każdy element pary jest Copy. Przeniesienie do saved pozostawia entry dostępną.",
@@ -2148,6 +2156,7 @@ export const lessons: Lesson[] = [
           "Zanim uruchomisz: czy ten kod się skompiluje? Wpisz kod błędu, którego oczekujesz, albo output. Wskaż też w myślach linię zmieniającą właściciela.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["E0382"],
           feedback:
             "String nie implementuje Copy. Odczyt title występuje po przeniesieniu do report — wróć do klasy błędu użycia przeniesionej wartości.",
@@ -2557,18 +2566,13 @@ export const reviewExercises: Record<string, LessonStep> = {
     kind: "recall",
     title: "Powtórka: przeniesiony String",
     prompt:
-      'Po `let label = String::from("x"); let moved = label;`, które wiązanie można wypisać?',
+      'Po `let label = String::from("x"); let moved = label;`, które wiązanie można wypisać? Wpisz samą nazwę wiązania.',
     solution:
       "Można wypisać tylko moved, bo String został przeniesiony z label.",
     evaluator: {
       kind: "answer",
-      accepted: [
-        "moved",
-        "only moved",
-        "the moved binding",
-        "tylko moved",
-        "przeniesione wiązanie moved",
-      ],
+      caseSensitive: true,
+      accepted: ["moved"],
       feedback: "Porównaj odpowiedź z regułą własności i uzasadnij ją.",
     },
     evidenceKind: "recall",
@@ -2584,6 +2588,7 @@ export const reviewExercises: Record<string, LessonStep> = {
     solution: "(2, true) (2, true)",
     evaluator: {
       kind: "answer",
+      caseSensitive: true,
       accepted: ["(2, true) (2, true)", "(2,true) (2,true)"],
       feedback:
         "Obie krotki mają wartość (2, true). Ich pola są Copy, więc przypisanie nie unieważnia pair.",

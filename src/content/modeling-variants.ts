@@ -604,6 +604,7 @@ fn missing_zero_and_both_overflow_directions() {
           "Wpisz cztery elementy kontraktu w jednej linii, oddzielone przecinkami: typ rekordu, enum stanu, typ opcjonalnej estymaty, odbiornik metody odczytującej tytuł.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: [
             "Task, TaskState, Option<i32>, &self",
             "Task,TaskState,Option<i32>,&self",
@@ -682,6 +683,7 @@ fn task_preserves_each_title_and_estimate_through_completion() {
           "Wpisz dwa warianty lub typy, które osobno odpowiadają za stan zadania i brak estymaty.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["TaskState i Option<i32>", "TaskState, Option<i32>"],
           feedback:
             "Stan opisuje TaskState, a obecność estymaty opisuje Option<i32>.",
@@ -845,6 +847,7 @@ fn main() {
     prompt: "Wpisz wariant Option<i32>, który oznacza brak wartości.",
     evaluator: {
       kind: "answer",
+      caseSensitive: true,
       accepted: ["None"],
       feedback: "None oznacza brak, a Some(value) oznacza obecną wartość.",
     },

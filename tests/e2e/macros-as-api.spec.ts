@@ -2,20 +2,9 @@ import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { lessons, modules } from "../../src/content/course";
 import { moduleGate } from "../../src/engine/learning";
+import type { UserState } from "../../src/domain/types";
 
-type LearningEvent = {
-  lessonId: string;
-  stepId: string;
-  kind: string;
-  passed: boolean;
-  hints: number;
-  revealed: boolean;
-};
-
-type LearningState = {
-  mastery: Record<string, { level?: string; reason?: string }>;
-  events: LearningEvent[];
-};
+type LearningState = UserState;
 
 const readLearningState = (page: Page) =>
   page.evaluate(async (): Promise<LearningState> => {
@@ -23,17 +12,15 @@ const readLearningState = (page: Page) =>
     return await new Promise<LearningState>((resolve, reject) => {
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
-        const transaction = request.result.transaction(
-          "user-state",
-          "readonly",
-        );
+        const database = request.result;
+        const transaction = database.transaction("user-state", "readonly");
+        transaction.oncomplete = () => database.close();
         const get = transaction.objectStore("user-state").get("current");
         get.onerror = () => reject(get.error);
-        get.onsuccess = () =>
-          resolve({
-            mastery: (get.result?.mastery ?? {}) as LearningState["mastery"],
-            events: (get.result?.events ?? []) as LearningEvent[],
-          });
+        get.onsuccess = () => {
+          if (!get.result) reject(new Error("No persisted learning state"));
+          else resolve(get.result as UserState);
+        };
       };
     });
   });
@@ -206,7 +193,9 @@ test.describe("macros-as-api production contracts", () => {
         page.getByRole("region", { name: "Wynik kompilatora" }),
       ).toContainText("test result: ok");
       await expect(
-        page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+        page
+          .locator(".save-status")
+          .filter({ hasText: "Zapisano na tym urządzeniu" }),
       ).toBeVisible();
       await expect
         .poll(async () => {
@@ -221,11 +210,9 @@ test.describe("macros-as-api production contracts", () => {
         );
       const stateAfterBlank = await readLearningState(page);
       expect(
-        moduleGate(
-          stateAfterBlank as Parameters<typeof moduleGate>[0],
-          lessons,
-          macroModule,
-        ).criteria[criterionIndex].passed,
+        moduleGate(stateAfterBlank, lessons, macroModule).criteria[
+          criterionIndex
+        ].passed,
       ).toBe(true);
 
       const independentDraft = `${blank.solution}\n// independent blank draft\n`;
@@ -234,7 +221,9 @@ test.describe("macros-as-api production contracts", () => {
       const note = `Makra API: ${criterion.id} zapisane lokalnie.`;
       await page.getByLabel("Notatki do lekcji").fill(note);
       await expect(
-        page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
+        page
+          .locator(".save-status")
+          .filter({ hasText: "Zapisano na tym urządzeniu" }),
       ).toBeVisible();
       const blankHeading = await page.locator(".task-pane h1").innerText();
 

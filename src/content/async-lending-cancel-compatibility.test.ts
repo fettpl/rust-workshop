@@ -532,7 +532,7 @@ it("derives the post-A2 registry inventory without changing the accepted source 
   ).toHaveLength(2);
   expect(sha(acceptedSendLesson.steps)).toBe(
     sha(
-      currentCourse.lessons.find(
+      historicalCourse.lessons.find(
         (lesson) => lesson.id === "async-lending-send-boundary",
       )!.steps,
     ),

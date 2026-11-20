@@ -19,7 +19,7 @@ const sha = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 
 it("appends exactly two Send steps without changing the accepted lesson prefix", () => {
-  const lesson = currentCourse.lessons.find(
+  const lesson = historicalBeforeExistingContractRepair(currentCourse).lessons.find(
     (l) => l.id === baseline.sendLesson.id,
   )!;
   expect(lesson.steps.slice(0, 5)).toEqual(baseline.sendLesson.steps);

@@ -346,6 +346,7 @@ export const foundationsLessons: Lesson[] = [
           "Wpisz trzy nazwy w kolejności: punkt wejścia, wypisywanie, komenda kompilująca i uruchamiająca.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["main; println!; cargo run", "main, println!, cargo run"],
           feedback: "Wpisz kolejno main, println! i cargo run.",
         },
@@ -426,6 +427,7 @@ export const foundationsLessons: Lesson[] = [
           "fn main() {\n    let whole: i32 = -4;\n    let ratio: f64 = 2.5;\n    let ready: bool = true;\n    let initial: char = 'R';\n    println!(\"{whole} {ratio} {ready} {initial}\");\n}",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["-4 2.5 true R", "-4 2.5 true R\\n"],
           feedback:
             "Wpisz pełny wynik w kolejności whole, ratio, ready, initial; potem uruchom kod, aby zweryfikować przewidywanie.",
@@ -507,6 +509,7 @@ export const foundationsLessons: Lesson[] = [
           "Wpisz dwa słowa w kolejności: słowo kluczowe dla ponownego przypisania; słowo kluczowe dla nowego wiązania, które może zmienić typ.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["mut; let", "mut, let"],
           feedback: "Wpisz kolejno mut i let.",
         },
@@ -523,6 +526,7 @@ export const foundationsLessons: Lesson[] = [
           'const PAIR_SIZE: u32 = 2;\nfn main() {\n    let signed: i8 = -2;\n    let byte: u8 = 255;\n    let inferred = 7;\n    let fraction: f64 = 7.0 / 2.0;\n    let length: usize = "Rust".len(); // tutaj 4 bajty ASCII\n    let items = 8u32; // sufiks też wskazuje typ\n    let items = items / PAIR_SIZE; // nowe wiązanie przez shadowing\n    println!("{signed} {byte} {} {fraction} {length} {items}", inferred / 2);\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["-2 255 3 3.5 4 4"],
           feedback:
             "Oblicz osobno 7 / 2 i 7.0 / 2.0. const PAIR_SIZE pozostaje 2; nowe items ma 4.",
@@ -682,12 +686,13 @@ export const foundationsLessons: Lesson[] = [
         kind: "recall",
         title: "Dokończ regułę",
         prompt:
-          "Uzupełnij: w funkcji zwracającej i32 ostatnie wyrażenie bez średnika ma wartość ..., a to samo wyrażenie ze średnikiem ma wartość ... .",
+          "Uzupełnij typy dwóch bloków: `{ 2 + 3 }` ma typ ..., a `{ 2 + 3; }` ma typ ... . Wpisz oba typy w tej kolejności, oddzielone średnikiem.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["i32; ()", "i32 i ()"],
           feedback:
-            "Właściwe rozróżnienie to wartość obliczenia versus pusty typ jednostkowy ().",
+            "Bez średnika blok ma typ i32; po dodaniu średnika ma typ jednostkowy ().",
         },
         evidenceKind: "recall",
       },
@@ -724,6 +729,7 @@ export const foundationsLessons: Lesson[] = [
           'fn nonnegative(n: i32) -> i32 {\n    if n < 0 { return 0; }\n    n\n}\nfn announce() {\n    println!("start");\n    return;\n}\nfn main() {\n    let unit: () = announce();\n    let result: (i32, bool) = (nonnegative(-3), true);\n    let (value, ready) = result;\n    println!("{value} {ready} {unit:?}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["start\n0 true ()"],
           feedback:
             "announce wypisuje start i zwraca (). W nonnegative(-3) return kończy funkcję przed końcowym n.",
@@ -830,6 +836,7 @@ export const foundationsLessons: Lesson[] = [
           'fn main() {\n    let score = 7;\n    let band = if score >= 5 { "pass" } else { "retry" };\n    println!("{band}");\n}',
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["pass", "pass\\n"],
           feedback:
             "score = 7 spełnia warunek score >= 5, więc band otrzymuje wartość pass; potem uruchom kod.",
@@ -926,7 +933,7 @@ export const foundationsLessons: Lesson[] = [
         kind: "recall",
         title: "Odtwórz kolejność",
         prompt:
-          "W jakiej kolejności pracujesz przy nowym warunku z pętlą: odkryj regułę, przewidź output, uruchom, zmodyfikuj i uruchom ponownie?",
+          "Odtwórz kolejność pracy nad nowym warunkiem z pętlą. Dostępne kroki: modify — zmodyfikuj i uruchom ponownie; run — uruchom; discover — odkryj regułę; predict — przewidź wynik. Wpisz cztery identyfikatory kroków, oddzielając je przecinkami.",
         evaluator: {
           kind: "ordering",
           correct: ["discover", "predict", "run", "modify"],
@@ -1083,6 +1090,7 @@ fn zmiana_stawki() {
           "Zasady są: 0 dla attempted <= 0, 0 dla correct <= 0, 100 gdy correct >= attempted, w pozostałych przypadkach całkowity procent correct * 100 / attempted. Oba wejścia mieszczą się w zakresie -1000..=1000. Dla wywołań (0,0), (0,5), (3,3), (2,4), (1,3), (5,4) wpisz sześć wyników w kolejności. Nie oglądasz jeszcze implementacji score.",
         evaluator: {
           kind: "answer",
+          caseSensitive: true,
           accepted: ["0 0 100 50 33 100"],
           feedback:
             "Sprawdź kolejność: przypadki zerowe, pełny wynik, procent całkowity oraz correct większe od attempted. Następny krok wymaga napisania funkcji bez podanej sygnatury.",
@@ -1133,8 +1141,9 @@ fn zmiana_stawki() {
         title: "Uruchom wiele przypadków",
         prompt:
           "Uruchom cztery przypadki innej reguły: remaining_points oblicza pozostały budżet przez odejmowanie. Gdy total <= 0 lub used >= total, oddaje 0; gdy used <= 0, oddaje cały total; w pozostałych przypadkach oddaje total - used. Oba wejścia mieszczą się w zakresie -1000..=1000. Porównaj wszystkie wyniki. W zadaniu score trzeba samodzielnie obliczać procent, a nie pozostały budżet.",
-        code: "fn remaining_points(total: i32, used: i32) -> i32 {\n    if total <= 0 || used >= total {\n        0\n    } else if used <= 0 {\n        total\n    } else {\n        total - used\n    }\n}\n\nfn main() {\n    println!(\"{}\", remaining_points(0, 0));\n    println!(\"{}\", remaining_points(5, 5));\n    println!(\"{}\", remaining_points(100, 0));\n    println!(\"{}\", remaining_points(80, 30));\n}",
-        solution: "fn remaining_points(total: i32, used: i32) -> i32 {\n    if total <= 0 || used >= total {\n        0\n    } else if used <= 0 {\n        total\n    } else {\n        total - used\n    }\n}\n\nfn main() {\n    println!(\"{}\", remaining_points(0, 0));\n    println!(\"{}\", remaining_points(5, 5));\n    println!(\"{}\", remaining_points(100, 0));\n    println!(\"{}\", remaining_points(80, 30));\n}",
+        code: 'fn remaining_points(total: i32, used: i32) -> i32 {\n    if total <= 0 || used >= total {\n        0\n    } else if used <= 0 {\n        total\n    } else {\n        total - used\n    }\n}\n\nfn main() {\n    println!("{}", remaining_points(0, 0));\n    println!("{}", remaining_points(5, 5));\n    println!("{}", remaining_points(100, 0));\n    println!("{}", remaining_points(80, 30));\n}',
+        solution:
+          'fn remaining_points(total: i32, used: i32) -> i32 {\n    if total <= 0 || used >= total {\n        0\n    } else if used <= 0 {\n        total\n    } else {\n        total - used\n    }\n}\n\nfn main() {\n    println!("{}", remaining_points(0, 0));\n    println!("{}", remaining_points(5, 5));\n    println!("{}", remaining_points(100, 0));\n    println!("{}", remaining_points(80, 30));\n}',
         evaluator: { kind: "exact-output", expected: "0\n0\n100\n50\n" },
         evidenceKind: "project",
         expectedStatus: "success",
@@ -1291,7 +1300,8 @@ export const foundationsModule: CourseModule = {
     },
     {
       id: "control-flow-gate",
-      label: "Samodzielnie obliczasz wynik dla zakresu z warunkiem, także na jego granicach",
+      label:
+        "Samodzielnie obliczasz wynik dla zakresu z warunkiem, także na jego granicach",
       requiredIndependentCodingTasks: 1,
       taskRefs: [
         { lessonId: "control-flow", stepId: "flow-range-transfer" },
@@ -1324,6 +1334,7 @@ export const foundationsReviewExercises: Record<string, LessonStep> = {
     prompt: "Wpisz nazwę funkcji, od której zaczyna się binarny program Rust.",
     evaluator: {
       kind: "answer",
+      caseSensitive: true,
       accepted: ["main", "fn main()"],
       feedback: "Program binarny zaczyna wykonywanie od funkcji main.",
     },
@@ -1413,6 +1424,7 @@ export const foundationsReviewExercises: Record<string, LessonStep> = {
     prompt: "Wpisz liczby wypisane kolejno przez `for n in 2..5`.",
     evaluator: {
       kind: "answer",
+      caseSensitive: true,
       accepted: ["2, 3, 4", "2 3 4"],
       feedback: "Zakres .. wyklucza końcową granicę 5.",
     },

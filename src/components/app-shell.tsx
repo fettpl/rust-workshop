@@ -27,7 +27,7 @@ import {
 import { useClock } from "./use-clock";
 import { LearningProvider, useLearning } from "./learning-provider";
 import { Onboarding, Diagnostic } from "./onboarding";
-import { Dashboard, CourseMap, ProjectView, useOpenLesson } from "./overview";
+import { Dashboard, CourseMap, ProjectView, UnavailableLesson, useOpenLesson } from "./overview";
 import { LessonWorkspace } from "./lesson-workspace";
 import { ReviewView } from "./review";
 import { Journal, SettingsView } from "./personal";
@@ -86,6 +86,7 @@ function AppShell() {
       : view;
   const previousNavigation = useRef(navigationKey);
   const openLesson = useOpenLesson();
+  const savedLesson = lessons.find((lesson) => lesson.id === state.resume.lessonId);
   const currentModule =
     modules.find((module) =>
       module.lessonIds.includes(state.resume.lessonId),
@@ -441,7 +442,11 @@ function AppShell() {
           ) : view === "course" ? (
             <CourseMap />
           ) : view === "lesson" ? (
-            <LessonWorkspace key={state.resume.lessonId} />
+            savedLesson?.steps[state.resume.stepIndex] ? (
+              <LessonWorkspace key={savedLesson.id} lesson={savedLesson} />
+            ) : (
+              <UnavailableLesson standalone />
+            )
           ) : view === "review" ? (
             <ReviewView />
           ) : view === "project" ? (

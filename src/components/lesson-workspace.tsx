@@ -28,10 +28,11 @@ import {
   STUDY_SESSION_ENTRY_LABEL,
 } from "@/domain/study-session-practice";
 import { LearnerInstruction } from "./learner-instruction";
+import { courseNoteKey } from "@/content/course-notes";
 import { createStepProgress, stepKey } from "@/persistence/state";
 import { evaluate } from "@/engine/evaluate";
 import { choicesForStep } from "@/engine/choices";
-import { stepInteraction } from "@/engine/step-interaction";
+import { predictsRunResult, stepInteraction } from "@/engine/step-interaction";
 import {
   recordCourseEvidence,
   evidenceForLessonStep,
@@ -69,13 +70,12 @@ type PanelDescriptor = {
   panelId: `workspace-panel-${WorkspacePanel}`;
   label: string;
 };
-export function LessonWorkspace() {
+export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }) {
   const { state, update, generation } = useLearning();
   const [pending, setPending] = useState(false);
   const [executionMessage, setExecutionMessage] = useState("");
-  const lesson =
-    lessons.find((l) => l.id === state.resume.lessonId) ?? lessons[0];
-  const index = Math.min(state.resume.stepIndex, lesson.steps.length - 1);
+  const index = state.resume.stepIndex;
+  const noteKey = courseNoteKey("lesson", lesson.id);
   const step = lesson.steps[index];
   const currentModule = modules.find(
     (candidate) => candidate.id === lesson.moduleId,
@@ -168,6 +168,10 @@ export function LessonWorkspace() {
   const lastRun = [...progress.attempts].reverse().find((a) => a.result);
   const result = lastRun?.result;
   const { hasCode, editable, executable: usesRun } = stepInteraction(step);
+  const prediction = predictsRunResult(step);
+  const needsPrediction = prediction && !progress.attempts.some(
+    (attempt) => attempt.answer !== undefined && !attempt.result,
+  );
   const isManifest = step.evaluator?.kind === "manifest-contract";
   const isToml = step.editorMode === "toml";
   const panels = isToml
@@ -284,7 +288,7 @@ export function LessonWorkspace() {
     );
   }
   async function run() {
-    if (isToml) return;
+    if (isToml || needsPrediction) return;
     const requestGeneration = generation();
     setPending(true);
     setExecutionMessage("");
@@ -340,7 +344,8 @@ export function LessonWorkspace() {
     } else {
       update((s) => {
         const prior = s.steps[key] ?? createStepProgress(step.code);
-        return {
+        const at = Date.now();
+        const next = {
           ...s,
           steps: {
             ...s.steps,
@@ -349,7 +354,7 @@ export function LessonWorkspace() {
               attempts: [
                 ...prior.attempts,
                 {
-                  at: Date.now(),
+                  at,
                   passed: prior.completed,
                   feedback:
                     step.explanation ?? "Porównaj wynik z przewidywaniem.",
@@ -360,6 +365,9 @@ export function LessonWorkspace() {
             },
           },
         };
+        return prediction
+          ? recordCourseLessonExposure(next, { lessonId, stepId, conceptIds: exposureConceptIds, at, hints: 1 })
+          : next;
       });
     }
   }
@@ -738,7 +746,7 @@ export function LessonWorkspace() {
             <button className="secondary" onClick={observed}>
               {progress.completed
                 ? "Obserwacja zapisana"
-                : "Zapisz obserwację i przejdź dalej"}
+                : "Zapisz obserwację"}
               <Check size={16} />
             </button>
           )}
@@ -788,11 +796,11 @@ export function LessonWorkspace() {
             <label>
               Notatki do lekcji
               <textarea
-                value={state.notes[lesson.id] ?? ""}
+                value={state.notes[noteKey] ?? state.notes[lesson.id] ?? ""}
                 onChange={(e) =>
                   update((s) => ({
                     ...s,
-                    notes: { ...s.notes, [lesson.id]: e.target.value },
+                    notes: { ...s.notes, [noteKey]: e.target.value },
                   }))
                 }
                 placeholder="Co mnie zaskoczyło? Jak opisać tę regułę własnymi słowami?"
@@ -860,7 +868,7 @@ export function LessonWorkspace() {
                       disabled={
                         pending ||
                         !code.trim() ||
-                        (step.kind === "predict" && !progress.attempts.length)
+                        needsPrediction
                       }
                       onClick={isManifest ? checkAnswer : () => void run()}
                     >

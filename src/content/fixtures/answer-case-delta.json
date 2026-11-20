@@ -1,0 +1,411 @@
+{
+  "baseline": {
+    "sha": "e4093ef",
+    "lessonsSha256": "2e035175d78743db1cf86f46d10c1a2aa2ba3e00a02322acb57e24f851ee849a",
+    "predecessorScope": "Registered course after the reviewed explanation-evaluation corrections; lessonsSha256 captures that exact local predecessor."
+  },
+  "restorations": [
+    {
+      "lessonId": "first-program",
+      "stepId": "entry-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["main; println!; cargo run", "main, println!, cargo run"],
+        "feedback": "Wpisz kolejno main, println! i cargo run."
+      },
+      "beforeSha256": "50b169d857493e1b8d829f39d6eb50c316f5ee2a937b6b186161401c5c8a3044",
+      "successorSha256": "eb3cca8093ddf690e5a31162f5910ad65a96e744d49a13b151df0e1d1c497a13"
+    },
+    {
+      "lessonId": "bindings-types",
+      "stepId": "scalar-predict",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["-4 2.5 true R", "-4 2.5 true R\\n"],
+        "feedback": "Wpisz pełny wynik w kolejności whole, ratio, ready, initial; potem uruchom kod, aby zweryfikować przewidywanie."
+      },
+      "beforeSha256": "05f5000b33c51a9cffacae6212003387eadd81f77417b8fba20f5b3472943573",
+      "successorSha256": "d05c79e75fe94e164fa6e862937659bcf51aa6d4c670394106494252138f86c8"
+    },
+    {
+      "lessonId": "bindings-types",
+      "stepId": "bindings-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["mut; let", "mut, let"],
+        "feedback": "Wpisz kolejno mut i let."
+      },
+      "beforeSha256": "dadbcf87fe2be08ce088f092b0e71ec2474b64a54108dd5b830091e1aa7991e1",
+      "successorSha256": "94957b8661fc24bba7dd5e7507a3ff04b78d14f7f7e001ff2e1aec27f2103935"
+    },
+    {
+      "lessonId": "bindings-types",
+      "stepId": "numeric-discover",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["-2 255 3 3.5 4 4"],
+        "feedback": "Oblicz osobno 7 / 2 i 7.0 / 2.0. const PAIR_SIZE pozostaje 2; nowe items ma 4."
+      },
+      "beforeSha256": "89f2893f140f712e8a3a55152c04feff89b8b10ebafa20ac5657e822efd28e01",
+      "successorSha256": "e196c2237d07be8d996d39204779e3cb4aceb95e5621be0e797ed2c9339881ac"
+    },
+    {
+      "lessonId": "functions-expressions",
+      "stepId": "function-recall",
+      "path": ["prompt"],
+      "before": "Uzupełnij: w funkcji zwracającej i32 ostatnie wyrażenie bez średnika ma wartość ..., a to samo wyrażenie ze średnikiem ma wartość ... .",
+      "beforeSha256": "d24c135541465e4218c39eb7fc8c7ae8e7c9420bff2e3f5a67aba62b460e47f2",
+      "successorSha256": "d9d467e531e4906d38fdc819e8ad9b00dcc05fdac2ee61746665dc65c527440c"
+    },
+    {
+      "lessonId": "functions-expressions",
+      "stepId": "function-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["i32; ()", "i32 i ()"],
+        "feedback": "Właściwe rozróżnienie to wartość obliczenia versus pusty typ jednostkowy ()."
+      },
+      "beforeSha256": "3fdecf193bd7994d6fd9b55e073fbf0fc52d626b787bc4f563abd4752047fc87",
+      "successorSha256": "3e7225eabceec8fd73af24562debb72fe74b952f15781158ab7c5db317286caf"
+    },
+    {
+      "lessonId": "functions-expressions",
+      "stepId": "function-return-unit-discover",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["start\n0 true ()"],
+        "feedback": "announce wypisuje start i zwraca (). W nonnegative(-3) return kończy funkcję przed końcowym n."
+      },
+      "beforeSha256": "9897df5d7298f56ff13f425818a7b7ac89fdafccf72c58f920543cc258bec7bd",
+      "successorSha256": "4bc1e76174129316e0fbd20f954752f648c2a40ba72d4a6bc6da9d0508824a28"
+    },
+    {
+      "lessonId": "control-flow",
+      "stepId": "flow-predict",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["pass", "pass\\n"],
+        "feedback": "score = 7 spełnia warunek score >= 5, więc band otrzymuje wartość pass; potem uruchom kod."
+      },
+      "beforeSha256": "7e05d32ae7918985fa652b4d04deb45ae8a9f66265e36b73be7c6dd43ade2ea2",
+      "successorSha256": "7e3c4466f12e8c30ff6a062a8ce59d1e1ec7a5ecc3a147935da8fd3efd7ca8c0"
+    },
+    {
+      "lessonId": "foundations-assessment",
+      "stepId": "assessment-predict",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["0 0 100 50 33 100"],
+        "feedback": "Sprawdź kolejność: przypadki zerowe, pełny wynik, procent całkowity oraz correct większe od attempted. Następny krok wymaga napisania funkcji bez podanej sygnatury."
+      },
+      "beforeSha256": "aefd926153b4863fc7bb4c856090f84aff86e80c15a59b1c6f03a032c2a7a014",
+      "successorSha256": "a4ba290b2ea8f25d1e0a638b2bd715dcbed0dd03daf1ab8028c8371bb1448f67"
+    },
+    {
+      "lessonId": "memory-intro",
+      "stepId": "memory-explain",
+      "path": ["prompt"],
+      "before": "Po przejściu śladu: jakie zdarzenie zwalnia bufor String, gdy właściciel opuszcza zakres?",
+      "beforeSha256": "1a0ea612f689bff6eab839d7f008dd708a1267d7ac68d091c4db9e5953b6e966",
+      "successorSha256": "ba35f79342995f3ada6dd15af0ff080e929062dbcc52f4b2719c4661b6dd1aee"
+    },
+    {
+      "lessonId": "memory-intro",
+      "stepId": "memory-transfer",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["outer"],
+        "feedback": "Porównaj zakresy obu nazw. Klamra w linii 5 zamyka tylko blok wewnętrzny."
+      },
+      "beforeSha256": "439f10f604fec4075cd8024cadacb7594294d3d511092de3d3656d0e77682ef0",
+      "successorSha256": "449836bbc3f6800c1edfc1d9fcae2274afb7146d86b7c51dfbb23cb6447ac1d4"
+    },
+    {
+      "lessonId": "memory-intro",
+      "stepId": "memory-owner-out-of-block",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["chwila\nzostaje"],
+        "feedback": "temporary jest odczytane wewnątrz, a local przenosi własność do saved, które pozostaje dostępne po bloku."
+      },
+      "beforeSha256": "bdee816ceade673d78f81643f65c862b3e59ca875b035d53549710ff2061ef2d",
+      "successorSha256": "037d8769aa840037b983a12fa0001a38b89d4f6535f373450dd50b6483d750f7"
+    },
+    {
+      "lessonId": "move-copy-discovery",
+      "stepId": "move-string-run",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["rust"],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "bf67467ba67165dcc22e340ffab79d0a5ae0d85fdbcc61c269dad8a356b9842b",
+      "successorSha256": "43dab4bb2827b79b95e4583a21294b506d5100f27883e2b79f2cc64ed96eee5d"
+    },
+    {
+      "lessonId": "move-copy-discovery",
+      "stepId": "copy-int-run",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["7 7"],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "4d6ea1b506193174d9a810723e701077180fdf9d86ebe5421c2e1d7726fe4366",
+      "successorSha256": "aac3e775d2fd7f0586b5b0a1ceac2ff3762455f30781d7be22ab90d1b33ac022"
+    },
+    {
+      "lessonId": "move-copy-discovery",
+      "stepId": "move-copy-return-predict",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["7 14 RUST"],
+        "feedback": "i32 zachowuje oba użyteczne wiązania dzięki Copy. String przechodzi do funkcji; upper posiada zwrócony wynik."
+      },
+      "beforeSha256": "74532aca59017a406129051614f3cfa87907584357ff97cd66c66e2058e2f85f",
+      "successorSha256": "e9f46711a568de75fd0092e1cc6670d6e8786c53aeee28607c8d548159ad8280"
+    },
+    {
+      "lessonId": "functions-and-ownership",
+      "stepId": "function-call-run",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["hello"],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "07eb565efbdae9ede8143281b5b3152635066ec7a96efdf07c75bc290feb46be",
+      "successorSha256": "174a44bf8160a37fa778f748a710604ee5377ae566adc52c844bb6ccf40652fb"
+    },
+    {
+      "lessonId": "borrow-intro",
+      "stepId": "borrow-read-run",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["ready 5"],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "2c9e1bbee80a731c27c80106d831df1a3bd54e03784558afbe09a5d7db86c6df",
+      "successorSha256": "0fe69bcdc044203442349835f230461c1c666d5c46aec2fb1a9bd00f25d3bb94"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-unseen-copy",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["(8, true) (8, true)"],
+        "feedback": "Każdy element pary jest Copy. Przeniesienie do saved pozostawia entry dostępną."
+      },
+      "beforeSha256": "21422b39949ee8ae081fe935afa12c8c8b401a97320be0e292d1802115b6eb1e",
+      "successorSha256": "52644357e1450eb20289ad73b4abe88852a82f73adcdc7ce6adbb2a733362bb9"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-unseen-move",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["E0382"],
+        "feedback": "String nie implementuje Copy. Odczyt title występuje po przeniesieniu do report — wróć do klasy błędu użycia przeniesionej wartości."
+      },
+      "beforeSha256": "18c2c7ccf3f752cf7b312f2c1dc05b65bc9c3770311ca42f4ebebc991c11b86d",
+      "successorSha256": "8a5860533c24505cf32dd6159d92bdf1aca1fd78ba11a893df659826ea3e627a"
+    },
+    {
+      "lessonId": "modeling-assessment",
+      "stepId": "assessment-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Task, TaskState, Option<i32>, &self",
+          "Task,TaskState,Option<i32>,&self"
+        ],
+        "feedback": "Kontrakt powinien wskazać Task, TaskState, Option<i32> i metodę z &self."
+      },
+      "beforeSha256": "03ba2106a3f0ca0bdb4d8f4edd6194f100c002317a32e028727f60b0b1c8ed71",
+      "successorSha256": "9afbfc1d421ce2a8b991194144b0588821ade0aa4315ca36763b9df963b50161"
+    },
+    {
+      "lessonId": "modeling-assessment",
+      "stepId": "modeling-fresh-retrieval",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["TaskState i Option<i32>", "TaskState, Option<i32>"],
+        "feedback": "Stan opisuje TaskState, a obecność estymaty opisuje Option<i32>."
+      },
+      "beforeSha256": "a29e968498ead8c7dfad46eb6225be898ad1f7de617e13148d03833376a7a643",
+      "successorSha256": "a47d2479bab2f6c5573d4adfca28b147f3b8bdc804b2828910c6ab4341de0a45"
+    },
+    {
+      "lessonId": "result-and-recovery",
+      "stepId": "result-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Ok, Err", "Ok,Err", "Err, Ok", "Err,Ok"],
+        "feedback": "Ok niesie sukces, a Err opisuje niepowodzenie."
+      },
+      "beforeSha256": "0a8c35378bfb14b8aeb622f35529fa2fc659f01a1506e0620f3edf4b84f8d35d",
+      "successorSha256": "c9cb5090ea441401c3e28f52bac6d82a557e696cda4c713ff44af86f56f0c335"
+    },
+    {
+      "lessonId": "propagation-and-errors",
+      "stepId": "propagate-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Err", "err"],
+        "feedback": "Po napotkaniu Err operator ? zwraca ten błąd z bieżącej funkcji."
+      },
+      "beforeSha256": "b46093667549d8ef3ba2f84a5b14979c3129a80865bdc12a74ac60c03b434317",
+      "successorSha256": "788f16bc15e3c94dad995b73ea1fc15b15353ba0d36180d79eaec607f6428886"
+    },
+    {
+      "lessonId": "panic-and-contracts",
+      "stepId": "panic-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Result", "result"],
+        "feedback": "Result zachowuje Ok lub Err i pozwala wywołującemu podjąć decyzję."
+      },
+      "beforeSha256": "4cf3cce01b77df67df67f1f462d9a83e2c4e79f49e3f73c264fb4c2d38f9975c",
+      "successorSha256": "48a0877de7377cdf7e768c25c13f0e9285f1e098777771a10c54de2fdf92bd9d"
+    },
+    {
+      "lessonId": "async-lending-send-boundary",
+      "stepId": "async-lending-send-boundary-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Send i 'static.",
+          "Send i 'static",
+          "Send + 'static",
+          "Send+'static",
+          "'static + Send",
+          "'static+Send"
+        ],
+        "feedback": "Tokio może przechować i przenieść future."
+      },
+      "beforeSha256": "51616dfeaf885a5a4414135ca3c881dbcd12d2aabb49168dcc0163e77db94b8d",
+      "successorSha256": "3fe10862ff61f919f2e6d8946a9a97157eb18b2f04291240ef9cb80cf84f34f9"
+    }
+  ],
+  "appendedSteps": [],
+  "registries": [
+    {
+      "registry": "reviewExercises",
+      "selector": "program-entry",
+      "id": "review-program-entry",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["main", "fn main()"],
+        "feedback": "Program binarny zaczyna wykonywanie od funkcji main."
+      },
+      "beforeSha256": "7a2df15528c23d1360bf5a30483817a0c1c01565a841b3c335118ea8d688ed69",
+      "successorSha256": "a26435881b6a79ea4a51a3c983693bac20a5febdb9db8f9228c4785691572658"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "control-flow",
+      "id": "review-control-flow",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["2, 3, 4", "2 3 4"],
+        "feedback": "Zakres .. wyklucza końcową granicę 5."
+      },
+      "beforeSha256": "801b82b737a2fc35cdba2033ba4d3c7e9cec9a3e305f2fdb4d603bddef879994",
+      "successorSha256": "bec1bfa19899acdab06c9cdaaa079d0d048addb578c976dfd0f436700f58459d"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "move-semantics",
+      "id": "review-move-semantics",
+      "path": ["prompt"],
+      "before": "Po `let label = String::from(\"x\"); let moved = label;`, które wiązanie można wypisać?",
+      "beforeSha256": "fd2c49e6964ddbb351978c4a1f8c5e8385effda84aa7b2441de009cbc4f0cc79",
+      "successorSha256": "832b5dd3b6a4635f46db28682716625d083960d1e7c21750474467043b5dded8"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "move-semantics",
+      "id": "review-move-semantics",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "moved",
+          "only moved",
+          "the moved binding",
+          "tylko moved",
+          "przeniesione wiązanie moved"
+        ],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "82d297549762ac145d5fbeb08e60891668ff03f592e0d8d3a0bbaa3a2458c7fc",
+      "successorSha256": "7a529a4537408a545681d37269f88deaf7554868744a65e70d9833817fb9fced"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "copy-semantics",
+      "id": "review-copy-semantics",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["(2, true) (2, true)", "(2,true) (2,true)"],
+        "feedback": "Obie krotki mają wartość (2, true). Ich pola są Copy, więc przypisanie nie unieważnia pair."
+      },
+      "beforeSha256": "121793f35763daf86bca7b7fc918e9e9200ddae005939523ae2cad289f8dfd7e",
+      "successorSha256": "95ce5f1c80eb38bfcafe40b00db36434db48b6bfa00ce6d0548338ca01917681"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "method-receivers",
+      "id": "review-method-receivers",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "&self, &mut self, Self",
+          "&self; &mut self; Self",
+          "&self, &mut self, Self"
+        ],
+        "feedback": "Rozdziel współdzielony odczyt, wyłączną mutację i alias typu w impl."
+      },
+      "beforeSha256": "1e5e74cda6c612adadcd07f36963c85e47dc37b9b34f762b76ec3f1ea9f7d565",
+      "successorSha256": "fbab8b47ca6265d58c4fc1a493b0ee4d0b66b4f1f8e23d489d61cf7738af61ad"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "optional-values",
+      "id": "review-optional-values",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["None"],
+        "feedback": "None oznacza brak, a Some(value) oznacza obecną wartość."
+      },
+      "beforeSha256": "1d79a71d151f993324be6c04115ed1d427cd2417f7fcdabbe094b7cbd3aad7e6",
+      "successorSha256": "c88db2b5514ade99ff0bc5375d3a762055dac4870e5ac2abb507b76651457bc4"
+    }
+  ]
+}

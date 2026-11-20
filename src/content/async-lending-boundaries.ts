@@ -372,9 +372,11 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         explanation:
           "Każdy punkt ma osobną odpowiedzialność i obserwowalny skutek.",
         evaluator: {
-          kind: "answer",
-          accepted: ["To trzy osobne punkty.", "osobne punkty"],
-          feedback: "Receive, callback i commit mają różne kontrakty.",
+          kind: "rubric",
+          criteria: [
+            "Rozróżniam odebranie rekordu, wykonanie callbacku i zatwierdzenie postępu.",
+            "Commit umieszczam dopiero po pomyślnym ukończeniu callbacku.",
+          ],
         },
         evidenceKind: "exposure",
       },
@@ -409,7 +411,8 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-cancel-commit-recall",
         kind: "recall",
         title: "Przypomnij commit",
-        prompt: "Opisz własnymi słowami, kiedy można zatwierdzić rekord i przesunąć kursor. Co powinien odczytać następny odbiorca, jeśli pracę anulowano podczas oczekiwania na callback?",
+        prompt:
+          "Opisz własnymi słowami, kiedy można zatwierdzić rekord i przesunąć kursor. Co powinien odczytać następny odbiorca, jeśli pracę anulowano podczas oczekiwania na callback?",
         evaluator: {
           kind: "rubric",
           criteria: [
@@ -473,9 +476,11 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         explanation:
           "Send mówi o przenoszeniu między wątkami, a 'static o braku krótszych pożyczek.",
         evaluator: {
-          kind: "answer",
-          accepted: ["Send i 'static są osobne.", "osobne boundy"],
-          feedback: "Send dotyczy wątków, a 'static lifetime.",
+          kind: "rubric",
+          criteria: [
+            "Łączę Send z możliwością przenoszenia między wątkami.",
+            "Łączę 'static z brakiem pożyczek o krótszym czasie życia.",
+          ],
         },
         evidenceKind: "exposure",
       },
@@ -510,10 +515,19 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-send-boundary-recall",
         kind: "recall",
         title: "Przypomnij wymaganie",
-        prompt: "Jakie dwa boundy są potrzebne do spawn?",
+        prompt:
+          "Jakie dwa boundy są potrzebne dla future przekazywanego do tokio::spawn? Wpisz ich nazwy oddzielone znakiem +.",
         evaluator: {
           kind: "answer",
-          accepted: ["Send i 'static.", "Send + 'static"],
+          caseSensitive: true,
+          accepted: [
+            "Send i 'static.",
+            "Send i 'static",
+            "Send + 'static",
+            "Send+'static",
+            "'static + Send",
+            "'static+Send",
+          ],
           feedback: "Tokio może przechować i przenieść future.",
         },
         evidenceKind: "recall",
@@ -571,9 +585,11 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         explanation:
           "Alokację i dynamiczne wywołanie oraz lifetime future ograniczony do wywołania.",
         evaluator: {
-          kind: "answer",
-          accepted: ["Alokację i dynamiczne wywołanie.", "alokację"],
-          feedback: "Boxing jest jawnie opisaną granicą kosztu.",
+          kind: "rubric",
+          criteria: [
+            "Wymieniam alokację i dynamiczne wywołanie jako koszty adaptera.",
+            "Wskazuję, że lifetime opakowanego future może pozostać ograniczony do wywołania.",
+          ],
         },
         evidenceKind: "exposure",
       },
@@ -606,7 +622,8 @@ export const asyncLendingBoundaryLessons: Lesson[] = [
         id: "async-lending-dyn-adapter-recall",
         kind: "recall",
         title: "Przypomnij wybór",
-        prompt: "Typ odbiornika jest znany podczas kompilacji. Kiedy pozostać przy statycznym API lending i jakie wymaganie klienta uzasadnia adapter dyn? Wyjaśnij własnymi słowami.",
+        prompt:
+          "Typ odbiornika jest znany podczas kompilacji. Kiedy pozostać przy statycznym API lending i jakie wymaganie klienta uzasadnia adapter dyn? Wyjaśnij własnymi słowami.",
         evaluator: {
           kind: "rubric",
           criteria: [

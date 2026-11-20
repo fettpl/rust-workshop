@@ -233,10 +233,11 @@ function contrastStep(id: string, title: string, prompt: string): LessonStep {
     explanation:
       "Porównaj dwa przypadki: granica domeny lub procesu jest jawna, a wynik nie jest dopowiadany na podstawie samego tekstu albo sygnału transportowego.",
     evaluator: {
-      kind: "answer",
-      accepted: ["kontrast", "różnica", "granica"],
-      feedback:
-        "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny.",
+      kind: "rubric",
+      criteria: [
+        "Wskazuję konkretne warunki rozróżniające opisane przypadki.",
+        "Opisuję wynik każdego przypadku i granicę dostępnego dowodu.",
+      ],
     },
     evidenceKind: "exposure",
   };
@@ -246,15 +247,16 @@ function explainStep(
   id: string,
   title: string,
   prompt: string,
-  accepted: string[],
-  feedback: string,
+  criteria: string[],
+  explanation: string,
 ): LessonStep {
   return {
     id,
     kind: "explain",
     title,
     prompt,
-    evaluator: { kind: "answer", accepted, feedback },
+    explanation,
+    evaluator: { kind: "rubric", criteria },
     evidenceKind: "exposure",
   };
 }
@@ -454,7 +456,10 @@ const lessonData = [
         "capstone-domain-explain",
         "Nazwij warunki",
         "Wyjaśnij, dlaczego limit znaków i limit bajtów nie są tym samym.",
-        ["bajty", "UTF-8", "limit"],
+        [
+          "Wyjaśniam, że znak UTF-8 może zajmować więcej niż jeden bajt.",
+          "Łączę limit bajtów z walidacją wiadomości na granicy transportu.",
+        ],
         "Połącz koszt UTF-8 z limitem transportowym.",
       ),
       codingStep({
@@ -537,7 +542,10 @@ const lessonData = [
         "capstone-commit-explain",
         "Powiąż receipt z commit",
         "Dlaczego sukces odpowiedzi nie może poprzedzać commit?",
-        ["commit", "receipt", "retry"],
+        [
+          "Wskazuję commit jako warunek wystawienia receiptu sukcesu.",
+          "Wyjaśniam, że nieudany commit nie może pozostawić potwierdzenia zapisu.",
+        ],
         "Wskaż moment, po którym klient może uznać zapis za potwierdzony.",
       ),
       codingStep({
@@ -624,7 +632,10 @@ const lessonData = [
         "capstone-lifecycle-explain",
         "Rozdziel przyjęcie od odpowiedzi",
         "Który licznik pozostaje zobowiązaniem po rozłączeniu klienta?",
-        ["accepted", "enqueue", "właściciel"],
+        [
+          "Wskazuję accepted jako liczbę przyjętych zobowiązań.",
+          "Wyjaśniam, że rozłączenie klienta nie kończy pracy workera ani nie cofa accepted.",
+        ],
         "Powiąż accepted z pracą workera, nie z życiem socketu.",
       ),
       codingStep({
@@ -711,7 +722,10 @@ const lessonData = [
         "capstone-protocol-explain",
         "Zachowaj starą umowę",
         "Dlaczego V1 nie może przypadkiem stać się V2 z pustym tekstem?",
-        ["None", "normalizacja", "stary"],
+        [
+          "Opisuję normalizację brakującego pola V1 do None.",
+          "Odróżniam brak pola od obecnego pustego tekstu w nowej wersji.",
+        ],
         "Opisz kanoniczną wartość braku pola.",
       ),
       codingStep({
@@ -794,7 +808,10 @@ const lessonData = [
         "capstone-incident-explain",
         "Nazwij niepewność",
         "Wyjaśnij, dlaczego Unknown jest bezpieczniejszy od zgadywania.",
-        ["Unknown", "dowód", "commit"],
+        [
+          "Wyjaśniam, że brak dowodu commit nie potwierdza rollbacku ani sukcesu.",
+          "Wskazuję ponowienie tego samego żądania jako sposób bezpiecznego rozstrzygnięcia.",
+        ],
         "Wskaż brakujący sygnał i retry jako następny krok.",
       ),
       codingStep({
@@ -881,7 +898,10 @@ const lessonData = [
         "capstone-release-explain",
         "Zachowaj ograniczenie",
         "Dlaczego nieznany status supply chain utrzymuje Hold?",
-        ["Hold", "nieznany", "dowód"],
+        [
+          "Wskazuję brak aktualnego dowodu stanu łańcucha dostaw.",
+          "Uzasadniam utrzymanie Hold do uzyskania wymaganego dowodu.",
+        ],
         "Brak aktualnego dowodu nie jest dowodem bezpieczeństwa.",
       ),
       codingStep({

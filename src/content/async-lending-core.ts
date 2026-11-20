@@ -483,9 +483,11 @@ export const asyncLendingCoreLessons: Lesson[] = [
         explanation:
           "Future przechowuje wyłączną pożyczkę receivera aż do Ready lub Drop.",
         evaluator: {
-          kind: "answer",
-          accepted: ["Future przechowuje receiver.", "future"],
-          feedback: "Pożyczka należy do future do czasu Ready lub Drop.",
+          kind: "rubric",
+          criteria: [
+            "Wskazuję future jako wartość utrzymującą wyłączną pożyczkę receivera.",
+            "Wskazuję Ready lub Drop jako granicę pożyczki utrzymywanej przez future.",
+          ],
         },
         evidenceKind: "exposure",
       },
@@ -520,7 +522,8 @@ export const asyncLendingCoreLessons: Lesson[] = [
         id: "async-lending-receiver-recall",
         kind: "recall",
         title: "Przypomnij granicę",
-        prompt: "Future pierwszego receive zwróciła pożyczony rekord. Kiedy możesz ponownie wywołać receive na tym samym odbiorniku? Wyjaśnij, co stanie się z kursorem po finish i po porzuceniu rekordu.",
+        prompt:
+          "Future pierwszego receive zwróciła pożyczony rekord. Kiedy możesz ponownie wywołać receive na tym samym odbiorniku? Wyjaśnij, co stanie się z kursorem po finish i po porzuceniu rekordu.",
         evaluator: {
           kind: "rubric",
           criteria: [
@@ -604,9 +607,11 @@ export const asyncLendingCoreLessons: Lesson[] = [
         explanation:
           "Referencję do argumentu lub do lokalnego stanu callbacku.",
         evaluator: {
-          kind: "answer",
-          accepted: ["Referencję do argumentu.", "lokalną referencję"],
-          feedback: "Future callbacku może pożyczać argument i stan.",
+          kind: "rubric",
+          criteria: [
+            "Wyjaśniam, że future callbacku może pożyczać argument lub lokalny stan callbacku.",
+            "Wiążę czas pożyczki z ukończeniem lub porzuceniem future callbacku.",
+          ],
         },
         evidenceKind: "exposure",
       },
@@ -641,10 +646,17 @@ export const asyncLendingCoreLessons: Lesson[] = [
         id: "async-lending-callbacks-recall",
         kind: "recall",
         title: "Przypomnij zatrzymanie",
-        prompt: "Co robi pierwszy błąd callbacku?",
+        prompt:
+          "Co robi pierwszy błąd callbacku z dalszym odwiedzaniem rekordów? Odpowiedz krótko: kończy wizytę albo kontynuuje wizytę.",
         evaluator: {
           kind: "answer",
-          accepted: ["Kończy wizytę.", "zatrzymuje pętlę"],
+          accepted: [
+            "Kończy wizytę.",
+            "kończy wizytę",
+            "zatrzymuje pętlę",
+            "przerywa wizytę",
+            "przerywa pętlę",
+          ],
           feedback: "Błąd nie może zostać pominięty.",
         },
         evidenceKind: "recall",

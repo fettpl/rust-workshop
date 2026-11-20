@@ -400,6 +400,7 @@ it("preserves an earned gate family after later assistance on its duplicate ref"
     gateEvent("reflection", {
       kind: "self-rating",
       evaluator: "rubric",
+      evidenceVersion: undefined,
       at: 40,
     }),
   ];

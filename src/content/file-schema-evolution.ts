@@ -167,12 +167,6 @@ export const fileSchemaEvolutionLessons: Lesson[] = [
         title: "Prześledź wejście i wynik",
         prompt:
           "Zapis na dysku przechodzi walidację przed utworzeniem Decoded. Normalize przyjmuje dopiero tę sprawdzoną wartość i zwraca Loaded.\n\n| Dane wejściowe | Wersja w Loaded | Dane w Todo |\n| --- | --- | --- |\n| V1: dwa wiersze „dup” | V1 | Dwa odrębne rekordy 1 i 2, NEXT=3 |\n| V2: rekordy 9 i 2, NEXT=12 | V2 | Rekordy 9 i 2 w tej kolejności, NEXT=12 |\n| V2: pusta lista, NEXT=- | V2 | Pusta lista i wyczerpana numeracja |",
-        evaluator: {
-          kind: "answer",
-          accepted: ["Prześledzony model"],
-          feedback:
-            "Loaded pamięta wersję wejścia, a Todo opisuje bieżącą postać danych.",
-        },
         evidenceKind: "exposure",
         evidence: normalizationEvidence,
       },
@@ -299,12 +293,6 @@ export const fileSchemaEvolutionLessons: Lesson[] = [
         title: "Wskaż moment zatwierdzenia",
         prompt:
           "Odczyt i przygotowanie planu nie zapisują pliku. Przed zapisem porównujesz odczytane bajty z planem. Potem tworzysz nowy plik obok celu, zapisujesz, synchronizujesz i zamykasz go. Udane przemianowanie na ścieżkę celu zatwierdza zmianę. Przećwicz tę kolejność dla jednego zapisującego.",
-        evaluator: {
-          kind: "answer",
-          accepted: ["Prześledzony model"],
-          feedback:
-            "Zapis pliku roboczego przygotowuje zmianę. Udane przemianowanie zastępuje plik docelowy.",
-        },
         evidenceKind: "exposure",
         evidenceGate: false,
       },

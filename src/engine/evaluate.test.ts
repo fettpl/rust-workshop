@@ -85,6 +85,97 @@ describe("evaluate", () => {
     ).toBe(true);
   });
 
+  it.each([
+    ["nested block comments", "/* outer /* nested */ .clone( */ fn f() {}"],
+    [
+      "an unmatched lifetime before a comment",
+      "fn f(x: &str) -> &str { x } type View = &'static str; // .clone(",
+    ],
+    ["ordinary string contents", 'fn f() { let help = "use .clone("; }'],
+    ["raw string contents", 'fn f() { let help = r#"use .clone("#; }'],
+    ["identifier suffixes", "fn my_unsafe_helper() {}"],
+  ])("does not treat %s as a forbidden operation", (_, code) => {
+    expect(
+      run(
+        {
+          kind: "tests",
+          tests: "authored tests",
+          forbiddenPatterns: [".clone(", "unsafe"],
+        },
+        { code, result: { ...success(), tests: { passed: 1, failed: 0 } } },
+      ).passed,
+    ).toBe(true);
+  });
+
+  it.each([
+    'fn f() { let quote = r#"a " // still a string"#; value.clone(); }',
+    'fn f() { let quote = r##"a "# // still a string"##; value.clone(); }',
+    "fn f() { let slash = '/'; value.clone(); }",
+    String.raw`fn f() { let slash = '\\'; value.clone(); }`,
+  ])("detects a forbidden operation after Rust literal syntax: %s", (code) => {
+    expect(
+      run(
+        {
+          kind: "tests",
+          tests: "authored tests",
+          forbiddenPatterns: [".clone("],
+        },
+        { code, result: { ...success(), tests: { passed: 1, failed: 0 } } },
+      ).passed,
+    ).toBe(false);
+  });
+
+  it.each([
+    'fn main() { let hint = "-> String if"; println!("correct"); }',
+    'fn difference() -> String { String::from("correct") } fn main() { println!("{}", difference()); }',
+  ])(
+    "requires syntax tokens rather than literal text or identifier fragments: %s",
+    (code) => {
+      expect(
+        run(
+          {
+            kind: "exact-output",
+            expected: "correct",
+            requiredPatterns: ["-> String", "if"],
+          },
+          { code, result: success("correct") },
+        ).passed,
+      ).toBe(false);
+    },
+  );
+
+  it.each(["value.r#clone()", "Clone::r#clone(&value)"])(
+    "recognizes raw identifier calls in authored method guards: %s",
+    (code) => {
+      expect(
+        run(
+          {
+            kind: "tests",
+            tests: "authored",
+            forbiddenPatterns: [".clone(", "Clone::clone("],
+          },
+          {
+            code,
+            result: { ...success(), tests: { passed: 1, failed: 0 } },
+          },
+        ).passed,
+      ).toBe(false);
+    },
+  );
+
+  it("does not confuse a raw identifier with an unsafe keyword", () => {
+    const evaluator: Evaluator = {
+      kind: "tests",
+      tests: "authored",
+      forbiddenPatterns: ["unsafe"],
+    };
+    const result = { ...success(), tests: { passed: 1, failed: 0 } };
+    expect(run(evaluator, { code: "fn r#unsafe() {}", result }).passed).toBe(
+      true,
+    );
+    expect(run(evaluator, { code: "unsafe {}", result }).passed).toBe(false);
+  });
+
   it("requires the declared diagnostic code for expected errors", () => {
     const result = {
       ...success(),

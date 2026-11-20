@@ -238,7 +238,7 @@ function predict(id: string, title: string, prompt: string, correct: string, lab
 }
 
 function modelTrace(id: string, title: string, prompt: string, conceptId: string): LessonStep {
-  return { id, kind: "observe", title, prompt, evaluator: { kind: "answer", accepted: ["Prześledzony model"], feedback: "Porównaj ślad z tabelą wyniku." }, evidenceKind: "exposure", evidence: { version: 2, conceptIds: [conceptId] } };
+  return { id, kind: "observe", title, prompt, evidenceKind: "exposure", evidence: { version: 2, conceptIds: [conceptId] } };
 }
 
 function testStep(id: string, title: string, prompt: string, codingTaskId: string, code: string, tests: string, kind: "modify" | "apply" | "recall" | "blank" = "modify", conceptId = "service-client-retry-policy", starter?: string, evidenceGate = false): LessonStep {

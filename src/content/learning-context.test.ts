@@ -151,14 +151,11 @@ describe("course learning context", () => {
     const makeEvent = (id: string, at: number): EvidenceEvent => ({
       id,
       conceptIds: [conceptId],
-      lessonId: "cargo-dependency-contract",
-      stepId: id,
-      kind:
-        id === "recall"
-          ? "recall"
-          : id === "second"
-            ? "assessment"
-            : "transfer",
+      lessonId: id === "recall" ? "review" : "cargo-dependency-contract",
+      stepId: id === "recall"
+        ? `${reviewExercises[conceptId].id}:manifest-retention`
+        : id === "first" ? "cargo-dependency-contract-gate" : "cargo-dependency-contract-blank",
+      kind: id === "recall" ? "recall" : id === "first" ? "assessment" : "transfer",
       passed: true,
       hints: 0,
       revealed: false,

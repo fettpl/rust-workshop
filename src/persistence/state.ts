@@ -140,6 +140,7 @@ const ReviewSessionSchema = z.strictObject({
   startedAt: z.number().finite().nonnegative(),
   wasDue: z.boolean(),
   exerciseId: z.string().min(1).optional(),
+  ratingCountAtStart: z.number().int().nonnegative().optional(),
 });
 const UserStateFields = {
   appVersion: z.string(),
@@ -366,6 +367,10 @@ export function migrateState(input: unknown): UserState {
     ...initial,
     appVersion: old.appVersion ?? initial.appVersion,
     updatedAt: old.updatedAt ?? initial.updatedAt,
+    routePreference:
+      "routePreference" in old
+        ? (old.routePreference ?? initial.routePreference)
+        : initial.routePreference,
     onboarding: migrateOnboarding(old.onboarding, initial.onboarding),
     diagnostic: { ...initial.diagnostic, ...old.diagnostic },
     resume: { ...initial.resume, ...old.resume },

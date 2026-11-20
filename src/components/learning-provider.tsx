@@ -10,7 +10,11 @@ import {
 } from "react";
 import type { UserState } from "@/domain/types";
 import { createInitialState } from "@/persistence/state";
-import { loadState, saveState } from "@/persistence/storage";
+import {
+  loadState,
+  saveState,
+  StateConflictError,
+} from "@/persistence/storage";
 type Update = (fn: (state: UserState) => UserState) => void;
 const LearningContext = createContext<{
   state: UserState;
@@ -31,13 +35,15 @@ export function LearningProvider({ children }: { children: ReactNode }) {
   const revision = useRef(0);
   const pending = useRef(false);
   const queue = useRef<Promise<void>>(Promise.resolve());
-  const persist = useCallback((next: UserState) => {
+  const persist = useCallback((next: UserState, replace = false) => {
+    // Keep the unload guard armed for every unsaved edit, including a session
+    // opened after a read failure. Only an acknowledged save clears it.
+    pending.current = true;
     if (!writable.current) return;
     const version = ++revision.current;
-    pending.current = true;
     setSaveStatus("Zapisywanie…");
     queue.current = queue.current
-      .then(() => saveState(next))
+      .then(() => saveState(next, { replace }))
       .then(() => {
         if (version === revision.current) {
           pending.current = false;
@@ -45,12 +51,13 @@ export function LearningProvider({ children }: { children: ReactNode }) {
           setStorageError("");
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (version === revision.current) {
-          pending.current = false;
           setSaveStatus("Zapis nie powiódł się");
           setStorageError(
-            "Brak dostępu do lokalnego zapisu. Wyeksportuj postęp przed zamknięciem — sesja pozostaje w pamięci.",
+            error instanceof StateConflictError
+              ? error.message
+              : "Brak dostępu do lokalnego zapisu. Wyeksportuj postęp przed zamknięciem — sesja pozostaje w pamięci.",
           );
         }
       });
@@ -129,7 +136,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       writable.current = true;
       current.current = next;
       setState(next);
-      persist(next);
+      persist(next, true);
     },
     [persist],
   );

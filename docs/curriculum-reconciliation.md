@@ -335,3 +335,5 @@ The local audit checked a hint before and after an otherwise independent submiss
 An imported review can refer to a concept or exercise absent from the installed course. The dashboard, navigation badge and review queue count currently available concepts. The original schedule stays in the export. A learner can dismiss an unavailable session, keep its draft and history, and open a current exercise.
 
 Completed reviews can return to the queue even if the save has no matching compiler result. Leaving the result creates no evidence or rating. A short coding probe offers its rating only when the last successful attempt ran the displayed code. Regression coverage includes those recovery paths in the browser and the due boundary for every current concept.
+
+The [20 November cross-course audit](curriculum-audit-2026-11-20.md) covers assessment wording, independent evidence, retention and saved-state recovery across the catalog.

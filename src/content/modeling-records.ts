@@ -1193,6 +1193,7 @@ fn main() {}`,
       "Uzupełnij regułę: metoda tylko czytająca używa ..., metoda zmieniająca stan używa ..., a konstruktor może zwrócić ....",
     evaluator: {
       kind: "answer",
+      caseSensitive: true,
       accepted: [
         "&self, &mut self, Self",
         "&self; &mut self; Self",

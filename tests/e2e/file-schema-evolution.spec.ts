@@ -156,6 +156,35 @@ async function openPackage(page: Page) {
   return page.getByRole("region", { name: "Pakiet Cargo" });
 }
 
+function expectPackageActionEvents(
+  before: UserState,
+  after: UserState,
+  variant: "starter" | "solution",
+) {
+  expect(after.events.slice(0, before.events.length)).toEqual(before.events);
+  const refs = variant === "starter" ? [] : archive.revealStepRefs;
+  const added = after.events.slice(before.events.length);
+  expect(added).toEqual(
+    refs.map((ref) =>
+      expect.objectContaining({
+        ...ref,
+        conceptIds: normalization.conceptIds,
+        kind: "exposure",
+        passed: true,
+        hints: 0,
+        revealed: true,
+        gate: false,
+      }),
+    ),
+  );
+  for (const event of added) {
+    expect(event.id).toMatch(/^supplied-solution:/);
+    expect(event).not.toHaveProperty("evaluator");
+    expect(event).not.toHaveProperty("evidenceVersion");
+  }
+  expectNoCredit(after);
+}
+
 async function downloadPackage(page: Page, variant: "starter" | "solution") {
   const panel = page.getByRole("region", { name: "Pakiet Cargo" });
   const selection = panel.getByRole("button", {
@@ -163,8 +192,13 @@ async function downloadPackage(page: Page, variant: "starter" | "solution") {
       variant === "starter" ? "Pliki startowe" : "Pokaż rozwiązanie pakietu",
     exact: true,
   });
+  const beforePreview = await savedState(page);
   await selection.click();
   await expect(selection).toHaveAttribute("aria-pressed", "true");
+  const afterPreview = await savedState(page);
+  // Preview and download are distinct real contacts. Each records exactly one
+  // complete ref set; re-rendering must not duplicate either action.
+  expectPackageActionEvents(beforePreview, afterPreview, variant);
   const link = panel.getByRole("link", {
     name:
       variant === "starter" ? "Pobierz pakiet startowy" : "Pobierz rozwiązanie",
@@ -175,6 +209,8 @@ async function downloadPackage(page: Page, variant: "starter" | "solution") {
     link.click(),
   ]);
   expect(await download.failure()).toBeNull();
+  const afterDownload = await savedState(page);
+  expectPackageActionEvents(afterPreview, afterDownload, variant);
   const bytes = await readFile((await download.path())!);
   const files = unzipSync(bytes);
   expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
@@ -307,10 +343,10 @@ test("out-of-order lessons and ordinary review expose only scoped source and rec
   );
   const reveals = afterSolution.events.slice(afterStarter.events.length);
   expect(reveals.map(({ lessonId, stepId }) => ({ lessonId, stepId }))).toEqual(
-    archive.revealStepRefs,
+    [...archive.revealStepRefs, ...archive.revealStepRefs],
   );
   expect(reveals).toEqual(
-    archive.revealStepRefs.map((ref) =>
+    [...archive.revealStepRefs, ...archive.revealStepRefs].map((ref) =>
       expect.objectContaining({
         ...ref,
         kind: "exposure",
@@ -592,7 +628,14 @@ test("offline downloads and reload preserve saved state and record one fresh neu
     expect(offlineStarter.equals(starter)).toBe(true);
     expect(offlineSolution.equals(solution)).toBe(true);
     const afterDownloads = await savedState(page);
-    expect(afterDownloads.events).toEqual(afterChecks.events);
+    expect(afterDownloads.events.slice(0, afterChecks.events.length)).toEqual(
+      afterChecks.events,
+    );
+    expect(
+      afterDownloads.events
+        .slice(afterChecks.events.length)
+        .map(({ lessonId, stepId }) => ({ lessonId, stepId })),
+    ).toEqual([...archive.revealStepRefs, ...archive.revealStepRefs]);
     expect(afterDownloads.steps).toEqual(afterChecks.steps);
     expect(afterDownloads.notes).toEqual(before.notes);
     expectNoCredit(afterDownloads);

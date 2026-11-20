@@ -8,19 +8,32 @@ export function reviewSessionKey(sessionId: string): string {
   return `review:${sessionId}`;
 }
 
+/** Ratings appended after an app-created start belong to its current attempt.
+ * Legacy sessions have no snapshot, so keep their conservative timestamp rule.
+ */
+export function reviewSessionRated(
+  state: UserState,
+  session: ReviewSession,
+): boolean {
+  const count = session.ratingCountAtStart;
+  const hasSnapshot =
+    count !== undefined &&
+    Number.isInteger(count) &&
+    count >= 0 &&
+    count <= state.ratings.length;
+  return state.ratings.some(
+    (rating, index) =>
+      rating.conceptId === session.conceptId &&
+      (hasSnapshot ? index >= count! : rating.at >= session.startedAt),
+  );
+}
+
 export function reviewSessionFinished(
   state: UserState,
   session: ReviewSession,
 ): boolean {
   const progress = state.steps[reviewSessionKey(session.sessionId)];
-  return Boolean(
-    progress?.completed ||
-    state.ratings.some(
-      (rating) =>
-        rating.conceptId === session.conceptId &&
-        rating.at >= session.startedAt,
-    ),
-  );
+  return Boolean(progress?.completed || reviewSessionRated(state, session));
 }
 
 export function startReviewSession(
@@ -44,6 +57,7 @@ export function startReviewSession(
     sessionId,
     startedAt: now,
     wasDue,
+    ratingCountAtStart: state.ratings.length,
     ...(exerciseId === undefined ? {} : { exerciseId }),
   };
 }

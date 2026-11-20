@@ -271,6 +271,15 @@ test("revealing the authored solution discloses its supplied components while ke
     gate: false,
   });
   expect(facts[0].at).toBeGreaterThanOrEqual(revealedAt);
+
+  // A new visit is a new reference contact, while the click plus its visibility
+  // observer above is one action. Keep the first receipt unchanged across both.
+  for (const count of [2, 3]) {
+    await page.reload();
+    await page.locator(".revealed-solution pre").scrollIntoViewIfNeeded();
+    await expect.poll(async () => sourceSolutionFacts(await saved(page)).length).toBe(count);
+    expect(sourceSolutionFacts(await saved(page))[0]).toEqual(facts[0]);
+  }
 });
 
 test.describe("editor loading and disclosure", () => {

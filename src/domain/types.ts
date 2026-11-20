@@ -99,7 +99,12 @@ export type Evaluator =
   | { kind: "compilation" }
   | { kind: "expected-error"; code?: string; diagnostic?: string }
   | { kind: "tests"; tests: string; forbiddenPatterns?: string[] }
-  | { kind: "answer"; accepted: string[]; feedback: string }
+  | {
+      kind: "answer";
+      accepted: string[];
+      feedback: string;
+      caseSensitive?: boolean;
+    }
   | { kind: "choice"; correct: string; explanations: Record<string, string> }
   | { kind: "ordering"; correct: string[] }
   | { kind: "rubric"; criteria: string[] }
@@ -123,7 +128,10 @@ export interface StepEvidenceDefinition {
 }
 export interface LessonStep {
   /** Complete solutions to other tasks supplied by this authored code or reference implementation. */
-  suppliedSolutions?: { code?: ModuleGateTaskRef[]; solution?: ModuleGateTaskRef[] };
+  suppliedSolutions?: {
+    code?: ModuleGateTaskRef[];
+    solution?: ModuleGateTaskRef[];
+  };
   evidence?: StepEvidenceDefinition;
   id: string;
   kind: StepKind;
@@ -295,6 +303,8 @@ export interface ReviewSession {
   startedAt: number;
   wasDue: boolean;
   exerciseId?: string;
+  /** Number of journaled ratings when this app-created session began. */
+  ratingCountAtStart?: number;
 }
 export type View =
   | "dashboard"

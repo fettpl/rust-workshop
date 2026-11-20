@@ -540,7 +540,16 @@ export function validateContent(content: ContentBundle): string[] {
       localStepIds.add(step.id);
       if (!step.prompt.trim() || !step.title.trim())
         errors.push(`step ${stepKey} is missing prompt or title`);
-      if (!step.evaluator) errors.push(`step ${stepKey} is missing evaluator`);
+      const observationOnly =
+        step.kind === "observe" &&
+        step.evidenceKind === "exposure" &&
+        step.evidenceGate !== true &&
+        step.evidence?.codingTaskId === undefined &&
+        step.code === undefined &&
+        step.solution === undefined &&
+        step.expectedStatus === undefined;
+      if (!step.evaluator && !observationOnly)
+        errors.push(`step ${stepKey} is missing evaluator`);
       if (step.code !== undefined) {
         const isExposureOnlyExpectedError =
           step.kind === "observe" &&
