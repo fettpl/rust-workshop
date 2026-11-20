@@ -89,7 +89,7 @@
     "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.4.5",
-    "fake-indexeddb": "^6.2.6",
+    "fake-indexeddb": "^6.2.8",
     "fflate": "^0.8.3",
     "prettier": "^3.9.10",
     "tailwindcss": "^4.3.3",
