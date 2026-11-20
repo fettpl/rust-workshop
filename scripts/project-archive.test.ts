@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import {
   mkdtempSync,
   mkdirSync,
@@ -202,6 +203,25 @@ describe("project archive distribution notices", () => {
     const second = buildProjectArchive(fixture, "starter", { repositoryRoot });
     expect(Buffer.from(first).equals(Buffer.from(second))).toBe(true);
   });
+
+  it("writes identical ZIP bytes across runner time zones", () => {
+    const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
+    const program = `
+      const { projects } = require("./src/content/course.ts");
+      const { buildProjectArchive } = require("./scripts/project-archive.ts");
+      const archive = projects.find(({ id }) => id === "service-authorization").package;
+      const { createHash } = require("node:crypto");
+      process.stdout.write(createHash("sha256").update(buildProjectArchive(archive, "starter")).digest("hex"));
+    `;
+    const archives = ["UTC", "Europe/Warsaw", "America/Los_Angeles"].map((zone) =>
+      execFileSync(process.execPath, ["--require", "tsx/cjs", "-e", program], {
+        cwd: repositoryRoot,
+        encoding: "utf8",
+        env: { ...process.env, TZ: zone },
+      }),
+    );
+    expect(archives).toEqual([archives[0], archives[0], archives[0]]);
+  }, 30_000);
 
   it("uses the generator source location when called outside the repository", () => {
     const originalCwd = process.cwd();

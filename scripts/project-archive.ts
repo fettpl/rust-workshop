@@ -127,12 +127,14 @@ export function buildProjectArchive(
   options: ProjectArchiveOptions = {},
 ): Uint8Array {
   const files = projectArchiveFiles(project, variant, options);
+  // ZIP stores DOS calendar fields without a time-zone offset. fflate reads
+  // local fields, so use the same local calendar date in every build.
   return zipSync(
     Object.fromEntries(
       Object.entries(files)
         .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
         .map(([path, content]) => [`${project.id}/${path}`, strToU8(content)]),
     ),
-    { level: 6, mtime: new Date("2026-01-01T00:00:00Z") },
+    { level: 6, mtime: new Date(2026, 0, 1) },
   );
 }

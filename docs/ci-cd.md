@@ -13,7 +13,7 @@ The configured job timeouts are part of the current contract:
 
 | Check                                 | Runner and scope                                                                                       | Timeout |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------: |
-| `verify`                              | Ubuntu stable Node/Rust; app, content, trusted fixtures, build, production browser, and offline checks |  45 min |
+| `verify`                              | Ubuntu stable Node/Rust; app, content, trusted fixtures, build, production browser, and offline checks |  60 min |
 | `workspace-msrv`                      | Ubuntu exact Rust 1.85.0 workspace and MSRV verifiers                                                  |  30 min |
 | `mini-grep-fuzz`                      | Ubuntu nightly campaign plus stable/MSRV replay                                                        |  20 min |
 | `profile-evidence`                    | Ubuntu stable Callgrind and DHAT evidence                                                              |  25 min |
