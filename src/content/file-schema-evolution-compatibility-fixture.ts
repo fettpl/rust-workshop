@@ -260,6 +260,7 @@ function copyRegistry(input: Registry, replacements: Map<unknown, unknown>) {
       key === "default" ||
       key === "project" ||
       key === "ownershipModule" ||
+      key === "sources" ||
       Object.hasOwn(arrayAdditions, key) ||
       Object.hasOwn(reviewAdditions, key);
     // Only the known authored getters may be read. Unknown accessors stay intact.
@@ -471,6 +472,7 @@ function projectMaintenanceBatch<T extends typeof Course>(
       "lessons",
       "modules",
       "projects",
+      "sources",
       "reviewExercises",
       "reviewExercisesById",
       "shortReviewExercises",

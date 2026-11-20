@@ -115,7 +115,7 @@ describe("project archive distribution notices", () => {
           }
         }
         expect(strFromU8(files[`${project.id}/LICENSE-SCOPE.md`])).toContain(
-          "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md)",
+          "](https://github.com/fettpl/rust-workshop/blob/main/docs/rights-assessment.md)",
         );
       }
     }
@@ -139,10 +139,10 @@ describe("project archive distribution notices", () => {
     );
     expect(strFromU8(files[`${fixture.id}/LICENSE-SCOPE.md`])).toBe(
       [
-        "[rights](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md)",
-        "[rights section](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md#findings)",
-        "[provenance](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-provenance.md)",
-        "[provenance section](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-provenance.md#inventory)",
+        "[rights](https://github.com/fettpl/rust-workshop/blob/main/docs/rights-assessment.md)",
+        "[rights section](https://github.com/fettpl/rust-workshop/blob/main/docs/rights-assessment.md#findings)",
+        "[provenance](https://github.com/fettpl/rust-workshop/blob/main/docs/oss-provenance.md)",
+        "[provenance section](https://github.com/fettpl/rust-workshop/blob/main/docs/oss-provenance.md#inventory)",
         "[other](other.md#unchanged)",
         "[similar](nested/rights-assessment.md)",
       ].join("\n"),

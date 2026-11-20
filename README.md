@@ -116,8 +116,8 @@ to serve the web app or use its browser exercises.
 From a clean checkout:
 
 ```sh
-git clone https://github.com/fettpl/rustcrushcourse.git
-cd rustcrushcourse
+git clone https://github.com/fettpl/rust-workshop.git
+cd rust-workshop
 npm ci
 npm run dev
 ```

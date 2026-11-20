@@ -185,7 +185,7 @@
     },
     {
       "path": "src/content/async-lending-cancel-transfer.ts",
-      "sha256": "60162cf1793dcd0f13e97e89afaf1eef66c99a1e7e8fafb0a81c3b792d6ef78d",
+      "sha256": "e14bca1afb378d3f8e8cc8b1bc6a2841b15e45c32d9a58ae3df2c4c37f56f6d4",
       "group": "course"
     },
     {
@@ -770,7 +770,7 @@
     },
     {
       "path": "src/content/file-schema-evolution-compatibility-fixture.ts",
-      "sha256": "6fa1234cf5fc755af7f2012f9ed5e34fff71edd90f7dca3336057910f0820e4c",
+      "sha256": "1be5fb767fd223d4db2edadedefe0eeeb1ca2f9bf30e43f071a9ff2333cd6e59",
       "group": "course"
     },
     {
@@ -904,6 +904,11 @@
       "group": "course"
     },
     {
+      "path": "src/content/fixtures/oss-repository-links-delta.json",
+      "sha256": "8d787d1957979871ed9e734148521cf6ad71bd1998636927b624df071c84b760",
+      "group": "course"
+    },
+    {
       "path": "src/content/fixtures/ownership-borrow-decision-delta.json",
       "sha256": "9bd2aa5d514cf68ec80cf36083c885a54cbe29610557e601ac0c94bf07a1b19f",
       "group": "course"
@@ -1030,7 +1035,7 @@
     },
     {
       "path": "src/content/fuzz-evidence.ts",
-      "sha256": "7905c3b18bb21b705e0a62f56ea28b7ca4468d6eee4ddcdee7ef401ed3fc26d8",
+      "sha256": "4fbabc6c9478a43f721e7d737a0cba65054d414b1e39f3f12f6181657c2a1a74",
       "group": "course"
     },
     {
@@ -1550,7 +1555,7 @@
     },
     {
       "path": "src/content/projects/frame-protocol.ts",
-      "sha256": "03e44feb6ea1d18e02f21dd7687dc9a0de8e912e0e3814aca876aaf2c6a61113",
+      "sha256": "386d230fd39b5ca0f9e9fb79d05f9ce90c265bb6c7cc64ee99511a4f67e06c79",
       "group": "course"
     },
     {
@@ -1710,7 +1715,7 @@
     },
     {
       "path": "src/content/property-foundations.ts",
-      "sha256": "cc5140c3fa07d4bbd316364b0fc87ee920e329a9727a9a12dc59812217983c40",
+      "sha256": "4ff685140eb8d61a8f212f014cb6c81a4230acc2f6f3de8c7447068a7760d9af",
       "group": "course"
     },
     {
@@ -2335,7 +2340,7 @@
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "6800919b967cf88d45c0149bf0f611fa5b0ec4fbc9d4b2fbf11ce11843870dcb",
+      "sha256": "0bbc43eb5214427f8a53c2d7a44452aac0d1b2840d2b4db64921e98e29c75108",
       "group": "course"
     },
     {
@@ -2345,7 +2350,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "520d0b0fed91e6673fc7a1926d922d4205cbf1bf776eed6371984ac2b74d593b",
+      "sha256": "a49420be43dec01b45b36241098b4ea354f5d61563c9ef124787e20595f74216",
       "group": "course"
     },
     {

@@ -14,7 +14,7 @@ publicly while the reporting channel is unavailable. The maintainer must
 resolve this gap as part of the public-release process.
 
 For the planned GitHub reporting route, first open the repository's
-[Security Advisories page](https://github.com/fettpl/rustcrushcourse/security/advisories).
+[Security Advisories page](https://github.com/fettpl/rust-workshop/security/advisories).
 Only use **Report a vulnerability** when that button is actually available;
 an ordinary issue is not a private substitute. Include affected versions or
 commit, impact, and a minimal reproduction without live secrets or personal

@@ -39,7 +39,7 @@ export const propertyFoundationSources: Source[] = [
   {
     id: "property-log-analyzer",
     title: "RustCrushCourse: Log Analyzer contract",
-    url: "https://github.com/fettpl/rustcrushcourse/blob/main/src/content/log-analyzer.ts",
+    url: "https://github.com/fettpl/rust-workshop/blob/main/src/content/log-analyzer.ts",
     classification: "versioned",
     reviewedAt,
     recheckPolicy:

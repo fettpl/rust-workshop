@@ -70,7 +70,7 @@ edition="2024"
 rust-version="1.85.0"
 description="A fixed authored manifest verification workspace."
 license="MIT OR Apache-2.0"
-repository="https://github.com/fettpl/rustcrushcourse"
+repository="https://github.com/fettpl/rust-workshop"
 readme="README.md"
 publish=false
 [workspace.dependencies]

@@ -1,10 +1,10 @@
 # OSS readiness and public release plan
 
-Status: local OSS preparation, not permission to publish. The separate OSS
-feature follows the completed local disjoint-range milestone `a51f306`.
-Local verification and a reviewable candidate do not complete the public release.
-No next curriculum chapter starts before this milestone is completed or the
-maintainer explicitly changes the sequence.
+The approved publication target is the independent repository `fettpl/rust-workshop`.
+The operational sequence and retirement criteria are maintained in the
+[publication handoff](publication-handoff.md). This document records the
+curriculum, licensing and review work that prepares a candidate for that handoff.
+The release delivers source and a verified local application.
 
 ## Goal and scope
 
@@ -37,11 +37,8 @@ in ignored handoff storage, never in the public package.
 
 ## Execution plan
 
-Independent authors may work in parallel on disjoint files. Every author is
-reviewed by a different worker. Maintainer-dispatched subagents use
-GPT-6.1-Sol with medium reasoning under the current maintainer preference;
-external contributors do not need that tool. Later explicit user instructions
-take precedence. Routine reversible local work does not need repeated approval.
+Use independent review for the actual release candidate and preserve the reviewed
+SHA. Contributor tooling is optional.
 
 1. **Inspect the actual release surface.** Inventory current files, Git history,
    published branches/tags, issues, PRs/reviews, Actions history, available logs
@@ -97,8 +94,8 @@ take precedence. Routine reversible local work does not need repeated approval.
    PR still requires independent/automated-review disposition, fresh required
    checks on the exact PR head, ordinary merge and checks on resulting `main`.
    If Actions is unavailable, retain the work locally; do not bypass the gates.
-   The maintainer personally changes visibility only after accepted integration
-   and resolution of public-surface blockers. Reverify public access and CI after
+   The maintainer personally makes the verified empty shell public on the approved free route.
+   Authorize disclosure of the cleaned source separately before its first public push. Reverify public access and CI after
    that human confirmation.
 
 ## Local completion and deferred publication gates
@@ -119,12 +116,10 @@ Review the preserved public-surface exports with their dates and missing-data
 limits, then resolve and recheck actual provider surfaces under separate
 authorization before publication. Keep existing backups and historical evidence.
 
-Required GitHub checks, ordinary integration and resulting-main verification,
-authorized provider-side privacy remediation, the maintainer's personal visibility
-decision, and private vulnerability-reporting activation remain deferred while
-work is local. No push, remote change, hosted deployment, package publication or
-paid service is implied. The future [human publication handoff](publication-handoff.md)
-contains the live-setting checks and procedure; do not issue that handoff early.
+The [publication handoff](publication-handoff.md) governs the empty public shell,
+authorization to disclose source, the protected release PR, green main and
+retirement of the previous repository. The maintainer confirms destructive
+cleanup against the recorded source ID after acceptance of the replacement.
 
 ## Definition of Done
 
@@ -142,14 +137,15 @@ contains the live-setting checks and procedure; do not issue that handoff early.
       review feedback is technically verified and resolved.
 - [ ] A separate PR is merged after fresh required exact-head checks; resulting
       `main` checks pass.
-- [ ] The maintainer personally makes the repository public after the final
-      gated handoff.
+- [ ] The maintainer personally makes the empty shell public, verifies protection,
+      and authorizes the reviewed source before its first public push.
 - [ ] Anonymous access, README/licenses/links, branch protection, private security
       reporting, fork PR controls and standard runner configuration are checked
       after publication, with one justified verification run.
 - [ ] Remaining limitations are explicit and the course queue is updated.
 
-Local files alone mean ready for integration, not completed publication.
+- [ ] The previous private repository has been backed up, restored in isolation,
+      retired after acceptance of the public release, and checked for further Actions usage.
 
 ## Official references
 

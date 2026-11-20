@@ -11,7 +11,7 @@ rust-version = "1.85.0"
 authors = ["Rust Crush Course"]
 description = "A small frame protocol teaching workspace."
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/fettpl/rustcrushcourse"
+repository = "https://github.com/fettpl/rust-workshop"
 readme = "README.md"
 publish = false
 
@@ -343,12 +343,12 @@ const releaseEvidenceManifest = `{
   "normalized": true,
   "dossier_excludes_self": true,
   "archive_digest": "outer-coordinator-report",
-  "manifest_sha256": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
+  "manifest_sha256": "sha256:f0e6c8e2401ed275552293dc7f864a4c382ff761ab95637abea2571f291ee0d5",
   "lock_sha256": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
   "normalized_fixture_sha256": "sha256:fb62cec17adef1f4ea1780da4a53bbc3c60b3f4a4f82e935107c92dfb35b1f26",
   "file_sha256": {
     "starter": {
-      "Cargo.toml": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
+      "Cargo.toml": "sha256:f0e6c8e2401ed275552293dc7f864a4c382ff761ab95637abea2571f291ee0d5",
       "Cargo.lock": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
       "README.md": "sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f",
       "ADR.md": "sha256:2bd41e62f69fb242b2791d5698b8055516eb8672162e152fe6c05e0890f394a4",
@@ -374,7 +374,7 @@ const releaseEvidenceManifest = `{
       "crates/frame-probe/tests/cli.rs": "sha256:e729b1929ced24275f242a9337eb0db8ea873933c36f6cfc450c8e6aadb6d333"
     },
     "solution": {
-      "Cargo.toml": "sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339",
+      "Cargo.toml": "sha256:f0e6c8e2401ed275552293dc7f864a4c382ff761ab95637abea2571f291ee0d5",
       "Cargo.lock": "sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768",
       "README.md": "sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f",
       "ADR.md": "sha256:2bd41e62f69fb242b2791d5698b8055516eb8672162e152fe6c05e0890f394a4",

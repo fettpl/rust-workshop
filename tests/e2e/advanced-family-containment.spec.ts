@@ -1216,13 +1216,13 @@ test("A2 cancellation prose stays within the mobile viewport", async ({
   );
   expect(primaryHeadingText).toBe("Zachowaj commit po utracie odpowiedzi");
   expect(modelObservation.promptText).toContain(
-    "https://github.com/fettpl/rustcrushcourse/blob/main/docs/capstone-change-review.md",
+    "https://github.com/fettpl/rust-workshop/blob/main/docs/capstone-change-review.md",
   );
   expect(modelObservation.promptText).toContain(
     "Wybierz i opisz wszystkie cztery stany: (1) przed pierwszym poll",
   );
   expect(primaryObservation.promptText).toContain(
-    "https://github.com/fettpl/rustcrushcourse/blob/main/docs/capstone-change-review.md",
+    "https://github.com/fettpl/rust-workshop/blob/main/docs/capstone-change-review.md",
   );
   expect(primaryObservation.promptText).toContain(
     "Dla tego samego klucza i tego samego payloadu zwróć oryginalny receipt",

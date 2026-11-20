@@ -1,7 +1,7 @@
 # Third-party notices (draft)
 
 This inventory accompanies the mixed-license source-release draft. The license
-split and project credit are approved. The [bounded rights assessment](https://github.com/fettpl/rustcrushcourse/blob/main/docs/rights-assessment.md)
+split and project credit are approved. The [bounded rights assessment](https://github.com/fettpl/rust-workshop/blob/main/docs/rights-assessment.md)
 records the completed course source review and accepted icon origin; this does
 not establish exhaustive clearance. Public-release gates remain separate.
 This inventory was checked against the locked dependency graph and a fresh

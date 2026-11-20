@@ -33,7 +33,7 @@ export const fuzzEvidenceSources: Source[] = [
   {
     id: "fuzz-mini-grep-fixture",
     title: "RustCrushCourse: authored Mini grep fuzz archive",
-    url: "https://github.com/fettpl/rustcrushcourse/tree/main/src/content/projects/mini-grep",
+    url: "https://github.com/fettpl/rust-workshop/tree/main/src/content/projects/mini-grep",
     classification: "versioned",
     reviewedAt,
     recheckPolicy: "Sprawdzaj po zmianie archiwum lub niezależnego oracle.",
@@ -41,7 +41,7 @@ export const fuzzEvidenceSources: Source[] = [
   {
     id: "fuzz-evidence-boundary",
     title: "RustCrushCourse: fuzz evidence lifecycle contract",
-    url: "https://github.com/fettpl/rustcrushcourse/blob/main/docs/superpowers/plans/2026-09-20-fuzz-evidence-lifecycle.md",
+    url: "https://github.com/fettpl/rust-workshop/blob/main/docs/superpowers/plans/2026-09-20-fuzz-evidence-lifecycle.md",
     classification: "versioned",
     reviewedAt,
     recheckPolicy:

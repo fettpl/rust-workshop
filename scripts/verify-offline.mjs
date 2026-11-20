@@ -549,7 +549,7 @@ import { tsImport } from "tsx/esm/api";
       const scope = (await readFile("docs/licensing.md", "utf8"))
         .replace(
           /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
-          "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/$1$2)",
+          "](https://github.com/fettpl/rust-workshop/blob/main/docs/$1$2)",
         )
         .replace(
           /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,

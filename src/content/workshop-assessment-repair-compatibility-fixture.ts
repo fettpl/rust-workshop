@@ -1,3 +1,4 @@
+import repositoryLinksDelta from "./fixtures/oss-repository-links-delta.json";
 import answerCaseDelta from "./fixtures/answer-case-delta.json";
 import explanationEvaluationDelta from "./fixtures/explanation-evaluation-delta.json";
 import multiArchivesDelta from "./fixtures/multi-archives-delta.json";
@@ -226,10 +227,12 @@ function restoreReviewedLessons(
 }
 
 // Repeated worked examples share their predecessor value in the fixture.
-const beforeValues: Record<string, unknown> = { ...multiArchivesDelta.beforeValues, ...projectArchivesDelta.beforeValues, ...crossModuleDelta.beforeValues, ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
+const beforeValues: Record<string, unknown> = { ...repositoryLinksDelta.beforeValues, ...multiArchivesDelta.beforeValues, ...projectArchivesDelta.beforeValues, ...crossModuleDelta.beforeValues, ...allVariantsDelta.beforeValues, ...remainingDelta.beforeValues, ...practiceDelta.beforeValues };
 function withPredecessor<T extends { beforeSha256: string | null }>(entry: T) {
   return { ...entry, before: entry.beforeSha256 === null ? null : beforeValues[entry.beforeSha256] };
 }
+const repositoryLinkLessons = { ...repositoryLinksDelta, restorations: repositoryLinksDelta.restorations.map(withPredecessor) };
+const repositoryLinkRegistries = repositoryLinksDelta.registries.map(withPredecessor);
 const practiceLessons = {
   ...practiceDelta,
   restorations: practiceDelta.restorations.map(withPredecessor),
@@ -249,8 +252,9 @@ export function restoreExplanationEvaluationLessons(
   replacements: Map<unknown, unknown>,
   matches: (value: unknown, expected: string) => boolean,
 ): Lesson[] {
+  const beforeMigration = restoreReviewedLessons(lessons, replacements, matches, repositoryLinkLessons);
   return restoreReviewedLessons(
-    restoreReviewedLessons(lessons, replacements, matches, answerCaseDelta),
+    restoreReviewedLessons(beforeMigration, replacements, matches, answerCaseDelta),
     replacements, matches, explanationEvaluationDelta,
   );
 }
@@ -418,7 +422,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   entries: readonly RegistryRestoration[] = [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   let result = registry;
-  for (const entry of [...answerCaseDelta.registries, ...entries].filter(
+  for (const entry of [...repositoryLinkRegistries, ...answerCaseDelta.registries, ...entries].filter(
     (item) =>
       item.registry === name ||
       (name === "reviewExercisesById" && item.registry === "reviewExercises"),

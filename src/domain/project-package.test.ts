@@ -157,7 +157,7 @@ describe("downloadable project packages", () => {
         const expectedScope = canonicalScope
           .replace(
             /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
-            "](https://github.com/fettpl/rustcrushcourse/blob/main/docs/$1$2)",
+            "](https://github.com/fettpl/rust-workshop/blob/main/docs/$1$2)",
           )
           .replace(
             /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,

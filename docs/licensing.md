@@ -9,7 +9,7 @@ not a determination that every AI-generated part is protected or rights-cleared.
 The bounded source review and icon-origin acceptance are recorded in the
 [rights assessment](rights-assessment.md); wider public-release checks remain
 open. This is not permission to publish the repository. The project URL used in examples is
-<https://github.com/fettpl/rustcrushcourse>.
+<https://github.com/fettpl/rust-workshop>.
 
 ## Two licenses with separate scopes
 
@@ -115,7 +115,7 @@ moral-rights permissions beyond rights the licensor can grant.
 For an adapted lesson covered by CC BY 4.0, use the approved project credit:
 
 > Pixel Media Workshop Paweł Borawski, “<title or section>”,
-> source <https://github.com/fettpl/rustcrushcourse>,
+> source <https://github.com/fettpl/rust-workshop>,
 > licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 > Changes: [briefly describe the changes]. No endorsement is implied.
 
@@ -216,7 +216,7 @@ and icon-origin acceptance are recorded as reviewed; privacy remediation,
 security reporting, dependency security, required CI, integration and human
 publication remain separate gates. Resolve concrete copied-material or asset findings before including them in the public release. An unresolved
 record is not cleared by the project's general license notice. See
-[the release plan](https://github.com/fettpl/rustcrushcourse/blob/main/docs/oss-release.md) in the repository for the full sequence.
+[the release plan](https://github.com/fettpl/rust-workshop/blob/main/docs/oss-release.md) in the repository for the full sequence.
 
 ## Official sources and provenance
 
