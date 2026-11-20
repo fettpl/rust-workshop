@@ -1,0 +1,13 @@
+[package]
+name = "rust_workshop_tokio_fixtures"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+tokio = { version = "=1.54.1", default-features = false, features = ["macros", "rt", "sync", "time", "test-util", "io-util", "net"] }
+tokio-stream = { version = "=0.1.19", default-features = false }
+
+[[bin]]
+name = "authored_fixture"
+path = "src/main.rs"

@@ -1,0 +1,32 @@
+{
+  "scripts/fixtures/tokio-runtime-1.53.1/Cargo.lock": {
+    "previousSha256": "bc717eed13252ff94861e05f3213f6888ca77a8e5269c063992f3ea03627fc71",
+    "currentPath": "scripts/fixtures/tokio-runtime-1.54.1/Cargo.lock",
+    "currentSha256": "b45815b44462fe92fa3aa0f5d345482c7bf66a5dbbd93c2a6807e1502cedc879"
+  },
+  "scripts/fixtures/tokio-runtime-1.53.1/Cargo.toml": {
+    "previousSha256": "82c0a3e9fd92ee8e3ab072363f55e3644de63a75aa90b5c4b0924c212fd7fee7",
+    "currentPath": "scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml",
+    "currentSha256": "b7ae1e03e1d38675618145c8f0bb5e512ad478b8ffb179a664694624c2192b59"
+  },
+  "scripts/fixtures/tokio-runtime-1.53.1/README.md": {
+    "previousSha256": "04406395998ea9e869f8803d599793f48fc64df01052431aa6b11838ba909d3b",
+    "currentPath": "scripts/fixtures/tokio-runtime-1.54.1/README.md",
+    "currentSha256": "7ef6af8fc24f5e40f65564a6970712f35de9db9579ee685daec155ec4d46fd5a"
+  },
+  "scripts/fixtures/tokio-runtime-1.53.1/src/lib.rs": {
+    "previousSha256": "26b326ce77c2105f8979187468b53deadc8aaad531ec75deb6608e5616258a1f",
+    "currentPath": "scripts/fixtures/tokio-runtime-1.54.1/src/lib.rs",
+    "currentSha256": "26b326ce77c2105f8979187468b53deadc8aaad531ec75deb6608e5616258a1f"
+  },
+  "scripts/fixtures/tokio-runtime-1.53.1/src/main.rs": {
+    "previousSha256": "536e506bb90914c243a12b397b9a998f85ae2cbd9ba02dfd03a9e155ca5ca0f4",
+    "currentPath": "scripts/fixtures/tokio-runtime-1.54.1/src/main.rs",
+    "currentSha256": "536e506bb90914c243a12b397b9a998f85ae2cbd9ba02dfd03a9e155ca5ca0f4"
+  },
+  "src/content/async-lending-send-native.ts": {
+    "previousSha256": "38b4a5da03dcb31c0ab83edaa2cc32788ea53270b998902aff9e46a561d7c4a5",
+    "currentPath": "src/content/async-lending-send-native.ts",
+    "currentSha256": "c361985a37eba1fd5856c57030c4262a5f14a988c659b849c17edd3eb2eef564"
+  }
+}

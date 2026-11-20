@@ -1,0 +1,484 @@
+{
+  "baseline": {
+    "sha": "e4093ef",
+    "lessonsSha256": "596f42c8f9bb935132c893971bda9a21c6746387fe1636d40ae9bedb91cd52a5"
+  },
+  "restorations": [
+    {
+      "lessonId": "control-flow",
+      "stepId": "flow-recall",
+      "path": ["prompt"],
+      "before": "W jakiej kolejności pracujesz przy nowym warunku z pętlą: odkryj regułę, przewidź output, uruchom, zmodyfikuj i uruchom ponownie?",
+      "beforeSha256": "c8082cd27767d122dd8935d5901d6a46fc5dc3865ad69e1b1ee3add3185cd99b",
+      "successorSha256": "80552cbb2400b6bde01e56d1297a56f6d8a05f5f5b79677529c0523ae1afa90f"
+    },
+    {
+      "lessonId": "async-lending-receiver",
+      "stepId": "async-lending-receiver-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Future przechowuje receiver.", "future"],
+        "feedback": "Pożyczka należy do future do czasu Ready lub Drop."
+      },
+      "beforeSha256": "b3c3f7cbd4e06fc5c9e2360f5df904dc4e712c9a54533eb1d249a6b2014065e5",
+      "successorSha256": "e34ab27b76a57347209e4b16da29b2376939beea3c7763e59b13f50d09a31517"
+    },
+    {
+      "lessonId": "async-lending-callbacks",
+      "stepId": "async-lending-callbacks-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Referencję do argumentu.", "lokalną referencję"],
+        "feedback": "Future callbacku może pożyczać argument i stan."
+      },
+      "beforeSha256": "e21ff2c399f81f0c160710766712ea7ee9e1405586a5a7722591aec0ce9d5772",
+      "successorSha256": "cee13148875c1efa0d97238635a2a7a37a9f33d1565ad2699eabfc1d24af1e79"
+    },
+    {
+      "lessonId": "async-lending-callbacks",
+      "stepId": "async-lending-callbacks-recall",
+      "path": ["prompt"],
+      "before": "Co robi pierwszy błąd callbacku?",
+      "beforeSha256": "9cd6d40ae18793aab072c755b8b2b68897585cf09dd4d172cb8725d075e11f7e",
+      "successorSha256": "83bebb43de6f4c997924172b37f2efb2bf33461bfba0e0154b327a3d070c2461"
+    },
+    {
+      "lessonId": "async-lending-callbacks",
+      "stepId": "async-lending-callbacks-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Kończy wizytę.", "zatrzymuje pętlę"],
+        "feedback": "Błąd nie może zostać pominięty."
+      },
+      "beforeSha256": "327ce3645cbc021837982b1e233a3d80a9b049a87864807bb20138ce0ce91a5d",
+      "successorSha256": "fa15c042814282d0b4ea0b9c7a39160dc2487e06b30a61659ad08dada03960c3"
+    },
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepId": "async-lending-cancel-commit-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["To trzy osobne punkty.", "osobne punkty"],
+        "feedback": "Receive, callback i commit mają różne kontrakty."
+      },
+      "beforeSha256": "fdfc98ff72e5cc126c03da1ecefbbeb3163ea41883cde1c7280ff5bda5947f98",
+      "successorSha256": "1213239cf91789838494d2bdb2dea77bd37740f4bfaefdd7e06b1aeaa55170c7"
+    },
+    {
+      "lessonId": "async-lending-send-boundary",
+      "stepId": "async-lending-send-boundary-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Send i 'static są osobne.", "osobne boundy"],
+        "feedback": "Send dotyczy wątków, a 'static lifetime."
+      },
+      "beforeSha256": "a512299ad845471a91b28f59436efc52a9a6c634b9b7d9d964d85fe7d0daa385",
+      "successorSha256": "8e46fa89386efbdb635b0be8449e21df63bfee46f9b175d558c7c3db713e5168"
+    },
+    {
+      "lessonId": "async-lending-send-boundary",
+      "stepId": "async-lending-send-boundary-recall",
+      "path": ["prompt"],
+      "before": "Jakie dwa boundy są potrzebne do spawn?",
+      "beforeSha256": "5e18aeed425aa8da34f1d2a406d20c8259702d35be7f5883012a92cc11f6fb68",
+      "successorSha256": "2bb56c94d047385ea2b49609eb99f7960fc3e3c393f59727c6544ea92559a6bb"
+    },
+    {
+      "lessonId": "async-lending-send-boundary",
+      "stepId": "async-lending-send-boundary-recall",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Send i 'static.", "Send + 'static"],
+        "feedback": "Tokio może przechować i przenieść future."
+      },
+      "beforeSha256": "5071071f1b5934e349fdc3139186a17e9aae1de57fb426d82a12f39ca05f6d22",
+      "successorSha256": "51616dfeaf885a5a4414135ca3c881dbcd12d2aabb49168dcc0163e77db94b8d"
+    },
+    {
+      "lessonId": "async-lending-dyn-adapter",
+      "stepId": "async-lending-dyn-adapter-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Alokację i dynamiczne wywołanie.", "alokację"],
+        "feedback": "Boxing jest jawnie opisaną granicą kosztu."
+      },
+      "beforeSha256": "c11a370f77133482f8695b1d24e8c028cfb2d60df6dcfeb042d1481612850e14",
+      "successorSha256": "acbe2135251146e978bc73f6428ad0d1d0f2234f044288ebdca6cc0bec5127f9"
+    },
+    {
+      "lessonId": "capstone-domain-boundary",
+      "stepId": "capstone-domain-contrast",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["kontrast", "różnica", "granica"],
+        "feedback": "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny."
+      },
+      "beforeSha256": "bef72cc0d8074aab7a86b6b1b2af185c0d810120d8cef39e07535543547ea8ac",
+      "successorSha256": "67aae4d3749d6a8d592e21517587824ca4e4f31b2dac9ad779f028d1b1029a4d"
+    },
+    {
+      "lessonId": "capstone-domain-boundary",
+      "stepId": "capstone-domain-explain",
+      "path": ["explanation"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "bbe3e06f343cbfd8bef832942d2816ffaac6eefa590fca56c82c8c07448f8b01"
+    },
+    {
+      "lessonId": "capstone-domain-boundary",
+      "stepId": "capstone-domain-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["bajty", "UTF-8", "limit"],
+        "feedback": "Połącz koszt UTF-8 z limitem transportowym."
+      },
+      "beforeSha256": "8c0795ca248ac96b670e5e4c2f05e4d422cc41be1464796277549ae36c515f33",
+      "successorSha256": "74d3f190f5082a6c1c43f4e1040f7b35db905d0104c9fe7bd50f7012592ada9b"
+    },
+    {
+      "lessonId": "capstone-idempotent-commit",
+      "stepId": "capstone-commit-contrast",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["kontrast", "różnica", "granica"],
+        "feedback": "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny."
+      },
+      "beforeSha256": "bef72cc0d8074aab7a86b6b1b2af185c0d810120d8cef39e07535543547ea8ac",
+      "successorSha256": "67aae4d3749d6a8d592e21517587824ca4e4f31b2dac9ad779f028d1b1029a4d"
+    },
+    {
+      "lessonId": "capstone-idempotent-commit",
+      "stepId": "capstone-commit-explain",
+      "path": ["explanation"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "98097640ddc8adca1e52c01df6d01f5e9cbfb48c57be8ecc2883460c49d85f6f"
+    },
+    {
+      "lessonId": "capstone-idempotent-commit",
+      "stepId": "capstone-commit-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["commit", "receipt", "retry"],
+        "feedback": "Wskaż moment, po którym klient może uznać zapis za potwierdzony."
+      },
+      "beforeSha256": "a055da3dc63cd1fc7626606f3701ca80ee2430aa2257958ca58268a3cf590290",
+      "successorSha256": "c8c18ac5f3e3fd3820e13e091f4f8bcf75b7567a8defe2ea90e53363ad291faf"
+    },
+    {
+      "lessonId": "capstone-bounded-lifecycle",
+      "stepId": "capstone-lifecycle-contrast",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["kontrast", "różnica", "granica"],
+        "feedback": "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny."
+      },
+      "beforeSha256": "bef72cc0d8074aab7a86b6b1b2af185c0d810120d8cef39e07535543547ea8ac",
+      "successorSha256": "67aae4d3749d6a8d592e21517587824ca4e4f31b2dac9ad779f028d1b1029a4d"
+    },
+    {
+      "lessonId": "capstone-bounded-lifecycle",
+      "stepId": "capstone-lifecycle-explain",
+      "path": ["explanation"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "46fb4e8d45890c7a3b61017219fd5c710d3788a9330d01615bbd9cfe59335e96"
+    },
+    {
+      "lessonId": "capstone-bounded-lifecycle",
+      "stepId": "capstone-lifecycle-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["accepted", "enqueue", "właściciel"],
+        "feedback": "Powiąż accepted z pracą workera, nie z życiem socketu."
+      },
+      "beforeSha256": "3d9c7f3ff3632dc7c3d922bcf5acd4db14ac0f109c9778a5adaf53f60220bf5b",
+      "successorSha256": "7259b6967b18e29f8e0539244beed35b06381243c29ae102aba7ba439ba9d0fa"
+    },
+    {
+      "lessonId": "capstone-protocol-evolution",
+      "stepId": "capstone-protocol-contrast",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["kontrast", "różnica", "granica"],
+        "feedback": "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny."
+      },
+      "beforeSha256": "bef72cc0d8074aab7a86b6b1b2af185c0d810120d8cef39e07535543547ea8ac",
+      "successorSha256": "67aae4d3749d6a8d592e21517587824ca4e4f31b2dac9ad779f028d1b1029a4d"
+    },
+    {
+      "lessonId": "capstone-protocol-evolution",
+      "stepId": "capstone-protocol-explain",
+      "path": ["explanation"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "30d236537e2d118117824901d2a0fb4b7f5e53a58c6add31dcf950a4c3ea6208"
+    },
+    {
+      "lessonId": "capstone-protocol-evolution",
+      "stepId": "capstone-protocol-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["None", "normalizacja", "stary"],
+        "feedback": "Opisz kanoniczną wartość braku pola."
+      },
+      "beforeSha256": "1ec59056620371b1311965a87a56887d8cb06dcd59cf93443350f639a86237cc",
+      "successorSha256": "d2123df2cbfb5db247bc57dba80e04e0e542ee0a8cd5264650ca3ccbde57c814"
+    },
+    {
+      "lessonId": "capstone-incident-recovery",
+      "stepId": "capstone-incident-contrast",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["kontrast", "różnica", "granica"],
+        "feedback": "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny."
+      },
+      "beforeSha256": "bef72cc0d8074aab7a86b6b1b2af185c0d810120d8cef39e07535543547ea8ac",
+      "successorSha256": "67aae4d3749d6a8d592e21517587824ca4e4f31b2dac9ad779f028d1b1029a4d"
+    },
+    {
+      "lessonId": "capstone-incident-recovery",
+      "stepId": "capstone-incident-explain",
+      "path": ["explanation"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "09c9cce4bc30da76f3946bc18dfaf68c017cad9f1108b4e4d9eeb21402b214b2"
+    },
+    {
+      "lessonId": "capstone-incident-recovery",
+      "stepId": "capstone-incident-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Unknown", "dowód", "commit"],
+        "feedback": "Wskaż brakujący sygnał i retry jako następny krok."
+      },
+      "beforeSha256": "2ed7bf9b7b7dc9fccbe2c5482f640c156ca28572d97e954b631aa7b7698c8e4f",
+      "successorSha256": "53bbe68a4b33d4b50dff09c543ded46698be620854758fe015dc363f9696fb8f"
+    },
+    {
+      "lessonId": "capstone-release-evidence",
+      "stepId": "capstone-release-contrast",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["kontrast", "różnica", "granica"],
+        "feedback": "Wskaż, który warunek chroni granicę i jaki dowód jest jeszcze potrzebny."
+      },
+      "beforeSha256": "bef72cc0d8074aab7a86b6b1b2af185c0d810120d8cef39e07535543547ea8ac",
+      "successorSha256": "67aae4d3749d6a8d592e21517587824ca4e4f31b2dac9ad779f028d1b1029a4d"
+    },
+    {
+      "lessonId": "capstone-release-evidence",
+      "stepId": "capstone-release-explain",
+      "path": ["explanation"],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "4fc3063379170ab27390163b8df87c208ea2d8c855f22e13459e34409b3c2f41"
+    },
+    {
+      "lessonId": "capstone-release-evidence",
+      "stepId": "capstone-release-explain",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": ["Hold", "nieznany", "dowód"],
+        "feedback": "Brak aktualnego dowodu nie jest dowodem bezpieczeństwa."
+      },
+      "beforeSha256": "b186d2625a535d5df8903e6552525e9850283b8beb95abfa78c4e77f808b4462",
+      "successorSha256": "2fbf90481ee823a54e7d13626955512f824e3a71400873f903922a585284c7f5"
+    }
+  ],
+  "appendedSteps": [],
+  "lessonRestorations": [
+    {
+      "lessonId": "service-client-bounded-retry",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "bounded-retry-model-trace",
+        "kind": "observe",
+        "title": "Prześledź model",
+        "prompt": "Model: przy attempts_started=0, max_attempts=2 i deadline=20 pierwsza próba może wystartować w t=4; BUSY planuje drugi start, a receipt INSERTED(seq=7) daje Delivered. Gdy deadline jest już osiągnięty przed pierwszą próbą, wynik to NotAttempted bez I/O. To ślad obserwacyjny, nie gotowa implementacja bramki.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Porównaj ślad z tabelą wyniku."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["service-client-retry-policy"]
+        }
+      },
+      "beforeSha256": "4bd79dd4694b1d99760d6a3fc130c2e947705733cf1c9653aa317c81183322ee",
+      "successorSha256": "418cebc4a1e491fa9f2b9bb596cefb5426e035e898b1d1103429e6a66549e8f5"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "ambiguous-driver-model-trace",
+        "kind": "observe",
+        "title": "Prześledź niepewność",
+        "prompt": "Model: jedna niezmienna ramka ma historię Unknown(transport) → BUSY → DUPLICATE(seq=7). Końcowy wynik to Delivered z tym receipt; ta sama historia bez receipt kończy się Unknown, nawet jeśli ostatnia obserwacja wygląda terminalnie. To ślad obserwacyjny, nie gotowa implementacja bramki.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Porównaj ślad z tabelą wyniku."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["service-client-ambiguity-contract"]
+        }
+      },
+      "beforeSha256": "3063a7692bade4bacd39975c6fe39fd8b965bcf8c0d5cb1f9d587fb8aa422745",
+      "successorSha256": "ead6c7a7d12105201bdac18c1ee466fc31708fca01d74ef4a7a10915314d9a84"
+    },
+    {
+      "lessonId": "service-authorization-policy",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "authorization-policy-model",
+        "kind": "observe",
+        "title": "Prześledź dane i wynik",
+        "prompt": "Zaufany gospodarz ustawia G: subject1, tenant10, Tenant, Read+Append, max4. Principal ma subject1/tenant10. Koszt jest deklaracją, nie pomiarem pamięci ani CPU.\n\n| Żądanie | Wynik |\n| --- | --- |\n| tenant10/resource7, Append, cost4 | Ok |\n| tenant10/resource8, Read, cost0 | Ok |\n| tenant10/resource7, Append, cost5 | NoMatchingGrant |\n| tenant20/resource7, Append, cost4 | TenantMismatch |\n\nGrant innego podmiotu ani grant z innego tenanta nie dostarcza brakującego pola. Kolejność i duplikaty nie zmieniają wyniku.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Porównaj niezmienniki z literalnymi wynikami tabeli."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["service-scoped-authority"]
+        }
+      },
+      "beforeSha256": "5e6f0d10c906618b6e2860aa3859ee87edc2412bec66e413ecbf6e9780c54e1a",
+      "successorSha256": "36aa287853509faffa9544ec6ebff71ba334728811c5a370e1ddabdaa966ab28"
+    },
+    {
+      "lessonId": "service-authorization-attenuation",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "authorization-attenuation-model",
+        "kind": "observe",
+        "title": "Prześledź dane i wynik",
+        "prompt": "Gospodarz ma parent subject1/tenant10, Tenant, Read+Append, max100. Child zachowuje podmiot i tenant, wybiera resource7, Append, max4. Osłabienie zwraca dokładnie child. Gospodarz tworzy osobny serwis z child i limitami accepted10/cost20.\n\n| Wejście / konfiguracja | Wynik |\n| child: resource7 Append cost4 | Accepted z oryginalnym payload |\n| child: resource8 Append cost4 | Denied(NoMatchingGrant), księga bez zmian |\n| child: resource7 Read cost4 | Denied(NoMatchingGrant), księga bez zmian |\n| child: resource7 Append cost5 | Denied(NoMatchingGrant), księga bez zmian |\n| próba rozszerzenia child do Tenant | WouldAmplify, nie instaluj |\n| osobny serwis nadal z parent: resource8 | Accepted |\n| ten serwis po jawnym replace_grants z child: resource8 | Denied(NoMatchingGrant) |\n\nSamo obliczenie child nie odwołuje parent. Pusty zbiór akcji odmawia wszystkiego; max0 z niepustymi akcjami może dopuścić koszt0. To osłabienie polityki, nie delegowanie innej tożsamości.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Porównaj niezmienniki z literalnymi wynikami tabeli."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["service-scoped-authority"]
+        }
+      },
+      "beforeSha256": "3db811674f9e0ff9b01d560631149afbefd0529bab06b95f8b63d1c16bd747a0",
+      "successorSha256": "a5128f552c67e2be91215d821b9f72792834fdc2e4850e86bec6143282cd9bab"
+    },
+    {
+      "lessonId": "service-authorization-binding",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "authorization-binding-model",
+        "kind": "observe",
+        "title": "Prześledź dane i wynik",
+        "prompt": "Tutaj decide to deterministyczny test double sprawdzający argumenty, nie rzeczywista polityka autoryzacji. Fixture przechowuje oczekiwany principal, Request i wynik; dokładne argumenty dostają ten wynik, inne NoMatchingGrant.\n\n| Argumenty i ustawienie test double | Wynik |\n| subject1/tenant10, resource7 Append cost4, line-α; Ok | świadek tych samych danych |\n| subject2/tenant20, resource9 Read cost3, nowy-β; Ok | świadek dokładnie nowych danych |\n| dokładne argumenty; TenantMismatch | TenantMismatch bez świadka |\n| zmieniony payload wobec oczekiwania | NoMatchingGrant |\n\nŚwiadek przechowuje &Authority oraz własne Request. Natywny pakiet osobno sprawdza prywatność, E0382 po użyciu przeniesionej wartości i E0502 przy aktualizacji authority przed późniejszym użyciem świadka. Ostatnie użycie, a nie sam koniec zakresu leksykalnego, wyznacza pożyczkę. Świadka można porzucić; późniejsza nowa autoryzacja jest dozwolona. Nie ma gwarancji globalnego zakazu powtórzenia ani rozproszonego odwołania.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Porównaj niezmienniki z literalnymi wynikami tabeli."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["service-bound-authorization-use"]
+        }
+      },
+      "beforeSha256": "0dd7f689f10e447f325d65e1f8e9247216ed612626a71c95488a63e11be1a094",
+      "successorSha256": "457f1215a9bd7029f8881e9b648fd2daf69a6d178fa20cc157568ca317abbc33"
+    },
+    {
+      "lessonId": "service-authorization-admission",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "authorization-admission-model",
+        "kind": "observe",
+        "title": "Prześledź dane i wynik",
+        "prompt": "Świadek w tym modelu jest stałym wejściem testowym, bez dowodu wcześniejszej autoryzacji. Pełny pakiet osobno łączy politykę, własną authority serwisu i przyjęcie. Księga liczy przyjęte operacje; nie symuluje aktywnych połączeń ani zakończeń.\n\n| Stan / następne wejście | Wynik i stan |\n| accepting, (0,0), limits(2,4), cost4 | Accepted, (1,4) |\n| (1,4), cost1 | CostBudget, (1,4) |\n| (1,4), cost0 | Accepted, (2,4) |\n| (2,4), cost0 | Capacity, (2,4) |\n| closed | Closed, bez zmian |\n| accepted=MAX, limits MAX/MAX, cost0 | CounterOverflow, bez zmian |\n| charged=MAX, accepted0, limits MAX/MAX, cost1 | CounterOverflow, bez zmian |\n\nW pełnym serwisie denied request daje Denied przed kontrolą closed/full, a świadek innej authority nie jest wejściem publicznego submit. Accepted zachowuje dokładne dane; nie oznacza wykonania, zapisu trwałego ani dostarczenia.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Porównaj niezmienniki z literalnymi wynikami tabeli."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["service-bound-authorization-use"]
+        }
+      },
+      "beforeSha256": "a9f6562f34b345421c6a479cf06bff2fcd78ca343edd540b511ec0100d7ba22c",
+      "successorSha256": "ecf53a8ae5578df2c1e65428ff27b63f7c2b363856d6cfd53695bacabf1b8612"
+    },
+    {
+      "lessonId": "file-schema-normalization",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "schema-normalize-model",
+        "kind": "observe",
+        "title": "Prześledź wejście i wynik",
+        "prompt": "Zapis na dysku przechodzi walidację przed utworzeniem Decoded. Normalize przyjmuje dopiero tę sprawdzoną wartość i zwraca Loaded.\n\n| Dane wejściowe | Wersja w Loaded | Dane w Todo |\n| --- | --- | --- |\n| V1: dwa wiersze „dup” | V1 | Dwa odrębne rekordy 1 i 2, NEXT=3 |\n| V2: rekordy 9 i 2, NEXT=12 | V2 | Rekordy 9 i 2 w tej kolejności, NEXT=12 |\n| V2: pusta lista, NEXT=- | V2 | Pusta lista i wyczerpana numeracja |",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Loaded pamięta wersję wejścia, a Todo opisuje bieżącą postać danych."
+        },
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["file-version-meaning"]
+        }
+      },
+      "beforeSha256": "05bf1e666fa3a104a53224ceced7142414bbf2bbb8d8b585d0ff2c86c7941b80",
+      "successorSha256": "4356dff222e6d9c264a314014f17d3b37a0915433fd78ddabe084f1d7de70cf2"
+    },
+    {
+      "lessonId": "file-schema-explicit-upgrade",
+      "path": ["steps", "1"],
+      "before": {
+        "id": "schema-upgrade-model",
+        "kind": "observe",
+        "title": "Wskaż moment zatwierdzenia",
+        "prompt": "Odczyt i przygotowanie planu nie zapisują pliku. Przed zapisem porównujesz odczytane bajty z planem. Potem tworzysz nowy plik obok celu, zapisujesz, synchronizujesz i zamykasz go. Udane przemianowanie na ścieżkę celu zatwierdza zmianę. Przećwicz tę kolejność dla jednego zapisującego.",
+        "evaluator": {
+          "kind": "answer",
+          "accepted": ["Prześledzony model"],
+          "feedback": "Zapis pliku roboczego przygotowuje zmianę. Udane przemianowanie zastępuje plik docelowy."
+        },
+        "evidenceKind": "exposure",
+        "evidenceGate": false
+      },
+      "beforeSha256": "b967c29f874637918545683a1d3285197e0955ab3c2c7cbafddba11ec4e5b09c",
+      "successorSha256": "c5467c924785e4c5b533eeab66641418c2a1c41698c6a164d2b58b41cebe757d"
+    }
+  ]
+}

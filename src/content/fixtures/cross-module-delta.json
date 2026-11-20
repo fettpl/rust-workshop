@@ -1,0 +1,141 @@
+{
+  "baseline": {
+    "sha": "758c4a2",
+    "lessonsSha256": "779d7534ef91fb9463cfaeed36455b0181e228f5349a2a6c5045b6cdf013579d",
+    "modulesSha256": "8a00febe4d1d17f49721c39813cda8a266886d4cc1feb479cedaae1496db8780",
+    "projectsSha256": "0745efe7965e29c0f7dba521b9cde3cb0df3f63575353570e92d34cb9cd24c5b",
+    "reviewExercisesSha256": "e5fdf11799b2c8dba9f38ae7f9cca70507c4df878bd7ff3b113eaee1a6b9d23b",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [
+    {
+      "lessonId": "functions-and-ownership",
+      "stepId": "function-error",
+      "path": ["prompt"],
+      "beforeSha256": "721e97e32730ecc460b0a985e6d56b4ceab08cc9f2b62e12b53621b3c8c1b444",
+      "successorSha256": "e0341809ef59c8960ac21da4c57ac290a8df34fb3a0a6b8d0381c5a77c4cdc30"
+    },
+    {
+      "lessonId": "functions-and-ownership",
+      "stepId": "function-error",
+      "path": ["evaluator", "tests"],
+      "beforeSha256": "910b06cbfef4ada9c581b086387ddd828c130581b25e8e24996d3f66c5cd7601",
+      "successorSha256": "ef71fd76d39a983f4054cc8af3314bf663a8309c3c3da253e6b628a1deaabf50"
+    },
+    {
+      "lessonId": "number-guessing-transfer",
+      "stepId": "project-error",
+      "path": ["prompt"],
+      "beforeSha256": "b6472a5faa98d6413ecd2d40f31ca55656bcd76b0c0417d1804b604a0cde4a28",
+      "successorSha256": "ac3dff5f507a8440683d7747fd28803202cbc7e50475e23768aeb74f0bf71014"
+    },
+    {
+      "lessonId": "number-guessing-transfer",
+      "stepId": "project-error",
+      "path": ["evaluator", "tests"],
+      "beforeSha256": "da32921e04f7cad5dfe019d1536946bf4fdadfa89efcd3860aa42bd559e23d26",
+      "successorSha256": "d202ad7765a6e83a3c457121cb3ad3f2b07778435ef0fd7da5adeb7f1f23e237"
+    },
+    {
+      "lessonId": "unsafe-ffi-split-regions",
+      "stepId": "split-regions-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "1f4d02b9909ffd1213fa7daca6e8eb43933e2f1bfbdb607706a8b4d05dc0a09d"
+    },
+    {
+      "lessonId": "unsafe-ffi-split-regions",
+      "stepId": "split-regions-alias-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "1f4d02b9909ffd1213fa7daca6e8eb43933e2f1bfbdb607706a8b4d05dc0a09d"
+    },
+    {
+      "lessonId": "unsafe-ffi-split-regions",
+      "stepId": "split-regions-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "1f4d02b9909ffd1213fa7daca6e8eb43933e2f1bfbdb607706a8b4d05dc0a09d"
+    },
+    {
+      "lessonId": "unsafe-ffi-split-regions",
+      "stepId": "split-regions-recall",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "1f4d02b9909ffd1213fa7daca6e8eb43933e2f1bfbdb607706a8b4d05dc0a09d"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-gate",
+      "path": ["suppliedSolutions", "solution"],
+      "beforeSha256": "76796cec37921263911d4b0277eb76d00d679be8ee35075ab4963c8bbe9bb91b",
+      "successorSha256": "a7d825abe33ee0f2bd62bac3f4cc87c2c2d382af7e8ff66d32f27aad5b98c8e3"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-contract-gate",
+      "path": ["suppliedSolutions", "solution"],
+      "beforeSha256": "76796cec37921263911d4b0277eb76d00d679be8ee35075ab4963c8bbe9bb91b",
+      "successorSha256": "a7d825abe33ee0f2bd62bac3f4cc87c2c2d382af7e8ff66d32f27aad5b98c8e3"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-blank",
+      "path": ["suppliedSolutions", "solution"],
+      "beforeSha256": "76796cec37921263911d4b0277eb76d00d679be8ee35075ab4963c8bbe9bb91b",
+      "successorSha256": "a7d825abe33ee0f2bd62bac3f4cc87c2c2d382af7e8ff66d32f27aad5b98c8e3"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-recall",
+      "path": ["suppliedSolutions", "solution"],
+      "beforeSha256": "c313d93947784c9c6887a14278a492aae9c5e61dff9e203d671044a4d03352ef",
+      "successorSha256": "8ef84b51d4c042b1f5ba8432b07627811a2649b1459231e3294eb3ff93551fd0"
+    },
+    {
+      "lessonId": "conversion-ownership-views",
+      "stepId": "conversions-label-repair",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "54bdefd336d62f72237f036fea5eed2dbbcd82f31ebb1e4b754939fd57f69d50"
+    }
+  ],
+  "lessonRestorations": [],
+  "appendedSteps": [],
+  "registries": [
+    {
+      "registry": "projects",
+      "selector": "todo-command-session",
+      "path": ["package", "starterRevealStepRefs"],
+      "beforeSha256": null,
+      "successorSha256": "7ac58734393c19577baa802bfcf4634ef3d5890f898c7f67faf841e8014547f9"
+    }
+  ],
+  "beforeValues": {
+    "721e97e32730ecc460b0a985e6d56b4ceab08cc9f2b62e12b53621b3c8c1b444": "Uruchom przykład i wyjaśnij, dlaczego drugie println nie może użyć message. Następnie napraw granicę show: funkcja ma czytać pożyczony tekst, a wywołujący nadal posiadać message. Zachowaj oba wypisania i nie używaj clone. Testy sprawdzą także inny komunikat.",
+    "910b06cbfef4ada9c581b086387ddd828c130581b25e8e24996d3f66c5cd7601": "#[test]\nfn caller_can_reuse() {\n    let text = String::from(\"hello\");\n    show(&text);\n    assert_eq!(text, \"hello\");\n    show(&String::from(\"nowy przypadek\"));\n}",
+    "b6472a5faa98d6413ecd2d40f31ca55656bcd76b0c0417d1804b604a0cde4a28": "Ten wariant przenosi String do formatera, a potem próbuje go wypisać. Napraw granicę przez pożyczkę.",
+    "da32921e04f7cad5dfe019d1536946bf4fdadfa89efcd3860aa42bd559e23d26": "#[test]\nfn caller_can_reuse() {\n    let text = String::from(\"correct\");\n    show(&text);\n    assert_eq!(text, \"correct\");\n    show(&String::from(\"nowy przypadek\"));\n}",
+    "76796cec37921263911d4b0277eb76d00d679be8ee35075ab4963c8bbe9bb91b": [
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-recall"
+      }
+    ],
+    "c313d93947784c9c6887a14278a492aae9c5e61dff9e203d671044a4d03352ef": [
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-blank"
+      }
+    ]
+  }
+}

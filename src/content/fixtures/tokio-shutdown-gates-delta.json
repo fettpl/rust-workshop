@@ -1,0 +1,68 @@
+{
+  "baseline": {
+    "sha": "5824b7e3966fc241e1cff72005e1947c1b3a0372",
+    "modulesSha256": "3a48579cd6e6dd5b32963bbc97ddcaa7f3c31e27c6cf913bb12a465283f96227",
+    "lessonsSha256": "3fd63aadad8dc8689a44b0465662217fff09931df75617dcc1d8d5c14e9e230e"
+  },
+  "modules": [
+    {
+      "index": 28,
+      "id": "tokio-flow-control",
+      "criterionIndex": 4,
+      "beforeCriterion": {
+        "id": "tokio-close-drain-join",
+        "label": "Zamknięcie rozlicza zaakceptowane wiadomości oraz sukcesy i JoinError wszystkich dzieci.",
+        "taskRefs": [
+          {
+            "lessonId": "tokio-graceful-shutdown",
+            "stepId": "tokio-graceful-shutdown-drain-gate"
+          },
+          {
+            "lessonId": "tokio-graceful-shutdown",
+            "stepId": "tokio-graceful-shutdown-join-blank"
+          }
+        ]
+      },
+      "beforeExitGate": [
+        "Samodzielnie rozwiążesz po jednym nowym zadaniu o pojemności, rezerwacji, czasie, select i zamknięciu.",
+        "Testy obserwują dane i zasoby, także poza happy path."
+      ],
+      "beforeSha256": "abf0da4175021c17b274730ddc8472b4838283493b76fb538883164f85cfda04",
+      "successorSha256": "0915cde848c03f0904515a5f16ca0d7be6e12682afde07e1dde02a0a0aee519b"
+    },
+    {
+      "index": 29,
+      "id": "tokio-io-streams",
+      "criterionIndex": 4,
+      "beforeCriterion": {
+        "id": "tokio-stream-shutdown-policy",
+        "label": "Zamknięcie opróżnia dane i wcześniejsze rezerwacje; sygnał stop zachowuje kolejny element.",
+        "taskRefs": [
+          {
+            "lessonId": "tokio-receiver-stream-drain",
+            "stepId": "tokio-receiver-stream-drain-close-and-drain-gate"
+          },
+          {
+            "lessonId": "tokio-receiver-stream-drain",
+            "stepId": "tokio-receiver-stream-drain-next-or-stop-blank"
+          }
+        ]
+      },
+      "beforeExitGate": [
+        "Rozwiążesz nowy kontrakt z każdej z pięciu umiejętności bez pełnego rozwiązania.",
+        "Testy sprawdzą bajty, niepełne operacje, błędy, anulowanie i własność elementów."
+      ],
+      "beforeSha256": "e33adfe3eff9d2b953e777ff3dd9b979a50e8914951b31d050c5fca6b118f1c7",
+      "successorSha256": "907325ded39e8473119abc0dd1b0f0f0c1bdbd86f6eca61248e8ffce9107280f"
+    }
+  ],
+  "restorations": [],
+  "appendedSteps": [
+    {
+      "lessonId": "tokio-graceful-shutdown",
+      "index": 6,
+      "id": "tokio-graceful-shutdown-join-transfer",
+      "successorSha256": "5070262f7a465c7190e410369aa9ffc3cc926b80eaa6b82140afa812cef05559"
+    }
+  ]
+}

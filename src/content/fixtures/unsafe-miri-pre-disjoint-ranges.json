@@ -1,0 +1,505 @@
+{
+  "provenance": {
+    "sourceHead": "7c760e32d85544080d049a79f69e17afca121def",
+    "localMaintenanceBase": "f9cdeef7d71cc6cbd73740021df3b0e525c3b072",
+    "date": "2026-10-22",
+    "scope": "Exact pre-disjoint course captured from untouched canonical main; course source matches the local maintenance base",
+    "sourceHashes": {
+      "src/content/unsafe-miri.ts": "5929c46625de578e978e61f32532679bd5f324aa1fe8222fb9ada3641b08fa0e",
+      "src/content/projects/miri-safety.ts": "3f5cdaf6ff8c20a3d5d5ce0d68d0679b35903e2705c0fa6970051562c5dde681"
+    }
+  },
+  "registryKeys": [
+    "competencies",
+    "concepts",
+    "delayedReviewExercises",
+    "lessons",
+    "modules",
+    "ownershipModule",
+    "project",
+    "projects",
+    "reviewExercises",
+    "reviewExercisesById",
+    "roadmap",
+    "shortReviewExercises",
+    "sources",
+    "traces"
+  ],
+  "wholeCourseSha256": "ce77d3f044159372bacc143ff4d22c04241333e09fbbba3b52bba8b1dc1296d5",
+  "inventory": {
+    "modules": 48,
+    "lessons": 192,
+    "concepts": 194,
+    "steps": 1275,
+    "sources": 349
+  },
+  "lesson": {
+    "id": "unsafe-miri-disjoint-regions",
+    "moduleId": "unsafe-miri-contracts",
+    "conceptIds": ["unsafe-miri-disjoint-regions-contract"],
+    "competencyIds": ["unsafe-miri-disjoint-mutation"],
+    "prerequisites": ["unsafe-miri-byte-view"],
+    "title": "Rozdziel mutowalne regiony",
+    "subtitle": "Zachowaj rozłączność `&mut` na obu krawędziach i nie ukrywaj błędu granicy.",
+    "minutes": 25,
+    "outcomes": [
+      "Zaakceptujesz `mid == 0` i `mid == len`.",
+      "Odrzucisz tylko indeks poza buforem.",
+      "Udowodnisz niezależne mutacje bez nakładających się pożyczek."
+    ],
+    "steps": [
+      {
+        "id": "disjoint-regions-predict",
+        "kind": "predict",
+        "title": "Przewidź pustą stronę",
+        "prompt": "Czy `mid == len` może zwrócić pusty prawy region?",
+        "choices": [
+          {
+            "id": "0",
+            "label": "Tak"
+          },
+          {
+            "id": "1",
+            "label": "Nie, bo prawa strona musi mieć element"
+          },
+          {
+            "id": "2",
+            "label": "Tylko w unsafe"
+          }
+        ],
+        "evaluator": {
+          "kind": "choice",
+          "correct": "0",
+          "explanations": {
+            "0": "Równość jest poprawną granicą.",
+            "1": "Pusty region jest częścią kontraktu.",
+            "2": "`split_at_mut` jest bezpiecznym API."
+          }
+        },
+        "evidenceKind": "prediction",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"]
+        }
+      },
+      {
+        "id": "disjoint-regions-run",
+        "kind": "run",
+        "title": "Uruchom podział",
+        "prompt": "Zmień tylko lewy region i wypisz obie strony.",
+        "code": "fn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), &'static str> {\n    if mid > buffer.len() { return Err(\"poza zakresem\"); }\n    Ok(buffer.split_at_mut(mid))\n}\nfn main() { let mut data = [1_u8, 2, 3]; let (left, right) = split_regions(&mut data, 1).unwrap(); left[0] = 9; println!(\"{:?} {:?}\", left, right); }",
+        "solution": "fn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), &'static str> {\n    if mid > buffer.len() { return Err(\"poza zakresem\"); }\n    Ok(buffer.split_at_mut(mid))\n}\nfn main() { let mut data = [1_u8, 2, 3]; let (left, right) = split_regions(&mut data, 1).unwrap(); left[0] = 9; println!(\"{:?} {:?}\", left, right); }",
+        "evaluator": {
+          "kind": "exact-output",
+          "expected": "[9] [2, 3]\n"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"]
+        }
+      },
+      {
+        "id": "disjoint-regions-explain",
+        "kind": "explain",
+        "title": "Wyjaśnij rozłączność",
+        "prompt": "Dlaczego `split_at_mut` może zwrócić dwa `&mut`?",
+        "evaluator": {
+          "kind": "rubric",
+          "criteria": [
+            "Granica pochodzi z jednego slice'a i rozdziela elementy.",
+            "`mid == len` daje pustą prawą stronę.",
+            "Dwa regiony nie pozwalają na dostęp do tego samego elementu."
+          ]
+        },
+        "rubric": [
+          "Granica pochodzi z jednego slice'a i rozdziela elementy.",
+          "`mid == len` daje pustą prawą stronę.",
+          "Dwa regiony nie pozwalają na dostęp do tego samego elementu."
+        ],
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"]
+        }
+      },
+      {
+        "id": "disjoint-regions-gate",
+        "kind": "modify",
+        "title": "Napraw granicę",
+        "prompt": "Napraw `split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>`. `mid == 0` i `mid == buffer.len()` są poprawne; tylko `mid > len` zwraca `OutOfBounds`.",
+        "code": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    if mid >= buffer.len() { return Err(SplitError::OutOfBounds); }\n    Ok(buffer.split_at_mut(mid))\n}",
+        "solution": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    if mid > buffer.len() { return Err(SplitError::OutOfBounds); }\n    Ok(buffer.split_at_mut(mid))\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn regions_keep_both_edges_and_reject_only_out_of_bounds() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 0).unwrap();\n    assert!(left.is_empty());\n    right[0] = 7;\n    drop((left, right));\n    let len = data.len();\n    let (left, right) = split_regions(&mut data, len).unwrap();\n    assert_eq!(left, &[7, 0, 0, 0]);\n    assert!(right.is_empty());\n    assert_eq!(split_regions(&mut data, len + 1), Err(SplitError::OutOfBounds));\n}\n\n#[test]\nfn regions_allow_disjoint_mutations() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 2).unwrap();\n    left[0] = 1;\n    right[0] = 2;\n    assert_eq!(data, [1, 0, 2, 0]);\n}"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "transfer",
+        "evidenceGate": true,
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"],
+          "codingTaskId": "unsafe-miri/disjoint-regions-v1"
+        }
+      },
+      {
+        "id": "disjoint-regions-contract-gate",
+        "kind": "apply",
+        "title": "Przenieś dowód rozłączności",
+        "prompt": "Zaimplementuj ten sam podpis i zachowaj niezależne mutacje oraz oba puste przypadki bez ręcznego tworzenia nakładających się referencji. To ta sama rodzina dowodu co gate.",
+        "code": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    if mid >= buffer.len() { return Err(SplitError::OutOfBounds); }\n    Ok(buffer.split_at_mut(mid))\n}",
+        "solution": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    match buffer.get(mid..) {\n        None => Err(SplitError::OutOfBounds),\n        Some(_) => Ok(buffer.split_at_mut(mid)),\n    }\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn regions_keep_both_edges_and_reject_only_out_of_bounds() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 0).unwrap();\n    assert!(left.is_empty());\n    right[0] = 7;\n    drop((left, right));\n    let len = data.len();\n    let (left, right) = split_regions(&mut data, len).unwrap();\n    assert_eq!(left, &[7, 0, 0, 0]);\n    assert!(right.is_empty());\n    assert_eq!(split_regions(&mut data, len + 1), Err(SplitError::OutOfBounds));\n}\n\n#[test]\nfn regions_allow_disjoint_mutations() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 2).unwrap();\n    left[0] = 1;\n    right[0] = 2;\n    assert_eq!(data, [1, 0, 2, 0]);\n}"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "transfer",
+        "evidenceGate": true,
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"],
+          "codingTaskId": "unsafe-miri/disjoint-regions-v1"
+        }
+      },
+      {
+        "id": "disjoint-regions-blank",
+        "kind": "blank",
+        "title": "Blank page: disjoint mutable regions",
+        "prompt": "Od pustej kartki zdefiniuj `enum SplitError { OutOfBounds }` oraz `fn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError>`. Wymień w kodzie pełną deklarację typu i zachowaj rozłączność także przy `mid == 0` oraz `mid == len`; nie używaj unsafe jako zamiennika dowodu. Blank dzieli rodzinę dowodu z gate.",
+        "solution": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    if mid > buffer.len() { return Err(SplitError::OutOfBounds); }\n    Ok(buffer.split_at_mut(mid))\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn regions_keep_both_edges_and_reject_only_out_of_bounds() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 0).unwrap();\n    assert!(left.is_empty());\n    right[0] = 7;\n    drop((left, right));\n    let len = data.len();\n    let (left, right) = split_regions(&mut data, len).unwrap();\n    assert_eq!(left, &[7, 0, 0, 0]);\n    assert!(right.is_empty());\n    assert_eq!(split_regions(&mut data, len + 1), Err(SplitError::OutOfBounds));\n}\n\n#[test]\nfn regions_allow_disjoint_mutations() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 2).unwrap();\n    left[0] = 1;\n    right[0] = 2;\n    assert_eq!(data, [1, 0, 2, 0]);\n}"
+        },
+        "evidenceKind": "assessment",
+        "evidenceGate": true,
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"],
+          "codingTaskId": "unsafe-miri/disjoint-regions-v1"
+        }
+      },
+      {
+        "id": "disjoint-regions-recall",
+        "kind": "recall",
+        "title": "Retrieval: granice regionów",
+        "prompt": "Odtwórz `split_regions` z pamięci i przetestuj `0`, `len` oraz `len + 1`.",
+        "code": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    if mid >= buffer.len() { return Err(SplitError::OutOfBounds); }\n    let (left, right) = buffer.split_at_mut(mid);\n    Ok((left, right))\n}",
+        "solution": "#[derive(Debug, PartialEq, Eq)]\nenum SplitError { OutOfBounds }\n\nfn split_regions<'a>(buffer: &'a mut [u8], mid: usize) -> Result<(&'a mut [u8], &'a mut [u8]), SplitError> {\n    if mid > buffer.len() { return Err(SplitError::OutOfBounds); }\n    let regions = buffer.split_at_mut(mid);\n    Ok(regions)\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn recalled_regions_keep_both_boundary_sides() {\n    let mut data = [0_u8; 3];\n    let (left, right) = split_regions(&mut data, 0).unwrap();\n    assert!(left.is_empty());\n    assert_eq!(right.len(), 3);\n    drop((left, right));\n    let len = data.len();\n    let (left, right) = split_regions(&mut data, len).unwrap();\n    assert_eq!(left.len(), 3);\n    assert!(right.is_empty());\n    assert_eq!(split_regions(&mut data, len + 1), Err(SplitError::OutOfBounds));\n}\n\n#[test]\nfn recalled_regions_mutate_disjoint_elements() {\n    let mut data = [0_u8; 4];\n    let (left, right) = split_regions(&mut data, 2).unwrap();\n    left[1] = 4;\n    right[1] = 9;\n    assert_eq!(data, [0, 4, 0, 9]);\n}"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "recall",
+        "evidenceGate": false,
+        "evidence": {
+          "version": 2,
+          "conceptIds": ["unsafe-miri-disjoint-regions-contract"]
+        }
+      }
+    ],
+    "misconceptions": [
+      "`mid == len` to błąd.",
+      "Ręczne pointer arithmetic jest dowodem rozłączności.",
+      "Dwa `&mut` mogą wskazywać ten sam element, jeśli test odczytuje go szybko."
+    ],
+    "transferTask": "Zaprojektuj API dzielące bufor rekordów na region roboczy i region kontrolny, z jawną polityką granicy i bez aliasowania.",
+    "evidenceGate": "Bramki muszą przejść przypadki zero, len, out-of-bounds i niezależne mutacje.",
+    "sourceIds": ["unsafe-miri-guide", "unsafe-miri-from-raw-parts"]
+  },
+  "module": {
+    "id": "unsafe-miri-contracts",
+    "title": "Miri i pure-Rust unsafe: inicjalizacja, aliasowanie oraz wariancja",
+    "whyItMatters": "Miri nie zastępuje proofu, ale pozwala uruchomić małe pure-Rust fixtures, które ujawniają część naruszeń UB. Nauczysz się najpierw zbudować kontrakt i niezmiennik, a dopiero potem użyć interpreterowego dowodu dla raw views, rozłącznych regionów, MaybeUninit i reborrow.",
+    "capabilities": [
+      "Opisujesz i testujesz kontrakt inicjalizacji oraz lifetime widoku utworzonego z raw pointera.",
+      "Budujesz bezpieczny podział mutowalnego storage i dowodzisz rozłączności granicami wejścia.",
+      "Modelujesz stan `MaybeUninit<T>` tak, aby `Drop` dotykał wartości wyłącznie po inicjalizacji.",
+      "Rozróżniasz kowariancję lifetime od niezmienniczości zawartości `&mut T` i stosujesz krótkie reborrow."
+    ],
+    "prerequisites": ["unsafe-ffi-contracts"],
+    "lessonIds": [
+      "unsafe-miri-byte-view",
+      "unsafe-miri-disjoint-regions",
+      "unsafe-miri-slot-state",
+      "unsafe-miri-mut-slot"
+    ],
+    "exitGate": [
+      "Zbudujesz ByteView tylko z zainicjalizowanych, żywych bajtów i nie wydłużysz lifetime storage; gate i blank należą do jednej rodziny.",
+      "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania; druga forma nie tworzy nowej rodziny.",
+      "Utrzymasz Slot<T> z poprawnym stanem MaybeUninit i dokładnym Drop; powtórka recall pozostaje osobnym sprawdzeniem.",
+      "Rozpoznasz bezpieczny reborrow MutSlot oraz odrzucisz niepoprawne skrócenie wewnętrznego lifetime; przy jednej rodzinie potwierdzenie pozostaje prowizoryczne, a pomoc nie otwiera nowej wersji."
+    ],
+    "projectConnection": "Pure-Rust Miri fixtures są osobnym dowodem dla abstrakcji pamięci; nie przenoszą automatycznie zaufania na natywny C ABI ani na kod ucznia.",
+    "assessmentId": "unsafe-miri-mut-slot/mut-slot-blank",
+    "gateCriteria": [
+      {
+        "id": "unsafe-miri-byte-view-gate",
+        "label": "ByteView zachowuje kontrakt inicjalizacji i lifetime.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-blank"
+          },
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-initialized-prefix"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-disjoint-regions-gate",
+        "label": "Regiony są rozłączne dla obu krawędzi i mutacji.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-blank"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-slot-state-gate",
+        "label": "Slot<T> nie czyta ani nie dropuje Empty i nie dubluje Drop.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-blank"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-mut-slot-gate",
+        "label": "MutSlot skraca reborrow, ale odrzuca niepoprawną konwersję T.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-blank"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-byte-view-recall",
+        "label": "Retrieval ByteView zachowuje initialized storage.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-recall"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-disjoint-regions-recall",
+        "label": "Retrieval regionów zachowuje granice.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-recall"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-slot-state-recall",
+        "label": "Retrieval Slot<T> zachowuje stan.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-recall"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-mut-slot-recall",
+        "label": "Retrieval MutSlot rozróżnia reborrow i variance.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-recall"
+          }
+        ]
+      }
+    ]
+  },
+  "project": {
+    "id": "miri-safety",
+    "lessonIds": [
+      "unsafe-miri-byte-view",
+      "unsafe-miri-disjoint-regions",
+      "unsafe-miri-slot-state",
+      "unsafe-miri-mut-slot"
+    ],
+    "reviewConceptIds": [
+      "unsafe-miri-byte-view-contract",
+      "unsafe-miri-disjoint-regions-contract",
+      "unsafe-miri-slot-state-contract",
+      "unsafe-miri-mut-slot-variance-contract"
+    ],
+    "title": "Warsztat bezpieczeństwa z Miri",
+    "objective": "Przejrzyj ByteView, rozłączne regiony, stan Slot i reborrow MutSlot; następnie użyj interpretera, aby ujawnić niezdefiniowane zachowanie w małych przykładach Rust.",
+    "requiredBehaviors": [
+      "Zdefiniuj ByteView nad zainicjalizowanymi bajtami; null jest dopuszczalny tylko dla pustego widoku, bez wydłużania czasu życia pamięci.",
+      "Zwracaj rozłączne regiony mutable dla podziału od zera do długości bufora włącznie; odrzucaj podział poza zakresem.",
+      "Zachowaj niezmiennik Empty/Full w Slot<T>, aby put, take i Drop przenosiły lub zwalniały każdą wartość dokładnie raz.",
+      "Skróć dostęp przez reborrow MutSlot, zachowując invariant wewnętrznego T; niepoprawne podstawienie lifetime ma zostać odrzucone przy kompilacji."
+    ],
+    "requiredEvidence": [
+      "Cztery główne bramki, cztery zadania od pustej kartki i cztery powtórki ćwiczą ByteView, granice podziału, stan/Drop Slot i reborrow MutSlot.",
+      "Dla autorskiego pakietu sprawdź Cargo, testy, formatowanie i Clippy na stable oraz dokładnym Rust 1.85.0.",
+      "Każdy negatywny fixture kompiluje się do diagnostyki, lecz przypięty interpreter Miri go odrzuca; autorski test odrzuca też kontrolowanego mutanta kontraktu."
+    ],
+    "constraints": [
+      "Główna biblioteka korzysta wyłącznie ze std i zabrania unsafe.",
+      "Weryfikator przyjmuje wyłącznie pliki autora z repozytorium i przypięty toolchain Miri.",
+      "Negatywne przykłady można kompilować do diagnostyki, ale nigdy uruchamiać natywnie."
+    ],
+    "lessonId": "unsafe-miri-byte-view",
+    "adversarialLessonId": "unsafe-miri-mut-slot",
+    "adversarialInject": "Fixture skompilował się poprawnie. Oceń, czy dowodzi to zdefiniowanego wykonania unsafe, a następnie sprawdź wynik Miri.",
+    "retrospective": [
+      "Który warunek wstępny umożliwił przegląd bezpiecznego API?",
+      "Co zaobserwowało Miri, czego nie mogła ustalić sama natywna kompilacja?",
+      "Które twierdzenie o unsafe pozostaje poza tym ograniczonym zestawem przykładów?"
+    ],
+    "package": {
+      "id": "miri-safety-workshop",
+      "title": "Warsztat bezpieczeństwa z Miri",
+      "description": "Pakiet Rust oparty na std z bezpiecznymi kontraktami pamięci i odizolowanymi przykładami niezdefiniowanego zachowania interpretowanymi przez Miri.",
+      "instructions": [
+        "Użyj Rust 2024 i stabilnego kompilatora dla bezpiecznego pakietu; przypięty w repozytorium nightly służy tylko Miri.",
+        "Uruchom cargo fmt --check, cargo check --all-targets --offline, cargo test --offline i cargo clippy --all-targets --offline -- -D warnings.",
+        "Przed analizą negatywnych przykładów przeczytaj SAFETY.md; te programy są celowo niepoprawne.",
+        "Uruchom npm run content:miri -- --fetch w repozytorium, aby powtórzyć weryfikator autora."
+      ],
+      "revealStepRefs": [
+        {
+          "lessonId": "unsafe-miri-byte-view",
+          "stepId": "byte-view-gate"
+        },
+        {
+          "lessonId": "unsafe-miri-disjoint-regions",
+          "stepId": "disjoint-regions-gate"
+        },
+        {
+          "lessonId": "unsafe-miri-slot-state",
+          "stepId": "slot-state-gate"
+        },
+        {
+          "lessonId": "unsafe-miri-mut-slot",
+          "stepId": "mut-slot-gate"
+        }
+      ],
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "starter": "[package]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[lib]\nname = \"miri_safety_workshop\"\npath = \"src/lib.rs\"\n\n[lints.rust]\nunsafe_code = \"deny\"\n",
+          "solution": "[package]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[lib]\nname = \"miri_safety_workshop\"\npath = \"src/lib.rs\"\n\n[lints.rust]\nunsafe_code = \"deny\"\n"
+        },
+        {
+          "path": "Cargo.lock",
+          "starter": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\n",
+          "solution": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\n"
+        },
+        {
+          "path": "README.md",
+          "starter": "# Warsztat bezpieczeństwa z Miri\n\nThis authored package is a small, dependency-free Rust 2024 fixture for the\nunsafe curriculum. The library keeps its public API safe and tests the\ncontracts for borrowed byte views, disjoint mutable regions, single-value\nstorage and short mutable reborrows.\n\nThe \\`fixtures/\\` crate contains three deliberately invalid programs. They are\ncompiled for diagnostics only and are interpreted by a pinned Miri nightly.\nThe verifier never executes their native binaries. A Miri failure is evidence\nthat the interpreter observed undefined behavior in the fixture; it is not a\nclaim that Miri proves every possible unsafe program safe.\n\nRun the authored checks from the repository with:\n\n\\`\\`\\`text\nnpm run content:miri -- --stable --fetch\n\\`\\`\\`\n\nThe command accepts no learner paths, source overrides, dependency overrides,\nor arbitrary toolchains.\n",
+          "solution": "# Warsztat bezpieczeństwa z Miri\n\nThis authored package is a small, dependency-free Rust 2024 fixture for the\nunsafe curriculum. The library keeps its public API safe and tests the\ncontracts for borrowed byte views, disjoint mutable regions, single-value\nstorage and short mutable reborrows.\n\nThe \\`fixtures/\\` crate contains three deliberately invalid programs. They are\ncompiled for diagnostics only and are interpreted by a pinned Miri nightly.\nThe verifier never executes their native binaries. A Miri failure is evidence\nthat the interpreter observed undefined behavior in the fixture; it is not a\nclaim that Miri proves every possible unsafe program safe.\n\nRun the authored checks from the repository with:\n\n\\`\\`\\`text\nnpm run content:miri -- --stable --fetch\n\\`\\`\\`\n\nThe command accepts no learner paths, source overrides, dependency overrides,\nor arbitrary toolchains.\n"
+        },
+        {
+          "path": "SAFETY.md",
+          "starter": "# Safety ledger\n\nThe main crate has \\`#![forbid(unsafe_code)]\\`. Its contracts are deliberately\nsmall:\n\n- \\`ByteView\\` borrows an existing initialized slice without taking ownership or\n  extending its lifetime.\n- \\`split_regions\\` delegates the disjointness proof to the standard library and\n  returns no pair when the split is outside the slice.\n- \\`Slot<T>\\` represents Empty/Full state and transfers each stored value once;\n  \\`MutSlot\\` can shorten only its outer borrow through a reborrow.\n\nThe three files under \\`fixtures/\\` are negative examples. Each one violates a\ndifferent memory rule and must be observed through Miri. They are kept outside\nthe library crate so an accidental native test run cannot make them part of a\nnormal package test.\n",
+          "solution": "# Safety ledger\n\nThe main crate has \\`#![forbid(unsafe_code)]\\`. Its contracts are deliberately\nsmall:\n\n- \\`ByteView\\` borrows an existing initialized slice without taking ownership or\n  extending its lifetime.\n- \\`split_regions\\` delegates the disjointness proof to the standard library and\n  returns no pair when the split is outside the slice.\n- \\`Slot<T>\\` represents Empty/Full state and transfers each stored value once;\n  \\`MutSlot\\` can shorten only its outer borrow through a reborrow.\n\nThe three files under \\`fixtures/\\` are negative examples. Each one violates a\ndifferent memory rule and must be observed through Miri. They are kept outside\nthe library crate so an accidental native test run cannot make them part of a\nnormal package test.\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "starter": "#![forbid(unsafe_code)]\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub struct ByteView<'a> {\n    bytes: &'a [u8],\n}\n\nimpl<'a> ByteView<'a> {\n    pub fn from_slice(bytes: &'a [u8]) -> Self {\n        Self { bytes }\n    }\n    pub fn as_slice(&self) -> &[u8] {\n        self.bytes\n    }\n}\n\npub fn split_regions(_input: &mut [u8], _at: usize) -> Option<(&mut [u8], &mut [u8])> {\n    todo!(\"return disjoint regions only when the split is in bounds\")\n}\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum SlotState {\n    Empty,\n    Full,\n}\n\npub struct Slot<T> {\n    value: Option<T>,\n}\n\nimpl<T> Slot<T> {\n    pub fn empty() -> Self {\n        Self { value: None }\n    }\n    pub fn put(&mut self, _value: T) -> Result<(), T> {\n        todo!(\"store exactly one value\")\n    }\n    pub fn take(&mut self) -> Option<T> {\n        todo!(\"transfer the stored value once\")\n    }\n    pub fn state(&self) -> SlotState {\n        todo!(\"report Empty or Full\")\n    }\n    pub fn is_full(&self) -> bool {\n        todo!(\"report the storage state\")\n    }\n}\n\npub struct MutSlot<'a, T> {\n    value: &'a mut T,\n}\n\nimpl<'a, T> MutSlot<'a, T> {\n    pub fn new(value: &'a mut T) -> Self {\n        Self { value }\n    }\n    pub fn get(&self) -> &T {\n        self.value\n    }\n    pub fn get_mut(&mut self) -> &mut T {\n        self.value\n    }\n    pub fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        todo!(\"shorten only the outer borrow\")\n    }\n}\n",
+          "solution": "#![forbid(unsafe_code)]\n//! Safe contracts whose boundary cases are checked by the package tests.\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub struct ByteView<'a> {\n    bytes: &'a [u8],\n}\n\nimpl<'a> ByteView<'a> {\n    pub fn from_slice(bytes: &'a [u8]) -> Self {\n        Self { bytes }\n    }\n    pub fn as_slice(&self) -> &[u8] {\n        self.bytes\n    }\n}\n\npub fn split_regions(input: &mut [u8], at: usize) -> Option<(&mut [u8], &mut [u8])> {\n    input.split_at_mut_checked(at)\n}\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum SlotState {\n    Empty,\n    Full,\n}\n\npub struct Slot<T> {\n    value: Option<T>,\n}\n\nimpl<T> Slot<T> {\n    pub fn empty() -> Self {\n        Self { value: None }\n    }\n    pub fn put(&mut self, value: T) -> Result<(), T> {\n        if self.value.is_some() {\n            return Err(value);\n        }\n        self.value = Some(value);\n        Ok(())\n    }\n    pub fn take(&mut self) -> Option<T> {\n        self.value.take()\n    }\n    pub fn state(&self) -> SlotState {\n        if self.value.is_some() {\n            SlotState::Full\n        } else {\n            SlotState::Empty\n        }\n    }\n    pub fn is_full(&self) -> bool {\n        self.value.is_some()\n    }\n}\n\npub struct MutSlot<'a, T> {\n    value: &'a mut T,\n}\n\nimpl<'a, T> MutSlot<'a, T> {\n    pub fn new(value: &'a mut T) -> Self {\n        Self { value }\n    }\n    pub fn get(&self) -> &T {\n        self.value\n    }\n    pub fn get_mut(&mut self) -> &mut T {\n        self.value\n    }\n    pub fn reborrow(&mut self) -> MutSlot<'_, T> {\n        MutSlot {\n            value: &mut *self.value,\n        }\n    }\n}\n"
+        },
+        {
+          "path": "tests/safety_contract.rs",
+          "starter": "use miri_safety_workshop::{ByteView, MutSlot, Slot, SlotState, split_regions};\n\n#[test]\nfn byte_view_borrows_initialized_bytes_without_owning_them() {\n    let input = [10, 20];\n    let view = ByteView::from_slice(&input);\n    assert_eq!(view.as_slice(), &[10, 20]);\n    assert_eq!(ByteView::from_slice(&[]).as_slice(), &[]);\n}\n\n#[test]\nfn split_regions_are_disjoint() {\n    let mut input = [1, 2, 3, 4];\n    let (left, right) = split_regions(&mut input, 2).expect(\"valid split\");\n    left[0] = 9;\n    right[0] = 8;\n    assert_eq!(left, [9, 2]);\n    assert_eq!(right, [8, 4]);\n    assert!(split_regions(&mut input, 5).is_none());\n}\n\n#[test]\nfn slot_transfers_values_and_rejects_a_second_put() {\n    let mut slot = Slot::empty();\n    assert_eq!(slot.state(), SlotState::Empty);\n    assert_eq!(slot.put(7_u32), Ok(()));\n    assert_eq!(slot.state(), SlotState::Full);\n    assert_eq!(slot.put(8_u32), Err(8));\n    assert_eq!(slot.take(), Some(7));\n    assert_eq!(slot.take(), None);\n}\n\n#[test]\nfn mut_slot_reborrow_releases_the_outer_slot() {\n    let mut value = 3;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 1;\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 6);\n}\n",
+          "solution": "use miri_safety_workshop::{ByteView, MutSlot, Slot, SlotState, split_regions};\n\n#[test]\nfn byte_view_borrows_initialized_bytes_without_owning_them() {\n    let input = [10, 20];\n    let view = ByteView::from_slice(&input);\n    assert_eq!(view.as_slice(), &[10, 20]);\n    assert_eq!(ByteView::from_slice(&[]).as_slice(), &[]);\n}\n\n#[test]\nfn split_regions_are_disjoint() {\n    let mut input = [1, 2, 3, 4];\n    let (left, right) = split_regions(&mut input, 2).expect(\"valid split\");\n    left[0] = 9;\n    right[0] = 8;\n    assert_eq!(left, [9, 2]);\n    assert_eq!(right, [8, 4]);\n    assert!(split_regions(&mut input, 5).is_none());\n}\n\n#[test]\nfn slot_transfers_values_and_rejects_a_second_put() {\n    let mut slot = Slot::empty();\n    assert_eq!(slot.state(), SlotState::Empty);\n    assert_eq!(slot.put(7_u32), Ok(()));\n    assert_eq!(slot.state(), SlotState::Full);\n    assert_eq!(slot.put(8_u32), Err(8));\n    assert_eq!(slot.take(), Some(7));\n    assert_eq!(slot.take(), None);\n}\n\n#[test]\nfn mut_slot_reborrow_releases_the_outer_slot() {\n    let mut value = 3;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 1;\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 6);\n}\n"
+        },
+        {
+          "path": "tests/mutation_contract.rs",
+          "starter": "use miri_safety_workshop::split_regions;\n\n#[test]\nfn split_regions_boundary_mutant_is_rejected() {\n    let mut input = [7_u8, 8];\n    let len = input.len();\n    let (left, right) = split_regions(&mut input, len).expect(\"len is valid\");\n    assert_eq!(left, [7, 8]);\n    assert!(right.is_empty());\n}\n",
+          "solution": "use miri_safety_workshop::split_regions;\n\n#[test]\nfn split_regions_boundary_mutant_is_rejected() {\n    let mut input = [7_u8, 8];\n    let len = input.len();\n    let (left, right) = split_regions(&mut input, len).expect(\"len is valid\");\n    assert_eq!(left, [7, 8]);\n    assert!(right.is_empty());\n}\n"
+        },
+        {
+          "path": "fixtures/Cargo.toml",
+          "starter": "[package]\nname = \"miri-ub-fixtures\"\nversion = \"1.0.0\"\nedition = \"2024\"\npublish = false\n\n[[bin]]\nname = \"ub-out-of-bounds\"\npath = \"ub_out_of_bounds.rs\"\n\n[[bin]]\nname = \"ub-use-after-free\"\npath = \"ub_use_after_free.rs\"\n\n[[bin]]\nname = \"ub-aliasing\"\npath = \"ub_aliasing.rs\"\n",
+          "solution": "[package]\nname = \"miri-ub-fixtures\"\nversion = \"1.0.0\"\nedition = \"2024\"\npublish = false\n\n[[bin]]\nname = \"ub-out-of-bounds\"\npath = \"ub_out_of_bounds.rs\"\n\n[[bin]]\nname = \"ub-use-after-free\"\npath = \"ub_use_after_free.rs\"\n\n[[bin]]\nname = \"ub-aliasing\"\npath = \"ub_aliasing.rs\"\n"
+        },
+        {
+          "path": "fixtures/ub_out_of_bounds.rs",
+          "starter": "fn main() {\n    let input = [1_u8, 2_u8];\n    let raw = input.as_ptr();\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        let value = *raw.add(2);\n        std::hint::black_box(value);\n    }\n}\n",
+          "solution": "fn main() {\n    let input = [1_u8, 2_u8];\n    let raw = input.as_ptr();\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        let value = *raw.add(2);\n        std::hint::black_box(value);\n    }\n}\n"
+        },
+        {
+          "path": "fixtures/ub_use_after_free.rs",
+          "starter": "fn main() {\n    let raw = Box::into_raw(Box::new(7_u32));\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        drop(Box::from_raw(raw));\n        let value = std::ptr::read(raw);\n        std::hint::black_box(value);\n    }\n}\n",
+          "solution": "fn main() {\n    let raw = Box::into_raw(Box::new(7_u32));\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        drop(Box::from_raw(raw));\n        let value = std::ptr::read(raw);\n        std::hint::black_box(value);\n    }\n}\n"
+        },
+        {
+          "path": "fixtures/ub_aliasing.rs",
+          "starter": "fn main() {\n    let mut value = 1_u32;\n    let raw = &mut value as *mut u32;\n    let shared = &value;\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        *raw = 2;\n        std::hint::black_box(*shared);\n    }\n}\n",
+          "solution": "fn main() {\n    let mut value = 1_u32;\n    let raw = &mut value as *mut u32;\n    let shared = &value;\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        *raw = 2;\n        std::hint::black_box(*shared);\n    }\n}\n"
+        }
+      ]
+    }
+  }
+}

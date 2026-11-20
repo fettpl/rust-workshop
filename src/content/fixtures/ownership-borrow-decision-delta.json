@@ -1,0 +1,132 @@
+{
+  "baseline": {
+    "sha": "9bb12fee1dbeacb8b8349314e4b0119acbed9ad0",
+    "lessonsSha256": "c47395413045c1f1afe26f335d0d63a2bcf20f7cd408c87ffd7da2d5104def88"
+  },
+  "lessonRestorations": [
+    {
+      "lessonId": "scenario-assessment",
+      "path": ["evidenceGate"],
+      "before": "Bez podpowiedzi sklasyfikuj przypadki, napraw błąd i przejdź odroczone przypomnienie.",
+      "beforeSha256": "3b055aa0b67f6a37fbab6703b299d346bb3471e6eb0793780aefb786a9a05131",
+      "successorSha256": "103af36a590e6231502cad9074cd6353fe4f316bcf6a2cf3380dab19e92b4ae6"
+    }
+  ],
+  "restorations": [
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-retrieval",
+      "path": ["kind"],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "4c7d995e1e6179f1cc8dada95a139a9c60641ecddaff54523662fb4e898f4827"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-retrieval",
+      "path": ["title"],
+      "before": "Odroczone przypomnienie",
+      "beforeSha256": "fe6f0a87a0da09017f01968c191a8935ae41227680302489bb03fe8f70c66f94",
+      "successorSha256": "bfd5625cabb5998b961e151cf5ef9e35343e03307d2783b6100bcb7436dd69a9"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-retrieval",
+      "path": ["prompt"],
+      "before": "Bez otwierania poprzednich lekcji: kiedy należy wybrać pożyczkę zamiast clone?",
+      "beforeSha256": "32edccee1d3ed02027599a216c2af85728bb52ce20c46eddcd4ba5990de02618",
+      "successorSha256": "0d66ca04f91e1ff081eb4ef5db14c797f305c6e65a267cdff74d24eecc49d02f"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-retrieval",
+      "path": ["evaluator"],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "when the callee only needs read access",
+          "when only read access is needed",
+          "if the callee only reads",
+          "gdy wywołana funkcja potrzebuje tylko odczytu",
+          "gdy funkcja tylko czyta",
+          "kiedy potrzebny jest tylko odczyt"
+        ],
+        "feedback": "Porównaj odpowiedź z regułą własności i uzasadnij ją."
+      },
+      "beforeSha256": "8e846ae8f291e7136de8296a5f8ffad0af3b7c73a9db19666816426b8410bf7c",
+      "successorSha256": "0c3e2f8de4a028c212b7c5f4bde7f3e018ea7e317911594f0e7cd22c53065188"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-retrieval",
+      "path": ["evidenceKind"],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-retrieval",
+      "path": ["evidenceGate"],
+      "before": true,
+      "beforeSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "successorSha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-transfer",
+      "path": ["title"],
+      "before": "Końcowy transfer",
+      "beforeSha256": "e99b12a1db824ac23b051947ebd0f855b8d7681122c06e9340fd101764f43547",
+      "successorSha256": "a0abbcc7797a3aef622646351142b3d3f9cfc9205921ee729bc220b960808836"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-transfer",
+      "path": ["prompt"],
+      "before": "Wybierz API funkcji, która po wywołaniu przechowuje własną kopię etykiety.",
+      "beforeSha256": "f96ff9631d9d085f07d72b99227f8b2e2c5c9f307f63868b9727488543cbfdb7",
+      "successorSha256": "32fe42cea41ebed69787cbe94620302775b17e44b04d6dd7d2333932d46391c9"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-transfer",
+      "path": ["choices", "0", "label"],
+      "before": "Przejmij albo zbuduj własny String",
+      "beforeSha256": "2bda1456a6e4897902cafc6c220a2eddebc5fe73efd7edfdc5a76ca2b56c246e",
+      "successorSha256": "8e8becb7871665d6e054028b01240cfe5f071a680b756214f2bff8fe5adac098"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-transfer",
+      "path": ["choices", "1", "label"],
+      "before": "Tylko pożycz i przechowuj referencję na zawsze",
+      "beforeSha256": "3af8cebb90c1c26a788fa5b1609297e5c9c4ea7941764eb859f11ea61b9a4332",
+      "successorSha256": "97faf370ca07ef9f48c14971c7695bd326c5b790d74da8f4f9a6b8aab76556a4"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-transfer",
+      "path": ["evaluator", "explanations", "owned"],
+      "before": "Poprawnie: przejęcie albo zbudowanie String daje API, które może przechowywać własną etykietę.",
+      "beforeSha256": "ec29c24825c3b8ac5c4405549125dc0a5381dfab8fa0bf29673e697aa007204f",
+      "successorSha256": "b10620d9acdc3bec61f8604c91ffdce23e67b10c45944595a60d2433327cc2e2"
+    },
+    {
+      "lessonId": "scenario-assessment",
+      "stepId": "assessment-transfer",
+      "path": ["evaluator", "explanations", "borrow"],
+      "before": "Przechowywanie samej referencji wymagałoby żywotności danych wykraczającej poza wywołującego.",
+      "beforeSha256": "acc57229a675a77e0394a0417eb5771aa8c5310b5ff1b683fcb0665ea012b69f",
+      "successorSha256": "70c2cb5cc00faee9ec68270e16a31257697fefafe1fdf7c22e2f50556db90714"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "scenario-assessment",
+      "index": 6,
+      "id": "assessment-preview-borrow",
+      "successorSha256": "21d91d051744437041596b26afafe083e16394d1f5be67d22b56c4a47c70ae12"
+    }
+  ]
+}

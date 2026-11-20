@@ -1,0 +1,598 @@
+import { functionOwnershipCalibrationLesson } from "./function-ownership-calibration";
+import { sharedBorrowCalibrationLesson } from "./shared-borrow-calibration";
+import testingRecallDelta from "./fixtures/testing-recall-delta.json";
+import exerciseDelta from "./fixtures/exercise-contracts-delta.json";
+import recoveryDelta from "./fixtures/recovery-practice-delta.json";
+import { restoreTokioShutdownModules } from "./tokio-shutdown-gates-compatibility-fixture";
+import {
+  restoreMultiArchivesLessons,
+  restoreMultiArchivesRegistry,
+  restoreProjectArchivesLessons,
+  restoreProjectArchivesRegistry,
+  restoreCrossModuleLessons,
+  restoreCrossModuleRegistry,
+  restoreAllVariantsLessons,
+  restoreAllVariantsRegistry,
+  restoreRemainingCriteriaLessons,
+  restoreRemainingCriteriaRegistry,
+  restoreIndependentPracticeLessons,
+  restoreIndependentPracticeRegistry,
+  restoreWorkshopAssessmentLessons,
+  restoreCurriculumRecoveryRegistry,
+  restoreCurriculumRecoveryLessons,
+} from "./workshop-assessment-repair-compatibility-fixture";
+import { createHash } from "node:crypto";
+import type * as Course from "./course";
+import {
+  historicalBeforeA11 as beforeA11,
+  historicalBeforeA10 as beforeA10,
+  historicalBeforeA10ThenA9 as beforeA10ThenA9,
+  historicalBeforeA10ThenA9ThenCapstoneMaintenance as beforeCapstoneMaintenance,
+  historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair as beforeExistingContractRepairThroughA7,
+  historicalBeforeA10ThenExistingContractRepair as beforeExistingContractRepair,
+} from "./service-authorization-compatibility-fixture";
+
+const arrayAdditions = {
+  modules: [
+    {
+      index: 50,
+      id: "file-schema-evolution",
+      hash: "cbbe5fba12015318335eb9d5fc6cbf356167ee297affdba88054b652d80facf5",
+    },
+  ],
+  lessons: [
+    {
+      index: 202,
+      id: "file-schema-normalization",
+      hash: "2c5b5f91ff0d40f60fdfe331cddec348a6c33071a4bbb8d25ba030ddf89bd9f9",
+    },
+    {
+      index: 203,
+      id: "file-schema-explicit-upgrade",
+      hash: "0616247d6b890f0b3011c20e1fb1bbd481516c5f5dc20826525e1f7efc196a45",
+    },
+  ],
+  concepts: [
+    {
+      index: 198,
+      id: "file-version-meaning",
+      hash: "3a1a083a0d252360fbc8451a77bc03fcb5bb1b8380fd1d7a06ca384757976f30",
+    },
+  ],
+  competencies: [
+    {
+      index: 199,
+      id: "file-identity-evolution",
+      hash: "4b4ed2914e355d4ae5145da2e6c2a096853b9047b157fa3f5aac56b141ca3f7c",
+    },
+  ],
+  projects: [
+    {
+      index: 15,
+      id: "file-schema-evolution",
+      hash: "73188b4905d95ce8d25ae077b34cb4bd43a2af6a8243f705b9a1ca50c59dbac6",
+    },
+  ],
+};
+const reviewAdditions = {
+  reviewExercises: "file-version-meaning",
+  reviewExercisesById: "review-file-version-meaning",
+};
+const reviewIndex = 198;
+const reviewHash =
+  "3135a1ab6abf8a0c21aed342ee5fa6bb4e369baa349e794de136338f589137d8";
+
+type ProjectFormat = {
+  index: number;
+  projectId: string;
+  packageId: string;
+  liveHash: string;
+  historicalHash: string;
+  members: readonly {
+    path: string;
+    variant: "starter" | "solution";
+    historical: string;
+    formatted?: string;
+  }[];
+};
+
+// Restore only known package maintenance edits before comparing captured course data.
+// The retry starter formatting follow-up changes two virtual Rust files.
+const retryProjectFormat = {
+  index: 13,
+  projectId: "durable-log-retry",
+  packageId: "durable-log-retry-workspace",
+  liveHash: "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5",
+  historicalHash:
+    "e364d16da0b15fba65f1acc67cfc5cd885265bbb96c0ed1d5a968f8c2be090f3",
+  members: [
+    {
+      path: "crates/ingest-service/src/bin/ingest-retry-client.rs",
+      variant: "starter",
+      historical: String.raw`#![forbid(unsafe_code)]
+fn main() { eprintln!("uzupełnij zamknięty klient retry"); }
+`,
+    },
+    {
+      path: "crates/ingest-service/tests/retry_client.rs",
+      variant: "starter",
+      historical: String.raw`#![forbid(unsafe_code)]
+#[test]
+fn retry_contract_is_your_work() { todo!("zapisz parser, budżet i agregację Unknown"); }
+`,
+    },
+  ],
+} satisfies ProjectFormat;
+
+const miriProjectFormat = {
+  index: 11,
+  projectId: "miri-safety",
+  packageId: "miri-safety-workshop",
+  liveHash: "983152a95721ceca060f55c7d9f854431254689a0013af4dbcc6d05e0481ef91",
+  historicalHash:
+    "bac8d3f35d3a3abf93d9ae4f7ab583b3057f7b695284a489975124db1c190109",
+  members: [
+    {
+      path: "tests/mut_slot_with_mut.rs",
+      variant: "solution",
+      formatted: "    fn reborrow(&mut self) -> MutSlot<'_, T> {",
+      historical:
+        "    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {",
+    },
+  ],
+} satisfies ProjectFormat;
+
+const authorizationProjectFormat = {
+  index: 14,
+  projectId: "service-authorization",
+  packageId: "service-authorization-workshop",
+  liveHash: "ce2042b890db806eab63108681a14db213c240a30dfedc345ddfd872659262ea",
+  historicalHash:
+    "b0c2b9fd0aced454ad04eff90c150332f72c56357f1d5da60c22cb1c197a338e",
+  members: [
+    {
+      path: "src/lib.rs",
+      variant: "solution",
+      formatted: String.raw`        pub fn authorize(
+            &self,
+            principal: Principal,
+            request: Request,
+        ) -> Result<Authorized<'_>, Denial> {`,
+      historical: String.raw`        pub fn authorize<'a>(
+            &'a self,
+            principal: Principal,
+            request: Request,
+        ) -> Result<Authorized<'a>, Denial> {`,
+    },
+  ],
+} satisfies ProjectFormat;
+
+const projectFormats = [
+  retryProjectFormat,
+  miriProjectFormat,
+  authorizationProjectFormat,
+];
+
+export const hashRegistryValue = (value: unknown) =>
+  createHash("sha256").update(JSON.stringify(value)).digest("hex");
+
+type Registry = Record<PropertyKey, unknown>;
+
+function objectRecord(value: unknown): value is Registry {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+// A hash of JSON alone would accept extra undefined, symbol, or non-enumerable fields.
+function isCompleteJson(
+  value: unknown,
+  ancestors = new Set<object>(),
+): boolean {
+  if (value === null || typeof value === "boolean" || typeof value === "string")
+    return true;
+  if (typeof value === "number")
+    return Number.isFinite(value) && !Object.is(value, -0);
+  if (typeof value !== "object" || ancestors.has(value)) return false;
+  const array = Array.isArray(value);
+  if (
+    Object.getPrototypeOf(value) !==
+    (array ? Array.prototype : Object.prototype)
+  )
+    return false;
+  const keys = Reflect.ownKeys(value);
+  if (
+    array &&
+    (keys.length !== value.length + 1 ||
+      !keys.slice(0, -1).every((key, index) => key === String(index)))
+  )
+    return false;
+  ancestors.add(value);
+  const complete = keys.every((key) => {
+    if (array && key === "length") return true;
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return (
+      typeof key === "string" &&
+      descriptor?.enumerable === true &&
+      "value" in descriptor &&
+      isCompleteJson(descriptor.value, ancestors)
+    );
+  });
+  ancestors.delete(value);
+  return complete;
+}
+
+function matches(value: unknown, hash: string): boolean {
+  return isCompleteJson(value) && hashRegistryValue(value) === hash;
+}
+
+// Shared only by test projections; avoids a dependency from the lesson delta back here.
+export const matchesRegistryValue = matches;
+
+function recognized(registry: Registry): boolean {
+  for (const [key, additions] of Object.entries(arrayAdditions)) {
+    const records = registry[key];
+    if (!Array.isArray(records)) return false;
+    for (const { id, index, hash } of additions) {
+      if (
+        !matches(records[index], hash) ||
+        records.filter((item) => objectRecord(item) && item.id === id)
+          .length !== 1
+      )
+        return false;
+    }
+  }
+  for (const [key, addition] of Object.entries(reviewAdditions)) {
+    const reviews = registry[key];
+    if (
+      !objectRecord(reviews) ||
+      Object.keys(reviews)[reviewIndex] !== addition ||
+      !matches(reviews[addition], reviewHash)
+    )
+      return false;
+  }
+  return true;
+}
+
+function copyRegistry(input: Registry, replacements: Map<unknown, unknown>) {
+  const result = replacements.get(input) as Registry;
+  for (const key of Reflect.ownKeys(input)) {
+    const descriptor = Object.getOwnPropertyDescriptor(input, key)!;
+    const projectedKey =
+      key === "default" ||
+      key === "project" ||
+      key === "ownershipModule" ||
+      key === "sources" ||
+      Object.hasOwn(arrayAdditions, key) ||
+      Object.hasOwn(reviewAdditions, key);
+    // Only the known authored getters may be read. Unknown accessors stay intact.
+    const value =
+      "value" in descriptor
+        ? descriptor.value
+        : projectedKey
+          ? input[key]
+          : undefined;
+    Object.defineProperty(
+      result,
+      key,
+      replacements.has(value)
+        ? {
+            enumerable: descriptor.enumerable,
+            configurable: descriptor.configurable,
+            writable: descriptor.writable ?? false,
+            value: replacements.get(value),
+          }
+        : descriptor,
+    );
+  }
+}
+
+function withValue<T extends object, Key extends keyof T>(
+  value: T,
+  key: Key,
+  replacement: T[Key],
+): T {
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  descriptors[key] = { ...descriptors[key], value: replacement };
+  return Object.create(Object.getPrototypeOf(value), descriptors);
+}
+
+function restoreProjectFormat(
+  projects: typeof Course.projects,
+  format: ProjectFormat,
+) {
+  const { index, projectId, packageId, liveHash, historicalHash, members } =
+    format;
+  const project = projects[index];
+  if (
+    !matches(project, liveHash) ||
+    project.id !== projectId ||
+    projects.some(
+      (item, other) =>
+        other !== index &&
+        objectRecord(item) &&
+        Object.getOwnPropertyDescriptor(item, "id")?.value === project.id,
+    ) ||
+    project.package?.id !== packageId
+  )
+    return;
+
+  const files = project.package.files;
+  const descriptors = Object.fromEntries(
+    Object.entries(Object.getOwnPropertyDescriptors(files)),
+  );
+  for (const member of members) {
+    const index = files.findIndex((file) => file.path === member.path);
+    const descriptor = descriptors[index];
+    if (!descriptor) return;
+    const file: (typeof files)[number] = descriptor.value;
+    const current = file[member.variant];
+    if (current === undefined) return;
+    if (member.formatted && current.split(member.formatted).length !== 2)
+      return;
+    const historical = member.formatted
+      ? current.replace(member.formatted, () => member.historical)
+      : member.historical;
+    descriptors[index] = {
+      ...descriptor,
+      value: withValue(file, member.variant, historical),
+    };
+  }
+  const historical = withValue(
+    project,
+    "package",
+    withValue(
+      project.package,
+      "files",
+      Object.defineProperties([], descriptors),
+    ),
+  );
+  if (matches(historical, historicalHash)) return { project, historical };
+}
+
+function collectAdditions(
+  registry: Registry,
+  replacements: Map<unknown, unknown>,
+) {
+  for (const [key, additions] of Object.entries(arrayAdditions)) {
+    const items = registry[key] as unknown[];
+    if (replacements.has(items)) continue;
+    const indices = new Set(additions.map(({ index }) => index));
+    const restored =
+      key === "lessons"
+        ? restoreWorkshopAssessmentLessons(
+            items as typeof Course.lessons,
+            replacements,
+            matches,
+          )
+        : key === "modules"
+          ? restoreTokioShutdownModules(
+              items as typeof Course.modules,
+              replacements,
+              matches,
+            )
+          : restoreCurriculumRecoveryRegistry(
+              items,
+              key,
+              replacements,
+              matches,
+            );
+    const projected = restored.filter((_, index) => !indices.has(index));
+    if (key === "projects") {
+      for (const format of projectFormats) {
+        const formatted = restoreProjectFormat(
+          restored as typeof Course.projects,
+          format,
+        );
+        if (!formatted) continue;
+        if (!replacements.has(formatted.project))
+          replacements.set(formatted.project, formatted.historical);
+        projected[format.index] = replacements.get(formatted.project);
+      }
+    }
+    for (const key of Reflect.ownKeys(items)) {
+      if (
+        key === "length" ||
+        (typeof key === "string" &&
+          /^(0|[1-9]\d*)$/.test(key) &&
+          Number(key) < items.length)
+      )
+        continue;
+      Object.defineProperty(
+        projected,
+        key,
+        Object.getOwnPropertyDescriptor(items, key)!,
+      );
+    }
+    replacements.set(items, projected);
+  }
+  for (const [key, addition] of Object.entries(reviewAdditions)) {
+    const items = registry[key] as Registry;
+    if (replacements.has(items)) continue;
+    const recovered = restoreCurriculumRecoveryRegistry(
+      items,
+      key,
+      replacements,
+      matches,
+    );
+    const descriptors = Object.getOwnPropertyDescriptors(recovered);
+    for (const review of [
+      recoveryDelta.review,
+      exerciseDelta.review,
+      ...testingRecallDelta,
+    ]) {
+      const reviewKey =
+        key === "reviewExercises" ? review.conceptId : review.id;
+      const descriptor = descriptors[reviewKey];
+      const current = descriptor?.value;
+      if (matches(current, review.successorSha256)) {
+        const evaluator = withValue(
+          current.evaluator,
+          "tests",
+          review.beforeTests,
+        );
+        const previous =
+          replacements.get(current) ??
+          withValue(
+            withValue(current, "prompt", review.beforePrompt),
+            "evaluator",
+            evaluator,
+          );
+        if (matches(previous, review.beforeSha256)) {
+          descriptors[reviewKey] = { ...descriptor, value: previous };
+          replacements.set(current, previous);
+          replacements.set(
+            current.evaluator,
+            (previous as typeof current).evaluator,
+          );
+        }
+      }
+    }
+    delete descriptors[addition];
+    replacements.set(
+      items,
+      Object.create(Object.getPrototypeOf(items), descriptors),
+    );
+  }
+}
+
+/** Visit the public registries and their default namespace without breaking shared references. */
+function projectMaintenanceBatch<T extends typeof Course>(
+  course: T,
+  restoreLessons: typeof restoreIndependentPracticeLessons,
+  restoreRegistry: typeof restoreIndependentPracticeRegistry,
+): T {
+  const input = course as unknown as Registry;
+  const defaultRegistry = input.default;
+  const registries =
+    objectRecord(defaultRegistry) && defaultRegistry !== input
+      ? [input, defaultRegistry]
+      : [input];
+  const replacements = new Map<unknown, unknown>();
+  for (const registry of registries) {
+    for (const key of [
+      "lessons",
+      "modules",
+      "projects",
+      "sources",
+      "reviewExercises",
+      "reviewExercisesById",
+      "shortReviewExercises",
+      "delayedReviewExercises",
+    ]) {
+      const current = registry[key];
+      if (
+        current === null ||
+        typeof current !== "object" ||
+        (key === "lessons" && !Array.isArray(current)) ||
+        replacements.has(current)
+      )
+        continue;
+      const restored =
+        key === "lessons"
+          ? restoreLessons(
+              current as typeof Course.lessons,
+              replacements,
+              matches,
+            )
+          : restoreRegistry(
+              current,
+              key,
+              replacements,
+              matches,
+            );
+      if (restored !== current) replacements.set(current, restored);
+    }
+  }
+  if (replacements.size === 0) return course;
+  for (const registry of registries)
+    replacements.set(registry, Object.create(Object.getPrototypeOf(registry)));
+  for (const registry of registries) copyRegistry(registry, replacements);
+  return replacements.get(input) as T;
+}
+
+export function historicalBeforeMultiArchives<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreMultiArchivesLessons, restoreMultiArchivesRegistry);
+}
+
+export function historicalBeforeProjectArchives<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreProjectArchivesLessons, restoreProjectArchivesRegistry);
+}
+
+export function historicalBeforeCrossModule<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreCrossModuleLessons, restoreCrossModuleRegistry);
+}
+
+export function historicalBeforeAllVariants<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreAllVariantsLessons, restoreAllVariantsRegistry);
+}
+
+export function historicalBeforeRemainingCriteria<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreRemainingCriteriaLessons, restoreRemainingCriteriaRegistry);
+}
+
+export function historicalBeforeIndependentPractice<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreIndependentPracticeLessons, restoreIndependentPracticeRegistry);
+}
+
+export function historicalBeforeCurriculumRecovery<T extends typeof Course>(course: T): T {
+  return projectMaintenanceBatch(course, restoreCurriculumRecoveryLessons, restoreCurriculumRecoveryRegistry);
+}
+
+/** Removes the complete authored A12 successor or returns the input unchanged. */
+export function historicalBeforeA12<T extends typeof Course>(course: T): T {
+  // The A12 recognizer hashes its entire normalization lesson and module.
+  // Remove the reviewed recovery additions before checking those original hashes.
+  const input = historicalBeforeRemainingCriteria(course) as unknown as Registry;
+  const defaultRegistry = input.default;
+  if (
+    !recognized(input) ||
+    (objectRecord(defaultRegistry) &&
+      defaultRegistry !== input &&
+      !recognized(defaultRegistry))
+  )
+    return course;
+
+  const registries =
+    objectRecord(defaultRegistry) && defaultRegistry !== input
+      ? [input, defaultRegistry]
+      : [input];
+  const replacements = new Map<unknown, unknown>();
+  for (const registry of registries) {
+    collectAdditions(registry, replacements);
+    replacements.set(registry, Object.create(Object.getPrototypeOf(registry)));
+  }
+  for (const registry of registries) copyRegistry(registry, replacements);
+  return replacements.get(input) as T;
+}
+
+export function historicalBeforeA11<T extends typeof Course>(course: T): T {
+  return beforeA11(historicalBeforeA12(course));
+}
+export function historicalBeforeA10<T extends typeof Course>(course: T): T {
+  return beforeA10(historicalBeforeA12(course));
+}
+export function historicalBeforeA10ThenA9<T extends typeof Course>(
+  course: T,
+): T {
+  return beforeA10ThenA9(historicalBeforeA12(course));
+}
+export function historicalBeforeA10ThenA9ThenCapstoneMaintenance<
+  T extends typeof Course,
+>(course: T): T {
+  return beforeCapstoneMaintenance(historicalBeforeA12(course));
+}
+export function historicalBeforeA10ThenA9ThenA8ThenA7ThenExistingContractRepair<
+  T extends typeof Course,
+>(course: T): T {
+  return beforeExistingContractRepairThroughA7(historicalBeforeA12(course));
+}
+export function historicalBeforeA10ThenExistingContractRepair<
+  T extends typeof Course,
+>(course: T): T {
+  return beforeExistingContractRepair(historicalBeforeA12(course));
+}
+
+// The archived integrations compare whole lesson definitions from before the recovery tasks.
+export const [historicalFunctionOwnershipCalibration, historicalSharedBorrowCalibration] =
+  restoreRemainingCriteriaLessons(
+    [functionOwnershipCalibrationLesson, sharedBorrowCalibrationLesson], new Map(), matches,
+  );

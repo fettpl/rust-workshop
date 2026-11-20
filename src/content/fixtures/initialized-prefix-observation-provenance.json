@@ -1,0 +1,138 @@
+{
+  "schema": "initialized-prefix-observation-provenance-v1",
+  "adjudication": {
+    "status": "root-reviewed",
+    "date": "2026-10-16",
+    "basis": "Actual complete product raw campaign, independent retained byte/transport inspection, independent observation review 97, and root rendered-summary normalization. This records data provenance; strict product verification is separate.",
+    "review": {
+      "id": 97,
+      "reportSha256": "1e5bf9993d6b98527371ac72b33fa5130545d2e368da0ace07357a2b68cf8656",
+      "companionSha256": "1ff437d63ea53e76efb0fa19f8c677706ca2d5dfeeb77d511d3da87ebf11326b",
+      "inputsRehashed": 25
+    }
+  },
+  "capture": {
+    "id": "a3a-product-raw-capture-02",
+    "results": {
+      "bytes": 1422,
+      "sha256": "65bdc43150b7a156781af7672ae134372e24b9dde47aa9aa1de557bf428af161"
+    },
+    "retentionInspection": {
+      "bytes": 880,
+      "sha256": "45e5fc6ca34537e9e55f46dfc999f8d4e1ea16fb972412f17bbce893faca879a"
+    },
+    "runtimeSourceBinding": {
+      "bytes": 3096,
+      "sha256": "87dc73e7efa4f09ee1112b3dc46c5494d24695c0ab930dd2e31ac93c5babac08"
+    },
+    "targetRecipes": 358,
+    "commands": 381,
+    "archivesChecked": 25684,
+    "fileRefsChecked": 27783,
+    "retentionMismatches": 0,
+    "runtimeSourceBeforeAfterEqual": true
+  },
+  "runtimeProductSources": [
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-native.ts",
+      "bytes": 52603,
+      "sha256": "a43f8c0dca88b2e345575ae7c0fa66d53046e09afcc840cf6f2dbe861c8cbc11"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-proof.ts",
+      "bytes": 135085,
+      "sha256": "e5dd878758b274bc587ea669686c321c67d16e68a12911f88a87559891b216cc"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix-recorder.ts",
+      "bytes": 73914,
+      "sha256": "67218a259103b87240ed40fd81513ac585dba38f0390c98798d6b67723eeaaba"
+    },
+    {
+      "path": "src/content/unsafe-miri-initialized-prefix.ts",
+      "bytes": 24863,
+      "sha256": "da908ceaf16aa488910be56a6e52ffd4adf407f132a06a512701c8ebb22feca9"
+    },
+    {
+      "path": "src/runner/index.ts",
+      "bytes": 11883,
+      "sha256": "327ff3b13e127b84d3a9968f4e79216ec816f5a0d79e789bd8236cd4cb771a2f"
+    }
+  ],
+  "modes": {
+    "stable": {
+      "captureId": "a3a-product-raw-capture-02/stable/attempt-stable-wiXnKG/proof-manifest.json",
+      "manifest": {
+        "bytes": 2621079,
+        "sha256": "0a6c7b1453ce3e3635c738f6f8280627f54cd12e0f575171449f6e567fb09045"
+      },
+      "authoredRecipeInventory": {
+        "bytes": 148018,
+        "sha256": "3d56861dba6d1feb20c274958bfdc712fc770a2ffc67553b5b12af6bf5a0ea53"
+      },
+      "modeResult": {
+        "bytes": 7116,
+        "sha256": "7368cdd33b0cc6bd6f0939b6ea84fb10f9dbc832947c5a54897a8405726bdb49"
+      },
+      "targetRecipes": 118,
+      "metadataAndTargetCommands": 125,
+      "sourceBindings": 48,
+      "semanticPayloadSha256": "3f030c07fa90aeff5f103e80b2353342f741a7e853b9698a5f15d943db983b60"
+    },
+    "msrv": {
+      "captureId": "a3a-product-raw-capture-02/msrv/attempt-msrv-XgSktF/proof-manifest.json",
+      "manifest": {
+        "bytes": 2583971,
+        "sha256": "78a1b99fd8253559f2333708b2f35634dbbb817233016a0e43022edaadd34655"
+      },
+      "authoredRecipeInventory": {
+        "bytes": 147544,
+        "sha256": "45b1f187e5810f5ca1ca5e3ff670734973a54a433d1e1847d20563f134458674"
+      },
+      "modeResult": {
+        "bytes": 6866,
+        "sha256": "664c2f0d2e0acdd29a434d8cdfedcf3bd9f6405a29084918277c91b054cbbe5b"
+      },
+      "targetRecipes": 118,
+      "metadataAndTargetCommands": 125,
+      "sourceBindings": 48,
+      "semanticPayloadSha256": "4c38662e0f6c42ee6bc0644c502e3f1c3835d0c665f26c8033668d9df817bbf0"
+    },
+    "miri": {
+      "captureId": "a3a-product-raw-capture-02/miri/attempt-miri-KEFUlI/proof-manifest.json",
+      "manifest": {
+        "bytes": 35119705,
+        "sha256": "cce847a87d9da1cea40b4fd7ab3ea466dc81456afe20897d0567ae04c03d1bec"
+      },
+      "authoredRecipeInventory": {
+        "bytes": 157089,
+        "sha256": "7a9f01c6fa6f50f64c098c7d5b8dbc6a349d9dd6b513195282a52cd0de382e67"
+      },
+      "modeResult": {
+        "bytes": 7009,
+        "sha256": "2e15d8a14e7be08a0df78650847a5b17229aa6007a0bad62caf31d0e82f8a584"
+      },
+      "targetRecipes": 122,
+      "metadataAndTargetCommands": 131,
+      "sourceBindings": 64,
+      "semanticPayloadSha256": "f6403103f9bcb57e1df8625541f6a9de6fc4e05197e7cd67e8f14dc5fabfffbe"
+    }
+  },
+  "normalization": {
+    "diagnosticErrorCodes": {
+      "E0597": 12,
+      "E0499": 6,
+      "E0503": 2
+    },
+    "primarySpanMultiplicity": {
+      "E0597": 14,
+      "E0499": 6,
+      "E0503": 2
+    },
+    "intendedPanics": 84,
+    "ordinaryFullFailureOccurrences": 492,
+    "ordinaryNamedFailureOccurrences": 0,
+    "summaryPolicy": "Exact rendered abort and code-specific explanation markers. Preserve every error and primary span, including MSRV duplicate primary records and its E0503/E0499 pair.",
+    "modePayloadHashPolicy": "SHA-256 of recursively key-sorted compact UTF-8 JSON of the mode observations, excluding adjudication; no self-reference or bundle hash."
+  }
+}

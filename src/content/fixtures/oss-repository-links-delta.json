@@ -1,0 +1,154 @@
+{
+  "baseline": {
+    "sha": "a459444ad7c37272b553d1133e4708426063eb32",
+    "lessonsSha256": "0fc7cda0777391c2270cc1106a32dbf06875e9ca826ef87c4e92e1f85439b54e"
+  },
+  "restorations": [
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepId": "async-lending-cancel-commit-reply-model",
+      "path": [
+        "prompt"
+      ],
+      "beforeSha256": "8a7047c4bc85a1d5dcd846f56ecc49be195e7d31464d55b3190f11dd2461e70d",
+      "successorSha256": "ffdd7ce603dc8da7ec2ce90f498c6847bd7c00610d4722cde2608aa53ed4e4c6"
+    },
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepId": "async-lending-cancel-commit-lost-reply",
+      "path": [
+        "prompt"
+      ],
+      "beforeSha256": "a4fa31902049f6027e125e6306b7dc4f49006aad2e93b00d7f26244118be58fb",
+      "successorSha256": "bc52027c619395d9560ca48b08e4f2d4324e9062b8c458ac97dc780151c092d9"
+    },
+    {
+      "lessonId": "cargo-dependency-contract",
+      "stepId": "cargo-dependency-contract-gate",
+      "path": [
+        "code"
+      ],
+      "beforeSha256": "668685f9b7b9eef6ed0986e5a1dc2b92e1a7d546bdb85cbfb75695c2611e4d75",
+      "successorSha256": "b180e3f5e0ebe14d90c6f5a6f8fa1bd3f84eeb6b8fe7d5d56ee74372e6388bc4"
+    },
+    {
+      "lessonId": "cargo-dependency-contract",
+      "stepId": "cargo-dependency-contract-gate",
+      "path": [
+        "solution"
+      ],
+      "beforeSha256": "e53c3732be35fc3cf2a69021a7bce4612c9c7bd6e91bae7a3573896341f13559",
+      "successorSha256": "9245710196c267dd8c275ac6ab2f9f8c561d114e27064e2ea849425bd8407cea"
+    },
+    {
+      "lessonId": "cargo-lock-msrv-policy",
+      "stepId": "cargo-lock-msrv-policy-gate",
+      "path": [
+        "code"
+      ],
+      "beforeSha256": "3c4aba550f2f9664d6dc7f62071dbec6097762a09cedb4047ce63cdee5788b81",
+      "successorSha256": "c0a04a389bbb06c48fd17668f90d4e213c40a20a18deeabd1f624e45551c1961"
+    },
+    {
+      "lessonId": "cargo-lock-msrv-policy",
+      "stepId": "cargo-lock-msrv-policy-gate",
+      "path": [
+        "solution"
+      ],
+      "beforeSha256": "e53c3732be35fc3cf2a69021a7bce4612c9c7bd6e91bae7a3573896341f13559",
+      "successorSha256": "9245710196c267dd8c275ac6ab2f9f8c561d114e27064e2ea849425bd8407cea"
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepId": "cargo-package-rehearsal-gate",
+      "path": [
+        "solution"
+      ],
+      "beforeSha256": "e53c3732be35fc3cf2a69021a7bce4612c9c7bd6e91bae7a3573896341f13559",
+      "successorSha256": "9245710196c267dd8c275ac6ab2f9f8c561d114e27064e2ea849425bd8407cea"
+    }
+  ],
+  "appendedSteps": [],
+  "registries": [
+    {
+      "registry": "sources",
+      "selector": "property-log-analyzer",
+      "path": [
+        "url"
+      ],
+      "beforeSha256": "6b83242be881049804e8e7855a096d95e5409a8e426838c80c20ef144d992c80",
+      "successorSha256": "af6199733b43e4b77d4d39d6f45117417f944e6b6e5dd6ae361825ee7cb91cbf",
+      "id": "property-log-analyzer"
+    },
+    {
+      "registry": "sources",
+      "selector": "fuzz-mini-grep-fixture",
+      "path": [
+        "url"
+      ],
+      "beforeSha256": "6b58fe98b1ad0e5c59db4d7d5993739a06129841c8ed66d64bc24d19ce435de8",
+      "successorSha256": "8c0b6566aa93e17cdc7404223627bac06e49efbce2c9f19622393266ea1e0f18",
+      "id": "fuzz-mini-grep-fixture"
+    },
+    {
+      "registry": "sources",
+      "selector": "fuzz-evidence-boundary",
+      "path": [
+        "url"
+      ],
+      "beforeSha256": "260468e9cd96644a8a88e752b71c07415b799fc6e5ab1552ac0f45446b47afb1",
+      "successorSha256": "16898d76696bae5a21d03a83f8a92f0ab20f1a40de0a0f064b95e5866ff530db",
+      "id": "fuzz-evidence-boundary"
+    },
+    {
+      "registry": "projects",
+      "selector": "frame-protocol",
+      "path": [
+        "package",
+        "files",
+        "0",
+        "starter"
+      ],
+      "beforeSha256": "e53c3732be35fc3cf2a69021a7bce4612c9c7bd6e91bae7a3573896341f13559",
+      "successorSha256": "9245710196c267dd8c275ac6ab2f9f8c561d114e27064e2ea849425bd8407cea",
+      "id": "frame-protocol"
+    },
+    {
+      "registry": "projects",
+      "selector": "frame-protocol",
+      "id": "frame-protocol",
+      "path": [
+        "package",
+        "files",
+        "8",
+        "starter"
+      ],
+      "beforeSha256": "2b55469faa07ffd34bf788b69f8cd23c992f25719d93a9834550e43c86afc940",
+      "successorSha256": "be2fdd6cabdb6fa1b02f5231aab701d3f8d835429e0ce88d6e3ce42c944265cd"
+    },
+    {
+      "registry": "projects",
+      "selector": "frame-protocol",
+      "id": "frame-protocol",
+      "path": [
+        "package",
+        "files",
+        "15",
+        "starter"
+      ],
+      "beforeSha256": "2b55469faa07ffd34bf788b69f8cd23c992f25719d93a9834550e43c86afc940",
+      "successorSha256": "be2fdd6cabdb6fa1b02f5231aab701d3f8d835429e0ce88d6e3ce42c944265cd"
+    }
+  ],
+  "beforeValues": {
+    "8a7047c4bc85a1d5dcd846f56ecc49be195e7d31464d55b3190f11dd2461e70d": "Wybierz i opisz wszystkie cztery stany: (1) przed pierwszym poll: len=0, receipt nie istnieje i gate'y nie są pollowane; (2) Pending `before_commit`: nadal brak wpisu, receipt 0 będzie pierwszym nowym ordinalem, a latest waker jest zastępowany; (3) Pending `before_reply` po commicie: wpis i receipt już istnieją, lecz wynik jeszcze nie wrócił; (4) Ready: zwrócony jest istniejący albo nowy receipt. Dla tego samego klucza i tego samego payloadu replay zwraca oryginalny receipt; inny payload daje `SubmitError::Conflict`, a zapisany stan pozostaje bez zmian. Replay i konflikt mają wynik na pierwszym pollu, a anulowanie przed commit nie zużywa ordinalu. Uwzględnij dokładne puste, whitespace i Unicode Stringi, brak lookupu dla None, pożyczkę `&mut Ledger`, Debug jako zwykłą cechę bez wymogu na P/Q, bezpieczny Box::pin/manualny Context/Waker/Pending bridge oraz zakaz repollowania submit po Ready. Mechanika klienta jest dostarczona; learner może użyć zwykłego await, bez busy-loop executora. Pamiętaj, że to lokalna niedurable pamięć; późniejszy capstone kursu durable-log-service (https://github.com/fettpl/rustcrushcourse/blob/main/docs/capstone-change-review.md) służy tylko późniejszemu porównaniu i nie jest prerekwizytem. Przeczytaj oficjalne: https://doc.rust-lang.org/std/future/trait.Future.html, https://doc.rust-lang.org/reference/expressions/await-expr.html oraz https://doc.rust-lang.org/std/pin/index.html.",
+    "a4fa31902049f6027e125e6306b7dc4f49006aad2e93b00d7f26244118be58fb": "Zaimplementuj prywatny `Ledger` z `SubmitError::Conflict`, `new`, `len`, `receipt`, `value` i `submit`. Receipt zaczyna się od 0 i rośnie wyłącznie przy nowym wpisie w kolejności wstawiania: anulowanie przed commit, replay i konflikt nie zużywają ordinalu. Dla tego samego klucza i tego samego payloadu zwróć oryginalny receipt; dla tego samego klucza i innego payloadu zwróć `SubmitError::Conflict` i pozostaw zapisany stan bez zmian. Future jest leniwy: lookup istniejącego klucza nie polluje gate'ów; replay i konflikt zwracają wynik na pierwszym pollu. Dla nowego klucza awaituj `before_commit`, zapisz klucz, payload i receipt, a dopiero potem awaituj `before_reply`; Drop przed commitem nie tworzy wpisu, a Drop po commicie zachowuje wpis. Zachowaj dokładne, nieprzetworzone Stringi, brak wpisu dla nieznanego klucza i żadnych boundów Send, Sync, Clone, Unpin, Debug ani `'static` na P/Q. Dostarczony klient używa bezpiecznego `Box::pin`, `Context`, `Waker` i kontrolowanego `Poll::Pending`: pin stabilizuje adres future, Context dostarcza waker, Pending oddaje sterowanie do release; implementacja może zwyczajnie używać await i nie ma busy-loop executor. Submit nie obiecuje repollowania po Ready. Kontrakt obejmuje lokalny, niedurable stan pamięci; późniejszy capstone kursu durable-log-service (https://github.com/fettpl/rustcrushcourse/blob/main/docs/capstone-change-review.md) jest tylko późniejszym porównaniem, bez ukrytego prerekwizytu. Nie obiecuj transakcji, rollbacku, crash recovery ani równoległej exactly-once.",
+    "668685f9b7b9eef6ed0986e5a1dc2b92e1a7d546bdb85cbfb75695c2611e4d75": "[workspace]\nmembers = [\"crates/frame-protocol\", \"crates/frame-probe\"]\nresolver = \"3\"\n\n[workspace.package]\nversion = \"1.1.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\nauthors = [\"Rust Crush Course\"]\ndescription = \"A small frame protocol teaching workspace.\"\nlicense = \"MIT OR Apache-2.0\"\nrepository = \"https://github.com/fettpl/rustcrushcourse\"\nreadme = \"README.md\"\npublish = false\n\n[workspace.lints.rust]\nunsafe_code = \"forbid\"\n\n",
+    "e53c3732be35fc3cf2a69021a7bce4612c9c7bd6e91bae7a3573896341f13559": "[workspace]\nmembers = [\"crates/frame-protocol\", \"crates/frame-probe\"]\nresolver = \"3\"\n\n[workspace.package]\nversion = \"1.1.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\nauthors = [\"Rust Crush Course\"]\ndescription = \"A small frame protocol teaching workspace.\"\nlicense = \"MIT OR Apache-2.0\"\nrepository = \"https://github.com/fettpl/rustcrushcourse\"\nreadme = \"README.md\"\npublish = false\n\n[workspace.lints.rust]\nunsafe_code = \"forbid\"\n\n[workspace.dependencies]\nserde = { version = \"1.0.229\", default-features = false }\n",
+    "3c4aba550f2f9664d6dc7f62071dbec6097762a09cedb4047ce63cdee5788b81": "[workspace]\nmembers = [\"crates/frame-protocol\", \"crates/frame-probe\"]\nresolver = \"2\"\n\n[workspace.package]\nversion = \"1.1.0\"\nedition = \"2024\"\nrust-version = \"1.84.0\"\nauthors = [\"Rust Crush Course\"]\ndescription = \"A small frame protocol teaching workspace.\"\nlicense = \"MIT OR Apache-2.0\"\nrepository = \"https://github.com/fettpl/rustcrushcourse\"\nreadme = \"README.md\"\npublish = false\n\n[workspace.lints.rust]\nunsafe_code = \"forbid\"\n\n[workspace.dependencies]\nserde = { version = \"1.0.229\", default-features = false }\n",
+    "6b83242be881049804e8e7855a096d95e5409a8e426838c80c20ef144d992c80": "https://github.com/fettpl/rustcrushcourse/blob/main/src/content/log-analyzer.ts",
+    "6b58fe98b1ad0e5c59db4d7d5993739a06129841c8ed66d64bc24d19ce435de8": "https://github.com/fettpl/rustcrushcourse/tree/main/src/content/projects/mini-grep",
+    "260468e9cd96644a8a88e752b71c07415b799fc6e5ab1552ac0f45446b47afb1": "https://github.com/fettpl/rustcrushcourse/blob/main/docs/superpowers/plans/2026-09-20-fuzz-evidence-lifecycle.md",
+    "2b55469faa07ffd34bf788b69f8cd23c992f25719d93a9834550e43c86afc940": "{\n  \"schema\": 2,\n  \"project\": \"frame-protocol\",\n  \"release\": \"1.1.0\",\n  \"publish\": false,\n  \"reviewed_at\": \"2026-11-02\",\n  \"predecessor\": {\n    \"head\": \"16356613b729f5a456e506fc7508424994ab369b\",\n    \"tree\": \"e68b5123d83ac456c59d4e5c4125c9f94ac698fc\"\n  },\n  \"source_cut\": \"accepted-pre-a6\",\n  \"normalized\": true,\n  \"dossier_excludes_self\": true,\n  \"archive_digest\": \"outer-coordinator-report\",\n  \"manifest_sha256\": \"sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339\",\n  \"lock_sha256\": \"sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768\",\n  \"normalized_fixture_sha256\": \"sha256:fb62cec17adef1f4ea1780da4a53bbc3c60b3f4a4f82e935107c92dfb35b1f26\",\n  \"file_sha256\": {\n    \"starter\": {\n      \"Cargo.toml\": \"sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339\",\n      \"Cargo.lock\": \"sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768\",\n      \"README.md\": \"sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f\",\n      \"ADR.md\": \"sha256:2bd41e62f69fb242b2791d5698b8055516eb8672162e152fe6c05e0890f394a4\",\n      \"CHANGELOG.md\": \"sha256:cc80f217b2e08036afd54145e063c9718c156ad3a4c7c2091c76e91d858416fd\",\n      \"deny.toml\": \"sha256:450be14930e6d6992144ce2a473ec57b478570a3a8fcd7c259d34a889c0634ca\",\n      \"DEPENDENCY-POLICY.md\": \"sha256:36e2014b387cda4e5cb01f5cae17e2a4f7d327de54805149c8dd8674801ae7e8\",\n      \"RELEASE-CHECKLIST.md\": \"sha256:ec0396a240916337caf5ab110634b82a5c9b28d6040a5d8bb6594ac3366cc310\",\n      \"MAINTENANCE-CHALLENGE.md\": \"sha256:26939bf26b0548961d1e43c102e4d952ef8eedac7c7ef6494b562e13dcb89185\",\n      \"CHANGE-REVIEW.md\": \"sha256:ba590cd96bbd327ef82e27c15180c1c66d256cfc10f2cc899cf3053a9456d069\",\n      \"exceptions/advisories.toml\": \"sha256:f29d3938df68d8dae2a8da54be47769ae1077076be18764858c495417a3af55a\",\n      \"evidence/duplicate-dependencies.toml\": \"sha256:04318aa0d7c0b0df133ca33bbbddec0ddeae9fb4bc2db6f323587237194b70ce\",\n      \"evidence/actual-cargo-tree.txt\": \"sha256:8101b639cfa5f9cc01825ee700136a505086022179ec72f18dc3e5bc37bc350d\",\n      \"evidence/cargo-deny-snapshot.json\": \"sha256:5fb6d4547bc843d6ba33c8ebe9ac17a3d384fd973b8fe936db67d40128cea718\",\n      \"evidence/package-list.txt\": \"sha256:8d509ae8a3c10554d3b1c9f3bc7bd4511ae77dfd5b5276a016a071904eb7e5b7\",\n      \"fixtures/external-consumer/Cargo.toml\": \"sha256:e79eec1d02783b0f1a342437d8bd9b803fefc2aa6ea822e2b1f3bf04aeec3893\",\n      \"fixtures/external-consumer/src/main.rs\": \"sha256:8d8856d2c6a52dea90b018a8b8621ab47bdef8870dd107dad0456b1843d85110\",\n      \".gitignore\": \"sha256:44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb\",\n      \"crates/frame-protocol/Cargo.toml\": \"sha256:fc4055d786ffe509f9c1107e8849be3d598febecf73ec57fac5e381c6ccb3db8\",\n      \"crates/frame-protocol/src/lib.rs\": \"sha256:3e3341e2502c4b4f063ab5fff517b2eaf9e822caf76d677f8cecbb8eeb1861ee\",\n      \"crates/frame-protocol/tests/public_consumer.rs\": \"sha256:df75ddb4f503aebe76c7f7e2a14d59aa3ef84a04c02c41442429c782c224cf49\",\n      \"crates/frame-probe/Cargo.toml\": \"sha256:3f6b1d5388bcd4dc34b220b24e76b26996b688c8feea4a23b450ea5f3ed7d14f\",\n      \"crates/frame-probe/src/main.rs\": \"sha256:440d465cbb3ffdc6ea1c4f87d3ac398c9fd582ee8590abd6c31d7226dc273b10\",\n      \"crates/frame-probe/tests/cli.rs\": \"sha256:e729b1929ced24275f242a9337eb0db8ea873933c36f6cfc450c8e6aadb6d333\"\n    },\n    \"solution\": {\n      \"Cargo.toml\": \"sha256:1acdc3a7757e3fda9e7e2d73202f5a4d3595bf4b6b16e108e5de3b9a8aa02339\",\n      \"Cargo.lock\": \"sha256:c8ddd46c35d24381c66b3f7336e21320fa1ffa30165f95f8963cf47e8c415768\",\n      \"README.md\": \"sha256:342ab59ee9163a6bec7c89b3e9a8532db605a02a3c3efb3a48b32ca3d15a446f\",\n      \"ADR.md\": \"sha256:2bd41e62f69fb242b2791d5698b8055516eb8672162e152fe6c05e0890f394a4\",\n      \"CHANGELOG.md\": \"sha256:cc80f217b2e08036afd54145e063c9718c156ad3a4c7c2091c76e91d858416fd\",\n      \"deny.toml\": \"sha256:450be14930e6d6992144ce2a473ec57b478570a3a8fcd7c259d34a889c0634ca\",\n      \"DEPENDENCY-POLICY.md\": \"sha256:36e2014b387cda4e5cb01f5cae17e2a4f7d327de54805149c8dd8674801ae7e8\",\n      \"RELEASE-CHECKLIST.md\": \"sha256:ec0396a240916337caf5ab110634b82a5c9b28d6040a5d8bb6594ac3366cc310\",\n      \"MAINTENANCE-CHALLENGE.md\": \"sha256:26939bf26b0548961d1e43c102e4d952ef8eedac7c7ef6494b562e13dcb89185\",\n      \"CHANGE-REVIEW.md\": \"sha256:ba590cd96bbd327ef82e27c15180c1c66d256cfc10f2cc899cf3053a9456d069\",\n      \"exceptions/advisories.toml\": \"sha256:f29d3938df68d8dae2a8da54be47769ae1077076be18764858c495417a3af55a\",\n      \"evidence/duplicate-dependencies.toml\": \"sha256:04318aa0d7c0b0df133ca33bbbddec0ddeae9fb4bc2db6f323587237194b70ce\",\n      \"evidence/actual-cargo-tree.txt\": \"sha256:8101b639cfa5f9cc01825ee700136a505086022179ec72f18dc3e5bc37bc350d\",\n      \"evidence/cargo-deny-snapshot.json\": \"sha256:5fb6d4547bc843d6ba33c8ebe9ac17a3d384fd973b8fe936db67d40128cea718\",\n      \"evidence/package-list.txt\": \"sha256:8d509ae8a3c10554d3b1c9f3bc7bd4511ae77dfd5b5276a016a071904eb7e5b7\",\n      \"fixtures/external-consumer/Cargo.toml\": \"sha256:e79eec1d02783b0f1a342437d8bd9b803fefc2aa6ea822e2b1f3bf04aeec3893\",\n      \"fixtures/external-consumer/src/main.rs\": \"sha256:8d8856d2c6a52dea90b018a8b8621ab47bdef8870dd107dad0456b1843d85110\",\n      \".gitignore\": \"sha256:44c92e3a70ad3307b7056871c2bdb096d8bfa9373f5bf06a79bb6324a20ff2fb\",\n      \"crates/frame-protocol/Cargo.toml\": \"sha256:fc4055d786ffe509f9c1107e8849be3d598febecf73ec57fac5e381c6ccb3db8\",\n      \"crates/frame-protocol/src/lib.rs\": \"sha256:e9ae6d1e2392bec30b15589a1d50246d598e99db1eb0cc45475d12f01ff72e6a\",\n      \"crates/frame-protocol/tests/public_consumer.rs\": \"sha256:df75ddb4f503aebe76c7f7e2a14d59aa3ef84a04c02c41442429c782c224cf49\",\n      \"crates/frame-probe/Cargo.toml\": \"sha256:3f6b1d5388bcd4dc34b220b24e76b26996b688c8feea4a23b450ea5f3ed7d14f\",\n      \"crates/frame-probe/src/main.rs\": \"sha256:440d465cbb3ffdc6ea1c4f87d3ac398c9fd582ee8590abd6c31d7226dc273b10\",\n      \"crates/frame-probe/tests/cli.rs\": \"sha256:e729b1929ced24275f242a9337eb0db8ea873933c36f6cfc450c8e6aadb6d333\"\n    }\n  },\n  \"fixed_commands\": [\n    \"cargo metadata --offline --locked\",\n    \"cargo tree --offline --locked --workspace -e features\",\n    \"cargo test --workspace --offline --locked\",\n    \"cargo test -p frame-protocol --no-default-features --offline --locked\",\n    \"cargo test -p frame-probe --features diagnostics --offline --locked\",\n    \"cargo test -p frame-probe --features format --offline --locked\",\n    \"cargo +1.85.0 test --workspace --offline --locked\"\n  ],\n  \"output_tails\": [],\n  \"supply_chain_report\": \"evidence/cargo-deny-snapshot.json\",\n  \"duplicate_report\": \"evidence/duplicate-dependencies.toml\",\n  \"archive_listing\": \"evidence/package-list.txt\",\n  \"external_consumer\": \"fixtures/external-consumer\",\n  \"archive_kind\": \"authored-project-zip\",\n  \"decision\": \"hold-until-local-verifier\",\n  \"limits\": [\n    \"No registry publish is attempted.\",\n    \"The advisory snapshot is pinned authored evidence, not a live database.\",\n    \"The external consumer is compiled only after archive extraction.\",\n    \"This dossier never hashes itself or its containing archive; the outer coordinator report binds the full archive hash.\"\n  ]\n}\n"
+  }
+}

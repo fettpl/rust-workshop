@@ -1,0 +1,46 @@
+{
+  "beforeValues": {
+    "fa97a08a77cf4864a1b0e48699d192c9acc11f100c10ede75b5017cd2d0ae7ef": "use ingest_core::{Event, Level, encode_v1};\nuse ingest_store::Store;\nuse std::io::{BufRead, BufReader, Read, Write};\nuse std::net::{SocketAddr, TcpStream};\nuse std::process::{Child, Command, Stdio};\nuse std::sync::mpsc;\nuse std::thread;\nuse std::time::{Duration, Instant};\n\nfn kill_reap(child: &mut Child) {\n    let _ = child.kill();\n    let _ = child.wait();\n}\n\nfn wait_with_watchdog(child: &mut Child) -> std::process::ExitStatus {\n    let deadline = Instant::now() + Duration::from_secs(3);\n    loop {\n        match child.try_wait().unwrap() {\n            Some(status) => return status,\n            None if Instant::now() >= deadline => {\n                kill_reap(child);\n                panic!(\"child watchdog expired\");\n            }\n            None => thread::yield_now(),\n        }\n    }\n}\n\nfn run_client(args: &[String]) -> std::process::ExitStatus {\n    let mut child = Command::new(client_binary())\n        .args(args)\n        .stdout(Stdio::null())\n        .stderr(Stdio::null())\n        .spawn()\n        .unwrap();\n    wait_with_watchdog(&mut child)\n}\n\nfn start(path: &std::path::Path) -> (Child, SocketAddr) {\n    let mut child = Command::new(env!(\"CARGO_BIN_EXE_ingest-service\"))\n        .args([\"--db\", path.to_str().unwrap(), \"--bind\", \"127.0.0.1:0\"])\n        .stdin(Stdio::piped())\n        .stdout(Stdio::piped())\n        .stderr(Stdio::null())\n        .spawn()\n        .unwrap();\n    let stdout = child.stdout.take().unwrap();\n    let (sender, receiver) = mpsc::channel();\n    thread::spawn(move || {\n        let mut line = String::new();\n        let _ = BufReader::new(stdout).read_line(&mut line);\n        let _ = sender.send(line);\n    });\n    let ready = match receiver.recv_timeout(Duration::from_secs(3)) {\n        Ok(line) => line,\n        Err(_) => {\n            kill_reap(&mut child);\n            panic!(\"READY watchdog expired\");\n        }\n    };\n    assert!(ready.starts_with(\"READY 127.0.0.1:\"));\n    let address = ready\n        .trim()\n        .strip_prefix(\"READY \")\n        .unwrap()\n        .parse()\n        .unwrap();\n    (child, address)\n}\n\nfn stop(child: &mut Child) -> std::process::ExitStatus {\n    drop(child.stdin.take());\n    wait_with_watchdog(child)\n}\n\nfn request(address: SocketAddr, frame: &[u8]) -> Vec<u8> {\n    let mut stream = TcpStream::connect(address).unwrap();\n    stream\n        .set_read_timeout(Some(Duration::from_secs(3)))\n        .unwrap();\n    stream.write_all(frame).unwrap();\n    stream.shutdown(std::net::Shutdown::Write).unwrap();\n    let mut response = Vec::new();\n    stream.read_to_end(&mut response).unwrap();\n    response\n}\n\nfn frame(key: &str, message: &str) -> Vec<u8> {\n    encode_v1(&Event::new(\"source\".into(), key.into(), Level::Info, message.into()).unwrap())\n        .unwrap()\n}\n\nfn wait_for_count(path: &std::path::Path, expected: u64, child: &mut Child) {\n    let deadline = Instant::now() + Duration::from_secs(3);\n    loop {\n        if let Ok(store) = Store::open(path, 4) {\n            if store.count().unwrap_or(0) >= expected {\n                return;\n            }\n        }\n        if Instant::now() >= deadline {\n            kill_reap(child);\n            panic!(\"storage commit watchdog expired\");\n        }\n        thread::yield_now();\n    }\n}\n\nfn client_binary() -> std::path::PathBuf {\n    let mut path = std::env::current_exe().unwrap();\n    path.pop();\n    path.pop();\n    path.push(\"ingest-client\");\n    path\n}\n\n#[test]\nfn valid_process_prints_ready_after_initialization_and_eof_stops_it() {\n    let path = std::env::temp_dir().join(format!(\"ingest-process-{}.sqlite\", std::process::id()));\n    let (mut child, _) = start(&path);\n    assert!(stop(&mut child).success());\n    let _ = std::fs::remove_file(path);\n}\n\n#[test]\nfn invalid_flags_return_code_two() {\n    let mut child = Command::new(env!(\"CARGO_BIN_EXE_ingest-service\"))\n        .arg(\"--unknown\")\n        .stdin(Stdio::null())\n        .stdout(Stdio::null())\n        .spawn()\n        .unwrap();\n    assert_eq!(wait_with_watchdog(&mut child).code(), Some(2));\n}\n\n#[test]\nfn acknowledged_receipt_survives_crash_and_restart() {\n    let path =\n        std::env::temp_dir().join(format!(\"ingest-ack-restart-{}.sqlite\", std::process::id()));\n    let payload = frame(\"ack\", \"message\");\n    let (mut first, address) = start(&path);\n    let first_response = request(address, &payload);\n    assert!(first_response.starts_with(b\"OK\\t1\\tINSERTED\\n\"));\n    kill_reap(&mut first);\n    let (mut second, address) = start(&path);\n    let replay = request(address, &payload);\n    assert!(replay.starts_with(b\"OK\\t1\\tDUPLICATE\\n\"));\n    assert!(stop(&mut second).success());\n    assert_eq!(Store::open(&path, 4).unwrap().count().unwrap(), 1);\n    let _ = std::fs::remove_file(path);\n}\n\n#[test]\nfn unacknowledged_crash_replay_leaves_exactly_one_row() {\n    let path = std::env::temp_dir().join(format!(\n        \"ingest-unack-restart-{}.sqlite\",\n        std::process::id()\n    ));\n    let payload = frame(\"unack\", \"message\");\n    let (mut first, address) = start(&path);\n    let mut socket = TcpStream::connect(address).unwrap();\n    socket.write_all(&payload).unwrap();\n    wait_for_count(&path, 1, &mut first);\n    kill_reap(&mut first);\n    let (mut second, address) = start(&path);\n    let replay = request(address, &payload);\n    assert_eq!(replay, b\"OK\\t1\\tDUPLICATE\\n\");\n    assert!(stop(&mut second).success());\n    assert_eq!(Store::open(&path, 4).unwrap().count().unwrap(), 1);\n    let _ = std::fs::remove_file(path);\n}\n\n#[test]\nfn client_exit_codes_distinguish_receipt_domain_and_transport() {\n    let path = std::env::temp_dir().join(format!(\n        \"ingest-client-process-{}.sqlite\",\n        std::process::id()\n    ));\n    let (mut child, address) = start(&path);\n    let address = address.to_string();\n    let valid = run_client(&[\n        \"--addr\".into(),\n        address.clone(),\n        \"--source\".into(),\n        \"source\".into(),\n        \"--key\".into(),\n        \"client\".into(),\n        \"--level\".into(),\n        \"INFO\".into(),\n        \"--message\".into(),\n        \"message\".into(),\n    ]);\n    assert_eq!(valid.code(), Some(0));\n    let domain = run_client(&[\n        \"--addr\".into(),\n        address.clone(),\n        \"--source\".into(),\n        \"source\".into(),\n        \"--key\".into(),\n        \"client\".into(),\n        \"--level\".into(),\n        \"INFO\".into(),\n        \"--message\".into(),\n        \"bad\\nmessage\".into(),\n    ]);\n    assert_eq!(domain.code(), Some(2));\n    assert!(stop(&mut child).success());\n    let unused = std::net::TcpListener::bind(\"127.0.0.1:0\")\n        .unwrap()\n        .local_addr()\n        .unwrap();\n    let transport = run_client(&[\n        \"--addr\".into(),\n        unused.to_string(),\n        \"--source\".into(),\n        \"source\".into(),\n        \"--key\".into(),\n        \"client\".into(),\n        \"--level\".into(),\n        \"INFO\".into(),\n        \"--message\".into(),\n        \"message\".into(),\n    ]);\n    assert_eq!(transport.code(), Some(3));\n    let _ = std::fs::remove_file(path);\n}\n"
+  },
+  "registries": [
+    {
+      "registry": "projects",
+      "selector": "durable-log-service",
+      "id": "durable-log-service",
+      "path": [
+        "package",
+        "files",
+        "35",
+        "solution"
+      ],
+      "beforeSha256": "fa97a08a77cf4864a1b0e48699d192c9acc11f100c10ede75b5017cd2d0ae7ef",
+      "successorSha256": "7c5f1f9fd2fd7abf9db9a5c984ec93034db587dc3bd1afcecf00fc5b44bb1da7"
+    },
+    {
+      "registry": "projects",
+      "selector": "durable-log-retry",
+      "id": "durable-log-retry",
+      "path": [
+        "package",
+        "files",
+        "35",
+        "starter"
+      ],
+      "beforeSha256": "fa97a08a77cf4864a1b0e48699d192c9acc11f100c10ede75b5017cd2d0ae7ef",
+      "successorSha256": "7c5f1f9fd2fd7abf9db9a5c984ec93034db587dc3bd1afcecf00fc5b44bb1da7"
+    },
+    {
+      "registry": "projects",
+      "selector": "durable-log-retry",
+      "id": "durable-log-retry",
+      "path": [
+        "package",
+        "files",
+        "35",
+        "solution"
+      ],
+      "beforeSha256": "fa97a08a77cf4864a1b0e48699d192c9acc11f100c10ede75b5017cd2d0ae7ef",
+      "successorSha256": "7c5f1f9fd2fd7abf9db9a5c984ec93034db587dc3bd1afcecf00fc5b44bb1da7"
+    }
+  ]
+}

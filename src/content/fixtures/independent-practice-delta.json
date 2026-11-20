@@ -1,0 +1,1900 @@
+{
+  "baseline": {
+    "sha": "02b6126",
+    "lessonsSha256": "335dffe353d3b8348148f1620d301edbc853dac1e31d0a03f92a0416c7a4dbf0",
+    "modulesSha256": "583091b30435f100d1c3d17cccdbcc2335c33618cf6ecdb07491c30793866128",
+    "projectsSha256": "0745efe7965e29c0f7dba521b9cde3cb0df3f63575353570e92d34cb9cd24c5b",
+    "reviewExercisesSha256": "88a950e72556b3d574c9e44ab4de194ee5b32b006583a2f03f18c404b4b4b0e7",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [
+    {
+      "lessonId": "functions-expressions",
+      "stepId": "function-run",
+      "path": ["prompt"],
+      "beforeSha256": "771ff55bbed9c5bddc6a048d2dd3d421bb82db15f2107ccbcec06423943e27b5",
+      "successorSha256": "6f56c2ec8c28bc4d06affc4bb090aaf5084f8f6a44cf1459a885b36af019e5b2"
+    },
+    {
+      "lessonId": "functions-expressions",
+      "stepId": "function-run",
+      "path": ["code"],
+      "beforeSha256": "75478ab16a3b760dd872d8fd35d7769e62057fd495e230c52d34074fffe2e189",
+      "successorSha256": "bac4d7988dfb0d56288692cdb0ed9315266bf84fd77d7fbbbc6c108568077585"
+    },
+    {
+      "lessonId": "functions-expressions",
+      "stepId": "function-run",
+      "path": ["solution"],
+      "beforeSha256": "75478ab16a3b760dd872d8fd35d7769e62057fd495e230c52d34074fffe2e189",
+      "successorSha256": "bac4d7988dfb0d56288692cdb0ed9315266bf84fd77d7fbbbc6c108568077585"
+    },
+    {
+      "lessonId": "foundations-assessment",
+      "stepId": "assessment-tests",
+      "path": ["prompt"],
+      "beforeSha256": "169dbd4a42859d607f07e94be43ee126e9c06e44d0e911daebac0f2ace2da542",
+      "successorSha256": "d10f81d62ffb8de06efb3bdacff4fdb179dc054514afb2237bd6ca648cfb19be"
+    },
+    {
+      "lessonId": "foundations-assessment",
+      "stepId": "assessment-tests",
+      "path": ["code"],
+      "beforeSha256": "dae285d66174b38757125b68ae854c7739ba140c5dcdcd8a1a9bc505c0db0556",
+      "successorSha256": "dd921f24076d20c23a8f6c4f26a8c9b4f85be56bd3962a8a92c9dbe54b2d9c5b"
+    },
+    {
+      "lessonId": "foundations-assessment",
+      "stepId": "assessment-tests",
+      "path": ["solution"],
+      "beforeSha256": "dae285d66174b38757125b68ae854c7739ba140c5dcdcd8a1a9bc505c0db0556",
+      "successorSha256": "dd921f24076d20c23a8f6c4f26a8c9b4f85be56bd3962a8a92c9dbe54b2d9c5b"
+    },
+    {
+      "lessonId": "move-copy-discovery",
+      "stepId": "move-error",
+      "path": ["evidenceGate"],
+      "beforeSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "successorSha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "lessonId": "functions-and-ownership",
+      "stepId": "function-error",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "a25a5849f08c3456ad2a8b9e470b84242c089f045a4b39ba8be0a22e56ff21a2"
+    },
+    {
+      "lessonId": "number-guessing-transfer",
+      "stepId": "project-error",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "4fe67bf39b8b7b1c80cdc24f0a15397e6e7633d5ba92fa17eceb72e52f0163d3"
+    },
+    {
+      "lessonId": "methods-and-state",
+      "stepId": "method-run",
+      "path": ["prompt"],
+      "beforeSha256": "9c4982a88881774b75ffed2b342073e8c477a216943f80a37fb45b267601486e",
+      "successorSha256": "70527953da452e2a7f900f0cf702aa41201f609694d44959361599db6079688c"
+    },
+    {
+      "lessonId": "methods-and-state",
+      "stepId": "method-run",
+      "path": ["code"],
+      "beforeSha256": "506102863a073abc00d52d81b19173bbd2bd970d997e62847e28f1a497789c34",
+      "successorSha256": "10a3332d781edfec2915d1fc436325985e5c176df1c03165ce7990d5b8eff016"
+    },
+    {
+      "lessonId": "methods-and-state",
+      "stepId": "method-run",
+      "path": ["solution"],
+      "beforeSha256": "506102863a073abc00d52d81b19173bbd2bd970d997e62847e28f1a497789c34",
+      "successorSha256": "10a3332d781edfec2915d1fc436325985e5c176df1c03165ce7990d5b8eff016"
+    },
+    {
+      "lessonId": "methods-and-state",
+      "stepId": "method-run",
+      "path": ["hints", "0"],
+      "beforeSha256": "52e7993c5730456ad973eee0ab808a7c1fa7745b0be445c6b1f13c21116446cc",
+      "successorSha256": "a91effda9593d079aef22baa039fce5ccf46f5bb903e92c4a64496b456ff0486"
+    },
+    {
+      "lessonId": "methods-and-state",
+      "stepId": "method-run",
+      "path": ["hints", "1"],
+      "beforeSha256": "e90000093a27e7e023ccfb5a02832dcec29f872b9cf038f4b30b8eb0e3a7222a",
+      "successorSha256": "0738d11887bec85625d1c4ef4151d574ade23e625c1f47d07fe58bfd17b04f25"
+    },
+    {
+      "lessonId": "propagation-and-errors",
+      "stepId": "propagate-modify",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "f3e1058037538b49462abe2422a32f9719c369ec276ee7171a7bdd96473cf269"
+    },
+    {
+      "lessonId": "todo-command-parser",
+      "stepId": "parser-run",
+      "path": ["prompt"],
+      "beforeSha256": "56d891e958b2f83930344d36f9e2c8dd673687ca4dd1fc75934e7b921d496286",
+      "successorSha256": "a96e371868d9569cf7ef95b491ba3b66d62e22a1e0ed72608bb68d4bd46f9098"
+    },
+    {
+      "lessonId": "todo-command-parser",
+      "stepId": "parser-run",
+      "path": ["code"],
+      "beforeSha256": "dbc4c2ef297ed44caf9165cfc9b5a9206f2753db82fc113a9279148481ddf960",
+      "successorSha256": "32f83d920d8fce2dbc937df3bbe92f45fc8854eae030551344df7b7fc827d63e"
+    },
+    {
+      "lessonId": "todo-command-parser",
+      "stepId": "parser-run",
+      "path": ["solution"],
+      "beforeSha256": "dbc4c2ef297ed44caf9165cfc9b5a9206f2753db82fc113a9279148481ddf960",
+      "successorSha256": "32f83d920d8fce2dbc937df3bbe92f45fc8854eae030551344df7b7fc827d63e"
+    },
+    {
+      "lessonId": "todo-command-parser",
+      "stepId": "parser-run",
+      "path": ["evaluator", "expected"],
+      "beforeSha256": "564f277b4f46c3ffa3ad8646c51c8fbb381b99e858101f99ffc10b213b29878e",
+      "successorSha256": "6105530ba563fd5eaa062304a1a430051cc9a551d4e249a54e3447374e505ab3"
+    },
+    {
+      "lessonId": "todo-state-invariants",
+      "stepId": "state-run",
+      "path": ["prompt"],
+      "beforeSha256": "ea7565550110e3aaec9bc9fe4a583d974a948ade8d96651304f439f34f4f06b9",
+      "successorSha256": "481f96e90825312fbc45fd050831a6c3aa2a7a683ad570e0a60e61ff23522eec"
+    },
+    {
+      "lessonId": "todo-state-invariants",
+      "stepId": "state-run",
+      "path": ["code"],
+      "beforeSha256": "62a41c5f8d08f3f25c91de2d561dcbcd5cee122a85564bffd4c162c938b4295f",
+      "successorSha256": "5043a66c7a5f06f94decf641997b2651385ac7e7fa2ed3948a33b1881effe507"
+    },
+    {
+      "lessonId": "todo-state-invariants",
+      "stepId": "state-run",
+      "path": ["solution"],
+      "beforeSha256": "62a41c5f8d08f3f25c91de2d561dcbcd5cee122a85564bffd4c162c938b4295f",
+      "successorSha256": "5043a66c7a5f06f94decf641997b2651385ac7e7fa2ed3948a33b1881effe507"
+    },
+    {
+      "lessonId": "todo-state-invariants",
+      "stepId": "state-run",
+      "path": ["evaluator", "expected"],
+      "beforeSha256": "234ff57bba801bd3e16a256f5f1217c2ae1c0d56d8b239993be4572009aacbf6",
+      "successorSha256": "31fea5af93657d60b1006dc032e30ee584cbf14ba708bbe3a68f197754831c90"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-run",
+      "path": ["prompt"],
+      "beforeSha256": "ddec45fac946f5a82e1e112cab97ca30bf6e9cdc16dba4e57c6773779e81fc2f",
+      "successorSha256": "a4d73df692fc2c00d265af1b821861a3401948a1ece09fdf0998c8c7c5abef59"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-run",
+      "path": ["code"],
+      "beforeSha256": "576e93735642512c79e9a3f74b0db63083cb833934605837700a77931c0e4ae4",
+      "successorSha256": "70991cdde137ce4bc68117660f3f84681f5439a954a08e47830c9ab1c6cd36f4"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-run",
+      "path": ["solution"],
+      "beforeSha256": "576e93735642512c79e9a3f74b0db63083cb833934605837700a77931c0e4ae4",
+      "successorSha256": "70991cdde137ce4bc68117660f3f84681f5439a954a08e47830c9ab1c6cd36f4"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-run",
+      "path": ["evaluator", "expected"],
+      "beforeSha256": "eeb0788d9f0b9a0cecf0928d92d20d38d294e172218a40bb8e9341be17f0f027",
+      "successorSha256": "238799e13c28df0a7e71b0304bfebd65a57202b2b0d3547e37e474835f9bc941"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-debug",
+      "path": ["prompt"],
+      "beforeSha256": "e3f4d51394fa0a9a668e3bcdc9af734481485a4b1c95b31a89d0c5b5a71bd8c7",
+      "successorSha256": "c216040804db0549ea12be66542082800306b7bdc07521f4d59c5e49661f311a"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-debug",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "002a5c7c804c316220750af4a851da7a5ec341c3fb3aada07ff2e72f6ee6b6a9"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-run-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "002a5c7c804c316220750af4a851da7a5ec341c3fb3aada07ff2e72f6ee6b6a9"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-strict-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "002a5c7c804c316220750af4a851da7a5ec341c3fb3aada07ff2e72f6ee6b6a9"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "stepId": "session-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "f1a7fa86e918d8135e51096a61c38e428ea6b64e3bfb02050e0c0f814dfdbeb7"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-run",
+      "path": ["prompt"],
+      "beforeSha256": "2b6327b90d1df4821439ce6f9005a172336174a269f7839f3d5ad4dad88ef879",
+      "successorSha256": "3ff443b6acd17e86667f8164e678f8f0dc9d60a68c44fa52fd14c2ff0ed00989"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-run",
+      "path": ["code"],
+      "beforeSha256": "bb92c3a3af794c2a98d26e2293eff534ce7bbc8db7cac97bca1b1788039f4f67",
+      "successorSha256": "3e03508003ca7451217ed176427f47cc30699cc4a1a4403517570fcc6e419342"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-run",
+      "path": ["solution"],
+      "beforeSha256": "bb92c3a3af794c2a98d26e2293eff534ce7bbc8db7cac97bca1b1788039f4f67",
+      "successorSha256": "3e03508003ca7451217ed176427f47cc30699cc4a1a4403517570fcc6e419342"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-run",
+      "path": ["evaluator", "expected"],
+      "beforeSha256": "ae23dc6ab4ea584014c185feadd79c1298a8777e7bbd867d1a7a0d28c3f988a5",
+      "successorSha256": "384e084c285b793bdfc41ac5b012a0374264652dac09beb85122490bf421c02d"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-error",
+      "path": ["prompt"],
+      "beforeSha256": "978e463a2cf42cf00cc259d4336103a353e402d95e7b95cfc8b0f5766323fab7",
+      "successorSha256": "aac021d25e760d4ee0c57a1498b515c985c53a1825e6f1c7e49287d54d4b5b55"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-error",
+      "path": ["code"],
+      "beforeSha256": "89a06e7382ea41db8ef0e8c13b2820641e74927b490b460bdb00afc874a3698a",
+      "successorSha256": "87d5aa4c2687edfa4fbffd6e7d6262954115d156a7533dd4954188ab93adfd91"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-error",
+      "path": ["solution"],
+      "beforeSha256": "8ae79f9fcbe189c7aa46694cb8b20dc683652f544744e6310c9e5aa6047baf25",
+      "successorSha256": "89266c694fd5440e3c12981daae575c637efe74be1db5c638f3e61e5f2bc57e7"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-debug",
+      "path": ["prompt"],
+      "beforeSha256": "220aa8d29259ee53787b1353b5869b9558ab7a42b54ae9373f2a7a9ce8239914",
+      "successorSha256": "ba706ab6ce1a514c88f940123ed7496394323c4bc9397c777e7bbcaa3d2d88c7"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-debug",
+      "path": ["code"],
+      "beforeSha256": "89a06e7382ea41db8ef0e8c13b2820641e74927b490b460bdb00afc874a3698a",
+      "successorSha256": "87d5aa4c2687edfa4fbffd6e7d6262954115d156a7533dd4954188ab93adfd91"
+    },
+    {
+      "lessonId": "module-visibility",
+      "stepId": "visibility-debug",
+      "path": ["solution"],
+      "beforeSha256": "8ae79f9fcbe189c7aa46694cb8b20dc683652f544744e6310c9e5aa6047baf25",
+      "successorSha256": "89266c694fd5440e3c12981daae575c637efe74be1db5c638f3e61e5f2bc57e7"
+    },
+    {
+      "lessonId": "imports-and-reexports",
+      "stepId": "imports-run",
+      "path": ["title"],
+      "beforeSha256": "eca83632b3397cdf78ec880a61e0534cd8acf0e7304f10fdadd3f1a568f7859e",
+      "successorSha256": "22f60a5f54761ce4c5482606cab83de0ed8e7dc46fd7c21a7b10e1c64eeafa41"
+    },
+    {
+      "lessonId": "imports-and-reexports",
+      "stepId": "imports-run",
+      "path": ["prompt"],
+      "beforeSha256": "681b8b38ccd237d9d163aa242161c41e2684965708586d21a7ad743ae7688af8",
+      "successorSha256": "a9595015f0440998d5d471a5dcbfe71ab5cc7af21b1b5c003d597575c54e7d85"
+    },
+    {
+      "lessonId": "imports-and-reexports",
+      "stepId": "imports-run",
+      "path": ["code"],
+      "beforeSha256": "80c58d1d6512eaa496bd0f719091d2b840a3af2c263ade162a52c994eeeea2f2",
+      "successorSha256": "463e6569cab4017d366d24383aa19fdf8f40a2e3d40b6afb22bffc9a1996f04c"
+    },
+    {
+      "lessonId": "imports-and-reexports",
+      "stepId": "imports-run",
+      "path": ["solution"],
+      "beforeSha256": "80c58d1d6512eaa496bd0f719091d2b840a3af2c263ade162a52c994eeeea2f2",
+      "successorSha256": "463e6569cab4017d366d24383aa19fdf8f40a2e3d40b6afb22bffc9a1996f04c"
+    },
+    {
+      "lessonId": "imports-and-reexports",
+      "stepId": "imports-run",
+      "path": ["evaluator", "expected"],
+      "beforeSha256": "587a9f727bfec1245dcf8b3ea0715c5b8a8861ab32aba350edba10d936ee0f40",
+      "successorSha256": "f481b2d7a081741039ac0ecb62fc53b1ae9c10754061a31b42f3a9895153ddae"
+    },
+    {
+      "lessonId": "cargo-package-integration",
+      "stepId": "cargo-run",
+      "path": ["prompt"],
+      "beforeSha256": "538f3e196cd8c3f04912b5a5424720ed87edd489507e3011ea0ce867a8f0d4d9",
+      "successorSha256": "5957981d07c12607202fbb2da65f9d2c94dd6f574eb09352ec5be34ab2eafd6c"
+    },
+    {
+      "lessonId": "cargo-package-integration",
+      "stepId": "cargo-run",
+      "path": ["code"],
+      "beforeSha256": "0456f07ce2b59f86013cb1c46705506db57c15886b4ba4f3ba48dae5eda8b248",
+      "successorSha256": "8202954649e0a811f93e8ddca4f8616deb5d1c11ce54ba8a04f3e669679b5310"
+    },
+    {
+      "lessonId": "cargo-package-integration",
+      "stepId": "cargo-run",
+      "path": ["solution"],
+      "beforeSha256": "0456f07ce2b59f86013cb1c46705506db57c15886b4ba4f3ba48dae5eda8b248",
+      "successorSha256": "8202954649e0a811f93e8ddca4f8616deb5d1c11ce54ba8a04f3e669679b5310"
+    },
+    {
+      "lessonId": "cargo-package-integration",
+      "stepId": "cargo-run",
+      "path": ["evaluator", "expected"],
+      "beforeSha256": "7234ff72a3321175c070494ba32ac17aff5726ec0fb80339f37976187e9093a1",
+      "successorSha256": "25ed8e83c2eebaa139fa1a4a898786a9809e58047eb46407a7046565eaa672d9"
+    },
+    {
+      "lessonId": "todo-storage-format",
+      "stepId": "format-debug",
+      "path": ["prompt"],
+      "beforeSha256": "7314e459af1c4e1fd81f0989cf768081021a2ed4cfbae8885718478abcaa295a",
+      "successorSha256": "815a243915a3b72bb5205fbaa72b542103cedd618ad3a1f42d7e5edd1a48068a"
+    },
+    {
+      "lessonId": "todo-storage-format",
+      "stepId": "format-debug",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "002a5c7c804c316220750af4a851da7a5ec341c3fb3aada07ff2e72f6ee6b6a9"
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "stepId": "file-debug",
+      "path": ["prompt"],
+      "beforeSha256": "5558d0a3e018e0ee78580cf877dbf77b6f125b97a3ce75f42e64845a3c1914d8",
+      "successorSha256": "9c64015425f00ffe7f9724a8b7e780100545fff654853208f9f9be3584dd5701"
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "stepId": "file-debug",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "44e202c19496eb742f472e8d873a6dbcdca073ea58b00ab751be204d663e6752"
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "stepId": "file-gate",
+      "path": ["prompt"],
+      "beforeSha256": "62536472b43557af8f19385e2d75fab4aaf9fb09c197745b9356ceb5c28d95f1",
+      "successorSha256": "6aed1dad3a74dbf9baabf179e59c9d4f181fd11de7e992a1c3c6db4a70f9024f"
+    },
+    {
+      "lessonId": "todo-file-persistence",
+      "stepId": "file-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "71ca572117cf231ef9166c5bb5fb633d125ecf58790002893e51979da909d8da"
+    },
+    {
+      "lessonId": "todo-terminal-cli",
+      "stepId": "cli-debug",
+      "path": ["prompt"],
+      "beforeSha256": "0441925ba01af7c752d6efbc09e40985d3d941d89367d5d9a7f1c5c2ffba8526",
+      "successorSha256": "9c37af81058cd6111468c23558b354dbccba81789dcd576ccf126373165ff718"
+    },
+    {
+      "lessonId": "todo-terminal-cli",
+      "stepId": "cli-debug",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "9c3f7c659d1ea6d6154926e21688c4465a1e12f9b0db01595d04de1c9393136b"
+    },
+    {
+      "lessonId": "todo-terminal-cli",
+      "stepId": "cli-gate",
+      "path": ["prompt"],
+      "beforeSha256": "eca90363838896e4f5a4debfabc5fb38e98b7ff35d3ab5569c518a30df367547",
+      "successorSha256": "d802053dba0adc81deb692f02ea8655a77469a2275455a0c50be6060fac8b9dc"
+    },
+    {
+      "lessonId": "todo-terminal-cli",
+      "stepId": "cli-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "4b991ba0f8d819bf83cc123495c048639dff2356a18803ad3c120c98ddb489b9"
+    },
+    {
+      "lessonId": "iterator-contracts",
+      "stepId": "contracts-run",
+      "path": ["prompt"],
+      "beforeSha256": "b90da9b467a869c48775bb25888a40c07c7b723c59548827937d66925cb37c55",
+      "successorSha256": "b90b9be7050d5ce7b11e22460149875d82061085d1ea6cf6a4f72ca5234aafc5"
+    },
+    {
+      "lessonId": "iterator-contracts",
+      "stepId": "contracts-run",
+      "path": ["code"],
+      "beforeSha256": "b1740b248fa04e76d3e0119aa22a2048f46ae8988d80e01e5d7da367f3fe24c6",
+      "successorSha256": "b2fa56ea17e9a6dbc3f3f185a413c9a0e9852af3279538772223fc7210d120da"
+    },
+    {
+      "lessonId": "iterator-contracts",
+      "stepId": "contracts-run",
+      "path": ["solution"],
+      "beforeSha256": "b1740b248fa04e76d3e0119aa22a2048f46ae8988d80e01e5d7da367f3fe24c6",
+      "successorSha256": "b2fa56ea17e9a6dbc3f3f185a413c9a0e9852af3279538772223fc7210d120da"
+    },
+    {
+      "lessonId": "gat-receiver-borrows",
+      "stepId": "receiver-run",
+      "path": ["prompt"],
+      "beforeSha256": "f6a2b0148673340c7f4a9eb818ca2f20ffa1a56c147e201da94e230ed85989a0",
+      "successorSha256": "35e8bdd639226e00852c9e28f68ab47ad2ea3bb3ec87f33a8189bdeeeb61283b"
+    },
+    {
+      "lessonId": "gat-receiver-borrows",
+      "stepId": "receiver-run",
+      "path": ["code"],
+      "beforeSha256": "93047a465b0090c0fe017d9c6ee39c1cd46689928a9307044ff5db06a2c90b74",
+      "successorSha256": "589c775fc705f053ffb00a2b4a91bd244f56fa47d4b4cd414c7d97c4a31a9a19"
+    },
+    {
+      "lessonId": "gat-receiver-borrows",
+      "stepId": "receiver-run",
+      "path": ["solution"],
+      "beforeSha256": "93047a465b0090c0fe017d9c6ee39c1cd46689928a9307044ff5db06a2c90b74",
+      "successorSha256": "589c775fc705f053ffb00a2b4a91bd244f56fa47d4b4cd414c7d97c4a31a9a19"
+    },
+    {
+      "lessonId": "gat-receiver-borrows",
+      "stepId": "receiver-discover",
+      "path": ["code"],
+      "beforeSha256": "747b3597a9a442f76f93f812e2a4180a83a7262f02ae16a170f45b4cd6578393",
+      "successorSha256": "5be71037ce9f34777e5e9662799ebb4173968fc2a9ed4d7cee0276df82b4a186"
+    },
+    {
+      "lessonId": "gat-receiver-borrows",
+      "stepId": "receiver-discover",
+      "path": ["solution"],
+      "beforeSha256": "e7f6816644b3e36d5af159dd51f993981a88c57fd9f5ada19c218aa5a245d892",
+      "successorSha256": "d9b38b2bb94f48e168dead5e4a2994b6683c0234ece358c05b3436189346e5e4"
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepId": "windows-run",
+      "path": ["prompt"],
+      "beforeSha256": "fd3ae098824131fbc5b8df6ace067da7109d44bc29525a4e8b10e06ca0cfb0aa",
+      "successorSha256": "5d85166db5d52c75a4a5923566746aa1b430eaef66db01c516140de4c88ff6d2"
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepId": "windows-run",
+      "path": ["code"],
+      "beforeSha256": "d8ac895b8fc68327b9aceb3d300e9669a44b45dbf444dffa8fbb933ee82c4bdf",
+      "successorSha256": "8c3ca4663e685232f899beea13c05c2d0c446a439e9467c2beaf21b9d6bd3af4"
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepId": "windows-run",
+      "path": ["solution"],
+      "beforeSha256": "d8ac895b8fc68327b9aceb3d300e9669a44b45dbf444dffa8fbb933ee82c4bdf",
+      "successorSha256": "8c3ca4663e685232f899beea13c05c2d0c446a439e9467c2beaf21b9d6bd3af4"
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepId": "windows-discover",
+      "path": ["prompt"],
+      "beforeSha256": "aae56dc6c9d995b6cd24c2654f0dfe325c6e06811ab2d76deccab87f23523aee",
+      "successorSha256": "23fa144a5319d62dfe0f2a379def9be3003779f0506f64c1aea4bb52f8c09526"
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepId": "windows-discover",
+      "path": ["code"],
+      "beforeSha256": "a616e447f06568f927ea8a8495ce4493720c626e7cad0412f3de0409ac4231e3",
+      "successorSha256": "3dc0941e36aca4b3d17485643eb086df70b98fa2dc4f946d36ac0fc73bdac74e"
+    },
+    {
+      "lessonId": "gat-overlapping-mutable-windows",
+      "stepId": "windows-discover",
+      "path": ["solution"],
+      "beforeSha256": "93f6d409b148f97c7d5f44d3fc3e93179452c0c37f3ac3d149bdd4b66a5a1ab7",
+      "successorSha256": "59abecadc75f608b2acda9fcccb0729d49041907aa8028c38feabdbe119fc3aa"
+    },
+    {
+      "lessonId": "guess-round-state",
+      "stepId": "guess-round-state-blank",
+      "path": ["evidenceGate"],
+      "beforeSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "successorSha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "lessonId": "box-recursive",
+      "stepId": "box-move-gate",
+      "path": ["evidenceGate"],
+      "beforeSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "successorSha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "lessonId": "loom-evidence",
+      "stepId": "loom-evidence-small-model-blank",
+      "path": ["evidenceGate"],
+      "beforeSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "successorSha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "lessonId": "tokio-spawn-join",
+      "stepId": "tokio-spawn-join-run",
+      "path": ["prompt"],
+      "beforeSha256": "01ca5a50ebbd71a56203133da57691de422414e3c997f519710021f9cda43160",
+      "successorSha256": "c13801a4f84cd5fba458ea8cd64ecdf83814a8082bfbbb87b54a2156896d8fc7"
+    },
+    {
+      "lessonId": "tokio-spawn-join",
+      "stepId": "tokio-spawn-join-run",
+      "path": ["code"],
+      "beforeSha256": "2fa3783fa2af5a8c91e518a14fadbb2a5c8564f6c2471494c3460d483b7110f0",
+      "successorSha256": "5d74be57e0e9f18d66a3701097e4bb0a6d50335f333fa3e86fa1610e09419302"
+    },
+    {
+      "lessonId": "tokio-spawn-join",
+      "stepId": "tokio-spawn-join-run",
+      "path": ["solution"],
+      "beforeSha256": "2fa3783fa2af5a8c91e518a14fadbb2a5c8564f6c2471494c3460d483b7110f0",
+      "successorSha256": "5d74be57e0e9f18d66a3701097e4bb0a6d50335f333fa3e86fa1610e09419302"
+    },
+    {
+      "lessonId": "macros-exactly-once",
+      "stepId": "macros-exactly-once-run",
+      "path": ["prompt"],
+      "beforeSha256": "8d1ea99ff2caf1e240b57cbe203abf16870581cbaa9b5e72c20f29f0aa07975e",
+      "successorSha256": "021e94b1c5a471ddc04b1f5732ff65eec56e812a785bde48cdf39ece7e60a196"
+    },
+    {
+      "lessonId": "macros-exactly-once",
+      "stepId": "macros-exactly-once-run",
+      "path": ["code"],
+      "beforeSha256": "639b59ef7d80e4fd72ed80fde32459467cb275bb1178ac1311aa435d0bfdf5c7",
+      "successorSha256": "b75a6321b3af135176cc9daf9787302518cb474062759ee488f4062b57a8b2c2"
+    },
+    {
+      "lessonId": "macros-exactly-once",
+      "stepId": "macros-exactly-once-run",
+      "path": ["solution"],
+      "beforeSha256": "639b59ef7d80e4fd72ed80fde32459467cb275bb1178ac1311aa435d0bfdf5c7",
+      "successorSha256": "b75a6321b3af135176cc9daf9787302518cb474062759ee488f4062b57a8b2c2"
+    },
+    {
+      "lessonId": "macros-repetition-grammar",
+      "stepId": "macros-repetition-grammar-run",
+      "path": ["prompt"],
+      "beforeSha256": "3965bbb47005334bcb563e9954e0d39758287c70c5cc8e1ac88599b4cc44ebb2",
+      "successorSha256": "6135fac108d8ec39fae50e75d31978a10bd33251b3f2dc75699baf71e1dcf29a"
+    },
+    {
+      "lessonId": "macros-repetition-grammar",
+      "stepId": "macros-repetition-grammar-run",
+      "path": ["code"],
+      "beforeSha256": "ea5c59f2c3417527ab2f9a8b982287a6cf54146b9d95ae33cb8a240726ddc397",
+      "successorSha256": "4a280376b1e9a5d8979e084c5091377b8d6d1260b3a52667b963acb23eb67c03"
+    },
+    {
+      "lessonId": "macros-repetition-grammar",
+      "stepId": "macros-repetition-grammar-run",
+      "path": ["solution"],
+      "beforeSha256": "ea5c59f2c3417527ab2f9a8b982287a6cf54146b9d95ae33cb8a240726ddc397",
+      "successorSha256": "4a280376b1e9a5d8979e084c5091377b8d6d1260b3a52667b963acb23eb67c03"
+    },
+    {
+      "lessonId": "macros-exported-paths-2024",
+      "stepId": "macros-exported-paths-2024-run",
+      "path": ["prompt"],
+      "beforeSha256": "70fc07a809e4cbc0ddd35a9698b522e25ddae367a59a625321c02f9cb11af78a",
+      "successorSha256": "1c7d1e5c1d30faa53bd8f3b9843a14d2b737a262df300864c41ce3daac007bab"
+    },
+    {
+      "lessonId": "macros-exported-paths-2024",
+      "stepId": "macros-exported-paths-2024-run",
+      "path": ["code"],
+      "beforeSha256": "0faed54dc6e8e3a7a5a81e4f98187f7cffdbd6b9f49962b33eb0a1ef31e38020",
+      "successorSha256": "8837a481312b5f55e8e10f80f3657b8934ceaec43d22d45151e4e98468a420af"
+    },
+    {
+      "lessonId": "macros-exported-paths-2024",
+      "stepId": "macros-exported-paths-2024-run",
+      "path": ["solution"],
+      "beforeSha256": "0faed54dc6e8e3a7a5a81e4f98187f7cffdbd6b9f49962b33eb0a1ef31e38020",
+      "successorSha256": "8837a481312b5f55e8e10f80f3657b8934ceaec43d22d45151e4e98468a420af"
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepId": "cargo-package-rehearsal-observe",
+      "path": ["prompt"],
+      "beforeSha256": "8c5ac59e3d3a0719949b6c3b47f9073011773b2f92cef549ce818ec3c1fd6dc3",
+      "successorSha256": "c95b070f46ebce237423305516024f34624c1464c19a4c00f3fa329fe18ac530"
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepId": "cargo-package-rehearsal-observe",
+      "path": ["choices", "1", "label"],
+      "beforeSha256": "2458eded9e05419c2f0726895f878c9e0cab3ae495a699fb1460760878e4efe7",
+      "successorSha256": "912f9ea39b011e612d7839f667c7eea1a9404ca97b62643147afe7bc0df49066"
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepId": "cargo-package-rehearsal-observe",
+      "path": ["code"],
+      "beforeSha256": "5f2879c718d93287918eda90ef2780c670c7432e556a3a1146070c96ac578d2c",
+      "successorSha256": "a6d30c6c40c6ca102b94daaca8b14dbd58fa449508d408eebad18e3d5e8f523e"
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepId": "cargo-package-rehearsal-observe",
+      "path": ["solution"],
+      "beforeSha256": "5f2879c718d93287918eda90ef2780c670c7432e556a3a1146070c96ac578d2c",
+      "successorSha256": "a6d30c6c40c6ca102b94daaca8b14dbd58fa449508d408eebad18e3d5e8f523e"
+    },
+    {
+      "lessonId": "cargo-package-rehearsal",
+      "stepId": "cargo-package-rehearsal-observe",
+      "path": ["editorFile"],
+      "beforeSha256": "a9eb3e1a7d6ac8b9198914b0f9e2f589970bf5a2803daf8b6b09883d4acc9e68",
+      "successorSha256": "1b952d0cdcbd99d738f46edf34ef323b1f8fbba501243ea597ef18f58485e179"
+    },
+    {
+      "lessonId": "profile-instruction-cost",
+      "stepId": "instruction-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "54b2327066a85af657fdfb0403e3c95e6cbb3e2777963379f520200e9b9c7de0"
+    },
+    {
+      "lessonId": "profile-instruction-cost",
+      "stepId": "instruction-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "2663a86cd3e4264cc022c72e56536c98b72814ff5ba71206f4dde98fe6df595d"
+    },
+    {
+      "lessonId": "unsafe-ffi-checked-view",
+      "stepId": "checked-view-run",
+      "path": ["prompt"],
+      "beforeSha256": "7977df0058c86d20f5b75a112fcaff3a0bc988c5036126060792ec3c28449215",
+      "successorSha256": "0ba6eb4dddeb0f0e9d9a1925c51710d7fd6aaad1be0213ffd7a493a7d3f446dd"
+    },
+    {
+      "lessonId": "unsafe-ffi-checked-view",
+      "stepId": "checked-view-run",
+      "path": ["code"],
+      "beforeSha256": "cac1c605b23a1e52af81cbc4e9fb8b1d2dc408baf87892ff590bb8209da86c1e",
+      "successorSha256": "60c6d37a7eeec9e9c800164195aa06dae74dea5f5210eff528366a082b17fd26"
+    },
+    {
+      "lessonId": "unsafe-ffi-checked-view",
+      "stepId": "checked-view-run",
+      "path": ["solution"],
+      "beforeSha256": "cac1c605b23a1e52af81cbc4e9fb8b1d2dc408baf87892ff590bb8209da86c1e",
+      "successorSha256": "60c6d37a7eeec9e9c800164195aa06dae74dea5f5210eff528366a082b17fd26"
+    },
+    {
+      "lessonId": "unsafe-miri-byte-view",
+      "stepId": "byte-view-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "95958b5defed338524621c1abee0988711bb63faffe4499730047f8b6045cc31"
+    },
+    {
+      "lessonId": "unsafe-miri-byte-view",
+      "stepId": "byte-view-contract-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "95958b5defed338524621c1abee0988711bb63faffe4499730047f8b6045cc31"
+    },
+    {
+      "lessonId": "unsafe-miri-byte-view",
+      "stepId": "byte-view-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "95958b5defed338524621c1abee0988711bb63faffe4499730047f8b6045cc31"
+    },
+    {
+      "lessonId": "unsafe-miri-byte-view",
+      "stepId": "byte-view-recall",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "d206cd94e542a2b2c1d32c48d454380537d3d0a1305fc89bdbd5f1337b57f28b"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "81f607d6dc9a9dc0762d40bc03ede4faf3c88a98b75e5428e36a2f5424aa4bf3"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-contract-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "81f607d6dc9a9dc0762d40bc03ede4faf3c88a98b75e5428e36a2f5424aa4bf3"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "81f607d6dc9a9dc0762d40bc03ede4faf3c88a98b75e5428e36a2f5424aa4bf3"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-recall",
+      "path": ["prompt"],
+      "beforeSha256": "a3f0069502754fba7fd74defa0316452a26ce4cdc875d301d68af97912abe560",
+      "successorSha256": "3406ec13c3c77ceef8afd658a323c0eade0a1150ada5dc2b574cbf6bc54f34fa"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "stepId": "disjoint-regions-recall",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "db024f169f4ba62065b04a675ab995580d6fc0cddc246693523cd9bd538db3f9"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "stepId": "slot-state-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "667697c21839391c604abcb79d1a14ca37688629e737e9dd6a13033734ea19d5"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "stepId": "slot-state-contract-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "667697c21839391c604abcb79d1a14ca37688629e737e9dd6a13033734ea19d5"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "stepId": "slot-state-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "667697c21839391c604abcb79d1a14ca37688629e737e9dd6a13033734ea19d5"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "stepId": "slot-state-recall",
+      "path": ["prompt"],
+      "beforeSha256": "af2282810d118ba6e1bf6e049c2d8a9a3de2c1246e1623ae25f6c44bff47c6d1",
+      "successorSha256": "cbe507ad1e5fdbc19bbb6712d949acfd1aa82ae9754afe4baf42622d92951f4b"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "stepId": "slot-state-recall",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "1e66df713aab5d7f35cb7bbb6f3013257ac8d46e603e4981cd09f7799b606f73"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "88db60eb819146ce17580f9ab9fc251a209edfa21476a7f09a8c0a23e2ed49f6"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-contract-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "88db60eb819146ce17580f9ab9fc251a209edfa21476a7f09a8c0a23e2ed49f6"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "88db60eb819146ce17580f9ab9fc251a209edfa21476a7f09a8c0a23e2ed49f6"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-recall",
+      "path": ["prompt"],
+      "beforeSha256": "9e3216f0c589542bdd1500694d1d29ac53f57fa0cfb511cf27c4fc54da165201",
+      "successorSha256": "89f190d847450089ceda1efed296f49b5371eb39810d24efaee8525c2d0c3223"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-recall",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "8621746797f7861af64db80ac2fd9c0060b992589c4a635f234e8b5d51ae0084"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-with-mut-model",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "4dfba26bb67c882fd3d91b76269f349904914aee4b8c410f38556e1f7512a180"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "stepId": "mut-slot-with-mut-transfer",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "4dfba26bb67c882fd3d91b76269f349904914aee4b8c410f38556e1f7512a180"
+    },
+    {
+      "lessonId": "unsafe-borrowed-auto-traits",
+      "stepId": "unsafe-borrowed-auto-traits-compile-fail",
+      "path": ["prompt"],
+      "beforeSha256": "ade06a7b79aece58b1c5c82c8c79e5a4d14f49a2924e3dc5b269d6b4f8ae3c49",
+      "successorSha256": "8671fa6a8897e119ee6d1c63b811d87d52341ef07cd4bfa9a3bbc679e92b3deb"
+    },
+    {
+      "lessonId": "unsafe-borrowed-auto-traits",
+      "stepId": "unsafe-borrowed-auto-traits-compile-fail",
+      "path": ["code"],
+      "beforeSha256": "fd4faf80bd4fc811b8e51ce0963dfe9302f2934beff1b221f684a925576250bd",
+      "successorSha256": "594e702c3662cd40ed1ef95e8ebe4584505e40477b34783c17f126cbb4e079e5"
+    },
+    {
+      "lessonId": "nested-patterns-and-destructuring",
+      "stepId": "nested-run",
+      "path": ["prompt"],
+      "beforeSha256": "5d4d500ac8aec485535826daa96d659bd0611e99b15460c6a40f3c9be0247dca",
+      "successorSha256": "be1cffd6ccbf7f2d5c23286f002c2d49795fc02927131b54b0fb0e422be29920"
+    },
+    {
+      "lessonId": "nested-patterns-and-destructuring",
+      "stepId": "nested-run",
+      "path": ["code"],
+      "beforeSha256": "0c14ae5f45b9c7199650519fc657b17cbdefbd99cbc3b214a6ccfd65d6823017",
+      "successorSha256": "14cd08a4de88396c5ace7afb8b9ceb77d3095b1b9af4b1b6774c79dd3c30d812"
+    },
+    {
+      "lessonId": "nested-patterns-and-destructuring",
+      "stepId": "nested-run",
+      "path": ["solution"],
+      "beforeSha256": "0c14ae5f45b9c7199650519fc657b17cbdefbd99cbc3b214a6ccfd65d6823017",
+      "successorSha256": "14cd08a4de88396c5ace7afb8b9ceb77d3095b1b9af4b1b6774c79dd3c30d812"
+    }
+  ],
+  "lessonRestorations": [
+    {
+      "lessonId": "box-recursive",
+      "path": ["evidenceGate"],
+      "beforeSha256": "9f6fd704f793b317f2980e1e60493ac7eabaca2d2a3c13551d8d2a17756df009",
+      "successorSha256": "44a8632152fb8eb3a2a8daed3e3482c71f993a3eeef0ea8ebf7b6c13149af724"
+    },
+    {
+      "lessonId": "loom-evidence",
+      "path": ["evidenceGate"],
+      "beforeSha256": "4fe43e237634f06bf316dfb76f0585586250585179689911f683d1913e5c6d4a",
+      "successorSha256": "d38fa422c92ec4087b20579683fa3a9ad1adcdb1c1ba0fb85d7b9b374ed86641"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "propagation-and-errors",
+      "index": 8,
+      "id": "propagate-import-fault",
+      "successorSha256": "5ff44d5afc364fe32a5756c7298d8061cbbf7933a8750c003f40095664c334f4"
+    },
+    {
+      "lessonId": "todo-command-parser",
+      "index": 7,
+      "id": "todo-import-command",
+      "successorSha256": "56805142ccd265b08acad9c76cc56792117787a9dd1540602a530b4b82d04548"
+    },
+    {
+      "lessonId": "todo-state-invariants",
+      "index": 8,
+      "id": "todo-board-edits",
+      "successorSha256": "49410ebfaad2e2d51df5e64b55f65fff42b078c42a7b5a3b7a40e7dacb1be706"
+    },
+    {
+      "lessonId": "todo-session-project",
+      "index": 8,
+      "id": "todo-session-replay",
+      "successorSha256": "24043d9924b3324380da7eef372016993253b8c4cb36181400d8a59d3430f82c"
+    },
+    {
+      "lessonId": "guess-round-state",
+      "index": 6,
+      "id": "guess-round-score-transfer",
+      "successorSha256": "b4c2c1579c7be2cc49a9ad04d702de326ab50b326f351bc88143df0ba0e1b702"
+    },
+    {
+      "lessonId": "box-recursive",
+      "index": 7,
+      "id": "box-tree-summary-transfer",
+      "successorSha256": "38af13caccd6e4a2be3a880d6902e7ecec68cfeb4b69c4a20081a09ad8598458"
+    },
+    {
+      "lessonId": "loom-evidence",
+      "index": 6,
+      "id": "loom-evidence-publication-report-transfer",
+      "successorSha256": "96b0d9ee11318b59cb1f3b6c7316088070afca3c3ada5fb28284aa6e68d2bcd4"
+    },
+    {
+      "lessonId": "performance-measured-workload",
+      "index": 6,
+      "id": "workload-prefix-transfer",
+      "successorSha256": "b4e5a8aebd8344c8875631cb04ba690b0062506fc4726b946f85bc18b7c44ac8"
+    },
+    {
+      "lessonId": "performance-borrowed-stream",
+      "index": 6,
+      "id": "borrow-tagged-messages-transfer",
+      "successorSha256": "5592e2eaac4693b7b73b5f4b5a7711b08076d300f18b86f4e15e0ff49372907e"
+    },
+    {
+      "lessonId": "performance-bounded-buffer",
+      "index": 6,
+      "id": "buffer-line-report-transfer",
+      "successorSha256": "83722f9a936f0ec1c565c8f1b879698a52a886380f6714636748ac80c672a432"
+    },
+    {
+      "lessonId": "performance-evidence-decisions",
+      "index": 6,
+      "id": "decision-batch-audit-transfer",
+      "successorSha256": "b6fd6b457a68b14c73bf5d89783e5331a87a28c81e246932a6f46d6264db6d61"
+    },
+    {
+      "lessonId": "profile-instruction-cost",
+      "index": 6,
+      "id": "instruction-batch-budget-transfer",
+      "successorSha256": "b549b4fe89feaba22c7c75b4d41b08bb649b74cbd29afef91bfada2a190d0c38"
+    },
+    {
+      "lessonId": "profile-allocation-events",
+      "index": 6,
+      "id": "allocation-site-bytes-transfer",
+      "successorSha256": "064b704ee9392c939173dd078db28ea4b24acaeb9f0895467a40ff7fc0bb5084"
+    },
+    {
+      "lessonId": "profile-optimization-transfer",
+      "index": 6,
+      "id": "optimization-trial-batch-transfer",
+      "successorSha256": "119f0eddfc424ffc920e63b6e02c5e2063ce9cf834cd277c60463cef32bdd4bf"
+    },
+    {
+      "lessonId": "profile-regression-decision",
+      "index": 6,
+      "id": "profile-regression-batch-transfer",
+      "successorSha256": "05fce56afcd033789d1f90cb1edd1d118f6225347028517c823df4a65f86764e"
+    },
+    {
+      "lessonId": "unsafe-ffi-checked-view",
+      "index": 7,
+      "id": "checked-view-prefix-transfer",
+      "successorSha256": "139ccf10d0bde953c30010cddca91ca99c44122bd4edab20e4a7eea5f3617385"
+    },
+    {
+      "lessonId": "unsafe-ffi-split-regions",
+      "index": 7,
+      "id": "split-envelope-transfer",
+      "successorSha256": "09054b1b3471887f306b6abc8b92d902fc3b24d86e16e8e6f31e5c51818d198c"
+    },
+    {
+      "lessonId": "unsafe-ffi-raw-record",
+      "index": 7,
+      "id": "raw-header-transfer",
+      "successorSha256": "29a69f640a5c38a27bf540adcf8764eee190e2cfc144915f943fd675feb01c56"
+    },
+    {
+      "lessonId": "unsafe-ffi-owned-handle",
+      "index": 7,
+      "id": "owned-pair-transfer",
+      "successorSha256": "37f3920eacb985db6f9293595c34bb5e91a5797a03fd9666e185f036f4d7acea"
+    },
+    {
+      "lessonId": "unsafe-miri-mut-slot",
+      "index": 10,
+      "id": "mut-slot-pair-reborrow-transfer",
+      "successorSha256": "5b3a7b3b25e538bdd9a26e68bc308a4d62df7a0390b643258623003807b79eb0"
+    },
+    {
+      "lessonId": "service-trust-admission",
+      "index": 6,
+      "id": "trust-admission-batch-transfer",
+      "successorSha256": "dc0ce65ed0a92925226d8ef9e3f1708edada7a1c3070fa37d6e191ef66ed2558"
+    },
+    {
+      "lessonId": "service-correlated-telemetry",
+      "index": 6,
+      "id": "telemetry-correlation-reports-transfer",
+      "successorSha256": "f13491052bbe804f3ed943f6d5fb4c6b3cf08c01d7da01e3ed5cc155ed7d31cd"
+    },
+    {
+      "lessonId": "service-readiness-drain",
+      "index": 6,
+      "id": "readiness-drain-replay-transfer",
+      "successorSha256": "b4f85255ca831cfe9cd2c9117285f0894be793dac064381f05cc52a58d2417f8"
+    },
+    {
+      "lessonId": "service-incident-diagnosis",
+      "index": 6,
+      "id": "incident-diagnosis-timeline-transfer",
+      "successorSha256": "2f6c26b0cfac4a963eb9fa9c004936aad06a49c7342881222deb6751db3e2dd0"
+    }
+  ],
+  "registries": [
+    {
+      "registry": "modules",
+      "selector": "ownership",
+      "path": ["gateCriteria", "3", "taskRefs", "0", "lessonId"],
+      "beforeSha256": "6aba70b0fb71ceb488c65b30fbb9ae73b1e711ae8b9b5430b4140d76e8222338",
+      "successorSha256": "83273beb08c8f79a4fd42f1f834b3f36cd9fbe25ca71c52c93bb65eb29c07bc8"
+    },
+    {
+      "registry": "modules",
+      "selector": "ownership",
+      "path": ["gateCriteria", "3", "taskRefs", "0", "stepId"],
+      "beforeSha256": "3148bd377f027d40e5e7fb7909ed80b8358bf068003d9a5e22f72446ea59ca78",
+      "successorSha256": "88dd9282327996b0601efe9283fac185b06871d9d6405f2c1b6db0d0fbbca1d6"
+    },
+    {
+      "registry": "modules",
+      "selector": "ownership",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "70a18d8aebc272cc16f68d0e92672ef88b56d427f0b53a90cd69b8cac7b909d0",
+      "successorSha256": "f286f9517381c14e925dcf4b22920e34a2ff324a7811311864a12fed721d1b1c"
+    },
+    {
+      "registry": "modules",
+      "selector": "error-handling",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "04f50fa8bb0cb786abcc261bdb9b6904d032e3c6103ca2e87d1a52db07c2a6fc",
+      "successorSha256": "676405a50af0a807b863801f79db4ae9a6d68a039cacf74df8e563aeac6ddc07"
+    },
+    {
+      "registry": "modules",
+      "selector": "todo-project",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "e69f94adfc8c694d7a633e31a34679e8acadf79bcc7ebbd7fd1a5ed53bcfaa97",
+      "successorSha256": "6dc5480b5a3bb900a4b08bc0c0f9f98a61eee99c1edb2547d3dd0c5c503f8e66"
+    },
+    {
+      "registry": "modules",
+      "selector": "todo-project",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "12c8afea380e06c6fe36a3b8295f9fd70bfa2c704910c5eba0e91c5efb07da18",
+      "successorSha256": "f5e38085fae3dd962c2b113cb9c08e97eed65c7f7f3c14e0669c3e6cd57896ed"
+    },
+    {
+      "registry": "modules",
+      "selector": "todo-project",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "f0b3f475885c28eaf4b35feff826a9b2d98b6f2c410b3e9a9264f8e3728e7fab",
+      "successorSha256": "0d38103b2bacbbbe88871005f05180028b82124909f77eeb5e40f21af2a8a49c"
+    },
+    {
+      "registry": "modules",
+      "selector": "todo-project",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "1f6071b458274bfb2aee967b7c4e7994dfd06986a081913ef68b48b622fbae4f",
+      "successorSha256": "890470eeeefe52055612b90e666c6c364a8bd6819cb8e45454d83c851e566396"
+    },
+    {
+      "registry": "modules",
+      "selector": "todo-project",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "f6327f8255e4c99d079fdc5297551e8f67ecd8c35195a0d3f2c7e0780a6884cd",
+      "successorSha256": "b410a79af762cdb6af479ecb0bc9c00517efdae7fd05ced30082bd6868d86700"
+    },
+    {
+      "registry": "modules",
+      "selector": "number-guessing-plus",
+      "path": ["gateCriteria", "1", "taskRefs", "1", "stepId"],
+      "beforeSha256": "05d5989da4a1189464ca1188fe5a2d7ba2338da84fb6037f67d66a4e0db5d184",
+      "successorSha256": "a701653ae708ae0483cd5412bbdb2cc9b71fcc025981a79eb10ccbc68dc0a8bb"
+    },
+    {
+      "registry": "modules",
+      "selector": "boxed-values",
+      "path": ["gateCriteria", "0", "taskRefs", "0", "stepId"],
+      "beforeSha256": "5eb2bf1af51d963a07947da321caabac37ea058ad430025f384321434a685859",
+      "successorSha256": "33c7e2650a8261c7a5500253edfcd484c73b5f1351926176a5b40a15ccc20f64"
+    },
+    {
+      "registry": "modules",
+      "selector": "boxed-values",
+      "path": ["gateCriteria", "0", "taskRefs", "1", "stepId"],
+      "beforeSha256": "33c7e2650a8261c7a5500253edfcd484c73b5f1351926176a5b40a15ccc20f64",
+      "successorSha256": "44b47f0e8686219ea04dd5e6970e39f0e2bb45626bb27342e0278f9f33bf01b6"
+    },
+    {
+      "registry": "modules",
+      "selector": "memory-ordering",
+      "path": ["gateCriteria", "2", "taskRefs", "1", "stepId"],
+      "beforeSha256": "ebc4c52c2ae90d3a0b32e7827c5f35f83a5b334c1e9bc46a123356edf882b2c8",
+      "successorSha256": "0965e769e02ead2751b5de41b4a4ead363de098facbd91bac1355c11a7ee366b"
+    },
+    {
+      "registry": "modules",
+      "selector": "macros-as-api",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "c8ccdfd73c2eda56405194400e6b60951d0c9b29a221954e083685d6996e9869",
+      "successorSha256": "66816480f7138916806ea94b413a0a3c22ad3017c1d2139bd99d9823767f7278"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "d7d46cad71bd54ea37a0f2816093cbb61cfe7f1e320fca64617ffcbe0bb8962c",
+      "successorSha256": "96a9f261f66db4da6621f2737150c14128e903b508fbc5de7d828be20ea7e581"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "782965c7ec9eab03f39373dbeb9f8f2b4697ffd864354dda73cb6cb85cd34141",
+      "successorSha256": "36d4cf9c867e741c35b6a508f61f5a3e4db69323ac75de6fa74c126d12a53e9a"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "4d10465daa904c2ce7760b77bab7e28ec6fe04721a8267dcba8eebaf37d6b059",
+      "successorSha256": "d327d5ee96a04e4b79532fed6c6357324a995ebb2c5c07d6c85c2e41d733f76e"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "50d488f08280a2aeeb45fecf314c02ab26deb5061da9e224e11c7b248b210952",
+      "successorSha256": "940a0171f6373fcca93244cf2cdeaf9302d003a825019e8594edf6fa090ca704"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "6ce36783ddcc0f421c6b2057e7a466c3875f4f1d06c27957021631dee036e6a8",
+      "successorSha256": "c5460fed5a609effc24cdc59a479492262f2b6d6c01f63c95040c85fe3f352c5"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "ee9e9254e0d9ab3572092c2d16c0ce370739ac49c09f073bb18d55a3b90bb8b7",
+      "successorSha256": "5c78cbc6cd19af2bd22d12e637312f8616e9b47be5f1832802a836e3518d93b3"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "afa54678fa33f0e62d422ea44d6803cea58a3910dfe58972ab67cc71b2a79d49",
+      "successorSha256": "eb7ce0ca1c32d7500ae268390104bc9bf3686f61f019051346ed54ffd82b77cb"
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["gateCriteria", "7", "taskRefs"],
+      "beforeSha256": "927f1307754f718914b60802a9d7c6e8ecb2c31038a2eaf3425828636123bbb3",
+      "successorSha256": "c5a8fa3c92c5e7f481bf1c1d6d244c157d5f2ae9c4311caacacf4cd385f29b80"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "c0fae3787ede37b477d906546abd1dfbc2367c4318212f54bb608efc13fadf62",
+      "successorSha256": "23d592dd177884a5c11a27ecaff5593fad4530be520604e4d186ecb5628db0c6"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "023a75a571b2a52ac8f84dc06870da159085420a6640da9af47d119ee73d45f3",
+      "successorSha256": "8933fd99fc919bd21b13cbd1b5b23131bde11ec60598f5002c52e8f697627a77"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "6969dda7ebbee2da888e2db0919ec44a19bda0b7230189ca3dc9922278b89b6f",
+      "successorSha256": "516463ea511547e41469f8e83957704a7bc2b3522240823ae2bb057a5a5cbaa3"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "04ee1ce4c33a8d73853d8433db7b6963838c52df82231a74ed5fadb942fd0e79",
+      "successorSha256": "595cec0afe4592c5997f5482cc56acbdf1f14e42ef88effbc1878d191f07f0f8"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "dbb906ae357b5eacb6e33b7d9f178d478503a3a20d30ab1fd1b685c3aa0e4834",
+      "successorSha256": "7912843d2527a3918c669a8a1b7909c0d5554541e16bad9955e9a6529820d765"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "d03aed39e24f044684d5112a538a33a19bb4273180e6b5bcb70051d5fd25ad64",
+      "successorSha256": "654f95ef66302a2fd9a89a2af4f34912c6b1cb3c04fad19d46676bd5ebd375d2"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "7", "taskRefs"],
+      "beforeSha256": "3b5a5aaf6e1340c7373753191e9f98d0c52da8d9589a5cf78dc1d33f6c2c45c8",
+      "successorSha256": "b5d8a91e7a396f324b5e7c08cf136b8addd68897ffb0cd0ba8bb90f8689df312"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-ffi-contracts",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "6284a17957d01df0e7b69829716d78bc5659bff32f5566532e74ea4e86e12560",
+      "successorSha256": "f83dde2ae1f345e166df8284974494416d208d108bf4b5d490f11ebb9c8ed168"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-ffi-contracts",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "6cb8c569be9ea5b3d9a69298a047643cbcb721ebf3fa98907e7ced3025ebf90e",
+      "successorSha256": "31f54a27430a6f07b06b4f01774698cc452b1b75f6fe124b055afdeee121baa4"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-ffi-contracts",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "e08b608c8b6a8b84fcf36ced9efd2021621436a3fa03e2ec7d00982757d66886",
+      "successorSha256": "1bf4a2d7dee3aa83283cf42649aac25466d8b78640c718ac71a16dfb2f0f9daa"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-ffi-contracts",
+      "path": ["gateCriteria", "3", "label"],
+      "beforeSha256": "6654f28c94d9109be45698d0fdeb144008f3ef65d3741d4b8bd95a0d0ac6ebbb",
+      "successorSha256": "32d954af3e7f4d56b6ddcf8d6f52b4ad5b5820ed53f45a670a7a5a1d42238598"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-ffi-contracts",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "b9c07a2993a02f136b4da31bc90ff568abf01ee8838fb894c865aaad1f5f6475",
+      "successorSha256": "3460acc0781c8e128e02fe936d241124f98254d1989d55d27c5b14aff1891197"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "b6f5695aae2b7ddc0b8cc91dfe2ce468939992b9071c6c2b615542ec7f77c50e",
+      "successorSha256": "50ed30e00885f052dbd298996fe4702ae1c462bc512326ee322d47fd96c9b56f"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "1145e3f463dc05114f7db940b0fc2c4d480681cb7912d77c27183e7577d13878",
+      "successorSha256": "2b88aa5d2877754a35b9168923029174b122efc2c424ddb7d2a58e41bd6c6a89"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "e4d06cbb35d6452bbad586e4a2a047308546aa4cd9068556cd801de11e4b21d5",
+      "successorSha256": "4292c728d4702cc367326a1e7d685b0b327a82c1aa5ae506492d63cb9d14e068"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "7", "taskRefs"],
+      "beforeSha256": "1f192541e5a81deac5522dba7213f8c7472423988d879c5489f3658ddd654487",
+      "successorSha256": "158b77aa651e4b9082baac3debd9cc5eb7b4f8cb0437d01f21ee1d48b985e7f2"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["exitGate", "1"],
+      "beforeSha256": "66d2397d9441cf71e62cfb4601620a7ea81b2e9f3eb27faeb0612c8d6ad59c0e",
+      "successorSha256": "4acee25d71de491416f843feeef297505f7cdd50ec3c0bd5a43fbfba128e6af1"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "0a24cadd7c83ecbc108ef8efe6e31e6203183ec734ff56d59b9af6e54dc011a4",
+      "successorSha256": "6968d6bfbaa66a7782a05d8cc0415b66f12362372014c1a01def9eb4f793e870"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "8b9df58f912822eeb22185fc0022ea63616ea1d60e709547ebaa8fa96a58a344",
+      "successorSha256": "142c8bee5e5d422b06e844762fbe22765f5bcab2fbef3e8fd097a2b2eedd415f"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "b820f33c36bc9b2f4892e9069547e28c31fa542278ec9d6e96d591d889721cfa",
+      "successorSha256": "035eaf9f9587e2df7c297f36fb4bc36ef7a50ebc682e5578c8cc9c9265fb370f"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "1443e721f08c3a9741e3dca4a622475bd2ea0553443aae139e695c27f9e2fec1",
+      "successorSha256": "ae1062e85a99a0ec0e7f02044a5b66872bef4ba0c56960eb928d985a02774694"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "4610dedc2889f703b7386e0c8f718e30086526b0ce86e38c8971656dce9698ad",
+      "successorSha256": "4ea38ec036d0cd473da6c57ec06bad1850a824b3ed0be440060320ada2dfafa0"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "209db0db1f154ef32eaee7644417eee17169b95135e89f377c38470630299b65",
+      "successorSha256": "be435de0e15e2ca1553eb9910bad36ec1b6ade0ff8b1063fc66ae44e8df4b6f9"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "a03d3980b0cde44cf97a31ef4e3261e635c2f4deb8a83b8bb4f0304edd96cb05",
+      "successorSha256": "d07f3aa11b71d849ad5b54eb7bc8ca77d1675d9a51485521220f88c52d0fc0a5"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "7", "taskRefs"],
+      "beforeSha256": "ed5b0965b0fe1dd0fe1f0e84fcbc03007e0dc2693381527e7262453e3993dffb",
+      "successorSha256": "094dbed9dacd791b0664eb1fed3ef8b34ad739a5081cfa490af34341a30622ce"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "io-format-roundtrip",
+      "id": "review-io-format",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "400e9252cd4313a81f5046e4e8c2542065cc43c852af171eab0a3246e970107f"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "io-safe-persistence",
+      "id": "review-io-files",
+      "path": ["prompt"],
+      "beforeSha256": "8173bb14781b83873f8a5bed0267b6071f4f23146b33616c6fcf8ad41df05482",
+      "successorSha256": "740a638f7555336c92b5ff1152b48414d9a0369b253e13703fb7e9575ca17ad1"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "io-safe-persistence",
+      "id": "review-io-files",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "d92a116427efa9da81d2d05797ede450986bd8e3314f1192f5f07c7d95f83208"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "io-terminal-boundary",
+      "id": "review-io-command",
+      "path": ["prompt"],
+      "beforeSha256": "74589f7ad8c4e6c6883eab39d0df23707edef39075e0a21596a0b41db9034ef6",
+      "successorSha256": "4309441130c4172a6f3fa161801d397bdc7b3cd044468eb16572e00226304e08"
+    },
+    {
+      "registry": "reviewExercises",
+      "selector": "io-terminal-boundary",
+      "id": "review-io-command",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "b519feeb314eb57147034e3785b6b7c646788a61e0edd64bd3c54f4fcb53a3fc"
+    }
+  ],
+  "beforeValues": {
+    "771ff55bbed9c5bddc6a048d2dd3d421bb82db15f2107ccbcec06423943e27b5": "Uruchom funkcję z dwoma parametrami i sprawdź wynik. Zauważ brak średnika przy ostatnim wyrażeniu w add.",
+    "75478ab16a3b760dd872d8fd35d7769e62057fd495e230c52d34074fffe2e189": "fn add(left: i32, right: i32) -> i32 {\n    left + right\n}\n\nfn main() {\n    println!(\"{}\", add(2, 3));\n}",
+    "169dbd4a42859d607f07e94be43ee126e9c06e44d0e911daebac0f2ace2da542": "Uruchom kompletną implementację z czterema wynikami. Wejścia mieszczą się w zakresie -1000..=1000; porównaj cały wynik, nie tylko jeden przypadek.",
+    "dae285d66174b38757125b68ae854c7739ba140c5dcdcd8a1a9bc505c0db0556": "fn score(correct: i32, attempted: i32) -> i32 {\n    if attempted <= 0 {\n        0\n    } else if correct <= 0 {\n        0\n    } else if correct >= attempted {\n        100\n    } else {\n        correct * 100 / attempted\n    }\n}\n\nfn main() {\n    println!(\"{}\", score(0, 0));\n    println!(\"{}\", score(0, 5));\n    println!(\"{}\", score(3, 3));\n    println!(\"{}\", score(2, 4));\n}",
+    "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b": true,
+    "9c4982a88881774b75ffed2b342073e8c477a216943f80a37fb45b267601486e": "Uruchom kod i zobacz, że `new` jest funkcją powiązaną, a `summary` i `add` są metodami instancji. Zapis `Self { label, value: 0 }` korzysta ze skrótu pola: lokalne `label` zasila pole o tej samej nazwie.",
+    "506102863a073abc00d52d81b19173bbd2bd970d997e62847e28f1a497789c34": "struct Counter {\n    label: String,\n    value: i32,\n}\n\nimpl Counter {\n    fn new(label: String) -> Self {\n        Self { label, value: 0 }\n    }\n\n    fn add(&mut self, amount: i32) {\n        self.value += amount;\n    }\n\n    fn summary(&self) -> String {\n        format!(\"{}: {}\", self.label, self.value)\n    }\n}\n\nfn main() {\n    let mut counter = Counter::new(String::from(\"build\"));\n    counter.add(2);\n    println!(\"{}\", counter.summary());\n}",
+    "52e7993c5730456ad973eee0ab808a7c1fa7745b0be445c6b1f13c21116446cc": "`Counter::new` nie ma instancji, ale zwraca Self.",
+    "e90000093a27e7e023ccfb5a02832dcec29f872b9cf038f4b30b8eb0e3a7222a": "Po utworzeniu potrzebujesz mut na bindingu, aby wywołać add.",
+    "56d891e958b2f83930344d36f9e2c8dd673687ca4dd1fc75934e7b921d496286": "Obserwuj trzy wyniki Debug. trim zwraca pożyczony tekst bez brzegowych białych znaków, split_once dzieli go na dwie części przy pierwszym separatorze, a contains sprawdza obecność znaku. is_ascii_digit rozpoznaje cyfry 0–9. Zapis Ok(value) if value > 0 to wzorzec z dodatkowym warunkiem. derive(Debug, PartialEq, Eq) pozwala wypisać i porównywać nasze enumy. Najpierw trim usuwa białe znaki na brzegach całej linii; pusta linia daje Empty. Pierwsza zwykła spacja rozdziela czasownik i argument. Czasowniki są małymi literami: add, done, list; pozostałe dają Unknown. Tabulator między czasownikiem i argumentem nie jest separatorem. add obcina brzegi argumentu, zachowuje jego wnętrze i zwraca Add z własnym String; pusty tytuł lub LF/CR w środku daje InvalidTitle. done przyjmuje wyłącznie dodatnią liczbę z cyfr ASCII mieszczącą się w usize, z opcjonalnymi zerami wiodącymi; pozostałe argumenty dają InvalidId. list przyjmuje wyłącznie pusty argument, inaczej daje Unknown. Wspólny CommandError ma też NotFound, ale ten błąd zwraca dopiero Todo.",
+    "dbc4c2ef297ed44caf9165cfc9b5a9206f2753db82fc113a9279148481ddf960": "#[derive(Debug, PartialEq, Eq)]\nenum Command {\n    Add(String),\n    Done(usize),\n    List,\n}\n\n#[derive(Debug, PartialEq, Eq)]\nenum CommandError {\n    Empty,\n    Unknown,\n    InvalidTitle,\n    InvalidId,\n    NotFound,\n}\n\nfn parse_command(line: &str) -> Result<Command, CommandError> {\n    let line = line.trim();\n    if line.is_empty() {\n        return Err(CommandError::Empty);\n    }\n    let (verb, argument) = match line.split_once(' ') {\n        Some(parts) => parts,\n        None => (line, \"\"),\n    };\n    match verb {\n        \"add\" => {\n            let title = argument.trim();\n            if title.is_empty() || title.contains('\\n') || title.contains('\\r') {\n                Err(CommandError::InvalidTitle)\n            } else {\n                Ok(Command::Add(String::from(title)))\n            }\n        }\n        \"done\" => {\n            let id = argument.trim();\n            if id.is_empty() || id.starts_with('+') {\n                return Err(CommandError::InvalidId);\n            }\n            for character in id.chars() {\n                if !character.is_ascii_digit() {\n                    return Err(CommandError::InvalidId);\n                }\n            }\n            match id.parse::<usize>() {\n                Ok(value) if value > 0 => Ok(Command::Done(value)),\n                _ => Err(CommandError::InvalidId),\n            }\n        }\n        \"list\" => {\n            if argument.trim().is_empty() { Ok(Command::List) } else { Err(CommandError::Unknown) }\n        }\n        _ => Err(CommandError::Unknown),\n    }\n}\nfn main() {\n    println!(\"{:?}\", parse_command(\" add żółć \"));\n    println!(\"{:?}\", parse_command(\"done 0007\"));\n    println!(\"{:?}\", parse_command(\"list now\"));\n}",
+    "564f277b4f46c3ffa3ad8646c51c8fbb381b99e858101f99ffc10b213b29878e": "Ok(Add(\"żółć\"))\nOk(Done(7))\nErr(Unknown)\n",
+    "ea7565550110e3aaec9bc9fe4a583d974a948ade8d96651304f439f34f4f06b9": "Zobacz, że Add zwraca numer 1, a List pokazuje znacznik i końcowy znak nowej linii. format! tworzy String tak jak println! formatuje wydruk. Pętla while powtarza blok, dopóki warunek jest prawdziwy; index += 1 zwiększa indeks i pozwala zakończyć przejście przez listę. Todo::new tworzy pustą listę. apply przyjmuje Command i zwraca Result<String, CommandError>. Add odrzuca tytuł pusty po trim oraz każdy LF/CR, także przy wywołaniu bez parsera; zwraca wtedy InvalidTitle bez zmiany stanu. Poprawny tytuł zapisuje dokładnie, bez obcinania, jako niewykonane zadanie i zwraca added N. Numery zaczynają się od 1 i odpowiadają kolejności dodania; duplikaty są dozwolone. Done(0) daje InvalidId, dodatni numer poza listą daje NotFound; oba błędy zachowują stan. Poprawne Done, także powtórzone, oznacza zadanie jako wykonane i zwraca done N. List zwraca pusty String albo kolejne wiersze N [ ] title\\n lub N [x] title\\n. Każdy wiersz kończy się znakiem nowej linii.",
+    "62a41c5f8d08f3f25c91de2d561dcbcd5cee122a85564bffd4c162c938b4295f": "#[derive(Debug, PartialEq, Eq)]\nenum Command { Add(String), Done(usize), List }\n#[derive(Debug, PartialEq, Eq)]\nenum CommandError { Empty, Unknown, InvalidTitle, InvalidId, NotFound }\n#[derive(Debug, PartialEq, Eq)]\nstruct Task { title: String, done: bool }\n\nstruct Todo { tasks: Vec<Task> }\n\nimpl Todo {\n    fn new() -> Todo { Todo { tasks: Vec::new() } }\n\n    fn apply(&mut self, command: Command) -> Result<String, CommandError> {\n        match command {\n            Command::Add(title) => {\n                if title.trim().is_empty() || title.contains('\\n') || title.contains('\\r') {\n                    return Err(CommandError::InvalidTitle);\n                }\n                self.tasks.push(Task { title: title, done: false });\n                Ok(format!(\"added {}\", self.tasks.len()))\n            }\n            Command::Done(id) => {\n                if id == 0 { return Err(CommandError::InvalidId); }\n                let index = id - 1;\n                if index >= self.tasks.len() { return Err(CommandError::NotFound); }\n                self.tasks[index].done = true;\n                Ok(format!(\"done {}\", id))\n            }\n            Command::List => {\n                let mut output = String::new();\n                let mut index = 0;\n                while index < self.tasks.len() {\n                    let task = &self.tasks[index];\n                    let mark = if task.done { \"x\" } else { \" \" };\n                    output.push_str(&format!(\"{} [{}] {}\\n\", index + 1, mark, task.title));\n                    index += 1;\n                }\n                Ok(output)\n            }\n        }\n    }\n}\nfn main() {\n    let mut todo = Todo::new();\n    println!(\"{:?}\", todo.apply(Command::Add(String::from(\"naprawić parser\"))));\n    println!(\"{:?}\", todo.apply(Command::List));\n}",
+    "234ff57bba801bd3e16a256f5f1217c2ae1c0d56d8b239993be4572009aacbf6": "Ok(\"added 1\")\nOk(\"1 [ ] naprawić parser\\n\")\n",
+    "ddec45fac946f5a82e1e112cab97ca30bf6e9cdc16dba4e57c6773779e81fc2f": "Obserwuj wektor wyników: każda linia ma własny Result, a List widzi poprzednią zmianę. Każde wywołanie zaczyna od nowego, pustego Todo. run_session daje dokładnie jeden Result dla każdej linii w tej samej kolejności, zachowuje rodzaj błędu i kontynuuje bez cofania poprzednich operacji. Puste wejście daje pusty Vec. run_strict_session zwraca pierwszy błąd parsera lub stanu, a przy braku błędów — wynik ostatniej operacji; puste wejście daje Ok z pustym String. Poprzednie operacje nie są cofane, lecz lokalny Todo znika po zakończeniu wywołania.",
+    "576e93735642512c79e9a3f74b0db63083cb833934605837700a77931c0e4ae4": "#[derive(Debug, PartialEq, Eq)]\nenum Command {\n    Add(String),\n    Done(usize),\n    List,\n}\n\n#[derive(Debug, PartialEq, Eq)]\nenum CommandError {\n    Empty,\n    Unknown,\n    InvalidTitle,\n    InvalidId,\n    NotFound,\n}\n\nfn parse_command(line: &str) -> Result<Command, CommandError> {\n    let line = line.trim();\n    if line.is_empty() {\n        return Err(CommandError::Empty);\n    }\n    let (verb, argument) = match line.split_once(' ') {\n        Some(parts) => parts,\n        None => (line, \"\"),\n    };\n    match verb {\n        \"add\" => {\n            let title = argument.trim();\n            if title.is_empty() || title.contains('\\n') || title.contains('\\r') {\n                Err(CommandError::InvalidTitle)\n            } else {\n                Ok(Command::Add(String::from(title)))\n            }\n        }\n        \"done\" => {\n            let id = argument.trim();\n            if id.is_empty() || id.starts_with('+') {\n                return Err(CommandError::InvalidId);\n            }\n            for character in id.chars() {\n                if !character.is_ascii_digit() {\n                    return Err(CommandError::InvalidId);\n                }\n            }\n            match id.parse::<usize>() {\n                Ok(value) if value > 0 => Ok(Command::Done(value)),\n                _ => Err(CommandError::InvalidId),\n            }\n        }\n        \"list\" => {\n            if argument.trim().is_empty() { Ok(Command::List) } else { Err(CommandError::Unknown) }\n        }\n        _ => Err(CommandError::Unknown),\n    }\n}\n\n#[derive(Debug, PartialEq, Eq)]\nstruct Task { title: String, done: bool }\n\nstruct Todo { tasks: Vec<Task> }\n\nimpl Todo {\n    fn new() -> Todo { Todo { tasks: Vec::new() } }\n\n    fn apply(&mut self, command: Command) -> Result<String, CommandError> {\n        match command {\n            Command::Add(title) => {\n                if title.trim().is_empty() || title.contains('\\n') || title.contains('\\r') {\n                    return Err(CommandError::InvalidTitle);\n                }\n                self.tasks.push(Task { title: title, done: false });\n                Ok(format!(\"added {}\", self.tasks.len()))\n            }\n            Command::Done(id) => {\n                if id == 0 { return Err(CommandError::InvalidId); }\n                let index = id - 1;\n                if index >= self.tasks.len() { return Err(CommandError::NotFound); }\n                self.tasks[index].done = true;\n                Ok(format!(\"done {}\", id))\n            }\n            Command::List => {\n                let mut output = String::new();\n                let mut index = 0;\n                while index < self.tasks.len() {\n                    let task = &self.tasks[index];\n                    let mark = if task.done { \"x\" } else { \" \" };\n                    output.push_str(&format!(\"{} [{}] {}\\n\", index + 1, mark, task.title));\n                    index += 1;\n                }\n                Ok(output)\n            }\n        }\n    }\n}\n\nfn run_session(lines: &[&str]) -> Vec<Result<String, CommandError>> {\n    let mut todo = Todo::new();\n    let mut results = Vec::new();\n    for line in lines {\n        let result = match parse_command(line) {\n            Ok(command) => todo.apply(command),\n            Err(error) => Err(error),\n        };\n        results.push(result);\n    }\n    results\n}\n\nfn run_strict_session(lines: &[&str]) -> Result<String, CommandError> {\n    let mut todo = Todo::new();\n    let mut last = String::new();\n    for line in lines {\n        let command = parse_command(line)?;\n        last = todo.apply(command)?;\n    }\n    Ok(last)\n}\nfn main() {\n    println!(\"{:?}\", run_session(&[\"add jeden\", \"done 1\", \"list\"]));\n}",
+    "eeb0788d9f0b9a0cecf0928d92d20d38d294e172218a40bb8e9341be17f0f027": "[Ok(\"added 1\"), Ok(\"done 1\"), Ok(\"1 [x] jeden\\n\")]\n",
+    "e3f4d51394fa0a9a668e3bcdc9af734481485a4b1c95b31a89d0c5b5a71bd8c7": "Starter ma poprawny parser i stan, ale zwraca puste sukcesy. Napraw run_session: przekaż każdą linię do parsera, a poprawne polecenie do Todo. Nie używaj unwrap ani expect. Każde wywołanie zaczyna od nowego, pustego Todo. run_session daje dokładnie jeden Result dla każdej linii w tej samej kolejności, zachowuje rodzaj błędu i kontynuuje bez cofania poprzednich operacji. Puste wejście daje pusty Vec. run_strict_session zwraca pierwszy błąd parsera lub stanu, a przy braku błędów — wynik ostatniej operacji; puste wejście daje Ok z pustym String. Poprzednie operacje nie są cofane, lecz lokalny Todo znika po zakończeniu wywołania.",
+    "2b6327b90d1df4821439ce6f9005a172336174a269f7839f3d5ad4dad88ef879": "Wcześniej pola struct można było wypełniać w tym samym module. Po umieszczeniu typu w booking potrzebujemy granicy: element bez pub jest dostępny w module, który go definiuje, i jego potomkach. Rodzic nie dostaje dostępu do prywatnego wnętrza dziecka. pub struct Seat udostępnia nazwę typu, ale pole number pozostaje prywatne. Publiczne Seat::new sprawdza numer przed zbudowaniem wartości, dlatego nazywamy je konstruktorem z walidacją; new to zwykła wybrana przez nas nazwa funkcji skojarzonej, nie specjalne słowo Rust. Publiczna metoda number pożycza &self i zwraca Copy liczby. Zapis Seat { number } jest skrótem Seat { number: number }. pub(crate) przy limit pozwala użyć pomocnika w bieżącym crate. Nie daje dostępu innemu crate. Publiczny enum SeatError udostępnia też swój wariant Outside. is_err() sprawdza, czy Result jest Err. Uruchom: poprawne miejsce 8 powstaje, zero jest odrzucone.",
+    "bb92c3a3af794c2a98d26e2293eff534ce7bbc8db7cac97bca1b1788039f4f67": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn main() {\n    match crate::booking::Seat::new(8) {\n        Ok(seat) => println!(\"miejsce {}\", seat.number()),\n        Err(error) => println!(\"{:?}\", error),\n    }\n    println!(\"limit {}\", crate::booking::limit());\n    println!(\"odrzucono: {}\", crate::booking::Seat::new(0).is_err());\n}",
+    "ae23dc6ab4ea584014c185feadd79c1298a8777e7bbd867d1a7a0d28c3f988a5": "miejsce 8\nlimit 8\nodrzucono: true\n",
+    "978e463a2cf42cf00cc259d4336103a353e402d95e7b95cfc8b0f5766323fab7": "Uruchom próbę odczytu seat.number spoza booking. Kompilator zgłosi E0616: pole number jest prywatne. To celowa ochrona danych. Publiczna metoda number() daje odczyt bez udostępniania samego pola do zapisu.",
+    "89a06e7382ea41db8ef0e8c13b2820641e74927b490b460bdb00afc874a3698a": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn chosen() -> u8 {\n    match crate::booking::Seat::new(3) {\n        Ok(seat) => seat.number,\n        Err(_) => 0,\n    }\n}\nfn main() { println!(\"{}\", chosen()); }",
+    "8ae79f9fcbe189c7aa46694cb8b20dc683652f544744e6310c9e5aa6047baf25": "mod booking {\n    #[derive(Debug, PartialEq, Eq)]\n    pub enum SeatError { Outside }\n\n    pub struct Seat { number: u8 }\n\n    pub(crate) fn limit() -> u8 { 8 }\n\n    impl Seat {\n        pub fn new(number: u8) -> Result<Seat, SeatError> {\n            if number == 0 || number > self::limit() {\n                Err(SeatError::Outside)\n            } else {\n                Ok(Seat { number })\n            }\n        }\n        pub fn number(&self) -> u8 { self.number }\n    }\n}\nfn chosen() -> u8 {\n    match crate::booking::Seat::new(3) {\n        Ok(seat) => seat.number(),\n        Err(_) => 0,\n    }\n}\nfn main() { println!(\"{}\", chosen()); }",
+    "220aa8d29259ee53787b1353b5869b9558ab7a42b54ae9373f2a7a9ce8239914": "Napraw chosen: odczytaj numer poprawnego Seat przez istniejącą publiczną metodę. Zachowaj prywatne pole i konstruktor. Wynik chosen pozostaje liczbą 3. Nie dodawaj pub do number.",
+    "eca83632b3397cdf78ec880a61e0534cd8acf0e7304f10fdadd3f1a568f7859e": "Uruchom dwa formaty",
+    "681b8b38ccd237d9d163aa242161c41e2684965708586d21a7ad743ae7688af8": "Długie ścieżki są jednoznaczne, lecz przy wielu wywołaniach przydaje się lokalna nazwa. use path::name wprowadza nazwę do bieżącego zakresu; niczego nie kopiuje i nie wywołuje. as input nadaje alias, więc dwie różne funkcje label mogą współistnieć w pair jako input i output. use można umieścić także wewnątrz funkcji. Zapis use crate::formats::{incoming_label, outgoing_label} skraca dwa importy o wspólnym początku. pub use jest re-eksportem: klient widzi nazwę formats::incoming_label, chociaż definicja pozostaje w prywatnym incoming. Funkcja w środku musi być publiczna, lecz moduł zawierający implementację może zostać prywatny. Uruchom i porównaj wywołania przez re-eksport z lokalnymi aliasami.",
+    "80c58d1d6512eaa496bd0f719091d2b840a3af2c263ade162a52c994eeeea2f2": "mod formats {\n    mod incoming {\n        pub fn label(text: &str) -> String { format!(\"IN:{}\", text.trim()) }\n    }\n    mod outgoing {\n        pub fn label(text: &str) -> String { format!(\"OUT:{}\", text.trim()) }\n    }\n    pub use self::incoming::label as incoming_label;\n    pub use self::outgoing::label as outgoing_label;\n\n    pub fn pair(text: &str) -> String {\n        use self::incoming::label as input;\n        use self::outgoing::label as output;\n        format!(\"{} | {}\", input(text), output(text))\n    }\n}\nuse crate::formats::{incoming_label, outgoing_label};\nfn main() {\n    println!(\"{}\", incoming_label(\"  paczka  \"));\n    println!(\"{}\", outgoing_label(\"  paczka  \"));\n    println!(\"{}\", crate::formats::pair(\"  paczka  \"));\n}",
+    "587a9f727bfec1245dcf8b3ea0715c5b8a8861ab32aba350edba10d936ee0f40": "IN:paczka\nOUT:paczka\nIN:paczka | OUT:paczka\n",
+    "538f3e196cd8c3f04912b5a5424720ed87edd489507e3011ea0ce867a8f0d4d9": "Cargo zarządza pakietem: katalogiem z manifestem Cargo.toml opisującym m.in. nazwę, wersję, edycję i zależności. Target to wynik, który Cargo może zbudować, np. bibliotekę lub program. Konwencjonalnie src/lib.rs jest korzeniem crate biblioteki, a src/main.rs korzeniem osobnego crate programu. Pakiet może mieć jedną bibliotekę i wiele programów, np. z src/bin/, ale potrzebuje co najmniej jednego targetu biblioteki lub programu. Poniższy przykład nadal jest jednym źródłem i jednym crate. dispatch reprezentuje granicę API, a desk jest klientem używającym tylko jej publicznych nazw. To przygotowanie do rozdzielenia kodu, nie uruchomienie Cargo w przeglądarce. Metoda label(&self) -> &str pożycza tekst pola; Rust wiąże użyteczność tego widoku z pożyczką obiektu. Najpierw uruchom wyniki poprawnej etykiety i dwóch różnych błędów. Moduł dispatch udostępnia Parcel, ParcelError i register przez swoją granicę. Prywatny model przechowuje Parcel z prywatnym polem label typu String. Publiczna metoda label pożycza zapisany tekst jako &str. register przyjmuje pożyczony tekst, obcina brzegi przez trim, odrzuca pusty wynik jako ParcelError::Empty, a LF lub CR wewnątrz jako ParcelError::Multiline. Poprawny tekst zachowuje bez dalszych zmian i zwraca Parcel w Ok. Moduł desk udostępnia receipt, który przyjmuje tekst i korzysta wyłącznie z API dispatch: sukces daje String przyjęto: LABEL, Empty daje brak etykiety, Multiline daje jedna linia. Bez unwrap i expect.",
+    "0456f07ce2b59f86013cb1c46705506db57c15886b4ba4f3ba48dae5eda8b248": "mod dispatch {\n    mod model {\n        #[derive(Debug, PartialEq, Eq)]\n        pub enum ParcelError { Empty, Multiline }\n        pub struct Parcel { label: String }\n        impl Parcel {\n            pub fn new(text: &str) -> Result<Parcel, ParcelError> {\n                let label = text.trim();\n                if label.is_empty() { return Err(ParcelError::Empty); }\n                if label.contains('\\n') || label.contains('\\r') {\n                    return Err(ParcelError::Multiline);\n                }\n                Ok(Parcel { label: String::from(label) })\n            }\n            pub fn label(&self) -> &str { &self.label }\n        }\n    }\n    pub use self::model::{Parcel, ParcelError};\n    pub fn register(text: &str) -> Result<Parcel, ParcelError> {\n        Parcel::new(text)\n    }\n}\nmod desk {\n    use crate::dispatch::{register, ParcelError};\n    pub fn receipt(text: &str) -> String {\n        match register(text) {\n            Ok(parcel) => format!(\"przyjęto: {}\", parcel.label()),\n            Err(ParcelError::Empty) => String::from(\"brak etykiety\"),\n            Err(ParcelError::Multiline) => String::from(\"jedna linia\"),\n        }\n    }\n}\nfn main() {\n    println!(\"{}\", crate::desk::receipt(\"  Szkło  \"));\n    println!(\"{}\", crate::desk::receipt(\" \"));\n    println!(\"{}\", crate::desk::receipt(\"a\\nb\"));\n}",
+    "7234ff72a3321175c070494ba32ac17aff5726ec0fb80339f37976187e9093a1": "przyjęto: Szkło\nbrak etykiety\njedna linia\n",
+    "7314e459af1c4e1fd81f0989cf768081021a2ed4cfbae8885718478abcaa295a": "Starter zawsze zapisuje sam nagłówek i zawsze odczytuje pustą listę. Zastąp obie funkcje pełnym kodowaniem i dekodowaniem. W tym jednoplikowym ćwiczeniu pola Task i Todo są dostępne lokalnie; eksport Cargo używa modułów i pub(crate). Bez unwrap i expect. encode(&Todo) -> String i decode(&str) -> Result<Todo, FormatError> używają formatu UTF-8: dokładny nagłówek RUST_TODO_V1 oraz LF, potem zero lub więcej wierszy: 0, TAB, tytuł, LF dla niewykonanego zadania albo 1, TAB, tytuł, LF dla wykonanego. Każdy wiersz wymaga końcowego LF. Pierwszy TAB jest separatorem; kolejne należą do tytułu. Zachowaj dokładny tytuł, także spacje na brzegach, tabulatory i Unicode; trim służy tylko sprawdzeniu, czy tytuł nie jest pusty. LF i CR w tytule są zabronione. Identyfikatory wynikają z kolejności wierszy od 1; duplikaty zostają. Pusty Todo daje sam nagłówek z LF. Brak lub inny nagłówek (także BOM i CRLF) daje InvalidHeader. Po sprawdzeniu nagłówka brak końcowego LF daje MissingFinalNewline. Następnie pierwszy zły wiersz daje InvalidRow(n), jeśli nie ma TAB, InvalidStatus(n), jeśli flaga nie jest dokładnie 0 lub 1, albo InvalidTitle(n), jeśli tytuł jest niepoprawny. n to numer fizycznej linii, pierwszy rekord ma numer 2. Puste wiersze i CRLF są błędami. Błąd nie zwraca częściowo odczytanego Todo. FormatError i Todo muszą obsługiwać Debug, PartialEq i Eq.",
+    "5558d0a3e018e0ee78580cf877dbf77b6f125b97a3ce75f42e64845a3c1914d8": "Starter zgłasza sukces, choć nie dotyka systemu plików. Zaimplementuj load i save. Dostarczony kodek pozostaw zgodny z poprzednią lekcją. std::fs::{self, File} skraca ścieżki nazw; do write_all potrzebujesz use std::io::Write. Opakowuj błędy za pomocą match, bez własnego From, unwrap, expect i closures. load(path: &str) -> Result<Todo, StorageError> odczytuje UTF-8 i wywołuje decode. Tylko ErrorKind::NotFound oznacza nowy pusty Todo, bez tworzenia pliku; każdy inny błąd odczytu, w tym niepoprawne UTF-8, daje StorageError::Io, a błąd formatu daje StorageError::Format. save(path: &str, todo: &Todo) -> Result<(), StorageError> serializuje stan do pliku obok celu: do całej ścieżki dopisuje .tmp (tasks.txt → tasks.txt.tmp). File::create_new odmawia otwarcia istniejącego pliku lub katalogu tymczasowego. Po utworzeniu własnego pliku: write_all, sync_all, zamknięcie uchwytu przez drop, a na końcu rename na plik docelowy. Każdy błąd przed udanym rename pozostawia poprzedni cel; zwracaj StorageError::Io. Sprzątaj wyłącznie własny plik tymczasowy, nigdy ten zastany. Nieudane sprzątanie nie może ukryć pierwotnego błędu. Nie usuwaj celu przed rename. To ćwiczenie nie zapewnia pełnej trwałości po utracie zasilania ani ochrony przed równoczesnymi autorami zmian: rename nie jest transakcją całego odczytu i zapisu. W przeglądarce testy tworzą własne katalogi tymczasowe w izolowanym runnerze i wykonują prawdziwe std::fs. Pliki z tego uruchomienia nie są plikami twojego komputera i nie stanowią trwałego magazynu między kliknięciami Uruchom. Formularz kodu nie udostępnia interaktywnego stdin ani wieloplikowego Cargo. Działanie terminala sprawdzisz w pobranym pakiecie.",
+    "62536472b43557af8f19385e2d75fab4aaf9fb09c197745b9356ceb5c28d95f1": "Połącz gotowy kodek notatnika z plikami. Publiczne funkcje i błędy są inne, a własny plik roboczy ma przyrostek .pending. Testy wymagają pełnego odczytu i zapisu, zachowania danych oraz wszystkich ścieżek błędów opisanych niżej. open_notebook(path: &str) -> Result<Notebook, NotebookStorageError> odczytuje UTF-8 i wywołuje unpack; tylko ErrorKind::NotFound daje pusty Notebook bez tworzenia pliku. Inne błędy odczytu, także wadliwe UTF-8, dają Io(io::Error); błąd formatu daje Format(NotebookFormatError). save_notebook(path: &str, notebook: &Notebook) -> Result<(), NotebookStorageError> zapisuje pack(notebook) przez własny plik obok celu, do całej ścieżki dopisując .pending. Użyj File::create_new, write_all, sync_all, drop i dopiero potem rename. Istniejący .pending, także katalog, powoduje Io i pozostaje nietknięty. Każdy błąd przed udanym rename zachowuje poprzedni cel. Sprzątaj tylko własny plik tymczasowy; błąd sprzątania nie ukrywa pierwotnego błędu. Nigdy nie usuwaj celu przed rename. Ten kontrakt również nie zapewnia pełnej trwałości po utracie zasilania ani bezpieczeństwa równoczesnych autorów zmian. W przeglądarce testy tworzą własne katalogi tymczasowe w izolowanym runnerze i wykonują prawdziwe std::fs. Pliki z tego uruchomienia nie są plikami twojego komputera i nie stanowią trwałego magazynu między kliknięciami Uruchom. Formularz kodu nie udostępnia interaktywnego stdin ani wieloplikowego Cargo. Działanie terminala sprawdzisz w pobranym pakiecie.",
+    "0441925ba01af7c752d6efbc09e40985d3d941d89367d5d9a7f1c5c2ffba8526": "Starter execute zawsze zwraca pusty sukces. Parser, Todo, kodek i pliki są już dostarczone; połącz je w odpowiedniej kolejności. Dopasowanie match &command pożycza polecenie, więc później nadal można przekazać je przez move do apply. Użyj konkretnych wariantów AppError, bez unwrap i expect. execute(path: &str, line: &str) -> Result<String, AppError> najpierw parsuje polecenie; błąd parsera daje AppError::Command bez odczytu pliku. Następnie każde wywołanie od nowa ładuje Todo z tej samej ścieżki, stosuje Command i zapisuje stan tylko po poprawnym Add lub Done (także powtórzonym Done). Błąd Todo daje AppError::Command bez zapisu; błąd load lub save daje AppError::Storage. Dopiero udany zapis pozwala zwrócić tekst sukcesu. List nie tworzy ani nie przepisuje pliku. Stary parser i Todo zachowują kontrakt: małe add/done/list, tylko spacja oddziela czasownik, add obcina brzegi argumentu i odrzuca pusty tytuł oraz LF/CR; done przyjmuje dodatnie cyfry ASCII mieszczące się w usize, z zerami wiodącymi, bez plusa; list nie przyjmuje argumentu. Done(0) to InvalidId, numer poza listą to NotFound. Add zwraca added N, Done zwraca done N, a List zwraca kolejne N [ ] title\\n lub N [x] title\\n. Każda linia listy ma końcowy LF. Identyfikatory i duplikaty są zachowane. AppError ma warianty Command(CommandError) i Storage(StorageError), oba błędy zewnętrzne obsługują Debug. W przeglądarce testy tworzą własne katalogi tymczasowe w izolowanym runnerze i wykonują prawdziwe std::fs. Pliki z tego uruchomienia nie są plikami twojego komputera i nie stanowią trwałego magazynu między kliknięciami Uruchom. Formularz kodu nie udostępnia interaktywnego stdin ani wieloplikowego Cargo. Działanie terminala sprawdzisz w pobranym pakiecie.",
+    "eca90363838896e4f5a4debfabc5fb38e98b7ff35d3ab5569c518a30df367547": "Klient zmienił domenę na notatki: note/archive/show, inne wyniki, format i przyrostek pliku roboczego. Zaimplementuj execute_note; dostarczone funkcje dziedzinowe i plikowe są poprawne. Testy obejmują ponowny odczyt, duplikaty, powtórne archiwizowanie, odczyt przy zajętym .pending oraz błędy przed i po zmianie pamięci. execute_note(path: &str, line: &str) -> Result<String, NotebookError> używa dostarczonych parse_note, Notebook::apply, open_notebook i save_notebook. Najpierw parser, potem świeży odczyt, zastosowanie polecenia, zapis tylko po Note lub Archive, a na końcu wynik. NoteCommand::Note(String), Archive(usize), Show odpowiadają poleceniom note, archive, show. note obcina brzegi argumentu, ale zachowuje wnętrze i odrzuca pustą treść oraz LF/CR; archive wymaga dodatnich cyfr ASCII mieszczących się w usize, bez plusa, z dozwolonymi zerami wiodącymi. Tylko zwykła spacja oddziela czasownik. Show nie ma argumentów i nie zapisuje pliku. Wyniki to noted N, archived N, albo wiersze N [ ] body\\n / N [x] body\\n; każda linia ma LF. Duplikaty i powtórne Archive są poprawne; powtórne Archive też zapisuje. NoteError ma Empty, Unknown, InvalidBody, InvalidId i NotFound. Błąd parsera lub stanu daje NotebookError::Command(NoteError); load/save dają NotebookError::Storage(NotebookStorageError). Parser poprzedza odczyt nawet przy uszkodzonym pliku. Nie zwracaj sukcesu przed udanym zapisem; Show nie tworzy ani nie przepisuje pliku. W przeglądarce testy tworzą własne katalogi tymczasowe w izolowanym runnerze i wykonują prawdziwe std::fs. Pliki z tego uruchomienia nie są plikami twojego komputera i nie stanowią trwałego magazynu między kliknięciami Uruchom. Formularz kodu nie udostępnia interaktywnego stdin ani wieloplikowego Cargo. Działanie terminala sprawdzisz w pobranym pakiecie.",
+    "b90da9b467a869c48775bb25888a40c07c7b723c59548827937d66925cb37c55": "Uruchom przykład. Zobacz, że Iterator oddaje Option<Item>, a explicitne ponowne next po None pozostaje None, bo tak zaprojektowano ten finite iterator.",
+    "b1740b248fa04e76d3e0119aa22a2048f46ae8988d80e01e5d7da367f3fe24c6": "struct FinitePositions {\n    next: usize,\n    end: usize,\n}\n\nimpl Iterator for FinitePositions {\n    type Item = usize;\n\n    fn next(&mut self) -> Option<Self::Item> {\n        if self.next >= self.end {\n            None\n        } else {\n            let position = self.next;\n            self.next += 1;\n            Some(position)\n        }\n    }\n}\n\nfn positions(end: usize) -> FinitePositions {\n    FinitePositions { next: 0, end }\n}\n\nfn main() {\n    let mut positions = positions(3);\n    println!(\"{:?} {:?} {:?} {:?} {:?}\", positions.next(), positions.next(), positions.next(), positions.next(), positions.next());\n}",
+    "f6a2b0148673340c7f4a9eb818ca2f20ffa1a56c147e201da94e230ed85989a0": "Obserwacja przechodzi przez wiersz, pusty wiersz i kolejny wiersz. Każdą pożyczkę zamyka przed następnym `next`.",
+    "93047a465b0090c0fe017d9c6ee39c1cd46689928a9307044ff5db06a2c90b74": "trait LendingIterator {\n    type Item<'a> where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;\n}\n\nstruct RowLender<T> {\n    rows: Vec<Vec<T>>,\n    next: usize,\n}\n\nimpl<T> RowLender<T> {\n    fn new(rows: Vec<Vec<T>>) -> Self { Self { rows, next: 0 } }\n}\n\nimpl<T> LendingIterator for RowLender<T> {\n    type Item<'a> = &'a mut [T] where Self: 'a;\n\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {\n        if self.next >= self.rows.len() { return None; }\n        let row = self.next;\n        self.next += 1;\n        Some(self.rows[row].as_mut_slice())\n    }\n}\n\nimpl<T> RowLender<T> { fn into_rows(self) -> Vec<Vec<T>> { self.rows } }\nfn main() {\n    let mut lender = RowLender::new(vec![vec![String::from(\"A\")], Vec::new(), vec![String::from(\"Łódź\")]]);\n    { let row = lender.next().unwrap(); row[0].push('!'); }\n    { let row = lender.next().unwrap(); println!(\"pusty: {}\", row.is_empty()); }\n    { let row = lender.next().unwrap(); println!(\"ostatni: {}\", row[0]); }\n    println!(\"koniec: {:?}\", lender.next().is_none());\n    println!(\"końcowe: {:?}\", lender.into_rows());\n}\n",
+    "747b3597a9a442f76f93f812e2a4180a83a7262f02ae16a170f45b4cd6578393": "trait LendingIterator {\n    type Item<'a> where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;\n}\n\nstruct RowLender<T> {\n    rows: Vec<Vec<T>>,\n    next: usize,\n}\n\nimpl<T> RowLender<T> {\n    fn new(rows: Vec<Vec<T>>) -> Self { Self { rows, next: 0 } }\n}\n\nimpl<T> LendingIterator for RowLender<T> {\n    type Item<'a> = &'a mut [T] where Self: 'a;\n\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {\n        if self.next >= self.rows.len() { return None; }\n        let row = self.next;\n        self.next += 1;\n        Some(self.rows[row].as_mut_slice())\n    }\n}\n\nfn main() {\n    let mut lender = RowLender::new(vec![vec![String::from(\"A\")], vec![String::from(\"B\")]]);\n    let first = lender.next().unwrap();\n    let _second = lender.next();\n    println!(\"{}\", first.len());\n}\n",
+    "e7f6816644b3e36d5af159dd51f993981a88c57fd9f5ada19c218aa5a245d892": "trait LendingIterator {\n    type Item<'a> where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;\n}\n\nstruct RowLender<T> {\n    rows: Vec<Vec<T>>,\n    next: usize,\n}\n\nimpl<T> RowLender<T> {\n    fn new(rows: Vec<Vec<T>>) -> Self { Self { rows, next: 0 } }\n}\n\nimpl<T> LendingIterator for RowLender<T> {\n    type Item<'a> = &'a mut [T] where Self: 'a;\n\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {\n        if self.next >= self.rows.len() { return None; }\n        let row = self.next;\n        self.next += 1;\n        Some(self.rows[row].as_mut_slice())\n    }\n}\n",
+    "fd3ae098824131fbc5b8df6ace067da7109d44bc29525a4e8b10e06ca0cfb0aa": "Najpierw zwykłe `slice::windows`, potem dwa sekwencyjne mutable okna. Zwróć uwagę na wspólny element.",
+    "d8ac895b8fc68327b9aceb3d300e9669a44b45dbf444dffa8fbb933ee82c4bdf": "trait LendingIterator {\n    type Item<'a> where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;\n}\n\n#[derive(Debug, PartialEq, Eq)]\nenum WidthError { Zero }\n\nstruct WindowsMut<'data, T> { data: &'data mut [T], width: usize, position: usize, done: bool }\n\nimpl<'data, T> WindowsMut<'data, T> {\n    fn new(data: &'data mut [T], width: usize) -> Result<Self, WidthError> {\n        if width == 0 { Err(WidthError::Zero) } else { Ok(Self { data, width, position: 0, done: false }) }\n    }\n}\n\nimpl<T> LendingIterator for WindowsMut<'_, T> {\n    type Item<'a> = &'a mut [T] where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {\n        if self.done || self.position >= self.data.len() || self.width > self.data.len() - self.position { self.done = true; return None; }\n        let start = self.position;\n        let end = match start.checked_add(self.width) { Some(end) => end, None => { self.done = true; return None; } };\n        self.position = match start.checked_add(1) { Some(next) => next, None => { self.done = true; start } };\n        if end > self.data.len() { self.done = true; return None; }\n        self.data.get_mut(start..end)\n    }\n}\n\nfn main() {\n    let data = [1, 2, 3, 4];\n    for window in data.windows(3) { println!(\"niemutowalne: {window:?}\"); }\n    let mut separate = [1, 2, 3, 4];\n    for value in separate.iter_mut() { *value += 100; }\n    println!(\"niepokrywające mutable: {separate:?}\");\n    let mut data = [1, 2, 3, 4]; let mut lender = WindowsMut::new(&mut data, 3).unwrap();\n    { let window = lender.next().unwrap(); window[1] += 10; }\n    { let window = lender.next().unwrap(); println!(\"nakłada się: {window:?}\"); }\n    println!(\"dane: {data:?}\");\n}\n",
+    "aae56dc6c9d995b6cd24c2654f0dfe325c6e06811ab2d76deccab87f23523aee": "Zostaw pierwsze okno żywe podczas drugiego pollu. Ten przykład powinien zakończyć się E0499.",
+    "a616e447f06568f927ea8a8495ce4493720c626e7cad0412f3de0409ac4231e3": "trait LendingIterator {\n    type Item<'a> where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;\n}\n\n#[derive(Debug, PartialEq, Eq)]\nenum WidthError { Zero }\n\nstruct WindowsMut<'data, T> { data: &'data mut [T], width: usize, position: usize, done: bool }\n\nimpl<'data, T> WindowsMut<'data, T> {\n    fn new(data: &'data mut [T], width: usize) -> Result<Self, WidthError> {\n        if width == 0 { Err(WidthError::Zero) } else { Ok(Self { data, width, position: 0, done: false }) }\n    }\n}\n\nimpl<T> LendingIterator for WindowsMut<'_, T> {\n    type Item<'a> = &'a mut [T] where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {\n        if self.done || self.position >= self.data.len() || self.width > self.data.len() - self.position { self.done = true; return None; }\n        let start = self.position;\n        let end = match start.checked_add(self.width) { Some(end) => end, None => { self.done = true; return None; } };\n        self.position = match start.checked_add(1) { Some(next) => next, None => { self.done = true; start } };\n        if end > self.data.len() { self.done = true; return None; }\n        self.data.get_mut(start..end)\n    }\n}\n\nfn main() {\n    let mut data = [1, 2, 3]; let mut lender = WindowsMut::new(&mut data, 2).unwrap();\n    let first = lender.next().unwrap(); let _second = lender.next(); println!(\"{}\", first.len());\n}\n",
+    "93f6d409b148f97c7d5f44d3fc3e93179452c0c37f3ac3d149bdd4b66a5a1ab7": "trait LendingIterator {\n    type Item<'a> where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>>;\n}\n\n#[derive(Debug, PartialEq, Eq)]\nenum WidthError { Zero }\n\nstruct WindowsMut<'data, T> { data: &'data mut [T], width: usize, position: usize, done: bool }\n\nimpl<'data, T> WindowsMut<'data, T> {\n    fn new(data: &'data mut [T], width: usize) -> Result<Self, WidthError> {\n        if width == 0 { Err(WidthError::Zero) } else { Ok(Self { data, width, position: 0, done: false }) }\n    }\n}\n\nimpl<T> LendingIterator for WindowsMut<'_, T> {\n    type Item<'a> = &'a mut [T] where Self: 'a;\n    fn next<'a>(&'a mut self) -> Option<Self::Item<'a>> {\n        if self.done || self.position >= self.data.len() || self.width > self.data.len() - self.position { self.done = true; return None; }\n        let start = self.position;\n        let end = match start.checked_add(self.width) { Some(end) => end, None => { self.done = true; return None; } };\n        self.position = match start.checked_add(1) { Some(next) => next, None => { self.done = true; start } };\n        if end > self.data.len() { self.done = true; return None; }\n        self.data.get_mut(start..end)\n    }\n}\n",
+    "01ca5a50ebbd71a56203133da57691de422414e3c997f519710021f9cda43160": "Kod awaituje najpierw lewy uchwyt, potem prawy. Stabilny tekst opisuje tę kolejność odbioru, a nie kolejność wykonania dzieci.",
+    "2fa3783fa2af5a8c91e518a14fadbb2a5c8564f6c2471494c3460d483b7110f0": "use std::future::Future;\nuse tokio::task::JoinHandle;\n\nfn spawn_pair<F, G, T, U>(first: F, second: G) -> (JoinHandle<T>, JoinHandle<U>)\nwhere\n    F: Future<Output = T> + Send + 'static,\n    G: Future<Output = U> + Send + 'static,\n    T: Send + 'static,\n    U: Send + 'static,\n{\n    (tokio::spawn(first), tokio::spawn(second))\n}\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() {\n    let (left, right) = spawn_pair(async { \"left\" }, async { \"right\" });\n    println!(\"left={} right={}\", left.await.unwrap(), right.await.unwrap());\n}",
+    "8d1ea99ff2caf1e240b57cbe203abf16870581cbaa9b5e72c20f29f0aa07975e": "Uruchom przykład z dwoma odczytami i porównaj wydruk. To obserwacja pliku przeglądarkowego, nie test granicy osobnego crate.",
+    "639b59ef7d80e4fd72ed80fde32459467cb275bb1178ac1311aa435d0bfdf5c7": "#[derive(Debug, PartialEq, Eq)]\npub struct Reading {\n    pub name: String,\n    pub value: i32,\n}\n\nimpl Reading {\n    pub fn new(name: impl Into<String>, value: i32) -> Self {\n        Self { name: name.into(), value }\n    }\n}\n\n#[macro_export]\nmacro_rules! metric_readings {\n    ($( $name:expr => $value:expr ),* $(,)?) => {{\n        let mut readings = ::std::vec::Vec::<$crate::Reading>::new();\n        $(\n            let captured_name = $name;\n            let captured_value = $value;\n            readings.push($crate::Reading::new(captured_name, captured_value));\n        )*\n        readings\n    }};\n}\n\nfn main() {\n    let readings = metric_readings!(\"cpu\" => 7, \"queue\" => 3,);\n    for reading in readings {\n        println!(\"{}={}\", reading.name, reading.value);\n    }\n}",
+    "3965bbb47005334bcb563e9954e0d39758287c70c5cc8e1ac88599b4cc44ebb2": "Uruchom wywołania puste, pojedyncze, wieloelementowe i z przecinkiem końcowym. Zauważ, że są to osobne przypadki gramatyki.",
+    "ea5c59f2c3417527ab2f9a8b982287a6cf54146b9d95ae33cb8a240726ddc397": "#[derive(Debug, PartialEq, Eq)]\npub struct Reading {\n    pub name: String,\n    pub value: i32,\n}\n\nimpl Reading {\n    pub fn new(name: impl Into<String>, value: i32) -> Self {\n        Self { name: name.into(), value }\n    }\n}\n\n#[macro_export]\nmacro_rules! metric_readings {\n    ($( $name:expr => $value:expr ),* $(,)?) => {{\n        let mut readings = ::std::vec::Vec::<$crate::Reading>::new();\n        $(\n            let captured_name = $name;\n            let captured_value = $value;\n            readings.push($crate::Reading::new(captured_name, captured_value));\n        )*\n        readings\n    }};\n}\n\nfn main() {\n    println!(\"{}\", metric_readings!().len());\n    println!(\"{}\", metric_readings!(\"one\" => 1).len());\n    println!(\"{}\", metric_readings!(\"a\" => 1, \"b\" => 2).len());\n    println!(\"{}\", metric_readings!(\"tail\" => 3,).len());\n}",
+    "70fc07a809e4cbc0ddd35a9698b522e25ddae367a59a625321c02f9cb11af78a": "Uruchom wywołanie z `const { 7 }`. Ten plik jest modelem kompilacji Rust 2024; zewnętrzny klient i MSRV należą do osobnego verifiera.",
+    "0faed54dc6e8e3a7a5a81e4f98187f7cffdbd6b9f49962b33eb0a1ef31e38020": "#[derive(Debug, PartialEq, Eq)]\npub struct Reading {\n    pub name: String,\n    pub value: i32,\n}\n\nimpl Reading {\n    pub fn new(name: impl Into<String>, value: i32) -> Self {\n        Self { name: name.into(), value }\n    }\n}\n\n#[macro_export]\nmacro_rules! metric_readings {\n    ($( $name:expr => $value:expr ),* $(,)?) => {{\n        let mut readings = ::std::vec::Vec::<$crate::Reading>::new();\n        $(\n            let captured_name = $name;\n            let captured_value = $value;\n            readings.push($crate::Reading::new(captured_name, captured_value));\n        )*\n        readings\n    }};\n}\n\nfn main() {\n    let reading = metric_readings!(\"limit\" => const { 7 },);\n    println!(\"{}={}\", reading[0].name, reading[0].value);\n}",
+    "8c5ac59e3d3a0719949b6c3b47f9073011773b2f92cef549ce818ec3c1fd6dc3": "Dla standalone `signal-kit` z `include = [\"Cargo.toml\", \"README.md\", \"src/**\", \"tests/**\"]` później wybierz `cargo package --list`. Co jest właściwym dowodem?",
+    "2458eded9e05419c2f0726895f878c9e0cab3ae495a699fb1460760878e4efe7": "Sama tablica include dowodzi, że archiwum już istnieje i nie zawiera plików generowanych",
+    "5f2879c718d93287918eda90ef2780c670c7432e556a3a1146070c96ac578d2c": "[package]\nname = \"signal-kit\"\nversion = \"0.3.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\ndescription = \"A signal library for package rehearsal.\"\nlicense = \"MIT\"\nrepository = \"https://example.invalid/signal-kit\"\nreadme = \"README.md\"\npublish = false\ninclude = [\"Cargo.toml\", \"README.md\", \"src/**\", \"tests/**\"]\n\n[lib]\npath = \"src/lib.rs\"\n",
+    "a9eb3e1a7d6ac8b9198914b0f9e2f589970bf5a2803daf8b6b09883d4acc9e68": "signal-kit/Cargo.toml",
+    "7977df0058c86d20f5b75a112fcaff3a0bc988c5036126060792ec3c28449215": "Zobacz wynik dla ważnego adresu i pustego widoku z null.",
+    "cac1c605b23a1e52af81cbc4e9fb8b1d2dc408baf87892ff590bb8209da86c1e": "/// # Safety\n/// For len > 0, raw must be non-null, aligned, and point to len initialized bytes\n/// in one live allocation; len must be <= isize::MAX and raw.add(len) must not wrap.\n/// The allocation remains valid and unaliased for the returned lifetime.\n/// For len == 0, raw may be null and no dereference occurs.\nunsafe fn checked_view<'a>(raw: *const u8, len: usize) -> Option<&'a [u8]> {\n    if len == 0 { return Some(&[]); }\n    if raw.is_null() { return None; }\n    Some(unsafe { std::slice::from_raw_parts(raw, len) })\n}\nfn main() {\n    let bytes = [7_u8, 8, 9];\n    println!(\"{:?} {:?}\", unsafe { checked_view(bytes.as_ptr(), 2) }.unwrap(), unsafe { checked_view(std::ptr::null(), 0) }.unwrap());\n}",
+    "a3f0069502754fba7fd74defa0316452a26ce4cdc875d301d68af97912abe560": "Odtwórz `split_regions` z pamięci i przetestuj `0`, `len` oraz `len + 1`.",
+    "af2282810d118ba6e1bf6e049c2d8a9a3de2c1246e1623ae25f6c44bff47c6d1": "Odtwórz z pamięci Slot<T> i test z DropProbe, który odróżnia drop wartości po take od drop przez destruktor slotu.",
+    "9e3216f0c589542bdd1500694d1d29ac53f57fa0cfb511cf27c4fc54da165201": "Odtwórz MutSlot, krótkie reborrow i wyjaśnienie, dlaczego nie można skrócić lifetime wewnętrznej referencji przez zapis do `&mut T`.",
+    "ade06a7b79aece58b1c5c82c8c79e5a4d14f49a2924e3dc5b269d6b4f8ae3c49": "Uruchom compile-fail klienta safe API; musi odrzucić próbę lifetime escape.",
+    "fd4faf80bd4fc811b8e51ce0963dfe9302f2934beff1b221f684a925576250bd": "#[derive(Debug, PartialEq, Eq)]\nstruct BorrowedBytes<'owner> { bytes: &'owner [u8] }\nimpl<'owner> BorrowedBytes<'owner> {\n    fn from_slice(owner: &'owner [u8]) -> Self { Self { bytes: owner } }\n    fn reborrow<'short>(&'short self) -> BorrowedBytes<'short> { Self { bytes: self.bytes } }\n    fn as_slice(&self) -> &[u8] { self.bytes }\n}\n\nfn escape<'a>()->&'a[u8]{let owner=vec![1_u8,2];let view=BorrowedBytes::from_slice(&owner);view.as_slice()}\nfn main(){let _escaped=escape();}\n\nuse std::marker::PhantomData;\nstruct InvariantBorrow<'owner,T>{ value: &'owner mut T, life: PhantomData<fn(T)->T>, auto_traits: PhantomData<&'owner mut T> }\nimpl<'owner,T> InvariantBorrow<'owner,T>{\n fn from_mut(owner:&'owner mut T)->Self{Self{value:owner,life:PhantomData,auto_traits:PhantomData}}\n fn reborrow<'short>(&'short mut self)->InvariantBorrow<'short,T>{InvariantBorrow{value:&mut *self.value,life:PhantomData,auto_traits:PhantomData}}\n fn get(&self)->&T{self.value} fn get_mut(&mut self)->&mut T{self.value}\n}",
+    "5d4d500ac8aec485535826daa96d659bd0611e99b15460c6a40f3c9be0247dca": "Uruchom kod i porównaj `missing`, `ready-nonpositive`, `failed` oraz `ready`. Zwróć uwagę, że zero i liczba ujemna są obecnymi, lecz niegotowymi odczytami.",
+    "0c14ae5f45b9c7199650519fc657b17cbdefbd99cbc3b214a6ccfd65d6823017": "#[derive(Debug, PartialEq)]\nenum ReadingState {\n    Ready { value: i32 },\n    Failed,\n}\n\n#[derive(Debug, PartialEq)]\nstruct Reading {\n    label: String,\n    state: Option<ReadingState>,\n}\n\nfn describe(reading: &Reading) -> &'static str {\n    match &reading.state {\n        Some(ReadingState::Ready { value }) if *value > 0 => \"ready\",\n        Some(ReadingState::Ready { .. }) => \"ready-nonpositive\",\n        Some(ReadingState::Failed) => \"failed\",\n        None => \"missing\",\n    }\n}\n\nfn main() {\n    let readings = [\n        Reading { label: \"none\".to_owned(), state: None },\n        Reading { label: \"zero\".to_owned(), state: Some(ReadingState::Ready { value: 0 }) },\n        Reading { label: \"negative\".to_owned(), state: Some(ReadingState::Ready { value: -3 }) },\n        Reading { label: \"failed\".to_owned(), state: Some(ReadingState::Failed) },\n        Reading { label: \"positive\".to_owned(), state: Some(ReadingState::Ready { value: 7 }) },\n    ];\n    for reading in &readings {\n        println!(\"{}: {}\", reading.label, describe(reading));\n    }\n}",
+    "9f6fd704f793b317f2980e1e60493ac7eabaca2d2a3c13551d8d2a17756df009": "Dwie niezależne implementacje testują generyczne przeniesienie danych bez Clone oraz przejście po ograniczonej liczbie węzłów Chain.",
+    "4fe43e237634f06bf316dfb76f0585586250585179689911f683d1913e5c6d4a": "loom-evidence-assertions-gate wymaga asercji na rzeczywistym payloadzie i odrzuca pusty/inconclusive wynik, a loom-evidence-small-model-blank odtwarza sześć legalnych przeplotów SC oraz odrzuca duplikaty, błędne ID, niepełność i overflow bez przekroczenia czasu.",
+    "6aba70b0fb71ceb488c65b30fbb9ae73b1e711ae8b9b5430b4140d76e8222338": "move-copy-discovery",
+    "3148bd377f027d40e5e7fb7909ed80b8358bf068003d9a5e22f72446ea59ca78": "move-error",
+    "70a18d8aebc272cc16f68d0e92672ef88b56d427f0b53a90cd69b8cac7b909d0": [
+      {
+        "lessonId": "functions-and-ownership",
+        "stepId": "function-error"
+      },
+      {
+        "lessonId": "number-guessing-transfer",
+        "stepId": "project-error"
+      }
+    ],
+    "04f50fa8bb0cb786abcc261bdb9b6904d032e3c6103ca2e87d1a52db07c2a6fc": [
+      {
+        "lessonId": "propagation-and-errors",
+        "stepId": "propagate-debug"
+      },
+      {
+        "lessonId": "propagation-and-errors",
+        "stepId": "propagate-modify"
+      }
+    ],
+    "e69f94adfc8c694d7a633e31a34679e8acadf79bcc7ebbd7fd1a5ed53bcfaa97": [
+      {
+        "lessonId": "todo-command-parser",
+        "stepId": "parser-debug"
+      },
+      {
+        "lessonId": "todo-command-parser",
+        "stepId": "parser-add-gate"
+      }
+    ],
+    "12c8afea380e06c6fe36a3b8295f9fd70bfa2c704910c5eba0e91c5efb07da18": [
+      {
+        "lessonId": "todo-state-invariants",
+        "stepId": "state-add-done-gate"
+      },
+      {
+        "lessonId": "todo-session-project",
+        "stepId": "session-blank"
+      }
+    ],
+    "f0b3f475885c28eaf4b35feff826a9b2d98b6f2c410b3e9a9264f8e3728e7fab": [
+      {
+        "lessonId": "todo-state-invariants",
+        "stepId": "state-list-gate"
+      },
+      {
+        "lessonId": "todo-session-project",
+        "stepId": "session-blank"
+      }
+    ],
+    "1f6071b458274bfb2aee967b7c4e7994dfd06986a081913ef68b48b622fbae4f": [
+      {
+        "lessonId": "todo-session-project",
+        "stepId": "session-run-gate"
+      },
+      {
+        "lessonId": "todo-session-project",
+        "stepId": "session-blank"
+      }
+    ],
+    "f6327f8255e4c99d079fdc5297551e8f67ecd8c35195a0d3f2c7e0780a6884cd": [
+      {
+        "lessonId": "todo-session-project",
+        "stepId": "session-strict-gate"
+      },
+      {
+        "lessonId": "todo-session-project",
+        "stepId": "session-blank"
+      }
+    ],
+    "05d5989da4a1189464ca1188fe5a2d7ba2338da84fb6037f67d66a4e0db5d184": "guess-round-state-blank",
+    "5eb2bf1af51d963a07947da321caabac37ea058ad430025f384321434a685859": "box-move-gate",
+    "33c7e2650a8261c7a5500253edfcd484c73b5f1351926176a5b40a15ccc20f64": "box-list-gate",
+    "ebc4c52c2ae90d3a0b32e7827c5f35f83a5b334c1e9bc46a123356edf882b2c8": "loom-evidence-small-model-blank",
+    "c8ccdfd73c2eda56405194400e6b60951d0c9b29a221954e083685d6996e9869": [
+      {
+        "lessonId": "macros-exactly-once",
+        "stepId": "macros-exactly-once-gate"
+      },
+      {
+        "lessonId": "macros-exactly-once",
+        "stepId": "macros-exactly-once-blank"
+      }
+    ],
+    "d7d46cad71bd54ea37a0f2816093cbb61cfe7f1e320fca64617ffcbe0bb8962c": [
+      {
+        "lessonId": "performance-measured-workload",
+        "stepId": "workload-gate"
+      },
+      {
+        "lessonId": "performance-measured-workload",
+        "stepId": "workload-blank"
+      }
+    ],
+    "782965c7ec9eab03f39373dbeb9f8f2b4697ffd864354dda73cb6cb85cd34141": [
+      {
+        "lessonId": "performance-measured-workload",
+        "stepId": "workload-budget-gate"
+      },
+      {
+        "lessonId": "performance-measured-workload",
+        "stepId": "workload-recall"
+      }
+    ],
+    "4d10465daa904c2ce7760b77bab7e28ec6fe04721a8267dcba8eebaf37d6b059": [
+      {
+        "lessonId": "performance-borrowed-stream",
+        "stepId": "borrow-gate"
+      },
+      {
+        "lessonId": "performance-borrowed-stream",
+        "stepId": "borrow-recall"
+      }
+    ],
+    "50d488f08280a2aeeb45fecf314c02ab26deb5061da9e224e11c7b248b210952": [
+      {
+        "lessonId": "performance-borrowed-stream",
+        "stepId": "borrow-stream-gate"
+      },
+      {
+        "lessonId": "performance-borrowed-stream",
+        "stepId": "borrow-blank"
+      }
+    ],
+    "6ce36783ddcc0f421c6b2057e7a466c3875f4f1d06c27957021631dee036e6a8": [
+      {
+        "lessonId": "performance-bounded-buffer",
+        "stepId": "buffer-gate"
+      },
+      {
+        "lessonId": "performance-bounded-buffer",
+        "stepId": "buffer-blank"
+      }
+    ],
+    "ee9e9254e0d9ab3572092c2d16c0ce370739ac49c09f073bb18d55a3b90bb8b7": [
+      {
+        "lessonId": "performance-bounded-buffer",
+        "stepId": "buffer-capacity-gate"
+      },
+      {
+        "lessonId": "performance-bounded-buffer",
+        "stepId": "buffer-recall"
+      }
+    ],
+    "afa54678fa33f0e62d422ea44d6803cea58a3910dfe58972ab67cc71b2a79d49": [
+      {
+        "lessonId": "performance-evidence-decisions",
+        "stepId": "decision-gate"
+      },
+      {
+        "lessonId": "performance-evidence-decisions",
+        "stepId": "decision-blank"
+      }
+    ],
+    "927f1307754f718914b60802a9d7c6e8ecb2c31038a2eaf3425828636123bbb3": [
+      {
+        "lessonId": "performance-evidence-decisions",
+        "stepId": "decision-evidence-gate"
+      },
+      {
+        "lessonId": "performance-evidence-decisions",
+        "stepId": "decision-recall"
+      }
+    ],
+    "c0fae3787ede37b477d906546abd1dfbc2367c4318212f54bb608efc13fadf62": [
+      {
+        "lessonId": "profile-instruction-cost",
+        "stepId": "instruction-gate"
+      },
+      {
+        "lessonId": "profile-instruction-cost",
+        "stepId": "instruction-blank"
+      }
+    ],
+    "023a75a571b2a52ac8f84dc06870da159085420a6640da9af47d119ee73d45f3": [
+      {
+        "lessonId": "profile-instruction-cost",
+        "stepId": "instruction-budget-gate"
+      },
+      {
+        "lessonId": "profile-instruction-cost",
+        "stepId": "instruction-recall"
+      }
+    ],
+    "6969dda7ebbee2da888e2db0919ec44a19bda0b7230189ca3dc9922278b89b6f": [
+      {
+        "lessonId": "profile-allocation-events",
+        "stepId": "allocation-gate"
+      },
+      {
+        "lessonId": "profile-allocation-events",
+        "stepId": "allocation-recall"
+      }
+    ],
+    "04ee1ce4c33a8d73853d8433db7b6963838c52df82231a74ed5fadb942fd0e79": [
+      {
+        "lessonId": "profile-optimization-transfer",
+        "stepId": "transfer-gate"
+      },
+      {
+        "lessonId": "profile-optimization-transfer",
+        "stepId": "transfer-recall"
+      }
+    ],
+    "dbb906ae357b5eacb6e33b7d9f178d478503a3a20d30ab1fd1b685c3aa0e4834": [
+      {
+        "lessonId": "profile-optimization-transfer",
+        "stepId": "transfer-budget-gate"
+      },
+      {
+        "lessonId": "profile-optimization-transfer",
+        "stepId": "transfer-blank"
+      }
+    ],
+    "d03aed39e24f044684d5112a538a33a19bb4273180e6b5bcb70051d5fd25ad64": [
+      {
+        "lessonId": "profile-regression-decision",
+        "stepId": "decision-gate"
+      },
+      {
+        "lessonId": "profile-regression-decision",
+        "stepId": "decision-recall"
+      }
+    ],
+    "3b5a5aaf6e1340c7373753191e9f98d0c52da8d9589a5cf78dc1d33f6c2c45c8": [
+      {
+        "lessonId": "profile-regression-decision",
+        "stepId": "decision-evidence-gate"
+      },
+      {
+        "lessonId": "profile-regression-decision",
+        "stepId": "decision-blank"
+      }
+    ],
+    "6284a17957d01df0e7b69829716d78bc5659bff32f5566532e74ea4e86e12560": [
+      {
+        "lessonId": "unsafe-ffi-checked-view",
+        "stepId": "checked-view-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-checked-view",
+        "stepId": "checked-view-blank"
+      }
+    ],
+    "6cb8c569be9ea5b3d9a69298a047643cbcb721ebf3fa98907e7ced3025ebf90e": [
+      {
+        "lessonId": "unsafe-ffi-split-regions",
+        "stepId": "split-regions-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-split-regions",
+        "stepId": "split-regions-blank"
+      }
+    ],
+    "e08b608c8b6a8b84fcf36ced9efd2021621436a3fa03e2ec7d00982757d66886": [
+      {
+        "lessonId": "unsafe-ffi-raw-record",
+        "stepId": "raw-record-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-raw-record",
+        "stepId": "raw-record-blank"
+      }
+    ],
+    "6654f28c94d9109be45698d0fdeb144008f3ef65d3741d4b8bd95a0d0ac6ebbb": "RAII wrapper pożycza wartość i wykonuje dokładnie jeden release.",
+    "b9c07a2993a02f136b4da31bc90ff568abf01ee8838fb894c865aaad1f5f6475": [
+      {
+        "lessonId": "unsafe-ffi-owned-handle",
+        "stepId": "owned-handle-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-owned-handle",
+        "stepId": "owned-handle-blank"
+      }
+    ],
+    "b6f5695aae2b7ddc0b8cc91dfe2ce468939992b9071c6c2b615542ec7f77c50e": [
+      {
+        "lessonId": "unsafe-miri-byte-view",
+        "stepId": "byte-view-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-byte-view",
+        "stepId": "byte-view-recall"
+      }
+    ],
+    "1145e3f463dc05114f7db940b0fc2c4d480681cb7912d77c27183e7577d13878": [
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-recall"
+      }
+    ],
+    "e4d06cbb35d6452bbad586e4a2a047308546aa4cd9068556cd801de11e4b21d5": [
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-recall"
+      }
+    ],
+    "1f192541e5a81deac5522dba7213f8c7472423988d879c5489f3658ddd654487": [
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-recall"
+      }
+    ],
+    "66d2397d9441cf71e62cfb4601620a7ea81b2e9f3eb27faeb0612c8d6ad59c0e": "Cztery blank-page tasks i cztery retrievals używają deterministycznych, standardowych bibliotek Rust; rozwiązania są weryfikowane przez stałe testy i mutanty.",
+    "0a24cadd7c83ecbc108ef8efe6e31e6203183ec734ff56d59b9af6e54dc011a4": [
+      {
+        "lessonId": "service-trust-admission",
+        "stepId": "trust-admission-gate"
+      },
+      {
+        "lessonId": "service-trust-admission",
+        "stepId": "trust-admission-blank"
+      }
+    ],
+    "8b9df58f912822eeb22185fc0022ea63616ea1d60e709547ebaa8fa96a58a344": [
+      {
+        "lessonId": "service-trust-admission",
+        "stepId": "trust-admission-budget-gate"
+      },
+      {
+        "lessonId": "service-trust-admission",
+        "stepId": "trust-admission-recall"
+      }
+    ],
+    "b820f33c36bc9b2f4892e9069547e28c31fa542278ec9d6e96d591d889721cfa": [
+      {
+        "lessonId": "service-correlated-telemetry",
+        "stepId": "telemetry-correlation-gate"
+      },
+      {
+        "lessonId": "service-correlated-telemetry",
+        "stepId": "telemetry-correlation-blank"
+      }
+    ],
+    "1443e721f08c3a9741e3dca4a622475bd2ea0553443aae139e695c27f9e2fec1": [
+      {
+        "lessonId": "service-correlated-telemetry",
+        "stepId": "telemetry-correlation-allowlist-gate"
+      },
+      {
+        "lessonId": "service-correlated-telemetry",
+        "stepId": "telemetry-correlation-recall"
+      }
+    ],
+    "4610dedc2889f703b7386e0c8f718e30086526b0ce86e38c8971656dce9698ad": [
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-gate"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-blank"
+      }
+    ],
+    "209db0db1f154ef32eaee7644417eee17169b95135e89f377c38470630299b65": [
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-accounting-gate"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-recall"
+      }
+    ],
+    "a03d3980b0cde44cf97a31ef4e3261e635c2f4deb8a83b8bb4f0304edd96cb05": [
+      {
+        "lessonId": "service-incident-diagnosis",
+        "stepId": "incident-diagnosis-gate"
+      },
+      {
+        "lessonId": "service-incident-diagnosis",
+        "stepId": "incident-diagnosis-blank"
+      }
+    ],
+    "ed5b0965b0fe1dd0fe1f0e84fcbc03007e0dc2693381527e7262453e3993dffb": [
+      {
+        "lessonId": "service-incident-diagnosis",
+        "stepId": "incident-diagnosis-evidence-gate"
+      },
+      {
+        "lessonId": "service-incident-diagnosis",
+        "stepId": "incident-diagnosis-recall"
+      }
+    ],
+    "8173bb14781b83873f8a5bed0267b6071f4f23146b33616c6fcf8ad41df05482": "Odtwórz odczyt i zapis na podstawie ich kontraktu. open_notebook(path: &str) -> Result<Notebook, NotebookStorageError> odczytuje UTF-8 i wywołuje unpack; tylko ErrorKind::NotFound daje pusty Notebook bez tworzenia pliku. Inne błędy odczytu, także wadliwe UTF-8, dają Io(io::Error); błąd formatu daje Format(NotebookFormatError). save_notebook(path: &str, notebook: &Notebook) -> Result<(), NotebookStorageError> zapisuje pack(notebook) przez własny plik obok celu, do całej ścieżki dopisując .pending. Użyj File::create_new, write_all, sync_all, drop i dopiero potem rename. Istniejący .pending, także katalog, powoduje Io i pozostaje nietknięty. Każdy błąd przed udanym rename zachowuje poprzedni cel. Sprzątaj tylko własny plik tymczasowy; błąd sprzątania nie ukrywa pierwotnego błędu. Nigdy nie usuwaj celu przed rename. Ten kontrakt również nie zapewnia pełnej trwałości po utracie zasilania ani bezpieczeństwa równoczesnych autorów zmian. W przeglądarce testy tworzą własne katalogi tymczasowe w izolowanym runnerze i wykonują prawdziwe std::fs. Pliki z tego uruchomienia nie są plikami twojego komputera i nie stanowią trwałego magazynu między kliknięciami Uruchom. Formularz kodu nie udostępnia interaktywnego stdin ani wieloplikowego Cargo. Działanie terminala sprawdzisz w pobranym pakiecie.",
+    "74589f7ad8c4e6c6883eab39d0df23707edef39075e0a21596a0b41db9034ef6": "Odtwórz execute_note i granicę potwierdzenia zapisu. execute_note(path: &str, line: &str) -> Result<String, NotebookError> używa dostarczonych parse_note, Notebook::apply, open_notebook i save_notebook. Najpierw parser, potem świeży odczyt, zastosowanie polecenia, zapis tylko po Note lub Archive, a na końcu wynik. NoteCommand::Note(String), Archive(usize), Show odpowiadają poleceniom note, archive, show. note obcina brzegi argumentu, ale zachowuje wnętrze i odrzuca pustą treść oraz LF/CR; archive wymaga dodatnich cyfr ASCII mieszczących się w usize, bez plusa, z dozwolonymi zerami wiodącymi. Tylko zwykła spacja oddziela czasownik. Show nie ma argumentów i nie zapisuje pliku. Wyniki to noted N, archived N, albo wiersze N [ ] body\\n / N [x] body\\n; każda linia ma LF. Duplikaty i powtórne Archive są poprawne; powtórne Archive też zapisuje. NoteError ma Empty, Unknown, InvalidBody, InvalidId i NotFound. Błąd parsera lub stanu daje NotebookError::Command(NoteError); load/save dają NotebookError::Storage(NotebookStorageError). Parser poprzedza odczyt nawet przy uszkodzonym pliku. Nie zwracaj sukcesu przed udanym zapisem; Show nie tworzy ani nie przepisuje pliku. W przeglądarce testy tworzą własne katalogi tymczasowe w izolowanym runnerze i wykonują prawdziwe std::fs. Pliki z tego uruchomienia nie są plikami twojego komputera i nie stanowią trwałego magazynu między kliknięciami Uruchom. Formularz kodu nie udostępnia interaktywnego stdin ani wieloplikowego Cargo. Działanie terminala sprawdzisz w pobranym pakiecie."
+  }
+}

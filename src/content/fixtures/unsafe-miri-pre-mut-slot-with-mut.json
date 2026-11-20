@@ -1,0 +1,607 @@
+{
+  "provenance": {
+    "sourceHead": "8a40f138d360ad48a005f6909d5dea6a215d9e9a",
+    "date": "2026-10-26",
+    "scope": "Authentic complete pre-authoring course read from unchanged frozen 8a; not reconstructed from successor source.",
+    "sourceHashes": {
+      "src/content/unsafe-miri.ts": "3591a4a4adc906ba31814366d4a3764d861cf59357c78640025e7425a684cda4",
+      "src/content/projects/miri-safety.ts": "4cf306391a1b9f8517e6714a80841d21df5da9fd814da49007fe92abbf176fae",
+      "src/content/course.ts": "ff47154a5be56e575d1e9159078b8c8b0ee5efad5d3e653a33fe991e93ec1364"
+    },
+    "sourceTree": "ba2652e4919dee10a5d89e74c43a95171d30952d",
+    "sourceClean": true,
+    "toolQualification": {
+      "nodeVersion": "v22.23.4",
+      "nodeSha256": "2cc28a1880d0774616959f2210ee739bffa6ac695c887e8988a496a21271f6c0",
+      "tsxVersion": "4.23.15"
+    }
+  },
+  "lessonId": "unsafe-miri-mut-slot",
+  "stepIds": [
+    "mut-slot-predict",
+    "mut-slot-run",
+    "mut-slot-explain",
+    "mut-slot-gate",
+    "mut-slot-contract-gate",
+    "mut-slot-variance-compile-fail",
+    "mut-slot-blank",
+    "mut-slot-recall"
+  ],
+  "primaryStepId": "mut-slot-gate",
+  "registryKeys": [
+    "competencies",
+    "concepts",
+    "delayedReviewExercises",
+    "lessons",
+    "modules",
+    "ownershipModule",
+    "project",
+    "projects",
+    "reviewExercises",
+    "reviewExercisesById",
+    "roadmap",
+    "shortReviewExercises",
+    "sources",
+    "traces"
+  ],
+  "wholeCourseSha256": "02ef962fe33f4210c1ac5f271777aa4fb45b70b5da96a15e29a626c71dad7a29",
+  "preMutSlotMiriProjectSha256": "02fc7cfeb73ce283ef977b068ec4423f269e934b5b3e1a40938a805463a5cb3c",
+  "inventory": {
+    "modules": 48,
+    "lessons": 192,
+    "concepts": 194,
+    "steps": 1279,
+    "sources": 349
+  },
+  "lesson": {
+    "id": "unsafe-miri-mut-slot",
+    "moduleId": "unsafe-miri-contracts",
+    "conceptIds": [
+      "unsafe-miri-mut-slot-variance-contract"
+    ],
+    "competencyIds": [
+      "unsafe-miri-variance-reborrow"
+    ],
+    "prerequisites": [
+      "unsafe-miri-slot-state"
+    ],
+    "title": "Skróć reborrow bez łamania wariancji MutSlot",
+    "subtitle": "Rozpoznaj, co jest kowariantne w lifetime, a co pozostaje niezmiennicze w `&mut T`.",
+    "minutes": 35,
+    "outcomes": [
+      "Zwrócisz krótkotrwały MutSlot przez reborrow.",
+      "Wykorzystasz kompilator do odrzucenia złego zapisu wewnętrznego lifetime.",
+      "Odseparujesz bezpieczny reborrow od niebezpiecznej próby podmiany T."
+    ],
+    "steps": [
+      {
+        "id": "mut-slot-predict",
+        "kind": "predict",
+        "title": "Przewidź skrócenie",
+        "prompt": "Co może skrócić `reborrow`?",
+        "choices": [
+          {
+            "id": "0",
+            "label": "Lifetime zewnętrznej pożyczki"
+          },
+          {
+            "id": "1",
+            "label": "Dowolny lifetime wewnętrznego T"
+          },
+          {
+            "id": "2",
+            "label": "Oba bez ograniczeń"
+          }
+        ],
+        "evaluator": {
+          "kind": "choice",
+          "correct": "0",
+          "explanations": {
+            "0": "Reborrow ogranicza czas dostępu do slotu.",
+            "1": "`&mut T` jest niezmiennicze w zawartości T.",
+            "2": "Skrócenie ma konkretny zakres."
+          }
+        },
+        "evidenceKind": "prediction",
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ]
+        }
+      },
+      {
+        "id": "mut-slot-run",
+        "kind": "run",
+        "title": "Uruchom reborrow",
+        "prompt": "Zmień wartość przez krótki reborrow i użyj outer slotu po jego zakończeniu.",
+        "code": "struct MutSlot<'a, T> { value: &'a mut T }\nimpl<'a, T> MutSlot<'a, T> { fn new(value: &'a mut T) -> Self { Self { value } } fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> { MutSlot { value: &mut *self.value } } }\nfn main() { let mut value = 4; let mut slot = MutSlot::new(&mut value); *slot.reborrow().value += 2; println!(\"{}\", value); }",
+        "solution": "struct MutSlot<'a, T> { value: &'a mut T }\nimpl<'a, T> MutSlot<'a, T> { fn new(value: &'a mut T) -> Self { Self { value } } fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> { MutSlot { value: &mut *self.value } } }\nfn main() { let mut value = 4; let mut slot = MutSlot::new(&mut value); *slot.reborrow().value += 2; println!(\"{}\", value); }",
+        "evaluator": {
+          "kind": "exact-output",
+          "expected": "6\n"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ]
+        }
+      },
+      {
+        "id": "mut-slot-explain",
+        "kind": "explain",
+        "title": "Wyjaśnij wariancję",
+        "prompt": "Wyjaśnij różnicę między lifetime pożyczki a lifetime referencji przechowywanej w T.",
+        "evaluator": {
+          "kind": "rubric",
+          "criteria": [
+            "Można skrócić dostęp do samego `MutSlot`.",
+            "Wewnętrzny T nie może zostać uznany za bezpiecznie krótszy przy zapisie przez `&mut`.",
+            "Kompilator compile-fail jest dowodem ograniczenia API, nie awarią runtime."
+          ]
+        },
+        "rubric": [
+          "Można skrócić dostęp do samego `MutSlot`.",
+          "Wewnętrzny T nie może zostać uznany za bezpiecznie krótszy przy zapisie przez `&mut`.",
+          "Kompilator compile-fail jest dowodem ograniczenia API, nie awarią runtime."
+        ],
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ]
+        }
+      },
+      {
+        "id": "mut-slot-gate",
+        "kind": "modify",
+        "title": "Napraw reborrow",
+        "prompt": "Uzupełnij `MutSlot<'a, T>` z deklaracją `new`, `get`, `get_mut` oraz `reborrow<'short>(&'short mut self) -> MutSlot<'short, T>`. Reborrow ma kończyć się przed ponownym użyciem outer slotu.",
+        "code": "struct MutSlot<'a, T> { value: &'a mut T }\n\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { self.value }\n    fn get_mut(&mut self) -> &mut T { self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        panic!(\"TODO: implement the short reborrow\")\n    }\n}\n\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) {\n    let mut short = slot.reborrow();\n    *short.get_mut() += 1;\n}",
+        "solution": "struct MutSlot<'a, T> { value: &'a mut T }\n\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { self.value }\n    fn get_mut(&mut self) -> &mut T { self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        MutSlot { value: &mut *self.value }\n    }\n}\n\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) {\n    let mut short = slot.reborrow();\n    *short.get_mut() += 1;\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn reborrow_shortens_access_and_preserves_the_outer_slot() {\n    let mut value = 4;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 3;\n        assert_eq!(*short.get(), 7);\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 9);\n}\n\n#[test]\nfn generic_mut_slot_can_hold_a_borrowed_value_without_static() {\n    let text = String::from(\"życie\");\n    let mut selected = text.as_str();\n    let mut slot = MutSlot::new(&mut selected);\n    assert_eq!(*slot.get(), \"życie\");\n    *slot.reborrow().get_mut() = \"zmiana\";\n    assert_eq!(selected, \"zmiana\");\n}"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "transfer",
+        "evidenceGate": true,
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ],
+          "codingTaskId": "unsafe-miri/mut-slot-v1"
+        }
+      },
+      {
+        "id": "mut-slot-contract-gate",
+        "kind": "apply",
+        "title": "Zachowaj niezmienniczość T",
+        "prompt": "Zaimplementuj reborrow, który skraca lifetime dostępu, ale nie pozwala zapisać krótszej referencji w miejscu wymagającym dłuższej. Zachowaj test wartości po reborrow; ta forma dzieli rodzinę dowodu z gate.",
+        "code": "struct MutSlot<'a, T> { value: &'a mut T }\n\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { self.value }\n    fn get_mut(&mut self) -> &mut T { self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        panic!(\"TODO: implement the short reborrow\")\n    }\n}\n\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) {\n    let mut short = slot.reborrow();\n    *short.get_mut() += 1;\n}",
+        "solution": "struct MutSlot<'a, T> { value: &'a mut T }\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { &*self.value }\n    fn get_mut(&mut self) -> &mut T { &mut *self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> { MutSlot { value: &mut *self.value } }\n}\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) { *slot.reborrow().get_mut() += 1; }",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn reborrow_shortens_access_and_preserves_the_outer_slot() {\n    let mut value = 4;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 3;\n        assert_eq!(*short.get(), 7);\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 9);\n}\n\n#[test]\nfn generic_mut_slot_can_hold_a_borrowed_value_without_static() {\n    let text = String::from(\"życie\");\n    let mut selected = text.as_str();\n    let mut slot = MutSlot::new(&mut selected);\n    assert_eq!(*slot.get(), \"życie\");\n    *slot.reborrow().get_mut() = \"zmiana\";\n    assert_eq!(selected, \"zmiana\");\n}"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "transfer",
+        "evidenceGate": true,
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ],
+          "codingTaskId": "unsafe-miri/mut-slot-v1"
+        }
+      },
+      {
+        "id": "mut-slot-variance-compile-fail",
+        "kind": "observe",
+        "title": "Zobacz odrzuconą konwersję",
+        "prompt": "Uruchom compile-fail-like contract. Kompilator powinien odrzucić zapis krótkiej referencji do `MutSlot<'static, &'static str>`, ponieważ `&mut T` nie pozwala skrócić wewnętrznego T.",
+        "code": "struct MutSlot<'a, T> { value: &'a mut T }\n\nfn write_short<'short>(slot: &mut MutSlot<'static, &'static str>, value: &'short str) {\n    // &mut T is invariant in T: this assignment cannot shorten the inner reference.\n    *slot.value = value;\n}\n\nfn main() {}",
+        "solution": "struct MutSlot<'a, T> { value: &'a mut T }\n\nfn write_short<'short>(slot: &mut MutSlot<'short, &'short str>, value: &'short str) {\n    *slot.value = value;\n}\n\nfn main() {}",
+        "evaluator": {
+          "kind": "expected-error",
+          "diagnostic": "lifetime"
+        },
+        "expectedStatus": "compile-error",
+        "expectedDiagnostic": "lifetime",
+        "evidenceKind": "exposure",
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ]
+        }
+      },
+      {
+        "id": "mut-slot-blank",
+        "kind": "blank",
+        "title": "Blank page: MutSlot lifetime and variance",
+        "prompt": "Od pustej kartki zdefiniuj dokładnie `struct MutSlot<'a, T> { value: &'a mut T }` oraz `new(value: &'a mut T) -> Self`, `get(&self) -> &T`, `get_mut(&mut self) -> &mut T` i `reborrow<'short>(&'short mut self) -> MutSlot<'short, T>`. Dodaj test lokalnego, nie-`'static` tekstu i osobny przypadek, który kompilator ma odrzucić przy próbie skrócenia wewnętrznego T. Blank pozostaje drugą formą tej samej rodziny co gate.",
+        "solution": "struct MutSlot<'a, T> { value: &'a mut T }\n\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { self.value }\n    fn get_mut(&mut self) -> &mut T { self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        MutSlot { value: &mut *self.value }\n    }\n}\n\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) {\n    let mut short = slot.reborrow();\n    *short.get_mut() += 1;\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn reborrow_shortens_access_and_preserves_the_outer_slot() {\n    let mut value = 4;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 3;\n        assert_eq!(*short.get(), 7);\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 9);\n}\n\n#[test]\nfn generic_mut_slot_can_hold_a_borrowed_value_without_static() {\n    let text = String::from(\"życie\");\n    let mut selected = text.as_str();\n    let mut slot = MutSlot::new(&mut selected);\n    assert_eq!(*slot.get(), \"życie\");\n    *slot.reborrow().get_mut() = \"zmiana\";\n    assert_eq!(selected, \"zmiana\");\n}"
+        },
+        "evidenceKind": "assessment",
+        "evidenceGate": true,
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ],
+          "codingTaskId": "unsafe-miri/mut-slot-v1"
+        }
+      },
+      {
+        "id": "mut-slot-recall",
+        "kind": "recall",
+        "title": "Retrieval: reborrow kontra variance",
+        "prompt": "Odtwórz MutSlot, krótkie reborrow i wyjaśnienie, dlaczego nie można skrócić lifetime wewnętrznej referencji przez zapis do `&mut T`.",
+        "code": "struct MutSlot<'a, T> { value: &'a mut T }\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { &*self.value }\n    fn get_mut(&mut self) -> &mut T { &mut *self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        panic!(\"TODO: implement the short reborrow\")\n    }\n}\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) { let mut short = slot.reborrow(); *short.get_mut() += 1; }",
+        "solution": "struct MutSlot<'a, T> { value: &'a mut T }\nimpl<'a, T> MutSlot<'a, T> {\n    fn new(value: &'a mut T) -> Self { Self { value } }\n    fn get(&self) -> &T { self.value }\n    fn get_mut(&mut self) -> &mut T { self.value }\n    fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        let value = &mut *self.value;\n        MutSlot { value }\n    }\n}\nfn increment<'a>(slot: &'a mut MutSlot<'_, i32>) {\n    let mut short = slot.reborrow();\n    *short.get_mut() += 1;\n}",
+        "hints": [
+          "Najpierw zapisz niezmiennik i wszystkie granice wejścia; dopiero potem użyj operacji unsafe.",
+          "Uruchom testy dla pustego wejścia, granic oraz mutanta łamiącego stan, Drop albo lifetime."
+        ],
+        "evaluator": {
+          "kind": "tests",
+          "tests": "#[test]\nfn recalled_mut_slot_releases_outer_slot_after_short_use() {\n    let mut value = 10;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() -= 3;\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 9);\n}\n\n#[test]\nfn recalled_mut_slot_supports_a_local_inner_borrow() {\n    let text = String::from(\"lokalne\");\n    let mut selected = text.as_str();\n    let mut slot = MutSlot::new(&mut selected);\n    *slot.reborrow().get_mut() = \"odtworzone\";\n    assert_eq!(selected, \"odtworzone\");\n}"
+        },
+        "expectedStatus": "success",
+        "evidenceKind": "recall",
+        "evidenceGate": false,
+        "evidence": {
+          "version": 2,
+          "conceptIds": [
+            "unsafe-miri-mut-slot-variance-contract"
+          ]
+        }
+      }
+    ],
+    "misconceptions": [
+      "Skoro lifetime można skrócić, można też skrócić każdy lifetime w T.",
+      "`&mut T` zachowuje się jak `&T` w każdym wymiarze.",
+      "Jeśli test runtime przechodzi, zła konwersja lifetime jest bezpieczna."
+    ],
+    "transferTask": "Zaprojektuj API reborrow dla bufora roboczego, które pozwala helperowi użyć krótkiego zakresu bez przejęcia prawa do zapisania referencji o niewłaściwym lifetime.",
+    "evidenceGate": "Bramki muszą zawierać przechodzący test reborrow oraz osobny compile-fail-like kontrakt wariancji.",
+    "sourceIds": [
+      "unsafe-miri-guide",
+      "unsafe-miri-nomicon-subtyping"
+    ]
+  },
+  "module": {
+    "id": "unsafe-miri-contracts",
+    "title": "Miri i pure-Rust unsafe: inicjalizacja, aliasowanie oraz wariancja",
+    "whyItMatters": "Miri nie zastępuje proofu, ale pozwala uruchomić małe pure-Rust fixtures, które ujawniają część naruszeń UB. Nauczysz się najpierw zbudować kontrakt i niezmiennik, a dopiero potem użyć interpreterowego dowodu dla raw views, rozłącznych regionów, MaybeUninit i reborrow.",
+    "capabilities": [
+      "Opisujesz i testujesz kontrakt inicjalizacji oraz lifetime widoku utworzonego z raw pointera.",
+      "Budujesz bezpieczny podział mutowalnego storage i dowodzisz rozłączności granicami wejścia.",
+      "Modelujesz stan `MaybeUninit<T>` tak, aby `Drop` dotykał wartości wyłącznie po inicjalizacji.",
+      "Rozróżniasz kowariancję lifetime od niezmienniczości zawartości `&mut T` i stosujesz krótkie reborrow."
+    ],
+    "prerequisites": [
+      "unsafe-ffi-contracts"
+    ],
+    "lessonIds": [
+      "unsafe-miri-byte-view",
+      "unsafe-miri-disjoint-regions",
+      "unsafe-miri-slot-state",
+      "unsafe-miri-mut-slot"
+    ],
+    "exitGate": [
+      "Zbudujesz ByteView tylko z zainicjalizowanych, żywych bajtów i nie wydłużysz lifetime storage; gate i blank należą do jednej rodziny.",
+      "Podzielisz mutowalny bufor po obu krawędziach bez aliasowania, a następnie wybierzesz dwa rozłączne zakresy z zachowaniem kolejności podanych zakresów; druga forma starego podziału nie tworzy nowej rodziny.",
+      "Utrzymasz Slot<T> z poprawnym stanem MaybeUninit i dokładnym Drop; powtórka recall pozostaje osobnym sprawdzeniem.",
+      "Rozpoznasz bezpieczny reborrow MutSlot oraz odrzucisz niepoprawne skrócenie wewnętrznego lifetime; przy jednej rodzinie potwierdzenie pozostaje prowizoryczne, a pomoc nie otwiera nowej wersji."
+    ],
+    "projectConnection": "Pure-Rust Miri fixtures są osobnym dowodem dla abstrakcji pamięci; nie przenoszą automatycznie zaufania na natywny C ABI ani na kod ucznia.",
+    "assessmentId": "unsafe-miri-mut-slot/mut-slot-blank",
+    "gateCriteria": [
+      {
+        "id": "unsafe-miri-byte-view-gate",
+        "label": "ByteView zachowuje kontrakt inicjalizacji i lifetime.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-blank"
+          },
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-initialized-prefix"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-disjoint-regions-gate",
+        "label": "Regiony są rozłączne dla obu krawędzi i mutacji.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-blank"
+          },
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-range-transfer"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-slot-state-gate",
+        "label": "Slot<T> nie czyta ani nie dropuje Empty i nie dubluje Drop.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-blank"
+          },
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-lazy-init-transfer"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-mut-slot-gate",
+        "label": "MutSlot skraca reborrow, ale odrzuca niepoprawną konwersję T.",
+        "requiredIndependentCodingTasks": 1,
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-blank"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-byte-view-recall",
+        "label": "Retrieval ByteView zachowuje initialized storage.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-byte-view",
+            "stepId": "byte-view-recall"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-disjoint-regions-recall",
+        "label": "Retrieval regionów zachowuje granice.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-disjoint-regions",
+            "stepId": "disjoint-regions-recall"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-slot-state-recall",
+        "label": "Retrieval Slot<T> zachowuje stan.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-slot-state",
+            "stepId": "slot-state-recall"
+          }
+        ]
+      },
+      {
+        "id": "unsafe-miri-mut-slot-recall",
+        "label": "Retrieval MutSlot rozróżnia reborrow i variance.",
+        "taskRefs": [
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-contract-gate"
+          },
+          {
+            "lessonId": "unsafe-miri-mut-slot",
+            "stepId": "mut-slot-recall"
+          }
+        ]
+      }
+    ]
+  },
+  "project": {
+    "id": "miri-safety",
+    "lessonIds": [
+      "unsafe-miri-byte-view",
+      "unsafe-miri-disjoint-regions",
+      "unsafe-miri-slot-state",
+      "unsafe-miri-mut-slot"
+    ],
+    "reviewConceptIds": [
+      "unsafe-miri-byte-view-contract",
+      "unsafe-miri-disjoint-regions-contract",
+      "unsafe-miri-slot-state-contract",
+      "unsafe-miri-mut-slot-variance-contract"
+    ],
+    "title": "Warsztat bezpieczeństwa z Miri",
+    "objective": "Przejrzyj ByteView, dwa rozłączne regiony wybrane przez caller'a, stan Slot i reborrow MutSlot; następnie użyj interpretera, aby ujawnić niezdefiniowane zachowanie w małych przykładach Rust.",
+    "requiredBehaviors": [
+      "Zdefiniuj ByteView nad zainicjalizowanymi bajtami; null jest dopuszczalny tylko dla pustego widoku, bez wydłużania czasu życia pamięci.",
+      "Zwracaj rozłączne regiony mutable dla podziału od zera do długości bufora włącznie; odrzucaj podział poza zakresem.",
+      "Wybieraj dwa półotwarte zakresy w kolejności caller'a, odrzucaj overlap i zachowaj dokładną tożsamość niepustych wyników.",
+      "Zachowaj niezmiennik Empty/Full w Slot<T>, aby put, take i Drop przenosiły lub zwalniały każdą wartość dokładnie raz.",
+      "Skróć dostęp przez reborrow MutSlot, zachowując invariant wewnętrznego T; niepoprawne podstawienie lifetime ma zostać odrzucone przy kompilacji."
+    ],
+    "requiredEvidence": [
+      "Cztery główne bramki, dwa transfery zakresów, cztery zadania od pustej kartki i cztery powtórki ćwiczą ByteView, zakresy, stan/Drop Slot i reborrow MutSlot.",
+      "Dla autorskiego pakietu sprawdź Cargo, testy, formatowanie i Clippy na stable oraz dokładnym Rust 1.85.0.",
+      "Każdy negatywny fixture kompiluje się do diagnostyki, lecz przypięty interpreter Miri go odrzuca; autorski test odrzuca też kontrolowanego mutanta kontraktu."
+    ],
+    "constraints": [
+      "Główna biblioteka korzysta wyłącznie ze std i zabrania unsafe.",
+      "Weryfikator przyjmuje wyłącznie pliki autora z repozytorium i przypięty toolchain Miri.",
+      "Negatywne przykłady można kompilować do diagnostyki, ale nigdy uruchamiać natywnie."
+    ],
+    "lessonId": "unsafe-miri-byte-view",
+    "adversarialLessonId": "unsafe-miri-mut-slot",
+    "adversarialInject": "Fixture skompilował się poprawnie. Oceń, czy dowodzi to zdefiniowanego wykonania unsafe, a następnie sprawdź wynik Miri.",
+    "retrospective": [
+      "Który warunek wstępny umożliwił przegląd bezpiecznego API?",
+      "Co zaobserwowało Miri, czego nie mogła ustalić sama natywna kompilacja?",
+      "Które twierdzenie o unsafe pozostaje poza tym ograniczonym zestawem przykładów?"
+    ],
+    "package": {
+      "id": "miri-safety-workshop",
+      "title": "Warsztat bezpieczeństwa z Miri",
+      "description": "Pakiet Rust oparty na std z bezpiecznymi kontraktami pamięci i odizolowanymi przykładami niezdefiniowanego zachowania interpretowanymi przez Miri.",
+      "instructions": [
+        "Użyj Rust 2024 i stabilnego kompilatora dla bezpiecznego pakietu; przypięty w repozytorium nightly służy tylko Miri.",
+        "Uruchom cargo fmt --check, cargo check --all-targets --offline, cargo test --offline i cargo clippy --all-targets --offline -- -D warnings.",
+        "Przed analizą negatywnych przykładów przeczytaj SAFETY.md; te programy są celowo niepoprawne.",
+        "Uruchom npm run content:miri -- --fetch w repozytorium, aby powtórzyć weryfikator autora."
+      ],
+      "revealStepRefs": [
+        {
+          "lessonId": "unsafe-miri-byte-view",
+          "stepId": "byte-view-gate"
+        },
+        {
+          "lessonId": "unsafe-miri-disjoint-regions",
+          "stepId": "disjoint-regions-gate"
+        },
+        {
+          "lessonId": "unsafe-miri-disjoint-regions",
+          "stepId": "disjoint-regions-range-transfer"
+        },
+        {
+          "lessonId": "unsafe-miri-slot-state",
+          "stepId": "slot-state-gate"
+        },
+        {
+          "lessonId": "unsafe-miri-slot-state",
+          "stepId": "slot-state-lazy-init-transfer"
+        },
+        {
+          "lessonId": "unsafe-miri-mut-slot",
+          "stepId": "mut-slot-gate"
+        }
+      ],
+      "files": [
+        {
+          "path": "Cargo.toml",
+          "starter": "[package]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[lib]\nname = \"miri_safety_workshop\"\npath = \"src/lib.rs\"\n\n[lints.rust]\nunsafe_code = \"deny\"\n",
+          "solution": "[package]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[lib]\nname = \"miri_safety_workshop\"\npath = \"src/lib.rs\"\n\n[lints.rust]\nunsafe_code = \"deny\"\n"
+        },
+        {
+          "path": "Cargo.lock",
+          "starter": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\n",
+          "solution": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"miri-safety-workshop\"\nversion = \"1.0.0\"\n"
+        },
+        {
+          "path": "fixtures/Cargo.lock",
+          "starter": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"miri-ub-fixtures\"\nversion = \"1.0.0\"\n",
+          "solution": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"miri-ub-fixtures\"\nversion = \"1.0.0\"\n"
+        },
+        {
+          "path": "README.md",
+          "starter": "# Warsztat bezpieczeństwa z Miri\n\nThis authored package is a small, dependency-free Rust 2024 fixture for the\nunsafe curriculum. The library keeps its public API safe and tests the\ncontracts for borrowed byte views, caller-selected disjoint mutable regions,\nsingle-value storage and short mutable reborrows.\n\nThe \\`fixtures/\\` crate contains four deliberately invalid programs. They are\ncompiled for diagnostics only and are interpreted by a pinned Miri nightly.\nThe verifier never executes their native binaries. A Miri failure is evidence\nthat the interpreter observed undefined behavior in the fixture; it is not a\nclaim that Miri proves every possible unsafe program safe.\n\nRun the authored checks from the repository with:\n\n\\`\\`\\`text\nnpm run content:miri -- --stable --fetch\n\\`\\`\\`\n\nThe command accepts no learner paths, source overrides, dependency overrides,\nor arbitrary toolchains.\n",
+          "solution": "# Warsztat bezpieczeństwa z Miri\n\nThis authored package is a small, dependency-free Rust 2024 fixture for the\nunsafe curriculum. The library keeps its public API safe and tests the\ncontracts for borrowed byte views, caller-selected disjoint mutable regions,\nsingle-value storage and short mutable reborrows.\n\nThe \\`fixtures/\\` crate contains four deliberately invalid programs. They are\ncompiled for diagnostics only and are interpreted by a pinned Miri nightly.\nThe verifier never executes their native binaries. A Miri failure is evidence\nthat the interpreter observed undefined behavior in the fixture; it is not a\nclaim that Miri proves every possible unsafe program safe.\n\nRun the authored checks from the repository with:\n\n\\`\\`\\`text\nnpm run content:miri -- --stable --fetch\n\\`\\`\\`\n\nThe command accepts no learner paths, source overrides, dependency overrides,\nor arbitrary toolchains.\n"
+        },
+        {
+          "path": "SAFETY.md",
+          "starter": "# Safety ledger\n\nThe main crate has \\`#![forbid(unsafe_code)]\\`. Its contracts are deliberately\nsmall:\n\n- \\`ByteView\\` borrows an existing initialized slice without taking ownership or\n  extending its lifetime.\n- \\`split_regions\\` delegates the disjointness proof to the standard library and\n  returns no pair when the split is outside the slice.\n- \\`select_regions\\` validates two half-open ranges, rejects overlap before any\n  mutation, and preserves the caller's tuple order.\n- \\`Slot<T>\\` represents Empty/Full state and transfers each stored value once;\n  \\`MutSlot\\` can shorten only its outer borrow through a reborrow.\n\nThe four files under \\`fixtures/\\` are negative examples. Each one violates a\ndifferent memory rule and must be observed through Miri. They are kept outside\nthe library crate so an accidental native test run cannot make them part of a\nnormal package test.\n",
+          "solution": "# Safety ledger\n\nThe main crate has \\`#![forbid(unsafe_code)]\\`. Its contracts are deliberately\nsmall:\n\n- \\`ByteView\\` borrows an existing initialized slice without taking ownership or\n  extending its lifetime.\n- \\`split_regions\\` delegates the disjointness proof to the standard library and\n  returns no pair when the split is outside the slice.\n- \\`select_regions\\` validates two half-open ranges, rejects overlap before any\n  mutation, and preserves the caller's tuple order.\n- \\`Slot<T>\\` represents Empty/Full state and transfers each stored value once;\n  \\`MutSlot\\` can shorten only its outer borrow through a reborrow.\n\nThe four files under \\`fixtures/\\` are negative examples. Each one violates a\ndifferent memory rule and must be observed through Miri. They are kept outside\nthe library crate so an accidental native test run cannot make them part of a\nnormal package test.\n"
+        },
+        {
+          "path": "src/lib.rs",
+          "starter": "#![forbid(unsafe_code)]\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub struct ByteView<'a> {\n    bytes: &'a [u8],\n}\n\nimpl<'a> ByteView<'a> {\n    pub fn from_slice(bytes: &'a [u8]) -> Self {\n        Self { bytes }\n    }\n    pub fn as_slice(&self) -> &[u8] {\n        self.bytes\n    }\n}\n\npub fn split_regions(_input: &mut [u8], _at: usize) -> Option<(&mut [u8], &mut [u8])> {\n    todo!(\"return disjoint regions only when the split is in bounds\")\n}\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum RangeError {\n    FirstInvalid,\n    SecondInvalid,\n    Overlap,\n}\n\npub fn select_regions<'a>(\n    _buffer: &'a mut [u8],\n    _first: std::ops::Range<usize>,\n    _second: std::ops::Range<usize>,\n) -> Result<(&'a mut [u8], &'a mut [u8]), RangeError> {\n    todo!(\"return two validated, non-overlapping regions in caller order\")\n}\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum SlotState {\n    Empty,\n    Full,\n}\n\npub struct Slot<T> {\n    value: Option<T>,\n}\n\nimpl<T> Slot<T> {\n    pub fn empty() -> Self {\n        Self { value: None }\n    }\n    pub fn put(&mut self, _value: T) -> Result<(), T> {\n        todo!(\"store exactly one value\")\n    }\n    pub fn take(&mut self) -> Option<T> {\n        todo!(\"transfer the stored value once\")\n    }\n    pub fn state(&self) -> SlotState {\n        todo!(\"report Empty or Full\")\n    }\n    pub fn is_full(&self) -> bool {\n        todo!(\"report the storage state\")\n    }\n}\n\npub struct MutSlot<'a, T> {\n    value: &'a mut T,\n}\n\nimpl<'a, T> MutSlot<'a, T> {\n    pub fn new(value: &'a mut T) -> Self {\n        Self { value }\n    }\n    pub fn get(&self) -> &T {\n        self.value\n    }\n    pub fn get_mut(&mut self) -> &mut T {\n        self.value\n    }\n    pub fn reborrow<'short>(&'short mut self) -> MutSlot<'short, T> {\n        todo!(\"shorten only the outer borrow\")\n    }\n}\n",
+          "solution": "#![forbid(unsafe_code)]\n//! Safe contracts whose boundary cases are checked by the package tests.\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub struct ByteView<'a> {\n    bytes: &'a [u8],\n}\n\nimpl<'a> ByteView<'a> {\n    pub fn from_slice(bytes: &'a [u8]) -> Self {\n        Self { bytes }\n    }\n    pub fn as_slice(&self) -> &[u8] {\n        self.bytes\n    }\n}\n\npub fn split_regions(input: &mut [u8], at: usize) -> Option<(&mut [u8], &mut [u8])> {\n    input.split_at_mut_checked(at)\n}\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum RangeError {\n    FirstInvalid,\n    SecondInvalid,\n    Overlap,\n}\n\n#[allow(clippy::needless_lifetimes)]\npub fn select_regions<'a>(\n    buffer: &'a mut [u8],\n    first: std::ops::Range<usize>,\n    second: std::ops::Range<usize>,\n) -> Result<(&'a mut [u8], &'a mut [u8]), RangeError> {\n    if first.start > first.end || first.end > buffer.len() {\n        return Err(RangeError::FirstInvalid);\n    }\n    if second.start > second.end || second.end > buffer.len() {\n        return Err(RangeError::SecondInvalid);\n    }\n    if first.start < first.end\n        && second.start < second.end\n        && first.start < second.end\n        && second.start < first.end\n    {\n        return Err(RangeError::Overlap);\n    }\n    if first.start == first.end && second.start == second.end {\n        return Ok((&mut [], &mut []));\n    }\n    if first.start == first.end {\n        let (_, tail) = buffer.split_at_mut(second.start);\n        let (selected, _) = tail.split_at_mut(second.end - second.start);\n        return Ok((&mut [], selected));\n    }\n    if second.start == second.end {\n        let (_, tail) = buffer.split_at_mut(first.start);\n        let (selected, _) = tail.split_at_mut(first.end - first.start);\n        return Ok((selected, &mut []));\n    }\n    let first_is_low = first.start < second.start;\n    let (low, high) = if first_is_low {\n        (first, second)\n    } else {\n        (second, first)\n    };\n    let (_, tail) = buffer.split_at_mut(low.start);\n    let (low_slice, after_low) = tail.split_at_mut(low.end - low.start);\n    let (_, tail) = after_low.split_at_mut(high.start - low.end);\n    let (high_slice, _) = tail.split_at_mut(high.end - high.start);\n    if first_is_low {\n        Ok((low_slice, high_slice))\n    } else {\n        Ok((high_slice, low_slice))\n    }\n}\n\n#[derive(Debug, Clone, Copy, PartialEq, Eq)]\npub enum SlotState {\n    Empty,\n    Full,\n}\n\npub struct Slot<T> {\n    value: Option<T>,\n}\n\nimpl<T> Slot<T> {\n    pub fn empty() -> Self {\n        Self { value: None }\n    }\n    pub fn put(&mut self, value: T) -> Result<(), T> {\n        if self.value.is_some() {\n            return Err(value);\n        }\n        self.value = Some(value);\n        Ok(())\n    }\n    pub fn take(&mut self) -> Option<T> {\n        self.value.take()\n    }\n    pub fn state(&self) -> SlotState {\n        if self.value.is_some() {\n            SlotState::Full\n        } else {\n            SlotState::Empty\n        }\n    }\n    pub fn is_full(&self) -> bool {\n        self.value.is_some()\n    }\n}\n\npub struct MutSlot<'a, T> {\n    value: &'a mut T,\n}\n\nimpl<'a, T> MutSlot<'a, T> {\n    pub fn new(value: &'a mut T) -> Self {\n        Self { value }\n    }\n    pub fn get(&self) -> &T {\n        self.value\n    }\n    pub fn get_mut(&mut self) -> &mut T {\n        self.value\n    }\n    pub fn reborrow(&mut self) -> MutSlot<'_, T> {\n        MutSlot {\n            value: &mut *self.value,\n        }\n    }\n}\n"
+        },
+        {
+          "path": "tests/safety_contract.rs",
+          "starter": "#![allow(clippy::drop_non_drop, clippy::reversed_empty_ranges)]\nuse miri_safety_workshop::{\n    ByteView, MutSlot, RangeError, Slot, SlotState, select_regions, split_regions,\n};\n\n#[test]\nfn byte_view_borrows_initialized_bytes_without_owning_them() {\n    let input = [10, 20];\n    let view = ByteView::from_slice(&input);\n    assert_eq!(view.as_slice(), &[10, 20]);\n    assert_eq!(ByteView::from_slice(&[]).as_slice(), &[]);\n}\n\n#[test]\nfn split_regions_are_disjoint() {\n    let mut input = [1, 2, 3, 4];\n    let (left, right) = split_regions(&mut input, 2).expect(\"valid split\");\n    left[0] = 9;\n    right[0] = 8;\n    assert_eq!(left, [9, 2]);\n    assert_eq!(right, [8, 4]);\n    assert!(split_regions(&mut input, 5).is_none());\n}\n\n#[test]\nfn select_regions_accepts_empty_reversed_adjacent_and_gapped_ranges() {\n    let mut input = [1_u8, 2, 3, 4, 5, 6];\n    let (empty, whole) = select_regions(&mut input, 3..3, 0..6).expect(\"empty is valid\");\n    assert!(empty.is_empty());\n    assert_eq!(whole, [1, 2, 3, 4, 5, 6]);\n    drop((empty, whole));\n    let base = input.as_mut_ptr();\n    let (later, earlier) = select_regions(&mut input, 4..6, 1..3).expect(\"reversed order is valid\");\n    assert_eq!(later.as_ptr(), base.wrapping_add(4));\n    assert_eq!(earlier.as_ptr(), base.wrapping_add(1));\n    assert_eq!(later.len(), 2);\n    assert_eq!(earlier.len(), 2);\n    later[0] = 60;\n    earlier[1] = 20;\n    drop((later, earlier));\n    assert_eq!(input, [1, 2, 20, 4, 60, 6]);\n    assert!(select_regions(&mut input, 0..2, 2..4).is_ok());\n    assert!(select_regions(&mut input, 0..1, 4..6).is_ok());\n}\n\n#[test]\nfn select_regions_errors_have_precedence_and_preserve_the_buffer() {\n    let mut input = [7_u8, 8, 9, 10];\n    let before = input;\n    assert_eq!(\n        select_regions(&mut input, 4..3, 0..9),\n        Err(RangeError::FirstInvalid)\n    );\n    assert_eq!(input, before);\n    assert_eq!(\n        select_regions(&mut input, 0..4, 4..3),\n        Err(RangeError::SecondInvalid)\n    );\n    assert_eq!(input, before);\n    assert_eq!(\n        select_regions(&mut input, 0..3, 2..4),\n        Err(RangeError::Overlap)\n    );\n    assert_eq!(input, before);\n}\n\nfn expected_select_result(\n    length: usize,\n    first: std::ops::Range<usize>,\n    second: std::ops::Range<usize>,\n) -> Result<(), RangeError> {\n    if first.start > first.end || first.end > length {\n        return Err(RangeError::FirstInvalid);\n    }\n    if second.start > second.end || second.end > length {\n        return Err(RangeError::SecondInvalid);\n    }\n    if first.start < first.end\n        && second.start < second.end\n        && first.start < second.end\n        && second.start < first.end\n    {\n        return Err(RangeError::Overlap);\n    }\n    Ok(())\n}\n\nfn check_select_case(length: usize, first: std::ops::Range<usize>, second: std::ops::Range<usize>) {\n    let expected = expected_select_result(length, first.clone(), second.clone());\n    let sentinel: Vec<u8> = (0..length).map(|index| 0xa0 + index as u8).collect();\n    let mut data = sentinel.clone();\n    match expected {\n        Err(error) => {\n            assert_eq!(select_regions(&mut data, first, second), Err(error));\n            assert_eq!(data, sentinel, \"errors must preserve every byte\");\n        }\n        Ok(()) => {\n            let first_len = first.end - first.start;\n            let second_len = second.end - second.start;\n            let before = data.clone();\n            let first_pointer = if first_len > 0 {\n                Some(data.as_ptr().wrapping_add(first.start))\n            } else {\n                None\n            };\n            let second_pointer = if second_len > 0 {\n                Some(data.as_ptr().wrapping_add(second.start))\n            } else {\n                None\n            };\n            let (first_view, second_view) =\n                select_regions(&mut data, first.clone(), second.clone()).expect(\"valid ranges\");\n            assert_eq!(first_view.len(), first_len);\n            assert_eq!(second_view.len(), second_len);\n            assert_eq!(first_view, &before[first.start..first.end]);\n            assert_eq!(second_view, &before[second.start..second.end]);\n            if first_len > 0 {\n                assert_eq!(first_view.as_ptr(), first_pointer.unwrap());\n            }\n            if second_len > 0 {\n                assert_eq!(second_view.as_ptr(), second_pointer.unwrap());\n            }\n            for (offset, byte) in first_view.iter_mut().enumerate() {\n                *byte = 0x10 + offset as u8;\n            }\n            for (offset, byte) in second_view.iter_mut().enumerate() {\n                *byte = 0x80 + offset as u8;\n            }\n            drop((first_view, second_view));\n            for index in 0..length {\n                let expected_byte = if first.start <= index && index < first.end {\n                    0x10 + (index - first.start) as u8\n                } else if second.start <= index && index < second.end {\n                    0x80 + (index - second.start) as u8\n                } else {\n                    sentinel[index]\n                };\n                assert_eq!(data[index], expected_byte, \"mutation at index {index}\");\n            }\n        }\n    }\n}\n\n#[test]\nfn select_regions_exhaustive_endpoint_matrix() {\n    let mut cases = 0_usize;\n    for length in 0..=4 {\n        for first_start in 0..=length + 1 {\n            for first_end in 0..=length + 1 {\n                for second_start in 0..=length + 1 {\n                    for second_end in 0..=length + 1 {\n                        cases += 1;\n                        check_select_case(length, first_start..first_end, second_start..second_end);\n                    }\n                }\n            }\n        }\n    }\n    assert_eq!(cases, 2274);\n}\n\n#[test]\nfn select_regions_handles_empty_orderings_and_shape_boundaries() {\n    let mut data = [1_u8, 2, 3, 4];\n    let (empty, whole) = select_regions(&mut data, 2..2, 0..4).unwrap();\n    assert!(empty.is_empty());\n    assert_eq!(whole, [1, 2, 3, 4]);\n    drop((empty, whole));\n    let (whole, empty) = select_regions(&mut data, 0..4, 2..2).unwrap();\n    assert_eq!(whole, [1, 2, 3, 4]);\n    assert!(empty.is_empty());\n    drop((whole, empty));\n    let (first_empty, second_empty) = select_regions(&mut data, 0..0, 4..4).unwrap();\n    assert!(first_empty.is_empty() && second_empty.is_empty());\n    drop((first_empty, second_empty));\n    assert!(select_regions(&mut [], 0..0, 0..0).is_ok());\n    assert!(select_regions(&mut data, 0..2, 2..4).is_ok());\n    assert!(select_regions(&mut data, 0..1, 3..4).is_ok());\n    assert!(select_regions(&mut data, 0..4, 4..4).is_ok());\n    assert_eq!(\n        select_regions(&mut data, 0..3, 2..4),\n        Err(RangeError::Overlap)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..3, 1..2),\n        Err(RangeError::Overlap)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..2, 1..4),\n        Err(RangeError::Overlap)\n    );\n}\n\n#[test]\nfn select_regions_repeats_with_arbitrary_bytes_and_preserves_gaps() {\n    let mut data = [0_u8, 255, 17, 128, 42, 99];\n    for _ in 0..8 {\n        let (first, second) = select_regions(&mut data, 1..2, 4..6).unwrap();\n        assert_eq!(first, &[255]);\n        assert_eq!(second, &[42, 99]);\n        drop((first, second));\n        data[2] = data[2].wrapping_add(1);\n    }\n    assert_eq!(data, [0, 255, 25, 128, 42, 99]);\n}\n\n#[test]\nfn select_regions_rejects_extreme_endpoints_without_overflow() {\n    let mut data = [4_u8, 5, 6];\n    assert_eq!(\n        select_regions(&mut data, usize::MAX..usize::MAX, 0..0),\n        Err(RangeError::FirstInvalid)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..0, usize::MAX..usize::MAX),\n        Err(RangeError::SecondInvalid)\n    );\n    assert_eq!(\n        select_regions(&mut data, usize::MAX..0, 0..0),\n        Err(RangeError::FirstInvalid)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..0, usize::MAX..0),\n        Err(RangeError::SecondInvalid)\n    );\n    assert_eq!(data, [4, 5, 6]);\n}\n\n#[test]\nfn slot_transfers_values_and_rejects_a_second_put() {\n    let mut slot = Slot::empty();\n    assert_eq!(slot.state(), SlotState::Empty);\n    assert_eq!(slot.put(7_u32), Ok(()));\n    assert_eq!(slot.state(), SlotState::Full);\n    assert_eq!(slot.put(8_u32), Err(8));\n    assert_eq!(slot.take(), Some(7));\n    assert_eq!(slot.take(), None);\n}\n\n#[test]\nfn mut_slot_reborrow_releases_the_outer_slot() {\n    let mut value = 3;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 1;\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 6);\n}\n",
+          "solution": "#![allow(clippy::drop_non_drop, clippy::reversed_empty_ranges)]\nuse miri_safety_workshop::{\n    ByteView, MutSlot, RangeError, Slot, SlotState, select_regions, split_regions,\n};\n\n#[test]\nfn byte_view_borrows_initialized_bytes_without_owning_them() {\n    let input = [10, 20];\n    let view = ByteView::from_slice(&input);\n    assert_eq!(view.as_slice(), &[10, 20]);\n    assert_eq!(ByteView::from_slice(&[]).as_slice(), &[]);\n}\n\n#[test]\nfn split_regions_are_disjoint() {\n    let mut input = [1, 2, 3, 4];\n    let (left, right) = split_regions(&mut input, 2).expect(\"valid split\");\n    left[0] = 9;\n    right[0] = 8;\n    assert_eq!(left, [9, 2]);\n    assert_eq!(right, [8, 4]);\n    assert!(split_regions(&mut input, 5).is_none());\n}\n\n#[test]\nfn select_regions_accepts_empty_reversed_adjacent_and_gapped_ranges() {\n    let mut input = [1_u8, 2, 3, 4, 5, 6];\n    let (empty, whole) = select_regions(&mut input, 3..3, 0..6).expect(\"empty is valid\");\n    assert!(empty.is_empty());\n    assert_eq!(whole, [1, 2, 3, 4, 5, 6]);\n    drop((empty, whole));\n    let base = input.as_mut_ptr();\n    let (later, earlier) = select_regions(&mut input, 4..6, 1..3).expect(\"reversed order is valid\");\n    assert_eq!(later.as_ptr(), base.wrapping_add(4));\n    assert_eq!(earlier.as_ptr(), base.wrapping_add(1));\n    assert_eq!(later.len(), 2);\n    assert_eq!(earlier.len(), 2);\n    later[0] = 60;\n    earlier[1] = 20;\n    drop((later, earlier));\n    assert_eq!(input, [1, 2, 20, 4, 60, 6]);\n    assert!(select_regions(&mut input, 0..2, 2..4).is_ok());\n    assert!(select_regions(&mut input, 0..1, 4..6).is_ok());\n}\n\n#[test]\nfn select_regions_errors_have_precedence_and_preserve_the_buffer() {\n    let mut input = [7_u8, 8, 9, 10];\n    let before = input;\n    assert_eq!(\n        select_regions(&mut input, 4..3, 0..9),\n        Err(RangeError::FirstInvalid)\n    );\n    assert_eq!(input, before);\n    assert_eq!(\n        select_regions(&mut input, 0..4, 4..3),\n        Err(RangeError::SecondInvalid)\n    );\n    assert_eq!(input, before);\n    assert_eq!(\n        select_regions(&mut input, 0..3, 2..4),\n        Err(RangeError::Overlap)\n    );\n    assert_eq!(input, before);\n}\n\nfn expected_select_result(\n    length: usize,\n    first: std::ops::Range<usize>,\n    second: std::ops::Range<usize>,\n) -> Result<(), RangeError> {\n    if first.start > first.end || first.end > length {\n        return Err(RangeError::FirstInvalid);\n    }\n    if second.start > second.end || second.end > length {\n        return Err(RangeError::SecondInvalid);\n    }\n    if first.start < first.end\n        && second.start < second.end\n        && first.start < second.end\n        && second.start < first.end\n    {\n        return Err(RangeError::Overlap);\n    }\n    Ok(())\n}\n\nfn check_select_case(length: usize, first: std::ops::Range<usize>, second: std::ops::Range<usize>) {\n    let expected = expected_select_result(length, first.clone(), second.clone());\n    let sentinel: Vec<u8> = (0..length).map(|index| 0xa0 + index as u8).collect();\n    let mut data = sentinel.clone();\n    match expected {\n        Err(error) => {\n            assert_eq!(select_regions(&mut data, first, second), Err(error));\n            assert_eq!(data, sentinel, \"errors must preserve every byte\");\n        }\n        Ok(()) => {\n            let first_len = first.end - first.start;\n            let second_len = second.end - second.start;\n            let before = data.clone();\n            let first_pointer = if first_len > 0 {\n                Some(data.as_ptr().wrapping_add(first.start))\n            } else {\n                None\n            };\n            let second_pointer = if second_len > 0 {\n                Some(data.as_ptr().wrapping_add(second.start))\n            } else {\n                None\n            };\n            let (first_view, second_view) =\n                select_regions(&mut data, first.clone(), second.clone()).expect(\"valid ranges\");\n            assert_eq!(first_view.len(), first_len);\n            assert_eq!(second_view.len(), second_len);\n            assert_eq!(first_view, &before[first.start..first.end]);\n            assert_eq!(second_view, &before[second.start..second.end]);\n            if first_len > 0 {\n                assert_eq!(first_view.as_ptr(), first_pointer.unwrap());\n            }\n            if second_len > 0 {\n                assert_eq!(second_view.as_ptr(), second_pointer.unwrap());\n            }\n            for (offset, byte) in first_view.iter_mut().enumerate() {\n                *byte = 0x10 + offset as u8;\n            }\n            for (offset, byte) in second_view.iter_mut().enumerate() {\n                *byte = 0x80 + offset as u8;\n            }\n            drop((first_view, second_view));\n            for index in 0..length {\n                let expected_byte = if first.start <= index && index < first.end {\n                    0x10 + (index - first.start) as u8\n                } else if second.start <= index && index < second.end {\n                    0x80 + (index - second.start) as u8\n                } else {\n                    sentinel[index]\n                };\n                assert_eq!(data[index], expected_byte, \"mutation at index {index}\");\n            }\n        }\n    }\n}\n\n#[test]\nfn select_regions_exhaustive_endpoint_matrix() {\n    let mut cases = 0_usize;\n    for length in 0..=4 {\n        for first_start in 0..=length + 1 {\n            for first_end in 0..=length + 1 {\n                for second_start in 0..=length + 1 {\n                    for second_end in 0..=length + 1 {\n                        cases += 1;\n                        check_select_case(length, first_start..first_end, second_start..second_end);\n                    }\n                }\n            }\n        }\n    }\n    assert_eq!(cases, 2274);\n}\n\n#[test]\nfn select_regions_handles_empty_orderings_and_shape_boundaries() {\n    let mut data = [1_u8, 2, 3, 4];\n    let (empty, whole) = select_regions(&mut data, 2..2, 0..4).unwrap();\n    assert!(empty.is_empty());\n    assert_eq!(whole, [1, 2, 3, 4]);\n    drop((empty, whole));\n    let (whole, empty) = select_regions(&mut data, 0..4, 2..2).unwrap();\n    assert_eq!(whole, [1, 2, 3, 4]);\n    assert!(empty.is_empty());\n    drop((whole, empty));\n    let (first_empty, second_empty) = select_regions(&mut data, 0..0, 4..4).unwrap();\n    assert!(first_empty.is_empty() && second_empty.is_empty());\n    drop((first_empty, second_empty));\n    assert!(select_regions(&mut [], 0..0, 0..0).is_ok());\n    assert!(select_regions(&mut data, 0..2, 2..4).is_ok());\n    assert!(select_regions(&mut data, 0..1, 3..4).is_ok());\n    assert!(select_regions(&mut data, 0..4, 4..4).is_ok());\n    assert_eq!(\n        select_regions(&mut data, 0..3, 2..4),\n        Err(RangeError::Overlap)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..3, 1..2),\n        Err(RangeError::Overlap)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..2, 1..4),\n        Err(RangeError::Overlap)\n    );\n}\n\n#[test]\nfn select_regions_repeats_with_arbitrary_bytes_and_preserves_gaps() {\n    let mut data = [0_u8, 255, 17, 128, 42, 99];\n    for _ in 0..8 {\n        let (first, second) = select_regions(&mut data, 1..2, 4..6).unwrap();\n        assert_eq!(first, &[255]);\n        assert_eq!(second, &[42, 99]);\n        drop((first, second));\n        data[2] = data[2].wrapping_add(1);\n    }\n    assert_eq!(data, [0, 255, 25, 128, 42, 99]);\n}\n\n#[test]\nfn select_regions_rejects_extreme_endpoints_without_overflow() {\n    let mut data = [4_u8, 5, 6];\n    assert_eq!(\n        select_regions(&mut data, usize::MAX..usize::MAX, 0..0),\n        Err(RangeError::FirstInvalid)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..0, usize::MAX..usize::MAX),\n        Err(RangeError::SecondInvalid)\n    );\n    assert_eq!(\n        select_regions(&mut data, usize::MAX..0, 0..0),\n        Err(RangeError::FirstInvalid)\n    );\n    assert_eq!(\n        select_regions(&mut data, 0..0, usize::MAX..0),\n        Err(RangeError::SecondInvalid)\n    );\n    assert_eq!(data, [4, 5, 6]);\n}\n\n#[test]\nfn slot_transfers_values_and_rejects_a_second_put() {\n    let mut slot = Slot::empty();\n    assert_eq!(slot.state(), SlotState::Empty);\n    assert_eq!(slot.put(7_u32), Ok(()));\n    assert_eq!(slot.state(), SlotState::Full);\n    assert_eq!(slot.put(8_u32), Err(8));\n    assert_eq!(slot.take(), Some(7));\n    assert_eq!(slot.take(), None);\n}\n\n#[test]\nfn mut_slot_reborrow_releases_the_outer_slot() {\n    let mut value = 3;\n    let mut slot = MutSlot::new(&mut value);\n    {\n        let mut short = slot.reborrow();\n        *short.get_mut() += 1;\n    }\n    *slot.get_mut() += 2;\n    assert_eq!(value, 6);\n}\n"
+        },
+        {
+          "path": "tests/mutation_contract.rs",
+          "starter": "use miri_safety_workshop::{RangeError, select_regions, split_regions};\n\n#[test]\nfn split_regions_boundary_mutant_is_rejected() {\n    let mut input = [7_u8, 8];\n    let len = input.len();\n    let (left, right) = split_regions(&mut input, len).expect(\"len is valid\");\n    assert_eq!(left, [7, 8]);\n    assert!(right.is_empty());\n}\n\n#[test]\nfn select_regions_overlap_mutant_is_rejected() {\n    let mut input = [1_u8, 2, 3, 4];\n    assert_eq!(\n        select_regions(&mut input, 0..3, 2..4),\n        Err(RangeError::Overlap)\n    );\n}\n",
+          "solution": "use miri_safety_workshop::{RangeError, select_regions, split_regions};\n\n#[test]\nfn split_regions_boundary_mutant_is_rejected() {\n    let mut input = [7_u8, 8];\n    let len = input.len();\n    let (left, right) = split_regions(&mut input, len).expect(\"len is valid\");\n    assert_eq!(left, [7, 8]);\n    assert!(right.is_empty());\n}\n\n#[test]\nfn select_regions_overlap_mutant_is_rejected() {\n    let mut input = [1_u8, 2, 3, 4];\n    assert_eq!(\n        select_regions(&mut input, 0..3, 2..4),\n        Err(RangeError::Overlap)\n    );\n}\n"
+        },
+        {
+          "path": "tests/slot_lazy_init.rs",
+          "starter": "#![allow(unsafe_code)]\nuse std::mem::MaybeUninit;\n\npub struct LazySlot<T> {\n    value: MaybeUninit<T>,\n    full: bool,\n}\n\nimpl<T> LazySlot<T> {\n    pub fn new() -> Self {\n        Self {\n            value: MaybeUninit::uninit(),\n            full: false,\n        }\n    }\n\n    pub fn get_or_try_init<E, F>(&mut self, _init: F) -> Result<&mut T, E>\n    where\n        F: FnOnce() -> Result<T, E>,\n    {\n        todo!(\"zaimplementuj leniwą inicjalizację\")\n    }\n\n    pub fn take(&mut self) -> Option<T> {\n        if !self.full {\n            return None;\n        }\n        self.full = false;\n        Some(unsafe { self.value.assume_init_read() })\n    }\n}\n\nimpl<T> Drop for LazySlot<T> {\n    fn drop(&mut self) {\n        if self.full {\n            unsafe {\n                self.value.assume_init_drop();\n            }\n        }\n    }\n}\n\nimpl<T> Default for LazySlot<T> {\n    fn default() -> Self {\n        Self::new()\n    }\n}\nuse std::cell::Cell;\nuse std::marker::PhantomPinned;\nuse std::panic::{AssertUnwindSafe, catch_unwind};\nuse std::rc::Rc;\nuse std::sync::{\n    Arc,\n    atomic::{AtomicUsize, Ordering},\n};\n\n#[derive(Debug)]\nstruct DropProbe(Arc<AtomicUsize>);\n\nimpl Drop for DropProbe {\n    fn drop(&mut self) {\n        self.0.fetch_add(1, Ordering::SeqCst);\n    }\n}\n\n#[derive(Debug)]\nstruct CaptureDrop(Arc<AtomicUsize>);\n\nimpl Drop for CaptureDrop {\n    fn drop(&mut self) {\n        self.0.fetch_add(1, Ordering::SeqCst);\n    }\n}\n\nstatic ZST_DROPS: AtomicUsize = AtomicUsize::new(0);\n\nstruct Zst;\n\nimpl Drop for Zst {\n    fn drop(&mut self) {\n        ZST_DROPS.fetch_add(1, Ordering::SeqCst);\n    }\n}\n\n#[test]\nfn full_suppresses_initializer_and_drops_captured_closure() {\n    let calls = Arc::new(AtomicUsize::new(0));\n    let captures = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    *slot\n        .get_or_try_init(|| {\n            calls.fetch_add(1, Ordering::SeqCst);\n            Ok::<_, ()>(10_i32)\n        })\n        .unwrap() += 1;\n\n    {\n        let capture = CaptureDrop(captures.clone());\n        let value = slot\n            .get_or_try_init(move || -> Result<i32, ()> {\n                drop(capture);\n                panic!(\"full slots must not invoke init\");\n            })\n            .unwrap();\n        assert_eq!(*value, 11);\n    }\n\n    assert_eq!(calls.load(Ordering::SeqCst), 1);\n    assert_eq!(\n        captures.load(Ordering::SeqCst),\n        1,\n        \"unused capture still drops\"\n    );\n}\n\n#[test]\nfn error_is_returned_unchanged_and_slot_stays_empty() {\n    struct SentinelError(u8);\n\n    let mut slot = LazySlot::<String>::new();\n    let original = Box::new(SentinelError(7));\n    let original_ptr = &*original as *const SentinelError;\n    let error = slot\n        .get_or_try_init(move || Err::<String, _>(original))\n        .unwrap_err();\n    assert_eq!(error.as_ref() as *const SentinelError, original_ptr);\n    assert_eq!(error.0, 7);\n    drop(error);\n    assert!(slot.take().is_none());\n    let retry = slot\n        .get_or_try_init(|| Ok::<_, Box<SentinelError>>(String::from(\"retry\")))\n        .ok()\n        .expect(\"retry initialized\");\n    assert_eq!(*retry, \"retry\");\n}\n\n#[test]\nfn failed_initialization_can_be_retried() {\n    let attempts = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    assert_eq!(\n        slot.get_or_try_init(|| {\n            attempts.fetch_add(1, Ordering::SeqCst);\n            Err::<u32, _>(\"retry\")\n        }),\n        Err(\"retry\")\n    );\n    assert_eq!(\n        *slot\n            .get_or_try_init(|| {\n                attempts.fetch_add(1, Ordering::SeqCst);\n                Ok::<_, &str>(42)\n            })\n            .unwrap(),\n        42\n    );\n    assert_eq!(attempts.load(Ordering::SeqCst), 2);\n}\n\n#[test]\nfn caught_initializer_panic_leaves_slot_empty_and_retryable() {\n    let mut slot = LazySlot::<u32>::new();\n    let panic_result = catch_unwind(AssertUnwindSafe(|| {\n        let _ = slot.get_or_try_init(|| -> Result<u32, ()> {\n            panic!(\"fixed initializer panic\");\n        });\n    }));\n    assert!(panic_result.is_err());\n    assert_eq!(*slot.get_or_try_init(|| Ok::<_, ()>(7)).unwrap(), 7);\n}\n\n#[test]\nfn resident_value_drops_exactly_once() {\n    let drops = Arc::new(AtomicUsize::new(0));\n    {\n        let mut slot = LazySlot::new();\n        slot.get_or_try_init(|| Ok::<_, ()>(DropProbe(drops.clone())))\n            .unwrap();\n        assert_eq!(drops.load(Ordering::SeqCst), 0);\n    }\n    assert_eq!(drops.load(Ordering::SeqCst), 1);\n}\n\n#[test]\nfn take_transfers_ownership_and_allows_a_new_value() {\n    let drops = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    slot.get_or_try_init(|| Ok::<_, ()>(DropProbe(drops.clone())))\n        .unwrap();\n    let first = slot.take().unwrap();\n    assert!(slot.take().is_none());\n    drop(first);\n    assert_eq!(drops.load(Ordering::SeqCst), 1);\n    slot.get_or_try_init(|| Ok::<_, ()>(DropProbe(drops.clone())))\n        .unwrap();\n    drop(slot);\n    assert_eq!(drops.load(Ordering::SeqCst), 2);\n}\n\n#[test]\nfn returned_mutable_borrow_can_be_reused_after_scope() {\n    let mut slot = LazySlot::new();\n    {\n        let value = slot.get_or_try_init(|| Ok::<_, ()>(1_u32)).unwrap();\n        *value += 4;\n    }\n    *slot\n        .get_or_try_init(|| -> Result<u32, ()> {\n            panic!(\"initializer must be suppressed\");\n        })\n        .unwrap() += 2;\n    assert_eq!(slot.take().unwrap(), 7);\n}\n\n#[test]\nfn borrowed_non_static_value_is_supported() {\n    let owner = String::from(\"lokalne\");\n    let mut slot = LazySlot::new();\n    let value = slot\n        .get_or_try_init(|| Ok::<_, ()>(owner.as_str()))\n        .unwrap();\n    assert_eq!(*value, \"lokalne\");\n}\n\n#[test]\nfn true_zst_drop_is_still_exactly_once() {\n    assert_eq!(std::mem::size_of::<Zst>(), 0);\n    ZST_DROPS.store(0, Ordering::SeqCst);\n    let mut slot = LazySlot::new();\n    slot.get_or_try_init(|| Ok::<_, ()>(Zst)).unwrap();\n    drop(slot.take());\n    assert_eq!(ZST_DROPS.load(Ordering::SeqCst), 1);\n}\n\n#[test]\nfn non_clone_value_needs_no_extra_trait_bound() {\n    struct NonClone {\n        cell: Rc<Cell<u8>>,\n        _pin: PhantomPinned,\n    }\n\n    let shared = Rc::new(Cell::new(3));\n    let mut slot = LazySlot::new();\n    {\n        let value = slot\n            .get_or_try_init(|| {\n                Ok::<_, ()>(NonClone {\n                    cell: Rc::clone(&shared),\n                    _pin: PhantomPinned,\n                })\n            })\n            .unwrap();\n        value.cell.set(value.cell.get() + 4);\n        assert_eq!(value.cell.get(), 7);\n    }\n    assert_eq!(shared.get(), 7);\n    let taken = slot.take().unwrap();\n    assert_eq!(taken.cell.get(), 7);\n}\n\n#[test]\nfn initializer_capture_drops_after_error() {\n    let captures = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::<u8>::new();\n    {\n        let capture = CaptureDrop(captures.clone());\n        assert_eq!(\n            slot.get_or_try_init(move || {\n                drop(capture);\n                Err::<u8, _>(())\n            }),\n            Err(())\n        );\n    }\n    assert_eq!(captures.load(Ordering::SeqCst), 1);\n}\n\n#[test]\nfn take_on_empty_does_not_call_or_drop_anything() {\n    let mut slot = LazySlot::<DropProbe>::new();\n    assert!(slot.take().is_none());\n}\n\n#[test]\nfn retry_after_take_returns_the_new_value() {\n    let mut slot = LazySlot::new();\n    assert_eq!(*slot.get_or_try_init(|| Ok::<_, ()>(1_u8)).unwrap(), 1);\n    assert_eq!(slot.take(), Some(1));\n    assert_eq!(*slot.get_or_try_init(|| Ok::<_, ()>(2_u8)).unwrap(), 2);\n}\n\n#[test]\nfn full_path_does_not_construct_a_second_resident() {\n    let constructed = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    slot.get_or_try_init(|| {\n        constructed.fetch_add(1, Ordering::SeqCst);\n        Ok::<_, ()>(String::from(\"pierwszy\"))\n    })\n    .unwrap();\n    slot.get_or_try_init(|| {\n        constructed.fetch_add(1, Ordering::SeqCst);\n        Ok::<_, ()>(String::from(\"drugi\"))\n    })\n    .unwrap();\n    assert_eq!(constructed.load(Ordering::SeqCst), 1);\n    assert_eq!(slot.take().as_deref(), Some(\"pierwszy\"));\n}\n",
+          "solution": "#![allow(unsafe_code)]\nuse std::mem::MaybeUninit;\n\npub struct LazySlot<T> {\n    value: MaybeUninit<T>,\n    full: bool,\n}\n\nimpl<T> LazySlot<T> {\n    pub fn new() -> Self {\n        Self {\n            value: MaybeUninit::uninit(),\n            full: false,\n        }\n    }\n\n    pub fn get_or_try_init<E, F>(&mut self, init: F) -> Result<&mut T, E>\n    where\n        F: FnOnce() -> Result<T, E>,\n    {\n        if self.full {\n            // SAFETY: full means value contains exactly one live T.\n            return Ok(unsafe { self.value.assume_init_mut() });\n        }\n\n        let value = init()?;\n        self.value.write(value);\n        self.full = true;\n\n        // SAFETY: the write immediately above established the invariant.\n        Ok(unsafe { self.value.assume_init_mut() })\n    }\n\n    pub fn take(&mut self) -> Option<T> {\n        if !self.full {\n            return None;\n        }\n        self.full = false;\n\n        // SAFETY: the old state was Full and is cleared before ownership moves.\n        Some(unsafe { self.value.assume_init_read() })\n    }\n}\n\nimpl<T> Drop for LazySlot<T> {\n    fn drop(&mut self) {\n        if self.full {\n            // SAFETY: only a Full slot contains a live value to drop.\n            unsafe {\n                self.value.assume_init_drop();\n            }\n        }\n    }\n}\n\nimpl<T> Default for LazySlot<T> {\n    fn default() -> Self {\n        Self::new()\n    }\n}\nuse std::cell::Cell;\nuse std::marker::PhantomPinned;\nuse std::panic::{AssertUnwindSafe, catch_unwind};\nuse std::rc::Rc;\nuse std::sync::{\n    Arc,\n    atomic::{AtomicUsize, Ordering},\n};\n\n#[derive(Debug)]\nstruct DropProbe(Arc<AtomicUsize>);\n\nimpl Drop for DropProbe {\n    fn drop(&mut self) {\n        self.0.fetch_add(1, Ordering::SeqCst);\n    }\n}\n\n#[derive(Debug)]\nstruct CaptureDrop(Arc<AtomicUsize>);\n\nimpl Drop for CaptureDrop {\n    fn drop(&mut self) {\n        self.0.fetch_add(1, Ordering::SeqCst);\n    }\n}\n\nstatic ZST_DROPS: AtomicUsize = AtomicUsize::new(0);\n\nstruct Zst;\n\nimpl Drop for Zst {\n    fn drop(&mut self) {\n        ZST_DROPS.fetch_add(1, Ordering::SeqCst);\n    }\n}\n\n#[test]\nfn full_suppresses_initializer_and_drops_captured_closure() {\n    let calls = Arc::new(AtomicUsize::new(0));\n    let captures = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    *slot\n        .get_or_try_init(|| {\n            calls.fetch_add(1, Ordering::SeqCst);\n            Ok::<_, ()>(10_i32)\n        })\n        .unwrap() += 1;\n\n    {\n        let capture = CaptureDrop(captures.clone());\n        let value = slot\n            .get_or_try_init(move || -> Result<i32, ()> {\n                drop(capture);\n                panic!(\"full slots must not invoke init\");\n            })\n            .unwrap();\n        assert_eq!(*value, 11);\n    }\n\n    assert_eq!(calls.load(Ordering::SeqCst), 1);\n    assert_eq!(\n        captures.load(Ordering::SeqCst),\n        1,\n        \"unused capture still drops\"\n    );\n}\n\n#[test]\nfn error_is_returned_unchanged_and_slot_stays_empty() {\n    struct SentinelError(u8);\n\n    let mut slot = LazySlot::<String>::new();\n    let original = Box::new(SentinelError(7));\n    let original_ptr = &*original as *const SentinelError;\n    let error = slot\n        .get_or_try_init(move || Err::<String, _>(original))\n        .unwrap_err();\n    assert_eq!(error.as_ref() as *const SentinelError, original_ptr);\n    assert_eq!(error.0, 7);\n    drop(error);\n    assert!(slot.take().is_none());\n    let retry = slot\n        .get_or_try_init(|| Ok::<_, Box<SentinelError>>(String::from(\"retry\")))\n        .ok()\n        .expect(\"retry initialized\");\n    assert_eq!(*retry, \"retry\");\n}\n\n#[test]\nfn failed_initialization_can_be_retried() {\n    let attempts = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    assert_eq!(\n        slot.get_or_try_init(|| {\n            attempts.fetch_add(1, Ordering::SeqCst);\n            Err::<u32, _>(\"retry\")\n        }),\n        Err(\"retry\")\n    );\n    assert_eq!(\n        *slot\n            .get_or_try_init(|| {\n                attempts.fetch_add(1, Ordering::SeqCst);\n                Ok::<_, &str>(42)\n            })\n            .unwrap(),\n        42\n    );\n    assert_eq!(attempts.load(Ordering::SeqCst), 2);\n}\n\n#[test]\nfn caught_initializer_panic_leaves_slot_empty_and_retryable() {\n    let mut slot = LazySlot::<u32>::new();\n    let panic_result = catch_unwind(AssertUnwindSafe(|| {\n        let _ = slot.get_or_try_init(|| -> Result<u32, ()> {\n            panic!(\"fixed initializer panic\");\n        });\n    }));\n    assert!(panic_result.is_err());\n    assert_eq!(*slot.get_or_try_init(|| Ok::<_, ()>(7)).unwrap(), 7);\n}\n\n#[test]\nfn resident_value_drops_exactly_once() {\n    let drops = Arc::new(AtomicUsize::new(0));\n    {\n        let mut slot = LazySlot::new();\n        slot.get_or_try_init(|| Ok::<_, ()>(DropProbe(drops.clone())))\n            .unwrap();\n        assert_eq!(drops.load(Ordering::SeqCst), 0);\n    }\n    assert_eq!(drops.load(Ordering::SeqCst), 1);\n}\n\n#[test]\nfn take_transfers_ownership_and_allows_a_new_value() {\n    let drops = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    slot.get_or_try_init(|| Ok::<_, ()>(DropProbe(drops.clone())))\n        .unwrap();\n    let first = slot.take().unwrap();\n    assert!(slot.take().is_none());\n    drop(first);\n    assert_eq!(drops.load(Ordering::SeqCst), 1);\n    slot.get_or_try_init(|| Ok::<_, ()>(DropProbe(drops.clone())))\n        .unwrap();\n    drop(slot);\n    assert_eq!(drops.load(Ordering::SeqCst), 2);\n}\n\n#[test]\nfn returned_mutable_borrow_can_be_reused_after_scope() {\n    let mut slot = LazySlot::new();\n    {\n        let value = slot.get_or_try_init(|| Ok::<_, ()>(1_u32)).unwrap();\n        *value += 4;\n    }\n    *slot\n        .get_or_try_init(|| -> Result<u32, ()> {\n            panic!(\"initializer must be suppressed\");\n        })\n        .unwrap() += 2;\n    assert_eq!(slot.take().unwrap(), 7);\n}\n\n#[test]\nfn borrowed_non_static_value_is_supported() {\n    let owner = String::from(\"lokalne\");\n    let mut slot = LazySlot::new();\n    let value = slot\n        .get_or_try_init(|| Ok::<_, ()>(owner.as_str()))\n        .unwrap();\n    assert_eq!(*value, \"lokalne\");\n}\n\n#[test]\nfn true_zst_drop_is_still_exactly_once() {\n    assert_eq!(std::mem::size_of::<Zst>(), 0);\n    ZST_DROPS.store(0, Ordering::SeqCst);\n    let mut slot = LazySlot::new();\n    slot.get_or_try_init(|| Ok::<_, ()>(Zst)).unwrap();\n    drop(slot.take());\n    assert_eq!(ZST_DROPS.load(Ordering::SeqCst), 1);\n}\n\n#[test]\nfn non_clone_value_needs_no_extra_trait_bound() {\n    struct NonClone {\n        cell: Rc<Cell<u8>>,\n        _pin: PhantomPinned,\n    }\n\n    let shared = Rc::new(Cell::new(3));\n    let mut slot = LazySlot::new();\n    {\n        let value = slot\n            .get_or_try_init(|| {\n                Ok::<_, ()>(NonClone {\n                    cell: Rc::clone(&shared),\n                    _pin: PhantomPinned,\n                })\n            })\n            .unwrap();\n        value.cell.set(value.cell.get() + 4);\n        assert_eq!(value.cell.get(), 7);\n    }\n    assert_eq!(shared.get(), 7);\n    let taken = slot.take().unwrap();\n    assert_eq!(taken.cell.get(), 7);\n}\n\n#[test]\nfn initializer_capture_drops_after_error() {\n    let captures = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::<u8>::new();\n    {\n        let capture = CaptureDrop(captures.clone());\n        assert_eq!(\n            slot.get_or_try_init(move || {\n                drop(capture);\n                Err::<u8, _>(())\n            }),\n            Err(())\n        );\n    }\n    assert_eq!(captures.load(Ordering::SeqCst), 1);\n}\n\n#[test]\nfn take_on_empty_does_not_call_or_drop_anything() {\n    let mut slot = LazySlot::<DropProbe>::new();\n    assert!(slot.take().is_none());\n}\n\n#[test]\nfn retry_after_take_returns_the_new_value() {\n    let mut slot = LazySlot::new();\n    assert_eq!(*slot.get_or_try_init(|| Ok::<_, ()>(1_u8)).unwrap(), 1);\n    assert_eq!(slot.take(), Some(1));\n    assert_eq!(*slot.get_or_try_init(|| Ok::<_, ()>(2_u8)).unwrap(), 2);\n}\n\n#[test]\nfn full_path_does_not_construct_a_second_resident() {\n    let constructed = Arc::new(AtomicUsize::new(0));\n    let mut slot = LazySlot::new();\n    slot.get_or_try_init(|| {\n        constructed.fetch_add(1, Ordering::SeqCst);\n        Ok::<_, ()>(String::from(\"pierwszy\"))\n    })\n    .unwrap();\n    slot.get_or_try_init(|| {\n        constructed.fetch_add(1, Ordering::SeqCst);\n        Ok::<_, ()>(String::from(\"drugi\"))\n    })\n    .unwrap();\n    assert_eq!(constructed.load(Ordering::SeqCst), 1);\n    assert_eq!(slot.take().as_deref(), Some(\"pierwszy\"));\n}\n"
+        },
+        {
+          "path": "fixtures/Cargo.toml",
+          "starter": "[package]\nname = \"miri-ub-fixtures\"\nversion = \"1.0.0\"\nedition = \"2024\"\npublish = false\n\n[[bin]]\nname = \"ub-out-of-bounds\"\npath = \"ub_out_of_bounds.rs\"\n\n[[bin]]\nname = \"ub-use-after-free\"\npath = \"ub_use_after_free.rs\"\n\n[[bin]]\nname = \"ub-aliasing\"\npath = \"ub_aliasing.rs\"\n\n[[bin]]\nname = \"ub-overlapping-regions\"\npath = \"ub_overlapping_regions.rs\"\n",
+          "solution": "[package]\nname = \"miri-ub-fixtures\"\nversion = \"1.0.0\"\nedition = \"2024\"\npublish = false\n\n[[bin]]\nname = \"ub-out-of-bounds\"\npath = \"ub_out_of_bounds.rs\"\n\n[[bin]]\nname = \"ub-use-after-free\"\npath = \"ub_use_after_free.rs\"\n\n[[bin]]\nname = \"ub-aliasing\"\npath = \"ub_aliasing.rs\"\n\n[[bin]]\nname = \"ub-overlapping-regions\"\npath = \"ub_overlapping_regions.rs\"\n"
+        },
+        {
+          "path": "fixtures/ub_out_of_bounds.rs",
+          "starter": "fn main() {\n    let input = [1_u8, 2_u8];\n    let raw = input.as_ptr();\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        let value = *raw.add(2);\n        std::hint::black_box(value);\n    }\n}\n",
+          "solution": "fn main() {\n    let input = [1_u8, 2_u8];\n    let raw = input.as_ptr();\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        let value = *raw.add(2);\n        std::hint::black_box(value);\n    }\n}\n"
+        },
+        {
+          "path": "fixtures/ub_use_after_free.rs",
+          "starter": "fn main() {\n    let raw = Box::into_raw(Box::new(7_u32));\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        drop(Box::from_raw(raw));\n        let value = std::ptr::read(raw);\n        std::hint::black_box(value);\n    }\n}\n",
+          "solution": "fn main() {\n    let raw = Box::into_raw(Box::new(7_u32));\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        drop(Box::from_raw(raw));\n        let value = std::ptr::read(raw);\n        std::hint::black_box(value);\n    }\n}\n"
+        },
+        {
+          "path": "fixtures/ub_aliasing.rs",
+          "starter": "fn main() {\n    let mut value = 1_u32;\n    let raw = &mut value as *mut u32;\n    let shared = &value;\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        *raw = 2;\n        std::hint::black_box(*shared);\n    }\n}\n",
+          "solution": "fn main() {\n    let mut value = 1_u32;\n    let raw = &mut value as *mut u32;\n    let shared = &value;\n    // This fixture is intentionally undefined behavior. The verifier compiles\n    // it to metadata and runs it only under Miri; it is never native-executed.\n    unsafe {\n        *raw = 2;\n        std::hint::black_box(*shared);\n    }\n}\n"
+        },
+        {
+          "path": "fixtures/ub_overlapping_regions.rs",
+          "starter": "use std::ops::Range;\n\nfn bad_select<'a>(\n    buffer: &'a mut [u8],\n    first: Range<usize>,\n    second: Range<usize>,\n) -> (&'a mut [u8], &'a mut [u8]) {\n    let base = buffer.as_mut_ptr();\n    unsafe {\n        (\n            std::slice::from_raw_parts_mut(base.add(first.start), first.end - first.start),\n            std::slice::from_raw_parts_mut(base.add(second.start), second.end - second.start),\n        )\n    }\n}\n\nfn main() {\n    let mut data = [0_u8; 4];\n    let (first, second) = bad_select(&mut data, 0..2, 1..3);\n    first[1] = 1;\n    std::hint::black_box(second[0]);\n}\n",
+          "solution": "use std::ops::Range;\n\nfn bad_select<'a>(\n    buffer: &'a mut [u8],\n    first: Range<usize>,\n    second: Range<usize>,\n) -> (&'a mut [u8], &'a mut [u8]) {\n    let base = buffer.as_mut_ptr();\n    unsafe {\n        (\n            std::slice::from_raw_parts_mut(base.add(first.start), first.end - first.start),\n            std::slice::from_raw_parts_mut(base.add(second.start), second.end - second.start),\n        )\n    }\n}\n\nfn main() {\n    let mut data = [0_u8; 4];\n    let (first, second) = bad_select(&mut data, 0..2, 1..3);\n    first[1] = 1;\n    std::hint::black_box(second[0]);\n}\n"
+        }
+      ]
+    }
+  },
+  "schema": "pre-mut-slot-registry-v1",
+  "sourceHead": "8a40f138d360ad48a005f6909d5dea6a215d9e9a",
+  "sourceTree": "ba2652e4919dee10a5d89e74c43a95171d30952d",
+  "sourceClean": true
+}

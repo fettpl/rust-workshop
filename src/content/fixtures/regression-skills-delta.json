@@ -1,0 +1,75 @@
+{
+  "baseline": {
+    "sha": "b81a8731d4f71cfde5f15951c553e06e8da6843c",
+    "lessonsSha256": "597bd8c1a30874a36c23fd71c7f870b64ceb8dd9b83e30ffc04daa0ec0697bf2",
+    "modulesSha256": "2a0d2bc936b27add88244b795b5104f903769be03a3547cfd5fd6071f91c24ec"
+  },
+  "module": {
+    "id": "testing-quality",
+    "index": 16,
+    "criterionIndex": 1,
+    "beforeCriterion": {
+      "id": "testing-regressions-gate",
+      "label": "Testy regresyjne trafiają w granice liczb oraz Unicode i nie akceptują skrótów.",
+      "taskRefs": [
+        {
+          "lessonId": "testing-regressions",
+          "stepId": "regressions-debug-gate"
+        },
+        {
+          "lessonId": "testing-regressions",
+          "stepId": "regressions-apply-gate"
+        }
+      ]
+    },
+    "beforeSha256": "e5c6a744c9f698648e0f7915be038318d168d98ab7e7b7b23ef2b1e29ec0153a",
+    "successorSha256": "0fd5ab437bcc6e75dcd88575efaa0c6b9362d401ede783b0332b7ab8bb07bc36"
+  },
+  "restorations": [
+    {
+      "lessonId": "testing-regressions",
+      "stepId": "regressions-apply-gate",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "\nfn normalize(value: &str) -> String { value.trim().to_lowercase() }\nfn trim_only(value: &str) -> String { value.trim().to_string() }\nfn first_word(value: &str) -> String { value.split_whitespace().next().unwrap_or(\"\").to_lowercase() }\nfn ascii_only(value: &str) -> String { value.trim().to_ascii_lowercase() }\nfn empty_wrong(value: &str) -> String { if value.is_empty() { String::from(\"pusty\") } else { value.trim().to_lowercase() } }\n\n#[test]\nfn normalization_contract_keeps_unicode_and_spaces() {\n    assert!(std::panic::catch_unwind(|| assert_normalize_contract(normalize)).is_ok());\n}\n\n#[test]\nfn normalization_contract_rejects_shortcuts() {\n    assert!(std::panic::catch_unwind(|| assert_normalize_contract(trim_only)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_normalize_contract(first_word)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_normalize_contract(ascii_only)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_normalize_contract(empty_wrong)).is_err());\n}",
+      "beforeSha256": "d82a7fee9e477a75276a4d3e050f52639924d0284d97c74aeb9b2b30eaac71fd",
+      "successorSha256": "2bbd6083edf268a90c5afb16f679342d360464e059e74e802541db727f387019"
+    },
+    {
+      "lessonId": "testing-regressions",
+      "stepId": "regressions-debug-gate",
+      "path": [
+        "evidence"
+      ],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "8e9f6031d44ce46b5d6aa2c5a7acf6b6d0d6e51bebad5f3aabca32f8e9d369f1"
+    },
+    {
+      "lessonId": "testing-regressions",
+      "stepId": "regressions-apply-gate",
+      "path": [
+        "evidence"
+      ],
+      "before": null,
+      "beforeSha256": null,
+      "successorSha256": "8e9f6031d44ce46b5d6aa2c5a7acf6b6d0d6e51bebad5f3aabca32f8e9d369f1"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "testing-regressions",
+      "index": 7,
+      "id": "regressions-tag-blank",
+      "successorSha256": "8bfaa6ebb49661c1ece167b2e261b7ec48111c68f08e613df947464aee17f447"
+    },
+    {
+      "lessonId": "testing-regressions",
+      "index": 6,
+      "id": "regressions-window-blank",
+      "successorSha256": "7e25e55e96bdfb7d16542e5970bfef0526c09db643174e22000d714d8aa1c672"
+    }
+  ]
+}

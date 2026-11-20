@@ -1,0 +1,2652 @@
+{
+  "base": "a5ef279fc6db0230738ae3631b29973a1c6919e0",
+  "reviewedOn": "2026-10-24",
+  "deltas": [
+    {
+      "registry": "lessons",
+      "id": "tokio-runtime-entry",
+      "previousSha256": "3fad322d242e9196cdd2bf83e04c5a9dfd1ed9dc4799c4caacc2e3016f957848",
+      "currentSha256": "b94535db68a97ad4b09dd3a8fcfa5723b00154964da0d2b10d9fd0989c006866",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-spawn-join",
+      "previousSha256": "e068b84efeced117d6a61bcce9479cca06f413fa98ee2739dc35ecba48f0cda9",
+      "currentSha256": "ec60631cb27e0c609c3e12a9f75dea7f6a0588d9844b870892eaa533bfff3c8b",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-task-boundaries",
+      "previousSha256": "a3b745c123c2d6114f3617027363f6e5574ce787dcc4e6ca89120b0c98821ee1",
+      "currentSha256": "8de643e41d6e870bbb3d61d27cd0d17eaa7b297741cd6977e53f9d2828340d12",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "0",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-join-outcomes",
+      "previousSha256": "b4e10fc28ad975380e39994574da3169f2ab9bf62e42fd0d3cc621eabe615b31",
+      "currentSha256": "d3d1dd78abc3b4444d9f75125b767da8ed23490973e1c1fad47bbac00e00c445",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-bounded-channels",
+      "previousSha256": "55cdba23b4aee4de745fdf12e2e00cf32979525c9e0802919217906e5d685148",
+      "currentSha256": "3c47abe211077089847fb1d655102e003e01318ec000e1b25a580993af73c98c",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "2",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-reservation-cancellation",
+      "previousSha256": "2f6a764bd65860548c2b972119cf22f26fc30bf5f76f5650c2c8e35edf687dd3",
+      "currentSha256": "0fe87b3d7836820aa7d5e15b011d50f280f551cfbc92f307186af317bce60b85",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "2",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-timeouts",
+      "previousSha256": "9208157df8b4841b68463998960d007327bb6e7192981239e5976a92412fc4a0",
+      "currentSha256": "950ab61a4a1ee8ad2661b590429b8ebc372e3fb8178d9bce56ceb5b61b6281ad",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "2",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-select-cancellation",
+      "previousSha256": "c482190777c5482a51271722bd52df9b6e4be10229a87456980e57dd009cc2e8",
+      "currentSha256": "03a24559038409515a86cbd9d6f221a15f3c7d63ee636417eabc5628698d5c68",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-graceful-shutdown",
+      "previousSha256": "8ee81b3d15a3fe593fdb8b6ea9471a658e2fa3f6364aea92d1182615fd5695ec",
+      "currentSha256": "ff0880066ace0f40389cb99b20d107c23623d3d642a4810392dca194408d3002",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-async-read-write",
+      "previousSha256": "e7948f5fe71ca20239cc3279a526b27485e3f8a6729b881144fab5b91a083cca",
+      "currentSha256": "9591ce237ddb49e818cc7870215557e75e96aaa175243003db932a95a0b8ca7a",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-framing-eof",
+      "previousSha256": "a96366d97e282088dcb21c2e59adb7522ec0c54b451f2eb5cfa81c779d639c48",
+      "currentSha256": "443897c58dbe12df0301e3238814fff765cc5eac8fb638c73e1bc4fe7004974d",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-retained-frame-progress",
+      "previousSha256": "f6e61dc45a170530f89648943fdd0a51787076c83754a49260753591937e2be1",
+      "currentSha256": "02597444f2aa095e07ce317a739acf6e57bd098c39d267f05fba2b3b5f7bde24",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "2",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-stream-next",
+      "previousSha256": "d6c16ba25316ce0ba062b8a9ae631eda50afdf72d6554ab8b6177e1700addfbd",
+      "currentSha256": "8df42ae42846a2b645881aad7f98a4f31f85ef3169c2f1418c2adec7504df672",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-receiver-stream-drain",
+      "previousSha256": "c17eed46993665fa5bc43853a037a75dac102c6a07582dd2ab8d891fa0b15ba4",
+      "currentSha256": "e45ce825a2160f17617d8d6342b071387aadbbeed8466944b836f8e61c5b553d",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-spawn-blocking-boundary",
+      "previousSha256": "554f68b47546783e0808c1b6d0b3142923c49e6d50cefded851187537762b532",
+      "currentSha256": "4d1ea4d6293aac33bbb832996e30f34d4445f29c2bd703b69a67103cbb35f7a9",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "2",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-blocking-cooperative-stop",
+      "previousSha256": "a577baa8ba1c2220bba4715666759bdb4873ba60053ff0966f312f9f8212e92e",
+      "currentSha256": "fad70fc1be72ec3354e9983e3dae023cad8cc9c3677fbee7c815e1ab33894006",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "5",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-tcp-connect",
+      "previousSha256": "18269831435006580afecc186a84b7ab0626a5b9f7b81ad8043f5330a3ef5756",
+      "currentSha256": "6f0d4180e666eac0167660c154493ee1b96e32a5b3e1a481d693683ca06636fe",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-tcp-half-close",
+      "previousSha256": "94a05e337d1cbde81392ca3fae35154c316497087bce83b61d68ab73fff99a1a",
+      "currentSha256": "1792cdbc07a0778d609995c86de7e3929fe240350a9ac74c66399060ec97f125",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-frame-deadlines",
+      "previousSha256": "1cc133ffce59e1dd443a423de3156f28941e8b701eb29a6b17531139e98ca1ab",
+      "currentSha256": "5864e73b7e32db6696e7001b2c43852369507dd12cc24b50d32e29f9f5f457d9",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "lessons",
+      "id": "tokio-admission-lifecycle",
+      "previousSha256": "6ca34135d1c10e0f6c04cf4cccb8d5ef8d41451cb9bafc80dfd52654e74e1323",
+      "currentSha256": "63406b83ab3dff919857222f49684c077278434401a5c828ab6a3fb778dbfa7c",
+      "changes": [
+        {
+          "path": [
+            "steps",
+            "1",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "3",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        },
+        {
+          "path": [
+            "steps",
+            "4",
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "project",
+      "previousSha256": "67a0bcfa8fe0b64b9c873bc252ac20112e08590686662572156175a75be77f3d",
+      "currentSha256": "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+      "changes": [
+        {
+          "path": [
+            "package",
+            "files",
+            "0",
+            "starter"
+          ],
+          "previous": "[package]\nname = \"number-guessing\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[dependencies]\nrand = { version = \"=0.10.2\", default-features = false, features = [\"thread_rng\"] }\n\n[lints.rust]\nunsafe_code = \"forbid\"\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "starter"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"cfg-if\"\nversion = \"1.0.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801\"\n\n[[package]]\nname = \"chacha20\"\nversion = \"0.10.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06\"\ndependencies = [\n \"cfg-if\",\n \"cpufeatures\",\n \"rand_core\",\n]\n\n[[package]]\nname = \"cpufeatures\"\nversion = \"0.3.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566\"\ndependencies = [\n \"libc\",\n]\n\n[[package]]\nname = \"getrandom\"\nversion = \"0.4.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099\"\ndependencies = [\n \"cfg-if\",\n \"libc\",\n \"r-efi\",\n \"rand_core\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.189\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2\"\n\n[[package]]\nname = \"number-guessing\"\nversion = \"1.0.0\"\ndependencies = [\n \"rand\",\n]\n\n[[package]]\nname = \"r-efi\"\nversion = \"6.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf\"\n\n[[package]]\nname = \"rand\"\nversion = \"0.10.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c7f5fa3a058cd35567ef9bfa5e75732bee0f9e4c55fa90477bef2dfcdbc4be80\"\ndependencies = [\n \"chacha20\",\n \"getrandom\",\n \"rand_core\",\n]\n\n[[package]]\nname = \"rand_core\"\nversion = \"0.10.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69\"\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "2",
+            "starter"
+          ],
+          "previous": "# Number Guessing+\n\nUruchom zwykłą grę z losowym sekretem:\n\n    cargo run --locked --\n\nDla każdej gry losowana jest jedna liczba od 1 do 100. To nie jest obietnica kryptograficznej\nlosowości ani powtarzalnej sekwencji między wersjami rand.\n\nAby uzyskać powtarzalny transkrypt ćwiczenia, użyj:\n\n    cargo run --locked -- --secret 42\n\nOpcja --attempts N ustawia od jednej do dwudziestu prób; domyślnie jest ich sześć.\nBłędna konfiguracja wypisuje usage na stderr i kończy program kodem 2 przed startem gry.\n\nBiblioteka przyjmuje tylko dziesiętne cyfry ASCII albo małą literę q, rozdziela błędy\nparsera od błędów I/O i ogranicza surową linię do 128 bajtów przed LF. Niepoprawny tekst lub liczba poza zakresem\nnie zużywa próby. Adapter strumienia ogranicza własny odczyt, ale nie może ograniczyć\nalokacji wykonanych wewnątrz dowolnego BufRead przekazanego przez wywołującego.\n\nSprawdzenia: cargo fmt --check, cargo check --locked, cargo test --locked, cargo test --doc --locked oraz cargo clippy --all-targets -- -D warnings.\n\nŹródła przejrzane 2026-09-13: rozdział Rust Book o grze w zgadywanie, manifest rand\n0.10.2 oraz dokumentacja random_range/ThreadRng i książka o powtarzalności Rust Rand.\n"
+        }
+      ]
+    },
+    {
+      "registry": "projects",
+      "id": "number-guessing-result-message",
+      "previousSha256": "67a0bcfa8fe0b64b9c873bc252ac20112e08590686662572156175a75be77f3d",
+      "currentSha256": "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+      "changes": [
+        {
+          "path": [
+            "package",
+            "files",
+            "0",
+            "starter"
+          ],
+          "previous": "[package]\nname = \"number-guessing\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[dependencies]\nrand = { version = \"=0.10.2\", default-features = false, features = [\"thread_rng\"] }\n\n[lints.rust]\nunsafe_code = \"forbid\"\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "starter"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"cfg-if\"\nversion = \"1.0.4\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801\"\n\n[[package]]\nname = \"chacha20\"\nversion = \"0.10.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06\"\ndependencies = [\n \"cfg-if\",\n \"cpufeatures\",\n \"rand_core\",\n]\n\n[[package]]\nname = \"cpufeatures\"\nversion = \"0.3.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"5ca28b0ae3115b884660db4118d803791fd6756b6e88f39c0f3f7859060d7566\"\ndependencies = [\n \"libc\",\n]\n\n[[package]]\nname = \"getrandom\"\nversion = \"0.4.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099\"\ndependencies = [\n \"cfg-if\",\n \"libc\",\n \"r-efi\",\n \"rand_core\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.189\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2\"\n\n[[package]]\nname = \"number-guessing\"\nversion = \"1.0.0\"\ndependencies = [\n \"rand\",\n]\n\n[[package]]\nname = \"r-efi\"\nversion = \"6.0.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf\"\n\n[[package]]\nname = \"rand\"\nversion = \"0.10.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c7f5fa3a058cd35567ef9bfa5e75732bee0f9e4c55fa90477bef2dfcdbc4be80\"\ndependencies = [\n \"chacha20\",\n \"getrandom\",\n \"rand_core\",\n]\n\n[[package]]\nname = \"rand_core\"\nversion = \"0.10.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"63b8176103e19a2643978565ca18b50549f6101881c443590420e4dc998a3c69\"\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "2",
+            "starter"
+          ],
+          "previous": "# Number Guessing+\n\nUruchom zwykłą grę z losowym sekretem:\n\n    cargo run --locked --\n\nDla każdej gry losowana jest jedna liczba od 1 do 100. To nie jest obietnica kryptograficznej\nlosowości ani powtarzalnej sekwencji między wersjami rand.\n\nAby uzyskać powtarzalny transkrypt ćwiczenia, użyj:\n\n    cargo run --locked -- --secret 42\n\nOpcja --attempts N ustawia od jednej do dwudziestu prób; domyślnie jest ich sześć.\nBłędna konfiguracja wypisuje usage na stderr i kończy program kodem 2 przed startem gry.\n\nBiblioteka przyjmuje tylko dziesiętne cyfry ASCII albo małą literę q, rozdziela błędy\nparsera od błędów I/O i ogranicza surową linię do 128 bajtów przed LF. Niepoprawny tekst lub liczba poza zakresem\nnie zużywa próby. Adapter strumienia ogranicza własny odczyt, ale nie może ograniczyć\nalokacji wykonanych wewnątrz dowolnego BufRead przekazanego przez wywołującego.\n\nSprawdzenia: cargo fmt --check, cargo check --locked, cargo test --locked, cargo test --doc --locked oraz cargo clippy --all-targets -- -D warnings.\n\nŹródła przejrzane 2026-09-13: rozdział Rust Book o grze w zgadywanie, manifest rand\n0.10.2 oraz dokumentacja random_range/ThreadRng i książka o powtarzalności Rust Rand.\n"
+        }
+      ]
+    },
+    {
+      "registry": "projects",
+      "id": "tokio-pipeline",
+      "previousSha256": "3ceeb8c71f0acbed5e8a132971bde6be80bc2095f434090360bb74c8b733d2b7",
+      "currentSha256": "cd7f8c01a10bf318d1593ebfb59f4e162652226f05ab8c1b779b785b95739795",
+      "changes": [
+        {
+          "path": [
+            "package",
+            "files",
+            "0",
+            "starter"
+          ],
+          "previous": "# Laboratorium: pipeline Tokio\n\nZaprojektuj kolejkę pracy, która ma ograniczony bufor i ograniczoną liczbę aktywnych zadań. Zamknięcie ma rozliczyć każdą przyjętą wiadomość: sukces, błąd domeny, timeout lub panic. To dodatkowe laboratorium po lekcjach Tokio, a nie gotowy serwer produkcyjny.\n\n## Uruchomienie\n\nPotrzebujesz stable Rust obsługującego edition 2024. Tokio jest przypięte do 1.53.1, a Cargo.lock zachowuje zależności. Pierwsze pobranie wymaga sieci:\n\n```sh\ncargo fetch --locked\ncargo fmt --all -- --check\ncargo check --offline --locked --all-targets\ncargo test --offline --locked\ncargo clippy --offline --locked --all-targets -- -D warnings\n```\n\nUzupełnij `enqueue`, `spawn_pipeline` i `run_pipeline` w src/lib.rs. Starter kompiluje się, ale jego testy celowo zawodzą na `todo!`. Rozwiązanie referencyjne przechodzi testy i Clippy. Testy używają rzeczywistego Tokio oraz zatrzymanego zegara; sekundy w scenariuszach nie oznaczają czekania tyle czasu przy uruchomieniu. Nie zmieniaj testów, aby uzyskać zielony wynik.\n\nSamo pobranie, lokalne testy i checklisty nie naliczają mastery w aplikacji. Zaliczenie wymaga samodzielnych zadań w lekcjach. Odsłonięcie pakietu zapisuje pomoc przy powiązanych zadaniach.\n\n## Kontrakt\n\n- `Config.capacity` ogranicza bufor mpsc; `parallelism` osobno ogranicza aktywne dzieci. Obie wartości są dodatnie. Pojemność musi też mieścić się w ograniczeniach Tokio mpsc. Nie pobieraj kolejnej wiadomości, gdy wszystkie miejsca pracy są zajęte.\n- `enqueue` dostaje `&mut Option<Job<T>>`. Pusty slot to sukces, także przy zamkniętym kanale. Rezerwuj miejsce przed `take`; anulowanie oczekiwania i zamknięcie kanału pozostawiają wiadomość u wywołującego. Między `take` i wysłaniem przez Permit nie ma await.\n- `spawn_pipeline` wywołuj wewnątrz działającego runtime Tokio z obsługą czasu. Przetwarzanie każdego Job działa w osobnym zadaniu. Fabryka `process` ma granice Send + Sync i jest współdzielona przez Arc; nie wymaga Clone. Wywołanie `process(value)` następuje w dziecku, żeby jego panic też miał przypisany identyfikator zadania.\n- Deadline jest liczony osobno od rozpoczęcia pracy nad wiadomością, nie od wejścia do bufora. `Outcome` zachowuje posiadany wynik lub błąd domeny. Timeout usuwa posiadany Future pracy; `JoinFailure` zachowuje pełny JoinError, łącznie z panic payload.\n- `shutdown(self)` sygnalizuje stop, zamyka zwykłe przyjmowanie i opróżnia bufor, a następnie odbiera każdy wynik. Nie używa abort dla normalnego zamknięcia. Klony Sender mogą pozostać u producentów; późniejsze zwykłe send zwróci im niesłany Job.\n- Permit uzyskany przed close nadal może dostarczyć wiadomość. Shutdown czeka, aż taki Permit zostanie użyty lub upuszczony. Nie kończ drain po samym `is_closed()`.\n- Raport ma kolejność przyjęcia przez odbiornik, choć dzieci mogą kończyć się inaczej. Publiczne `Job.id` nie muszą być unikalne; nie wolno użyć ich jako jedynego klucza dołączenia wyników. Wewnętrzny identyfikator zadania pozwala przypisać również panic do właściwej pozycji.\n- Pusta kolejka zamyka się poprawnie. Błąd jednego dziecka nie usuwa wyników innych. Błąd samego managera jest osobnym `Err(JoinError)` z `shutdown`; nie udaj wtedy kompletnego raportu.\n\n## Granice\n\nOgraniczamy bufor i pracę w toku. Raport zachowuje wszystkie wyniki w Vec, więc całkowita pamięć rośnie z liczbą zadań. Rozszerzenie na strumień wyników wymaga osobnego protokołu odbioru i backpressure.\n\nTimeout nie wywłaszcza blokującego kodu ani Future, który długo nie oddaje sterowania. Nie cofa zewnętrznych efektów. Długie CPU, blokujące I/O oraz retry z efektami wymagają dalszych decyzji architektonicznych. Zwykłe porzucenie Pipeline wysyła sygnał przez zamknięcie oneshot, lecz odłącza JoinHandle managera; dopiero oczekiwanie na shutdown potwierdza zakończenie. Anulowanie oczekiwania na shutdown również nie potwierdza zakończenia.\n\n## Kontrpróby i transfer\n\n1. Zastąp reserve przez send po wcześniejszym take. Test anulowanej rezerwacji powinien wykryć utratę danych.\n2. Pobieraj i uruchamiaj wszystkie wiadomości bez sprawdzania parallelism. Test z kanałami release powinien ujawnić złamany limit.\n3. Zakończ po close bez drain albo zwróć wyniki w kolejności join. Testy przyjętych wiadomości i wcześniejszego Permit powinny wykazać błąd.\n4. Podaj dwa identyczne Job.id i nie-Copy błąd. Wyjaśnij, dlaczego publiczny identyfikator nie wystarcza do przechowania wszystkich wyników.\n5. Zaprojektuj strumieniowy raport i politykę dla klienta, który nie odbiera wyników. Najpierw zapisz niezmiennik oraz odpowiedzialność za każde dziecko w ADR.md.\n\nŹródła sprawdzone 12 września 2026: [mpsc Sender](https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Sender.html), [Receiver](https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html), [timeout](https://docs.rs/tokio/1.53.1/tokio/time/fn.timeout.html), [JoinSet](https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinSet.html), [select](https://docs.rs/tokio/1.53.1/tokio/macro.select.html).\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "2",
+            "starter"
+          ],
+          "previous": "[package]\nname = \"tokio-pipeline-workshop\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n\n[dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"test-util\"] }\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "3",
+            "starter"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"12df2e0110f65b775f769bb17ef989067a1d931b2eb822bd4346631eeada89f9\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed\"\ndependencies = [\n \"pin-project-lite\",\n \"tokio-macros\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"tokio-pipeline-workshop\"\nversion = \"0.1.0\"\ndependencies = [\n \"tokio\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.24\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75\"\n"
+        }
+      ]
+    },
+    {
+      "registry": "projects",
+      "id": "tokio-service",
+      "previousSha256": "edf1c4c513d2ac22c6e714f90a5f4a5f70c518d2e7cb57e8a9aa599e99d3db51",
+      "currentSha256": "2799490b42a7484893bc7cf1e1f6da97a966f8ac73c521515892a449f5e27653",
+      "changes": [
+        {
+          "path": [
+            "package",
+            "files",
+            "0",
+            "starter"
+          ],
+          "previous": "[package]\nname = \"tokio-service-workshop\"\nversion = \"0.1.0\"\nedition = \"2024\"\npublish = false\n\n[dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"io-util\", \"net\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"test-util\"] }\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "starter"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"bytes\"\nversion = \"1.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04\"\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.189\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2\"\n\n[[package]]\nname = \"mio\"\nversion = \"1.2.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"30d65c71f1ce40ab09135ce117d742b9f8a19ff91a41a8b57ed50bc2de59c427\"\ndependencies = [\n \"libc\",\n \"wasi\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"socket2\"\nversion = \"0.6.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4\"\ndependencies = [\n \"libc\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"12df2e0110f65b775f769bb17ef989067a1d931b2eb822bd4346631eeada89f9\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed\"\ndependencies = [\n \"bytes\",\n \"libc\",\n \"mio\",\n \"pin-project-lite\",\n \"socket2\",\n \"tokio-macros\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"tokio-service-workshop\"\nversion = \"0.1.0\"\ndependencies = [\n \"tokio\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.24\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75\"\n\n[[package]]\nname = \"wasi\"\nversion = \"0.11.1+wasi-snapshot-preview1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b\"\n\n[[package]]\nname = \"windows-link\"\nversion = \"0.2.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5\"\n\n[[package]]\nname = \"windows-sys\"\nversion = \"0.61.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc\"\ndependencies = [\n \"windows-link\",\n]\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "8",
+            "starter"
+          ],
+          "previous": "# Laboratorium: serwis TCP\n\nZbuduj lokalną usługę Tokio, która przyjmuje jedną ramkę na połączenie TCP. To laboratorium uczy granic ownershipu, admission i shutdown; nie jest serwerem do wdrożenia.\n\n## Uruchomienie\n\nPotrzebujesz stable Rust z edition 2024. Tokio jest przypięte dokładnie do 1.53.1, a Cargo.lock jest częścią pakietu. Pierwsze pobranie zależności może wymagać internetu:\n\n```sh\ncargo fetch --locked\ncargo fmt --all -- --check\ncargo check --offline --locked --all-targets\ncargo test --offline --locked\ncargo clippy --offline --locked --all-targets -- -D warnings\ncargo run --offline --locked\n```\n\nStarter kompiluje się, lecz testy zatrzymują się na celowych `todo!`. Nie zmieniaj testów, aby uzyskać zielony wynik. Referencja uruchamia lokalny klient i serwer na IPv4 loopback oraz kończy je przez jawny owner shutdown.\n\n## Protokół i deadline\n\nPołączenie obsługuje **dokładnie jedną** ramkę żądania i jedną ramkę odpowiedzi, a następnie handler kończy stream. Ramka ma dwubajtową długość big-endian `u16`, po niej dokładnie tyle bajtów payloadu. TCP jest strumieniem: odczyt może zwrócić dowolny fragment, a pojedynczy write nie wyznacza granicy wiadomości.\n\n`max_frame_bytes` jest dodatnim limitem polityki. Długość wejścia jest sprawdzona przed alokacją payloadu; długość wyjścia przed wysłaniem nagłówka. Odpowiedź ma zawsze pierwszy bajt statusu, dlatego udany payload procesora może mieć najwyżej `max_frame_bytes - 1` bajtów. Czyste EOF przed pierwszym bajtem, ucięta ramka, I/O, przekroczenie limitu i deadline pozostają odrębnymi wynikami. Udany write/flush oznacza tylko lokalne I/O, nie przetworzenie przez zdalną aplikację.\n\nKażdy limit liczbowy musi być dodatni i nie większy niż `Semaphore::MAX_PERMITS`; `request_deadline` jest dodatni i nie większy niż `MAX_REQUEST_DEADLINE` (24 godziny). Walidacja odrzuca przekroczenia przed utworzeniem listenera lub managera, więc nie polega na panicu wewnętrznego kanału, semaphore albo przepełnieniu `Instant`.\n\nW chwili wejścia handler tworzy jeden absolutny `Instant`. Ten sam deadline obejmuje odczyt ramki, oczekiwanie na miejsce w queue, oczekiwanie na wynik blocking work oraz zapis odpowiedzi. Po deadline połączenie jest terminalne; nie odnawiaj budżetu na każdy chunk i nie wznawiaj częściowo wysłanej ramki.\n\n## Limity i własność\n\n- `admitted_connections` rezerwuje permit **przed** `accept`. Permit połączenia należy do handlera i zwalnia się dopiero, gdy handler kończy socket. Kernelowy listen backlog jest odrębną kolejką i nie jest licznikiem active handlerów.\n- `queued_work` ogranicza `mpsc`. Handler może czekać na jego miejsce, ale liczba handlerów jest już ograniczona admission; nie tworzymy osobnego taska czekającego na semaphore.\n- `active_workers` ogranicza osobny `Semaphore`. Manager odbiera nową pracę tylko gdy ma miejsce w swoim `JoinSet`, a następnie przenosi `OwnedSemaphorePermit` do closure `spawn_blocking`.\n- Wyrzucony network waiter lub timeout klienta może porzucić oneshot odpowiedzi. Nie porzuca to `JoinHandle` rozpoczętej closure i nie zwalnia jej worker permitu. Manager zatrzymuje go dopiero po prawdziwym join.\n\nProcesor jest współdzielonym `Arc<dyn Processor>`; manager nie wymaga `Clone` od kodu użytkownika. Kontrakt procesora jest skończony: closure ma sama zwrócić wynik. Nie ma obietnicy, że shutdown zakończy się w skończonym czasie dla arbitralnego blocking code, którego nie da się współpracująco zakończyć.\n\n## Odpowiedzi i raport\n\nKażda odpowiedź ma rozróżnialny tag: `O || payload` oznacza sukces, `E` błąd domenowy, `J` panic lub anulowaną closure, a `I` naruszenie wewnętrznego invariant managera. Błąd domenowy jest zużywany na granicy worker/klient, więc raport zachowuje licznik `rejected`; pełny `JoinError` zostaje własnością managera w `worker_join_failures`. I/O i protocol errors pozostają własnością `ConnectionOutcome`. Dzięki temu ten sam nie-`Clone` domain error lub `JoinError` nie jest fikcyjnie duplikowany dla klienta i raportu.\n\n`ServiceReport` przechowuje wszystkie connection outcomes oraz JoinErrors. Limity chronią bieżące połączenia, queue i workers, ale całkowita pamięć raportu rośnie z liczbą obsłużonych połączeń. Przy fatalnym błędzie accept usługa nadal dołącza zaakceptowane handlery, a potem zamyka i drenuje pool. Przy nieoczekiwanym błędzie samego managera raport podaje `unstarted_after_manager_failure` oraz `started_may_remain_unjoined_after_manager_failure`; taka ścieżka nie udaje kompletnego draina.\n\n## Shutdown\n\n`serve_until` ma owner sygnału stop. Po stopie przestaje rezerwować admission, upuszcza listener, dołącza wszystkie zaakceptowane handlery, dopiero potem upuszcza sender kolejki, drenuje ją i odbiera wszystkie rozpoczęte blocking jobs. Sam Drop `JoinHandle`, porzucenie oneshot albo timeout oczekiwania nie są dowodem zakończenia. Nie używaj abort jako substytutu tego protokołu.\n\n## Kontrpróby\n\n1. Nabądź connection permit po `accept`: wielu klientów może już przejść do handlerów mimo limitu.\n2. Spawnuj task przed worker semaphore: liczba czekających tasków staje się nową nieograniczoną kolejką.\n3. Trzymaj worker permit w async waiterze: timeout klienta wpuszcza kolejną closure, choć pierwsza nadal działa.\n4. Zastosuj deadline do każdego `read` osobno: wolne, częściowe ramki obchodzą budżet całego żądania.\n5. Zakończ service po Drop listenera: pozostawiasz aktywne sockety, queue lub closure bez join.\n\nPlik `tests/mutants.rs` zawiera trzy kompilujące się, celowo błędne kontrprzykłady. Są ignorowane podczas zwykłego testu; każde polecenie niżej powinno zakończyć się konkretną nieudaną asercją dopiero po zwolnieniu swoich testowych closures:\n\n```sh\ncargo test --offline --locked --test mutants renewing_the_frame_deadline_per_chunk_accepts_too_much_elapsed_time -- --ignored --exact\ncargo test --offline --locked --test mutants releasing_a_worker_permit_before_the_blocking_closure_returns_breaks_the_limit -- --ignored --exact\ncargo test --offline --locked --test mutants dropping_a_blocking_handle_is_not_a_completed_shutdown -- --ignored --exact\n```\n\nŹródła sprawdzone 13 września 2026: [TcpListener](https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpListener.html), [TcpStream](https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpStream.html), [AsyncReadExt](https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncReadExt.html), [timeout_at](https://docs.rs/tokio/1.53.1/tokio/time/fn.timeout_at.html), [Semaphore](https://docs.rs/tokio/1.53.1/tokio/sync/struct.Semaphore.html), [spawn_blocking](https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn_blocking.html), [JoinSet](https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinSet.html).\n"
+        }
+      ]
+    },
+    {
+      "registry": "projects",
+      "id": "service-operations",
+      "previousSha256": "00cb75625061ba19faf09d3f0f4e12f05b3f35b4e6924f3ba7956620e11c1f2d",
+      "currentSha256": "9ff4895fdfdc1a91dd07995ad67ca98393b373beef41a1e4beb4ad6a0a72f247",
+      "changes": [
+        {
+          "path": [
+            "constraints",
+            "1"
+          ],
+          "previous": "Tokio jest przypięte dokładnie do 1.53.1, a verifier kopiuje wyłącznie autorski solution archive."
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "0",
+            "starter"
+          ],
+          "previous": "[package]\nname = \"service-operations-workshop\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"test-util\"] }\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "0",
+            "solution"
+          ],
+          "previous": "[package]\nname = \"service-operations-workshop\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"test-util\"] }\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "starter"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"service-operations-workshop\"\nversion = \"1.0.0\"\ndependencies = [\n \"tokio\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed\"\ndependencies = [\n \"pin-project-lite\",\n \"tokio-macros\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954\"\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "solution"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"service-operations-workshop\"\nversion = \"1.0.0\"\ndependencies = [\n \"tokio\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed\"\ndependencies = [\n \"pin-project-lite\",\n \"tokio-macros\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954\"\n"
+        }
+      ]
+    },
+    {
+      "registry": "projects",
+      "id": "durable-log-service",
+      "previousSha256": "31112811db9a6f877732d5a7ed6a8374daa64dcd9f2cdb8de5fc17bb698ed7ea",
+      "currentSha256": "f60bdfb2bb778e57f08de07665baaa6c6060ec495271b6ef333a50e088b3b494",
+      "changes": [
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "starter"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"bitflags\"\nversion = \"2.13.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06\"\n\n[[package]]\nname = \"bytes\"\nversion = \"1.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04\"\n\n[[package]]\nname = \"cc\"\nversion = \"1.4.7\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"54413ede23c2daf518f35156dfde027feb2374004d63bd497f983c8db9c0e313\"\ndependencies = [\n \"find-msvc-tools\",\n \"shlex\",\n]\n\n[[package]]\nname = \"fallible-iterator\"\nversion = \"0.3.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"2acce4a10f12dc2fb14a218589d4f1f62ef011b2d0cc4b3cb1bba8e94da14649\"\n\n[[package]]\nname = \"fallible-streaming-iterator\"\nversion = \"0.1.9\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a\"\n\n[[package]]\nname = \"find-msvc-tools\"\nversion = \"0.1.13\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ef25905e51abafe4dcea6c15fec58c57b601cdbd0ee53d22ea1d3016c587d39b\"\n\n[[package]]\nname = \"ingest-core\"\nversion = \"1.0.0\"\n\n[[package]]\nname = \"ingest-service\"\nversion = \"1.0.0\"\ndependencies = [\n \"ingest-core\",\n \"ingest-store\",\n \"tokio\",\n]\n\n[[package]]\nname = \"ingest-store\"\nversion = \"1.0.0\"\ndependencies = [\n \"ingest-core\",\n \"rusqlite\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.189\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2\"\n\n[[package]]\nname = \"libsqlite3-sys\"\nversion = \"0.38.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f1d20bef17f513b9b3004532233187769cd072d790971f4e4da0e346eb6401e8\"\ndependencies = [\n \"cc\",\n \"pkg-config\",\n \"vcpkg\",\n]\n\n[[package]]\nname = \"mio\"\nversion = \"1.2.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8\"\ndependencies = [\n \"libc\",\n \"wasi\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"pkg-config\"\nversion = \"0.3.34\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"rusqlite\"\nversion = \"0.40.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"23f2a97da3e3873c73cb2a2e71b35c40ff95e0b1eefa8d72d8499a6928c3b5b3\"\ndependencies = [\n \"bitflags\",\n \"fallible-iterator\",\n \"fallible-streaming-iterator\",\n \"libsqlite3-sys\",\n \"smallvec\",\n]\n\n[[package]]\nname = \"shlex\"\nversion = \"2.0.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba\"\n\n[[package]]\nname = \"smallvec\"\nversion = \"1.16.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ba467056f1b547ed52077911161fc86985becbc60e8e1857c8a144dab0def891\"\n\n[[package]]\nname = \"socket2\"\nversion = \"0.6.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4\"\ndependencies = [\n \"libc\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed\"\ndependencies = [\n \"bytes\",\n \"libc\",\n \"mio\",\n \"pin-project-lite\",\n \"socket2\",\n \"tokio-macros\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954\"\n\n[[package]]\nname = \"vcpkg\"\nversion = \"0.2.15\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426\"\n\n[[package]]\nname = \"wasi\"\nversion = \"0.11.1+wasi-snapshot-preview1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b\"\n\n[[package]]\nname = \"windows-link\"\nversion = \"0.2.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5\"\n\n[[package]]\nname = \"windows-sys\"\nversion = \"0.61.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc\"\ndependencies = [\n \"windows-link\",\n]\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "1",
+            "solution"
+          ],
+          "previous": "# This file is automatically @generated by Cargo.\n# It is not intended for manual editing.\nversion = 4\n\n[[package]]\nname = \"bitflags\"\nversion = \"2.13.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06\"\n\n[[package]]\nname = \"bytes\"\nversion = \"1.12.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04\"\n\n[[package]]\nname = \"cc\"\nversion = \"1.4.7\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"54413ede23c2daf518f35156dfde027feb2374004d63bd497f983c8db9c0e313\"\ndependencies = [\n \"find-msvc-tools\",\n \"shlex\",\n]\n\n[[package]]\nname = \"fallible-iterator\"\nversion = \"0.3.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"2acce4a10f12dc2fb14a218589d4f1f62ef011b2d0cc4b3cb1bba8e94da14649\"\n\n[[package]]\nname = \"fallible-streaming-iterator\"\nversion = \"0.1.9\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a\"\n\n[[package]]\nname = \"find-msvc-tools\"\nversion = \"0.1.13\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ef25905e51abafe4dcea6c15fec58c57b601cdbd0ee53d22ea1d3016c587d39b\"\n\n[[package]]\nname = \"ingest-core\"\nversion = \"1.0.0\"\n\n[[package]]\nname = \"ingest-service\"\nversion = \"1.0.0\"\ndependencies = [\n \"ingest-core\",\n \"ingest-store\",\n \"tokio\",\n]\n\n[[package]]\nname = \"ingest-store\"\nversion = \"1.0.0\"\ndependencies = [\n \"ingest-core\",\n \"rusqlite\",\n]\n\n[[package]]\nname = \"libc\"\nversion = \"0.2.189\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2\"\n\n[[package]]\nname = \"libsqlite3-sys\"\nversion = \"0.38.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f1d20bef17f513b9b3004532233187769cd072d790971f4e4da0e346eb6401e8\"\ndependencies = [\n \"cc\",\n \"pkg-config\",\n \"vcpkg\",\n]\n\n[[package]]\nname = \"mio\"\nversion = \"1.2.3\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8\"\ndependencies = [\n \"libc\",\n \"wasi\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"pin-project-lite\"\nversion = \"0.2.17\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd\"\n\n[[package]]\nname = \"pkg-config\"\nversion = \"0.3.34\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548\"\n\n[[package]]\nname = \"proc-macro2\"\nversion = \"1.0.107\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9\"\ndependencies = [\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"quote\"\nversion = \"1.0.47\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001\"\ndependencies = [\n \"proc-macro2\",\n]\n\n[[package]]\nname = \"rusqlite\"\nversion = \"0.40.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"23f2a97da3e3873c73cb2a2e71b35c40ff95e0b1eefa8d72d8499a6928c3b5b3\"\ndependencies = [\n \"bitflags\",\n \"fallible-iterator\",\n \"fallible-streaming-iterator\",\n \"libsqlite3-sys\",\n \"smallvec\",\n]\n\n[[package]]\nname = \"shlex\"\nversion = \"2.0.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba\"\n\n[[package]]\nname = \"smallvec\"\nversion = \"1.16.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ba467056f1b547ed52077911161fc86985becbc60e8e1857c8a144dab0def891\"\n\n[[package]]\nname = \"socket2\"\nversion = \"0.6.5\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4\"\ndependencies = [\n \"libc\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"syn\"\nversion = \"3.0.6\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"unicode-ident\",\n]\n\n[[package]]\nname = \"tokio\"\nversion = \"1.53.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed\"\ndependencies = [\n \"bytes\",\n \"libc\",\n \"mio\",\n \"pin-project-lite\",\n \"socket2\",\n \"tokio-macros\",\n \"windows-sys\",\n]\n\n[[package]]\nname = \"tokio-macros\"\nversion = \"2.7.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e\"\ndependencies = [\n \"proc-macro2\",\n \"quote\",\n \"syn\",\n]\n\n[[package]]\nname = \"unicode-ident\"\nversion = \"1.0.26\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954\"\n\n[[package]]\nname = \"vcpkg\"\nversion = \"0.2.15\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426\"\n\n[[package]]\nname = \"wasi\"\nversion = \"0.11.1+wasi-snapshot-preview1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ccf3ec651a847eb01de73ccad15eb7d99f80485de043efb2f370cd654f4ea44b\"\n\n[[package]]\nname = \"windows-link\"\nversion = \"0.2.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5\"\n\n[[package]]\nname = \"windows-sys\"\nversion = \"0.61.2\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc\"\ndependencies = [\n \"windows-link\",\n]\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "2",
+            "starter"
+          ],
+          "previous": "# Trwały dziennik zdarzeń\n\nTo jest ograniczony projekt Cargo po polsku. Zawiera trzy człony: czysty model\nzdarzenia, właściciela SQLite oraz lokalny serwis TCP. Aplikacja kursu udostępnia\npliki do pobrania i nie uruchamia kodu uczącego się.\n\nNa początku uruchom `cargo fmt --all -- --check`, `cargo check --workspace --locked`\ni `cargo test --workspace --locked`. Następnie przeczytaj testy kontraktu,\nADR-y i pliki zadań. Uzupełnij własne niezmienniki dla granicy domeny,\nponowienia, wygaszania, protokołu, awarii i wydania; zachowaj wynik polecenia\noraz wersję kompilatora po każdej zmianie.\n\nPaczka używa Rust 2024, minimalnej wersji Rust 1.85.0, rusqlite 0.40.2 z\nkompilowanym SQLite oraz Tokio 1.53.1. Granice procesu, danych i wydania są\nczęścią ćwiczenia. Nie uruchamiaj publicznego nasłuchu i nie traktuj pobrania\npliku jako dowodu samodzielności.\n\n## Zmiana wymagania: limit K na strumień\n\nRozszerz własny lokalny projekt o konfigurowalny limit K dla nowo zatwierdzanych\nrekordów każdego strumienia. Wcześniej zatwierdzone rekordy liczą się do K. Dla\n`K=1` pokaż pierwszy zapis, identyczną idempotentną ponowną próbę przy pełnym\nlimicie, konflikt przy ponownym użyciu tego samego ID oraz odrzucenie nowego ID\nprzy pełnym limicie. Odrzucenie nie może utworzyć zatwierdzonego wiersza ani\npotwierdzenia sukcesu; identyczna próba nadal jest sukcesem, a konflikt pozostaje konfliktem.\nIstniejące żądania klienta pozostają zgodne poza opisanym odrzuceniem z powodu\npełnego limitu.\n\nPokaż `K=2` dla co najmniej dwóch strumieni i sprawdź, że restart zachowuje\nrozliczenie pojemności przy pełnym limicie oraz że awaria magazynu nie tworzy\nczęściowego zapisu. Próby jednoczesne dodaj tylko wtedy, gdy deklarujesz\nobsługę współbieżności; implementacja jednoprocesowa może\nopisać i zademonstrować swoją granicę. Wybierz miejsce reguły i uzasadnij granicę transakcji\noraz przyjęcia żądania.\n\nPracuj z CHANGE-REVIEW.md: zidentyfikuj własne źródła, porównaj dwa projekty,\nzachowaj rzeczywisty błąd i wynik poprawki, potem oddaj etap A do przeglądu.\nEtap B obniża i podnosi K po ponownym otwarciu. Zapisz wcześniejszą ekspozycję;\nznana zmiana wymagania jest ćwiczeniem, nie dowodem niewidzianego transferu.\n\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "2",
+            "solution"
+          ],
+          "previous": "# Trwały dziennik zdarzeń\n\nTo jest ograniczony projekt Cargo po polsku. Zawiera trzy człony: czysty model\nzdarzenia, właściciela SQLite oraz lokalny serwis TCP. Aplikacja kursu udostępnia\npliki do pobrania i nie uruchamia kodu uczącego się.\n\nNa początku uruchom `cargo fmt --all -- --check`, `cargo check --workspace --locked`\ni `cargo test --workspace --locked`. Binarka `ingest-service` przyjmuje\n`--db PATH --bind 127.0.0.1:PORT`, wypisuje rzeczywisty adres jako `READY`\npo otwarciu magazynu i kończy się po EOF na stdin. Klient przyjmuje jawny adres,\nźródło, klucz, poziom i wiadomość; kod 0 oznacza receipt, 2 odrzucenie domenowe,\na 3 nieznany wynik transportu. Pracuj według testów kontraktu, a po każdej\nzmianie zachowaj wynik polecenia oraz wersję kompilatora.\n\nPaczka używa Rust 2024, minimalnej wersji Rust 1.85.0, rusqlite 0.40.2 z\nkompilowanym SQLite oraz Tokio 1.53.1. Magazyn zapisuje receipt w transakcji,\nrozpoznaje bezpieczne powtórzenia i zachowuje dane po ponownym otwarciu. Nie jest to obietnica dostarczenia\nz dokładnie jednym skutkiem ani dowód bezpieczeństwa dla publicznej sieci.\n\n## Zmiana wymagania: limit K na strumień\n\nRozszerz własny lokalny projekt o konfigurowalny limit K dla nowo zatwierdzanych\nrekordów każdego strumienia. Wcześniej zatwierdzone rekordy liczą się do K. Dla\n`K=1` pokaż pierwszy zapis, identyczną idempotentną ponowną próbę przy pełnym\nlimicie, konflikt przy ponownym użyciu tego samego ID oraz odrzucenie nowego ID\nprzy pełnym limicie. To odrzucenie nie może utworzyć zatwierdzonego wiersza ani\npotwierdzenia sukcesu; identyczna próba nadal jest sukcesem, a konflikt pozostaje\nkonfliktem.\n\nPokaż `K=2` dla co najmniej dwóch strumieni i sprawdź, że restart zachowuje\nrozliczenie pojemności. Istniejące żądania klienta pozostają zgodne poza\nopisanym odrzuceniem z powodu pełnego limitu. Zbadaj awarię magazynu i brak częściowego zapisu. Próby\njednoczesne dodaj tylko przy deklarowanej obsłudze współbieżności; implementacja\njednoprocesowa może opisać i zademonstrować swoją granicę.\n\nWybierz miejsce reguły oraz uzasadnij granicę transakcji i przyjęcia żądania.\nPrzygotuj własne testy i dowody dla sekwencji `K=1`, dwóch strumieni przy `K=2`,\nrestartu, awarii magazynu i zadeklarowanej granicy współbieżności. Pobrany pakiet\noraz znane studium przypadku są pomocą, nie\nautomatycznym wykonaniem kodu uczącego się ani zaliczeniem.\n\nPracuj z CHANGE-REVIEW.md: zidentyfikuj własne źródła, porównaj dwa projekty,\nzachowaj rzeczywisty błąd i wynik poprawki, potem oddaj etap A do przeglądu.\nEtap B obniża i podnosi K po ponownym otwarciu. Zapisz wcześniejszą ekspozycję;\nznana zmiana wymagania jest ćwiczeniem, nie dowodem niewidzianego transferu.\n\n## Granica ujawnionej referencji autora kursu\n\nOpcjonalna ścieżka referencyjna to Store::open_with_stream_limit(path,\nmax_events, per_stream_limit), gdzie per_stream_limit ma typ NonZeroUsize,\na strumieniem jest Event.source. Store::open(path, max_events) zachowuje\nwyłącznie dotychczasowy limit globalny. Config, protokół i domyślny serwis\npozostają bez zmian; domyślny serwis nie włącza limitu K na strumień.\n\ncrates/ingest-store/tests/stream_capacity.rs sprawdza referencyjny Store,\nw tym zamknięcie i ponowne otwarcie z innym K. Nie jest to test twojego kodu\nani dowód integracji klient–serwis dla nowej reguły. Samodzielnie wybierasz\nAPI własnego rozwiązania i sprawdzasz całą zadeklarowaną ścieżkę działania.\n\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "24",
+            "starter"
+          ],
+          "previous": "[package]\nname = \"ingest-service\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[dependencies]\ningest-core = { path = \"../ingest-core\" }\ningest-store = { path = \"../ingest-store\" }\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"net\", \"io-util\", \"io-std\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"net\", \"io-util\", \"io-std\", \"test-util\"] }\n\n[lints.rust]\nunsafe_code = \"forbid\"\n"
+        },
+        {
+          "path": [
+            "package",
+            "files",
+            "24",
+            "solution"
+          ],
+          "previous": "[package]\nname = \"ingest-service\"\nversion = \"1.0.0\"\nedition = \"2024\"\nrust-version = \"1.85.0\"\npublish = false\n\n[dependencies]\ningest-core = { path = \"../ingest-core\" }\ningest-store = { path = \"../ingest-store\" }\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"net\", \"io-util\", \"io-std\"] }\n\n[dev-dependencies]\ntokio = { version = \"=1.53.1\", default-features = false, features = [\"macros\", \"rt\", \"sync\", \"time\", \"net\", \"io-util\", \"io-std\", \"test-util\"] }\n\n[lints.rust]\nunsafe_code = \"forbid\"\n"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-runtime-entry",
+      "previousSha256": "4c5007ee52448e52ad080faeba57420afd5842b759a02d31609b3e700fe30d2a",
+      "currentSha256": "75aef7f1c45b313916bb9975d01c44542c38a5485ee54079a39c0c9f9f83e1cb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-spawn-join",
+      "previousSha256": "4a97f8b6e90cea888962fabf5d0469e7e64fc004bb7d05c75c75a6b91162b4bc",
+      "currentSha256": "3e6bc50d99db03e29d73788a08e005b20081d90f0f3a4ef7e1ef4085e24ef1e3",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-task-boundaries",
+      "previousSha256": "6afd1fdb2785ad36214129230e05e731c0d1ffbe04ff79e38248c283c52a5e9e",
+      "currentSha256": "c93d95fe5fc7a0087cf94fd9201f5247a06e403e34c3a8379cd0f99a98a7ebdb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-join-outcomes",
+      "previousSha256": "40c6a92ad27980e7fb3faa7b54699bc7be64f1cb6cd6eb16a92b5ab0a08d9f49",
+      "currentSha256": "757e0aca66c4bea900f1e198e5c94c765a78e069e40cc373731beccd5d32a1eb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-bounded-channels",
+      "previousSha256": "07214013e84d1773b055b85411ead0d0a7cf782a83963a59adf87254edbf96a0",
+      "currentSha256": "3b80bd4f0481536fcfe61990aa18c43319190b55c4ebb8121dac4d16ad49aa70",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-reservation-cancellation",
+      "previousSha256": "79407a3939e0dfe124a980ee17f029c25de31edf25cd1e5269cee551b3ac791b",
+      "currentSha256": "1793fc4daa5e67ccc4c2c683087d12af97ebb6ebfb8c1e00cc7764a07998c12c",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-timeouts",
+      "previousSha256": "5396224611f9c50d4ded303b2293b27fe8d4ccb23506c2c60998b0e9a1f02e67",
+      "currentSha256": "34a55b58b042e4756eeb36a069ff51cd05578a1a4f4985489077d3ef7184fd1c",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-select-cancellation",
+      "previousSha256": "1b6743de60ad099501f2414cada7b325fdda3a581c9842f329f703ff0ddce7a5",
+      "currentSha256": "4d48532d3ff005ae2a6ea21948b5c3ce6fdc498da9776ee78c6903c2764552e4",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-graceful-shutdown",
+      "previousSha256": "ce3fad448fb0113c00599e69247b4711b583edf9ae886a0356e95ab1058cc48e",
+      "currentSha256": "ad36ce4e03f509bf564a720c108f823c11f18f92a2e1b65eb75d564c9b456d30",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-duplex-read-write",
+      "previousSha256": "f8d28023b9dde5088f90d95cb14edd1c42e2fa3b297f16bc74b856edb8f473cf",
+      "currentSha256": "2938979c8127e43f9069b3e58e167c5e8778b60eeb4d578e4048a8c1c5b23632",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-bounded-frame-eof",
+      "previousSha256": "a38688b8090747f3417aec10137c01bb784a2a4f643db2e732b6d500c57a1fde",
+      "currentSha256": "acb6574d2e9bf1638893a59ce0230c05085d36c822aecc473c798d192ad43472",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-cancellation-safe-frame-progress",
+      "previousSha256": "7ca3d8cc339d2c908b41a70838b0bab4d75945ed49686d71482bfa27a4ed8c7a",
+      "currentSha256": "4c782296569727e2c8e7341d014a9cf23580d2ca63eecdf7f5f7f444af82b704",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-stream-next-pinning",
+      "previousSha256": "96f146cb2492edb8d9039151071cb090e88c598c67dfd4357c27fc19c3a6ab6d",
+      "currentSha256": "c3f7889c394b7bcea0ede17072c85a902c6fa68bc93a3db03c9ae7ab52b05dd2",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-receiver-stream-shutdown",
+      "previousSha256": "8ad8e728de469f23dfb5230872895b1a9109cb1018e92317b0046b714eaae7e7",
+      "currentSha256": "0264f50c31e869f50a115739e1080f0d35250d4a3007a33b79b938a90d922086",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-spawn-blocking-owned-work",
+      "previousSha256": "0c5d27be1257158791ed79ce3ca49123c6bc925e2f63597b0fed888a456fc387",
+      "currentSha256": "fecd479600aa95276ff824197ae78cc7f8959ba7f057acddc843467ed8ddcd67",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-blocking-cooperative-stop",
+      "previousSha256": "c90472df65b2341546e7fefd242aba36c9059fe6e361056b959e02c02e75fe35",
+      "currentSha256": "654c8ff37765d7686dba62bf4575ee6c895ee5117f0f8655fceb3ea5ff435fcb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-tcp-ownership",
+      "previousSha256": "54deb1971b8b386e7d34e211a1ca1c9ab070cbf48f0b635089fabeb0c3f5d36b",
+      "currentSha256": "f7a8a7c22b36b762d3c5d8243d0a606ae03f6babc79ee04359408d9c70c4f7d9",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-tcp-directional-shutdown",
+      "previousSha256": "76b9c95c8519ee8f85ae231742cda99708d72bf051edcc206f9b767c642c666c",
+      "currentSha256": "71a32de87d6363bb8de81d15d7a301ef5ff1e8afec971aee41bc94cd251e012a",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-frame-absolute-deadline",
+      "previousSha256": "deac8efa2eacb5a62719d083d57db3a11830f4622161524a8db843bc3ae6af18",
+      "currentSha256": "cb41d116f6c91bcd3975c0dacd628d1f009eb02ab2370076969e2bb6875a410c",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercises",
+      "id": "tokio-admission-permit-lifetime",
+      "previousSha256": "0778ee8b4d66ab92e4cb9a85c876c4d05c5edc8b563fb7e11689d5d2803e132f",
+      "currentSha256": "0f03d8a2896a7bfbc511dec794439fe53af11170b33fe7c432edd556da1fcfd2",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-runtime-entry",
+      "previousSha256": "4c5007ee52448e52ad080faeba57420afd5842b759a02d31609b3e700fe30d2a",
+      "currentSha256": "75aef7f1c45b313916bb9975d01c44542c38a5485ee54079a39c0c9f9f83e1cb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-spawn-join",
+      "previousSha256": "4a97f8b6e90cea888962fabf5d0469e7e64fc004bb7d05c75c75a6b91162b4bc",
+      "currentSha256": "3e6bc50d99db03e29d73788a08e005b20081d90f0f3a4ef7e1ef4085e24ef1e3",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-task-boundaries",
+      "previousSha256": "6afd1fdb2785ad36214129230e05e731c0d1ffbe04ff79e38248c283c52a5e9e",
+      "currentSha256": "c93d95fe5fc7a0087cf94fd9201f5247a06e403e34c3a8379cd0f99a98a7ebdb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-join-outcomes",
+      "previousSha256": "40c6a92ad27980e7fb3faa7b54699bc7be64f1cb6cd6eb16a92b5ab0a08d9f49",
+      "currentSha256": "757e0aca66c4bea900f1e198e5c94c765a78e069e40cc373731beccd5d32a1eb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-bounded-channels",
+      "previousSha256": "07214013e84d1773b055b85411ead0d0a7cf782a83963a59adf87254edbf96a0",
+      "currentSha256": "3b80bd4f0481536fcfe61990aa18c43319190b55c4ebb8121dac4d16ad49aa70",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-reservation-cancellation",
+      "previousSha256": "79407a3939e0dfe124a980ee17f029c25de31edf25cd1e5269cee551b3ac791b",
+      "currentSha256": "1793fc4daa5e67ccc4c2c683087d12af97ebb6ebfb8c1e00cc7764a07998c12c",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-timeouts",
+      "previousSha256": "5396224611f9c50d4ded303b2293b27fe8d4ccb23506c2c60998b0e9a1f02e67",
+      "currentSha256": "34a55b58b042e4756eeb36a069ff51cd05578a1a4f4985489077d3ef7184fd1c",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-select-cancellation",
+      "previousSha256": "1b6743de60ad099501f2414cada7b325fdda3a581c9842f329f703ff0ddce7a5",
+      "currentSha256": "4d48532d3ff005ae2a6ea21948b5c3ce6fdc498da9776ee78c6903c2764552e4",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-graceful-shutdown",
+      "previousSha256": "ce3fad448fb0113c00599e69247b4711b583edf9ae886a0356e95ab1058cc48e",
+      "currentSha256": "ad36ce4e03f509bf564a720c108f823c11f18f92a2e1b65eb75d564c9b456d30",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-async-read-write",
+      "previousSha256": "f8d28023b9dde5088f90d95cb14edd1c42e2fa3b297f16bc74b856edb8f473cf",
+      "currentSha256": "2938979c8127e43f9069b3e58e167c5e8778b60eeb4d578e4048a8c1c5b23632",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-framing-eof",
+      "previousSha256": "a38688b8090747f3417aec10137c01bb784a2a4f643db2e732b6d500c57a1fde",
+      "currentSha256": "acb6574d2e9bf1638893a59ce0230c05085d36c822aecc473c798d192ad43472",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-retained-frame-progress",
+      "previousSha256": "7ca3d8cc339d2c908b41a70838b0bab4d75945ed49686d71482bfa27a4ed8c7a",
+      "currentSha256": "4c782296569727e2c8e7341d014a9cf23580d2ca63eecdf7f5f7f444af82b704",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-stream-next-pinning",
+      "previousSha256": "96f146cb2492edb8d9039151071cb090e88c598c67dfd4357c27fc19c3a6ab6d",
+      "currentSha256": "c3f7889c394b7bcea0ede17072c85a902c6fa68bc93a3db03c9ae7ab52b05dd2",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-receiver-stream-shutdown",
+      "previousSha256": "8ad8e728de469f23dfb5230872895b1a9109cb1018e92317b0046b714eaae7e7",
+      "currentSha256": "0264f50c31e869f50a115739e1080f0d35250d4a3007a33b79b938a90d922086",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-spawn-blocking-owned-work",
+      "previousSha256": "0c5d27be1257158791ed79ce3ca49123c6bc925e2f63597b0fed888a456fc387",
+      "currentSha256": "fecd479600aa95276ff824197ae78cc7f8959ba7f057acddc843467ed8ddcd67",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-blocking-cooperative-stop",
+      "previousSha256": "c90472df65b2341546e7fefd242aba36c9059fe6e361056b959e02c02e75fe35",
+      "currentSha256": "654c8ff37765d7686dba62bf4575ee6c895ee5117f0f8655fceb3ea5ff435fcb",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-tcp-ownership",
+      "previousSha256": "54deb1971b8b386e7d34e211a1ca1c9ab070cbf48f0b635089fabeb0c3f5d36b",
+      "currentSha256": "f7a8a7c22b36b762d3c5d8243d0a606ae03f6babc79ee04359408d9c70c4f7d9",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-tcp-directional-shutdown",
+      "previousSha256": "76b9c95c8519ee8f85ae231742cda99708d72bf051edcc206f9b767c642c666c",
+      "currentSha256": "71a32de87d6363bb8de81d15d7a301ef5ff1e8afec971aee41bc94cd251e012a",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-frame-absolute-deadline",
+      "previousSha256": "deac8efa2eacb5a62719d083d57db3a11830f4622161524a8db843bc3ae6af18",
+      "currentSha256": "cb41d116f6c91bcd3975c0dacd628d1f009eb02ab2370076969e2bb6875a410c",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "reviewExercisesById",
+      "id": "review-tokio-admission-permit-lifetime",
+      "previousSha256": "0778ee8b4d66ab92e4cb9a85c876c4d05c5edc8b563fb7e11689d5d2803e132f",
+      "currentSha256": "0f03d8a2896a7bfbc511dec794439fe53af11170b33fe7c432edd556da1fcfd2",
+      "changes": [
+        {
+          "path": [
+            "trustedFixtureTarget"
+          ],
+          "previous": "cargo-tokio-runtime-1.53.1"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-runtime-builder",
+      "previousSha256": "c95271756a9092b311a48cae8a950fcf4989597709331052e94f7963b970b424",
+      "currentSha256": "87af2995b5ed2777c328a26fdc0e15f9b8ab081cec8ed8cdda30f9d1a2a56552",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: runtime::Builder"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/runtime/struct.Builder.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-spawn",
+      "previousSha256": "0b7a46dda1c6fcb5cd99a99e1b5023ffc6ddec5787ea3ee3699c93a8e5f1c9ef",
+      "currentSha256": "6e3be94ef00b3f169bb4c78699184a5c23b91f89e941023aad6f49cd04c32135",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: tokio::spawn"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-join-handle",
+      "previousSha256": "a36ec6c0ee7f06ac1fc863cf86bdee848cc30a1f0610715ede7b34e6a2547241",
+      "currentSha256": "013b6700f669254aa86d029e2181ffaddcd98eeabba8c0ff7fbe6f94bee55a5f",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: JoinHandle"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-task-id",
+      "previousSha256": "8b7a3b33969d52198c663cb55bf830b81167dc907e111fd05404e8af842c057e",
+      "currentSha256": "48828c6a1ded976b1f8b91bce3923eda1b6f39a5ae38595fa26ecfa70c4150a8",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: task::id"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/fn.id.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-oneshot",
+      "previousSha256": "7955eaceabc3077833f733d1d730f405eeb3a25667df0e507bfb3c4c36af59c3",
+      "currentSha256": "770acdb4ad67b967635f3b121873846ad890fbd2ba02790d70cb36d86a84db71",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: sync::oneshot"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/oneshot/index.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-mpsc-sender",
+      "previousSha256": "9040bc4a9c09ba41962fe45768d8cb74c3b912d5fdde4f51903ff0ddf28a8e87",
+      "currentSha256": "c17c044542cc5aec19887b95582a07c7d839233ed969d771a24970057ae371a2",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: mpsc::Sender"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Sender.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-mpsc-receiver",
+      "previousSha256": "81b1b0653849817a5060a3784006f6ce522c2ef39bd732fff5d585d4c89ea9e3",
+      "currentSha256": "0f65ee4e0ca699d50ddf1f3eb2eb3d9154444e20af2b230ed4b197f49b151448",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: mpsc::Receiver"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-mpsc-permit",
+      "previousSha256": "b2cc87d7f78a003d70fb83c306a97e9f0de4080149f8985c8b08b997002267b3",
+      "currentSha256": "d57477aa7d3ac925e87386158201aa4a7bc7d2596303adfbe91c9ae9a0f5799a",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: mpsc::Permit"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Permit.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-mpsc-send-error",
+      "previousSha256": "dbee8fbdb4c37703c44c78f954675fda93261faa6c76d595543646ffe8a95d7f",
+      "currentSha256": "2d632ded7404bb3c7a187b25d8e2d34e1428888b3c19f1b762e43a46bd16b32e",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: mpsc::SendError"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/error/struct.SendError.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-timeout",
+      "previousSha256": "0ab9d6a92915e69be9985ab5aad5b7bddbacb8fa35944e301171f0d9dc842ff9",
+      "currentSha256": "5ea70f14dbd9dee5ef3b3ae9fa238712730f0151372e1dc7e7fa2abfa447f645",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: time::timeout"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/time/fn.timeout.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-select",
+      "previousSha256": "746db6f272576364a6c813125fcdfc41e1980f8f5e7e1ba6174d54d496e39b0d",
+      "currentSha256": "c346d814c29d672bc9e8728d6bbbacd44f9bb402e47499eb15e16d4c73fceb07",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: tokio::select!"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/macro.select.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-join-handle-time",
+      "previousSha256": "b8427ed32e337fa091766a0a1342bb736247bbbdd047ab038be9156107a31499",
+      "currentSha256": "50fc5e008469ff96602123bf6dcaff39afdfed4f6b7b76d9239777fa260ad953",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: task::JoinHandle"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-mpsc-recv-cancellation",
+      "previousSha256": "563df65835e45d4a40ed248de7752665c64efe77bdf9bbd40b4fb072835d42c9",
+      "currentSha256": "7afac0924b04f741c1e85a1ba9840955c95695bb3d7c25866c7c7ec5e3d25dfc",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: sync::mpsc::Receiver::recv"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html#method.recv"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-oneshot-receiver-cancellation",
+      "previousSha256": "e13ffaaa5f5f0d787b1b7f82db2a72b9354aa9ca419df155565515420aff87fc",
+      "currentSha256": "0574ce3f6e88b11af040cdcceddbf3423d4adf15b64f5a44b4414e2f1a9f8caf",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: sync::oneshot::Receiver"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/oneshot/struct.Receiver.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-shutdown-mpsc-receiver-close",
+      "previousSha256": "d222f88d9a19d657af2f4d050923d728c7735109199a677ecdd4fc6500067380",
+      "currentSha256": "096298262b24c74674a04b85fd070e6665ed5ecd3d879de1e752f4aa94b5952d",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: mpsc::Receiver::close"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-shutdown-watch-receiver",
+      "previousSha256": "adedd56eff296a0c37959a6dd0ff2101ab413845006a15c3b3fd3024854ea909",
+      "currentSha256": "737eaa879a7aac1d499261f99400013e8f095198ffbde24caa5e4de61d8fc67c",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: sync::watch::Receiver"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/watch/struct.Receiver.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-shutdown-join-set",
+      "previousSha256": "bfb799c7e8e8f9d77a430bc44f8082dc31e43a8ce9539154df3a5e85533adefd",
+      "currentSha256": "1997e3e93da66219a179253624e1509cfabe74f2a0ddfde124184e0f34a86acb",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: task::JoinSet"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinSet.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-shutdown-select",
+      "previousSha256": "27bd1d06ab2cd3cf8fb7918de7fce52c794b9d5f5f888ede3e1ba37a9e9b3263",
+      "currentSha256": "a28d6e8e39a22a498a88d7d59704145e45114d056c8bf67560edfaee8ad1005a",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: select!"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/macro.select.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-async-read",
+      "previousSha256": "a578bd037d3e074e87c4108845eece5a98f5a56a3d3f42f7455f072a7d9652b8",
+      "currentSha256": "304cfc3f9b3e816fc8df245ca3a6b3abe748a8764b8bbf8db215f78ce0fc29bf",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: io::AsyncRead"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncRead.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-async-write",
+      "previousSha256": "fd8752edd824903683537f4bdfdf07246496070195d356f5906c83fcb6003523",
+      "currentSha256": "f69c5b0d107cecfef82f812670a967cf5dad137ce26f13de7acfc67a1046c562",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: io::AsyncWrite"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncWrite.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-async-read-ext",
+      "previousSha256": "a94ce3e6ecd2e2f044d0050e7759ce9e1b3328d8cafdd2d05e4053e4be885930",
+      "currentSha256": "cfe8eea19fbece4f469698d22e6be0b58f3e18c29e3acf004187d038afcca3ce",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: io::AsyncReadExt"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncReadExt.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-async-write-ext",
+      "previousSha256": "71327a969a39f57ef53511d47d7aec3d9831f6ab4e2b017048e7acfb7b910592",
+      "currentSha256": "f8193c18db3ee41670cf13d639098a28c8fcc8f5f9ac30b0e4e77f8ef8001313",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: io::AsyncWriteExt"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncWriteExt.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-duplex",
+      "previousSha256": "17bf43d0c571914ded226dc99d764a8831ea6f09f8dd6aa4807466379828748b",
+      "currentSha256": "74818d9fcd1082c21b0900f11e3d9b43c1e229849df64036bdc2858919944120",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: io::duplex"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/io/fn.duplex.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-stream-mpsc-close",
+      "previousSha256": "8c34aeddb1f9dbc678960ebdc110a421b2e3207f229660ae5419eb9b74afa795",
+      "currentSha256": "443cd7e63ba9265c84235db39795526a3e28142f7a0d1614929fd3ce0b666cc4",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: mpsc::Receiver::close"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/struct.Receiver.html#method.close"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-stream-select-cancellation",
+      "previousSha256": "30ae3707258c8726b30a2a3f6aa2cc729745d07746a2629b9eb0a363dbc04976",
+      "currentSha256": "a0b586d021acaea39fe88ef5d600e2a58514512ce95a84a73d4003b83381d06d",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: tokio::select! i cancellation safety"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/macro.select.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-blocking-spawn",
+      "previousSha256": "20e0461a544a8d97379f3f7f75e06c5f2950651bead2c90407f3e6d6e4a80e6c",
+      "currentSha256": "def3fefae660d2e9dcda8803769b365f9b921e28f63f812bd4a9b572c48184f2",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: task::spawn_blocking"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn_blocking.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-blocking-runtime-shutdown",
+      "previousSha256": "6606d3eeb9337157b68c9892b1e6e20f8e05c6ec35c24440718994fa7cfcd80a",
+      "currentSha256": "bd90dd7d617208bae6dddd5f1871d8d88279ceec1bafd54c74d8357deab65b89",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: runtime::Runtime shutdown"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/runtime/struct.Runtime.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-blocking-semaphore",
+      "previousSha256": "5f6ff5067812d6b810347da15680148b0ea16b141bba970213f4626a7bf0e67c",
+      "currentSha256": "8c3110edbbe44d82babdd759d1da5249b661e53c9904f1e74dba8696d4ef100a",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: sync::Semaphore"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/struct.Semaphore.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-blocking-join-handle",
+      "previousSha256": "5012bc771ca8ee75159d1a9b694cd9515e0a1283127e1af32ce749cf2938f3e3",
+      "currentSha256": "f2d052418b04e42bfcf058610907d8589766c6be0a3499a74b1aea9de8649489",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: task::JoinHandle"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-12"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-tcp-listener",
+      "previousSha256": "d51b8b48106acfb72b9a1c152bf5fc444e9b04b088b8627f8cb991405e039589",
+      "currentSha256": "274baa80a2fd2c5108676fb43e0a6195c1e6bb005dd722a5452818bbeb027349",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: net::TcpListener"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpListener.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-tcp-stream",
+      "previousSha256": "174e2dac3f38229e8ecbaf21a50e58d753b04d41e0d95c013bf5791995c8a57f",
+      "currentSha256": "7e79bf65553e03b97d1c53537db162763b468b0bfe1ab68a44c9babb890df2f6",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: net::TcpStream"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpStream.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-tcp-owned-write-half",
+      "previousSha256": "232c36375c24a79c10e5adc20a193be0ff502327e87a9337f137f7192ab9aa5a",
+      "currentSha256": "402202867e2b2fc0004fed881703d5c637f569b80628819764de060ef07eecc1",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: net::tcp::OwnedWriteHalf"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/net/tcp/struct.OwnedWriteHalf.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-async-write-shutdown",
+      "previousSha256": "1c9875fa6c694da22821dc2be80d39071eb99aa2de59a08f0035fe3f39f264f1",
+      "currentSha256": "92888aa0f77de33df39030c784f762a26bfcd0516d6d582a7781c41e38841676",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53: io::AsyncWriteExt::shutdown"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/io/trait.AsyncWriteExt.html#method.shutdown"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-timeout-at",
+      "previousSha256": "c95541510a32cc4672bd5c0d39c11dd009a82fa4564cb5db489b929d9021030c",
+      "currentSha256": "76b903bf88a9b135d9744dd00c5aa2f84a58870b4f9cf239fcf90ac8ad4cdeef",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: time::timeout_at"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/time/fn.timeout_at.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-time-instant",
+      "previousSha256": "b78b1dc9998e202529fba3a0641c7a2c441452be40870a05e973fa39674824e0",
+      "currentSha256": "fc5b036c699423706785dab36f311e25438658da983f977c98724a116b84c933",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: time::Instant"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/time/struct.Instant.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-network-lifecycle-tcp-listener",
+      "previousSha256": "c99d32d535d5422c84d7bd9e375b88da5dc229ad629ad6ad8501e6f18254ed10",
+      "currentSha256": "3812644fb0ade1c8893dcab27b9c6221ff418db29f97f0691a94d860e05f5faf",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: net::TcpListener"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpListener.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-network-lifecycle-tcp-stream",
+      "previousSha256": "aaa894cc3e04ff3de5a42377f8461cc7566c81398173b3d538a705b5bc6b2e69",
+      "currentSha256": "188f76498acb848094aae96e067e130891e6c0442a95bd5444d04c4ba7cd2240",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: net::TcpStream"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/net/struct.TcpStream.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-semaphore",
+      "previousSha256": "70ee059d19bab5a7619905a16a205ddbc7a277d9ca51b0ab65914a278a243346",
+      "currentSha256": "f20bb5eaa0d150c8d82095c0d06c530c224f5b3de3a2801757a5f4acdd694bf2",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: sync::Semaphore"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/struct.Semaphore.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-owned-semaphore-permit",
+      "previousSha256": "3d343a1396598103ba0c26b399281255e89ebe30ca7d60aabc85b4d76d759ad2",
+      "currentSha256": "173c0f3a630da3b2d1e1bb1f93990965b8a1a55ec1989e362c4c398f2337f5a1",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: sync::OwnedSemaphorePermit"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/struct.OwnedSemaphorePermit.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-watch-receiver",
+      "previousSha256": "b4e7d331458f38970947970679e41f5a1f02bbcde10e9d8000cd8850ce20b3be",
+      "currentSha256": "669a90a6fb0795172de5adf311e41407e00935e9fa138266c329313fbdb8933a",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: sync::watch::Receiver"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/watch/struct.Receiver.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "tokio-join-handle-network",
+      "previousSha256": "9fda14e4f6f27f1a0d41b1ef030cf02deac34ee0837226049b111e12f98b5213",
+      "currentSha256": "be96f3ec31f5a8fd83edd8d5a43e3d17ebf02093f3e618dd8daa6b45f5a11d9d",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: task::JoinHandle"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/struct.JoinHandle.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-13"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "async-lending-boundary-send",
+      "previousSha256": "443004f81f02eaa2e438ac6085cc44b40da92dc5ed4c903b56005a196144bfd4",
+      "currentSha256": "21b52b5b333d76bdde25eec82a8ced96a2f25a79f76a4b2ad837f22eb39bbb77",
+      "changes": [
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-19"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "capstone-tokio-mpsc",
+      "previousSha256": "a8f4c99530c70bd414480580239595dfe15e18bf642a1643f14b1e2bb834eb42",
+      "currentSha256": "9118e7f8adb4d2a7d591ce15729917eb29cd490d4a1fd7ac52be1724c6cd4284",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: bounded mpsc"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/sync/mpsc/index.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-18"
+        }
+      ]
+    },
+    {
+      "registry": "sources",
+      "id": "capstone-tokio-blocking",
+      "previousSha256": "abd4c99d890c0b0f149b938e82d092d04e2d2d966c84e8ddec3b8cf0673ce66d",
+      "currentSha256": "e82455c705abc3fa2e87a196b395fd931b73fcc21b15d29b9b285e31db410530",
+      "changes": [
+        {
+          "path": [
+            "title"
+          ],
+          "previous": "Tokio 1.53.1: spawn_blocking"
+        },
+        {
+          "path": [
+            "url"
+          ],
+          "previous": "https://docs.rs/tokio/1.53.1/tokio/task/fn.spawn_blocking.html"
+        },
+        {
+          "path": [
+            "reviewedAt"
+          ],
+          "previous": "2026-09-18"
+        }
+      ]
+    }
+  ]
+}

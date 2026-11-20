@@ -1,0 +1,915 @@
+import { expect, test, type Page } from "@playwright/test";
+import {
+  createInitialState,
+  createStepProgress,
+} from "../../src/persistence/state";
+import { reviewSessionKey } from "../../src/engine/review-session";
+import {
+  reviewExercises,
+  shortReviewExercises,
+} from "../../src/content/course";
+import type { UserState } from "../../src/domain/types";
+
+const DAY = 24 * 60 * 60 * 1000;
+
+function readyReviewState(): UserState {
+  const state = createInitialState();
+  state.onboarding = {
+    completed: true,
+    name: "Ada",
+    minutes: 15,
+  };
+  state.diagnostic = {
+    completed: true,
+    answers: {},
+    score: 3,
+    recommendation: "memory-intro",
+  };
+  state.resume = {
+    ...state.resume,
+    view: "review",
+  };
+  state.settings = { ...state.settings, accessibleEditor: true };
+  return state;
+}
+
+async function mockReviewRunner(page: Page): Promise<void> {
+  await page.route("**/api/run", async (route) => {
+    const request = route.request().postDataJSON() as {
+      code?: string;
+      mode?: string;
+    };
+    const code = request.code ?? "";
+    const broken =
+      code.includes("show(text);") ||
+      code === shortReviewExercises["io-format-roundtrip"].code;
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        broken
+          ? {
+              status: "compile-error",
+              stdout: "",
+              stderr:
+                "error[E0382]: borrow of moved value: `text`\n --> review.rs:3:13",
+              diagnostics: [
+                {
+                  code: "E0382",
+                  message: "borrow of moved value",
+                  line: 3,
+                  level: "error",
+                },
+              ],
+              durationMs: 4,
+            }
+          : {
+              status: "success",
+              stdout: "",
+              stderr: "",
+              diagnostics: [],
+              durationMs: 4,
+              ...(request.mode === "test"
+                ? { tests: { passed: 1, failed: 0 } }
+                : {}),
+            },
+      ),
+    });
+  });
+}
+
+async function seedState(page: Page, state: UserState): Promise<void> {
+  await page.goto("/");
+  await page.evaluate(async (nextState) => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open("rust-workshop-state", 1);
+      request.onupgradeneeded = () => {
+        if (!request.result.objectStoreNames.contains("user-state"))
+          request.result.createObjectStore("user-state");
+      };
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const database = request.result;
+        const transaction = database.transaction("user-state", "readwrite");
+        transaction.objectStore("user-state").put(nextState, "current");
+        transaction.oncomplete = () => {
+          database.close();
+          resolve();
+        };
+        transaction.onerror = () => reject(transaction.error);
+      };
+    });
+  }, state);
+  await page.reload();
+}
+
+async function readStoredState(page: Page): Promise<UserState> {
+  return page.evaluate(
+    () =>
+      new Promise<UserState>((resolve, reject) => {
+        const request = indexedDB.open("rust-workshop-state", 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const database = request.result;
+          const transaction = database.transaction("user-state", "readonly");
+          const read = transaction.objectStore("user-state").get("current");
+          read.onerror = () => reject(read.error);
+          read.onsuccess = () => {
+            database.close();
+            resolve(read.result as UserState);
+          };
+        };
+      }),
+  );
+}
+
+async function waitForPersistedQueue(
+  page: Page,
+  expectedReview: UserState["review"],
+): Promise<void> {
+  await expect
+    .poll(async () => {
+      const current = await readStoredState(page);
+      return (
+        current.reviewSession === undefined &&
+        JSON.stringify(current.review) === JSON.stringify(expectedReview)
+      );
+    })
+    .toBe(true);
+}
+
+test("serves a due review as delayed recall and schedules the next attempt after success", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId: "move-semantics",
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "Powtórka oczekuje.",
+    },
+  ];
+
+  await seedState(page, state);
+
+  await expect(
+    page.getByRole("heading", { name: "Co zostało w pamięci?" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".review-row").filter({ hasText: "Semantyka move" }),
+  ).toBeVisible();
+  await page
+    .locator(".review-row")
+    .filter({ hasText: "Semantyka move" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: przeniesiony String" }),
+  ).toBeVisible();
+
+  await page.getByRole("textbox").fill("moved");
+  await page.getByRole("button", { name: "Sprawdź" }).click();
+  await expect(page.getByText("Na dziś nic nie czeka.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Po przerwie" }),
+  ).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText("Na dziś nic nie czeka.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Po przerwie" }),
+  ).toBeVisible();
+});
+
+test("does not expose rating controls after a completed review challenge", async ({
+  page,
+}) => {
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Semantyka move" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: przeniesiony String" }),
+  ).toBeVisible();
+  await page.getByRole("textbox").fill("moved");
+  await page.getByRole("button", { name: "Sprawdź" }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Po przerwie" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
+  ).toHaveCount(0);
+
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Po przerwie" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
+  ).toHaveCount(0);
+});
+
+test("restores a journaled reminder when a legacy review session has no step flags", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "move-semantics";
+  const sessionId = "recovered-reminder";
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: true,
+  };
+  state.review = [
+    { conceptId, dueAt: at, intervalDays: 2, attempts: 1, reason: "due" },
+  ];
+  state.events = [
+    {
+      id: "dated-reminder",
+      lessonId: "review",
+      stepId: reviewExercises[conceptId].id + ":" + sessionId,
+      conceptIds: [conceptId],
+      kind: "exposure",
+      at,
+      hints: 0,
+      revealed: true,
+      passed: true,
+      gate: false,
+    },
+  ];
+  await seedState(page, state);
+  await page.getByRole("textbox").fill("moved");
+  await page.getByRole("button", { name: "Sprawdź" }).click();
+  await expect
+    .poll(async () => (await readStoredState(page)).events.at(-1))
+    .toMatchObject({
+      lessonId: "review",
+      stepId: conceptId + ":" + sessionId,
+      kind: "recall",
+      passed: true,
+      revealed: true,
+    });
+  expect((await readStoredState(page)).review[0].intervalDays).toBe(2);
+});
+
+test("an unavailable restored concept can be dismissed without losing its history", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "retired-concept";
+  const sessionId = "retired-session";
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: true,
+  };
+  const key = reviewSessionKey(sessionId);
+  state.steps[key] = { ...createStepProgress(), answer: "Mój zapis", hints: 1 };
+  state.events = [
+    {
+      id: "old-hint",
+      lessonId: "review",
+      stepId: conceptId + ":" + sessionId,
+      conceptIds: [conceptId],
+      kind: "exposure",
+      at,
+      passed: true,
+      hints: 1,
+      revealed: false,
+      gate: false,
+    },
+  ];
+  state.review = [
+    { conceptId, dueAt: at, intervalDays: 1, attempts: 1, reason: "due" },
+  ];
+  await seedState(page, state);
+  await expect(
+    page.getByText("Ta powtórka nie jest dostępna w tej wersji."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Do kolejki", exact: true }).click();
+  await waitForPersistedQueue(page, state.review);
+  const saved = await readStoredState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events).toEqual(state.events);
+  expect(saved.ratings).toEqual([]);
+  await page.reload();
+  await expect(page.getByText("Na dziś nic nie czeka.")).toBeVisible();
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Semantyka move" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: przeniesiony String" }),
+  ).toBeVisible();
+});
+
+test("review counts and upcoming rows include only available restored concepts", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  state.resume.view = "dashboard";
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId: "retired-due",
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "old",
+    },
+    {
+      conceptId: "move-semantics",
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "due",
+    },
+    {
+      conceptId: "retired-later",
+      dueAt: now + DAY,
+      intervalDays: 2,
+      attempts: 1,
+      reason: "old",
+    },
+    {
+      conceptId: "stack-heap",
+      dueAt: now + DAY,
+      intervalDays: 2,
+      attempts: 1,
+      reason: "later",
+    },
+  ];
+  await seedState(page, state);
+  await expect(page.locator(".review-teaser h2")).toHaveText(
+    "1 krótka powtórka",
+  );
+  await expect(
+    page
+      .getByRole("button", { name: /Powtórki/ })
+      .filter({ has: page.locator(".count") })
+      .locator(".count"),
+  ).toHaveText("1");
+  await page.getByRole("button", { name: "Otwórz powtórki" }).click();
+  await expect(page.locator(".review-queue .count")).toHaveText("1");
+  await expect(page.locator(".review-row")).toHaveCount(1);
+  await expect(page.locator(".upcoming time")).toHaveCount(1);
+  expect((await readStoredState(page)).review).toEqual(state.review);
+});
+
+test("a restored completed challenge without a runner result can return to the queue", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "ownership-repair";
+  const sessionId = "partial-result";
+  const key = reviewSessionKey(sessionId);
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: true,
+  };
+  state.steps[key] = { ...createStepProgress("// mój kod"), completed: true };
+  state.review = [
+    { conceptId, dueAt: at, intervalDays: 1, attempts: 1, reason: "due" },
+  ];
+  await seedState(page, state);
+  await expect(
+    page.getByRole("button", { name: "Uruchom testy" }),
+  ).toBeDisabled();
+  const back = page.getByRole("button", { name: "← Do kolejki" });
+  await expect(back).toBeEnabled();
+  await back.click();
+  await waitForPersistedQueue(page, state.review);
+  const saved = await readStoredState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events).toEqual([]);
+  expect(saved.ratings).toEqual([]);
+  await page.locator(".review-row").click();
+  await expect(
+    page.getByRole("button", { name: "Uruchom testy" }),
+  ).toBeEnabled();
+});
+
+test("a restored short probe cannot rate a different draft using its previous run", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "io-format-roundtrip";
+  const exercise = shortReviewExercises[conceptId];
+  const sessionId = "stale-probe";
+  const key = reviewSessionKey(sessionId);
+  const at = Date.now() - DAY;
+  state.reviewSession = {
+    conceptId,
+    sessionId,
+    exerciseId: exercise.id,
+    mode: "challenge",
+    startedAt: at,
+    wasDue: false,
+  };
+  state.review = [
+    {
+      conceptId,
+      dueAt: at + 3 * DAY,
+      intervalDays: 3,
+      attempts: 1,
+      reason: "later",
+    },
+  ];
+  state.steps[key] = {
+    ...createStepProgress("// zmieniony szkic"),
+    completed: true,
+    attempts: [
+      {
+        at,
+        code: exercise.solution,
+        passed: true,
+        feedback: "OK",
+        result: {
+          status: "success",
+          stdout: "",
+          stderr: "",
+          diagnostics: [],
+          durationMs: 4,
+          tests: { passed: 1, failed: 0 },
+        },
+      },
+    ],
+  };
+  await seedState(page, state);
+  await expect(page.getByRole("textbox", { name: "Kod Rust" })).toHaveValue(
+    "// zmieniony szkic",
+  );
+  await expect(
+    page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
+  ).toHaveCount(0);
+  await expect(page.getByText(/Nową próbę możesz rozpocząć z kolejki/)).toBeVisible();
+  await page.getByRole("button", { name: "← Do kolejki" }).click();
+  await waitForPersistedQueue(page, state.review);
+  const saved = await readStoredState(page);
+  expect(saved.steps[key]).toEqual(state.steps[key]);
+  expect(saved.events).toEqual([]);
+  expect(saved.ratings).toEqual([]);
+});
+
+test("resumes an unfinished review answer after reload", async ({ page }) => {
+  const state = readyReviewState();
+  const sessionId = "unfinished-review";
+  state.reviewSession = {
+    conceptId: "move-semantics",
+    mode: "challenge",
+    sessionId,
+    startedAt: Date.now() - 5 * 60 * 1000,
+    wasDue: true,
+  };
+  state.steps[reviewSessionKey(sessionId)] = {
+    ...createStepProgress(),
+    answer: "only moved",
+  };
+
+  await seedState(page, state);
+
+  const answer = page.getByRole("textbox");
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: przeniesiony String" }),
+  ).toBeVisible();
+  await expect(answer).toHaveValue("only moved");
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: przeniesiony String" }),
+  ).toBeVisible();
+  await expect(page.getByRole("textbox")).toHaveValue("only moved");
+});
+
+test("keeps compiler output, code, and successful review evidence across reload", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  const state = readyReviewState();
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId: "ownership-repair",
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "Napraw granicę odczytu.",
+    },
+  ];
+  await seedState(page, state);
+
+  await page
+    .locator(".review-row")
+    .filter({ hasText: "Wybór naprawy własności" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: napraw granicę odczytu" }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await expect(editor).toBeVisible();
+  const starter = await editor.inputValue();
+
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Błąd kompilacji")).toBeVisible();
+  await expect(page.getByText(/E0382/)).toBeVisible();
+  await expect(editor).toHaveValue(starter);
+
+  const solution = starter
+    .replace("show(text);", "show(&text);")
+    .replace("fn show(value: String)", "fn show(value: &str)");
+  await editor.fill(solution);
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: napraw granicę odczytu" }),
+  ).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Kod Rust" })).toHaveValue(
+    solution,
+  );
+  await expect(
+    page.getByText(/Output pochodzi z poprzedniej wersji/),
+  ).toBeVisible();
+  await expect(page.getByText(/E0382/)).toBeVisible();
+
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  const runButton = page.getByRole("button", { name: "Uruchom testy" });
+  await expect(runButton).toBeDisabled();
+  await expect(
+    page.getByRole("textbox", { name: "Kod Rust" }),
+  ).not.toBeEditable();
+  await expect(
+    page.getByRole("button", { name: "Zakończ powtórkę" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem."),
+  ).toBeVisible();
+  await expect(runButton).toBeDisabled();
+
+  await page.reload();
+  await expect(page.getByRole("textbox", { name: "Kod Rust" })).toHaveValue(
+    solution,
+  );
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem."),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Zakończ powtórkę" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Po przerwie" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".upcoming").getByText("Wybór naprawy własności"),
+  ).toBeVisible();
+});
+
+test("runs an executable macro coding review from an empty editor", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Przechwycenie wyrażenia i dokładnie jedno obliczenie" })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Powtórka: pojedynczy odczyt",
+    }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await expect(editor).toBeVisible();
+  await expect(editor).toHaveValue("");
+  await editor.fill(reviewExercises["macros-exactly-once"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem."),
+  ).toBeVisible();
+});
+
+test("runs an executable API release retrieval from an empty editor", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Stara publiczna ścieżka i obserwowalne zachowanie" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: status sondy" }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await expect(editor).toBeVisible();
+  await expect(editor).toHaveValue("");
+  await editor.fill(reviewExercises["api-release-old-contracts"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  await expect(
+    page.getByText("Wszystkie testy zakończyły się powodzeniem."),
+  ).toBeVisible();
+});
+
+test("defaults I/O practice to a short probe and preserves an unrated queue", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  const state = readyReviewState();
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId: "io-format-roundtrip",
+      dueAt: now + DAY,
+      intervalDays: 2,
+      attempts: 3,
+      reason: "Pełny kontrakt wróci później.",
+    },
+  ];
+  const seededReview = state.review.map((item) => ({ ...item }));
+  await seedState(page, state);
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Wersjonowany format i pełny round trip" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
+  ).toBeVisible();
+  await expect(page.getByText("Krótka decyzja — cel 1–3 min")).toBeVisible();
+
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await editor.fill(shortReviewExercises["io-format-roundtrip"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
+  ).toHaveCount(4);
+
+  await page.getByRole("button", { name: "← Do kolejki" }).click();
+  await expect(
+    page
+      .locator(".upcoming")
+      .getByText("Wersjonowany format i pełny round trip"),
+  ).toBeVisible();
+  await waitForPersistedQueue(page, seededReview);
+  expect((await readStoredState(page)).review).toEqual(seededReview);
+  await page.reload();
+  await expect(
+    page
+      .locator(".upcoming")
+      .getByText("Wersjonowany format i pełny round trip"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
+  ).toHaveCount(0);
+  expect((await readStoredState(page)).review).toEqual(seededReview);
+});
+
+test("does not offer card ratings for an unfinished short probe", async ({
+  page,
+}) => {
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Wersjonowany format i pełny round trip" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Karta przypomnienia" }).click();
+  await expect(
+    page.getByRole("button", { name: "Karta przypomnienia" }),
+  ).toHaveClass(/selected/);
+  await page.getByRole("textbox").fill("0 i 1");
+  await page.getByRole("button", { name: "Odsłoń odpowiedź" }).click();
+
+  const ratingButtons = page.getByRole("button", {
+    name: /^(Again|Hard|Good|Easy) ·/,
+  });
+  for (let index = 0; index < (await ratingButtons.count()); index += 1) {
+    await expect(ratingButtons.nth(index)).toBeDisabled();
+  }
+  await expect(
+    page.getByText(/Wróć do Małego eksperymentu.*ocenić tę powtórkę/i),
+  ).toBeVisible();
+});
+
+test("keeps ordinary card ratings available", async ({ page }) => {
+  await seedState(page, readyReviewState());
+
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Rola stosu i sterty" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Powtórka: bufor i wiązanie" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Karta przypomnienia" }).click();
+  await page.getByRole("textbox").fill("metadane i właściciel bufora");
+  await page.getByRole("button", { name: "Odsłoń odpowiedź" }).click();
+
+  const goodRating = page.getByRole("button", { name: "Good · Dobrze" });
+  await expect(goodRating).toBeEnabled();
+  await goodRating.click();
+  await expect(
+    page.getByRole("heading", { name: "Co zostało w pamięci?" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".upcoming").getByText("Rola stosu i sterty"),
+  ).toBeVisible();
+});
+
+test("keeps the extended I/O review reachable by explicit selection", async ({
+  page,
+}) => {
+  await seedState(page, readyReviewState());
+  const choice = page
+    .locator(".review-choice")
+    .filter({ hasText: "Wersjonowany format i pełny round trip" });
+  await choice
+    .getByRole("button", { name: "Dłuższe odtworzenie kontraktu" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Odtwórz format notatnika po przerwie" }),
+  ).toBeVisible();
+  await expect(page.getByText("Dłuższe odtworzenie kontraktu")).toBeVisible();
+});
+
+test("keeps a failed short exposure queued after a later pass and unrated exit", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  await seedState(page, readyReviewState());
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Wersjonowany format i pełny round trip" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Kod Rust" });
+  await editor.fill(shortReviewExercises["io-format-roundtrip"].code!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Błąd kompilacji")).toBeVisible();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Rozpoznaj dokładną flagę zakończenia" }),
+  ).toBeVisible();
+  const afterFailure = await readStoredState(page);
+  expect(afterFailure.events.at(-1)).toMatchObject({
+    conceptIds: ["io-format-roundtrip"],
+    kind: "exposure",
+    passed: false,
+    delayed: false,
+  });
+  expect(afterFailure.review).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ conceptId: "io-format-roundtrip" }),
+    ]),
+  );
+  await page
+    .getByRole("textbox", { name: "Kod Rust" })
+    .fill(shortReviewExercises["io-format-roundtrip"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  await page.getByRole("button", { name: "← Do kolejki" }).click();
+  const failedQueue = afterFailure.review.map((item) => ({ ...item }));
+  await waitForPersistedQueue(page, failedQueue);
+  expect((await readStoredState(page)).review).toEqual(failedQueue);
+  await page.reload();
+  const afterReload = await readStoredState(page);
+  expect(afterReload.review).toEqual(failedQueue);
+});
+
+test("requires an explicit rating before scheduling a short probe", async ({
+  page,
+}) => {
+  await mockReviewRunner(page);
+  await seedState(page, readyReviewState());
+  await page
+    .locator(".review-concept")
+    .filter({ hasText: "Błąd odczytu i etapowany zapis" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Odróżnij brak pliku od awarii" }),
+  ).toBeVisible();
+  await page
+    .getByRole("textbox", { name: "Kod Rust" })
+    .fill(shortReviewExercises["io-safe-persistence"].solution!);
+  await page.getByRole("button", { name: "Uruchom testy" }).click();
+  await expect(page.getByText("Kod działa.")).toBeVisible();
+  const goodRating = page.getByRole("button", { name: "Good · Dobrze" });
+  await expect(goodRating).toBeEnabled();
+  await goodRating.click();
+  await expect(
+    page.locator(".upcoming").getByText("Błąd odczytu i etapowany zapis"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Again|Hard|Good|Easy/ }),
+  ).toHaveCount(0);
+  await expect
+    .poll(async () => {
+      const current = await readStoredState(page);
+      return (
+        current.reviewSession === undefined &&
+        current.review.some((item) => item.conceptId === "io-safe-persistence")
+      );
+    })
+    .toBe(true);
+  const scheduledReview = (await readStoredState(page)).review;
+  await page.reload();
+  await expect(
+    page.locator(".upcoming").getByText("Błąd odczytu i etapowany zapis"),
+  ).toBeVisible();
+  expect((await readStoredState(page)).review).toEqual(scheduledReview);
+});
+
+test("resumes a free-form review and schedules its explicit self-rating without coding credit", async ({
+  page,
+}) => {
+  const state = readyReviewState();
+  const conceptId = "stack-heap";
+  const exercise = reviewExercises[conceptId];
+  if (exercise.evaluator?.kind !== "rubric")
+    throw new Error("Expected a self-assessed review");
+  const now = Date.now();
+  state.review = [
+    {
+      conceptId,
+      dueAt: now - DAY,
+      intervalDays: 1,
+      attempts: 1,
+      reason: "Powtórka",
+    },
+  ];
+  const sessionId = "free-form-review";
+  state.reviewSession = {
+    sessionId,
+    conceptId,
+    mode: "challenge",
+    startedAt: now,
+    wasDue: true,
+  };
+  await seedState(page, state);
+  await expect(
+    page.getByRole("heading", { name: exercise.title }),
+  ).toBeVisible();
+  const answer =
+    "Lokalnie trzymam opis tekstu. Właściciel zwalnia bufor, gdy kończy swój zakres.";
+  await page.getByRole("textbox").fill(answer);
+  await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+  const checks = page.getByRole("checkbox");
+  await expect(checks).toHaveCount(exercise.evaluator.criteria.length);
+  await checks.first().check();
+  const good = page.getByRole("button", { name: "Good · Dobrze" });
+  await expect(good).toBeDisabled();
+  await expect
+    .poll(
+      async () =>
+        (await readStoredState(page)).steps[reviewSessionKey(sessionId)]
+          ?.rubricChecks.length,
+    )
+    .toBe(1);
+  await page.reload();
+  await expect(page.getByRole("textbox")).toHaveValue(answer);
+  await page.getByText("Porównaj z kryteriami", { exact: true }).click();
+  await expect(checks.first()).toBeChecked();
+  for (let i = 1; i < (await checks.count()); i++) await checks.nth(i).check();
+  await page.getByRole("textbox").fill("  ");
+  await expect(good).toBeDisabled();
+  await page.getByRole("textbox").fill(answer);
+  await good.click();
+  await expect(page.getByText("Na dziś nic nie czeka.")).toBeVisible();
+  await expect
+    .poll(async () => (await readStoredState(page)).ratings.length)
+    .toBe(1);
+  const after = await readStoredState(page);
+  expect(after.reviewSession).toBeUndefined();
+  expect(after.review[0].dueAt).toBeGreaterThan(now);
+  expect(after.events.filter((event) => event.lessonId === "review")).toEqual([
+    expect.objectContaining({
+      kind: "self-rating",
+      evaluator: "rubric",
+      passed: true,
+      gate: false,
+      delayed: false,
+    }),
+  ]);
+});
