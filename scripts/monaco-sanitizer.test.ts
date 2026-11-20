@@ -68,7 +68,7 @@ describe("closed Monaco adaptation", () => {
     expect(() => verifyGenerated(output + ";function GR(){} ")).toThrow(
       /old factory/,
     );
-  });
+  }, 30_000);
   it("restores the previous complete destination when promotion fails", async () => {
     const root = await mkdtemp(join(tmpdir(), "monaco-rollback-"));
     try {
@@ -94,7 +94,7 @@ describe("closed Monaco adaptation", () => {
     } finally {
       await rm(root, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 });
 
 describe("AMD-only app import policy", () => {

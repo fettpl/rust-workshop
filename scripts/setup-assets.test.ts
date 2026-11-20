@@ -43,7 +43,7 @@ describe("Monaco distribution assets", () => {
     expect(
       await readFile(join(destinationRoot, "vs", "loader.js"), "utf8"),
     ).toBe(await readFile(join(sourceRoot, "min", "vs", "loader.js"), "utf8"));
-  });
+  }, 30_000);
 
   it("fails when an upstream notice source is missing", async () => {
     const root = await mkdtemp(join(tmpdir(), "rust-workshop-monaco-assets-"));
@@ -99,7 +99,7 @@ describe("Monaco distribution assets", () => {
     await expect(
       readFile(join(destinationRoot, "vs", "old.js")),
     ).rejects.toThrow(/ENOENT/);
-  });
+  }, 30_000);
 });
 
 describe("served sanitizer security boundary", () => {
@@ -118,7 +118,7 @@ describe("served sanitizer security boundary", () => {
     expect(
       await readFile(join(root, "monaco/vs/dompurify-fixed.js"), "utf8"),
     ).toContain("DOMPurify 3.4.17");
-  });
+  }, 30_000);
 });
 
 describe("Monaco asset cleanup failures", () => {

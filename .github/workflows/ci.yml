@@ -119,6 +119,8 @@ jobs:
       - run: npm run content:property -- --fetch
       # Fetch Criterion before the generic archive verifier runs offline.
       - run: npm run content:performance -- --fetch
+      - name: Fetch locked client retry dependencies
+        run: bash scripts/fetch-client-retry-dependencies.sh
       - name: Verify bounded client retry on stable Rust
         run: npm run content:client-retry
       - name: Verify typed authorization on stable Rust
@@ -243,6 +245,8 @@ jobs:
       - run: npm run content:models -- --fetch --msrv
       # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
       - run: npm run content:performance -- --fetch --msrv
+      - name: Fetch locked client retry dependencies
+        run: bash scripts/fetch-client-retry-dependencies.sh
       - name: Verify bounded client retry on Rust 1.85.0
         run: npm run content:client-retry -- --msrv
       - name: Verify typed authorization on Rust 1.85.0

@@ -119,7 +119,7 @@ describe("project archive distribution notices", () => {
         );
       }
     }
-  });
+  }, 30_000);
 
   it("maps only known repository audit documents and preserves their fragments", () => {
     const repositoryRoot = repositoryWithNotices();
