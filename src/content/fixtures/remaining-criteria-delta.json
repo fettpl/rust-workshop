@@ -1,0 +1,766 @@
+{
+  "baseline": {
+    "sha": "ea82ec2",
+    "lessonsSha256": "98ce210f5c828c81d2936462a18a658a8e96d51a9f98af1aa37735d5dfa323a6",
+    "modulesSha256": "abc279b3104abc358bb638de0f36ab98f730cbff7fffdfd3af62fe0b08965a8e",
+    "projectsSha256": "0745efe7965e29c0f7dba521b9cde3cb0df3f63575353570e92d34cb9cd24c5b",
+    "reviewExercisesSha256": "e5fdf11799b2c8dba9f38ae7f9cca70507c4df878bd7ff3b113eaee1a6b9d23b",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [
+    {
+      "lessonId": "dependency-graph-diagnosis",
+      "stepId": "dependency-graph-diagnosis-recall",
+      "path": ["evidenceGate"],
+      "beforeSha256": null,
+      "successorSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    }
+  ],
+  "lessonRestorations": [
+    {
+      "lessonId": "service-client-bounded-retry",
+      "path": ["sessionStops"],
+      "beforeSha256": null,
+      "successorSha256": "1de011caa2f5e7a4e7fa5286137d6645d73b3126350fa0f73f296c894e57918b"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "path": ["sessionStops"],
+      "beforeSha256": null,
+      "successorSha256": "a89c58d795845d9279d3edfb875914ba476604e727a5ea337f8092d95f44d12b"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "tokio-graceful-shutdown",
+      "index": 7,
+      "id": "tokio-graceful-shutdown-fallible-drain-transfer",
+      "successorSha256": "25bfceb837234afab14a32d9768f763555828f2760254a8627f04648b2ae8460"
+    },
+    {
+      "lessonId": "tokio-receiver-stream-drain",
+      "index": 6,
+      "id": "tokio-receiver-stream-drain-partition-transfer",
+      "successorSha256": "e648a873a83d2dad97863189b6257a84ff5fd9c8a891c3d85f10b33aa977602b"
+    },
+    {
+      "lessonId": "tokio-receiver-stream-drain",
+      "index": 7,
+      "id": "tokio-receiver-stream-drain-batch-or-stop-transfer",
+      "successorSha256": "35cf50aa19b3ce5de4e2fb7058332fd7d95c8ad1f7c1466c6c5cd92e70da2f4e"
+    },
+    {
+      "lessonId": "dependency-graph-diagnosis",
+      "index": 5,
+      "id": "dependency-graph-diagnosis-edge-audit-transfer",
+      "successorSha256": "514640eefd2a3c8203fcfc7e714439d9c7ce4ba0fed6cdadcfea28bdcee7166a"
+    },
+    {
+      "lessonId": "dependency-source-license-policy",
+      "index": 5,
+      "id": "dependency-source-license-policy-batch-transfer",
+      "successorSha256": "b517d3054a0fcd0c8febbd945a2a6d1f454c0920dd90b4bb553278f43c354330"
+    },
+    {
+      "lessonId": "dependency-source-license-policy",
+      "index": 6,
+      "id": "dependency-source-license-policy-reason-transfer",
+      "successorSha256": "adaf651648eb39c4ea61c9d78bd050de5f61fcc620c0adce4acfde28a558a795"
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "index": 5,
+      "id": "dependency-advisory-exceptions-scope-transfer",
+      "successorSha256": "263a65cec4682038201f84c03a48122da4e8b0c01aa65ca88f458ca170fd4d0e"
+    },
+    {
+      "lessonId": "dependency-advisory-exceptions",
+      "index": 6,
+      "id": "dependency-advisory-exceptions-ledger-transfer",
+      "successorSha256": "3252d23bba0839aaa0549fe012b3beb763b30534005e6eb422d5f726707919b2"
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "index": 5,
+      "id": "dependency-release-dossier-missing-transfer",
+      "successorSha256": "5f249fe8ef0de2321228d1a6bad0ee15d79159d84896eda0178d40944859a02c"
+    },
+    {
+      "lessonId": "dependency-release-dossier",
+      "index": 6,
+      "id": "dependency-release-dossier-batch-transfer",
+      "successorSha256": "654535810c35020469ec7e8966d91393c5e0175d2d46d9b632e3a506aa618e7b"
+    },
+    {
+      "lessonId": "capstone-domain-boundary",
+      "index": 7,
+      "id": "capstone-domain-validate-transfer",
+      "successorSha256": "3d3ba3722a052569d52e91c7cfafd678dd7ae69e9cf8b7ce40ae55885193dde1"
+    },
+    {
+      "lessonId": "capstone-domain-boundary",
+      "index": 8,
+      "id": "capstone-domain-errors-transfer",
+      "successorSha256": "da566df29548417fe7dbfdf52fc4a3cb498da9405efaca5e508a09dbb7ff0459"
+    },
+    {
+      "lessonId": "capstone-idempotent-commit",
+      "index": 7,
+      "id": "capstone-commit-replay-transfer",
+      "successorSha256": "f0aea31c30e5794611a7cd853568c08ac640f791210ba63d07474e3a7d16beae"
+    },
+    {
+      "lessonId": "capstone-idempotent-commit",
+      "index": 8,
+      "id": "capstone-commit-atomicity-transfer",
+      "successorSha256": "033ceb4ba316e3713a56eca3f0d0696ac953788aaee92f0867c49a0277bc19b3"
+    },
+    {
+      "lessonId": "capstone-bounded-lifecycle",
+      "index": 7,
+      "id": "capstone-lifecycle-admit-transfer",
+      "successorSha256": "18198afab88b3685d055de2dbb4b08249452dfd9e7561675d04a5c7d8b0528a2"
+    },
+    {
+      "lessonId": "capstone-protocol-evolution",
+      "index": 7,
+      "id": "capstone-protocol-decode-transfer",
+      "successorSha256": "50de97fb81e67bf6d64592c74a589e92ddef41fe72b031d28d85f9ab5f15c4dc"
+    },
+    {
+      "lessonId": "capstone-protocol-evolution",
+      "index": 8,
+      "id": "capstone-protocol-migrate-transfer",
+      "successorSha256": "48f37c5d4894aedbfc9a2ab644f89ee2f2512402b3549367c797a7c28ab984ab"
+    },
+    {
+      "lessonId": "capstone-incident-recovery",
+      "index": 7,
+      "id": "capstone-incident-correlate-transfer",
+      "successorSha256": "2a9c1d1e795e8958b66d71d920591e5ea347e01a74a49bb59cac00468a4cbf3f"
+    },
+    {
+      "lessonId": "capstone-incident-recovery",
+      "index": 8,
+      "id": "capstone-incident-decide-transfer",
+      "successorSha256": "ccc087c922dd5aaa1afdb3bad832c006c8808be3633a3f8962cb8dce527d4c08"
+    },
+    {
+      "lessonId": "capstone-release-evidence",
+      "index": 7,
+      "id": "capstone-release-bind-transfer",
+      "successorSha256": "eff1ebef78a836e3986efe41b8b84f0811e70b2a5641d14834cc8d6b494bba11"
+    },
+    {
+      "lessonId": "capstone-release-evidence",
+      "index": 8,
+      "id": "capstone-release-decide-transfer",
+      "successorSha256": "dcc4eb2d4a21f07473d7ccc5fff0df33d069672c98fd20f95b470dab64f2be12"
+    },
+    {
+      "lessonId": "service-client-bounded-retry",
+      "index": 9,
+      "id": "retry-ready-queue",
+      "successorSha256": "688c761c5a29c759a56adcbd382c9a36a8b8d75bacc1d1966075b2b95c901802"
+    },
+    {
+      "lessonId": "service-client-bounded-retry",
+      "index": 10,
+      "id": "retry-time-windows",
+      "successorSha256": "efecdc3db6a375e407c22c4f7e4e5668a0b74702851f03465cfb22d67d82ac3c"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "index": 9,
+      "id": "retry-replica-frame",
+      "successorSha256": "31dd4fb6efb5b0c15f10b70a5569e9cca0b0d641fcc19fb060ccc46326634a2a"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "index": 10,
+      "id": "retry-receipt-ledger",
+      "successorSha256": "da763869acf5e9d650426f6d017f9a4df66fcb5d0af0f3912fe9d068969e5029"
+    },
+    {
+      "lessonId": "function-ownership-calibration",
+      "index": 5,
+      "id": "function-split-owned",
+      "successorSha256": "44f0e63c78315a933d23dad1ac2dee1d738f693ef268aaf64caf218e12afdb81"
+    },
+    {
+      "lessonId": "shared-borrow-calibration",
+      "index": 5,
+      "id": "shared-character-count",
+      "successorSha256": "6f72dc56e38d77a856e73d1aa890631af2060adf2c066abb23b704c4cf42a01e"
+    },
+    {
+      "lessonId": "documentation-guided-repair",
+      "index": 9,
+      "id": "docs-keyed-setting",
+      "successorSha256": "3ed7e16fa2d2eb8ab66c50bf3cd95cd2c7350eae9df38baee1673503fdf336f6"
+    },
+    {
+      "lessonId": "service-authorization-policy",
+      "index": 6,
+      "id": "authorization-policy-matching-indexes",
+      "successorSha256": "98546013dcb1c3360ad415b754ad2e5e447cf4604688cbd68103f591168eaaa1"
+    },
+    {
+      "lessonId": "service-authorization-attenuation",
+      "index": 6,
+      "id": "authorization-attenuation-intersection",
+      "successorSha256": "276dd00aea1dabdf9a661d44865b1196696adfa368edf595511b0a35fd2376d4"
+    },
+    {
+      "lessonId": "service-authorization-binding",
+      "index": 6,
+      "id": "authorization-binding-atomic-batch",
+      "successorSha256": "ee8368e5363b22a30f8232e8eaba6dd4c9ec7328a292df06c57afcff4e1eab33"
+    },
+    {
+      "lessonId": "service-authorization-admission",
+      "index": 6,
+      "id": "authorization-admission-atomic-batch",
+      "successorSha256": "95691890a82a2ba18a905c3bde4c99a19e9357dcc2a41d0ad977c2197e621ca9"
+    },
+    {
+      "lessonId": "file-schema-normalization",
+      "index": 6,
+      "id": "schema-validate-current-snapshot",
+      "successorSha256": "56d2832bbc57e0dbe14b4fe6846dc9072f4eb3b14d1b6bf7a05c8f6923ecd679"
+    }
+  ],
+  "registries": [
+    {
+      "registry": "modules",
+      "selector": "ownership",
+      "path": ["gateCriteria", "8", "taskRefs"],
+      "beforeSha256": "bc314bbdbf8065afb9e33820f10c88865e252afa2d0577e8a3c4fe9a322f39a5",
+      "successorSha256": "1f228888747115a1f073d4ff7e16c1779b91c91f8dc4201ae0d0037e29200aa2"
+    },
+    {
+      "registry": "modules",
+      "selector": "ownership",
+      "path": ["gateCriteria", "9", "taskRefs"],
+      "beforeSha256": "f0f772384ae7b9551c33e8ffcb200f0e8c19fbc774e0498264fdfd0e967040e1",
+      "successorSha256": "e260e5f5890b43b8c832e88216875be1c89f161b6c5dc7be83dc6747d7e6eb7a"
+    },
+    {
+      "registry": "modules",
+      "selector": "testing-quality",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "0455bf5ddcd1add994fe5bcf00f77fe79f2ece6b74a35595b3ece7cbe5051421",
+      "successorSha256": "460b12813bacf22f11e26aa6ea87a2fb2e2b1e28cc78a54dc5f4ac070c5d2cb9"
+    },
+    {
+      "registry": "modules",
+      "selector": "tokio-flow-control",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "d84a8387c05fce67ee0919f3e1c7a1d8f10d38f0fae093ba3170aef36df8cea7",
+      "successorSha256": "189961782166e7a7c6248d6cfa8800dd432e2220968e7de9f4b8e3eef56807a4"
+    },
+    {
+      "registry": "modules",
+      "selector": "tokio-io-streams",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "6766da5fb254d3d65d7302ae474688bbca4ff7e29d43d4350daa2f91d9d63593",
+      "successorSha256": "ed07db0f4db9c4f440c304ccddd1b1fe308999544120eff7f6fcb3da4049932b"
+    },
+    {
+      "registry": "modules",
+      "selector": "tokio-io-streams",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "b4f8fb98411e9f08aa1310003f9f32d32402dc7ef5c16af43f92c55ca068df04",
+      "successorSha256": "e500b68f21ce2357f721960420eb74acc2f9dbc447d8f5e9ef83f6aa418011b7"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "d31934d94d7b175a5d75916ad269b0194f292c5188a34a784f12dba331ee68df",
+      "successorSha256": "540ea1cb64773e459c40bba96bdbfe0b2128dc0d7e5f1f2245d5050347753011"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "f3d4072db452d2ca2cf42e59b6be29bb2e46a080a2a7f48760b586bb48792f7e",
+      "successorSha256": "528dcba1903cf0cba83d3e73174693e058f410ee3c68e6ba05d9f12d5fa80dbc"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "0648c724d9975cb7f387fc4b5ad23104c2afb848c4ed57369cc188d879d626c6",
+      "successorSha256": "085865526e2663d2f367e91b26adeddae4ac733af1b6c6556f3b3576d26e4787"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "015f0fd3a1064b38914a5baf9ce44d38cf493d3c3ff74bee2a6618d3c2de141f",
+      "successorSha256": "61e61f1d8106545f1979c1865fcd5e2e58a7da7da3460ebe6e47a207e87ad3af"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "39d079c46a48e1b6a17d4e6b3c994feccd674fb9fcc6f572b2e2ded0aabe6817",
+      "successorSha256": "5b8c4e9fa246493e23f335a9fb78254153d47ea15817f296c8788bd717b6fb4d"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "d5f95e7ffbf2a564a3ff141f53eaa918b57124234af0101c69960d2887d9e63d",
+      "successorSha256": "b805a4e4b25e7de91afe2134ab5390a992eaab31a8c3717167749faa735d426d"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "6c2466491d10ff4daa6a47bef2c9e47246bd3dc983b0396b4e8afaeef683279f",
+      "successorSha256": "514c76437da37873132a80cb1c5669cf88fff6db7258802240069261d70dc138"
+    },
+    {
+      "registry": "modules",
+      "selector": "dependency-assurance",
+      "path": ["gateCriteria", "7", "taskRefs"],
+      "beforeSha256": "5c81618c0e2b4c6545cf21d53d58db8e486a8c7aefde74a6dfdd2fff75f13e87",
+      "successorSha256": "2bdf8f3f52b578ee28f41f9778e58489c293745c5e516964a5d05a0ec2f1f85f"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "74abd31a3c67e38d1dc3e7be229df6ef08172a1f1f2ef42455703417ffd05a96",
+      "successorSha256": "0a4e2995225e2d93ec8368701f9e8a18e19f1508ac3ba394e02b9747920a2b3c"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "b74165ae437b8b30783b707991cd18a3e9de07b2747c985bdac351895ee33620",
+      "successorSha256": "51de4d2fa65c579b2212dc22ab30f74cb2f9e175e733b203de700a738e79f888"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "ba854040af4fa479303bda0bf93ab06427a2a423c8bf1d86b70d612441af650c",
+      "successorSha256": "072ee427bc153d0395420eb0b05075fe77b8f04ab9cef8449b7abf52ad9b934e"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "29caf6b8e8d3aa18ebaff886375d664493b2dc2427a0b7d8337076d4c5b9b1ba",
+      "successorSha256": "6f6ad3c0c3156a29c67b165ce0ae27d7a1e2a40424c10811dee5f5d8cc377972"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "aaaff57fa4734d0a84c345d6b675cb8e4ab50cb5b54d2188c16ad043c81ffc0b",
+      "successorSha256": "f1ebf2eec1e968abad816146a237b0074f73dbf23da82a7b2d09d83272e0c1a4"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "d31978e9d3d1fe3c16cda31db52085a0fd405dbf71a4f97e3a27e4cd78cba260",
+      "successorSha256": "e24a9fe70b0016716c379d6e12b87dae807d924aacbda1675ed74fc417d7d695"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "7da6d10296c0742191e49af15a877382d09a8c0dd6030bb799fafd30687540a3",
+      "successorSha256": "6ca335cb1f6a6f531670d05ca0e8090687e1f966b87cf6878e1f43c6fa2652c7"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "88a0bd2807831d1ae794a060dc5a732c9e8578f0c7d6cfa5b1b4a8d3e9cdf4cc",
+      "successorSha256": "6503904cf962f068637be43fd03c6a4c927263407a7c5de20f0bd6e623770bd7"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "7", "taskRefs"],
+      "beforeSha256": "3cca049f6e2b82b5a6d5972fd94d3ee037e615e6e8c3853b8d10e62d1e9928a8",
+      "successorSha256": "bc25d4fad8449393d335ba928a3a9b69ba91651c8547bb5bd9b47f580d9c80fa"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "8", "taskRefs"],
+      "beforeSha256": "a6d76cd901244ac0ff4e5df67f8985af30d1aa1881ba6d31ae309fea25e64953",
+      "successorSha256": "31de3a954ba3bba4152b1f59d334b861bac3a4444cb7806b2f984493526f9fcc"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "9", "taskRefs"],
+      "beforeSha256": "49d3d905246af99b45c71ab26000e674ea3acae1e3ac7c0d62c52040d5a0d303",
+      "successorSha256": "a526eb02c1298a60f29691cd0b74fb5a00e1c18f60a09f12ae2463561b7dfc46"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "10", "taskRefs"],
+      "beforeSha256": "b9e72f369642f7615035e2698371ad8e4ec3d1ba3e929d027cea7e42f7df7e5c",
+      "successorSha256": "4ce3ea0ead5f9febfd2c44499468b21a52eb1292a30687226480816492aea61a"
+    },
+    {
+      "registry": "modules",
+      "selector": "capstone-integration",
+      "path": ["gateCriteria", "11", "taskRefs"],
+      "beforeSha256": "f3e10840d73637a238651f9b3d5be82f8b0ac9cd453808920b0574e4daf6c7a5",
+      "successorSha256": "71475c28993e9aabd7be67db09e7bfa607c8f945060200d050315afe9695bda8"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-client-retry",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "1300acc6e18b40809a7281378a1abd1f7b9a13b350981706be6972ffa042c9fd",
+      "successorSha256": "f513a704f39301d9bc1722922bae2e8c22985a8edee0a0209f54840a65c23519"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-client-retry",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "9aa4922ca433892a4b7f629877bae3abdfb5f285c1378ac17a2de941149abd3c",
+      "successorSha256": "d3edbb4dc9e6982309bf3123668e0d19e6b178869e26570e9d3537904c871594"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-client-retry",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "5ef780775eec574306034448df3c5ffec1fd48301f8be23b053293c73bea3b97",
+      "successorSha256": "df7c2090fa87ca3c1d20ad6f40320003b9778c379afe1ab44339bcfba271236b"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-client-retry",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "498a2a5ea2b8d47b069447147eebdc14a971f88a2c434f19a77db1550c8de1c5",
+      "successorSha256": "10d10836047773e87c6caf4248278bf8f92f65cd2ea3b70afc34c50da75d44ff"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-authorization",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "c2946a181c394050f3b022e45e99c64092b529b01476da5490b8b1bb2503d393",
+      "successorSha256": "f306e1d0c24d742284448f40257fef5e5e101aeb24a13523f8e152ec0d231cd0"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-authorization",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "62d9186be0eb1734521293428201e6af5b6152f0a1e6324a359dd604e65fa073",
+      "successorSha256": "fd26ec6c4a4437e1b470fff4750ccb365dab5e90b4f12bbb51a85256a112dbbc"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-authorization",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "5773ca08f98c4ff368e62f1a74c2479bbd57f8841a8da985a6bfc5ee2e757c35",
+      "successorSha256": "a942dd7d421d0ef1c6722346bbc97c7d4d45eec55d7cd207628238073b8d4273"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-authorization",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "90767e2f13589b082fdcb86e93801137abe1d9f914165d1d747e6d0f92b41227",
+      "successorSha256": "d671b3f8f9f186e8c23097be625818173244823589a1b3249e98a9687de53023"
+    },
+    {
+      "registry": "modules",
+      "selector": "file-schema-evolution",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "4055562b1532d6887b48c99c67d8509415c4b2c6330a2d667be5011688eb2d22",
+      "successorSha256": "0120ec785cdfdc0baf1140be55da73659707dfcf42f7ace9ad2a8cb81d0e5db6"
+    }
+  ],
+  "beforeValues": {
+    "bc314bbdbf8065afb9e33820f10c88865e252afa2d0577e8a3c4fe9a322f39a5": [
+      {
+        "lessonId": "function-ownership-calibration",
+        "stepId": "function-is-empty-text"
+      },
+      {
+        "lessonId": "function-ownership-calibration",
+        "stepId": "function-add-mark"
+      }
+    ],
+    "f0f772384ae7b9551c33e8ffcb200f0e8c19fbc774e0498264fdfd0e967040e1": [
+      {
+        "lessonId": "shared-borrow-calibration",
+        "stepId": "shared-count-words"
+      },
+      {
+        "lessonId": "shared-borrow-calibration",
+        "stepId": "shared-has-suffix"
+      }
+    ],
+    "0455bf5ddcd1add994fe5bcf00f77fe79f2ece6b74a35595b3ece7cbe5051421": [
+      {
+        "lessonId": "documentation-guided-repair",
+        "stepId": "docs-prefix-repair"
+      },
+      {
+        "lessonId": "documentation-guided-repair",
+        "stepId": "docs-split-transfer"
+      },
+      {
+        "lessonId": "documentation-guided-repair",
+        "stepId": "docs-split-blank"
+      }
+    ],
+    "d84a8387c05fce67ee0919f3e1c7a1d8f10d38f0fae093ba3170aef36df8cea7": [
+      {
+        "lessonId": "tokio-graceful-shutdown",
+        "stepId": "tokio-graceful-shutdown-drain-gate"
+      }
+    ],
+    "6766da5fb254d3d65d7302ae474688bbca4ff7e29d43d4350daa2f91d9d63593": [
+      {
+        "lessonId": "tokio-receiver-stream-drain",
+        "stepId": "tokio-receiver-stream-drain-close-and-drain-gate"
+      }
+    ],
+    "b4f8fb98411e9f08aa1310003f9f32d32402dc7ef5c16af43f92c55ca068df04": [
+      {
+        "lessonId": "tokio-receiver-stream-drain",
+        "stepId": "tokio-receiver-stream-drain-next-or-stop-blank"
+      }
+    ],
+    "d31934d94d7b175a5d75916ad269b0194f292c5188a34a784f12dba331ee68df": [
+      {
+        "lessonId": "dependency-graph-diagnosis",
+        "stepId": "dependency-graph-diagnosis-gate"
+      }
+    ],
+    "f3d4072db452d2ca2cf42e59b6be29bb2e46a080a2a7f48760b586bb48792f7e": [
+      {
+        "lessonId": "dependency-graph-diagnosis",
+        "stepId": "dependency-graph-diagnosis-blank"
+      }
+    ],
+    "0648c724d9975cb7f387fc4b5ad23104c2afb848c4ed57369cc188d879d626c6": [
+      {
+        "lessonId": "dependency-source-license-policy",
+        "stepId": "dependency-source-license-policy-gate"
+      }
+    ],
+    "015f0fd3a1064b38914a5baf9ce44d38cf493d3c3ff74bee2a6618d3c2de141f": [
+      {
+        "lessonId": "dependency-source-license-policy",
+        "stepId": "dependency-source-license-policy-blank"
+      }
+    ],
+    "39d079c46a48e1b6a17d4e6b3c994feccd674fb9fcc6f572b2e2ded0aabe6817": [
+      {
+        "lessonId": "dependency-advisory-exceptions",
+        "stepId": "dependency-advisory-exceptions-gate"
+      }
+    ],
+    "d5f95e7ffbf2a564a3ff141f53eaa918b57124234af0101c69960d2887d9e63d": [
+      {
+        "lessonId": "dependency-advisory-exceptions",
+        "stepId": "dependency-advisory-exceptions-blank"
+      }
+    ],
+    "6c2466491d10ff4daa6a47bef2c9e47246bd3dc983b0396b4e8afaeef683279f": [
+      {
+        "lessonId": "dependency-release-dossier",
+        "stepId": "dependency-release-dossier-gate"
+      }
+    ],
+    "5c81618c0e2b4c6545cf21d53d58db8e486a8c7aefde74a6dfdd2fff75f13e87": [
+      {
+        "lessonId": "dependency-release-dossier",
+        "stepId": "dependency-release-dossier-blank"
+      }
+    ],
+    "74abd31a3c67e38d1dc3e7be229df6ef08172a1f1f2ef42455703417ffd05a96": [
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-blank"
+      },
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-with-mut-transfer"
+      }
+    ],
+    "b74165ae437b8b30783b707991cd18a3e9de07b2747c985bdac351895ee33620": [
+      {
+        "lessonId": "capstone-domain-boundary",
+        "stepId": "capstone-domain-validate"
+      }
+    ],
+    "ba854040af4fa479303bda0bf93ab06427a2a423c8bf1d86b70d612441af650c": [
+      {
+        "lessonId": "capstone-domain-boundary",
+        "stepId": "capstone-domain-errors"
+      }
+    ],
+    "29caf6b8e8d3aa18ebaff886375d664493b2dc2427a0b7d8337076d4c5b9b1ba": [
+      {
+        "lessonId": "capstone-idempotent-commit",
+        "stepId": "capstone-commit-replay"
+      }
+    ],
+    "aaaff57fa4734d0a84c345d6b675cb8e4ab50cb5b54d2188c16ad043c81ffc0b": [
+      {
+        "lessonId": "capstone-idempotent-commit",
+        "stepId": "capstone-commit-atomicity"
+      }
+    ],
+    "d31978e9d3d1fe3c16cda31db52085a0fd405dbf71a4f97e3a27e4cd78cba260": [
+      {
+        "lessonId": "capstone-bounded-lifecycle",
+        "stepId": "capstone-lifecycle-admit"
+      }
+    ],
+    "7da6d10296c0742191e49af15a877382d09a8c0dd6030bb799fafd30687540a3": [
+      {
+        "lessonId": "capstone-bounded-lifecycle",
+        "stepId": "capstone-lifecycle-settle"
+      }
+    ],
+    "88a0bd2807831d1ae794a060dc5a732c9e8578f0c7d6cfa5b1b4a8d3e9cdf4cc": [
+      {
+        "lessonId": "capstone-protocol-evolution",
+        "stepId": "capstone-protocol-decode"
+      }
+    ],
+    "3cca049f6e2b82b5a6d5972fd94d3ee037e615e6e8c3853b8d10e62d1e9928a8": [
+      {
+        "lessonId": "capstone-protocol-evolution",
+        "stepId": "capstone-protocol-migrate"
+      }
+    ],
+    "a6d76cd901244ac0ff4e5df67f8985af30d1aa1881ba6d31ae309fea25e64953": [
+      {
+        "lessonId": "capstone-incident-recovery",
+        "stepId": "capstone-incident-correlate"
+      }
+    ],
+    "49d3d905246af99b45c71ab26000e674ea3acae1e3ac7c0d62c52040d5a0d303": [
+      {
+        "lessonId": "capstone-incident-recovery",
+        "stepId": "capstone-incident-decide"
+      }
+    ],
+    "b9e72f369642f7615035e2698371ad8e4ec3d1ba3e929d027cea7e42f7df7e5c": [
+      {
+        "lessonId": "capstone-release-evidence",
+        "stepId": "capstone-release-bind"
+      }
+    ],
+    "f3e10840d73637a238651f9b3d5be82f8b0ac9cd453808920b0574e4daf6c7a5": [
+      {
+        "lessonId": "capstone-release-evidence",
+        "stepId": "capstone-release-decide"
+      }
+    ],
+    "1300acc6e18b40809a7281378a1abd1f7b9a13b350981706be6972ffa042c9fd": [
+      {
+        "lessonId": "service-client-bounded-retry",
+        "stepId": "service-client-retry-next-action"
+      },
+      {
+        "lessonId": "service-client-bounded-retry",
+        "stepId": "bounded-retry-blank"
+      }
+    ],
+    "9aa4922ca433892a4b7f629877bae3abdfb5f285c1378ac17a2de941149abd3c": [
+      {
+        "lessonId": "service-client-bounded-retry",
+        "stepId": "service-client-retry-budget-reservation"
+      },
+      {
+        "lessonId": "service-client-bounded-retry",
+        "stepId": "bounded-retry-budget-blank"
+      }
+    ],
+    "5ef780775eec574306034448df3c5ffec1fd48301f8be23b053293c73bea3b97": [
+      {
+        "lessonId": "service-client-ambiguous-driver",
+        "stepId": "service-client-immutable-frame-replay"
+      },
+      {
+        "lessonId": "service-client-ambiguous-driver",
+        "stepId": "ambiguous-driver-frame-blank"
+      }
+    ],
+    "498a2a5ea2b8d47b069447147eebdc14a971f88a2c434f19a77db1550c8de1c5": [
+      {
+        "lessonId": "service-client-ambiguous-driver",
+        "stepId": "service-client-aggregate-uncertainty"
+      },
+      {
+        "lessonId": "service-client-ambiguous-driver",
+        "stepId": "ambiguous-driver-blank"
+      }
+    ],
+    "c2946a181c394050f3b022e45e99c64092b529b01476da5490b8b1bb2503d393": [
+      {
+        "lessonId": "service-authorization-policy",
+        "stepId": "authorization-policy-apply"
+      },
+      {
+        "lessonId": "service-authorization-policy",
+        "stepId": "authorization-policy-blank"
+      }
+    ],
+    "62d9186be0eb1734521293428201e6af5b6152f0a1e6324a359dd604e65fa073": [
+      {
+        "lessonId": "service-authorization-attenuation",
+        "stepId": "authorization-attenuation-apply"
+      },
+      {
+        "lessonId": "service-authorization-attenuation",
+        "stepId": "authorization-attenuation-blank"
+      }
+    ],
+    "5773ca08f98c4ff368e62f1a74c2479bbd57f8841a8da985a6bfc5ee2e757c35": [
+      {
+        "lessonId": "service-authorization-binding",
+        "stepId": "authorization-binding-apply"
+      },
+      {
+        "lessonId": "service-authorization-binding",
+        "stepId": "authorization-binding-blank"
+      }
+    ],
+    "90767e2f13589b082fdcb86e93801137abe1d9f914165d1d747e6d0f92b41227": [
+      {
+        "lessonId": "service-authorization-admission",
+        "stepId": "authorization-admission-apply"
+      },
+      {
+        "lessonId": "service-authorization-admission",
+        "stepId": "authorization-admission-blank"
+      }
+    ],
+    "4055562b1532d6887b48c99c67d8509415c4b2c6330a2d667be5011688eb2d22": [
+      {
+        "lessonId": "file-schema-normalization",
+        "stepId": "schema-normalize-apply"
+      },
+      {
+        "lessonId": "file-schema-normalization",
+        "stepId": "schema-normalize-blank"
+      }
+    ]
+  }
+}

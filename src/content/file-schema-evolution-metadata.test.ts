@@ -1,0 +1,361 @@
+import { expect, it } from "vitest";
+import * as course from "./course";
+import {
+  hashRegistryValue,
+  historicalBeforeCurriculumRecovery,
+} from "./file-schema-evolution-compatibility-fixture";
+import { validateContent } from "./validate";
+
+// Ordered metadata from the frozen predecessor registry. Null encodes an absent property.
+const predecessorDurationVector: [string, number | null][] = [
+  ["first-program", 12],
+  ["bindings-types", 16],
+  ["functions-expressions", 16],
+  ["control-flow", 18],
+  ["foundations-assessment", 20],
+  ["while-progress", 18],
+  ["loop-values", 20],
+  ["loop-control", 20],
+  ["memory-intro", 12],
+  ["move-copy-discovery", 16],
+  ["functions-and-ownership", 15],
+  ["borrow-intro", 18],
+  ["number-guessing-transfer", 20],
+  ["blank-page-repair", 18],
+  ["adversarial-no-clone", 16],
+  ["scenario-assessment", 20],
+  ["slices-and-views", 18],
+  ["structs-and-fields", 18],
+  ["methods-and-state", 20],
+  ["enums-and-match", 18],
+  ["option-and-absence", 18],
+  ["modeling-assessment", 20],
+  ["vec-and-borrowing", 20],
+  ["string-and-utf8", 22],
+  ["hashmap-and-entry", 22],
+  ["result-and-recovery", 18],
+  ["propagation-and-errors", 20],
+  ["panic-and-contracts", 18],
+  ["todo-command-parser", 35],
+  ["todo-state-invariants", 40],
+  ["todo-session-project", 45],
+  ["module-tree-paths", 30],
+  ["module-visibility", 35],
+  ["imports-and-reexports", 35],
+  ["cargo-package-integration", 40],
+  ["todo-storage-format", 40],
+  ["todo-file-persistence", 45],
+  ["todo-terminal-cli", 45],
+  ["generic-values", 18],
+  ["generic-impl", 20],
+  ["generic-bounds", 20],
+  ["trait-contracts", 28],
+  ["trait-consumers", 30],
+  ["associated-types", 32],
+  ["trait-dispatch", 34],
+  ["lifetime-relations", 16],
+  ["lifetime-structs", 17],
+  ["lifetime-api", 18],
+  ["closure-captures", 18],
+  ["closure-ownership", 18],
+  ["closure-contracts", 20],
+  ["variance-shared-views", 18],
+  ["variance-mutable-slots", 20],
+  ["hrtb-local-visitors", 22],
+  ["hrtb-borrowed-projections", 24],
+  ["iterator-ownership", 22],
+  ["iterator-pipelines", 20],
+  ["iterator-laziness", 18],
+  ["iterator-contracts", 25],
+  ["gat-receiver-borrows", 26],
+  ["gat-overlapping-mutable-windows", 28],
+  ["gat-item-capabilities", 24],
+  ["gat-owned-iterator-adapters", 24],
+  ["testing-contracts", 18],
+  ["testing-regressions", 19],
+  ["testing-quality-workflow", 20],
+  ["guess-input-contract", 24],
+  ["guess-round-state", 30],
+  ["guess-session-io", 32],
+  ["guess-random-boundary", 24],
+  ["log-records", 22],
+  ["log-streaming", 25],
+  ["log-analyzer-project", 25],
+  ["box-recursive", 20],
+  ["deref-contracts", 21],
+  ["drop-resources", 21],
+  ["rc-sharing", 35],
+  ["refcell-borrows", 35],
+  ["weak-links", 40],
+  ["thread-join", 22],
+  ["thread-move", 22],
+  ["scoped-threads", 24],
+  ["channel-ownership", 18],
+  ["channel-lifecycle", 18],
+  ["channel-backpressure", 20],
+  ["send-sync", 20],
+  ["mutex-state", 20],
+  ["mutex-recovery", 20],
+  ["atomic-rmw", 20],
+  ["atomic-cas", 25],
+  ["atomic-limits", 20],
+  ["release-acquire", 24],
+  ["ordering-contracts", 25],
+  ["loom-evidence", 24],
+  ["future-laziness", 20],
+  ["await-progress", 22],
+  ["future-ownership", 24],
+  ["future-cancellation", 20],
+  ["tokio-runtime-entry", 22],
+  ["tokio-spawn-join", 24],
+  ["tokio-task-boundaries", 26],
+  ["tokio-join-outcomes", 27],
+  ["tokio-bounded-channels", 27],
+  ["tokio-reservation-cancellation", 31],
+  ["tokio-timeouts", 27],
+  ["tokio-select-cancellation", 29],
+  ["tokio-graceful-shutdown", 30],
+  ["tokio-async-read-write", 29],
+  ["tokio-framing-eof", 32],
+  ["tokio-retained-frame-progress", 37],
+  ["tokio-stream-next", 28],
+  ["tokio-receiver-stream-drain", 30],
+  ["tokio-spawn-blocking-boundary", 28],
+  ["tokio-blocking-cooperative-stop", 31],
+  ["tokio-tcp-connect", 31],
+  ["tokio-tcp-half-close", 34],
+  ["tokio-frame-deadlines", 34],
+  ["tokio-admission-lifecycle", 38],
+  ["async-lending-receiver", 18],
+  ["async-lending-callbacks", 18],
+  ["async-lending-cancel-commit", 18],
+  ["async-lending-send-boundary", 18],
+  ["async-lending-dyn-adapter", 20],
+  ["api-validated-construction", 28],
+  ["api-error-source-chain", 30],
+  ["api-trait-compatibility", 35],
+  ["api-compatible-surface", 35],
+  ["api-frame-protocol-maintenance", 22],
+  ["api-release-old-contracts", 20],
+  ["api-release-matrix-decision", 20],
+  ["macros-exactly-once", 19],
+  ["macros-repetition-grammar", 19],
+  ["macros-exported-paths-2024", 20],
+  ["cargo-dependency-contract", 25],
+  ["cargo-resolver-feature-unification", 28],
+  ["cargo-lock-msrv-policy", 25],
+  ["cargo-package-rehearsal", 25],
+  ["dependency-graph-diagnosis", 28],
+  ["dependency-source-license-policy", 27],
+  ["dependency-advisory-exceptions", 27],
+  ["dependency-release-dossier", 29],
+  ["grep-context-selection", 24],
+  ["grep-bounded-input", 30],
+  ["grep-path-policy", 34],
+  ["grep-cli-contract", 36],
+  ["property-invariants", 24],
+  ["property-generated-inputs", 25],
+  ["property-shrinking-replay", 32],
+  ["property-metamorphic-transfer", 34],
+  ["fuzz-input-domain", 22],
+  ["fuzz-oracle-sensitivity", 23],
+  ["fuzz-counterexample-regression", 24],
+  ["fuzz-campaign-evidence", 25],
+  ["performance-measured-workload", 24],
+  ["performance-borrowed-stream", 26],
+  ["performance-bounded-buffer", 28],
+  ["performance-evidence-decisions", 25],
+  ["performance-evidence-investigation", 18],
+  ["profile-instruction-cost", 24],
+  ["profile-allocation-events", 26],
+  ["profile-optimization-transfer", 27],
+  ["profile-regression-decision", 25],
+  ["runtime-allocation-scope", 25],
+  ["runtime-allocation-comparison", 27],
+  ["unsafe-ffi-checked-view", 25],
+  ["unsafe-ffi-split-regions", 25],
+  ["unsafe-ffi-raw-record", 25],
+  ["unsafe-ffi-owned-handle", 25],
+  ["unsafe-miri-byte-view", 30],
+  ["unsafe-miri-disjoint-regions", 25],
+  ["unsafe-miri-slot-state", 35],
+  ["unsafe-miri-mut-slot", 35],
+  ["unsafe-borrowed-provenance", 30],
+  ["unsafe-borrowed-reborrow", 30],
+  ["unsafe-borrowed-slot", 30],
+  ["unsafe-borrowed-auto-traits", 30],
+  ["service-trust-admission", 28],
+  ["service-correlated-telemetry", 28],
+  ["service-readiness-drain", 30],
+  ["service-incident-diagnosis", 30],
+  ["capstone-domain-boundary", 16],
+  ["capstone-idempotent-commit", 16],
+  ["capstone-bounded-lifecycle", 16],
+  ["capstone-protocol-evolution", 16],
+  ["capstone-incident-recovery", 16],
+  ["capstone-release-evidence", 16],
+  ["capstone-maintenance-recovery", 16],
+  ["service-client-bounded-retry", null],
+  ["service-client-ambiguous-driver", null],
+  ["conversion-ownership-views", 20],
+  ["checked-conversions", 20],
+  ["nested-patterns-and-destructuring", 20],
+  ["function-ownership-calibration", 18],
+  ["shared-borrow-calibration", 18],
+  ["fallible-value-composition", 30],
+  ["fallible-iterator-contracts", 30],
+  ["documentation-guided-repair", 35],
+  ["ownership-foundation-transfer", 22],
+  ["service-authorization-policy", null],
+  ["service-authorization-attenuation", null],
+  ["service-authorization-binding", null],
+  ["service-authorization-admission", null],
+];
+const predecessorProjectHashes = [
+  [
+    "number-guessing-result-message",
+    "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+  ],
+  [
+    "todo-command-session",
+    "93f6b09f074d777bbfe49f92cca9cc3b548d08d7dd11e2a46102de1869385b10",
+  ],
+  [
+    "log-analyzer-project",
+    "6d5048078e9062bbff92ff97a08de5935c9eb23c7a17647d5401af597e34c16a",
+  ],
+  [
+    "concurrency-lab",
+    "0a6a1fe0e254b30319987dd4ccff336d87b2ae4e401410d15fb3fd9332fda387",
+  ],
+  [
+    "tokio-pipeline",
+    "cd7f8c01a10bf318d1593ebfb59f4e162652226f05ab8c1b779b785b95739795",
+  ],
+  [
+    "tokio-service",
+    "2799490b42a7484893bc7cf1e1f6da97a966f8ac73c521515892a449f5e27653",
+  ],
+  [
+    "service-operations",
+    "9ff4895fdfdc1a91dd07995ad67ca98393b373beef41a1e4beb4ad6a0a72f247",
+  ],
+  [
+    "frame-protocol",
+    "8cced4657537ece31ae3a673974f85eed7841ca6397ca4cf902a80a9a5c9f45b",
+  ],
+  [
+    "mini-grep",
+    "072719da266c47662cd6c91c433e3d05bb71651c4c70688a53dc737d701a8e3b",
+  ],
+  [
+    "property-contracts",
+    "a5eac79d70f5d326358f6953630df94a254038c12a5a10670e3525fca8024394",
+  ],
+  [
+    "ffi-buffer",
+    "01d5a624a61b4cbf138619102d3bc99ba082982535d3a117e399de69a8291083",
+  ],
+  [
+    "miri-safety",
+    "bac8d3f35d3a3abf93d9ae4f7ab583b3057f7b695284a489975124db1c190109",
+  ],
+  [
+    "durable-log-service",
+    "e20fd7f19747298b301afa65c2f2225a1e2549606fe4c184b2546e77d94e2d4d",
+  ],
+  [
+    "durable-log-retry",
+    "e364d16da0b15fba65f1acc67cfc5cd885265bbb96c0ed1d5a968f8c2be090f3",
+  ],
+  [
+    "service-authorization",
+    "b0c2b9fd0aced454ad04eff90c150332f72c56357f1d5da60c22cb1c197a338e",
+  ],
+];
+
+it("preserves the exact 202 predecessor duration values and property presence", () => {
+  const [old, added] = [
+    course.lessons.slice(0, 202),
+    course.lessons.slice(202),
+  ];
+  expect(
+    old.map((lesson) => [
+      lesson.id,
+      Object.hasOwn(lesson, "minutes") ? lesson.minutes : null,
+    ]),
+  ).toEqual(predecessorDurationVector);
+  expect(old.filter((lesson) => Object.hasOwn(lesson, "minutes"))).toHaveLength(
+    196,
+  );
+  expect(added.map(({ id }) => id)).toEqual([
+    "file-schema-normalization",
+    "file-schema-explicit-upgrade",
+  ]);
+  for (const lesson of added) {
+    expect(Object.hasOwn(lesson, "minutes")).toBe(false);
+    expect(lesson.minutes).toBeUndefined();
+  }
+  expect(validateContent(course)).toEqual([]);
+});
+
+it.each([0, -1, NaN, Infinity])(
+  "rejects invalid explicit minutes %s in either new lesson",
+  (minutes) => {
+    for (const target of course.lessons.slice(202)) {
+      const changed = {
+        ...course,
+        lessons: course.lessons.map((lesson) =>
+          lesson === target ? { ...lesson, minutes } : lesson,
+        ),
+      };
+      expect(validateContent(changed)).toContain(
+        `lesson ${target.id} is missing required learning metadata`,
+      );
+    }
+  },
+);
+
+it("reports the current catalog and pins inherited projects before the reviewed recovery", () => {
+  expect({
+    modules: course.modules.length,
+    lessons: course.lessons.length,
+    steps: course.lessons.flatMap((lesson) => lesson.steps).length,
+    concepts: course.concepts.length,
+    competencies: course.competencies.length,
+    sources: course.sources.length,
+    projects: course.projects.length,
+  }).toEqual({
+    modules: 51,
+    lessons: 204,
+    steps: 1436,
+    concepts: 199,
+    competencies: 200,
+    sources: 349,
+    projects: 16,
+  });
+  const maintainedProjectHashes = new Map([
+    [
+      "durable-log-retry",
+      "d0bee7811bd12b1a612b90f77be726d8accf6ac6ffadb7211ec04c9be787a0a5",
+    ],
+    [
+      "miri-safety",
+      "983152a95721ceca060f55c7d9f854431254689a0013af4dbcc6d05e0481ef91",
+    ],
+    [
+      "service-authorization",
+      "ce2042b890db806eab63108681a14db213c240a30dfedc345ddfd872659262ea",
+    ],
+  ]);
+  expect(
+    historicalBeforeCurriculumRecovery(course)
+      .projects.slice(0, 15)
+      .map((project) => [project.id, hashRegistryValue(project)]),
+  ).toEqual(
+    predecessorProjectHashes.map(([id, hash]) => [
+      id,
+      maintainedProjectHashes.get(id) ?? hash,
+    ]),
+  );
+});

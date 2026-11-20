@@ -1,0 +1,105 @@
+{
+  "schema": "performance-investigation-pre-a7-projection-v1",
+  "genuineCaptureSha256": "e829bec05c1bf76224fd93271094e9b51627901bfe1dc9d647d7090ed49fbb77",
+  "genuineCapturedAt": "2026-11-03T04:48:00.341Z",
+  "head": "da97ed42bfb3e2bf341195545c32489dacbf0bdc",
+  "tree": "721f026c962eb15580ecdb19db34dfc7b8a8b059",
+  "predecessor": {
+    "wholeCourseSha256": "c76320c1964700ac68f991776d4f80c23a5da2c4adb359ca38e8d1a6ff084c0a",
+    "composedPreC1WholeCourseSha256": "06c25a783eaec0643cae62d8804b46689042be41bea932836d948c7ee69ce160",
+    "registryKeys": [
+      "competencies",
+      "concepts",
+      "default",
+      "delayedReviewExercises",
+      "lessons",
+      "modules",
+      "ownershipModule",
+      "project",
+      "projects",
+      "reviewExercises",
+      "reviewExercisesById",
+      "roadmap",
+      "shortReviewExercises",
+      "sources",
+      "traces"
+    ],
+    "registrySha256ByKey": {
+      "competencies": "4e3a94355c196b6276e2aec7f1c6188f8c534ee806333bcb31a996cfb4fa1851",
+      "concepts": "5c8c7c63490fe024c47b6dab628e0c804c8e1f32b7be54123d8898c5482df358",
+      "default": "81031a8bd101fb9a5d0cbc8095b62a3c286daeb286992cdf3de4e9a4f395b47e",
+      "delayedReviewExercises": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c",
+      "lessons": "ab6bd26879d9375736ca2a9cd9d90522b77f6c2cbaa2b3e0dc3ee098c1ae5b67",
+      "modules": "8105bccdbd262204cd332c67bce47ed62c97312e957be17b1fd36e1c52d5ad20",
+      "ownershipModule": "a49b89d28c14ca64c42429ac0d946ee13b6f5d638cd55ea311c1e6746b44cec1",
+      "project": "6e6174f2465c09cd958a9bfd1ccc0a6394e69dc1e338c2281195f33d29691550",
+      "projects": "12ca1b30c738589b69ff4a5894f7785ba1b2bb1001a7a69033c07a233eff88f4",
+      "reviewExercises": "7cea35a71e381a39be8fc48555421b1d99b6c255bd1a88c1a9e47a3585d3e388",
+      "reviewExercisesById": "b18e4b1a3f2a17dbc317f27a20772a213f43b8b8150435bc8237fe32e86c0a2e",
+      "roadmap": "63c94381759dcb101770b8f8f56e3d66aebdcf27e19e6fccfaa21c1d8971792a",
+      "shortReviewExercises": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+      "sources": "e9ae605cb3b4accd0483bef877e991c113a53ae4b069838bcde34d3c52ff194a",
+      "traces": "f501901ba89841109381b3f99e858606cb6cebd888b595518f556504efcaa263"
+    },
+    "counts": {
+      "modules": 48,
+      "lessons": 194,
+      "steps": 1293,
+      "competencies": 195,
+      "concepts": 194,
+      "sources": 349,
+      "projects": 13
+    }
+  },
+  "restorations": [
+    {
+      "registry": "lessons",
+      "selector": "performance-evidence-investigation",
+      "operation": "remove-exact-item",
+      "successorSha256": "0a391ad56f67967f190114b36581be53d9a1a4a2e093e726ced833dae3eedabf",
+      "successorIndex": 157
+    },
+    {
+      "registry": "modules",
+      "selector": "performance-evidence",
+      "path": ["lessonIds"],
+      "operation": "remove-exact-appended-id",
+      "removeValue": "performance-evidence-investigation",
+      "successorSha256": "04ed2f077eabd6ad89661e4bb71ff16cac4d230e285c3b08bfe175b2b887c070"
+    },
+    {
+      "registry": "projects",
+      "selector": "log-analyzer-project",
+      "path": ["package", "files"],
+      "operation": "remove-exact-appended-files",
+      "removeValues": [
+        "tests/support/a7_filtered_mixed_2048.rs",
+        "tests/a7_performance_contract.rs",
+        "tests/a7_filter_ignored_mutant.rs",
+        "A7-PERFORMANCE-MANIFEST.json",
+        "A7-REPLAY.md",
+        "A7-INVESTIGATION.md"
+      ],
+      "prefixSha256": "6fea5d781f057dbdc4dee2f145996190ef8a30b91dd9703bb91bc1313329d9a6",
+      "successorSha256": "153bf389c73d9accf2c352a44c927b6b99aa5c063b2f1d648a817bf1226a36e1"
+    },
+    {
+      "registry": "projects",
+      "selector": "log-analyzer-project",
+      "path": ["package", "files"],
+      "operation": "restore-exact-file-fields",
+      "filePath": "benches/log_analyzer.rs",
+      "fields": ["starter", "solution"],
+      "successorSha256": "0842d035f3da07aba93f046444ea124420d85804228c13e50648f1cf3b29614e",
+      "before": "use criterion::{BatchSize, BenchmarkId, Criterion, black_box, criterion_group, criterion_main};\nuse log_analyzer_workshop::{Level, Summary, analyze_reader, parse_record};\nuse std::io::{BufRead, Cursor};\n\nfn classify(summary: &mut Summary, line: &[u8], filter: Option<Level>) {\n    match parse_record(line) {\n        Ok(record) if filter.is_none_or(|wanted| wanted == record.level) => match record.level {\n            Level::Info => summary.info += 1,\n            Level::Warn => summary.warn += 1,\n            Level::Error => summary.error += 1,\n        },\n        Ok(_) => {}\n        Err(_) => summary.malformed += 1,\n    }\n}\n\nfn baseline(reader: impl BufRead, filter: Option<Level>) -> Summary {\n    let mut reader = reader;\n    let mut summary = Summary::default();\n    let mut line = Vec::new();\n    loop {\n        line.clear();\n        let read = reader\n            .read_until(b'\\n', &mut line)\n            .expect(\"benchmark input is readable\");\n        if read == 0 {\n            break;\n        }\n        if line.last() == Some(&b'\\n') {\n            line.pop();\n        }\n        classify(&mut summary, &line, filter);\n    }\n    summary\n}\n\nfn candidate(reader: impl BufRead, filter: Option<Level>) -> Summary {\n    analyze_reader(reader, filter).expect(\"benchmark input is readable\")\n}\n\nfn workload(lines: usize, malformed_every: Option<usize>) -> Vec<u8> {\n    let levels = [\"INFO\", \"WARN\", \"ERROR\"];\n    let mut input = Vec::with_capacity(lines * 32);\n    for index in 0..lines {\n        if malformed_every.is_some_and(|period| index % period == 0) {\n            input.extend_from_slice(format!(\"{index} DEBUG malformed\\n\").as_bytes());\n        } else {\n            let level = levels[index % levels.len()];\n            input.extend_from_slice(format!(\"{index} {level} message-{index}\\n\").as_bytes());\n        }\n    }\n    input\n}\n\nfn workloads() -> [(String, Vec<u8>); 3] {\n    [\n        (\"small_valid\".to_owned(), workload(8, None)),\n        (\"mixed_malformed\".to_owned(), workload(64, Some(7))),\n        (\"large_valid\".to_owned(), workload(512, None)),\n    ]\n}\n\nfn benchmark_analyzer(c: &mut Criterion) {\n    let mut group = c.benchmark_group(\"log_analyzer\");\n    for (name, input) in workloads() {\n        assert_eq!(\n            baseline(Cursor::new(input.as_slice()), None),\n            candidate(Cursor::new(input.as_slice()), None),\n            \"baseline and candidate must have the same result shape\"\n        );\n        group.throughput(criterion::Throughput::Bytes(input.len() as u64));\n        // setup uses borrowed input before the timed closure; teardown drops the reader afterward.\n        group.bench_with_input(BenchmarkId::new(\"baseline\", &name), &input, |b, input| {\n            b.iter_batched_ref(\n                || Cursor::new(input.as_slice()),\n                |reader| black_box(baseline(reader, None)),\n                BatchSize::SmallInput,\n            );\n        });\n        group.bench_with_input(BenchmarkId::new(\"candidate\", &name), &input, |b, input| {\n            b.iter_batched_ref(\n                || Cursor::new(input.as_slice()),\n                |reader| black_box(candidate(reader, None)),\n                BatchSize::SmallInput,\n            );\n        });\n    }\n    group.finish();\n}\n\ncriterion_group!(benches, benchmark_analyzer);\ncriterion_main!(benches);\n"
+    }
+  ],
+  "unknownRegistryKeys": [],
+  "aliasChecks": {
+    "delayedReviewExercisesDefault": true,
+    "shortReviewExercisesDefault": true,
+    "projectProjects": true,
+    "ownershipModuleModules": true,
+    "reviewExercisesByIdUsesStepIds": true
+  }
+}

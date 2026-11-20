@@ -1,0 +1,341 @@
+{
+  "baseline": {
+    "sha": "914f90a66c04a491854151be6d0690ace9a6dfbc",
+    "lessonsSha256": "f50143ed57fac8c71cefdd0979510b1a9b5dd197212e54c7cfa7f36363e2e8ab"
+  },
+  "restorations": [
+    {
+      "lessonId": "vec-and-borrowing",
+      "stepId": "vec-last-gate",
+      "path": [
+        "prompt"
+      ],
+      "before": "Kontrakt: napisz `fn last_value(values: &[i32]) -> Option<&i32>`. Zwróć ostatni element przez pożyczkę albo None dla pustego Vec; nie przenoś i nie klonuj wektora. Starter zwraca pierwszy element, więc popraw go dla pustego, jednoelementowego i wieloelementowego przypadku.",
+      "beforeSha256": "6a918f69fdd9015127fc723b7caf27c286d87b23c8ae871daae9cefdca6033cf",
+      "successorSha256": "7a13f7613ee3c11ec4efb39a9a94cf861593f67a3d8bb69f891928106f95f4f9"
+    },
+    {
+      "lessonId": "vec-and-borrowing",
+      "stepId": "vec-last-gate",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn empty_vector_has_no_last_value() {\n    let values: Vec<i32> = Vec::new();\n    assert_eq!(last_value(&values), None);\n}\n\n#[test]\nfn finds_the_last_value_without_taking_the_vector() {\n    let singleton = vec![7];\n    assert_eq!(last_value(&singleton), Some(&7));\n    assert_eq!(singleton, vec![7]);\n    let values = vec![-4, 8, 15];\n    assert_eq!(last_value(&values), Some(&15));\n    assert_eq!(values, vec![-4, 8, 15]);\n}",
+      "beforeSha256": "11f92898d01216c0ab28a58359fd2b3fb8253e638e3f606ca143fc9ed2ef5505",
+      "successorSha256": "ead3abe098f404b96824feeadfb44033548d2345415f584b10b4068b7b1a0573"
+    },
+    {
+      "lessonId": "vec-and-borrowing",
+      "stepId": "vec-transfer",
+      "path": [
+        "prompt"
+      ],
+      "before": "Napisz summary przyjmujące &[i32] i zwracające parę (Option<&i32>, usize): referencję do pierwszej liczby oraz liczbę wartości ujemnych. Para (a, b) zawiera dwa niezależne wyniki, a typy pary zapisujemy tak samo w nawiasach. Dla pustego wycinka zwróć (None, 0). Pożyczaj dane i nie klonuj ich. first() jest odpowiednikiem get(0).",
+      "beforeSha256": "8aba5d918f85f3f153b1449f16e9aabd4fcc740f81c9830c3f03740f641a553c",
+      "successorSha256": "7867b00116c44b8a97c11d918d9f0a0bb8571f729add494c15a3ed079ccf876f"
+    },
+    {
+      "lessonId": "vec-and-borrowing",
+      "stepId": "vec-transfer",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test] fn summary_retains_borrowed_input() { assert_eq!(summary(&[]), (None, 0)); let values=vec![-3,7,0]; let actual: (Option<&i32>, usize)=summary(&values); assert_eq!(actual,(Some(&-3),1)); assert_eq!(values,vec![-3,7,0]); assert_eq!(summary(&[5,-1,-2]),(Some(&5),2)); assert_eq!(summary(&[0]),(Some(&0),0)); }",
+      "beforeSha256": "3fdcb68907c66855fd5703ea0ee85ea0a74f43f501657dad72d102a7023b7d39",
+      "successorSha256": "edd4f13956cf353951d49092b836810ebbd2300f555cf607f36c05ffb6df2113"
+    },
+    {
+      "lessonId": "async-lending-receiver",
+      "stepId": "async-lending-receiver-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Kiedy wolno rozpocząć drugi borrowed receive?",
+      "beforeSha256": "7a7b82228ed6895b10bce32234d9726a78b21cf413022bcc1b32b37408feb655",
+      "successorSha256": "5c3aba05a44c6fc54d47783518e0ec4ae57618a5c2c50dd54b1187e35f991401"
+    },
+    {
+      "lessonId": "async-lending-receiver",
+      "stepId": "async-lending-receiver-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Po zakończeniu pierwszej pożyczki.",
+          "po drop lub finish"
+        ],
+        "feedback": "Druga pożyczka nie może nakładać się z pierwszą."
+      },
+      "beforeSha256": "e60381a42f6fced40a8cc356c3609eb28a9ee8c02cb2cbf7896339f5a9044c02",
+      "successorSha256": "1f2e52bf8fa8a29ce470830e848e29d4e303650e2fa7e22f2eb4178ef3121c64"
+    },
+    {
+      "lessonId": "async-lending-receiver",
+      "stepId": "async-lending-receiver-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepId": "async-lending-cancel-commit-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Kiedy kursor może się przesunąć?",
+      "beforeSha256": "c1337c0b3f344baa6fcc0aa57f1426c48f88d1b73e791f63e988571dada9fef3",
+      "successorSha256": "d2e3d01495bcd656029eb5caf5551848aec019c2d6c47b6792ab8e4171b3e7a6"
+    },
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepId": "async-lending-cancel-commit-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Po ukończeniu callbacku.",
+          "po callbacku"
+        ],
+        "feedback": "Commit należy do zakończonej pracy."
+      },
+      "beforeSha256": "7514d11881ed12e5139e1853cebb175c1a65409c60b914e0233a74bd47163ebe",
+      "successorSha256": "1c03c6bcedfe3b02b6350dd907007cbf7b9420e0a9279a0228312697854128f6"
+    },
+    {
+      "lessonId": "async-lending-cancel-commit",
+      "stepId": "async-lending-cancel-commit-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "async-lending-dyn-adapter",
+      "stepId": "async-lending-dyn-adapter-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Kiedy wybrać static lending?",
+      "beforeSha256": "fc82a87e82d1a04587baebd52a1c6796f1a6b3262e8c86006c9c867a7eede7b6",
+      "successorSha256": "c57ef1c6e3fec93324fe39e1ac35f308bc4ce49811361004b2a64000d81abef6"
+    },
+    {
+      "lessonId": "async-lending-dyn-adapter",
+      "stepId": "async-lending-dyn-adapter-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Gdy typy są znane i nie potrzebujesz heterogenicznego dispatchu.",
+          "gdy typy są znane"
+        ],
+        "feedback": "Static API nie płaci za boxed dispatch."
+      },
+      "beforeSha256": "81d6acc63613a1691fb85d848cbb634bed3c9d968d174c47d5a70b85dda629e1",
+      "successorSha256": "3d68da59a478d228ab9ca8efd1f14a06d48b1333082af00c515af0d21a240ae5"
+    },
+    {
+      "lessonId": "async-lending-dyn-adapter",
+      "stepId": "async-lending-dyn-adapter-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "runtime-allocation-scope",
+      "stepId": "allocation-scope-recall",
+      "path": [
+        "title"
+      ],
+      "before": "Retrieval: granica GlobalAlloc",
+      "beforeSha256": "77689d9dc06db7e8db65989bfab2ff925c9235bbcec37f654d31e23bf9a0c455",
+      "successorSha256": "56499e51d7955682ced9866ebbe1f16ae59502b17bb63a681b5f99d6185967f7"
+    },
+    {
+      "lessonId": "runtime-allocation-scope",
+      "stepId": "allocation-scope-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Czy licznik wywołań GlobalAlloc jest twierdzeniem o RSS?",
+      "beforeSha256": "5e21ab9fb9bd7d7993249b1fccf100a09b2d0280017827133088032834a09dc4",
+      "successorSha256": "dc21c1f0bb598909b078dc92a3ccc700dd8f685078c7d259a39e2b0bdb329c14"
+    },
+    {
+      "lessonId": "runtime-allocation-scope",
+      "stepId": "allocation-scope-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Nie; to obserwacja wywołań alokatora w nazwanym oknie procesu, nie RSS ani retained memory."
+        ],
+        "feedback": "Nazwij granicę pomiaru i ograniczenie tej metryki."
+      },
+      "beforeSha256": "af636eca9b390dbd5a20306633a6a207c0462534313358448489782984a31202",
+      "successorSha256": "f0bd187d6dd80f47807768c0099cd191ec9ac1dfa2716ca0e19e2d88b254f6ba"
+    },
+    {
+      "lessonId": "runtime-allocation-scope",
+      "stepId": "allocation-scope-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepId": "allocation-comparison-recall",
+      "path": [
+        "title"
+      ],
+      "before": "Retrieval: interpretacja różnicy",
+      "beforeSha256": "9e8f34ec57220f50353fced8f6b33ba2ea07678b5863edc8c259437afef5358a",
+      "successorSha256": "784e760474afff6e27e78acb7aa508147bd410bac68eee2bed755880bb6cb6ea"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepId": "allocation-comparison-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Czy mniejsza liczba calls zawsze dowodzi poprawy?",
+      "beforeSha256": "eb7a710aef93fb9846a3c5f9d3bb302cfebda33fffbef8f4ce851aca5e34f04e",
+      "successorSha256": "e17d30d1a4142f27e34a41fe483b61b98c58b86458100abfa73bfa3ae97a5ee3"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepId": "allocation-comparison-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Nie; najpierw trzeba potwierdzić ten sam input, ten sam Summary i kompletność, a metryka dotyczy tylko wywołań obserwowanego alokatora."
+        ],
+        "feedback": "Nazwij granicę pomiaru i ograniczenie tej metryki."
+      },
+      "beforeSha256": "55d9712db5513b639d94bd83cf5e93d5d231877713d1fd4f941e03f8663ea002",
+      "successorSha256": "3547ddb25b9cf4eaeab47c979c9fde0d99ddeb24bfe2b4833f31b61e4804ee07"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepId": "allocation-comparison-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "service-client-bounded-retry",
+      "stepId": "bounded-retry-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Wymień warunki, które dają NotAttempted, i dwa statusy retryable.",
+      "beforeSha256": "dd27c37967b679041ef5181dc6d9ff676113403c7d7d0aa9cf5e3846604b8b9f",
+      "successorSha256": "02b9f6996f4a07e5da51d6c16ac69aa11d77ff34ca863ccee145b59aae21fdb6"
+    },
+    {
+      "lessonId": "service-client-bounded-retry",
+      "stepId": "bounded-retry-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "NotAttempted przy zerowej polityce lub deadline przed pierwszą próbą; BUSY i QUEUE_FULL mogą zaplanować bounded replay."
+        ],
+        "feedback": "Odwołaj się do konkretnej obserwacji i granicy kontraktu."
+      },
+      "beforeSha256": "d2a572c732a738e6c0296504929c098c1ef9467b745ae5a801f7f718e35ae1bd",
+      "successorSha256": "b9e64c3e8e48a25eeeacf9c94afbacfe38e6dcf6c793b63448de61549aa66455"
+    },
+    {
+      "lessonId": "service-client-bounded-retry",
+      "stepId": "bounded-retry-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "stepId": "ambiguous-driver-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Kiedy możesz powiedzieć Delivered, a kiedy historia kończy się Unknown?",
+      "beforeSha256": "fa70aaca353ced70af50bb600b0579d3195de192f4e6588265f7ef110ec38edd",
+      "successorSha256": "b69aea22d5b52d43bc64ed9b97bd3f57c58a07bafaf12a73a2659ad9bd167a46"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "stepId": "ambiguous-driver-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Delivered wymaga prawidłowego INSERTED albo DUPLICATE receiptu; timeout, STORAGE lub niepełna odpowiedź pozostawiają Unknown bez takiego receiptu."
+        ],
+        "feedback": "Odwołaj się do konkretnej obserwacji i granicy kontraktu."
+      },
+      "beforeSha256": "43c34d7e698b328611d41ef1b783ed027c3b0d5edb89c451ebb6d302688e2491",
+      "successorSha256": "20a8043159465c1d76087f92bea8ea0a721df993c468f3a96991be8018ae1e4c"
+    },
+    {
+      "lessonId": "service-client-ambiguous-driver",
+      "stepId": "ambiguous-driver-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "panic-and-contracts",
+      "index": 8,
+      "id": "recovery-readings-policy",
+      "successorSha256": "740e6f2c756ebecedf364308de847d9260e5ee00044a33c749dbb3a2e06b9411"
+    }
+  ],
+  "review": {
+    "id": "review-vec-borrowing",
+    "conceptId": "vec-borrowing",
+    "beforePrompt": "Napraw funkcję second: pożycza wycinek i zwraca Option referencji do elementu o indeksie 1. Dla pustej i jednoelementowej listy daje None. Nie przenosi danych.",
+    "beforeTests": "#[test] fn borrowed_second() { assert_eq!(second(&[]), None); assert_eq!(second(&[4]), None); let values = vec![2, -7, 8]; let result: Option<&i32> = second(&values); assert_eq!(result, Some(&-7)); assert_eq!(values, vec![2, -7, 8]); assert_eq!(second(&[9, 0]), Some(&0)); }",
+    "beforeSha256": "03cb7f36be6d599081d9faed259cff8abbf7f665cf5eb24954be7cbdf62d9c24",
+    "successorSha256": "377dfb634d1b8bd728baa8461b04f97eec820300e50a1577dadcb607f27dd9d8"
+  }
+}

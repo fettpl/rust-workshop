@@ -1,0 +1,298 @@
+{
+  "baseline": {
+    "sha": "f3a0081",
+    "lessonsSha256": "e3b4d274861f7c3bc5dcce22ea45559d5d8206d93de442fe79f69f4681152e21",
+    "modulesSha256": "4ccafd9e393a41d6024e50dc564146f4fb338b3f09af10d89318226f5f8d5813",
+    "projectsSha256": "0745efe7965e29c0f7dba521b9cde3cb0df3f63575353570e92d34cb9cd24c5b",
+    "reviewExercisesSha256": "e5fdf11799b2c8dba9f38ae7f9cca70507c4df878bd7ff3b113eaee1a6b9d23b",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [
+    {
+      "lessonId": "methods-and-state",
+      "stepId": "method-reset-gate",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "4386c0ac1f56beed66b4acdc1a5a34ec3893aef9e794339fccf389c52e8e2808"
+    },
+    {
+      "lessonId": "string-and-utf8",
+      "stepId": "string-transfer",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "d1e777dcad2112afa4ca33ae7197493650af414bacff45ee6c274201a6515e98"
+    },
+    {
+      "lessonId": "channel-backpressure",
+      "stepId": "backpressure-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "618a583974d806afd87865363f6d5203334abffed58eba7e75304a7572f967ee"
+    },
+    {
+      "lessonId": "tokio-spawn-blocking-boundary",
+      "stepId": "tokio-spawn-blocking-boundary-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "d15cb129749ff530713e257ee555fc0927bb99bd95c846a7bc5a747167558b4d"
+    },
+    {
+      "lessonId": "fuzz-oracle-sensitivity",
+      "stepId": "fuzz-oracle-sensitivity-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "615d8c7c5d9a6c29dbd54a04907582f3e85a5f876941bdecfe04d2ea62fcf897"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepId": "allocation-comparison-run",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "5bb919ff723bc9ddac78e3b04b3fcac38ac672fb21b375c33a1ee8392a17517c"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "stepId": "allocation-comparison-blank",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "8508465f0de19745fed7c432f315551a19d2ba512f458425d65c695869a1e67b"
+    },
+    {
+      "lessonId": "service-readiness-drain",
+      "stepId": "readiness-drain-replay-transfer",
+      "path": ["suppliedSolutions"],
+      "beforeSha256": null,
+      "successorSha256": "03d8e44d11051fbd2cd707277bdda552931b2083caf2bbcc13cca57e892d51a6"
+    }
+  ],
+  "lessonRestorations": [
+    {
+      "lessonId": "string-and-utf8",
+      "path": ["sessionStops"],
+      "beforeSha256": "0678f297f79b02391884323c2c7d6a97357825358667ff92c6f6e6f913743f97",
+      "successorSha256": "e48cf28eea24bb5f1dbacdcb09930399d5a71a9b237cf4fcb3e22a283e940548"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "string-and-utf8",
+      "index": 8,
+      "id": "string-scalar-frequency-transfer",
+      "successorSha256": "637bf498cb84dcd80f84f00b2c1bfb74d3c882603904880c3acb4be12c9aaf72"
+    },
+    {
+      "lessonId": "string-and-utf8",
+      "index": 9,
+      "id": "string-joined-parts-transfer",
+      "successorSha256": "18260119ae6b665748a8fe08b6823bc5b8eadf4ca3e9c860f8159a0e6ac7e6a1"
+    },
+    {
+      "lessonId": "channel-backpressure",
+      "index": 6,
+      "id": "backpressure-retain-outcome",
+      "successorSha256": "dcda1d04b7f225b05d74c2971b5292958ff725824a05026b8831cbbf5a331b25"
+    },
+    {
+      "lessonId": "tokio-spawn-blocking-boundary",
+      "index": 6,
+      "id": "tokio-spawn-blocking-boundary-map-transfer",
+      "successorSha256": "670d28bd87acf3bbbcd0dfc4315ebaae1bebe9aa24d6e48275370fcb54d8e4d6"
+    },
+    {
+      "lessonId": "fuzz-oracle-sensitivity",
+      "index": 6,
+      "id": "fuzz-oracle-batch-mismatches-transfer",
+      "successorSha256": "574343bf369f8d602e1fd4c009b3494959df49c52707ea5c8d4d01fae07c9e6f"
+    },
+    {
+      "lessonId": "runtime-allocation-comparison",
+      "index": 6,
+      "id": "allocation-comparison-audit",
+      "successorSha256": "b088d45b1ea51fada3b7042ece8e35a5d30b96ba09add9cb8588cf735e3d9c62"
+    },
+    {
+      "lessonId": "service-readiness-drain",
+      "index": 7,
+      "id": "readiness-job-ledger-transfer",
+      "successorSha256": "b3795c9b8dfb211af94b72efc94c790e123399ee763904fc64c24e05d816f179"
+    }
+  ],
+  "registries": [
+    {
+      "registry": "modules",
+      "selector": "collections",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "f598c9d16f417a9511520e7c101a6ed2788c4cdd2e962ec118b422013406879d",
+      "successorSha256": "9c1e914e88e23f4548d62fe16e9bfb9f425561c8cfb3b4c6efd258db9808dc42"
+    },
+    {
+      "registry": "modules",
+      "selector": "collections",
+      "path": ["gateCriteria", "3", "taskRefs"],
+      "beforeSha256": "74e3b1e5a888be16b7cbfdcb5b1e9cca63c7f2091dbce1911c30c81ba5051ffa",
+      "successorSha256": "84c2d916a8c43d3e2abef2f6329d78dad9e9121cf521291fce12a1583ff7f5e5"
+    },
+    {
+      "registry": "modules",
+      "selector": "channels",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "a154adbc53e3bb137e5935c7a08a3397b4c9c4a6fca02c637d103ac7a6f2384a",
+      "successorSha256": "ed0d327b15021856365640500120b2f60c33eeaad89a874ae08fcfa36f21c75a"
+    },
+    {
+      "registry": "modules",
+      "selector": "tokio-blocking-work",
+      "path": ["gateCriteria", "0", "taskRefs"],
+      "beforeSha256": "f923261de8a82a5ea27bc944d60ea3c20e72160cf8140510350dd301c657b112",
+      "successorSha256": "a3bd44d895f8360b2fdb0f15982dd3951a84f656407528dc548602b9d588282a"
+    },
+    {
+      "registry": "modules",
+      "selector": "fuzz-evidence-lifecycle",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "e10cc92db4573d1e3f5cd7acf4d2e12ddce809b4af5feef867fccab7e7ac5479",
+      "successorSha256": "5504f2aaebfd73627dcd44c6c81df2b32c616b5df0b704b5777ce39c58b09cae"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "10", "taskRefs"],
+      "beforeSha256": "9789f55a26238b784af1217f74bd7e6225ecbc11e8d1c7689eff2d3641b5a611",
+      "successorSha256": "abc8d59237280c725306a9ef9754ed1e6634258f63a40acbacf2b82c7e15a0a8"
+    },
+    {
+      "registry": "modules",
+      "selector": "profile-evidence",
+      "path": ["gateCriteria", "11", "taskRefs"],
+      "beforeSha256": "4c9154d7ef90833c23636f117c865c298d474f63a3ccedf22bb22674d66cd9ab",
+      "successorSha256": "0e3a7505b916233b2e77614a652390b7c649097ecfc4f8a696749a55d7f410d1"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "4", "taskRefs"],
+      "beforeSha256": "4ea38ec036d0cd473da6c57ec06bad1850a824b3ed0be440060320ada2dfafa0",
+      "successorSha256": "bf531fcdbb981d32557e0110275ff6221039f24071811c4ac7c841dd1fd9e4fa"
+    },
+    {
+      "registry": "modules",
+      "selector": "service-operations",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "be435de0e15e2ca1553eb9910bad36ec1b6ade0ff8b1063fc66ae44e8df4b6f9",
+      "successorSha256": "b25fb5056a07cee220f40241c656a4c041e1cb7a6189aeab0250ea71afa0a464"
+    }
+  ],
+  "beforeValues": {
+    "0678f297f79b02391884323c2c7d6a97357825358667ff92c6f6e6f913743f97": [
+      {
+        "afterStepId": "string-explain",
+        "title": "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        "nextGoal": "Usuń indeksowanie String i policz wartości skalarne Unicode. Szacunek czasu jest wstępny; dobierz długość sesji do siebie."
+      },
+      {
+        "afterStepId": "string-char-gate",
+        "title": "Opcjonalna przerwa: zachowaj bieżące miejsce",
+        "nextGoal": "Dołącz cały wycinek tekstu i sprawdź wynik w zadaniu łączącym operacje. Szacunek czasu jest wstępny; dobierz długość sesji do siebie."
+      }
+    ],
+    "f598c9d16f417a9511520e7c101a6ed2788c4cdd2e962ec118b422013406879d": [
+      {
+        "lessonId": "string-and-utf8",
+        "stepId": "string-char-gate"
+      },
+      {
+        "lessonId": "string-and-utf8",
+        "stepId": "string-transfer"
+      }
+    ],
+    "74e3b1e5a888be16b7cbfdcb5b1e9cca63c7f2091dbce1911c30c81ba5051ffa": [
+      {
+        "lessonId": "string-and-utf8",
+        "stepId": "string-push-gate"
+      },
+      {
+        "lessonId": "string-and-utf8",
+        "stepId": "string-transfer"
+      }
+    ],
+    "a154adbc53e3bb137e5935c7a08a3397b4c9c4a6fca02c637d103ac7a6f2384a": [
+      {
+        "lessonId": "channel-backpressure",
+        "stepId": "backpressure-modify"
+      },
+      {
+        "lessonId": "channel-backpressure",
+        "stepId": "backpressure-blank"
+      }
+    ],
+    "f923261de8a82a5ea27bc944d60ea3c20e72160cf8140510350dd301c657b112": [
+      {
+        "lessonId": "tokio-spawn-blocking-boundary",
+        "stepId": "tokio-spawn-blocking-boundary-owned-gate"
+      },
+      {
+        "lessonId": "tokio-spawn-blocking-boundary",
+        "stepId": "tokio-spawn-blocking-boundary-blank"
+      }
+    ],
+    "e10cc92db4573d1e3f5cd7acf4d2e12ddce809b4af5feef867fccab7e7ac5479": [
+      {
+        "lessonId": "fuzz-oracle-sensitivity",
+        "stepId": "fuzz-oracle-sensitivity-gate"
+      },
+      {
+        "lessonId": "fuzz-oracle-sensitivity",
+        "stepId": "fuzz-oracle-sensitivity-blank"
+      }
+    ],
+    "9789f55a26238b784af1217f74bd7e6225ecbc11e8d1c7689eff2d3641b5a611": [
+      {
+        "lessonId": "runtime-allocation-comparison",
+        "stepId": "allocation-comparison-gate"
+      },
+      {
+        "lessonId": "runtime-allocation-comparison",
+        "stepId": "allocation-comparison-blank"
+      }
+    ],
+    "4c9154d7ef90833c23636f117c865c298d474f63a3ccedf22bb22674d66cd9ab": [
+      {
+        "lessonId": "runtime-allocation-comparison",
+        "stepId": "allocation-comparison-complete-gate"
+      },
+      {
+        "lessonId": "runtime-allocation-comparison",
+        "stepId": "allocation-comparison-blank"
+      }
+    ],
+    "4ea38ec036d0cd473da6c57ec06bad1850a824b3ed0be440060320ada2dfafa0": [
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-gate"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-blank"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-replay-transfer"
+      }
+    ],
+    "be435de0e15e2ca1553eb9910bad36ec1b6ade0ff8b1063fc66ae44e8df4b6f9": [
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-accounting-gate"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-recall"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-replay-transfer"
+      }
+    ]
+  }
+}

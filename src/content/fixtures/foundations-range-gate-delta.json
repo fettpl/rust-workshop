@@ -1,0 +1,83 @@
+{
+  "baseline": {
+    "sha": "71796893f56edd30cdaa4e5ec0824f4e2d6c6550",
+    "lessonsSha256": "b8f74478a10e48bb392afbe7f8de1d4d129b16345f14360a8c50121b048bbeef",
+    "modulesSha256": "0bf5801d6f8e4e92d986b16457177e37dc2e9054187929e6571b1d58c3eb7fb4"
+  },
+  "module": {
+    "index": 0,
+    "id": "rust-foundations",
+    "criterionIndex": 3,
+    "beforeCriterion": {
+      "id": "control-flow-gate",
+      "label": "Zakres i warunek dają sprawdzalny wynik",
+      "taskRefs": [
+        {
+          "lessonId": "control-flow",
+          "stepId": "flow-modify"
+        },
+        {
+          "lessonId": "control-flow",
+          "stepId": "flow-transfer"
+        },
+        {
+          "lessonId": "control-flow",
+          "stepId": "flow-range-transfer"
+        }
+      ]
+    },
+    "beforeSha256": "9fea305d8b92cc0cc0b82462f93697324c2c23486d29d559c8ae53fe0d0d7f9a",
+    "successorSha256": "7be684e07357faddeba03837650ec9365d4c2ab5bb4e2450baf30a75266af10c"
+  },
+  "restorations": [
+    {
+      "lessonId": "control-flow",
+      "stepId": "flow-modify",
+      "path": [
+        "evidenceGate"
+      ],
+      "before": true,
+      "beforeSha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b",
+      "successorSha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    }
+  ],
+  "lessonRestorations": [
+    {
+      "lessonId": "control-flow",
+      "path": [
+        "transferTask"
+      ],
+      "before": "Dla nowego progu wybierz warunek bool, przewidź etykietę i zmień zakres tak, aby liczba iteracji była widoczna w wyniku.",
+      "beforeSha256": "750ce58822be875ab85977f4e8a6aeafd7c3c7193fdb489db3b1252fd9abb459",
+      "successorSha256": "49f31eead94b46b4ea53225958cd8f66b72adfe1d4d919032f0eb1d76a73b8c0"
+    },
+    {
+      "lessonId": "control-flow",
+      "path": [
+        "evidenceGate"
+      ],
+      "before": "Zmiana zakresu i osobny transfer if + for dają oczekiwany wynik, a granica zakresu jest sprawdzona niezależnym wyborem.",
+      "beforeSha256": "9e6e81343181e2821670c70c2f1900d09a4de4c9e7e4898b5c49b288b7dd2b4a",
+      "successorSha256": "0244f13d008dcdf80aee349122a4cd424f6431c59c15393bfa1be3cf84f90c40"
+    },
+    {
+      "lessonId": "control-flow",
+      "path": [
+        "sessionStops",
+        "0",
+        "nextGoal"
+      ],
+      "before": "Napisz samodzielnie wybór liczb w zakresie. Czas podany przy lekcji jest orientacyjny; dodatkową praktykę możesz zrobić w osobnej sesji.",
+      "beforeSha256": "8b27c0f47a8263de208cca9b698970d40f69e18297a0d13580bc2daa3d2ee918",
+      "successorSha256": "205705e03cecbd36b6db5c864793c850f15d967aef2e596f119a62cdc9dc170b"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "control-flow",
+      "index": 8,
+      "id": "flow-range-cost",
+      "successorSha256": "4dbb5c22eaac51147549803a3b01c041aa68518720b26f3696d2d0dbe0b2b473"
+    }
+  ]
+}

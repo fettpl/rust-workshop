@@ -1,0 +1,397 @@
+{
+  "baseline": {
+    "sha": "3bb18b7",
+    "lessonsSha256": "7573dc83cc4dd3d6e18c77bd54eb0a37cdc24328c2bffb80a8ee6d787c216e76",
+    "modulesSha256": "8a00febe4d1d17f49721c39813cda8a266886d4cc1feb479cedaae1496db8780",
+    "projectsSha256": "59db3b40f381b0cb58be9d09f2c4b4e9568a118d2e52eed499804dd8d4cb3630",
+    "reviewExercisesSha256": "e5fdf11799b2c8dba9f38ae7f9cca70507c4df878bd7ff3b113eaee1a6b9d23b",
+    "shortReviewExercisesSha256": "646f785b505ac5f45e8ba5230e4b87decb39a5edadb08bde83f7e4d7603a1db7",
+    "delayedReviewExercisesSha256": "420207547e86af34b82e50d6735ba5a262554ca77b409c9609f2fa2e3cc96d7c"
+  },
+  "restorations": [],
+  "lessonRestorations": [
+    {
+      "lessonId": "tokio-frame-deadlines",
+      "path": ["evidenceGate"],
+      "beforeSha256": "f3736309ad8046dd9f8668e61b8d6b868f0ebc9432aa4ee1d876e4745439485f",
+      "successorSha256": "5a7146d394dbd87a82aa5a623f9866b8b635adb0f5910924521bad00784c2f49"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "path": ["sessionStops"],
+      "beforeSha256": null,
+      "successorSha256": "a8efb65965351a87158e9c714e24d0b8246f53e1d9a2b8e219719d27ddf07f0c"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "path": ["sessionStops"],
+      "beforeSha256": null,
+      "successorSha256": "458fff3bd6bca767510466279217b048a346275a6f9621f0e8732484bcde9a10"
+    }
+  ],
+  "appendedSteps": [
+    {
+      "lessonId": "tokio-frame-deadlines",
+      "index": 6,
+      "id": "tokio-frame-deadlines-owned-discard-transfer",
+      "successorSha256": "c41854ff25e6731beb9f303a9e87df67a020d2d7e8f6f1d92a44eeb2f917ca7c"
+    },
+    {
+      "lessonId": "unsafe-miri-disjoint-regions",
+      "index": 9,
+      "id": "disjoint-regions-pivot-transfer",
+      "successorSha256": "71c2447345a6a6e6d81150c3f8a4dd31a1a0ce67d6b8bfcb727fafb6fcc5a583"
+    },
+    {
+      "lessonId": "unsafe-miri-slot-state",
+      "index": 9,
+      "id": "slot-state-move-transfer",
+      "successorSha256": "cc4b5fca835987171d9272407f36825b2b82111bbb0a21f75fe07925e55ba345"
+    }
+  ],
+  "registries": [
+    {
+      "registry": "modules",
+      "selector": "tokio-network-service",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "2249cb76af087ce725523feb9f15b28aa2da94a661454a980040824627aeffdc",
+      "successorSha256": "8ba38da2297cffd889c467764052133fb62e4f377c8b96eb54759d4f63f8174e"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "1", "taskRefs"],
+      "beforeSha256": "e752f8882db2f0faf2a0eceb5b20a85ae0c1bb5aa068b7ac549c33ba69b352e1",
+      "successorSha256": "d54dbe824ad5399d0f5ef8c60514fcde3919732b55a805713693f0af3866116c"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "2", "taskRefs"],
+      "beforeSha256": "5add0dd0d3ef9eba0f6785cdb3108fe299849e38ce5402bc643ff9511c37bcbf",
+      "successorSha256": "f1a158891c33df786dd8ae88a9783e72d66ab78ba3c6cf5e54cbcef39ea73b9f"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "5", "taskRefs"],
+      "beforeSha256": "2b88aa5d2877754a35b9168923029174b122efc2c424ddb7d2a58e41bd6c6a89",
+      "successorSha256": "956b3758979cc1bae2ea94ea35f398d7a5cbd6fcd0890ed726b7b8a8716d5d0c"
+    },
+    {
+      "registry": "modules",
+      "selector": "unsafe-miri-contracts",
+      "path": ["gateCriteria", "6", "taskRefs"],
+      "beforeSha256": "4292c728d4702cc367326a1e7d685b0b327a82c1aa5ae506492d63cb9d14e068",
+      "successorSha256": "be606ca9fef00e10fb251c2b0edf8ec9cdf282734add557f13e8a1e853bf22a1"
+    },
+    {
+      "registry": "projects",
+      "selector": "concurrency-lab",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "50c211eb0dd71eb2415d0e28871ddee6bb15d380b01990454030bd15afb21711",
+      "successorSha256": "d64b2491f4e34d934c6ca00f52ea5535c5b964a520b7f8a964d4537a259074ee"
+    },
+    {
+      "registry": "projects",
+      "selector": "concurrency-lab",
+      "path": ["package", "starterRevealStepRefs"],
+      "beforeSha256": null,
+      "successorSha256": "d64b2491f4e34d934c6ca00f52ea5535c5b964a520b7f8a964d4537a259074ee"
+    },
+    {
+      "registry": "projects",
+      "selector": "tokio-service",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "8f7c674ecb6f17a382d01dd38c6f6e7ff7957747cf53d461fb4065fbdec6cc0a",
+      "successorSha256": "9859b5959cac771db23e11a7346e8033c1f1ca29bad6ce7691e3e33e803a66ae"
+    },
+    {
+      "registry": "projects",
+      "selector": "tokio-service",
+      "path": ["package", "starterRevealStepRefs"],
+      "beforeSha256": null,
+      "successorSha256": "b172544ca17e3fe4a97f65eff1c84f8f439c41454bb676a038a291f009cad73e"
+    },
+    {
+      "registry": "projects",
+      "selector": "service-operations",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "508312b458a12370e0dd7f674e6c06f5d00ae4fc107f5c860dcac401e2c5c160",
+      "successorSha256": "7b982d6f73e1106efdc6b8f1dcf5cfc68aaa0c5fe15ce9b712e45e0fa7343e0d"
+    },
+    {
+      "registry": "projects",
+      "selector": "mini-grep",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "49b549e644a46478ab068c10384a05da95de5b537a0de717223cbaf16bbb8f90",
+      "successorSha256": "50439570367290c0b0ca329e8e17dd9d4b6f08441d1e90c46a2670410160818e"
+    },
+    {
+      "registry": "projects",
+      "selector": "mini-grep",
+      "path": ["package", "starterRevealStepRefs"],
+      "beforeSha256": null,
+      "successorSha256": "0ceec204c47862eab5dcbd866f49f7a749c6af0555fc0af19b61f1b882dadc15"
+    },
+    {
+      "registry": "projects",
+      "selector": "property-contracts",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "8ce30dd0eb1f045504eb0709a8a187ec4d12012eec27714fc288b94e07e9195f",
+      "successorSha256": "2b7d45f991b6fb6c725fe215d049bb40c9b39e2b12dfbaaaaf547bf09bc120f8"
+    },
+    {
+      "registry": "projects",
+      "selector": "ffi-buffer",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "8dde37fc8125f59c5b4543f7de63015a1de4a8410ea9faff4d0feb26ec21dcce",
+      "successorSha256": "0f46fd416771e56f344ce1b99252c51a4c5c662f63d6f497d23704bc8d196702"
+    },
+    {
+      "registry": "projects",
+      "selector": "miri-safety",
+      "path": ["package", "revealStepRefs"],
+      "beforeSha256": "cb4e289795c13bea269daa92e5fd7573590d8c076c56c13c065606bcee6463c7",
+      "successorSha256": "33caceae76efcf140721e8d4160c013e5d859db1ea3bcaf9ad7db71cecc54b51"
+    },
+    {
+      "registry": "projects",
+      "selector": "miri-safety",
+      "path": ["package", "starterRevealStepRefs"],
+      "beforeSha256": null,
+      "successorSha256": "fceb73bd3dd04ac7331e8ee5c9aa1121c890d786d3505945ea51eb119fe5fe7a"
+    }
+  ],
+  "beforeValues": {
+    "f3736309ad8046dd9f8668e61b8d6b868f0ebc9432aa4ee1d876e4745439485f": "tokio-frame-deadlines-gate ręcznie przesuwa zatrzymany zegar przez porcje krótsze od deadline, lecz przekraczające jego sumę; sprawdza także EOF, ucięcie, limit i własny io::Error. tokio-frame-deadlines-blank niezależnie sprawdza header/body/flush pod tym samym Instant oraz brak outputu dla oversize. Powtórka `review-tokio-frame-absolute-deadline` używa prawdziwego loopback TCP i sprawdza, że timeout upuszcza stream, zaś sukces zwraca nadal używalny stream.",
+    "2249cb76af087ce725523feb9f15b28aa2da94a661454a980040824627aeffdc": [
+      {
+        "lessonId": "tokio-frame-deadlines",
+        "stepId": "tokio-frame-deadlines-gate"
+      },
+      {
+        "lessonId": "tokio-frame-deadlines",
+        "stepId": "tokio-frame-deadlines-blank"
+      }
+    ],
+    "e752f8882db2f0faf2a0eceb5b20a85ae0c1bb5aa068b7ac549c33ba69b352e1": [
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-blank"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-range-transfer"
+      }
+    ],
+    "5add0dd0d3ef9eba0f6785cdb3108fe299849e38ce5402bc643ff9511c37bcbf": [
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-blank"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-lazy-init-transfer"
+      }
+    ],
+    "2b88aa5d2877754a35b9168923029174b122efc2c424ddb7d2a58e41bd6c6a89": [
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-recall"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-range-transfer"
+      }
+    ],
+    "4292c728d4702cc367326a1e7d685b0b327a82c1aa5ae506492d63cb9d14e068": [
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-recall"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-lazy-init-transfer"
+      }
+    ],
+    "50c211eb0dd71eb2415d0e28871ddee6bb15d380b01990454030bd15afb21711": [
+      {
+        "lessonId": "atomic-rmw",
+        "stepId": "atomic-rmw-fetch-gate"
+      },
+      {
+        "lessonId": "atomic-cas",
+        "stepId": "atomic-cas-retry-gate"
+      },
+      {
+        "lessonId": "atomic-limits",
+        "stepId": "atomic-limits-counter-gate"
+      },
+      {
+        "lessonId": "release-acquire",
+        "stepId": "release-acquire-publication-gate"
+      },
+      {
+        "lessonId": "ordering-contracts",
+        "stepId": "ordering-contracts-validation-gate"
+      },
+      {
+        "lessonId": "loom-evidence",
+        "stepId": "loom-evidence-assertions-gate"
+      }
+    ],
+    "8f7c674ecb6f17a382d01dd38c6f6e7ff7957747cf53d461fb4065fbdec6cc0a": [
+      {
+        "lessonId": "tokio-tcp-connect",
+        "stepId": "tokio-tcp-connect-gate"
+      },
+      {
+        "lessonId": "tokio-tcp-half-close",
+        "stepId": "tokio-tcp-half-close-gate"
+      },
+      {
+        "lessonId": "tokio-frame-deadlines",
+        "stepId": "tokio-frame-deadlines-gate"
+      },
+      {
+        "lessonId": "tokio-admission-lifecycle",
+        "stepId": "tokio-admission-lifecycle-gate"
+      }
+    ],
+    "508312b458a12370e0dd7f674e6c06f5d00ae4fc107f5c860dcac401e2c5c160": [
+      {
+        "lessonId": "service-trust-admission",
+        "stepId": "trust-admission-gate"
+      },
+      {
+        "lessonId": "service-correlated-telemetry",
+        "stepId": "telemetry-correlation-gate"
+      },
+      {
+        "lessonId": "service-readiness-drain",
+        "stepId": "readiness-drain-gate"
+      },
+      {
+        "lessonId": "service-incident-diagnosis",
+        "stepId": "incident-diagnosis-gate"
+      }
+    ],
+    "49b549e644a46478ab068c10384a05da95de5b537a0de717223cbaf16bbb8f90": [
+      {
+        "lessonId": "grep-context-selection",
+        "stepId": "grep-context-selection-gate"
+      },
+      {
+        "lessonId": "grep-bounded-input",
+        "stepId": "grep-bounded-input-gate"
+      },
+      {
+        "lessonId": "grep-path-policy",
+        "stepId": "grep-path-policy-gate"
+      },
+      {
+        "lessonId": "grep-cli-contract",
+        "stepId": "grep-cli-contract-gate"
+      },
+      {
+        "lessonId": "fuzz-input-domain",
+        "stepId": "fuzz-input-domain-gate"
+      },
+      {
+        "lessonId": "fuzz-oracle-sensitivity",
+        "stepId": "fuzz-oracle-sensitivity-gate"
+      },
+      {
+        "lessonId": "fuzz-counterexample-regression",
+        "stepId": "fuzz-counterexample-regression-gate"
+      },
+      {
+        "lessonId": "fuzz-campaign-evidence",
+        "stepId": "fuzz-campaign-evidence-gate"
+      }
+    ],
+    "8ce30dd0eb1f045504eb0709a8a187ec4d12012eec27714fc288b94e07e9195f": [
+      {
+        "lessonId": "property-invariants",
+        "stepId": "property-invariants-gate"
+      },
+      {
+        "lessonId": "property-generated-inputs",
+        "stepId": "property-generated-inputs-gate"
+      },
+      {
+        "lessonId": "property-shrinking-replay",
+        "stepId": "property-shrinking-replay-gate"
+      },
+      {
+        "lessonId": "property-metamorphic-transfer",
+        "stepId": "property-metamorphic-transfer-gate"
+      }
+    ],
+    "8dde37fc8125f59c5b4543f7de63015a1de4a8410ea9faff4d0feb26ec21dcce": [
+      {
+        "lessonId": "unsafe-ffi-checked-view",
+        "stepId": "checked-view-contract-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-split-regions",
+        "stepId": "split-regions-alias-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-raw-record",
+        "stepId": "raw-record-flags-gate"
+      },
+      {
+        "lessonId": "unsafe-ffi-owned-handle",
+        "stepId": "owned-handle-borrow-gate"
+      }
+    ],
+    "cb4e289795c13bea269daa92e5fd7573590d8c076c56c13c065606bcee6463c7": [
+      {
+        "lessonId": "unsafe-miri-byte-view",
+        "stepId": "byte-view-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-disjoint-regions",
+        "stepId": "disjoint-regions-range-transfer"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-slot-state",
+        "stepId": "slot-state-lazy-init-transfer"
+      },
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-gate"
+      },
+      {
+        "lessonId": "unsafe-miri-mut-slot",
+        "stepId": "mut-slot-with-mut-transfer"
+      }
+    ]
+  }
+}

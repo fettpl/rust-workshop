@@ -1,0 +1,91 @@
+{
+  "baseline": {
+    "sha": "494e66c9c869ed72b0ea1ffb86de74ec046e8403",
+    "lessonsSha256": "d56afb344e3fff0f88b6f111d1cef33aadb6c5fc1b27678aa36564893768be24"
+  },
+  "restorations": [
+    {
+      "lessonId": "vec-and-borrowing",
+      "stepId": "vec-even-gate",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn counts_even_values_in_empty_and_mixed_vectors() {\n    assert_eq!(count_even(&Vec::new()), 0);\n    assert_eq!(count_even(&vec![1, 2, 4, 7]), 2);\n}\n\n#[test]\nfn counts_negative_and_repeated_values() {\n    assert_eq!(count_even(&vec![-4, -3, 0, 0, 9]), 3);\n}",
+      "beforeSha256": "39f433c942591c48fb0fa3dfb89b28d46d7c4c27143dd865a635987e07bd1018",
+      "successorSha256": "a66a9087aa3be14a5224e2f8dba3e2e41f8814045db37f7d722288f23709f29f"
+    },
+    {
+      "lessonId": "panic-and-contracts",
+      "stepId": "panic-modify",
+      "path": [
+        "prompt"
+      ],
+      "before": "Zmień percentage tak, aby tekst 0..100 był Ok, tekst z błędną składnią dawał Err(\"invalid\"), a liczba poza zakresem — także przepełnienie i32 — Err(\"outside\"). `ParseIntError::kind()` rozróżnia overflow od InvalidDigit/Empty. Nie wywołuj panic dla danych wejściowych.",
+      "beforeSha256": "5ffc1397f68fbd760cea77c3bf7e915f26594890bc467abfede5638af79b1000",
+      "successorSha256": "b780829d8ea9b40d12e5985de6264d065cb33b3353be3411641e7ba33e187bb6"
+    },
+    {
+      "lessonId": "panic-and-contracts",
+      "stepId": "panic-modify",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn validates_input_at_the_boundary() {\n    assert_eq!(percentage(\"0\"), Ok(0));\n    assert_eq!(percentage(\"100\"), Ok(100));\n    assert_eq!(percentage(\"2147483647\"), Err(\"outside\"));\n    assert_eq!(percentage(\"-2147483648\"), Err(\"outside\"));\n    assert_eq!(percentage(\"-1\"), Err(\"outside\"));\n    assert_eq!(percentage(\"101\"), Err(\"outside\"));\n    assert_eq!(percentage(\"2147483648\"), Err(\"outside\"));\n    assert_eq!(percentage(\"-2147483649\"), Err(\"outside\"));\n    assert_eq!(percentage(\"999999999999999999999\"), Err(\"outside\"));\n    assert_eq!(percentage(\"abc\"), Err(\"invalid\"));\n    assert_eq!(percentage(\"\"), Err(\"invalid\"));\n}",
+      "beforeSha256": "1cb6f5f52010000bbffe0f582db0bee8a54d2d8c96ab76caeb6cd8e30f88f510",
+      "successorSha256": "9f2f5fcdf6fc80ae6ae275e35cfb085b6579a1d6160a927869a3801a41bac232"
+    },
+    {
+      "lessonId": "iterator-ownership",
+      "stepId": "ownership-blank",
+      "path": [
+        "prompt"
+      ],
+      "before": "Napraw views. Ma przyjąć pożyczony wycinek napisów oraz pożyczony prefiks, przejść po liniach w kolejności, zatrzymać te zaczynające się od prefiksu i oddać Vec pożyczonych widoków. Widoki muszą wskazywać na napisy z wejścia: nie przenoś ich, nie alokuj nowych Stringów i zachowaj znaki Unicode. Dla braku dopasowań wynik jest pusty.",
+      "beforeSha256": "c410347535422d53c8dd7f99b0d1632005263430d360e1a9fd7b8468ccee6642",
+      "successorSha256": "30ee7e970d62d7fd12a3249396f1d8888022704808318f5f64c50aaacd373709"
+    },
+    {
+      "lessonId": "iterator-ownership",
+      "stepId": "ownership-blank",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn views_borrow_unicode_in_order_and_keep_the_log_owned() {\n    let log = vec![\n        String::from(\"INFO: żółć\"),\n        String::from(\"WARN: Łódź\"),\n        String::from(\"INFO: pusty\"),\n        String::from(\"INFO: żółć\"),\n    ];\n    let viewed = views(&log, \"INFO:\");\n    assert_eq!(viewed, [\"INFO: żółć\", \"INFO: pusty\", \"INFO: żółć\"]);\n    assert!(std::ptr::eq(viewed[0].as_ptr(), log[0].as_ptr()));\n    assert_eq!(views(&log, \"ERROR:\"), Vec::<&str>::new());\n    assert_eq!(log[1], \"WARN: Łódź\");\n}",
+      "beforeSha256": "19727a43a12d410c2466afc5a3a72c34be64c53873190b2a277a09e76393e70d",
+      "successorSha256": "c6d30f63f3cb6281dd779faaa330cd51730ad9df80ee7e8bdf1631702572a7cf"
+    },
+    {
+      "lessonId": "iterator-pipelines",
+      "stepId": "pipelines-modify",
+      "path": [
+        "prompt"
+      ],
+      "before": "Uzupełnij selected_lengths. Przejdź pożyczająco po words, zostaw słowa o długości co najmniej minimum, zamień je na długość i zbierz wynik. Nie sortuj, nie zmieniaj wejścia i nie wymagaj własności String.",
+      "beforeSha256": "621a6bc3d8ddc6d16d27b6c538a2f6f5dd51c8d09d13458989611064d5bfb256",
+      "successorSha256": "f18898154550ffbb337b32375b049e97341105f5080726f6a4e74255a4f7aab7"
+    },
+    {
+      "lessonId": "iterator-pipelines",
+      "stepId": "pipelines-modify",
+      "path": [
+        "evaluator",
+        "tests"
+      ],
+      "before": "#[test]\nfn map_filter_collect_keep_order_and_unicode_byte_lengths() {\n    let words = [\n        String::from(\"a\"),\n        String::from(\"żółć\"),\n        String::from(\"Rust\"),\n        String::from(\"\"),\n    ];\n    assert_eq!(selected_lengths(&words, 4), vec![8, 4]);\n    assert_eq!(selected_lengths(&words, 99), Vec::<usize>::new());\n    assert_eq!(selected_lengths(&words, usize::MAX), Vec::<usize>::new());\n    assert_eq!(selected_lengths(&[], 0), Vec::<usize>::new());\n    assert_eq!(words[1], \"żółć\");\n}",
+      "beforeSha256": "c69f1a7d5fece7c67e4a796c24565e54797da69cdddfc627db0bc98df58b82a9",
+      "successorSha256": "c88e500e69a33f92e8490cf9ae7c94ca65571f4ec8e5863b2b90c8285339c324"
+    }
+  ],
+  "appendedSteps": [],
+  "review": {
+    "id": "review-iterator-ownership",
+    "conceptId": "iterator-item-ownership",
+    "beforePrompt": "Uzupełnij urgent_labels tak, aby pożyczyć etykiety pilnych Parcel w kolejności wejścia. Funkcja nie może skonsumować tablicy, klonować String ani zwracać własnych napisów. Puste wejście daje pusty Vec; test dodaje nieznane wcześniej znaki Unicode.",
+    "beforeTests": "#[test]\nfn review_views_borrow_and_filter_without_consuming_parcels() {\n    let parcels = [\n        Parcel { label: String::from(\"A\"), priority: false },\n        Parcel { label: String::from(\"żółć\"), priority: true },\n        Parcel { label: String::from(\"Łódź\"), priority: true },\n    ];\n    assert_eq!(urgent_labels(&parcels), [\"żółć\", \"Łódź\"]);\n    assert_eq!(urgent_labels(&[]), Vec::<&str>::new());\n    assert_eq!(parcels[0].label, \"A\");\n}",
+    "beforeSha256": "4926a7f28ed4589139c6647416d495c5ca53e32d65a62102c92dedb601150417",
+    "successorSha256": "23b37bf89a07aa3c9be3d73a257492af7b3368c2cd3d7b27272ea3d6b29c5801"
+  }
+}

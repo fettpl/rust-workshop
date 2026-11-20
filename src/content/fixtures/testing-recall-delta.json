@@ -1,0 +1,26 @@
+[
+  {
+    "conceptId": "testing-contracts",
+    "id": "review-testing-contracts",
+    "beforePrompt": "Uzupełnij helper, który sprawdza fn(i32) -> bool na ujemnej nieparzystej, zerze, ujemnej parzystej i dodatniej nieparzystej. Testy podają poprawną funkcję oraz trzy błędne warianty.",
+    "beforeTests": "\nfn even(value: i32) -> bool { value % 2 == 0 }\nfn positive_even(value: i32) -> bool { value > 0 && value % 2 == 0 }\nfn always_true(_: i32) -> bool { true }\nfn negative_even_wrong(value: i32) -> bool { value >= 0 && value % 2 == 0 }\n#[test]\nfn review_contract_accepts_and_rejects() {\n    assert!(std::panic::catch_unwind(|| assert_even_contract(even)).is_ok());\n    assert!(std::panic::catch_unwind(|| assert_even_contract(positive_even)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_even_contract(always_true)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_even_contract(negative_even_wrong)).is_err());\n}",
+    "beforeSha256": "f0cd040c35851f3f848210fa5b9cb6c819de847afba22b4da1c46475ed66f439",
+    "successorSha256": "786cb8d375e576ae589fad4b484a5c7121b8e293c2d5eafec9b5fc09a49c818b"
+  },
+  {
+    "conceptId": "testing-regressions",
+    "id": "review-testing-regressions",
+    "beforePrompt": "Zaimplementuj helper dla rabatu: ceny do 100 włącznie zostają, a powyżej 100 tracą 10. Tabela musi obejmować 100 i 101.",
+    "beforeTests": "\nfn discount(price: u32) -> u32 { if price > 100 { price - 10 } else { price } }\nfn wrong_boundary(price: u32) -> u32 { if price >= 100 { price - 10 } else { price } }\nfn no_discount(price: u32) -> u32 { price }\n#[test]\nfn review_regression_contract_is_mutation_sensitive() {\n    assert!(std::panic::catch_unwind(|| assert_discount_contract(discount)).is_ok());\n    assert!(std::panic::catch_unwind(|| assert_discount_contract(wrong_boundary)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_discount_contract(no_discount)).is_err());\n}",
+    "beforeSha256": "b37d9099119f23a4b34d18fb87db024f81b759c1164579e78c2548475c4a76bd",
+    "successorSha256": "8d753035782d7ac787de0c83aa9436c9b5038697d5924345757aeb92260303b0"
+  },
+  {
+    "conceptId": "testing-quality-workflow",
+    "id": "review-testing-quality-workflow",
+    "beforePrompt": "Napisz helper dla fn(&[i32], i32) -> usize. Sprawdź pustkę, pojedyncze wystąpienie, duplikaty i brak wartości, także gdy szukaną liczbą jest zero. Potem lokalnie rozdziel cargo test od cargo fmt i cargo clippy.",
+    "beforeTests": "\nfn count(values: &[i32], needle: i32) -> usize { values.iter().filter(|value| **value == needle).count() }\nfn first_occurrence(values: &[i32], needle: i32) -> usize { values.iter().position(|value| *value == needle).map_or(0, |_| 1) }\nfn count_nonzero(values: &[i32], needle: i32) -> usize { if needle == 0 { 0 } else { values.iter().filter(|value| **value == needle).count() } }\n#[test]\nfn review_quality_contract_rejects_lost_duplicates() {\n    assert!(std::panic::catch_unwind(|| assert_occurrence_contract(count)).is_ok());\n    assert!(std::panic::catch_unwind(|| assert_occurrence_contract(first_occurrence)).is_err());\n    assert!(std::panic::catch_unwind(|| assert_occurrence_contract(count_nonzero)).is_err());\n}",
+    "beforeSha256": "c834cccb3defedc9f917480d4f63873d07c47265aa02aa4cf5fd8a783517d681",
+    "successorSha256": "42e7c20aef81d434627b9d34b2133fd2376c79fac496bf06efcf97eaecc0a269"
+  }
+]

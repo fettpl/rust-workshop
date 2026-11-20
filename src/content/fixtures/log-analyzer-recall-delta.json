@@ -1,0 +1,117 @@
+{
+  "baseline": {
+    "sha": "28eeca02e2bac87eb2e8ff21c167f259f4b11705",
+    "lessonsSha256": "1e8d7d7438fd10e319ead0ed5b00f90bf89f5f438f2efb792e10f2f6699015f1"
+  },
+  "restorations": [
+    {
+      "lessonId": "log-records",
+      "stepId": "records-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Co należy zachować, a co zwalidować w komunikacie?",
+      "beforeSha256": "1aea42c919c07529f28b3b5972770207abe0c2d8e67294523ec3deaefbf4a9c2",
+      "successorSha256": "c48864297715dc0810588ee9be4c6b62a0d2c9a5fd8597bb4195b36192627d57"
+    },
+    {
+      "lessonId": "log-records",
+      "stepId": "records-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Zachować dokładną prawą część, ale odrzucić pustą po trim"
+        ],
+        "feedback": "Porównaj odpowiedź z kontraktem i uzasadnij wybór granicy."
+      },
+      "beforeSha256": "bc2bf873e6ec2daa2f7979fd11962ccec3be4680bb6c9ec49974fa7bdc69b709",
+      "successorSha256": "33d537c7a461cae0a304a175fc9f645f41f62ed80539161ef307256012c45b5a"
+    },
+    {
+      "lessonId": "log-records",
+      "stepId": "records-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "log-streaming",
+      "stepId": "stream-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "W jakiej kolejności obsłużyć pojedynczy wiersz?",
+      "beforeSha256": "2a8d2f7d204a763617e414b5da45d242191e668e6035c1927c18b5e717a19c61",
+      "successorSha256": "f46fa80ba6c7f289ac69b8af3e325c667bab60183d0bc3a8aa3ac43f57b9e11e"
+    },
+    {
+      "lessonId": "log-streaming",
+      "stepId": "stream-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Odetnij zakończenie, zwaliduj, zwiększ malformed przy błędzie, potem zastosuj filtr i licznik"
+        ],
+        "feedback": "Porównaj odpowiedź z kontraktem i uzasadnij wybór granicy."
+      },
+      "beforeSha256": "739e890d7640518095a1f2c83f326d0e2dfb51ee23aa7f6f2f9c73d3c95f68ef",
+      "successorSha256": "d8ac5c26620a64ef6d4e07f8e3cd360e13d07366c9910d4fb3d2eb29592bf9f2"
+    },
+    {
+      "lessonId": "log-streaming",
+      "stepId": "stream-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    },
+    {
+      "lessonId": "log-analyzer-project",
+      "stepId": "report-recall",
+      "path": [
+        "prompt"
+      ],
+      "before": "Jaką własność musi mieć końcowy raport, aby test porównujący cały String był wiarygodny?",
+      "beforeSha256": "70882b21f4c82518f5b22854f81ac6f689b3128da017c30b267c81efad126f54",
+      "successorSha256": "73380f1b26dd0dd6dd1d551b8fa0c0e48db3116137c1112ada7225efa0382ad4"
+    },
+    {
+      "lessonId": "log-analyzer-project",
+      "stepId": "report-recall",
+      "path": [
+        "evaluator"
+      ],
+      "before": {
+        "kind": "answer",
+        "accepted": [
+          "Stały format: kolejność, nazwy, wartości zerowe i końcowy LF"
+        ],
+        "feedback": "Porównaj odpowiedź z kontraktem i uzasadnij wybór granicy."
+      },
+      "beforeSha256": "8e0fcf8fcaf8bd4899f02811cd69a1c42ee5d4c0b4690bfdf2fed73006ccf92d",
+      "successorSha256": "c343ab694cddfb3fee5204224ae36664da6d4e212f2bc069fd4ff73155d31d55"
+    },
+    {
+      "lessonId": "log-analyzer-project",
+      "stepId": "report-recall",
+      "path": [
+        "evidenceKind"
+      ],
+      "before": "recall",
+      "beforeSha256": "00e2f4b3e3bade25ae3dfb5a954191104f05f52e5086d36af59195f20056bdaa",
+      "successorSha256": "9b6dbe74c6e6466ee492f41a3c2b146439de48e3183a71f76025282507c0ee14"
+    }
+  ],
+  "appendedSteps": []
+}

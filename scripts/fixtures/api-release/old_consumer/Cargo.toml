@@ -1,0 +1,12 @@
+[package]
+name = "old_consumer"
+version = "1.0.0"
+edition = "2024"
+rust-version = "1.85"
+
+[features]
+default = ["metrics"]
+metrics = ["release_probe/metrics"]
+
+[dependencies]
+release_probe = { path = "../release_probe", version = "1.0.0", default-features = false }
