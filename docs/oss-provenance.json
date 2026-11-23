@@ -1635,12 +1635,12 @@
     },
     {
       "path": "src/content/projects/property-contracts/archive.ts",
-      "sha256": "3bb55d39d3672135a704cf0c195e928ce0d43ae9b11122008b6bb258122a3f26",
+      "sha256": "eba76f8821fe83d4e1240d0813afc39914e24c5610507617ea15515a84067dea",
       "group": "course"
     },
     {
       "path": "src/content/projects/property-contracts/package.test.ts",
-      "sha256": "468f1290e5de0d8874e644f7d83b6a37c121845d36b1f0d17d7ebfac45ab9878",
+      "sha256": "32e4a9587a0f96ed6d4cf9abd085c46a38f8b106538528ec29ce070f0abf29d0",
       "group": "course"
     },
     {
@@ -1696,6 +1696,11 @@
     {
       "path": "src/content/property-contracts-module.ts",
       "sha256": "7bb9253e6ddfc13dc59c7a398d37877b77dbca44cf53e3abac22b9ea7e55da93",
+      "group": "course"
+    },
+    {
+      "path": "src/content/property-contracts-rustix-compatibility-fixture.ts",
+      "sha256": "49de20494e1d30f9b5df92a7873255756d43f353571c154c6fcb74e212a6b24a",
       "group": "course"
     },
     {
@@ -2360,7 +2365,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "10cf3ed99f18c6a59ec43044ba54314b8858edc5f4fa6d7b4d0903edd95195fa",
+      "sha256": "b4f877dd96f487be1793276061b74019e2770812cea3972359cc1dcfa947cd63",
       "group": "course"
     },
     {
