@@ -128,6 +128,27 @@ describe("English Rust terminology", () => {
     );
   });
 
+  it("explains the upper call bound after an incorrect FnOnce prediction", () => {
+    const step = getLocalizedCourse("en")
+      .lessons.find((lesson) => lesson.id === "guess-random-boundary")
+      ?.steps.find((item) => item.id === "guess-random-boundary-explain");
+    if (step?.evaluator?.kind !== "choice") {
+      throw new Error("Missing FnOnce assessment");
+    }
+
+    const result = evaluate(step.evaluator, { answer: "2" });
+    expect(result.passed).toBe(false);
+    expect(result.feedback).toContain("at most once");
+  });
+
+  it("distinguishes a missing configuration value from a valid zero in the title", () => {
+    const step = getLocalizedCourse("en")
+      .lessons.find((lesson) => lesson.id === "fallible-value-composition")
+      ?.steps.find((item) => item.id === "fallible-zero-counterexample");
+
+    expect(step?.title).toBe("Absence is not zero");
+  });
+
   it("avoids unrelated substitutions for common programming terms", () => {
     const artifacts =
       /\b(?:hearts?|hearte|Tokyo|overcrowding|proximal|poems?|Sam|abortion)\b/i;
