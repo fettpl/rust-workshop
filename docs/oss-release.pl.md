@@ -34,9 +34,9 @@ według jej wiedzy nie przekazano dodatkowego zewnętrznego pliku ani materiału
 referencyjnego. Rozwiązano obie kwestie pochodzenia, które blokowały wydanie w
 badanym zakresie. Pozostałe warunki wydania są odrębne.
 
-Osoba utrzymująca projekt zdecydowała o włączeniu i sprawdzeniu funkcji prywatnego
-zgłaszania podatności w GitHub zaraz po ręcznym upublicznieniu repozytorium.
-Działającego prywatnego kanału dotąd nie potwierdzono. Plan nie upoważnia do
+W publicznym repozytorium włączono funkcję prywatnego zgłaszania podatności
+GitHub. [Polityka bezpieczeństwa](../SECURITY.pl.md) prowadzi do prywatnego
+formularza i opisuje sposób zgłoszenia. Plan nie upoważnia do
 korzystania z płatnej infrastruktury, zmiany rozliczeń, publikacji pakietów,
 wdrożenia, przepisywania historii ani usuwania dowodów. Prywatne materiały audytu
 i informacje służące wznowieniu pracy przechowuj w ignorowanych plikach

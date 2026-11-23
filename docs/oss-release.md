@@ -30,9 +30,9 @@ copied-expression case; it does not establish exhaustive rights clearance. On
 and confirmed that, to their knowledge, no additional external icon file or
 reference was supplied. Both scoped provenance blockers are resolved; wider
 release gates remain separate.
-The maintainer selected GitHub private vulnerability reporting
-for enablement and verification immediately after human publication; no current
-working private channel is claimed. No paid infrastructure,
+GitHub Private Vulnerability Reporting is enabled for the public repository.
+The [security policy](../SECURITY.md) links to the private form and describes
+how to report a vulnerability. No paid infrastructure,
 billing changes, package publication, deployment, history rewriting or removal of
 evidence is authorized by this plan. Keep private audit inputs and resume state
 in ignored handoff storage, never in the public package.

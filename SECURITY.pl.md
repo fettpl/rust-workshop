@@ -1,45 +1,21 @@
-# Polityka bezpieczeństwa (projekt przed wydaniem)
+# Polityka bezpieczeństwa
 
 [English](SECURITY.md)
 
 ## Zgłaszanie podatności
 
-Prywatny kanał zgłaszania podatności w tym repozytorium nie został jeszcze
-zweryfikowany. Nie umieszczaj szczegółów podatności, kodu wykorzystującego
-podatność, danych uwierzytelniających, eksportów postępów ani prywatnych
-załączników w zgłoszeniach, pull requestach, przeglądach lub logach Actions.
-Projekt polityki nie określa prywatnego adresu kontaktowego ani czasu
-odpowiedzi.
+Zaloguj się na GitHubie i zgłoś podatność osobom utrzymującym projekt przez
+[prywatny formularz zgłaszania podatności na GitHubie](https://github.com/fettpl/rust-workshop/security/advisories/new).
+Możesz też wybrać przycisk **Report a vulnerability** na
+[stronie Security Advisories repozytorium](https://github.com/fettpl/rust-workshop/security/advisories).
 
-Jeśli masz już zaufany prywatny kontakt z osobą utrzymującą projekt, zapytaj
-ją, jak bezpiecznie przekazać zgłoszenie. Gdy kanał prywatny jest niedostępny,
-zachowaj szczegóły dla siebie. Osoba utrzymująca projekt musi zapewnić kanał
-zgłoszeń w ramach przygotowania publicznego wydania.
+Nie zamieszczaj szczegółów podatności, kodu wykorzystującego podatność, danych
+uwierzytelniających, eksportów postępów ani prywatnych załączników w
+zgłoszeniach, pull requestach, recenzjach ani logach Actions.
 
-W przypadku planowanej ścieżki zgłoszeń na GitHub najpierw otwórz
-[stronę Security Advisories repozytorium](https://github.com/fettpl/rust-workshop/security/advisories).
-Użyj przycisku **Report a vulnerability**, gdy jest dostępny. Zwykłe
-zgłoszenie nie zapewnia prywatności. Podaj wersje lub commit, których dotyczy
-problem, opisz jego wpływ i minimalny sposób odtworzenia bez aktywnych
-sekretów ani danych osobowych. Wrażliwe materiały pomocnicze przekazuj
-wyłącznie przez zweryfikowany prywatny kanał.
-
-## Wymagania wydania dla osoby utrzymującej projekt
-
-Osoba utrzymująca projekt wybrała GitHub Private Vulnerability Reporting
-i planuje włączyć oraz zweryfikować tę funkcję bezpośrednio po ręcznym
-upublicznieniu repozytorium. Funkcja pozostaje niewłączona
-i niezweryfikowana do czasu wykonania tych czynności.
-
-Prywatne raportowanie podatności na GitHub jest opcjonalną funkcją
-repozytoriów publicznych. Dostępność tej funkcji w projekcie wymaga
-weryfikacji. Przed ukończeniem publicznego wydania osoba utrzymująca
-projekt musi włączyć funkcję, sprawdzić formularz z osobnego konta
-i wpisać w tym dokumencie zweryfikowaną ścieżkę zgłoszeń. Jeżeli bezpieczny
-kanał będzie potrzebny przed zmianą widoczności, najpierw udostępnij
-i zweryfikuj alternatywny kontakt prywatny. Postępuj zgodnie z
-[instrukcją publikacji](docs/publication-handoff.pl.md) oraz
-[instrukcją konfiguracji GitHub](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/configure-vulnerability-reporting/configure-for-a-repository).
+Wskaż wersje lub commit objęte podatnością, opisz jej wpływ i podaj minimalny
+sposób odtworzenia problemu bez sekretów i danych osobowych. Wrażliwe materiały
+pomocnicze przekazuj wyłącznie w ramach prywatnego zgłoszenia.
 
 ## Zakres i ograniczenia
 
