@@ -3,13 +3,13 @@ import { createHash } from "node:crypto";
 import { lstatSync, readFileSync, realpathSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 
-const packageId = "file-schema-evolution-workshop";
+export const fileSchemaPackageId = "file-schema-evolution-workshop";
 
 export function fileSchemaPackageLockCommand(
   id: string,
   packageRoot: string,
 ): string[] {
-  if (id !== packageId) return [];
+  if (id !== fileSchemaPackageId) return [];
   assert(
     isAbsolute(packageRoot) && resolve(packageRoot) === packageRoot,
     "package root must be absolute and canonical",

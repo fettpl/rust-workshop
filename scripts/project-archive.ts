@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { strToU8, zipSync } from "fflate";
 import type { ProjectPackage } from "../src/domain/types";
 import {
+  packageDownloadPath,
   projectFiles,
   type PackageVariant,
 } from "../src/domain/project-package";
@@ -19,6 +20,18 @@ export { archiveNoticeSources, archiveApacheExceptionPackageIds } from "./archiv
 import { archiveNoticesFrom } from "./archive-notices";
 
 const defaultRepositoryRoot = fileURLToPath(new URL("..", import.meta.url));
+
+export function* projectArchiveDownloads(project: ProjectPackage) {
+  for (const variant of ["starter", "solution"] as const) {
+    for (const locale of [undefined, "pl", "en"] as const) {
+      yield {
+        variant,
+        locale,
+        url: packageDownloadPath(project, variant, locale),
+      };
+    }
+  }
+}
 
 export function readArchiveNotices(
   repositoryRoot = defaultRepositoryRoot,

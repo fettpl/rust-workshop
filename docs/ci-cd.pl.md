@@ -53,6 +53,22 @@ przeglądarkowe bez ponowień i sprawdza `npm run test:offline` na tym samym
 serwerze. Przeglądarka używa kontrolowanych odpowiedzi środowiska
 wykonawczego. Wyniki dotyczą tego zestawu danych testowych.
 
+Po wygenerowaniu plików projektów zadanie `verify` używa przypiętego wydania
+`cargo-audit 0.23.0`, aby sprawdzić zawartość plików `Cargo.lock` w archiwach
+startowych i rozwiązaniach pod adresami kanonicznymi, angielskimi i polskimi.
+Sprawdza także zagnieżdżone pliki blokady oraz pliki śledzone w
+`scripts/fixtures/`. Raport zapisuje wszystkie źródła dla każdej sumy SHA-256
+oraz wskazuje archiwa File Schema Evolution udostępniane bez pliku blokady.
+Weryfikator pobiera jedną migawkę oficjalnej bazy RustSec i zapisuje identyfikator
+jej commita. Skan działa offline w katalogu tymczasowym, używa jawnie wskazanych
+plików blokady i pomija status wycofania wersji z rejestru. Podatności i problemy
+z bezpieczeństwem typów lub pamięci (kategoria `unsound`) w pakietach z crates.io,
+brak wejścia oraz błędny lub niepełny skan powodują błąd zadania `verify`.
+Aby odtworzyć kontrolę lokalnie, umieść przypiętą wersję narzędzia w `PATH`
+i wykonaj `npm run content:packages` oraz `npm run audit:rustsec`.
+CI zachowuje `test-results/rustsec-audit/report.json` w artefakcie
+`rustsec-audit-report`. [Baza RustSec](https://github.com/RustSec/advisory-db) · [cargo-audit 0.23.0](https://github.com/RustSec/rustsec/releases/tag/cargo-audit/v0.23.0)
+
 `workspace-msrv` używa dokładnych ścieżek `cargo`, `rustc` i `rustdoc`
 z Rust `1.85.0` dla obszaru roboczego Frame Protocol, Number Guessing+,
 manifestów, kontraktów API i makr oraz testów wyników oceny. Durable Log
