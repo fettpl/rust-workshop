@@ -107,7 +107,7 @@ function discoverRustup(): string {
 
 function profileFor(msrv: boolean): RetryToolProfile {
   const mode = msrv ? "msrv" : "stable";
-  const toolchain = msrv ? "1.85.0" : "stable";
+  const toolchain = msrv ? "1.89.0" : "stable";
   const rustup = discoverRustup();
   const profileRoot = process.env.RUST_WORKSHOP_CLIENT_RETRY_QUALIFICATION_ROOT;
   let expected: { mode: string; toolchain: string; executables?: Record<string, { path: string; bytes: number; mode: number; sha256: string }>; versionContains?: Record<string, string>; } | undefined;

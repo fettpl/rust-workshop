@@ -19,7 +19,10 @@ type Control = {
  * that test's expected assertion; a compiler error, signal, timeout, or zero
  * tests never counts as rejection.
  */
-export function verifyMiniGrepMutants(root: string): void {
+export function verifyMiniGrepMutants(
+  root: string,
+  env: NodeJS.ProcessEnv = process.env,
+): void {
   assert.notEqual(
     process.platform,
     "win32",
@@ -51,6 +54,7 @@ export function verifyMiniGrepMutants(root: string): void {
   function run(args: string[]) {
     const result = spawnSync("cargo", [...args, "--offline", "--locked"], {
       cwd: root,
+      env,
       encoding: "utf8",
       timeout: 60_000,
       maxBuffer: 3 * 1024 * 1024,

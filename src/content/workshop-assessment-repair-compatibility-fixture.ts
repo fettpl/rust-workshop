@@ -1,3 +1,4 @@
+import { durableLogSqliteRestorations } from "./durable-log-sqlite-compatibility-fixture";
 import { propertyContractsRustixRestoration } from "./property-contracts-rustix-compatibility-fixture";
 import capstoneProcessPathDelta from "./fixtures/capstone-process-path-delta.json";
 import repositoryLinksDelta from "./fixtures/oss-repository-links-delta.json";
@@ -427,6 +428,7 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   entries: readonly RegistryRestoration[] = [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
   const restorations: readonly RegistryRestoration[] = [
+    ...durableLogSqliteRestorations,
     propertyContractsRustixRestoration,
     ...capstoneProcessRegistries,
     ...repositoryLinkRegistries,

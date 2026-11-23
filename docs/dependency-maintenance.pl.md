@@ -101,10 +101,9 @@ Przyjęcie części najnowszych stabilnych wersji wymaga osobnej migracji.
 - Deklaracje typów Node pozostają w linii Node 22, ponieważ obsługiwany
   jest Node 22.23.4. Typy Node 26 mogłyby dopuścić użycie API
   niedostępnego w obsługiwanym środowisku.
-- Criterion 0.8.2 wymaga Rusta 1.86, proptest 1.12.0 wymaga 1.88, a
-  rusqlite 0.41.0 wymaga 1.89. Przypięte wersje 0.5.1, 1.11.0 i
-  0.40.2 zachowują zgodność z Rustem 1.85 oraz kontrakty historycznych
-  testów wydajności. Pozostałe nieaktualne wersje zależności pośrednich
+- Criterion 0.8.2 wymaga Rusta 1.86, a Proptest 1.12.0 wymaga 1.88.
+  Criterion 0.5.1 i Proptest 1.11.0 zachowują zgodność z Rustem 1.85
+  oraz kontrakty historycznych testów wydajności. Pozostałe nieaktualne wersje zależności pośrednich
   podlegają zakresom pakietów nadrzędnych. Sam starszy numer główny
   wersji nie potwierdza podatności.
 
@@ -144,13 +143,12 @@ Pakiety dla różnych platform mogą zawierać różne kompilacje natywne.
 Zachowaj dołączone noty wydawców i przed dystrybucją pliku wykonywalnego
 sprawdź rzeczywistą platformę docelową.
 
-Przestrzeń robocza SQLite korzysta z rusqlite 0.40.2 i libsqlite3-sys
-0.38.2 z dołączonym SQLite 3.53.2. Oficjalna
-[tabela CVE SQLite](https://sqlite.org/cves.html) wskazuje 3.53.2 jako
-poprawkę dla CVE-2026-11822 i CVE-2026-11824. Nowsze wydania utrzymaniowe
-SQLite są dostępne. Aktualizację odroczono jawnie ze względu na zgodność.
-Najnowsza para rusqlite 0.41.0 i libsqlite3-sys 0.39.0 wymaga odpowiednio
-Rusta 1.89 i 1.88, powyżej MSRV projektu 1.85. Zachowaj dostarczony plik
-źródłowy C i zgodną wersję paczki sys. Audyt dołączonych bibliotek C
-wymaga osobnego sprawdzenia poza dopasowywaniem nazw paczek Rusta
-w RustSec.
+Oba obszary robocze Durable Log korzystają z rusqlite 0.41.1
+i libsqlite3-sys 0.39.1 z dołączonym SQLite 3.54.1. Opublikowana paczka
+rusqlite wymaga Rusta 1.89.0. Oba obszary deklarują i testują to minimum.
+Pozostałe obszary zachowują dotychczasowe wymagania. Plik blokady
+przypina wersje paczek Rust, a test transakcji sprawdza, czy dołączone
+SQLite ma co najmniej wersję 3.54.0 zawierającą poprawkę. Przy aktualizacji
+sprawdź komunikaty dotyczące zarówno paczek Rust, jak i bibliotek natywnych.
+[RUSTSEC-2026-0459](https://rustsec.org/advisories/RUSTSEC-2026-0459.html) ·
+[Komunikaty bezpieczeństwa SQLite](https://sqlite.org/cves.html)

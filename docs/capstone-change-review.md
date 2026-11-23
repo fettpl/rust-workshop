@@ -60,7 +60,7 @@ npm run build
 
 The restricted capstone verifier extracts only the repository-authored archive,
 checks archive/source and manifest relationships and runs the reference on
-stable and exact Rust 1.85.0. Its 13 controlled mutants include per-stream
+stable and exact Rust 1.89.0. Its 13 controlled mutants include per-stream
 accounting, identity precedence, persisted occupancy, lower-K deletion and false
 success. A mutant must compile and fail its designated behavioral test; restored
 reference execution must pass. Compilation, timeout and infrastructure failures

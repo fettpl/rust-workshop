@@ -16,7 +16,7 @@ macierzy. Podane limity czasu są częścią bieżącego kontraktu.
 | Kontrola | Środowisko i zakres | Limit czasu |
 | --- | --- | ---: |
 | `verify` | Ubuntu, stabilne Node i Rust. Aplikacja, kurs, zaufane materiały testowe, build, przeglądarka produkcyjna i tryb offline | 60 min |
-| `workspace-msrv` | Ubuntu, dokładnie Rust 1.85.0. Obszar roboczy i weryfikatory MSRV | 30 min |
+| `workspace-msrv` | Ubuntu, dokładne MSRV. Rust 1.85.0 oraz 1.89.0 dla Durable Log | 30 min |
 | `mini-grep-fuzz` | Kampania nightly na Ubuntu oraz odtworzenie na stable i MSRV | 20 min |
 | `profile-evidence` | Ubuntu stable, wyniki Callgrind i DHAT | 25 min |
 | `allocation-evidence` (stable Ubuntu) | Ubuntu stable, wyniki alokacji | 25 min |
@@ -55,9 +55,11 @@ wykonawczego. Wyniki dotyczą tego zestawu danych testowych.
 
 `workspace-msrv` używa dokładnych ścieżek `cargo`, `rustc` i `rustdoc`
 z Rust `1.85.0` dla obszaru roboczego Frame Protocol, Number Guessing+,
-projektu końcowego, manifestów, kontraktów API i makr oraz testów wyników
-oceny. Pobiera też przypięty profil Tokio przed kontrolami natywnymi
-offline. Bieżące zadanie stable i zadanie MSRV uruchamiają weryfikator
+manifestów, kontraktów API i makr oraz testów wyników oceny. Durable Log
+Service i Durable Log Retry używają dokładnie Rusta `1.89.0`, wymaganego
+przez zależność z dołączonym SQLite. Polecenie `content:cargo -- --msrv`
+wybiera minimum danego projektu. Zadanie pobiera też przypięty profil
+Tokio przed kontrolami natywnymi offline. Bieżące zadanie stable i zadanie MSRV uruchamiają weryfikator
 autorskich testów własności.
 
 `mini-grep-fuzz` instaluje przypięty `nightly-2026-08-08`, dokładnie Rust
@@ -232,7 +234,9 @@ CI przesyła tylko katalogi przebiegów, bez wielokrotnie używanej pamięci
 kompilacji. Zobacz [kontrakt badania](performance-investigation.pl.md).
 
 Używaj `--msrv` z weryfikatorem, który dokumentuje tę opcję, po
-instalacji i kwalifikacji dokładnie Rust `1.85.0`. Polecenia specjalistyczne
+instalacji i kwalifikacji wskazanej dokładnej wersji. Wersja bazowa to
+`1.85.0`, a weryfikatory Durable Log Service i Durable Log Retry wymagają
+`1.89.0`. Polecenia specjalistyczne
 odrzucają dowolne ścieżki, źródła, zamienniki zależności i dowolne
 wersje narzędzi. Przy ograniczonych zasobach ciężkie kontrole natywne
 i przeglądarkowe uruchamiaj kolejno. Kontrolowane atrapy potwierdzają

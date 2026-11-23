@@ -60,7 +60,8 @@ its own facts.
 ## Maintainer evidence boundary
 
 `npm run content:client-retry` and its `--msrv` variant qualify only the fixed
-authored archive and its stable/MSRV fixture controls. The private wrapper may
+authored archive and its fixture controls on stable and exact Rust 1.89.0.
+The private wrapper may
 supply a qualified tool profile and offline Cargo home; the public verifier
 does not depend on a maintainer's private directory layout. Raw commands,
 versions, executable hashes, mutant outcomes, and failures remain evidence

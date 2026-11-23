@@ -42,10 +42,10 @@ export const capstoneIntegrationSources: Source[] = [
   },
   {
     id: "capstone-rusqlite-transactions",
-    title: "rusqlite 0.40.2: Transaction",
-    url: "https://docs.rs/rusqlite/0.40.2/rusqlite/struct.Transaction.html",
+    title: "rusqlite 0.41.1: Transaction",
+    url: "https://docs.rs/rusqlite/0.41.1/rusqlite/struct.Transaction.html",
     classification: "versioned",
-    reviewedAt,
+    reviewedAt: "2026-11-23",
     recheckPolicy:
       "Sprawdzaj po zmianie przypiętej wersji rusqlite albo API transakcji.",
   },

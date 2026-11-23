@@ -4,7 +4,7 @@ export const coreManifest = String.raw`[package]
 name = "ingest-core"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 publish = false
 
 [lints.rust]
@@ -186,10 +186,11 @@ impl Event {
         mut self,
         correlation: Option<String>,
     ) -> Result<Self, ValidationError> {
-        if let Some(value) = &correlation {
-            if value == "-" || !valid_identifier(value) {
-                return Err(ValidationError::Correlation);
-            }
+        if correlation
+            .as_deref()
+            .is_some_and(|value| value == "-" || !valid_identifier(value))
+        {
+            return Err(ValidationError::Correlation);
         }
         self.correlation = correlation;
         Ok(self)

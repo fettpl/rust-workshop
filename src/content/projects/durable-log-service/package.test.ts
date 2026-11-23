@@ -1,14 +1,50 @@
+import { strFromU8, unzipSync } from "fflate";
 import { describe, expect, it } from "vitest";
+import { buildProjectArchive } from "../../../../scripts/project-archive";
 import {
   projectFiles,
   validateProjectPackage,
 } from "../../../domain/project-package";
+import { durableLogRetryPackage } from "../durable-log-retry";
 import {
   durableLogServicePackage,
   durableLogServiceWorkspacePaths,
 } from "./archive";
 
 describe("Paczka trwałego dziennika zdarzeń", () => {
+  describe.each([durableLogServicePackage, durableLogRetryPackage])(
+    "$id",
+    (project) => {
+      describe.each(["starter", "solution"] as const)("%s ZIP", (variant) => {
+        it.each([undefined, "pl", "en"] as const)(
+          "ships patched bundled SQLite and documents the MSRV for locale %s",
+          (locale) => {
+            const entries = unzipSync(
+              buildProjectArchive(project, variant, { locale }),
+            );
+            const read = (path: string) =>
+              strFromU8(entries[`${project.id}/${path}`]);
+            expect(project.workspaceMembers).toHaveLength(3);
+            for (const path of [
+              "Cargo.toml",
+              ...project.workspaceMembers!.map((member) => `${member}/Cargo.toml`),
+            ]) {
+              expect(read(path), path).toContain('rust-version = "1.89.0"');
+            }
+            expect(read("crates/ingest-store/Cargo.toml")).toContain(
+              'rusqlite = { version = "=0.41.1", default-features = false, features = ["bundled"] }',
+            );
+            const lock = read("Cargo.lock");
+            expect(lock).toMatch(/name = "rusqlite"\nversion = "0\.41\.1"/);
+            expect(lock).toMatch(/name = "libsqlite3-sys"\nversion = "0\.39\.1"/);
+            expect(read("README.md")).toContain("Rust 1.89.0");
+            expect(read("README.md")).toContain("rusqlite 0.41.1");
+          },
+        );
+      });
+    },
+  );
+
   it("publikuje dokładnie opisany workspace z trzema członkami", () => {
     expect(validateProjectPackage(durableLogServicePackage)).toEqual([]);
     expect(durableLogServicePackage.workspaceMembers).toEqual([
@@ -213,13 +249,13 @@ describe("Paczka trwałego dziennika zdarzeń", () => {
     expect(root).toContain(
       'members = ["crates/ingest-core", "crates/ingest-store", "crates/ingest-service"]',
     );
-    expect(root).toContain('rust-version = "1.85.0"');
+    expect(root).toContain('rust-version = "1.89.0"');
     expect(coreManifest).toContain('name = "ingest-core"');
     expect(coreManifest).toContain("publish = false");
     expect(coreManifest).toContain('unsafe_code = "forbid"');
     expect(coreManifest).not.toContain("[dependencies]");
     expect(storeManifest).toContain(
-      'rusqlite = { version = "=0.40.2", default-features = false, features = ["bundled"] }',
+      'rusqlite = { version = "=0.41.1", default-features = false, features = ["bundled"] }',
     );
     expect(serviceManifest).toContain(
       'tokio = { version = "=1.54.1", default-features = false, features = ["macros", "rt", "sync", "time", "net", "io-util", "io-std"] }',

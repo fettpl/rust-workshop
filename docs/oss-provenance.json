@@ -390,7 +390,7 @@
     },
     {
       "path": "src/content/capstone-integration.ts",
-      "sha256": "bc632f3c54481d33a733cbaebbbea186ddeba96cf64c857b9945c88952f68370",
+      "sha256": "7114200426e071ea5cdd0ffc75d2d2b06bb24c3821fdeffd00990b9bb78e376a",
       "group": "course"
     },
     {
@@ -696,6 +696,11 @@
     {
       "path": "src/content/duplicate-contract-evidence.test.ts",
       "sha256": "f31a8c4e3cea97c6495ebd12d232e2365349a01d05b598f3e12d12a5065a8316",
+      "group": "course"
+    },
+    {
+      "path": "src/content/durable-log-sqlite-compatibility-fixture.ts",
+      "sha256": "4d3d3a3a7c9007b6816015375aa091d9ecaedd31c1ca9e8d8d3b18f87e8037e1",
       "group": "course"
     },
     {
@@ -1480,27 +1485,27 @@
     },
     {
       "path": "src/content/projects/durable-log-service/archive.ts",
-      "sha256": "0564a2e7ea5e9aab76276098b046e82dddcd4dce07abae4de8336f9f2660b5fa",
+      "sha256": "d7fa46bdc2ae2cb50bdaefb69785be0a0d2f6bac76ac7fd1dc70c78918c93bd5",
       "group": "course"
     },
     {
       "path": "src/content/projects/durable-log-service/core.ts",
-      "sha256": "d38d742a6f1259bf19f5ecd2bd0df043a0b25723860b033cf582f0cbec256bc3",
+      "sha256": "44a2dd037d4964995762c0a8e3b94d649dbcb9de42da3097232b6f4a96f7b067",
       "group": "course"
     },
     {
       "path": "src/content/projects/durable-log-service/package.test.ts",
-      "sha256": "9145b32d051246b759852b540275064bb2f6c0804ca948843152099e48fb25b8",
+      "sha256": "de58561129bb346dfc0f08085ebc60757583c7c5e19e7fa10e9056cc472cb809",
       "group": "course"
     },
     {
       "path": "src/content/projects/durable-log-service/service.ts",
-      "sha256": "290b0b62cc6ea0356dd41e063f96c6c52a46a288de0a8f7855c348f0ba323000",
+      "sha256": "e517b0a190eb0aebe2655c8294d9f4513141483c9e46940a5d8a4a691b44c0a7",
       "group": "course"
     },
     {
       "path": "src/content/projects/durable-log-service/store.ts",
-      "sha256": "e542139d28490a68ab55d60057037835f92ee453f1d7c6222e80e7c497388011",
+      "sha256": "b8634d3b567e5f5fceae5f27dd983ea9e77f5e75b6aa31ccf9dbd606e13b7974",
       "group": "course"
     },
     {
@@ -2355,7 +2360,7 @@
     },
     {
       "path": "src/content/validate.ts",
-      "sha256": "0bbc43eb5214427f8a53c2d7a44452aac0d1b2840d2b4db64921e98e29c75108",
+      "sha256": "1fbdad7502c750647d21e416b22f9ec9163ac7a2ffff172e21659f19923c7e29",
       "group": "course"
     },
     {
@@ -2365,7 +2370,7 @@
     },
     {
       "path": "src/content/workshop-assessment-repair-compatibility-fixture.ts",
-      "sha256": "b4f877dd96f487be1793276061b74019e2770812cea3972359cc1dcfa947cd63",
+      "sha256": "c86bb4dc50b72847b46c2884b669539d3ae5772f69566f987ebff6c7e884318a",
       "group": "course"
     },
     {

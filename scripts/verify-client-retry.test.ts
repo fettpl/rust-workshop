@@ -52,7 +52,7 @@ describe("bounded retry verifier controls", () => {
   it("constructs a closed child environment without ambient flags", () => {
     const env = buildRetryChildEnv({
       cargoHome: "/home/learner/.cargo",
-      toolchain: "1.85.0",
+      toolchain: "1.89.0",
       executables: {
         cargo: { path: "/opt/rust/bin/cargo", bytes: 1, mode: 0o755, sha256: "cargo", version: "cargo" },
         rustc: { path: "/opt/rust/bin/rustc", bytes: 1, mode: 0o755, sha256: "rustc", version: "rustc" },
@@ -63,7 +63,7 @@ describe("bounded retry verifier controls", () => {
       CARGO_HOME: "/home/learner/.cargo",
       CARGO_NET_OFFLINE: "true",
       CARGO_TARGET_DIR: "/tmp/retry-target",
-      RUSTUP_TOOLCHAIN: "1.85.0",
+      RUSTUP_TOOLCHAIN: "1.89.0",
       RUSTC: "/opt/rust/bin/rustc",
       RUSTDOC: "/opt/rust/bin/rustdoc",
       NODE_ENV: "production",
