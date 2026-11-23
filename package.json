@@ -26,6 +26,7 @@
     "content:file-schema-evolution": "node --import tsx scripts/verify-file-schema-evolution.ts",
     "test:authorization": "node node_modules/vitest/vitest.mjs run scripts/verify-authorization.test.ts scripts/verify-client-retry.test.ts src/content/projects/service-authorization/package.test.ts",
     "audit:production": "node scripts/audit-production.mjs",
+    "audit:rustsec": "node --import tsx scripts/audit-rustsec.ts",
     "test:audit-production": "node --test scripts/audit-production.test.mjs",
     "test:sharp-runtime": "node --test scripts/verify-sharp-runtime.test.mjs",
     "precontent:capstone": "npm run content:packages",

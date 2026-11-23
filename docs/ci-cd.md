@@ -52,6 +52,20 @@ browser suite with zero retries, and runs `npm run test:offline` against that
 same server. The browser runner is controlled test data; it is not proof about
 arbitrary learner code.
 
+After generating project assets, `verify` uses the pinned `cargo-audit 0.23.0`
+release to check the actual `Cargo.lock` bytes inside starter and solution
+downloads at the canonical, English, and Polish URLs. It includes nested
+lockfiles and tracked lockfiles under `scripts/fixtures/`. The report records
+all origins for each distinct lockfile SHA-256 and identifies the File Schema
+Evolution ZIPs that ship without a lockfile. The verifier fetches one official RustSec Advisory
+Database snapshot and records its Git revision. It scans offline from a
+temporary directory using explicit lockfiles and leaves registry yank status
+outside the check. Crates.io vulnerability and unsoundness advisories, missing
+inputs, and failed or incomplete scans fail `verify`. To reproduce the check
+locally with the pinned tool on `PATH`, run `npm run content:packages` and
+`npm run audit:rustsec`. CI retains `test-results/rustsec-audit/report.json`
+in the `rustsec-audit-report` artifact. [RustSec Advisory Database](https://github.com/RustSec/advisory-db) · [cargo-audit 0.23.0](https://github.com/RustSec/rustsec/releases/tag/cargo-audit/v0.23.0)
+
 `workspace-msrv` uses the exact Rust `1.85.0` `cargo`, `rustc`, and `rustdoc`
 paths for the Frame Protocol workspace, Number Guessing+, manifests, API and
 macro contracts, and the evidence assessment suites. Durable Log Service and
