@@ -8,12 +8,12 @@ export const storeManifest = String.raw`[package]
 name = "ingest-store"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 publish = false
 
 [dependencies]
 ingest-core = { path = "../ingest-core" }
-rusqlite = { version = "=0.40.2", default-features = false, features = ["bundled"] }
+rusqlite = { version = "=0.41.1", default-features = false, features = ["bundled"] }
 
 [lints.rust]
 unsafe_code = "forbid"
@@ -576,6 +576,11 @@ fn both_correlation_values_participate_in_conflict_checking() {
         correlated_receipt.sequence
     );
     fs::remove_dir_all(directory).unwrap();
+}
+
+#[test]
+fn bundled_sqlite_has_current_security_baseline() {
+    assert!(rusqlite::version_number() >= 3_054_000);
 }
 `;
 

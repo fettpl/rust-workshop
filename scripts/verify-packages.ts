@@ -15,11 +15,26 @@ import { buildProjectArchive } from "./project-archive";
 import { generateFileSchemaPackageLock } from "./file-schema-package-commands";
 import { verifyMiniGrepMutants } from "./mini-grep-mutants";
 
+const args = process.argv.slice(2);
+const msrv = args.length === 1 && args[0] === "--msrv";
+if (args.length && !msrv) throw new Error("Expected no options or --msrv");
+
+const durableLogPackages = new Set([
+  "durable-log-service-workspace",
+  "durable-log-retry-workspace",
+]);
+
 const root = mkdtempSync(join(tmpdir(), "rust-workshop-authored-cargo-"));
 let failures = 0;
-function command(directory: string, args: string[], expectFailure = false) {
+function command(
+  directory: string,
+  args: string[],
+  env: NodeJS.ProcessEnv,
+  expectFailure = false,
+) {
   const result = spawnSync("cargo", args, {
     cwd: directory,
+    env,
     encoding: "utf8",
     timeout: 60_000,
     maxBuffer: 2 * 1024 * 1024,
@@ -44,7 +59,17 @@ function command(directory: string, args: string[], expectFailure = false) {
     console.error(result.error?.message ?? stdout + stderr);
   }
   if (args[0] === "generate-lockfile") {
-    console.log(JSON.stringify({ argv: ["cargo", ...args], cwd: directory, status: result.status, signal: result.signal, error: result.error?.message ?? null, stdout, stderr }));
+    console.log(
+      JSON.stringify({
+        argv: ["cargo", ...args],
+        cwd: directory,
+        status: result.status,
+        signal: result.signal,
+        error: result.error?.message ?? null,
+        stdout,
+        stderr,
+      }),
+    );
   }
   return passed;
 }
@@ -53,7 +78,15 @@ try {
     project.package ? [project.package] : [],
   );
   if (!packages.length) throw new Error("No authored Cargo packages to verify");
-  for (const project of packages)
+  for (const project of packages) {
+    const env = msrv
+      ? {
+          ...process.env,
+          RUSTUP_TOOLCHAIN: durableLogPackages.has(project.id)
+            ? "1.89.0"
+            : "1.85.0",
+        }
+      : process.env;
     for (const variant of ["starter", "solution"] as const) {
       const bytes = buildProjectArchive(project, variant);
       const served = readFileSync(
@@ -68,17 +101,19 @@ try {
         writeFileSync(target, contents);
       }
       const packageRoot = join(directory, project.id);
-      const lock = generateFileSchemaPackageLock(project.id, packageRoot, (args) => command(packageRoot, args));
+      const lock = generateFileSchemaPackageLock(
+        project.id,
+        packageRoot,
+        (args) => command(packageRoot, args, env),
+      );
       if (lock) console.log(JSON.stringify({ generatedLock: lock.binding }));
-      command(packageRoot, ["fmt", "--all", "--", "--check"]);
+      command(packageRoot, ["fmt", "--all", "--", "--check"], env);
       lock?.assertUnchanged();
-      command(packageRoot, [
-        "check",
-        "--workspace",
-        "--offline",
-        "--locked",
-        "--all-targets",
-      ]);
+      command(
+        packageRoot,
+        ["check", "--workspace", "--offline", "--locked", "--all-targets"],
+        env,
+      );
       lock?.assertUnchanged();
       command(
         packageRoot,
@@ -89,24 +124,30 @@ try {
           "--offline",
           "--locked",
         ],
+        env,
         variant === "starter",
       );
       lock?.assertUnchanged();
       if (variant === "solution")
-        command(packageRoot, [
-          "clippy",
-          "--workspace",
-          "--offline",
-          "--locked",
-          "--all-targets",
-          "--",
-          "-D",
-          "warnings",
-        ]);
+        command(
+          packageRoot,
+          [
+            "clippy",
+            "--workspace",
+            "--offline",
+            "--locked",
+            "--all-targets",
+            "--",
+            "-D",
+            "warnings",
+          ],
+          env,
+        );
       lock?.assertUnchanged();
       if (variant === "solution" && project.id === "mini-grep-workshop")
-        verifyMiniGrepMutants(packageRoot);
+        verifyMiniGrepMutants(packageRoot, env);
     }
+  }
 } finally {
   rmSync(root, { recursive: true, force: true });
 }

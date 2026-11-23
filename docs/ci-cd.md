@@ -16,7 +16,7 @@ The configured job timeouts are part of the current contract:
 | Check                                 | Runner and scope                                                                                       | Timeout |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------: |
 | `verify`                              | Ubuntu stable Node/Rust; app, content, trusted fixtures, build, production browser, and offline checks |  60 min |
-| `workspace-msrv`                      | Ubuntu exact Rust 1.85.0 workspace and MSRV verifiers                                                  |  30 min |
+| `workspace-msrv`                      | Ubuntu exact MSRV verifiers (Rust 1.85.0 and Durable Log on 1.89.0)                                                  |  30 min |
 | `mini-grep-fuzz`                      | Ubuntu nightly campaign plus stable/MSRV replay                                                        |  20 min |
 | `profile-evidence`                    | Ubuntu stable Callgrind and DHAT evidence                                                              |  25 min |
 | `allocation-evidence` (stable Ubuntu) | Ubuntu stable allocation evidence                                                                      |  25 min |
@@ -53,10 +53,12 @@ same server. The browser runner is controlled test data; it is not proof about
 arbitrary learner code.
 
 `workspace-msrv` uses the exact Rust `1.85.0` `cargo`, `rustc`, and `rustdoc`
-paths for the Frame Protocol workspace, Number Guessing+, capstone, manifests,
-API and macro contracts, and the evidence assessment suites. It also fetches
-the fixed Tokio lockfile before offline native checks. The current stable job
-and this MSRV job both run the authored property contract verifier.
+paths for the Frame Protocol workspace, Number Guessing+, manifests, API and
+macro contracts, and the evidence assessment suites. Durable Log Service and
+Durable Log Retry use exact Rust `1.89.0`, which their bundled SQLite dependency
+requires. The offline archive verifier `content:cargo -- --msrv` selects the
+minimum for each project. The job also fetches the fixed Tokio lockfile before
+offline native checks. Both jobs run the authored property contract verifier.
 
 `mini-grep-fuzz` installs the pinned nightly distribution
 `nightly-2026-08-08`, exact Rust `1.85.0`, and `cargo-fuzz 0.13.2`. The nightly
@@ -219,7 +221,9 @@ run directories, excluding reusable target caches. See the
 [investigation contract](performance-investigation.md).
 
 Use `--msrv` only with the verifier that documents it, after installing and
-qualifying exact Rust `1.85.0`. Specialized commands reject arbitrary paths,
+qualifying the documented exact Rust version. The baseline is `1.85.0`, and
+the Durable Log Service and Durable Log Retry verifiers require `1.89.0`.
+Specialized commands reject arbitrary paths,
 source, dependency overrides, and arbitrary toolchain selectors. Heavy native
 and browser checks should run serially when resources are limited; mocks are
 useful for request/UI/state contracts but are not compiler, runtime, archive,

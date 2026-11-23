@@ -82,9 +82,9 @@ Some latest stable releases cannot be adopted without a separate migration:
   suppress checks or claim that a zero-advisory result restores support.
 - Node type declarations stay on the Node 22 line because Node 22.23.4 is
   supported; Node 26 declarations could admit unsupported runtime APIs.
-- Criterion 0.8.2 requires Rust 1.86, proptest 1.12.0 requires 1.88, and
-  rusqlite 0.41.0 requires 1.89. The current 0.5.1, 1.11.0 and 0.40.2 pins
-  preserve the Rust 1.85 qualification and historical benchmark contracts.
+- Criterion 0.8.2 requires Rust 1.86 and Proptest 1.12.0 requires 1.88.
+  Criterion 0.5.1 and Proptest 1.11.0 preserve the Rust 1.85 qualification
+  and historical benchmark contracts.
   Other non-current transitive versions follow their parent package ranges;
   an older major alone is not evidence of a vulnerability.
 
@@ -117,12 +117,12 @@ identify 2.63.2 as the fix for RUSTSEC-2026-0305 / CVE-2026-96889. Platform
 packages can carry different native builds, so retain their upstream notices
 and inspect the actual target platform before distributing a binary.
 
-The authored SQLite workspace uses rusqlite 0.40.2 and libsqlite3-sys 0.38.2
-with bundled SQLite 3.53.2. The official
-[SQLite CVE table](https://sqlite.org/cves.html) lists 3.53.2 as the fix for
-CVE-2026-11822 and CVE-2026-11824. Later SQLite maintenance releases exist;
-this is an explicit freshness hold, not a claim that the C library is latest.
-The latest rusqlite 0.41.0 / libsqlite3-sys 0.39.0 pair requires Rust 1.89 /
-1.88, beyond the project's 1.85 MSRV. Do not replace a bundled C source file
-or force an incompatible sys-crate to disguise that constraint. RustSec
-matching on Rust crate names alone does not audit bundled C libraries.
+The two Durable Log workspaces use rusqlite 0.41.1 and libsqlite3-sys 0.39.1
+with bundled SQLite 3.54.1. The published rusqlite crate requires Rust 1.89.0,
+so these workspaces declare and test that minimum. The other workspaces retain
+their existing Rust minimums. The lockfile pins the Rust crates and the
+transaction test checks the linked SQLite version against the 3.54.0 fix
+floor. Check native component advisories as well as Rust crate advisories
+when refreshing the bundle.
+[RUSTSEC-2026-0459](https://rustsec.org/advisories/RUSTSEC-2026-0459.html) ·
+[SQLite security advisories](https://sqlite.org/cves.html)

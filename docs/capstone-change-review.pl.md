@@ -69,7 +69,7 @@ npm run build
 
 Ograniczony weryfikator Capstone rozpakowuje tylko archiwum autorskie,
 sprawdza zgodność archiwum, źródeł i manifestu oraz uruchamia
-rozwiązanie referencyjne na stabilnym Ruście i dokładnie 1.85.0.
+rozwiązanie referencyjne na stabilnym Ruście i dokładnie w wersji 1.89.0.
 Trzynaście kontrolowanych mutantów obejmuje zliczanie na strumień,
 pierwszeństwo sprawdzania tożsamości, zapisaną zajętość, usuwanie
 danych po obniżeniu K i fałszywy sukces. Mutant musi się skompilować

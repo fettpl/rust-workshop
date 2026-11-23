@@ -232,6 +232,8 @@ jobs:
         with:
           toolchain: 1.85.0
           components: rustfmt, clippy
+      - name: Install Rust 1.89.0 for the two Durable Log workspaces
+        run: rustup toolchain install 1.89.0 --profile minimal --component rustfmt --component clippy
       - run: npm ci
       - name: Prepare locked Tokio dependencies for offline native checks
         run: cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
@@ -246,8 +248,10 @@ jobs:
       # Fetch Proptest and Criterion before the generic archive verifier touches all Cargo packages.
       - run: npm run content:performance -- --fetch --msrv
       - name: Fetch locked client retry dependencies
+        env:
+          RUSTUP_TOOLCHAIN: "1.89.0"
         run: bash scripts/fetch-client-retry-dependencies.sh
-      - name: Verify bounded client retry on Rust 1.85.0
+      - name: Verify bounded client retry on Rust 1.89.0
         run: npm run content:client-retry -- --msrv
       - name: Verify typed authorization on Rust 1.85.0
         run: npm run content:authorization -- --msrv
@@ -285,7 +289,7 @@ jobs:
           path: test-results/macro-contracts/msrv/report.json
           if-no-files-found: warn
           retention-days: 7
-      - run: npm run content:cargo
+      - run: npm run content:cargo -- --msrv
       - run: npm run content:rust
       - run: npm run content:manifests -- --msrv
       - name: Verify baseline, GAT and Performance Evidence contracts on Rust 1.85.0

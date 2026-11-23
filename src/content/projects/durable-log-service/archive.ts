@@ -10,7 +10,7 @@ resolver = "3"
 [workspace.package]
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 publish = false
 license = "MIT OR Apache-2.0"
 
@@ -93,9 +93,9 @@ checksum = "65cd87c9a6d60536580b316ad985726104730a5151c99845f2490428ef91240a"
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.38.2"
+version = "0.39.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1d20bef17f513b9b3004532233187769cd072d790971f4e4da0e346eb6401e8"
+checksum = "14a5f01b87b92705d07b433c06f96cbc764637d81a0bffb5734ce17cf0f9a2b3"
 dependencies = [
  "cc",
  "pkg-config",
@@ -145,9 +145,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.40.2"
+version = "0.41.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23f2a97da3e3873c73cb2a2e71b35c40ff95e0b1eefa8d72d8499a6928c3b5b3"
+checksum = "da9bba6f3506135e120a6586df05be18b48d18896600646a4bec8f993d91a594"
 dependencies = [
  "bitflags",
  "fallible-iterator",
@@ -263,7 +263,7 @@ po otwarciu magazynu i kończy się po EOF na stdin. Klient przyjmuje jawny adre
 a 3 nieznany wynik transportu. Pracuj według testów kontraktu, a po każdej
 zmianie zachowaj wynik polecenia oraz wersję kompilatora.
 
-Paczka używa Rust 2024, minimalnej wersji Rust 1.85.0, rusqlite 0.40.2 z
+Paczka używa Rust 2024, minimalnej wersji Rust 1.89.0, rusqlite 0.41.1 z
 kompilowanym SQLite oraz Tokio 1.54.1. Magazyn zapisuje receipt w transakcji,
 rozpoznaje bezpieczne powtórzenia i zachowuje dane po ponownym otwarciu. Nie jest to obietnica dostarczenia
 z dokładnie jednym skutkiem ani dowód bezpieczeństwa dla publicznej sieci.
@@ -322,7 +322,7 @@ ADR-y i pliki zadań. Uzupełnij własne niezmienniki dla granicy domeny,
 ponowienia, wygaszania, protokołu, awarii i wydania; zachowaj wynik polecenia
 oraz wersję kompilatora po każdej zmianie.
 
-Paczka używa Rust 2024, minimalnej wersji Rust 1.85.0, rusqlite 0.40.2 z
+Paczka używa Rust 2024, minimalnej wersji Rust 1.89.0, rusqlite 0.41.1 z
 kompilowanym SQLite oraz Tokio 1.54.1. Granice procesu, danych i wydania są
 częścią ćwiczenia. Nie uruchamiaj publicznego nasłuchu i nie traktuj pobrania
 pliku jako dowodu samodzielności.
@@ -536,6 +536,11 @@ sygnały, stan magazynu i warunek zakończenia bez zgadywania wyniku.
 
 const changelog = `# Historia zmian
 
+## Aktualizacja zabezpieczeń SQLite
+
+- Zaktualizowano rusqlite do 0.41.1 i dołączone SQLite do 3.54.1.
+- Podniesiono minimalną wersję Rust do 1.89.0.
+
 ## 1.0.0 — materiał ćwiczeniowy
 
 - Dodano trzyczłonowy workspace z publicznym kontraktem modelu zdarzeń.
@@ -570,12 +575,12 @@ tej historii jako dowodu ukończenia ćwiczenia.
 const release = `# Procedura wydania
 
 Przed wydaniem porównaj listę plików archiwum z manifestem, uruchom formatowanie,
-sprawdzanie, testy, Clippy i dokumentację na stabilnym Rust oraz na Rust 1.85.0.
+sprawdzanie, testy, Clippy i dokumentację na stabilnym Rust oraz na Rust 1.89.0.
 Zapisz dokładne wersje narzędzi, skrót archiwum i wynik sprawdzenia zależności.
 Ten plik jest szablonem dowodów, a nie gotowym poświadczeniem wydania.
 
 Ograniczenie wydania: publiczne wydanie pozostaje wstrzymane do czasu zakończenia
-przebiegów archiwum na stable i dokładnym Rust 1.85.0 oraz przeglądu świeżych
+przebiegów archiwum na stable i dokładnym Rust 1.89.0 oraz przeglądu świeżych
 raportów JSON. Pomyślne sprawdzenie archiwum nie zastępuje bieżącego przeglądu
 advisory/license, pomiaru alokacji runtime, dowodów operacyjnych ani pilotażu
 z osobą uczącą się.
@@ -1067,7 +1072,7 @@ export const durableLogServicePackage: ProjectPackage = {
   description:
     "Ograniczony workspace Cargo do budowy lokalnego dziennika zdarzeń z publicznym API, transakcją SQLite i serwisem Tokio.",
   instructions: [
-    "Rozpakuj paczkę i sprawdź Rust 2024, Rust 1.85.0, manifesty oraz Cargo.lock.",
+    "Rozpakuj paczkę i sprawdź Rust 2024, Rust 1.89.0, manifesty oraz Cargo.lock.",
     "Zacznij od testów publicznego API i zanotuj wymagane granice oraz decyzje protokołu.",
     "Uruchamiaj cargo fmt --all -- --check, cargo check --workspace --locked oraz cargo test --workspace --locked.",
     "Przeczytaj ADR-y, zaproponuj własne niezmienniki i powiąż każdą decyzję z testem kontraktu.",

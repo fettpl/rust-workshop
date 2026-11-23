@@ -4,7 +4,7 @@ export const serviceManifest = String.raw`[package]
 name = "ingest-service"
 version = "1.0.0"
 edition = "2024"
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 publish = false
 
 [dependencies]
@@ -213,14 +213,12 @@ pub(crate) fn start(
         let mut paused = false;
         while let Some(work) = receiver.blocking_recv() {
             stats.accepted += 1;
-            if !paused {
-                if let Some(hooks) = &hooks {
-                    hooks.worker_started.notify_one();
-                    hooks
-                        .release_worker
-                        .wait_bounded(std::time::Duration::from_secs(1));
-                    paused = true;
-                }
+            if let (false, Some(hooks)) = (paused, &hooks) {
+                hooks.worker_started.notify_one();
+                hooks
+                    .release_worker
+                    .wait_bounded(std::time::Duration::from_secs(1));
+                paused = true;
             }
             telemetry::emit(
                 "attempt",
@@ -1568,10 +1566,8 @@ fn frame(key: &str, message: &str) -> Vec<u8> {
 fn wait_for_count(path: &std::path::Path, expected: u64, child: &mut Child) {
     let deadline = Instant::now() + Duration::from_secs(3);
     loop {
-        if let Ok(store) = Store::open(path, 4) {
-            if store.count().unwrap_or(0) >= expected {
-                return;
-            }
+        if Store::open(path, 4).is_ok_and(|store| store.count().unwrap_or(0) >= expected) {
+            return;
         }
         if Instant::now() >= deadline {
             kill_reap(child);

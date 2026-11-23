@@ -63,7 +63,7 @@ materiałów zewnętrznych trzeba ocenić na podstawie konkretnych okoliczności
 
 `npm run content:client-retry` i wariant `--msrv` sprawdzają wyłącznie stałe
 archiwum i jego repozytoryjne przypadki testowe na stabilnym Ruście oraz na
-wersji MSRV. Prywatny skrypt może dostarczyć zweryfikowany profil narzędzi i
+dokładnie w wersji 1.89.0. Prywatny skrypt może dostarczyć zweryfikowany profil narzędzi i
 katalog domowy Cargo przygotowany do pracy bez sieci. Publiczny weryfikator
 działa niezależnie od układu prywatnych katalogów osoby utrzymującej projekt.
 Dokładne polecenia, wersje, skróty plików wykonywalnych, wyniki mutantów i
