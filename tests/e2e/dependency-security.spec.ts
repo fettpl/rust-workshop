@@ -143,7 +143,7 @@ for (const trustedTypes of [true, false]) {
       body: JSON.stringify(fixed, null, 2),
       contentType: "application/json",
     });
-    expect(fixed.version).toBe("3.4.17");
+    expect(fixed.version).toBe("3.4.18");
     expect(fixed.singleton).toBe(true);
     expect(fixed.reconstructed).not.toContain("${workshopSecurityProbe}");
     expect(fixed.supported).toBe(true);
@@ -163,12 +163,13 @@ test("a new-worker-controlled reload ignores recreated old runtime caches and wo
   page,
   context,
 }) => {
-  await page.goto("/");
+  // Seed the outgoing cache before the application can register a worker.
+  await page.goto("/icon.svg");
   await page.evaluate(async () => {
     for (const registration of await navigator.serviceWorker.getRegistrations())
       await registration.unregister();
     for (const name of await caches.keys()) await caches.delete(name);
-    const old = await caches.open("rust-workshop-v29");
+    const old = await caches.open("rust-workshop-v31");
     await old.put(
       "/monaco/vs/dompurify-fixed.js",
       new Response("stale-vulnerable-runtime"),
@@ -184,14 +185,14 @@ test("a new-worker-controlled reload ignores recreated old runtime caches and wo
         ),
       );
   });
-  await page.reload();
+  await page.goto("/");
   const migration = await page.evaluate(async () => {
     const names = await caches.keys();
     const repaired = await fetch("/monaco/vs/dompurify-fixed.js").then((r) =>
       r.text(),
     );
     // Model an older in-flight handler reopening its deleted generation after activation.
-    const old = await caches.open("rust-workshop-v29");
+    const old = await caches.open("rust-workshop-v31");
     await old.put(
       "/monaco/vs/dompurify-fixed.js",
       new Response("stale-vulnerable-runtime"),
@@ -207,8 +208,9 @@ test("a new-worker-controlled reload ignores recreated old runtime caches and wo
     };
   });
   expect(migration.controlled).toBe(true);
-  expect(migration.names).not.toContain("rust-workshop-v29");
-  expect(migration.repaired).toContain("DOMPurify 3.4.17");
+  expect(migration.names).toContain("rust-workshop-v32");
+  expect(migration.names).not.toContain("rust-workshop-v31");
+  expect(migration.repaired).toContain("DOMPurify 3.4.18");
   expect(migration.current).toBe(migration.repaired);
   await context.setOffline(true);
   try {
