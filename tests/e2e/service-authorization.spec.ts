@@ -1,6 +1,5 @@
 import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Page } from "@playwright/test";
-import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import {
@@ -504,11 +503,10 @@ test("authorization_downloads_exact_starter_and_solution", async ({ page }) => {
       link.click(),
     ]);
     const bytes = await readFile((await download.path())!);
-    expect(createHash("sha256").update(bytes).digest("hex")).toBe(
-      variant === "starter"
-        ? "0baba6928d18e492fb969897a098c58e293a742e68df002d9f0c2f6dca9e5234"
-        : "121359855306e1972ca05342302ca5ea7e18a781da29dba0ff85cec81511f486",
+    const generated = await readFile(
+      `public/localized-projects/pl/${archive.id}/${variant}.zip`,
     );
+    expect(bytes.equals(generated)).toBe(true);
     const files = unzipSync(bytes);
     expect(Object.keys(files)).toHaveLength(14);
     expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));

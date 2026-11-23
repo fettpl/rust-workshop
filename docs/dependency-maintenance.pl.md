@@ -6,7 +6,7 @@ Aplikacja ładuje Monaco 0.57.0 przez lokalny moduł ładujący AMD pod
 `/monaco/vs`. W opublikowanym fragmencie pakietu edytora zaszyto wersję
 fabryki DOMPurify objętą podatnością. Samo ustawienie override w npm jej
 nie podmienia. Przygotowanie zasobów usuwa całą sprawdzoną fabrykę i
-importuje niezmienioną, oficjalną pojedynczą instancję DOMPurify 3.4.17
+importuje niezmienioną, oficjalną pojedynczą instancję DOMPurify 3.4.18
 z dystrybucji UMD w trybie AMD. Otaczający kod funkcji wywoływanych przez
 filtr Monaco i procedury czyszczenia pozostają identyczne bajt po bajcie.
 Bezpośrednia zależność i override ograniczony do pakietu nadrzędnego

@@ -5,13 +5,13 @@ import ts from "typescript";
 
 export const contract = Object.freeze({
   monaco: "0.57.0",
-  dompurify: "3.4.17",
+  dompurify: "3.4.18",
   chunk: "editor-BdtEMBbM.js",
   module: "vs/editor-BdtEMBbM",
   source: "e1e745003eb416b7ca6a1956a333e6f8434ff48381824858cb63c99e9c8f8acf",
   factory: "ddeda54ce7838c34163b04d7a74e1c91c7358b65271133951db535290fe2574e",
-  fixed: "cd37898f9782adf54820c413191b5691803f0f137c799d6edcfd38523b4c2c31",
-  map: "3b8343cc326034b684098bc5f00628142d0544f4624c92c9b9c79adb78fd5d8e",
+  fixed: "8053ee2a6a09f9d50f7fcd6fb7f07072f52c7f3fa9aa12147cab4feaf65ee970",
+  map: "e565dcc29492aa486364f05fbae2afb797a37918b4a36a079c1e0933499cc92a",
   license: "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
   dependency: "./dompurify-fixed",
   parameter: "__workshopFixedDOMPurify",
