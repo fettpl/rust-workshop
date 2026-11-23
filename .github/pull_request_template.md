@@ -1,11 +1,13 @@
 ## Summary
 
+[Polski](pull_request_template.pl.md)
+
 <!-- What learner or maintainer problem does this change solve? -->
 
 ## Scope
 
 - [ ] Application or maintainer code
-- [ ] Learner-facing content (Polish)
+- [ ] Learner-facing content (English and Polish)
 - [ ] Tests, fixtures, or verification
 - [ ] Documentation or contributor workflow
 
@@ -24,7 +26,7 @@ runtime, a controlled mock, or browser/UI state assertions.
 
 ## Learner and security checks
 
-- [ ] Learner-facing copy is Polish; contributor-facing copy is English.
+- [ ] Affected learner-facing copy and documentation are complete in English and Polish.
 - [ ] Existing lesson, module, concept, review, project, source, and step IDs are preserved or migration impact is explained.
 - [ ] No secrets, private attachments, credentials, account or billing data, or machine-specific paths are included.
 - [ ] Third-party material and required attribution are identified.

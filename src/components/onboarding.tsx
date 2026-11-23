@@ -13,10 +13,12 @@ import {
 import { useLearning } from "./learning-provider";
 import { LearningText } from "./learning-text";
 import { Eyebrow } from "./ui";
-import { diagnosticTasks } from "@/domain/diagnostic";
+import { getLocalizedCourse } from "@/i18n/course";
 import type { RunResult } from "@/domain/types";
+import { LanguagePicker, useLocale } from "./locale-provider";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 export function Onboarding({ onStart }: { onStart: () => void }) {
+  const { t } = useLocale();
   const { state, update } = useLearning();
   return (
     <main id="main-content" className="onboarding">
@@ -25,49 +27,52 @@ export function Onboarding({ onStart }: { onStart: () => void }) {
           <span className="brand-mark">r.</span>rust
           <span className="brand-light">workshop</span>
         </Link>
-        <span className="micro">TWÓJ LOKALNY WARSZTAT</span>
+        <span className="micro">{t("TWÓJ LOKALNY WARSZTAT")}</span>
+        <LanguagePicker />
       </header>
       <div className="welcome-grid">
         <section>
-          <Eyebrow>RUST · OD INTUICJI DO SAMODZIELNOŚCI</Eyebrow>
+          <Eyebrow>{t("RUST · OD INTUICJI DO SAMODZIELNOŚCI")}</Eyebrow>
           <h1>
-            Zrozum kod.
+            {t("Zrozum kod.")}
             <br />
-            Zanim go
+            {t("Zanim go")}
             <br />
-            <em>uruchomisz.</em>
+            <em>{t("uruchomisz.")}</em>
           </h1>
           <p className="lede">
-            Znasz podstawy programowania: zmienne, warunki, pętle i funkcje.
-            Rust poznasz tutaj od zera, krok po kroku, przez małe eksperymenty.
+            {t(
+              "Znasz podstawy programowania: zmienne, warunki, pętle i funkcje. Rust poznasz tutaj od zera, krok po kroku, przez małe eksperymenty.",
+            )}
           </p>
           <div className="welcome-principles">
             <span>
               <FlaskConical size={19} />
-              Małe eksperymenty
+              {t("Małe eksperymenty")}
             </span>
             <span>
               <Terminal size={19} />
-              Prawdziwy kompilator
+              {t("Prawdziwy kompilator")}
             </span>
             <span>
               <Shuffle size={19} />
-              Nowe problemy
+              {t("Nowe problemy")}
             </span>
           </div>
         </section>
         <section className="welcome-panel">
-          <h2>Urządź swój warsztat</h2>
+          <h2>{t("Urządź swój warsztat")}</h2>
           <p>
-            Bez konta. Kod i postęp zostają na tym urządzeniu. Wykonanie kodu
-            wysyła go do Rust Playground.
+            {t(
+              "Bez konta. Kod i postęp zostają na tym urządzeniu. Wykonanie kodu wysyła go do Rust Playground.",
+            )}
           </p>
           <label>
-            Jak się do Ciebie zwracać?{" "}
-            <span className="muted">(opcjonalnie)</span>
+            {t("Jak się do Ciebie zwracać?")}{" "}
+            <span className="muted">{t("(opcjonalnie)")}</span>
             <input
               maxLength={40}
-              placeholder="Twoje imię"
+              placeholder={t("Twoje imię")}
               value={state.onboarding.name}
               onChange={(e) =>
                 update((s) => ({
@@ -87,21 +92,23 @@ export function Onboarding({ onStart }: { onStart: () => void }) {
               }));
             }}
           >
-            Sprawdź punkt startowy <ArrowRight size={18} />
+            {t("Sprawdź punkt startowy ")}
+            <ArrowRight size={18} />
           </button>
           <p className="micro">
-            Sprawdzisz podstawy przed pierwszą lekcją. Wszystkie lekcje są
-            dostępne.
+            {t(
+              "Sprawdzisz podstawy przed pierwszą lekcją. Wszystkie lekcje są dostępne.",
+            )}
           </p>
         </section>
       </div>
       <footer className="welcome-footer">
-        <span>01 PREDICT</span>
-        <span>02 RUN</span>
-        <span>03 OBSERVE</span>
-        <span>04 EXPLAIN</span>
+        <span>{t("01 PRZEWIDŹ")}</span>
+        <span>{t("02 URUCHOM")}</span>
+        <span>{t("03 ZAOBSERWUJ")}</span>
+        <span>{t("04 WYJAŚNIJ")}</span>
         <span>
-          05 TRANSFER <ArrowUpRight size={16} />
+          {t("05 ZASTOSUJ")} <ArrowUpRight size={16} />
         </span>
       </footer>
     </main>
@@ -114,6 +121,7 @@ export function Diagnostic({
   takeStartFocus: () => boolean;
   requestCompletionFocus: () => void;
 }) {
+  const { t, locale } = useLocale();
   const { state, update } = useLearning();
   const [index, setIndex] = useState(() =>
     Math.min(
@@ -122,11 +130,15 @@ export function Diagnostic({
         .length,
     ),
   );
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState<{
+    message?: string;
+    stderr?: string;
+    explanation?: boolean;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const focusAfterNextRef = useRef(false);
-  const task = diagnosticTasks[index];
+  const task = getLocalizedCourse(locale).diagnosticTasks[index];
   const answer =
     state.diagnostic.answers[task.id] ?? (task.tests ? task.code : "");
   useLayoutEffect(() => {
@@ -178,22 +190,26 @@ export function Diagnostic({
         });
         const result: RunResult = await response.json();
         if (["infrastructure-error", "timeout"].includes(result.status)) {
-          setFeedback(
-            "Kompilator jest teraz niedostępny. Możesz spróbować ponownie albo przejść do nauki.",
-          );
+          setFeedback({
+            message:
+              "Kompilator jest teraz niedostępny. Możesz spróbować ponownie albo przejść do nauki.",
+          });
           return;
         }
         passed = result.status === "success";
         setFeedback(
-          (passed ? "Testy przeszły. " : result.stderr + "\n") + task.feedback,
+          passed
+            ? { message: "Testy przeszły. ", explanation: true }
+            : { stderr: result.stderr + "\n", explanation: true },
         );
       } else {
         passed =
           answer.trim().replace(/\s/g, "").toLowerCase() ===
           task.answer?.replace(/\s/g, "");
-        setFeedback(
-          (passed ? "Zgadza się. " : "Sprawdźmy to razem. ") + task.feedback,
-        );
+        setFeedback({
+          message: passed ? "Zgadza się. " : "Sprawdźmy to razem. ",
+          explanation: true,
+        });
       }
       update((s) => ({
         ...s,
@@ -206,9 +222,10 @@ export function Diagnostic({
         },
       }));
     } catch {
-      setFeedback(
-        "Nie udało się połączyć z kompilatorem. Nie wpływa to na Twój wynik.",
-      );
+      setFeedback({
+        message:
+          "Nie udało się połączyć z kompilatorem. Nie wpływa to na Twój wynik.",
+      });
     } finally {
       setBusy(false);
     }
@@ -216,12 +233,18 @@ export function Diagnostic({
   const checked = state.diagnostic.answers[task.id + ":done"] !== undefined;
   return (
     <main id="main-content" className="diagnostic-page">
-      <Link className="brand" href="/">
-        <span className="brand-mark">r.</span>rust workshop
-      </Link>
+      <header className="onboarding-header">
+        <Link className="brand" href="/">
+          <span className="brand-mark">r.</span>rust workshop
+        </Link>
+        <LanguagePicker />
+      </header>
       <section className="diagnostic-layout">
         <div>
-          <Eyebrow>PUNKT STARTOWY · {index + 1} / 4</Eyebrow>
+          <Eyebrow>
+            {t("PUNKT STARTOWY · ")}
+            {index + 1} / 4
+          </Eyebrow>
           <h1 ref={headingRef} tabIndex={-1}>
             {task.title}
           </h1>
@@ -229,10 +252,13 @@ export function Diagnostic({
             <LearningText>{task.prompt}</LearningText>
           </p>
           <p className="muted">
-            To wskazówka dla Twojego tempa. Każda lekcja pozostaje dostępna.
+            {t(
+              "To wskazówka dla Twojego tempa. Każda lekcja pozostaje dostępna.",
+            )}
           </p>
           <button className="text-button" onClick={finish}>
-            Przejdź do nauki <ArrowRight size={16} />
+            {t("Przejdź do nauki ")}
+            <ArrowRight size={16} />
           </button>
         </div>
         <div className="diagnostic-task">
@@ -251,7 +277,7 @@ export function Diagnostic({
           )}
           {!task.tests && (
             <label>
-              Twoja odpowiedź
+              {t("Twoja odpowiedź")}
               <input
                 autoComplete="off"
                 value={answer}
@@ -263,7 +289,9 @@ export function Diagnostic({
             </label>
           )}
           <div role="status" className={feedback ? "feedback" : ""}>
-            {feedback}
+            {feedback?.message && t(feedback.message)}
+            {feedback?.stderr}
+            {feedback?.explanation && task.feedback}
           </div>
           <div className="button-row">
             <button
@@ -271,7 +299,11 @@ export function Diagnostic({
               disabled={busy || !answer.trim()}
               onClick={() => void check()}
             >
-              {busy ? "Sprawdzanie…" : task.tests ? "Uruchom testy" : "Sprawdź"}
+              {busy
+                ? t("Sprawdzanie…")
+                : task.tests
+                  ? "Uruchom testy"
+                  : t("Sprawdź")}
               <Check size={16} />
             </button>
             {checked && (
@@ -282,11 +314,11 @@ export function Diagnostic({
                   else {
                     focusAfterNextRef.current = true;
                     setIndex(index + 1);
-                    setFeedback("");
+                    setFeedback(null);
                   }
                 }}
               >
-                {index === 3 ? "Otwórz warsztat" : "Dalej"}
+                {index === 3 ? t("Otwórz warsztat") : t("Dalej")}
                 <ArrowRight size={16} />
               </button>
             )}

@@ -5,7 +5,7 @@ import {
   lessons,
   modules,
   reviewExercises,
-} from "../../src/content/course";
+} from "./polish-course.helper";
 import {
   recordCourseEvidence,
   courseEvidenceSummary,
@@ -1385,7 +1385,7 @@ test("shared-borrow mobile tabs preserve the new lesson draft and compiler resul
   await editor(page).focus();
   await expect(editor(page)).toBeFocused();
   await runTests(page);
-  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("E0308");
@@ -1401,7 +1401,7 @@ test("shared-borrow mobile tabs preserve the new lesson draft and compiler resul
   await expect(
     page.getByRole("tab", { name: "Kod", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
-  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("E0308");
@@ -1612,11 +1612,11 @@ test("ownership mobile tabs preserve keyboard focus, raw failure and exact draft
   await editor(page).focus();
   await expect(editor(page)).toBeFocused();
   await runTests(page);
-  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("caller buffer mutation");
-  await page.getByRole("tab", { name: "Output", exact: false }).focus();
+  await page.getByRole("tab", { name: "Wyjście", exact: false }).focus();
   await page.keyboard.press("ArrowLeft");
   await expect(
     page.getByRole("tab", { name: "Kod", exact: true }),
@@ -1631,7 +1631,7 @@ test("ownership mobile tabs preserve keyboard focus, raw failure and exact draft
     page.getByRole("tab", { name: "Kod", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
   await expect(editor(page)).toHaveValue(draft);
-  await page.getByRole("tab", { name: "Output", exact: false }).click();
+  await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("caller buffer mutation");

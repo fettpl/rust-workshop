@@ -1,5 +1,7 @@
 # Borrowed callbacks: variance and HRTB
 
+[Polski](2026-09-13-borrowed-callbacks-design.pl.md)
+
 The course already covers basic lifetimes, closures and callable contracts, but has no executable variance or HRTB material. This milestone adds four lessons within the existing single-file Rust runner. It is the next bounded curriculum stage in the approved autonomous course goal. It introduces practical safe-Rust API behavior; unsafe variance, PhantomData, GATs and async lending remain future topics.
 
 ## Integration

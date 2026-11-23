@@ -1,5 +1,7 @@
 # API Release Matrix milestone plan
 
+[Polski](2026-09-25-api-release-matrix.pl.md)
+
 **Goal:** Teach a senior-level release decision for a Rust library through an old external client, feature configurations, and an exact MSRV promise. This continues the approved advanced curriculum without changing the beginner audience: basic programming knowledge, Rust from zero.
 
 **Architecture:** Add one late-course module after `public-api-workspaces`, with two Polish lessons and independent gate/blank/review evidence per concept. Browser tasks assess code and reasoning on bounded Rust contracts. A separate trusted verifier exercises a tiny authored Cargo library plus an external client on stable and Rust 1.85.0; browser mocks must never be presented as actual Cargo evidence. Keep Frame Protocol's existing package and public IDs stable.

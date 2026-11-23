@@ -1,5 +1,7 @@
 # A2 cancellation and transfer — source plan
 
+[Polski](2026-10-15-cancellation-transfer.pl.md)
+
 15 October 2026. This document records the bounded A2 source scope after the accepted A1 release. A1 PR68 is merged as `f975409feb0f1972089c2b368dc994417ca958d0` from head `7e03e2d56d29a10f68dfbeba2c4bf530109ab830`, tree `fad6f04d491b8e83a125327c7ba17a3818ca8a6c`. The [natural PR checks](https://github.com/fettpl/rustcrushcourse/actions/runs/38747309342) and [resulting-main checks](https://github.com/fettpl/rustcrushcourse/actions/runs/38752602241) passed all eleven jobs.
 
 ## Scope

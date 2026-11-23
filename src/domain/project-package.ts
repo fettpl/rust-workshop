@@ -208,6 +208,8 @@ export function revealAuthoredStepSolutions(
 export function packageDownloadPath(
   project: ProjectPackage,
   variant: PackageVariant,
+  locale?: "en" | "pl",
 ): string {
-  return `/projects/${project.id}/${variant}.zip`;
+  const directory = locale ? `/localized-projects/${locale}` : "/projects";
+  return `${directory}/${project.id}/${variant}.zip`;
 }

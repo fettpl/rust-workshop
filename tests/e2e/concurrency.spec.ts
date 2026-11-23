@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 
 async function start(page: Page) {
   await page.goto("/");

@@ -72,6 +72,7 @@ async function freshLesson(
     );
   }
   const context = await browser.newContext({
+    locale: "pl-PL",
     baseURL,
     viewport: { width: 390, height: 844 },
     serviceWorkers: "block",
@@ -103,6 +104,7 @@ async function freshTomlLesson(
     );
   }
   const context = await browser.newContext({
+    locale: "pl-PL",
     baseURL,
     viewport: { width: 390, height: 844 },
     serviceWorkers: "block",

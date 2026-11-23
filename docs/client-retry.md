@@ -1,5 +1,7 @@
 # Bounded client retry
 
+[Polski](client-retry.pl.md)
+
 This document records the scoped source, archive, and licensing boundary for
 the optional `durable-log-retry` project. It is a contributor and maintainer
 record, not a learner completion record and not a production reliability or

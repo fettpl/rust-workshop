@@ -1,5 +1,7 @@
 # Task 1 report — durable log service workspace and core contract
 
+[Polski](task-1-report.pl.md)
+
 Status: DONE
 
 ## Changed files

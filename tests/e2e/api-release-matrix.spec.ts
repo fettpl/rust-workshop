@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 
 async function openReleaseMatrix(page: Page) {
   const moduleData = modules.find((item) => item.id === "api-release-matrix")!;
@@ -203,7 +203,7 @@ test("API release matrix keeps authored gate evidence independent offline", asyn
   await page.getByRole("tab", { name: "Kod", exact: true }).focus();
   await page.keyboard.press("ArrowRight");
   await expect(
-    page.getByRole("tab", { name: "Output", exact: false }),
+    page.getByRole("tab", { name: "Wyjście", exact: false }),
   ).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("ArrowLeft");
   await expect(

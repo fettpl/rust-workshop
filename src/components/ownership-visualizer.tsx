@@ -1,6 +1,7 @@
 "use client";
 import { ArrowLeft, ArrowRight, Layers, Database } from "lucide-react";
 import type { Trace } from "@/domain/types";
+import { useLocale } from "./locale-provider";
 const labels = {
   owner: "właściciel",
   copied: "niezależna kopia",
@@ -19,16 +20,18 @@ export function OwnershipVisualizer({
   index: number;
   onChange: (n: number) => void;
 }) {
+  const { t, courseText } = useLocale();
   const current = Math.min(index, trace.frames.length - 1);
   const frame = trace.frames[current];
   return (
     <section className="visualizer">
       <header>
-        <span className="micro">MODEL PAMIĘCI</span>
-        <h2>{trace.title}</h2>
+        <span className="micro">{t("MODEL PAMIĘCI")}</span>
+        <h2>{courseText(trace.title)}</h2>
         <p className="footnote">
-          Model dydaktyczny przygotowanego przykładu; nie śledzi zmian w
-          edytorze.
+          {t(
+            "Model dydaktyczny przygotowanego przykładu; nie śledzi zmian w edytorze.",
+          )}
         </p>
       </header>
       <div className="trace-code">
@@ -43,10 +46,10 @@ export function OwnershipVisualizer({
         <div className="stack-region">
           <h3>
             <Layers size={15} />
-            Stack / zmienne
+            {t("Stack / zmienne")}
           </h3>
           {frame.stack.length === 0 ? (
-            <p className="muted">Brak aktywnych zmiennych</p>
+            <p className="muted">{t("Brak aktywnych zmiennych")}</p>
           ) : (
             frame.stack.map((item, i) => (
               <div
@@ -54,8 +57,8 @@ export function OwnershipVisualizer({
                 className={`memory-variable ${item.state}`}
               >
                 <code>{item.name}</code>
-                <code>{item.value}</code>
-                <span>{labels[item.state]}</span>
+                <code>{courseText(item.value)}</code>
+                <span>{t(labels[item.state])}</span>
               </div>
             ))
           )}
@@ -63,10 +66,10 @@ export function OwnershipVisualizer({
         <div className="heap-region">
           <h3>
             <Database size={15} />
-            Heap / wartości
+            {t("Heap / wartości")}
           </h3>
           {frame.heap.length === 0 ? (
-            <p className="muted">Brak alokacji na heap</p>
+            <p className="muted">{t("Brak alokacji na heap")}</p>
           ) : (
             frame.heap.map((item) => (
               <div
@@ -75,18 +78,26 @@ export function OwnershipVisualizer({
               >
                 <span>{item.id}</span>
                 <code>
-                  {item.valueDropped ? "Wartość niedostępna" : item.value}
+                  {item.valueDropped
+                    ? t("Wartość niedostępna")
+                    : courseText(item.value)}
                 </code>
                 <small>
                   {item.dropped
-                    ? "Zwolniono pamięć"
+                    ? t("Zwolniono pamięć")
                     : item.valueDropped
-                      ? "Wartość zakończyła życie; alokacja pozostaje"
-                      : `Właściciel: ${item.owner}`}
+                      ? t("Wartość zakończyła życie; alokacja pozostaje")
+                      : t("Właściciel: {0}", courseText(item.owner))}
                 </small>
                 {item.strongHandles !== undefined &&
                   item.weakHandles !== undefined && (
-                    <small>{`Jawne uchwyty Rc: ${item.strongHandles} · Weak: ${item.weakHandles}`}</small>
+                    <small>
+                      {t(
+                        "Jawne uchwyty Rc: {0} · Weak: {1}",
+                        item.strongHandles,
+                        item.weakHandles,
+                      )}
+                    </small>
                   )}
               </div>
             ))
@@ -94,7 +105,7 @@ export function OwnershipVisualizer({
         </div>
       </div>
       <p className="trace-explanation" role="status">
-        {frame.explanation}
+        {courseText(frame.explanation)}
       </p>
       <div className="trace-controls">
         <button
@@ -103,7 +114,7 @@ export function OwnershipVisualizer({
           onClick={() => onChange(current - 1)}
         >
           <ArrowLeft size={15} />
-          Wstecz
+          {t("Wstecz")}
         </button>
         <span className="micro">
           {current + 1} / {trace.frames.length}
@@ -113,7 +124,7 @@ export function OwnershipVisualizer({
           disabled={current === trace.frames.length - 1}
           onClick={() => onChange(current + 1)}
         >
-          Następna linia
+          {t("Następna linia")}
           <ArrowRight size={15} />
         </button>
       </div>

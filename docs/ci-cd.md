@@ -1,5 +1,7 @@
 # CI and local verification
 
+[Polski](ci-cd.pl.md)
+
 The current contract is defined by [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 It runs for pull requests targeting `main`, pushes to `main`, and manual
 dispatches. The application is local-first: the workflow starts a local

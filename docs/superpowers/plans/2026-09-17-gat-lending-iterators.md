@@ -1,5 +1,7 @@
 # GAT and lending iterators implementation plan
 
+[Polski](2026-09-17-gat-lending-iterators.pl.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use subagent-driven-development to implement this plan task-by-task. Authors use GPT-5.6-Luna high; reviewers use GPT-6-Astra medium. Root owns shared integration and release.
 
 **Goal:** Teach receiver-bound item families, overlapping mutable views, associated capabilities and lazy owned adapters through four independently assessed lessons.

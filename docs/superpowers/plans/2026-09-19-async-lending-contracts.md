@@ -1,5 +1,7 @@
 # Async Lending Contracts: Borrowed Futures, Cancellation, and Dispatch Boundaries
 
+[Polski](2026-09-19-async-lending-contracts.pl.md)
+
 ## Objective
 
 Add a bounded advanced-Rust milestone that teaches the ownership boundary between
@@ -45,8 +47,7 @@ Extend the generated `tokio-service-workshop` starter and solution archives with
 
 - `src/lending.rs`: bounded packet ownership, borrowed access, and a sequential
   visitor.
-- `src/report_source.rs`: owned reports, a static `Send` boundary, and a boxed
-  adapter.
+- `src/report_source.rs`: own reports, a static `Send` boundary, and a boxed adapter.
 - `examples/borrowed_batch.rs`: an executable local callback and an owned
   producer sent to a task.
 - `tests/lending_contract.rs`: controlled suspension, cancellation, commit,
@@ -83,8 +84,8 @@ by the example and tests, not left as an unused fixture.
 - Add the verifier to existing `verify` and `workspace-msrv` jobs without
   removing fuzz, profile, or Miri jobs. Emit JSON evidence with archive hash,
   toolchain, and fixture results.
-- Keep package/sequence limits bounded (32 records, 4096 bytes, controlled poll
-  sequences); a process timeout is verifier failure, never a passing mutant.
+- Keep package/sequence limits bounded (32 records, 4096 bytes, controlled poll sequences); a process
+  timeout is verifier failure, never a passing mutant.
 - Add E2E module search, gate/reveal/resume, offline ZIP, and console-error
   coverage plus keyboard review.
 

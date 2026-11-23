@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 
 type PersistedLearningState = {
   mastery: Record<string, unknown>;

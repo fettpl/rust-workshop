@@ -1,5 +1,7 @@
 # Macros as APIs: bounded course milestone
 
+[Polski](2026-09-25-macros-as-api-design.pl.md)
+
 Date: 2026-09-25. Design owner: GPT-6-Astra medium (planning and qualitative review only).
 
 ## Intent and scope

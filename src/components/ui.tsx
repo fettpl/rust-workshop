@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { MasteryLevel } from "@/domain/types";
+import { useLocale } from "./locale-provider";
 export const masteryLabels: Record<MasteryLevel, string> = {
   new: "Nowe",
   exposed: "Poznane",
@@ -17,12 +18,13 @@ export function MasteryBadge({
   level?: MasteryLevel;
   scope?: "ownership" | "calibrated";
 }) {
+  const { t } = useLocale();
   const label =
     scope !== undefined && level === "understood"
-      ? "Potwierdzone w zadaniach"
+      ? t("Potwierdzone w zadaniach")
       : scope !== undefined && level === "retained"
-        ? "Odtworzone po czasie"
-        : masteryLabels[level];
+        ? t("Odtworzone po czasie")
+        : t(masteryLabels[level]);
   return (
     <span className={`mastery-badge ${level}`}>
       <span aria-hidden="true">
@@ -58,13 +60,20 @@ export function OwnershipPolicyNote({
 }: {
   scope?: "ownership" | "calibrated";
 }) {
+  const { t } = useLocale();
   return (
     <p className="footnote">
-      Historia i ukończone kroki pozostają zapisane. Bieżące potwierdzenie zadań
+      {t(
+        "Historia i ukończone kroki pozostają zapisane. Bieżące potwierdzenie zadań",
+      )}
       {scope === "ownership"
-        ? " ownership wymaga dwóch różnych rozwiązań kodowych bez podpowiedzi."
-        : " jest oparte na opisanych rodzinach primary: gate i blank mogą być dwiema formami jednej rodziny, a pomoc nie otwiera nowego wariantu."}{" "}
-      Starsze wyniki pozostają w historii.
+        ? t(
+            " ownership wymaga dwóch różnych rozwiązań kodowych bez podpowiedzi.",
+          )
+        : t(
+            " jest oparte na opisanych rodzinach primary: gate i blank mogą być dwiema formami jednej rodziny, a pomoc nie otwiera nowego wariantu.",
+          )}{" "}
+      {t("Starsze wyniki pozostają w historii.")}
     </p>
   );
 }
@@ -77,11 +86,13 @@ export function OwnershipEvidenceCount({
   required?: number;
   legacy: boolean;
 }) {
+  const { t } = useLocale();
   if (required === undefined) return null;
   return (
     <small>
-      Samodzielne zadania kodowe: {count}/{required}
-      {legacy && " · Starsze wyniki nie spełniają bieżącego wymagania."}
+      {t("Samodzielne zadania kodowe: ")}
+      {count}/{required}
+      {legacy && t(" · Starsze wyniki nie spełniają bieżącego wymagania.")}
     </small>
   );
 }

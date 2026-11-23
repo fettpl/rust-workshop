@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { lessons, projects, reviewExercises } from "../../src/content/course";
+import { lessons, projects, reviewExercises } from "./polish-course.helper";
 import { createInitialState, createStepProgress, stepKey } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 

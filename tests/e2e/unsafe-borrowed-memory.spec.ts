@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 
 type State = {
   notes: Record<string, string>;

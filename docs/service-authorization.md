@@ -1,5 +1,7 @@
 # Typed request-bound authorization
 
+[Polski](service-authorization.pl.md)
+
 Source record: 4 November 2026. This optional extension follows service
 operations and adds four lessons, 24 steps, two concepts and four distinct
 primary coding families. It adds no learning-duration estimates. The current

@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 import {
   createInitialState,
   createStepProgress,
@@ -587,7 +587,7 @@ test("offers Study Session at the unfinished endpoint on a narrow screen", async
   await page.setViewportSize({ width: 390, height: 844 });
   const lesson = lessons.find((item) => item.id === "log-analyzer-project")!;
   await resumeAtLastStep(page, lesson, false);
-  await page.getByRole("tab", { name: "Output", exact: true }).click();
+  await page.getByRole("tab", { name: "Wyjście", exact: true }).click();
   const entry = page.getByText("Otwórz własny Study Session CLI", { exact: true });
   await entry.click();
   await expect(page.getByLabel("Pierwsza wersja — decyzja projektowa", { exact: true })).toBeVisible();

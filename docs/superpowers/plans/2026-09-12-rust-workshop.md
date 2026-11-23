@@ -1,5 +1,7 @@
 # Rust Workshop Implementation Plan
 
+[Polski](2026-09-12-rust-workshop.pl.md)
+
 > For agentic workers: use subagent-driven-development to implement bounded tasks, with independent domains in parallel.
 
 **Goal:** Complete and verify the ownership vertical slice in the user brief.

@@ -4,7 +4,7 @@ import {
   lessons,
   projects,
   reviewExercises,
-} from "../../src/content/course";
+} from "./polish-course.helper";
 import { createInitialState, exportState } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 

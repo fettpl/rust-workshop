@@ -1,7 +1,8 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import {
   assertArchiveNotices,
   expectedArchivePaths,
@@ -51,7 +52,7 @@ for (const [projectId, moduleId] of [
     expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
     assertArchiveNotices(files, archive);
     for (const file of archive.files)
-      expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(file.starter);
+      expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(localizedPackageFile(file.path, file.starter, "pl"));
     await panel
       .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
       .click();

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 import { stepKey } from "../../src/persistence/state";
 
 async function readStoredPacketState(page: Page) {
@@ -352,7 +352,7 @@ for (const moduleId of [
           "production module-resume config must provide project.use.baseURL",
         );
       }
-      const isolatedContext = await browser!.newContext({ baseURL });
+      const isolatedContext = await browser!.newContext({ baseURL, locale: "pl-PL" });
       const isolatedPage = await isolatedContext.newPage();
       try {
         await isolatedPage.goto("/");

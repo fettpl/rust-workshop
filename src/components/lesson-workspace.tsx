@@ -1,4 +1,5 @@
 "use client";
+import { sourceClassificationLabels } from "@/i18n/ui-locale";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
@@ -45,10 +46,11 @@ import {
 import type { RunResult, StepProgress, EvaluationResult } from "@/domain/types";
 import { LearningText } from "./learning-text";
 import { CompilerCoach, type CoachRecoveryStatus } from "./compiler-coach";
-import { CompilerOutput } from "./compiler-output";
+import { CompilerOutput, compilerConnectionFailure } from "./compiler-output";
 import { OwnershipVisualizer } from "./ownership-visualizer";
 import { Eyebrow, ProgressLine } from "./ui";
 import { nextLessonForNavigation } from "@/engine/course-route";
+import { useLocale } from "./locale-provider";
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 const kindLabels = {
   predict: "Przewidź",
@@ -70,7 +72,12 @@ type PanelDescriptor = {
   panelId: `workspace-panel-${WorkspacePanel}`;
   label: string;
 };
-export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }) {
+export function LessonWorkspace({
+  lesson,
+}: {
+  lesson: (typeof lessons)[number];
+}) {
+  const { t, courseText } = useLocale();
   const { state, update, generation } = useLearning();
   const [pending, setPending] = useState(false);
   const [executionMessage, setExecutionMessage] = useState("");
@@ -137,12 +144,12 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
       : undefined;
   const nextLabel =
     index < lesson.steps.length - 1
-      ? "Dalej"
+      ? t("Dalej")
       : !nextLesson
-        ? "Wróć do mapy"
+        ? t("Wróć do mapy")
         : nextLesson.moduleId !== lesson.moduleId
-          ? "Kolejny moduł"
-          : "Następna lekcja";
+          ? t("Kolejny moduł")
+          : t("Następna lekcja");
   const sessionStop = lesson.sessionStops?.find(
     (stop) => stop.afterStepId === step.id,
   );
@@ -162,16 +169,20 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
   const code = progress.code ?? step.code ?? "";
   const suppliedCodeRef = useSuppliedSolutionExposure(step, "code", code);
   const suppliedSolutionRef = useSuppliedSolutionExposure<HTMLElement>(
-    step, "solution", progress.revealed ? step.solution : undefined,
+    step,
+    "solution",
+    progress.revealed ? step.solution : undefined,
   );
   const lastAttempt = progress.attempts.at(-1);
   const lastRun = [...progress.attempts].reverse().find((a) => a.result);
   const result = lastRun?.result;
   const { hasCode, editable, executable: usesRun } = stepInteraction(step);
   const prediction = predictsRunResult(step);
-  const needsPrediction = prediction && !progress.attempts.some(
-    (attempt) => attempt.answer !== undefined && !attempt.result,
-  );
+  const needsPrediction =
+    prediction &&
+    !progress.attempts.some(
+      (attempt) => attempt.answer !== undefined && !attempt.result,
+    );
   const isManifest = step.evaluator?.kind === "manifest-contract";
   const isToml = step.editorMode === "toml";
   const panels = isToml
@@ -188,10 +199,10 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
     panelId: `workspace-panel-${key}`,
     label:
       key === "lesson"
-        ? "Zadanie"
+        ? t("Zadanie")
         : key === "code"
-          ? "Kod"
-          : `Output${result ? " • " + (result.status === "success" ? "OK" : "!") : ""}`,
+          ? t("Kod")
+          : `${t("Wyjście")}${result ? " • " + (result.status === "success" ? "OK" : "!") : ""}`,
   }));
   const lessonId = lesson.id;
   const stepId = step.id;
@@ -227,14 +238,18 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
       return values.hints !== undefined ||
         values.revealed ||
         values.traceIndex !== undefined
-        ? recordCourseLessonExposure(next, {
-            lessonId,
-            stepId,
-            conceptIds: exposureConceptIds,
-            at: Date.now(),
-            hints: values.hints,
-            revealed: values.revealed,
-          }, values.revealed === true ? "supplied-solution" : "exposure")
+        ? recordCourseLessonExposure(
+            next,
+            {
+              lessonId,
+              stepId,
+              conceptIds: exposureConceptIds,
+              at: Date.now(),
+              hints: values.hints,
+              revealed: values.revealed,
+            },
+            values.revealed === true ? "supplied-solution" : "exposure",
+          )
         : next;
     });
   }
@@ -304,14 +319,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
       });
       output = await response.json();
     } catch {
-      output = {
-        status: "infrastructure-error",
-        stdout: "",
-        stderr:
-          "Nie udało się połączyć z kompilatorem. Kod pozostaje zapisany. Spróbuj ponownie po odzyskaniu połączenia.",
-        diagnostics: [],
-        durationMs: 0,
-      };
+      output = compilerConnectionFailure;
     }
     setPending(false);
     if (generation() !== requestGeneration) return;
@@ -366,7 +374,13 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           },
         };
         return prediction
-          ? recordCourseLessonExposure(next, { lessonId, stepId, conceptIds: exposureConceptIds, at, hints: 1 })
+          ? recordCourseLessonExposure(next, {
+              lessonId,
+              stepId,
+              conceptIds: exposureConceptIds,
+              at,
+              hints: 1,
+            })
           : next;
       });
     }
@@ -409,7 +423,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
     <div className={`lesson-workspace step-${step.kind} mobile-panel-${panel}`}>
       {panel !== "lesson" && (
         <h1 className="sr-only mobile-editor-title">
-          {step.title} · {panel === "code" ? "Kod" : "Wynik"}
+          {courseText(step.title)} · {panel === "code" ? t("Kod") : t("Wynik")}
         </h1>
       )}
       <div className="lesson-top">
@@ -420,16 +434,17 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           }
         >
           <ArrowLeft size={15} />
-          {modules.find((module) => module.id === lesson.moduleId)?.title ??
-            "Mapa nauki"}
+          {courseText(
+            modules.find((module) => module.id === lesson.moduleId)?.title,
+          ) || t("Mapa nauki")}
         </button>
-        <span>{lesson.title}</span>
+        <span>{courseText(lesson.title)}</span>
         <button
           className={`icon-button ${state.bookmarks.includes(lesson.id) ? "bookmarked" : ""}`}
           aria-label={
             state.bookmarks.includes(lesson.id)
-              ? "Usuń zakładkę"
-              : "Dodaj zakładkę"
+              ? t("Usuń zakładkę")
+              : t("Dodaj zakładkę")
           }
           aria-pressed={state.bookmarks.includes(lesson.id)}
           onClick={() =>
@@ -444,7 +459,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           <Bookmark size={18} />
         </button>
       </div>
-      <nav className="step-navigation" aria-label="Kroki lekcji">
+      <nav className="step-navigation" aria-label={t("Kroki lekcji")}>
         {lesson.steps.map((item, i) => (
           <button
             key={item.id}
@@ -462,19 +477,21 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                 String(i + 1).padStart(2, "0")
               )}
             </span>
-            {lesson.id === "first-program" ? item.title : kindLabels[item.kind]}
+            {lesson.id === "first-program"
+              ? courseText(item.title)
+              : t(kindLabels[item.kind])}
           </button>
         ))}
       </nav>
       <ProgressLine
         value={(100 * (index + 1)) / lesson.steps.length}
-        label="Pozycja w lekcji"
+        label={t("Pozycja w lekcji")}
       />
       {hasCode && (
         <div
           className="mobile-workspace-tabs"
           role="tablist"
-          aria-label="Panele zadania"
+          aria-label={t("Panele zadania")}
         >
           {panelDescriptors.map((descriptor) => (
             <button
@@ -530,18 +547,20 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           id="workspace-panel-lesson"
           role={hasCode ? "tabpanel" : undefined}
           aria-labelledby={hasCode ? "workspace-tab-lesson" : undefined}
-          aria-label="Zadanie"
+          aria-label={t("Zadanie")}
         >
           <Eyebrow>
-            KROK {index + 1} Z {lesson.steps.length} · {kindLabels[step.kind]}
+            {t("KROK ")}
+            {index + 1} {t("Z ")}
+            {lesson.steps.length} · {kindLabels[step.kind]}
           </Eyebrow>
-          <h1>{step.title}</h1>
+          <h1>{courseText(step.title)}</h1>
           {lesson.sessionStops?.length ? (
             <section
               className="lesson-context session-stop-plan"
-              aria-label="Plan etapów lekcji"
+              aria-label={t("Plan etapów lekcji")}
             >
-              <h2>Plan etapów</h2>
+              <h2>{t("Plan etapów")}</h2>
               <ol>
                 {lesson.sessionStops.map((stop) => {
                   const boundaryIndex = lesson.steps.findIndex(
@@ -553,22 +572,30 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                       : undefined;
                   return (
                     <li key={stop.afterStepId}>
-                      <strong>{stop.title}</strong>{" "}
+                      <strong>{courseText(stop.title)}</strong>{" "}
                       {boundaryStep ? (
                         <>
-                          Po ukończeniu kroku {boundaryIndex + 1} „
-                          {boundaryStep.title}” możesz zrobić przerwę.
+                          {t("Po ukończeniu kroku ")}
+                          {boundaryIndex + 1} {t("„")}
+                          {courseText(boundaryStep.title)}
+                          {t("” możesz zrobić przerwę.")}
                         </>
                       ) : (
-                        <>Po ukończeniu tego zadania możesz zrobić przerwę.</>
+                        <>
+                          {t(
+                            "Po ukończeniu tego zadania możesz zrobić przerwę.",
+                          )}
+                        </>
                       )}{" "}
-                      Następny etap: {stop.nextGoal}
+                      {t("Następny etap: ")}
+                      {courseText(stop.nextGoal)}
                     </li>
                   );
                 })}
                 {finalStage && (
                   <li>
-                    <strong>Końcowy etap:</strong> {finalStage.title}
+                    <strong>{t("Końcowy etap:")}</strong>{" "}
+                    {courseText(finalStage.title)}
                   </li>
                 )}
               </ol>
@@ -580,57 +607,61 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           {sessionStop && (
             <aside
               className="lesson-context session-stop-note"
-              aria-label="Miejsce na przerwę"
+              aria-label={t("Miejsce na przerwę")}
             >
               <p>
-                <strong>{sessionStop.title}</strong>
+                <strong>{courseText(sessionStop.title)}</strong>
               </p>
               <p>
-                <strong>Następny etap:</strong> {sessionStop.nextGoal}
+                <strong>{t("Następny etap:")}</strong>{" "}
+                {courseText(sessionStop.nextGoal)}
               </p>
               <p>
-                Po ukończeniu tego zadania możesz zrobić przerwę. Jeśli kończysz
-                teraz, wrócisz do tego kroku wraz z zapisanym szkicem, pomocą i
-                notatkami.
+                {t(
+                  "Po ukończeniu tego zadania możesz zrobić przerwę. Jeśli kończysz teraz, wrócisz do tego kroku wraz z zapisanym szkicem, pomocą i notatkami.",
+                )}
               </p>
             </aside>
           )}
           {step.evidence?.codingTaskId && (
             <p className="footnote">
-              Bieżący kontrakt: wersja {step.evidence.version}. Zapisany szkic i
-              ukończenie pozostają dostępne. Potwierdzenie wymaga przejścia
-              obecnych testów; wcześniejsze podpowiedzi pozostają przypisane do
-              zadania.
+              {t("Bieżący kontrakt: wersja ")}
+              {step.evidence.version}
+              {t(
+                ". Zapisany szkic i ukończenie pozostają dostępne. Potwierdzenie wymaga przejścia obecnych testów; wcześniejsze podpowiedzi pozostają przypisane do zadania.",
+              )}
             </p>
           )}
           {(assistance.hints > progress.hints ||
             (assistance.revealed && !progress.revealed)) && (
             <p className="footnote">
-              Historia tego zadania zawiera podpowiedź lub odsłonięcie. Bieżąca próba
-              zachowa te podpowiedzi lub odsłonięcie; nadal możesz ukończyć
-              zadanie i ćwiczyć.
+              {t(
+                "Historia tego zadania zawiera podpowiedź lub odsłonięcie. Bieżąca próba zachowa te podpowiedzi lub odsłonięcie; nadal możesz ukończyć zadanie i ćwiczyć.",
+              )}
             </p>
           )}
           {step.evidence?.conceptIds.map((conceptId) => {
             const summary = courseEvidenceSummary(state, conceptId);
             return summary.requiredCodingTasks === undefined ? null : (
               <p className="footnote" key={conceptId}>
-                {concepts.find((concept) => concept.id === conceptId)?.title}:
-                samodzielne zadania kodowe {summary.qualifyingCodingTasks}/
-                {summary.requiredCodingTasks}
+                {courseText(
+                  concepts.find((concept) => concept.id === conceptId)?.title,
+                )}
+                {t(": samodzielne zadania kodowe ")}
+                {summary.qualifyingCodingTasks}/{summary.requiredCodingTasks}
                 {summary.hasLegacyEvidence &&
-                  " · Starsze wyniki pozostają w historii."}
+                  t(" · Starsze wyniki pozostają w historii.")}
               </p>
             );
           })}
           {step.evidenceGate && (
-            <p className="gate-label">◇ Zadanie samodzielności</p>
+            <p className="gate-label">{t("◇ Zadanie samodzielności")}</p>
           )}
           {step.evaluator && !usesRun && !isManifest && (
             <div className="answer-area">
               {step.choices ? (
                 <fieldset>
-                  <legend>Twoja decyzja</legend>
+                  <legend>{t("Twoja decyzja")}</legend>
                   {choicesForStep(step, lesson.id).map((choice) => (
                     <label
                       className={`choice ${progress.answer === choice.id ? "selected" : ""}`}
@@ -652,22 +683,28 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
               ) : step.evaluator.kind === "rubric" ? (
                 <>
                   <label>
-                    Wyjaśnij własnymi słowami
+                    {t("Wyjaśnij własnymi słowami")}
                     <textarea
-                      aria-label="Twoje wyjaśnienie"
+                      aria-label={t("Twoje wyjaśnienie")}
                       value={progress.answer}
                       onChange={(e) => patch({ answer: e.target.value })}
-                      placeholder="Najpierw zapisz swój model. Potem porównaj go z kryteriami."
+                      placeholder={t(
+                        "Najpierw zapisz swój model. Potem porównaj go z kryteriami.",
+                      )}
                     />
                   </label>
                   <details className="rubric">
-                    <summary>Porównaj z kryteriami</summary>
+                    <summary>{t("Porównaj z kryteriami")}</summary>
                     <p>
-                      To samoocena wyjaśnienia, nie automatyczna ocena jego
-                      poprawności.
+                      {t(
+                        "To samoocena wyjaśnienia, nie automatyczna ocena jego poprawności.",
+                      )}
                     </p>
                     {step.evaluator.criteria.map((criterion) => (
-                      <label key={criterion} className="check-label">
+                      <label
+                        key={courseText(criterion)}
+                        className="check-label"
+                      >
                         <input
                           type="checkbox"
                           checked={progress.rubricChecks.includes(criterion)}
@@ -681,7 +718,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                             })
                           }
                         />
-                        {criterion}
+                        {courseText(criterion)}
                       </label>
                     ))}
                   </details>
@@ -689,14 +726,14 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
               ) : (
                 <label>
                   {step.evaluator.kind === "ordering"
-                    ? "Kolejność (elementy oddziel przecinkami)"
-                    : "Twoje przewidywanie"}
+                    ? t("Kolejność (elementy oddziel przecinkami)")
+                    : t("Twoje przewidywanie")}
                   <textarea
-                    aria-label="Twoja odpowiedź"
+                    aria-label={t("Twoja odpowiedź")}
                     rows={3}
                     value={progress.answer}
                     onChange={(e) => patch({ answer: e.target.value })}
-                    placeholder="Zapisz odpowiedź, zanim uruchomisz kod…"
+                    placeholder={t("Zapisz odpowiedź, zanim uruchomisz kod…")}
                   />
                 </label>
               )}
@@ -707,7 +744,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                 }
                 onClick={checkAnswer}
               >
-                Sprawdź odpowiedź
+                {t("Sprawdź odpowiedź")}
                 <ArrowRight size={16} />
               </button>
             </div>
@@ -718,16 +755,16 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
               role="status"
             >
               {lastAttempt.passed ? <Check size={18} /> : null}
-              <p>{lastAttempt.feedback}</p>
+              <p>{t(courseText(lastAttempt.feedback))}</p>
             </div>
           )}
-          {executionMessage && <p role="status">{executionMessage}</p>}
+          {executionMessage && <p role="status">{t(executionMessage)}</p>}
           {step.explanation &&
             (progress.completed ||
               progress.attempts.length > 0 ||
               !step.evaluator) && (
               <div className="lesson-explanation">
-                <h2>Co z tego wynika?</h2>
+                <h2>{t("Co z tego wynika?")}</h2>
                 <p>
                   <LearningText>{step.explanation}</LearningText>
                 </p>
@@ -745,13 +782,13 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           {!step.evaluator && (
             <button className="secondary" onClick={observed}>
               {progress.completed
-                ? "Obserwacja zapisana"
-                : "Zapisz obserwację"}
+                ? t("Obserwacja zapisana")
+                : t("Zapisz obserwację")}
               <Check size={16} />
             </button>
           )}
           <details className="lesson-context lesson-notes">
-            <summary>Cel lekcji i zadanie końcowe</summary>
+            <summary>{t("Cel lekcji i zadanie końcowe")}</summary>
             <ul>
               {lesson.outcomes.map((outcome) => (
                 <li key={outcome}>
@@ -760,18 +797,22 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
               ))}
             </ul>
             <p>
-              <strong>Zastosowanie:</strong>{" "}
+              <strong>{t("Zastosowanie:")}</strong>{" "}
               <LearningText>{lesson.transferTask}</LearningText>
             </p>
             <p>
-              <strong>Dowód samodzielności:</strong>{" "}
+              <strong>{t("Dowód samodzielności:")}</strong>{" "}
               <LearningText>{lesson.evidenceGate}</LearningText>
             </p>
           </details>
           {progress.completed && lesson.misconceptions.length > 0 && (
             <details className="lesson-context lesson-notes">
-              <summary>Sprawdź swój model — częste pułapki</summary>
-              <p>Sprawdź w kodzie, dlaczego te założenia prowadzą do błędów:</p>
+              <summary>{t("Sprawdź swój model — częste pułapki")}</summary>
+              <p>
+                {t(
+                  "Sprawdź w kodzie, dlaczego te założenia prowadzą do błędów:",
+                )}
+              </p>
               <ul>
                 {lesson.misconceptions.map((misconception) => (
                   <li key={misconception}>
@@ -791,10 +832,10 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           <details className="lesson-notes">
             <summary>
               <NotebookPen size={16} />
-              Twój notatnik
+              {t("Twój notatnik")}
             </summary>
             <label>
-              Notatki do lekcji
+              {t("Notatki do lekcji")}
               <textarea
                 value={state.notes[noteKey] ?? state.notes[lesson.id] ?? ""}
                 onChange={(e) =>
@@ -803,22 +844,25 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                     notes: { ...s.notes, [noteKey]: e.target.value },
                   }))
                 }
-                placeholder="Co mnie zaskoczyło? Jak opisać tę regułę własnymi słowami?"
+                placeholder={t(
+                  "Co mnie zaskoczyło? Jak opisać tę regułę własnymi słowami?",
+                )}
               />
             </label>
           </details>
           <details className="sources">
-            <summary>Źródła i kontekst</summary>
+            <summary>{t("Źródła i kontekst")}</summary>
             {lesson.sourceIds.map((id) => {
               const source = sources.find((s) => s.id === id);
               return source ? (
                 <p key={id}>
                   <a href={source.url} target="_blank" rel="noreferrer">
-                    {source.title}
+                    {courseText(source.title)}
                     <ExternalLink size={12} />
                   </a>
                   <small>
-                    Sprawdzono {source.reviewedAt} · {source.classification}
+                    {t("Sprawdzono ")}
+                    {source.reviewedAt} · {t(sourceClassificationLabels[source.classification])}
                   </small>
                 </p>
               ) : null;
@@ -829,7 +873,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           <section
             className="code-pane"
             id="workspace-code"
-            aria-label="Edytor kodu"
+            aria-label={t("Edytor kodu")}
           >
             <div
               className="workspace-panel-code"
@@ -850,11 +894,13 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                 <div>
                   <button
                     className="icon-button"
-                    aria-label="Przywróć kod początkowy"
+                    aria-label={t("Przywróć kod początkowy")}
                     onClick={() => {
                       if (
                         window.confirm(
-                          "Przywrócić kod początkowy tego kroku? Obecny szkic zostanie zastąpiony.",
+                          t(
+                            "Przywrócić kod początkowy tego kroku? Obecny szkic zostanie zastąpiony.",
+                          ),
                         )
                       )
                         patch({ code: step.code ?? "" });
@@ -865,11 +911,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                   {(!isToml || isManifest) && (
                     <button
                       className="run-button"
-                      disabled={
-                        pending ||
-                        !code.trim() ||
-                        needsPrediction
-                      }
+                      disabled={pending || !code.trim() || needsPrediction}
                       onClick={isManifest ? checkAnswer : () => void run()}
                     >
                       {isManifest ? (
@@ -880,12 +922,12 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                         <Play size={15} />
                       )}{" "}
                       {isManifest
-                        ? "Sprawdź manifest"
+                        ? t("Sprawdź manifest")
                         : pending
-                          ? "Kompilowanie…"
+                          ? t("Kompilowanie…")
                           : step.evaluator?.kind === "tests"
-                            ? "Uruchom testy"
-                            : "Uruchom"}
+                            ? t("Uruchom testy")
+                            : t("Uruchom")}
                     </button>
                   )}
                 </div>
@@ -904,7 +946,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
               <div className="editor-status">
                 <span>
                   {isToml
-                    ? "TOML 1.0 · sprawdzenie deklaracji"
+                    ? t("TOML 1.0 · sprawdzenie deklaracji")
                     : "Rust · stable · edition 2024"}
                 </span>
                 <button
@@ -920,15 +962,16 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
                 >
                   {state.settings.accessibleEditor
                     ? "Monaco Editor"
-                    : "Prosty edytor"}
+                    : t("Prosty edytor")}
                 </button>
               </div>
               {!isToml &&
                 lastRun?.code !== undefined &&
                 lastRun.code !== code && (
                   <p className="output-stale" role="status">
-                    Output pochodzi z poprzedniej wersji kodu. Uruchom ponownie
-                    po zmianach.
+                    {t(
+                      "Wynik pochodzi z poprzedniej wersji kodu. Uruchom ponownie po zmianach.",
+                    )}
                   </p>
                 )}
             </div>
@@ -947,7 +990,7 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
       </div>
       {learnerProject && (
         <details className="study-session-entry">
-          <summary>{STUDY_SESSION_ENTRY_LABEL}</summary>
+          <summary>{courseText(STUDY_SESSION_ENTRY_LABEL)}</summary>
           <LearnerInstruction project={learnerProject} />
         </details>
       )}
@@ -958,12 +1001,12 @@ export function LessonWorkspace({ lesson }: { lesson: (typeof lessons)[number] }
           onClick={() => navigateStep(index - 1)}
         >
           <ArrowLeft size={16} />
-          Poprzedni krok
+          {t("Poprzedni krok")}
         </button>
         <span className="footnote">
           {progress.completed
-            ? "Krok sprawdzony. Możesz przejść dalej."
-            : "Zadanie zostaje otwarte, dopóki nie sprawdzisz rozwiązania."}
+            ? t("Krok sprawdzony. Możesz przejść dalej.")
+            : t("Zadanie zostaje otwarte, dopóki nie sprawdzisz rozwiązania.")}
         </span>
         <button
           className="primary"

@@ -12,7 +12,7 @@
   "scripts/fixtures/tokio-runtime-1.53.1/README.md": {
     "previousSha256": "04406395998ea9e869f8803d599793f48fc64df01052431aa6b11838ba909d3b",
     "currentPath": "scripts/fixtures/tokio-runtime-1.54.1/README.md",
-    "currentSha256": "7ef6af8fc24f5e40f65564a6970712f35de9db9579ee685daec155ec4d46fd5a"
+    "currentSha256": "c2887b32644048b2aed7e6a3ff3fde0d1af7faee263d13642ced7e8786dfc5f4"
   },
   "scripts/fixtures/tokio-runtime-1.53.1/src/lib.rs": {
     "previousSha256": "26b326ce77c2105f8979187468b53deadc8aaad531ec75deb6608e5616258a1f",

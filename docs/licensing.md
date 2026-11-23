@@ -1,5 +1,7 @@
 # Licensing guide
 
+[Polski](licensing.pl.md)
+
 The maintainer approved the license split, project credit, and three existing
 Cargo package exceptions on 23 October 2026. The approved project credit is
 **Pixel Media Workshop Paweł Borawski**, starting in 2026. The current MIT notice

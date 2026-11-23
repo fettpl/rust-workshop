@@ -1,17 +1,19 @@
-# Lifetimes, closures i iterators — plan etapu
+# Lifetimes, closures, and iterators — stage plan
 
-**Cel:** projektować bezpieczne widoki danych, świadomie przekazywać callbacki i przetwarzać kolekcje iteratorami. Etap realizuje podstawy części 12–13 oryginalnego briefu oraz przygotowuje projekt Log Analyzer. Pełny zakres zaawansowany i ocena samodzielnej pracy pozostają otwarte.
+[Polski](2026-09-12-lifetimes-closures-iterators.pl.md)
 
-**Architektura:** trzy niezależnie tworzone pliki treści, integrowane w istniejącym course.ts. Wspólne evaluatory, graf pojęć, mastery i persistence v3. Wykonanie szkiców ucznia nadal odbywa się wyłącznie przez izolowanego runnera. Nie potrzeba nowych zależności.
+The goal is to design safe data views, choose how to pass callbacks, and process collections with iterators. This stage covers the foundations of parts 12–13 of the original brief and prepares learners for Log Analyzer. The advanced scope and assessment of independent work remain open.
 
-**Wymagania:** odbiorca zna podstawy programowania i zaczynał kurs bez Rust. Stable Rust, edition 2024. Każda lekcja zaczyna od problemu lub przewidywania; reguły lifetime nie poprzedzają motywującego błędu. Podpowiedź 1 wskazuje obszar, 2 regułę, dopiero rozwiązanie pełną poprawkę. Każdy koncept ma aktywną powtórkę i dwa niezależne oceniane warianty. Lokalnie kompilujemy wyłącznie autorskie fixture'y repozytorium.
+Three independently authored content files are integrated in the existing course.ts. They share evaluators, the concept graph, mastery tracking, and the v3 persistence schema. Only the isolated runner executes learner drafts. The stage needs no new dependencies.
 
-- [x] src/content/lifetimes.ts: relacje wejść i wyników, struktury pożyczające, elision, dobór owned/borrowed; rzeczywiste diagnostyki i zadanie od pustej kartki. Testy sprawdzają pochodzenie widoku oraz różne zakresy danych pomocniczych.
-- [x] src/content/closures.ts: przechwytywanie, move, Fn/FnMut/FnOnce i minimalne kontrakty callbacków. Testy sprawdzają kolejność/liczbę wywołań, mutację i jednokrotne zużycie danych.
-- [x] src/content/iterators.ts: cztery lekcje (laziness oddzielona od składania potoków dla czytelności); pożyczanie i przenoszenie elementów, laziness, pipeline, short circuit, Iterator/IntoIterator. Testy sprawdzają efekty, pustkę, Unicode, granice i wyczerpanie.
-- [x] Integracja treści i mapy. Testy potwierdzają, że użycie pomocy wymaga nowego samodzielnego wariantu. Przegląd kontraktów sprawdza silniejsze, niepotrzebne ograniczenia i pozorne zadania.
-- [x] Usunięcie przewagi pierwszej odpowiedzi we wcześniejszych modułach: stabilna kolejność oparta na identyfikatorze pytania, zachowane ID odpowiedzi i Resume. Nie zmieniać zadań o znaczącej kolejności.
-- [x] Sprawdzenie rzeczywistego Rust i API, aktualnych źródeł, E2E/Resume i mobile. Przegląd wizualny, klawiatura, konsola, produkcyjny offline i build.
-- [x] Niezależny review każdej części, poprawki oraz aktualizacja audytu briefu i raportu weryfikacji. Commit po zweryfikowaniu etapu.
+Learners know basic programming and started the course without Rust. Use stable Rust, edition 2024. Start each lesson with a problem or prediction, and introduce lifetime rules after the error that motivates them. The first hint identifies the area and the second supplies the rule. The full fix appears in the solution. Each concept has active retrieval practice and two independent assessed variants. Compile only repository-authored fixtures locally.
 
-Lifetimes nie przedłużają życia danych w runtime. Właściwości związane z kompilacją sprawdzamy kompilatorem, a nie wyłącznie wynikiem uruchomienia. Koszty abstrakcji, variance, HRTB i dalsze zagadnienia zawodowe wymagają osobnego materiału oraz użycia w projektach.
+- [x] src/content/lifetimes.ts covers relationships between inputs and results, structs that borrow, elision, and choosing owned or borrowed data. Include actual diagnostics and one empty-editor task. Tests verify where the view comes from and vary the scope of supporting data.
+- [x] src/content/closures.ts covers captures, move, Fn/FnMut/FnOnce, and minimal callback contracts. Tests verify call order and count, mutation, and one-time consumption of data.
+- [x] src/content/iterators.ts contains four lessons, with laziness introduced separately from pipeline composition. Cover borrowing and moving elements, laziness, pipelines, short-circuiting, and Iterator/IntoIterator. Test side effects, empty input, Unicode, boundaries, and exhaustion.
+- [x] Integrate the content and roadmap. Tests verify that using help requires an independent attempt on a new variant. Review contracts for unnecessary stronger bounds and tasks that can pass without meaningful work.
+- [x] Remove the first-answer bias in earlier modules with a stable order based on the question ID. Preserve answer IDs, Resume, and the order where it matters to the exercise.
+- [x] Check real Rust behavior and the live API, current sources, end-to-end flows, Resume, and mobile. Inspect the UI, keyboard navigation, browser console, production offline mode, and build.
+- [x] Review each part independently, make corrections, and update the requirements audit and verification report. Commit after verifying the stage.
+
+Lifetimes describe the relationships Rust checks at compile time. They leave the runtime lifetime of data unchanged. Check compile-time properties with the compiler. Abstraction costs, variance, HRTB, and further professional topics require their own material and practice in projects.

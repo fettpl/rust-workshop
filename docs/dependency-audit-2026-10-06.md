@@ -1,5 +1,7 @@
 # Dependency audit remediation — 2026-10-06
 
+[Polski](dependency-audit-2026-10-06.pl.md)
+
 This bounded maintenance milestone starts from `origin/main` commit
 `7fd4238fee8fe2639b202d05ef70438a91beb2b9` in branch
 `maintenance/dependency-audit-oct6`. It owns only the package manifest, npm

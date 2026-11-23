@@ -6,19 +6,21 @@ import {
 import { useLearning } from "./learning-provider";
 import { LearningText } from "./learning-text";
 import { Eyebrow } from "./ui";
+import { useLocale } from "./locale-provider";
 
 function InstructionBody({ card }: { card: ProjectInstructionCard }) {
+  const { courseText } = useLocale();
   return (
     <>
       {card.summary && (
         <p>
-          <LearningText>{card.summary}</LearningText>
+          <LearningText>{courseText(card.summary)}</LearningText>
         </p>
       )}
       <ol>
         {card.points.map((point) => (
-          <li key={point}>
-            <LearningText>{point}</LearningText>
+          <li key={courseText(point)}>
+            <LearningText>{courseText(point)}</LearningText>
           </li>
         ))}
       </ol>
@@ -27,14 +29,15 @@ function InstructionBody({ card }: { card: ProjectInstructionCard }) {
 }
 
 function StudySessionNotes({ stage }: { stage: "first" | "change" }) {
+  const { courseText } = useLocale();
   const { state, update } = useLearning();
   return studySessionNoteFields
     .filter((field) => field.stage === stage)
     .map((field) => (
       <div className="study-session-note" key={field.key}>
-        <label htmlFor={field.key}>{field.label}</label>
+        <label htmlFor={field.key}>{courseText(field.label)}</label>
         <p className="footnote" id={`${field.key}-guidance`}>
-          {field.guidance}
+          {courseText(field.guidance)}
         </p>
         <textarea
           id={field.key}
@@ -54,6 +57,7 @@ function StudySessionNotes({ stage }: { stage: "first" | "change" }) {
 
 /** Both entry points render the same authored contract and durable notes. */
 export function LearnerInstruction({ project }: { project: ProjectContract }) {
+  const { t, courseText } = useLocale();
   const card = project.learnerInstruction;
   if (!card) return null;
   const isStudySession = project.id === STUDY_SESSION_PROJECT_ID;
@@ -62,22 +66,21 @@ export function LearnerInstruction({ project }: { project: ProjectContract }) {
       className="project-package learner-instruction"
       aria-labelledby={`project-instruction-${project.id}`}
     >
-      <Eyebrow>PRACA WŁASNA</Eyebrow>
-      <h2 id={`project-instruction-${project.id}`}>{card.title}</h2>
+      <Eyebrow>{t("PRACA WŁASNA")}</Eyebrow>
+      <h2 id={`project-instruction-${project.id}`}>{courseText(card.title)}</h2>
       <InstructionBody card={card} />
       {isStudySession && (
-        <section aria-label="Pierwsza wersja Study Session CLI">
-          <h3>Pierwsza wersja — materiał do przeglądu</h3>
+        <section aria-label={t("Pierwsza wersja Study Session CLI")}>
+          <h3>{t("Pierwsza wersja — materiał do przeglądu")}</h3>
           <p>
-            Do samooceny lub przeglądu zewnętrznego przygotuj własny projekt
-            Cargo: Cargo.toml, źródła i testy. Dołącz poniższe uzasadnienie,
-            własny test i rzeczywiste wyniki CLI. Wskaż, gdzie znajduje się
-            oceniana wersja kodu, aby dało się powiązać z nią wyniki.
+            {t(
+              "Do samooceny lub przeglądu zewnętrznego przygotuj własny projekt Cargo: Cargo.toml, źródła i testy. Dołącz poniższe uzasadnienie, własny test i rzeczywiste wyniki CLI. Wskaż, gdzie znajduje się oceniana wersja kodu, aby dało się powiązać z nią wyniki.",
+            )}
           </p>
           <p>
-            Uruchom CLI we własnym środowisku. Tutaj zapisujesz swoją relację
-            z pracy. Znajdziesz ją również w Notatniku. Jeśli prosisz kogoś
-            o recenzję, przekaż tej osobie kod, testy i wyniki.
+            {t(
+              "Uruchom CLI we własnym środowisku. Tutaj zapisujesz swoją relację z pracy. Znajdziesz ją również w Notatniku. Jeśli prosisz kogoś o recenzję, przekaż tej osobie kod, testy i wyniki.",
+            )}
           </p>
           <StudySessionNotes stage="first" />
         </section>
@@ -85,15 +88,15 @@ export function LearnerInstruction({ project }: { project: ProjectContract }) {
       {card.followUp && (
         <details className="learner-instruction-followup">
           <summary>
-            <LearningText>{card.followUp.title}</LearningText>
+            <LearningText>{courseText(card.followUp.title)}</LearningText>
           </summary>
           <InstructionBody card={card.followUp} />
           {isStudySession && (
             <>
               <p>
-                Najpierw udokumentuj samoocenę lub przegląd pierwszej wersji.
-                Następnie przekaż zmienione źródła i testy, wyniki regresji oraz
-                opis tego, co pozostało do sprawdzenia.
+                {t(
+                  "Najpierw udokumentuj samoocenę lub przegląd pierwszej wersji. Następnie przekaż zmienione źródła i testy, wyniki regresji oraz opis tego, co pozostało do sprawdzenia.",
+                )}
               </p>
               <StudySessionNotes stage="change" />
             </>

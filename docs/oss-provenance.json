@@ -69,13 +69,18 @@
       "group": "icons"
     },
     {
+      "path": "public/manifest.en.webmanifest",
+      "sha256": "4d7bfa9ebba414106335fcd14c45bbf55f336145d7327e6f62004b04b9b30571",
+      "group": "public-software"
+    },
+    {
       "path": "public/manifest.webmanifest",
       "sha256": "bad79a566bfaa04a62cc506ce479f7b63071f467f5b46908ca94f723127f57a2",
       "group": "public-software"
     },
     {
       "path": "public/sw.js",
-      "sha256": "12b3224bd6f99206abb44ff39e5c8b4c13977dc9c3daa012b3f1e7e701af3335",
+      "sha256": "41772ab51c5985611e5ecbc7b7885abf59bf2e0e2764b0193d43837128cbb089",
       "group": "public-software"
     },
     {
@@ -625,7 +630,7 @@
     },
     {
       "path": "src/content/dependency-maintenance-file-successors.json",
-      "sha256": "6e4930035baa2db2e42ace114d6f0bb0a27e143261acf13f6a1874279237dbba",
+      "sha256": "62f6cde5c35e09eb13ff2f321214e0525a6041d0e89162e55d1e2fdcb76ff952",
       "group": "course"
     },
     {

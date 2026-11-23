@@ -1,5 +1,7 @@
 # Repair the workshop assessment contracts
 
+[Polski](005-workshop-assessment-contracts.pl.md)
+
 Start from local release candidate `7d803e4`. Address the four findings from the 18 November course audit in one local change set. Keep the Polish learner-facing copy and the existing lesson, exercise and project identities. Preserve saved drafts and the meaning of earlier attempts. Hosted integration follows a separate publication decision.
 
 | Work | Acceptance evidence |

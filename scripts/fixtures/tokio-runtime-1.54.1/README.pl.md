@@ -1,0 +1,9 @@
+# Profil zaufanych przykładów Tokio
+
+[English](README.md)
+
+Ten pakiet przypina zależności służące do weryfikacji przykładów Tokio opracowanych dla kursu. Weryfikator pracuje na kodzie z repozytorium. Szkice kursantów, importowane dane, ścieżki i manifesty pozostają poza jego zakresem. Używa Tokio 1.54.1 z funkcjami `macros`, `rt`, `sync`, `time`, `test-util`, `io-util` i `net` oraz tokio-stream 0.1.19 z wyłączonymi funkcjami domyślnymi. Sprawdza środowisko wykonawcze, sterowanie przepływem, operacje wejścia i wyjścia, strumienie, pracę blokującą i TCP. Wstępna próba sieciowa utrzymuje nasłuch na `127.0.0.1:0` podczas nawiązywania i przyjmowania połączenia, zamykania kierunku wysyłania żądania oraz odbioru odpowiedzi. Cała komunikacja odbywa się lokalnie.
+
+Zależności funkcji opisuje [manifest Tokio 1.54.1](https://raw.githubusercontent.com/tokio-rs/tokio/tokio-1.54.1/tokio/Cargo.toml). Funkcja `test-util` wymaga `rt`, `sync` i `time`. Tokio 1.54.1 wymaga Rusta 1.85 i zawiera poprawki RUSTSEC-2026-0386 i RUSTSEC-2026-0384. Przykłady kursu pomijają konstruktory `AsyncFd`, których dotyczyły problemy. Ten profil natywny zastępuje profil z wersją 1.53.1. Historyczne zapisy weryfikacji i starsze metadane zachowują pierwotne wersje i identyfikatory. Odczyt manifestu Playground z 2026-09-12 wskazywał Tokio 1.53.1. Ustalenie dotyczy tamtego dnia. Aktualizację lokalną wykonano bez żądania POST do zewnętrznej usługi. [Zakres wykonania kodu](../../../docs/runner.pl.md)
+
+Weryfikator kopiuje manifest i Cargo.lock do nowego katalogu tymczasowego, zapisuje tam sprawdzone źródła lekcji i wywołuje ustalone polecenia Cargo z opcjami --offline --locked. Osoba utrzymująca projekt może raz uruchomić ten weryfikator z opcją --fetch, aby wypełnić pamięć podręczną Cargo zgodnie z plikiem blokady. Przeglądarka korzysta z ustalonego kodu wstępnego zewnętrznego Playground. Nie przesyła tego manifestu ani nie wybiera profilu zależności.

@@ -1,9 +1,10 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { test, expect, type Page } from "@playwright/test";
 import type { UserState } from "../../src/domain/types";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import {
   assertArchiveNotices,
   expectedArchivePaths,
@@ -108,7 +109,7 @@ test("downloads the actual Loom lab and keeps project work separate after viewin
     assertArchiveNotices(files, archive);
     for (const file of archive.files)
       expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(
-        variant === "solution" ? (file.solution ?? file.starter) : file.starter,
+        localizedPackageFile(file.path, variant === "solution" ? (file.solution ?? file.starter) : file.starter, "pl"),
       );
   }
   const todo = projects.find((item) => item.id === "todo-command-session")!;

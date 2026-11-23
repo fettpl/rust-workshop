@@ -1,5 +1,7 @@
 # Performance investigation
 
+[Polski](performance-investigation.pl.md)
+
 The optional `performance-evidence-investigation` lesson follows the four
 existing Performance Evidence lessons. It uses the existing concept and
 competency without adding a gate, task family, review fixture, or primary

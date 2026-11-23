@@ -1,5 +1,7 @@
 # Initialized prefix: contract and evidence boundary
 
+[Polski](initialized-prefix-evidence.pl.md)
+
 The initialized-prefix lesson extends the existing `unsafe-miri-byte-view`
 lesson. It introduces the maintained `unsafe-miri/initialized-prefix-v1`
 family through two appended steps:

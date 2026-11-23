@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync } from "fflate";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import { courseEvidencePolicy } from "../../src/content/learning-context";
 import { independentCodingTaskIds } from "../../src/engine/learning";
 import {

@@ -1,3 +1,4 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
@@ -7,7 +8,7 @@ import {
   modules,
   projects,
   reviewExercises,
-} from "../../src/content/course";
+} from "./polish-course.helper";
 import {
   assistanceForLessonStep,
   courseEvidencePolicy,
@@ -218,7 +219,7 @@ async function downloadPackage(page: Page, variant: "starter" | "solution") {
   for (const file of archive.files) {
     const expected =
       variant === "starter" ? file.starter : (file.solution ?? file.starter);
-    expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(expected);
+    expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(localizedPackageFile(file.path, expected, "pl"));
   }
   return bytes;
 }

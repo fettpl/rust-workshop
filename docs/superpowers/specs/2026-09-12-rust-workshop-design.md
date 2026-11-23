@@ -1,5 +1,7 @@
 # Rust Workshop — first ownership slice
 
+[Polski](2026-09-12-rust-workshop-design.pl.md)
+
 Authoritative brief: the user's pasted-text-1.txt, provided 2026-09-12.
 
 ## Product and scope

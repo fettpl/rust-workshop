@@ -1,5 +1,7 @@
 # Disjoint range transfer: contract and evidence boundary
 
+[Polski](disjoint-range-transfer-evidence.pl.md)
+
 Date: 2026-10-22. This is a local feature candidate on top of the local native-test
 maintenance milestone. GitHub Actions acceptance, PR integration and resulting-main
 checks remain deferred during the billing hold.

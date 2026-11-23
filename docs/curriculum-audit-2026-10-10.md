@@ -1,5 +1,7 @@
 # Source-bound curriculum audit — 10 October 2026
 
+[Polski](curriculum-audit-2026-10-10.pl.md)
+
 The complete static semantic audit examined source `fc3491a74e30557ebea1196986d136ca66a43973`, tree `cfba502e64f648483174ec7e2028eb6640b0105a`. The audit found existing coverage of all original topic headings and five project families, with ten concrete depth/copy corrections. This correction candidate authors those repairs. Integration review, complete software checks, latest-head CI and merge remain separate acceptance work; authored availability is not observed learning.
 
 ## Coverage and reproducible source evidence

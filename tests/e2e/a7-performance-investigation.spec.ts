@@ -1,9 +1,10 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { courseEvidencePolicy } from "../../src/content/learning-context";
 import { independentCodingTaskIds } from "../../src/engine/learning";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import { createInitialState } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 import {
@@ -265,7 +266,7 @@ test("resumes optional performance practice and downloads its cached archive off
   const starter = panel.getByRole("link", { name: "Pobierz pakiet startowy" });
   await expect(starter).toHaveAttribute(
     "href",
-    "/projects/log-analyzer-workshop/starter.zip",
+    "/localized-projects/pl/log-analyzer-workshop/starter.zip",
   );
   await waitForServiceWorker(page);
   const archiveUrl = await starter.getAttribute("href");
@@ -290,7 +291,7 @@ test("resumes optional performance practice and downloads its cached archive off
   assertArchiveNotices(onlineFiles, archive);
   for (const file of archive.files)
     expect(strFromU8(onlineFiles[`${archive.id}/${file.path}`])).toBe(
-      file.starter,
+      localizedPackageFile(file.path, file.starter, "pl"),
     );
 
   await page.context().setOffline(true);
@@ -329,7 +330,7 @@ test("resumes optional performance practice and downloads its cached archive off
   ]);
   for (const file of archive.files)
     expect(strFromU8(offlineFiles[`${archive.id}/${file.path}`])).toBe(
-      file.starter,
+      localizedPackageFile(file.path, file.starter, "pl"),
     );
 
   state = await savedState(page);

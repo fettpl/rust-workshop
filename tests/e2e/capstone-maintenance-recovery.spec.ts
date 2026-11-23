@@ -1,9 +1,10 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { courseEvidencePolicy } from "../../src/content/learning-context";
 import { independentCodingTaskIds } from "../../src/engine/learning";
-import { lessons, projects } from "../../src/content/course";
+import { lessons, projects } from "./polish-course.helper";
 import { createInitialState } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 import {
@@ -147,7 +148,7 @@ async function inspectArchive(
   expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
   assertArchiveNotices(files, archive);
   for (const file of archive.files)
-    expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(file[variant]);
+    expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(localizedPackageFile(file.path, file[variant] ?? file.starter, "pl"));
 }
 
 test("resumes optional capstone maintenance practice and downloads both authored archives offline", async ({
@@ -297,8 +298,8 @@ test("resumes optional capstone maintenance practice and downloads both authored
   const panel = page.getByRole("region", { name: "Pakiet Cargo" });
   await waitForServiceWorker(page);
   const links: Record<"starter" | "solution", string> = {
-    starter: "/projects/durable-log-service-workspace/starter.zip",
-    solution: "/projects/durable-log-service-workspace/solution.zip",
+    starter: "/localized-projects/pl/durable-log-service-workspace/starter.zip",
+    solution: "/localized-projects/pl/durable-log-service-workspace/solution.zip",
   };
   for (const href of Object.values(links)) {
     await page.waitForFunction(async (path) => !!(await caches.match(path)), href);

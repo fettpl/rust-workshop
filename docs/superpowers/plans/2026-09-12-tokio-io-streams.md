@@ -1,5 +1,7 @@
 # Tokio I/O, streams and blocking work implementation plan
 
+[Polski](2026-09-12-tokio-io-streams.pl.md)
+
 > **For agentic workers:** Use subagent-driven-development with independent authors and review before integration.
 
 **Goal:** Teach partial asynchronous I/O, bounded framing, retained progress across cancellation, streams, and the blocking-pool boundary through executable contracts.
@@ -16,7 +18,7 @@
 - Each concept has two distinct coding gates and a fresh coding review. A revealed solution cannot satisfy an independent gate.
 - Tests observe actual bytes, ownership, errors, polls and resource lifetimes. Sleeps or a watchdog firing are not correctness evidence.
 - Only reviewed repository-authored Rust is compiled locally. No external runner POST is part of this verification.
-- Tokio `duplex` demonstrates I/O traits, not a deployed TCP service. Network architecture remains a separate portfolio extension.
+- Tokio `duplex` demonstrates I/O traits in memory. Network architecture and deployment of a TCP service remain a separate portfolio extension.
 
 ## 1. Repair verified CI failure and extend the fixture profile
 

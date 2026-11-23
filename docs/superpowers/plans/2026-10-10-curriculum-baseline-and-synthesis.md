@@ -1,5 +1,7 @@
 # Current objective, Definition of Done and implementation plan
 
+[Polski](2026-10-10-curriculum-baseline-and-synthesis.pl.md)
+
 Date: 10 October 2026. This plan supersedes broad seniority promises and human-pilot-gated development scope. Implementation uses Sol high; final integrated quality review uses Astra xHigh. Learner-facing prose is Polish; engineering docs, README and PRs are English.
 
 ## Objective

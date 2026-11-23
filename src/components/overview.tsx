@@ -49,6 +49,7 @@ import {
   recommendedModuleIds,
   type CourseMapMode,
 } from "@/engine/course-route";
+import { useLocale } from "./locale-provider";
 export function useOpenLesson() {
   const { update } = useLearning();
   return (id: string, stepIndex?: number) =>
@@ -66,10 +67,14 @@ export function useOpenLesson() {
             stepIndex ??
             (resumeHere
               ? s.resume.stepIndex
-              : Math.max(0, lesson?.steps.findIndex(
-                  (step) => !s.steps[stepKey(id, step.id)]?.completed,
-                ) ?? 0)),
-          panel: stepIndex === undefined && resumeHere ? s.resume.panel : "lesson",
+              : Math.max(
+                  0,
+                  lesson?.steps.findIndex(
+                    (step) => !s.steps[stepKey(id, step.id)]?.completed,
+                  ) ?? 0,
+                )),
+          panel:
+            stepIndex === undefined && resumeHere ? s.resume.panel : "lesson",
         },
       };
     });
@@ -82,25 +87,33 @@ function lessonProgress(
     (step) => steps[stepKey(lesson.id, step.id)]?.completed,
   ).length;
 }
-export function UnavailableLesson({ standalone = false }: { standalone?: boolean }) {
+export function UnavailableLesson({
+  standalone = false,
+}: {
+  standalone?: boolean;
+}) {
+  const { t } = useLocale();
   const { update } = useLearning();
   const Heading = standalone ? "h1" : "h2";
   return (
     <section className="continue-panel">
       <div className="continue-copy">
-        <Heading>Zapisany krok jest niedostępny</Heading>
+        <Heading>{t("Zapisany krok jest niedostępny")}</Heading>
         <p>
-          Wybierz zadanie z obecnej wersji kursu. Wcześniejsze notatki i wyniki
-          znajdziesz w swoim zapisie.
+          {t(
+            "Wybierz zadanie z obecnej wersji kursu. Wcześniejsze notatki i wyniki znajdziesz w swoim zapisie.",
+          )}
         </p>
         <button
           className="primary"
-          onClick={() => update((state) => ({
-            ...state,
-            resume: { ...state.resume, view: "course" },
-          }))}
+          onClick={() =>
+            update((state) => ({
+              ...state,
+              resume: { ...state.resume, view: "course" },
+            }))
+          }
         >
-          Wybierz lekcję na mapie
+          {t("Wybierz lekcję na mapie")}
         </button>
       </div>
     </section>
@@ -108,6 +121,7 @@ export function UnavailableLesson({ standalone = false }: { standalone?: boolean
 }
 
 export function Dashboard() {
+  const { t, courseText } = useLocale();
   const now = useClock();
   const { state, update } = useLearning();
   const savedLesson = lessons.find((l) => l.id === state.resume.lessonId);
@@ -162,74 +176,80 @@ export function Dashboard() {
     <div className="dashboard">
       <div className="page-heading">
         <div>
-          <Eyebrow>TWÓJ WARSZTAT · RUST 2024</Eyebrow>
+          <Eyebrow>{t("TWÓJ WARSZTAT · RUST 2024")}</Eyebrow>
           <h1>
             {state.onboarding.name
-              ? `Cześć, ${state.onboarding.name}.`
-              : "Dobrze Cię widzieć."}
+              ? t("Cześć, {0}.", state.onboarding.name)
+              : t("Dobrze Cię widzieć.")}
           </h1>
         </div>
       </div>
       {savedLesson?.steps[state.resume.stepIndex] ? (
-      <section className="continue-panel" aria-labelledby="continue-title">
-        <div className="continue-copy">
-          <span className="lesson-index">
-            {mapModeForModule(activeModule.id) === "core"
-              ? "Ścieżka główna"
-              : "Rozszerzenie"}
-            {" · "}
-            {activeModule.title}
-          </span>
-          <h2 id="continue-title">{lesson.title}</h2>
-          <p>
-            <LearningText>{lesson.outcomes[0] ?? lesson.subtitle}</LearningText>
-          </p>
-          <div className="continue-meta">
-            <span>
-              Krok {stepIndex + 1} z {lesson.steps.length}
+        <section className="continue-panel" aria-labelledby="continue-title">
+          <div className="continue-copy">
+            <span className="lesson-index">
+              {mapModeForModule(activeModule.id) === "core"
+                ? t("Ścieżka główna")
+                : t("Rozszerzenie")}
+              {" · "}
+              {courseText(activeModule.title)}
             </span>
-            <strong>{currentStep.title}</strong>
+            <h2 id="continue-title">{courseText(lesson.title)}</h2>
+            <p>
+              <LearningText>
+                {lesson.outcomes[0] ?? lesson.subtitle}
+              </LearningText>
+            </p>
+            <div className="continue-meta">
+              <span>
+                {t("Krok ")}
+                {stepIndex + 1} {t("z ")}
+                {lesson.steps.length}
+              </span>
+              <strong>{courseText(currentStep.title)}</strong>
+            </div>
+            <button className="primary" onClick={() => open(lesson.id)}>
+              {isResuming ? t("Kontynuuj naukę") : t("Wejdź do lekcji")}
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
           </div>
-          <button className="primary" onClick={() => open(lesson.id)}>
-            {isResuming ? "Kontynuuj naukę" : "Wejdź do lekcji"}
-            <ArrowRight size={18} aria-hidden="true" />
-          </button>
-        </div>
-        <div className="session-outline">
-          <div className="session-outline-header">
-            <span className="micro">TWOJA SESJA</span>
-            <span>
-              {progress} / {lesson.steps.length} kroków sprawdzonych
-            </span>
+          <div className="session-outline">
+            <div className="session-outline-header">
+              <span className="micro">{t("TWOJA SESJA")}</span>
+              <span>
+                {progress} / {lesson.steps.length} {t("kroków sprawdzonych")}
+              </span>
+            </div>
+            <ol>
+              {lesson.steps.map((step, i) => (
+                <li key={step.id}>
+                  <button
+                    className={`session-step ${i === stepIndex ? "current" : ""}`}
+                    aria-current={i === stepIndex ? "step" : undefined}
+                    onClick={() => open(lesson.id, i)}
+                  >
+                    <span className="session-step-number">
+                      {state.steps[stepKey(lesson.id, step.id)]?.completed ? (
+                        <Check size={17} />
+                      ) : (
+                        String(i + 1).padStart(2, "0")
+                      )}
+                    </span>
+                    <span>{courseText(step.title)}</span>
+                    {i === stepIndex && <ArrowRight size={16} />}
+                  </button>
+                </li>
+              ))}
+            </ol>
           </div>
-          <ol>
-            {lesson.steps.map((step, i) => (
-              <li key={step.id}>
-                <button
-                  className={`session-step ${i === stepIndex ? "current" : ""}`}
-                  aria-current={i === stepIndex ? "step" : undefined}
-                  onClick={() => open(lesson.id, i)}
-                >
-                  <span className="session-step-number">
-                    {state.steps[stepKey(lesson.id, step.id)]?.completed ? (
-                      <Check size={17} />
-                    ) : (
-                      String(i + 1).padStart(2, "0")
-                    )}
-                  </span>
-                  <span>{step.title}</span>
-                  {i === stepIndex && <ArrowRight size={16} />}
-                </button>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-      ) : <UnavailableLesson />}
+        </section>
+      ) : (
+        <UnavailableLesson />
+      )}
       {state.diagnostic.recommendation && (
         <p className="diagnostic-recommendation">
-          <strong>Twój punkt startowy:</strong>{" "}
-          {state.diagnostic.recommendation}
+          <strong>{t("Twój punkt startowy:")}</strong>{" "}
+          {t(state.diagnostic.recommendation)}
         </p>
       )}
       <div className="dashboard-secondary">
@@ -238,17 +258,19 @@ export function Dashboard() {
             <span className="round-icon">
               <RotateCcw size={20} />
             </span>
-            <span className="micro">ODTWÓRZ Z PAMIĘCI</span>
+            <span className="micro">{t("ODTWÓRZ Z PAMIĘCI")}</span>
           </div>
           <h2>
             {due.length
-              ? `${due.length} ${due.length === 1 ? "krótka powtórka" : "krótkie powtórki"}`
-              : "Daj wiedzy chwilę."}
+              ? `${due.length} ${due.length === 1 ? t("krótka powtórka") : t("krótkie powtórki")}`
+              : t("Daj wiedzy chwilę.")}
           </h2>
           <p>
             {due.length
-              ? "Sprawdź, co potrafisz odtworzyć bez zaglądania do lekcji."
-              : "Po pierwszych eksperymentach pojawią się tutaj krótkie powroty do poznanych zasad."}
+              ? t("Sprawdź, co potrafisz odtworzyć bez zaglądania do lekcji.")
+              : t(
+                  "Po pierwszych eksperymentach pojawią się tutaj krótkie powroty do poznanych zasad.",
+                )}
           </p>
           <button
             className="text-button"
@@ -256,7 +278,7 @@ export function Dashboard() {
               update((s) => ({ ...s, resume: { ...s.resume, view: "review" } }))
             }
           >
-            {due.length ? "Otwórz powtórki" : "Zobacz plan powtórek"}
+            {due.length ? t("Otwórz powtórki") : t("Zobacz plan powtórek")}
             <ArrowRight size={16} />
           </button>
         </section>
@@ -265,12 +287,12 @@ export function Dashboard() {
             <span className="round-icon">
               <Terminal size={20} />
             </span>
-            <span className="micro">ZASTOSUJ W PRAKTYCE</span>
+            <span className="micro">{t("ZASTOSUJ W PRAKTYCE")}</span>
           </div>
-          <h2>{project.title}</h2>
-          <p>{project.objective}</p>
+          <h2>{courseText(project.title)}</h2>
+          <p>{courseText(project.objective)}</p>
           <p className="footnote">
-            {projectCompleted} / {projectSteps} kroków sprawdzonych
+            {projectCompleted} / {projectSteps} {t("kroków sprawdzonych")}
           </p>
           <button
             className="text-button"
@@ -281,7 +303,7 @@ export function Dashboard() {
               }))
             }
           >
-            Otwórz projekt
+            {t("Otwórz projekt")}
             <ArrowUpRight size={16} />
           </button>
         </section>
@@ -289,11 +311,11 @@ export function Dashboard() {
       <section className="competency-section">
         <div className="section-heading spread">
           <div>
-            <Eyebrow>CO JUŻ POTRAFISZ</Eyebrow>
-            <h2>Pojęcia w bieżącym module</h2>
+            <Eyebrow>{t("CO JUŻ POTRAFISZ")}</Eyebrow>
+            <h2>{t("Pojęcia w bieżącym module")}</h2>
           </div>
           <span className="micro">
-            {practiced} / {moduleConcepts.length} Z DOWODEM ROZUMIENIA
+            {practiced} / {moduleConcepts.length} {t("Z DOWODEM ROZUMIENIA")}
           </span>
         </div>
         {activeModule.id === "ownership" && <OwnershipPolicyNote />}
@@ -303,7 +325,7 @@ export function Dashboard() {
               <span className="concept-number">
                 {String(index + 1).padStart(2, "0")}
               </span>
-              <span>{concept.title}</span>
+              <span>{courseText(concept.title)}</span>
               <span>
                 <MasteryBadge
                   level={courseMastery(state, concept.id).level}
@@ -332,26 +354,30 @@ export function Dashboard() {
           ))}
         </div>
         <p className="footnote">
-          Opanowanie wynika z samodzielnych rozwiązań. Ukończenie lekcji i
-          znajomość pojęcia to różne rzeczy.
+          {t(
+            "Opanowanie wynika z samodzielnych rozwiązań. Ukończenie lekcji i znajomość pojęcia to różne rzeczy.",
+          )}
         </p>
       </section>
       <details className="competency-details">
-        <summary>Kompetencje z całego kursu</summary>
+        <summary>{t("Kompetencje z całego kursu")}</summary>
         <p className="footnote">
-          Poziom uwzględnia wszystkie powiązane pojęcia. Samo ukończenie lekcji
-          nie potwierdza kompetencji.
+          {t(
+            "Poziom uwzględnia wszystkie powiązane pojęcia. Samo ukończenie lekcji nie potwierdza kompetencji.",
+          )}
         </p>
         {competencies.map((competency) => {
           const result = courseCompetencyProgress(state, competency.id);
           return (
             <div className="competency-row" key={competency.id}>
               <div>
-                <strong>{competency.title}</strong>
+                <strong>{courseText(competency.title)}</strong>
                 <small>
-                  {result.proven} / {result.total} pojęć z dowodem rozumienia ·{" "}
-                  kwalifikujące zadania w powiązanych pojęciach:{" "}
-                  {result.independentTasks} · lekcje: {result.lessonCount}
+                  {result.proven} / {result.total}{" "}
+                  {t("pojęć z dowodem rozumienia ·")}{" "}
+                  {t("kwalifikujące zadania w powiązanych pojęciach:")}{" "}
+                  {result.independentTasks} {t("· lekcje: ")}
+                  {result.lessonCount}
                 </small>
               </div>
               <MasteryBadge level={result.level} />
@@ -363,8 +389,9 @@ export function Dashboard() {
         <div className="recent-difficult">
           <Target size={18} />
           <span>
-            Warto wrócić do: {difficult.map((c) => c.title).join(", ")}. Błąd
-            jest wskazówką do kolejnego eksperymentu.
+            {t("Warto wrócić do: ")}
+            {difficult.map((c) => courseText(c.title)).join(", ")}
+            {t(". Błąd jest wskazówką do kolejnego eksperymentu.")}
           </span>
         </div>
       )}
@@ -372,6 +399,7 @@ export function Dashboard() {
   );
 }
 export function CourseMap() {
+  const { t, courseText } = useLocale();
   const { state, update } = useLearning();
   const open = useOpenLesson();
   const currentModule =
@@ -406,7 +434,7 @@ export function CourseMap() {
       return [
         {
           id: `${criterion.id}-${target.stepId}`,
-          label: gate.criteria[index]?.label ?? "Najbliższe zadanie",
+          label: gate.criteria[index]?.label,
           lessonId: target.lessonId,
           stepIndex: targetLesson.steps.findIndex(
             (step) => step.id === target.stepId,
@@ -435,11 +463,12 @@ export function CourseMap() {
     : 0;
   return (
     <div className="course-page">
-      <Eyebrow>MAPA NAUKI</Eyebrow>
-      <h1>Od pierwszego programu do samodzielności.</h1>
+      <Eyebrow>{t("MAPA NAUKI")}</Eyebrow>
+      <h1>{t("Od pierwszego programu do samodzielności.")}</h1>
       <p className="lede">
-        Zacznij od fundamentów albo wróć do konkretnego problemu. Każda lekcja
-        jest dostępna.
+        {t(
+          "Zacznij od fundamentów albo wróć do konkretnego problemu. Każda lekcja jest dostępna.",
+        )}
       </p>
       <ModulePicker
         selectedId={selectedModule.id}
@@ -450,34 +479,37 @@ export function CourseMap() {
         }
       />
       <div className="module-summary">
-        <h2>{selectedModule.title}</h2>
-        <p className="lede">{selectedModule.whyItMatters}</p>
+        <h2>{courseText(selectedModule.title)}</h2>
+        <p className="lede">{courseText(selectedModule.whyItMatters)}</p>
         {selectedModule.id === "ownership" && <OwnershipPolicyNote />}
       </div>
       <div className="module-contract">
         <div>
-          <h2>Po tym module potrafisz</h2>
+          <h2>{t("Po tym module potrafisz")}</h2>
           <ul className="check-list">
             {selectedModule.capabilities.map((c) => (
-              <li key={c}>
+              <li key={courseText(c)}>
                 <Check size={16} />
-                {c}
+                {courseText(c)}
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <h2>Sprawdzian samodzielności</h2>
-          <p>{selectedModule.exitGate.join(" ")}</p>
+          <h2>{t("Sprawdzian samodzielności")}</h2>
+          <p>{selectedModule.exitGate.map(courseText).join(" ")}</p>
           <div className="connection-note">
             <GitBranch size={18} />
-            {selectedModule.projectConnection}
+            {courseText(selectedModule.projectConnection)}
           </div>
         </div>
       </div>
-      <section className="module-connections" aria-label="Powiązania modułu">
+      <section
+        className="module-connections"
+        aria-label={t("Powiązania modułu")}
+      >
         <div>
-          <h2>Wymagania wstępne</h2>
+          <h2>{t("Wymagania wstępne")}</h2>
           {prerequisiteModules.length ? (
             <ul className="module-link-list">
               {prerequisiteModules.map((module) => (
@@ -486,17 +518,17 @@ export function CourseMap() {
                     className="text-button"
                     onClick={() => setSelected(module.id)}
                   >
-                    {module.title} <ArrowRight size={16} />
+                    {courseText(module.title)} <ArrowRight size={16} />
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="footnote">Punkt wyjścia w tej trasie.</p>
+            <p className="footnote">{t("Punkt wyjścia w tej trasie.")}</p>
           )}
         </div>
         <div>
-          <h2>Polecane rozszerzenia</h2>
+          <h2>{t("Polecane rozszerzenia")}</h2>
           {recommendedModules.length ? (
             <ul className="module-link-list">
               {recommendedModules.map((module) => (
@@ -505,34 +537,36 @@ export function CourseMap() {
                     className="text-button"
                     onClick={() => setSelected(module.id)}
                   >
-                    {module.title} <ArrowRight size={16} />
+                    {courseText(module.title)} <ArrowRight size={16} />
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="footnote">
-              Odkrywaj rozszerzenia według własnego celu; ta sekcja nie tworzy
-              dodatkowych blokad.
+              {t(
+                "Odkrywaj rozszerzenia według własnego celu; ta sekcja nie tworzy dodatkowych blokad.",
+              )}
             </p>
           )}
         </div>
         <div>
-          <h2>Jak wrócić do praktyki</h2>
+          <h2>{t("Jak wrócić do praktyki")}</h2>
           <p className="footnote">
-            Wybierz zadanie, które pomoże odbudować dowód samodzielności. Każda
-            lekcja pozostaje dostępna.
+            {t(
+              "Wybierz zadanie, które pomoże odbudować dowód samodzielności. Każda lekcja pozostaje dostępna.",
+            )}
           </p>
           {exhaustedCriteria.length > 0 && (
             <p className="footnote">
-              Brak świeżego samodzielnego wariantu dla kryteriów:{" "}
+              {t("Brak świeżego samodzielnego wariantu dla kryteriów:")}{" "}
               {exhaustedCriteria
-                .map((criterion) => criterion.label)
+                .map((criterion) => courseText(criterion.label))
                 .join(" · ")}
               <br />
-              Pozostałe zadania w tych kryteriach mają zapisane podpowiedzi lub
-              rozwiązanie. Możesz nadal ćwiczyć; powtórzenie nie usuwa
-              wcześniejszej pomocy.
+              {t(
+                "Pozostałe zadania w tych kryteriach mają zapisane podpowiedzi lub rozwiązanie. Możesz nadal ćwiczyć; powtórzenie nie usuwa wcześniejszej pomocy.",
+              )}
             </p>
           )}
           {recoveryTargets.length ? (
@@ -543,7 +577,8 @@ export function CourseMap() {
                     className="text-button"
                     onClick={() => open(target.lessonId, target.stepIndex)}
                   >
-                    {target.label} <ArrowRight size={16} />
+                    {courseText(target.label) || t("Najbliższe zadanie")}{" "}
+                    <ArrowRight size={16} />
                   </button>
                 </li>
               ))}
@@ -555,19 +590,20 @@ export function CourseMap() {
                 open(fallbackRecoveryLesson.id, fallbackRecoveryStep)
               }
             >
-              Otwórz pierwszą lekcję do powtórki <ArrowRight size={16} />
+              {t("Otwórz pierwszą lekcję do powtórki ")}
+              <ArrowRight size={16} />
             </button>
           ) : (
             <p className="footnote">
-              Każdą lekcję możesz otworzyć ze ścieżki eksperymentów.
+              {t("Każdą lekcję możesz otworzyć ze ścieżki eksperymentów.")}
             </p>
           )}
         </div>
       </section>
       <section>
         <div className="section-heading spread">
-          <h2>Ścieżka eksperymentów</h2>
-          <span className="micro">WSZYSTKIE LEKCJE SĄ DOSTĘPNE</span>
+          <h2>{t("Ścieżka eksperymentów")}</h2>
+          <span className="micro">{t("WSZYSTKIE LEKCJE SĄ DOSTĘPNE")}</span>
         </div>
         <div className="lesson-list">
           {moduleLessons.map((lesson, index) => {
@@ -588,11 +624,11 @@ export function CourseMap() {
                   )}
                 </span>
                 <div>
-                  <h3>{lesson.title}</h3>
-                  <p>{lesson.subtitle}</p>
+                  <h3>{courseText(lesson.title)}</h3>
+                  <p>{courseText(lesson.subtitle)}</p>
                 </div>
                 <span className="lesson-completion">
-                  {completed}/{lesson.steps.length} kroków
+                  {completed}/{lesson.steps.length} {t("kroków")}
                 </span>
                 <ArrowRight size={19} />
               </button>
@@ -601,11 +637,11 @@ export function CourseMap() {
         </div>
       </section>
       <section className="gate-panel">
-        <Eyebrow>DOWODY, NIE ODHACZENIA</Eyebrow>
+        <Eyebrow>{t("DOWODY, NIE ODHACZENIA")}</Eyebrow>
         <h2>
           {gate.passed
-            ? "Masz dowody samodzielności."
-            : "Co pokaże, że rozumiesz?"}
+            ? t("Masz dowody samodzielności.")
+            : t("Co pokaże, że rozumiesz?")}
         </h2>
         <ul className="check-list">
           {gate.criteria.map((criterion, index) => {
@@ -619,17 +655,17 @@ export function CourseMap() {
             const targetLesson =
               target && lessons.find((lesson) => lesson.id === target.lessonId);
             return (
-              <li key={criterion.label}>
+              <li key={courseText(criterion.label)}>
                 <span
                   aria-label={
-                    criterion.passed ? "Potwierdzone" : "Do sprawdzenia"
+                    criterion.passed ? t("Potwierdzone") : t("Do sprawdzenia")
                   }
                 >
                   {criterion.passed ? "✓" : "○"}
                 </span>
                 <span>
-                  {criterion.label}
-                  {exhausted && " · Brak świeżego samodzielnego wariantu"}
+                  {courseText(criterion.label)}
+                  {exhausted && t(" · Brak świeżego samodzielnego wariantu")}
                 </span>
                 {!criterion.passed && target && targetLesson && (
                   <button
@@ -643,7 +679,8 @@ export function CourseMap() {
                       )
                     }
                   >
-                    Sprawdź w zadaniu <ArrowRight size={16} />
+                    {t("Sprawdź w zadaniu ")}
+                    <ArrowRight size={16} />
                   </button>
                 )}
               </li>
@@ -652,7 +689,7 @@ export function CourseMap() {
         </ul>
       </section>
       <section className="graph-section">
-        <Eyebrow>POWIĄZANIA POJĘĆ</Eyebrow>
+        <Eyebrow>{t("POWIĄZANIA POJĘĆ")}</Eyebrow>
         <div className="graph-nodes">
           {concepts
             .filter((concept) =>
@@ -662,17 +699,19 @@ export function CourseMap() {
             )
             .map((concept) => (
               <div key={concept.id}>
-                <strong>{concept.title}</strong>
+                <strong>{courseText(concept.title)}</strong>
                 <small>
                   {concept.prerequisites.length
                     ? "← " +
                       concept.prerequisites
                         .map(
                           (id) =>
-                            concepts.find((c) => c.id === id)?.title ?? id,
+                            courseText(
+                              concepts.find((c) => c.id === id)?.title,
+                            ) || id,
                         )
                         .join(", ")
-                    : "Punkt wyjścia"}
+                    : t("Punkt wyjścia")}
                 </small>
               </div>
             ))}
@@ -680,18 +719,19 @@ export function CourseMap() {
       </section>
       <details className="roadmap">
         <summary>
-          Pełna ścieżka kursu — co jest dostępne, co przed nami?
+          {t("Pełna ścieżka kursu — co jest dostępne, co przed nami?")}
         </summary>
         <p>
-          Dostępne moduły mają własne zadania i kryteria samodzielności. Kolejne
-          części rozwijamy według poniższej ścieżki.
+          {t(
+            "Dostępne moduły mają własne zadania i kryteria samodzielności. Kolejne części rozwijamy według poniższej ścieżki.",
+          )}
         </p>
         <ol>
           {roadmap.map((item) => (
-            <li key={item.title}>
-              <span>{item.title}</span>{" "}
+            <li key={courseText(item.title)}>
+              <span>{courseText(item.title)}</span>{" "}
               <small>
-                {item.status === "available" ? "Dostępne" : "W planie"}
+                {item.status === "available" ? t("Dostępne") : t("W planie")}
               </small>
             </li>
           ))}
@@ -701,6 +741,7 @@ export function CourseMap() {
   );
 }
 export function ProjectView() {
+  const { t, courseText } = useLocale();
   const { state } = useLearning();
   const [selectedId, setSelectedId] = useState(
     () =>
@@ -714,7 +755,7 @@ export function ProjectView() {
     projects.find((item) => item.id === selectedId) ?? projects[0];
   return (
     <div>
-      <nav className="module-picker" aria-label="Wybierz projekt">
+      <nav className="module-picker" aria-label={t("Wybierz projekt")}>
         {projects.map((item, index) => (
           <button
             key={item.id}
@@ -723,7 +764,7 @@ export function ProjectView() {
             onClick={() => setSelectedId(item.id)}
           >
             <span className="micro">{String(index + 1).padStart(2, "0")}</span>
-            <strong>{item.title}</strong>
+            <strong>{courseText(item.title)}</strong>
           </button>
         ))}
       </nav>
@@ -733,6 +774,7 @@ export function ProjectView() {
 }
 
 function ProjectDetails({ project }: { project: ProjectContract }) {
+  const { t, courseText } = useLocale();
   const { state, update } = useLearning();
   const open = useOpenLesson();
   const noteKey = courseNoteKey("project", project.id);
@@ -764,31 +806,31 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
   );
   return (
     <div className="project-page">
-      <Eyebrow>PROJEKT / TRANSFER</Eyebrow>
-      <h1>{project.title}</h1>
-      <p className="lede">{project.objective}</p>
+      <Eyebrow>{t("PROJEKT / TRANSFER")}</Eyebrow>
+      <h1>{courseText(project.title)}</h1>
+      <p className="lede">{courseText(project.objective)}</p>
       <div className="project-contract-grid">
         <section>
-          <h2>Program ma…</h2>
+          <h2>{t("Program ma…")}</h2>
           <ul>
             {project.requiredBehaviors.map((x) => (
-              <li key={x}>{x}</li>
+              <li key={courseText(x)}>{courseText(x)}</li>
             ))}
           </ul>
         </section>
         <section>
-          <h2>Dowody poprawności</h2>
+          <h2>{t("Dowody poprawności")}</h2>
           <ul>
             {project.requiredEvidence.map((x) => (
-              <li key={x}>{x}</li>
+              <li key={courseText(x)}>{courseText(x)}</li>
             ))}
           </ul>
         </section>
         <section>
-          <h2>Ograniczenia, które uczą</h2>
+          <h2>{t("Ograniczenia, które uczą")}</h2>
           <ul>
             {project.constraints.map((x) => (
-              <li key={x}>{x}</li>
+              <li key={courseText(x)}>{courseText(x)}</li>
             ))}
           </ul>
         </section>
@@ -798,18 +840,18 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
           <Terminal size={23} />
         </span>
         <div>
-          <h2>Od pomysłu do działającego kodu</h2>
+          <h2>{t("Od pomysłu do działającego kodu")}</h2>
           <p>
-            {completed} / {totalSteps} kroków · Twój kod zapisuje się
-            automatycznie.
+            {completed} / {totalSteps}{" "}
+            {t("kroków · Twój kod zapisuje się automatycznie.")}
           </p>
           <ProgressLine
             value={totalSteps ? (100 * completed) / totalSteps : 0}
-            label="Ukończone kroki projektu"
+            label={t("Ukończone kroki projektu")}
           />
         </div>
         <button className="primary" onClick={() => open(resumeLessonId)}>
-          Pracuj nad projektem
+          {t("Pracuj nad projektem")}
           <ArrowRight size={18} />
         </button>
       </div>
@@ -818,27 +860,27 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
         <ProjectPackage key={project.package.id} project={project.package} />
       )}
       <section className="adversarial">
-        <Eyebrow>ZMIANA WYMAGAŃ</Eyebrow>
-        <h2>A jeśli warunki się zmienią?</h2>
-        <p>{project.adversarialInject}</p>
+        <Eyebrow>{t("ZMIANA WYMAGAŃ")}</Eyebrow>
+        <h2>{t("A jeśli warunki się zmienią?")}</h2>
+        <p>{courseText(project.adversarialInject)}</p>
         <button
           className="secondary"
           onClick={() => open(project.adversarialLessonId)}
         >
-          Podejmij nowy wariant
+          {t("Podejmij nowy wariant")}
           <ArrowUpRight size={16} />
         </button>
       </section>
       <section className="retrospective">
-        <Eyebrow>RETROSPEKTYWA</Eyebrow>
-        <h2>Zachowaj to, co odkrywasz.</h2>
+        <Eyebrow>{t("RETROSPEKTYWA")}</Eyebrow>
+        <h2>{t("Zachowaj to, co odkrywasz.")}</h2>
         <ul>
           {project.retrospective.map((x) => (
-            <li key={x}>{x}</li>
+            <li key={courseText(x)}>{courseText(x)}</li>
           ))}
         </ul>
         <label>
-          Twoje obserwacje
+          {t("Twoje obserwacje")}
           <textarea
             value={state.notes[noteKey] ?? state.notes[project.id] ?? ""}
             onChange={(e) =>
@@ -847,7 +889,7 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
                 notes: { ...s.notes, [noteKey]: e.target.value },
               }))
             }
-            placeholder="Który błąd zmienił Twój model myślenia?"
+            placeholder={t("Który błąd zmienił Twój model myślenia?")}
           />
         </label>
         {reviewConcepts.map((concept) => (
@@ -857,23 +899,32 @@ function ProjectDetails({ project }: { project: ProjectContract }) {
             onClick={() =>
               update((s) => {
                 const now = Date.now();
-                const previous = s.review.find((item) => item.conceptId === concept.id);
+                const previous = s.review.find(
+                  (item) => item.conceptId === concept.id,
+                );
                 const reminder = {
-                  ...(previous ?? { conceptId: concept.id, intervalDays: 0, attempts: 0 }),
+                  ...(previous ?? {
+                    conceptId: concept.id,
+                    intervalDays: 0,
+                    attempts: 0,
+                  }),
                   dueAt: Math.min(now, previous?.dueAt ?? now),
                   reason: "Niepewność zaznaczona w retrospektywie projektu",
                 };
                 return {
                   ...s,
                   review: previous
-                    ? s.review.map((item) => (item === previous ? reminder : item))
+                    ? s.review.map((item) =>
+                        item === previous ? reminder : item,
+                      )
                     : [...s.review, reminder],
                 };
               })
             }
           >
             <Bookmark size={16} />
-            Powtórz: {concept.title}
+            {t("Powtórz: ")}
+            {courseText(concept.title)}
           </button>
         ))}
       </section>

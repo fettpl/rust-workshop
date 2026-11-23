@@ -190,8 +190,8 @@ test("exposes lesson, code, and output tabs on a narrow viewport", async ({
     "aria-selected",
     "true",
   );
-  await page.getByRole("tab", { name: /Output/ }).click();
-  await expect(page.getByRole("tab", { name: /Output/ })).toHaveAttribute(
+  await page.getByRole("tab", { name: /Wyjście/ }).click();
+  await expect(page.getByRole("tab", { name: /Wyjście/ })).toHaveAttribute(
     "aria-selected",
     "true",
   );
@@ -226,7 +226,7 @@ for (const viewport of [
     await openDashboard();
 
     const entry = page.getByRole("button", { name: "Wejdź do lekcji" });
-    const lessonCard = page.getByRole("region", { name: "Pierwszy program i pierwszy przebieg" });
+    const lessonCard = page.getByRole("region", { name: "Pierwszy program i jego uruchomienie" });
     await expect(lessonCard.getByText("Rozpoznasz", { exact: false })).toBeVisible();
     await expect(lessonCard.locator(".continue-meta").getByText("Znajdź punkt wejścia")).toBeVisible();
     await entry.press("Enter");

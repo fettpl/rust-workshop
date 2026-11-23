@@ -2,7 +2,9 @@ Current authored foundation source checkpoint — 2 November 2026: 48 modules, 1
 
 Current M13 accepted product snapshot: [M13 verification — 9 October 2026](verification.md#m13-current-verification-snapshot-9-october-2026). The accepted PR54 product source is [main commit `70682709eabb1d8f95dd067d6429df3190eae72d`](https://github.com/fettpl/rustcrushcourse/commit/70682709eabb1d8f95dd067d6429df3190eae72d) with tree `ee303bdc5d451b162b45b7916e4fb901f5cff3a1`; source availability, natural CI, maintainer-local release evidence, learner outcomes, and readiness claims remain distinct scopes.
 
-# Rust Workshop — stan implementacji
+# Rust Workshop — state of implementation
+
+[Polski](progress.pl.md)
 
 Latest accepted release before the session-scaffolding candidate: [M8 accepted release — 9 October 2026](verification.md#latest-accepted-release-before-session-scaffolding-candidate-9-october-2026). Packet 005 authored stops and pilot materials remain a separate candidate with no learner outcomes.
 
@@ -18,19 +20,53 @@ Historical catalog snapshot after the API Release Matrix, fuzz evidence, borrowe
 
 The `macros-as-api` milestone adds three Polish lessons, three primary gates, three independent blank-page tasks, three coding retrievals and three reviewed Rust sources. Its single-source browser exercises are paired with a std-only two-crate verifier that checks `$crate` resolution, exactly-once side effects, repetition grammar and Rust 2024 `expr` behavior on stable and exact Rust 1.85.0.
 
-Etap `async-lending-contracts` dodaje pięć polskich lekcji, pięć kryteriów z dziesięcioma ocenianymi zadaniami (gate i blank dla każdego kontraktu) oraz pięć niezależnych powtórek: borrowed receiver z kontrolowanym `Pending -> Ready`, sekwencyjny `AsyncFnMut`, commit po callbacku, granicę `Send + 'static` oraz boxed adapter. Rozszerzenie `tokio-service-workshop` zawiera `lending.rs`, `report_source.rs`, lokalny przykład, kontrakt testowy i `ASYNC-LENDING.md`; `content:async-lending` porównuje oba ZIP-y, uruchamia stable oraz exact Rust 1.85.0 w trybie offline i wymaga odrzucenia startera. Dedykowane async gate/reveal/transfer/resume/offline/keyboard/console assertions są zapisane w E2E/offline, ale pozostają niezweryfikowane do przebiegu z działającym loopback.
+Stage `async-lending-contracts` adds five Polish lessons, five criteria with ten evaluated tasks (gate and
+blank for each contract) and five independent replays: Borrowed receiver with controlled
+`Pending -> Ready`, sequential `AsyncFnMut`, commit after callback, border `Send + 'static` and boxed adapter. The extension
+`tokio-service-workshop` contains `lending.rs`, `report_source.rs`, a local example, a test contract and `ASYNC-LENDING.md`; `content:async-lending` compares both
+ZIP-y, launches the table and effect Rust 1.85.0 in offline mode and requires the starter
+to be rejected. Dedicated assync gate/reveal/transfer/resume/offline/keyboard/console Assertions are recorded in E2E/offline, but remain
+unverified to run with a working loopback.
 
 The historical local catalog had 184 lessons in 48 modules, 187 concepts, 139 blank-page tasks, 7 memory traces, 329 source entries and thirteen Cargo projects. The course assumes programming basics and teaches Rust from zero. The Unsafe/FFI module adds four lessons on raw-pointer preconditions, disjoint regions, `#[repr(C)]` validation and an RAII FFI handle. The API Release Matrix adds two Polish lessons, four gates, two blank-page tasks and two independent retrievals; the trusted verifier records stable and exact Rust 1.85.0 evidence for an authored external client. The new fuzz evidence module adds four lessons, eight gates, four blank tasks and four independent retrievals; Mini grep stores a stable replay separately from the nightly campaign.
 
-Etap `dependency-assurance` dodaje cztery polskie lekcje o diagnozie grafu, polityce źródeł/licencji, czasowych wyjątkach advisory i decyzji z release dossier. Ma osiem bramek, cztery blank-page tasks i cztery kodowe retrievals. Frame Protocol zawiera restricted supply-chain verifier, authored duplicate evidence, pinned offline snapshot, exception ledger, package extraction i external consumer; `publish = false` pozostaje zachowane. Brak przypiętego binarium/bazy cargo-deny jest jawnie oznaczony jako `unsupported/infrastructure`, więc decyzja wydania pozostaje hold; snapshot nie jest live feedem, SBOM-em ani publikacją.
+Stage `dependency-assurance` adds four Polish lessons on the diagnosis of graph, politics źródeł/licencji, temporary
+exceptions to advisors and decisions with release dossier. It has eight goals, four
+blank-page tasks and four code retrievals. Frame Protocol includes restored supply-chain verifier,
+authorized duplicate evidence, pinned offline snapshot, expression ledger, packaging
+extraction and external consumer; `publish = false` remains preserved. The absence of a fastened binarium/bazy
+cargo-deny is explicitly marked as `unsupported/infrastructure`, so the release decision remains hold; snapshot
+is not a live feed, SBOM-em or publication.
 
-Zintegrowany katalog Unsafe/FFI ma lokalne testy treści, integrację pakietu i dedykowany verifier stable/MSRV. `ffi-buffer-workshop` jest dziesiątym autorskim pakietem: zawiera checked-in C ABI, bezpieczny wrapper, testy natywnej granicy i safety ledger. Miri nie jest raportowane: obecny pakiet celowo przekracza granicę kompilowanego C i alokatora, a repozytorium nie ma reprodukowalnego, wspieranego przebiegu Miri dla tego fixture.
+The integrated directory Unsafe/FFI has local content tests, package integration and dedicated
+verifier stable/MSRV. `ffi-buffer-workshop` is the tenth authorial package: it contains checked-in C ABI, safe
+wrapper, native border testing, and ledger safekeeping. Miri is not reported: the
+current package deliberately crosses the bounds of a compiled C and an allocator, and
+the repository does not have a reproducible, supported Miri run for this fixture.
 
-Etap `service-operations` jest 46. modułem i jedenastym projektem. Cztery lekcje mają osiem bramek, cztery blank-page i cztery powtórki kodowe; sprawdzają bounded admission, allowlistę skorelowanej telemetryki, readiness/drain oraz diagnozę z niewystarczającym dowodem. `service-operations-workshop` przypina Tokio 1.53.1, zawiera pięć testów kontraktowych, sześć kontrolowanych mutantów, threat model i runbook. Stable oraz exact Rust 1.85.0 porównują wygenerowane archiwa przed testami Cargo; E2E sprawdza mapę, wznowienie, pobranie i offline cache. Pakiet jest autorskim fixture dydaktycznym: nie uruchamia kodu ucznia ani importu i nie deklaruje produkcyjnego backendu telemetrycznego, cancellation arbitralnego blocking code ani pełnej gotowości operacyjnej.
+Stage `service-operations` is 46. module and 11th design. Four lessons have eight goals, four blank-pages
+and four code replays; they check the bounced admission, the allowlist of correlated
+telemetry, readiness/drain and a diagnosis with insufficient evidence. `service-operations-workshop` pins Tokio 1.53.1, features
+five contract tests, six controlled mutants, a three model, and a runbook. Stable and
+Exact Rust 1.85.0 compare generated archives before Cargo tests; E2E checks the map,
+resume, download and offline cache. The package is an author's teaching fixture: it does
+not run student code or import and does not declare a production telemetry batkend,
+cancellation of arbitrary blocking code or full operational readiness.
 
-Etap `unsafe-miri-contracts` jest 44. modułem i dwunastym projektem. Cztery lekcje mają osiem bramek, cztery blank-page i cztery powtórki kodowe; sprawdzają kontrakty `ByteView`, rozłączne regiony, stan `Slot<T>` z `MaybeUninit` oraz krótkie reborrow `MutSlot`. `miri-safety-workshop` zawiera bezpieczną bibliotekę i trzy izolowane pure-Rust fixtures UB. Stable i exact Rust 1.85.0 sprawdzają pakiet, a przypięty nightly uruchamia Miri na testach bezpiecznej biblioteki oraz osobno na trzech izolowanych binariach negatywnych; tylko te binaria są negatywnymi fixture'ami i celowo wywołują UB, a verifier wymaga diagnostyki przypisanej do konkretnego pliku.
+Stage `unsafe-miri-contracts` is 44. module and twelfth design. Four lessons have eight goals, four
+blank-pages and four code replays; they check contracts `ByteView`, separate regions, state `Slot<T>`
+with `MaybeUninit` and short reborrow `MutSlot`. `miri-safety-workshop` contains a safe library and three isolated
+pure-Rust fixtures UB. Stable and Exact Rust 1.85.0 check the package, and the fastened
+nightly runs Miri on safe library tests and separately on three isolated negative
+binaries; only these binaries are negative fixtures and intentionally trigger UB, and
+verifier requires a diagnostic assigned to a particular file.
 
-Etap `profile-evidence` jest 40. modułem. Cztery polskie lekcje mają osiem bramek, cztery blank-page i cztery powtórki kodowe; follow-up dodaje dwie lekcje, cztery bramki, sześć ocenianych kroków i dwie powtórki runtime allocation. Log Analyzer ma teraz 20 autorskich plików, w tym `tests/source_model_contract.rs`, `PROFILE-MANIFEST.json`, `PERFORMANCE.md`, `ALLOCATION-MANIFEST.json` i allocation probe. `content:profiles` sprawdza stały workload 512 rekordów i jawne założenia źródłowe, a `content:allocations` uruchamia osiem workloadów, trzy tryby w osobnych procesach i kontrolowanego mutanta. Raport nie jest pomiarem RSS ani uniwersalnym twierdzeniem o szybkości.
+Stage `profile-evidence` is 40. a module. Four Polish lessons have eight goals, four blank-page and
+four code replays; follow-up adds two lessons, four goals, six evaluated steps and two
+runtime allocation replays. Log Analyzer now has 20 copyright files, including `tests/source_model_contract.rs`, `PROFILE-MANIFEST.json`, `PERFORMANCE.md`, `ALLOCATION-MANIFEST.json`
+and allocation probe. `content:profiles` checks the constant workload of 512 records and public source
+assumptions, and `content:allocations` launches eight workloads, three modes in separate processes and a
+controlled mutant. The report is not a measurement RSS or a universal claim of speed.
 
 Historical counts were 184/187/7/329 across 48 modules (the earlier 181/184/7/326 and 171/174/7/314 reports are historical). Commit `38fbdb061336a222b6db077630b1fd4c0943ca74` adds isolated executed mutants for replay, executable regression, oracle text, instrumentation and normal completion, discoverable Rust contracts for blank/retrieval work, and the offline prediction → mocked primary → reveal/download → assisted completion → mastery-invariance → blank/resume scenario. The preceding fuzz-only validation report recorded TypeScript, focused Vitest, full Vitest (496/496), content validation, build and lint passes; current integrated-tree validation is tracked separately by exact-head CI and the logs for this update. Full Cargo with loopback tests and production E2E/offline checks may remain unverified in an environment with timeouts and `Operation not permitted` for loopback. The verifier preserves the report, logs, corpus and artifacts after failure and validates current artifact paths, hashes and run identity. Stable regression replay and the nightly campaign are reported separately. The first full authored Rust run reached 2126/2139 cases, while its post-fix rerun stalled without output and was stopped. Local fuzzing is infrastructure-limited by missing `cargo-fuzz`; Cargo, production E2E and offline checks are also limited by loopback/Chromium `EPERM`. CI has the required nightly, exact Rust 1.85.0 and cargo-fuzz setup, but no CI campaign result is claimed here. The API verifier separately exercises its authored library and old client across feature configurations and exact MSRV. No pilot has been conducted, so these checks do not establish teaching effectiveness.
 
@@ -38,49 +74,156 @@ Commit `ba7db78605addd0680cf3627400069a0f9527e51` additionally requires trusted 
 
 Commit `2fc588ef04a214dbdb8c4ea95b38455a3c3437f7` separates the stable regression seed hash from the padded reduction witness, rejects arbitrary target/mutant identities, tests duplicate-preserving rows including matched flags and order, and requires the named stable regression failure.
 
-Historyczne lokalne zapisy kontroli kompilatora, testów jednostkowych, stable/MSRV, typecheck, content validation, lint, build, browser i offline oraz dowody RED/GREEN jawnej polityki `unsafe` zostały zachowane na maszynie autora, ale nie są dostępne czytelnikom repozytorium. Nie publikujemy ich prywatnych ścieżek ani nie przypisujemy im publicznego przebiegu workflow; zachowane powyżej wyniki i ograniczenia pozostają historycznym zapisem. Publiczne odnośniki do commitów, PR-ów i przebiegów CI w dalszej części dokumentu pozostają bez zmian.
+Historical local records of compiler controls, unit tests, stable/MSRV, typecheck, content
+validation, lint, build, browser and offline, and evidence RED/GREEN of the open policy `unsafe`
+were preserved on the author's machine, but are not available to readers of the
+repository. We do not publish their private paths or assign them to the public workflow;
+the results and limitations preserved above remain a historical record. The public
+references to the Commits, PR and runs CI in the remainder of the document remain
+unchanged.
 
-Etap Pożyczone API i angielskie README zostały scalone w [PR #8](https://github.com/fettpl/rustcrushcourse/pull/8) jako `57c24f9`, po sukcesie wszystkich trzech kontroli [CI dla commita `236a09e`](https://github.com/fettpl/rustcrushcourse/actions/runs/34750981784). Cargo zostało scalone w [PR #9](https://github.com/fettpl/rustcrushcourse/pull/9) jako `2a68786`, po sukcesie wszystkich trzech zadań dla dokładnego head `520ed98`. [CI po scaleniu](https://github.com/fettpl/rustcrushcourse/actions/runs/35235866279) również zakończyło wszystkie trzy zadania sukcesem. Nie oznacza to ukończenia całego celu zaawansowanego kursu.
+Stage Borrowed API and English README were merged in [PR #8](https://github.com/fettpl/rustcrushcourse/pull/8) as `57c24f9`, following the success of
+all three controls [CI for the Commit `236a09e`](https://github.com/fettpl/rustcrushcourse/actions/runs/34750981784). Cargo was integrated in [PR #9](https://github.com/fettpl/rustcrushcourse/pull/9) as `2a68786`, following the success of all
+three tasks for the exact head `520ed98`. [CI after integration](https://github.com/fettpl/rustcrushcourse/actions/runs/35235866279) also completed all three tasks successfully.
+This does not mean completing the entire advanced course goal.
 
-Poprzedni Number Guessing+ został scalony w [PR #7](https://github.com/fettpl/rustcrushcourse/pull/7) jako f94b87e po sukcesie wszystkich trzech jobów [CI dla commita 451e3a3](https://github.com/fettpl/rustcrushcourse/actions/runs/34749313613). Etap przeszedł 171 testów Vitest, 1343 przypadki Rust, 252 Tokio, modele Loom, osiem pakietów Cargo, MSRV, mutacje, fuzz oraz 46 produkcyjnych E2E i offline z cache v20.
+The previous Number Guessing+ was integrated in [PR #7](https://github.com/fettpl/rustcrushcourse/pull/7) as f94b87e after the success of all
+three jobs [CI for the Commit 451e3a3](https://github.com/fettpl/rustcrushcourse/actions/runs/34749313613). The stage passed 171 Vitest tests, 1343 Rust cases, 252 Tokio, Loom
+models, eight Cargo packages, MSRV, mutations, fuzz and 46 productions E2E and offline
+with cache v20.
 
-Zakończono implementację i lokalną weryfikację etapu `public-api-workspaces`: cztery lekcje kontraktów publicznego API oraz workspace z biblioteką `frame-protocol` i osobnym klientem `frame-probe`. Walidacja archiwów obsługuje jawne katalogi członków wirtualnego workspace’u. Niezależne przeglądy treści, pakietu i weryfikatorów są zamknięte. Rzeczywiste kontrole Cargo sprawdziły bibliotekę i workspace, konfiguracje features oraz dokładny Rust 1.85.0; dziesięć kontrolowanych mutacji potwierdziło skuteczność testów. Pełne E2E zakończyło się wynikiem 42/42, Vitest 158/158, a produkcyjny build i kontrola offline przeszły. Szczegóły i ograniczenia zawiera [raport weryfikacji](verification.md).
+The implementation and local stage verification `public-api-workspaces` were completed: four public contract
+classes API and a workspace with a library `frame-protocol` and a separate customer `frame-probe`. The
+validation of archives supports public workspace member directories. Independent reviews
+of content, package and verifiers are closed. The actual Cargo checks checked the
+library and workspace, features configurations and accurate Rust 1.85.0; ten controlled
+mutations confirmed the effectiveness of the tests. The full E2E ended with the result
+42/42, Vitest 158/158, and the production build and offline control passed. Details and
+restrictions include [verification report](verification.md).
 
-Cały dostępny zakres współbieżności obejmuje 15 lekcji w pięciu modułach: wątki i scope, kanały, współdzielony stan przez Arc/Mutex, atomiki oraz porządkowanie pamięci z laboratorium Loom. Ćwiczenia dotyczą kończenia pracy także po błędzie, granicy własności, Send/Sync, przepływu wiadomości, backpressure, poison, RMW/CAS, publikacji Release/Acquire i zakresu dowodu z małego modelu. Mapa kursu wyszukuje nazwy i tematy lekcji bez polskich znaków; filtr nie zmienia wybranego modułu ani miejsca nauki.
+The entire range of co-operation available includes 15 lessons in five modules: threads
+and scope, channels, shared state by Arc/Mutex, atoms and memory sorting from the Loom lab.
+Exercises include finishing work also after error, property boundary, Send/Sync, message flow,
+backpressure, poison, RMW/CAS, publication Release/Acquire and the scope of the evidence from a small
+model. The course map searches for names and topics of lessons without Polish
+characters; the filter does not change the selected module or the place of study.
 
-Log Analyzer prowadzi przez pożyczony rekord, jawne błędy parsera, analizę strumieniową i raport w ustalonym formacie. Pobierany pakiet Cargo zawiera 12 plików i 19 testów: 11 jednostkowych, 5 integracyjnych, 2 procesu CLI i 1 doctest. Czytnik pakietu zachowuje najwyżej 4096 bajtów linii przed LF, pomija resztę zbyt długiego rekordu i liczy go raz. Ćwiczenia przeglądarkowe używają prostszego `read_line`, bez takiej gwarancji pamięci. Pakiet obejmuje CRLF, EOF bez LF, Unicode, duplikaty, uszkodzony UTF-8 i awarię odczytu.
+Log Analyzer runs through a borrowed record, public parser errors, stream analysis and report in
+a set format. The downloaded Cargo package contains 12 files and 19 tests: 11 unit, 5
+integrations, 2 process CLI and 1 doctest. The package reader keeps a maximum of 4096
+bytes of the line before LF, skips the rest of the too long record and counts it once.
+The browser exercises use a simpler `read_line`, without such a memory guarantee. The package
+includes CRLF, EOF without LF, Unicode, duplicates, damaged UTF-8 and read failure.
 
-Dotychczasowy etap współbieżności ma 18 zadań z evidence gate, 9 zadań od pustej kartki i 9 kodowych powtórek. Etap atomików dodał 6 lekcji, 12 zadań gate, 6 zadań od pustej kartki i 6 kodowych powtórek; łącznie dostępny zakres ma 30 zadań gate, 15 blank-page i 15 powtórek. Atomics i Loom są dostępne w podstawowym zakresie: RMW/CAS, legalne orderingi, one-shot publication i mały model podmieniający prymitywy. Laboratorium `concurrency-lab-workshop` jest dodatkowym projektem, nie zastępuje pięciu projektów docelowego portfolio. Każde nowe kryterium ma dwa warianty; odsłonięcie pakietu oznacza pomoc dla pierwszych zadań, zachowując samodzielne alternatywy. Pobranie i lokalna lista kontrolna nie zaliczają lekcji. Projekty zachowują oddzielne notatki, pliki, retrospektywy i dokładne wznowienie.
+The current stage of co-existence has 18 tasks with evidence gate, 9 tasks from an empty
+card and 9 code replays. The atomic stage added 6 lessons, 12 gate tasks, 6 tasks from
+an empty card and 6 code replays; a total available range has 30 gate tasks, 15
+blank-page and 15 replays. Atomics and Loom are available in the basic scope: RMW/CAS, legal
+ordering, one-shot publication, and a small model swapping primitives. The laboratory
+`concurrency-lab-workshop` is an additional project, it does not replace five projects of the target portfolio.
+Each new criterion has two options; unveiling the package means helping for the first
+tasks, while retaining stand-alone alternatives. Download and local checklist do not
+count lessons. The projects retain separate notes, files, retrospectives and accurate
+resume.
 
-Poprzedni milestone dodał cztery lekcje podstaw async: leniwe ciało i argumenty wywołania, postęp przez await, własność zasobu w Future oraz anulowanie przez Drop. Osiem bramek obejmuje cztery różne zadania od pustej kartki; każdemu pojęciu towarzyszy osobna powtórka kodowa. Testy używają rzeczywistych futures std, zewnętrznych obserwatorów efektów, Waker i Drop oraz skończonych prób poll. Nie zastępują testów runtime Tokio.
+The previous milstone added four lessons of the basics of async: lazy body and arguments
+for calling, progress by await, ownership of the resource in Future, and cancellation by
+Drop. Eight goals include four different tasks from an empty card; each concept is
+accompanied by a separate code replay. Tests use real futures std, external effects
+observers, Waker and Drop, and finished poll trials. They're not replacing Tokio's
+runtime tests.
 
-Poprzedni etap zintegrował pięć lekcji `tokio-flow-control`: bounded kanały, `reserve` i anulowanie, timeout, `select!` oraz graceful shutdown. Każda ma dwie bramki, w tym jedną blank-page, oraz osobną kodową powtórkę na zmienionym kontrakcie. Materiał sprawdza pojemność i zachowanie wartości, zatrzymany zegar Tokio, politykę cancellation oraz drain i join wszystkich dzieci z zachowaniem JoinError. Profil Cargo Tokio 1.53.1 ma `macros`, `rt`, `sync`, `time` i `test-util`; służy wyłącznie autorskim fixture'om, a API runnera nadal przyjmuje wyłącznie kod, tryb i testy.
+The previous stage integrated five lessons `tokio-flow-control`: bounded channels, `reserve` and cancellation,
+timeout, `select!` and graceful shutdown. Each has two goals, including one blank-page, and a
+separate code replay on the revised contract. The material checks the capacity and
+conservation of values, the halted Tokio clock, the cancellation policy, and the drag
+and joint of all children with behavior JoinError. Cargo Tokio 1.53.1 profile has `macros`, `rt`, `sync`,
+`time` and `test-util`; it serves exclusively copyright fixtures, and API runner still accepts
+only code, mode and tests.
 
-Siedem kolejnych lekcji w `tokio-io-streams` i `tokio-blocking-work` dodaje częściowe I/O, ramki z limitem, postęp zachowany po anulowaniu, przypięte Stream, zamknięcie ReceiverStream oraz spawn_blocking z kontrolą życia pracy i permitu. Mają 14 niezależnych bramek, siedem zadań od pustej kartki i siedem osobnych kodowych powtórek. Profil autorski rozszerza Tokio 1.53.1 o io-util i przypina tokio-stream 0.1.19 bez opcjonalnych features. Duplex i kanały służą testowaniu kontraktów I/O; nie zastępują testu sieci TCP.
+Seven further lessons in `tokio-io-streams` and `tokio-blocking-work` add partial I/O, limit frames, progress preserved
+after cancellation, pinned Stream, closure ReceiverStream and spawn_blocking with work and permit control.
+They have 14 independent goals, seven tasks from an empty card and seven separate code
+replays. The author's profile extends Tokio 1.53.1 to io-util and pins the tokyo-stream 0.1.19
+without optional features. Duplex and channels are used to test contracts I/O; they do
+not replace the network test TCP.
 
-Etap `tokio-network-service` dodaje cztery lekcje TCP: własność połączenia, kierunkowe zamknięcie zapisu, absolutny deadline ramki i limit admission. Osiem niezależnych bramek obejmuje cztery zadania od pustej kartki; każde pojęcie ma świeżą powtórkę kodową. `tokio-service-workshop` jest piątym pobieranym pakietem Cargo i szóstym projektem. Łączy rzeczywiste IPv4 loopback TCP, ograniczoną kolejkę i pracę blocking z jawnym rozliczeniem zamknięcia. Profil autora dodaje `net` do przypiętego Tokio 1.53.1. Historyczny raport tego etapu znajduje się w wersji `0d25d9d` pliku `docs/verification.md`; bieżący raport obejmuje także późniejsze etapy API i Mini grep.
+Stage `tokio-network-service` adds four lessons TCP: connection ownership, directional write closure,
+absolute deadline frames and limit of admission. Eight independent goals include four
+tasks from an empty card; each concept has a fresh code replay. `tokio-service-workshop` is the fifth Cargo
+download and sixth project. It combines the actual IPv4 loopback TCP, a limited queue and
+blocking work with an open closing settlement. The author's profile adds `net` to the
+attached Tokio 1.53.1. The historical report of this stage is in version `0d25d9d` of the file
+`docs/verification.md`; the current report also includes later stages API and Mini grep.
 
-Projekty obejmują również `tokio-pipeline-workshop`: 7 plików i obecnie 10 testów Rust (1 prywatny test managera, 9 integracyjnych). Łączy bounded queue, limit aktywnych zadań, deadline i raport zamknięcia; pozostaje laboratorium dydaktycznym, nie wdrożonym serwisem.
+The projects also include `tokio-pipeline-workshop`: 7 files and currently 10 Rust tests (1 private manager
+test, 9 inclusive). It combines the Bounded Queue, the limit of active tasks, deadline
+and closing report; remains a teaching laboratory, not implemented service.
 
-Wcześniejsze moduły obejmują fundamenty, własność i pożyczanie, modelowanie, kolekcje, błędy, Todo CLI, moduły/Cargo, format i IO, generics, traity, lifetimes, closures i iteratory. Todo ma 11-plikowy pakiet Cargo z biblioteką, programem terminalowym, zapisem pliku i testami procesu. Number Guessing+ zachowuje zadanie komunikatu wyniku i rozwija je w pełną pojedynczą rundę, z parserem, stanem, terminalem i wstrzykiwanym źródłem sekretu. Poprzedni etap dodał pętle, Box/Deref/Drop, Rc/RefCell/Weak i ślad życia wartości oraz alokacji.
+Earlier modules include foundations, property and lending, modeling, collections, bugs,
+Todo CLI, moduły/Cargo, format and IO, generics, traity, lifetimes, closes and iterators. Todo has an
+11-file Cargo package with a library, terminal program, file saving and process tests.
+Number Guessing+ retains the task of the result message and develops it in a full single
+round, with parser, state, terminal and injected secret source. The previous stage added
+loops, Box/Deref/Drop, Rc/RefCell/Weak and a life trail of value and allocation.
 
-Mechaniki aplikacji obejmują onboarding, diagnostykę, Monaco i prosty edytor, zewnętrzny runner, surowe komunikaty kompilatora, wskazówki, ślady pamięci, samodzielne zadania, powtórki i mastery oparte na dowodach. IndexedDB, migracje/import/export, notatki, zakładki, Focus Mode i PWA zachowują schemat v3 oraz wcześniejsze identyfikatory. Stabilnie przestawione pytania wyboru zapisują odpowiedzi po identyfikatorze. Interfejs używa chłodnej palety bieli, granatu i niebieskiego akcentu; ma większą typografię, klawiaturową nawigację i mobilne panele.
+Application mechanics include onboarding, diagnostics, Monaco and a simple editor,
+external runner, raw compiler messages, tips, memory tracks, independent tasks, reruns
+and proof-based masteries. IndexedDB, migracje/import/export, notes, bookmarks, Focus Mode and PWA retain scheme
+v3 and previous identifiers. Stabilized selection questions save responses after the
+ID. The interface uses a cool palette of white, grenade and blue accent; it has a
+larger typography, keyboard navigation and mobile panels.
 
-[Raport weryfikacji](verification.md) zawiera wyniki kontroli technicznych i ich ograniczenia. [Audyt wymagań](requirements-audit.md) porównuje stan z pierwotnym briefem, a [mapa zaawansowanego curriculum](advanced-curriculum.md) zachowuje docelowy zakres.
+[Verification report](verification.md) contains the results of technical checks and their limitations. [Audit of requirements](requirements-audit.md) compares the
+condition to the original brief and [Advanced Curriculum Map](advanced-curriculum.md) retains the target range.
 
-Blok Mini grep i wzmocnienia CI został zapisany, wypchnięty i scalony w PR #2 po kontroli dokładnego SHA. Number Guessing+ jest scalony w PR #7, praktyczny zakres wariancji i HRTB w PR #8, Cargo w PR #9, a synchroniczny GAT w PR #10 jako `054a12de` po zielonym CI dla head `2b6500e`. Poza tym pozostają produkcyjne rozszerzenia serwisu Tokio, zaawansowane protokoły współbieżności, dalsze projektowanie publicznego API, wariancja abstrakcji unsafe, szersze curriculum property/fuzz, platformowo niezależny próg benchmarku, utrzymanie systemów oraz szersze operacje. Podstawy pętli, smart pointers, współbieżności, atomików i małego modelowania Loom są dostępne; pełny memory model i zaawansowane gwarancje postępu pozostają rozszerzeniem. Capstone ma ograniczony pakiet i verifier, lecz wydanie pozostaje Hold do live advisory/license review oraz świeżych, przejrzanych raportów stable/MSRV; automatyczne ponawianie rund Number Guessing+ pozostaje rozszerzeniem.
+The block Mini grep and reinforcement CI was saved, pushed and integrated in PR #2 after
+accurate control SHA. Number Guessing+ is integrated in PR #7, the practical range of
+variance and HRTB in PR #8, Cargo in PR #9, and synchronous GAT in PR #10 as `054a12de`
+after green CI for head `2b6500e`. In addition, the production extensions of Tokio,
+advanced co-ordinance protocols, further public design API, the variant of abstraction
+unsafe, widercurriculum property/fuzz, platform independent benchmark threshold, maintenance of
+systems and wider operations remain. Loop base, smart pointers, co-ordinance, atoms and
+low modeling Loom are available; the full memory model and advanced guarantees of
+progress remain an extension. Capstone has a limited package and verifier, but the
+release remains Hold to live advisory/license review and fresh, reviewed reports stable/MSRV; automatic
+re-renewal of the Number Guessing+ rounds remains an extension.
 
-Etap `property-contracts` jest lokalnie zarejestrowany jako dziewiąty projekt i pakiet `property-contracts-workshop`. Cztery lekcje mają osiem niezależnych bramek, cztery blanki i cztery powtórki. Biblioteka pakietu jest std-only; Proptest 1.11.0 występuje wyłącznie jako dev-dependency. Autorowy verifier nie przyjmuje ścieżek, kodu ani zależności z zewnątrz i osobno odrzuca starter oraz mutanta ignorującego malformed. To ograniczony workflow property testing.
+Stage `property-contracts` is locally registered as the ninth design and package `property-contracts-workshop`. Four lessons have
+eight independent goals, four blanks and four replays. The package library is std-only;
+Proptest 1.11.0 occurs exclusively as dev-dependency. The author verifier does not accept
+paths, code or external dependence and rejects the starter and mutant ignoring malformed
+separately. It's a limited workflow property testing.
 
-Etap `performance-evidence` ma cztery lekcje, osiem bramek, cztery blanki i cztery powtórki. Stałe fixture'y nie używają zegara ściennego. Pakiet Log Analyzer zawiera Criterion 0.5.1 wyłącznie jako dev-dependency oraz test kontraktowy porównujący kształt wyniku baseline/candidate; `content:performance` uruchamia `fmt`, sprawdzenie targetów, test kontraktu i benchmark offline/locked na stable i exact Rust 1.85.0. To dowód jednego workloadu i możliwości porównania ścieżek.
+Stage `performance-evidence` has four lessons, eight goals, four blanks and four replays. Fixed fixtures
+don't use a wall clock. The package Log Analyzer includes the Criterion 0.5.1 exclusively as a
+dev-dependency and a contract test comparing the shape of the result baseline/candidate; `content:performance` launches
+`fmt`, a target check, contract test and benchmark offline/locked on the table and effect Rust 1.85.0.
+This is proof of one workload and the possibility to compare paths.
 
-Etap `profile-evidence` ma cztery lekcje, osiem bramek, cztery blanki i cztery powtórki; runtime follow-up dodaje authored probe, strict report schema i niezależne Rust contracts. `content:profiles` sprawdza źródłowe założenia modelu, a `content:allocations` obserwuje named parser call na ośmiu workloadach, w tym controlled reader error, granice 4096/4097 i simulated failed realloc. Opcjonalne tryby zewnętrzne uruchamiają świeży Callgrind albo DHAT pod Valgrind dla całego procesu testowego; raport nie przypisuje próbek wyłącznie parserowi. CI ma osobny job dla obu raportów; repozytorium nie przechowuje wygenerowanych profili jako źródła prawdy. Pozostają: RSS i retained-memory claims, platformowo niezależny próg czasu i szersze pomiary kosztu.
+Stage `profile-evidence` has four lessons, eight goals, four blanks and four replays; runtime follow-up
+adds authorized probe, strict report scheme and independent Rust contracts. `content:profiles` checks
+the model's source assumptions, and `content:allocations` watches named parser call on eight workloads,
+including controlled reader error, boundaries 4096/4097 and simulated failed realloc. Optional
+outdoor modes run fresh Callgrind or DHAT under Valgrind for the entire test process; the
+report does not assign samples to parser only. CI has a separate job for both reports;
+the repository does not store generated profiles as a source of truth. They remain: RSS
+and retained-memory claims, a platform independent time threshold and wider cost
+measurements.
 
-Nie przeprowadzono pilotażu z uczącymi się. Dostępność treści i zielone testy nie potwierdzają samodzielnego transferu po przerwie ani gotowości zawodowej. Cel całego kursu pozostaje otwarty.
+No piloting has been conducted with learners. The availability of content and green
+tests do not confirm self-transfer after interruption or professional readiness. The
+goal of the entire course remains open.
 
-Etap `unsafe-ffi-contracts` jest lokalnie dostępny jako 38. moduł i prowadzi do dziesiątego projektu, `ffi-buffer-workshop`. Stable i job MSRV uruchamiają `content:ffi` przed generycznym `content:cargo`; verifier porównuje oba wygenerowane archiwa, sprawdza formatowanie, locked/offline target checks, testy natywnej granicy i Clippy. Miri pozostaje jawnie poza zakresem tego pakietu: natywny C i allocator są częścią fixture ABI. Wspierany pure-Rust harness Miri znajduje się w osobnym `miri-safety-workshop` i nie obejmuje tej granicy. E2E pokrywa nawigację, dokładne wznowienie blanku, pobranie obu wariantów oraz offline cache dla nowego ZIP-a.
+Stage `unsafe-ffi-contracts` is locally available as 38. module and leads to the tenth project, `ffi-buffer-workshop`. Stable
+and job MSRV run `content:ffi` before generic `content:cargo`; verifier compares both generated archives,
+checks formatting, locked/offline target checks, native border testing, and Clippy. Miri remains
+openly outside the scope of this package: native C and allocator are part of the fixture
+ABI. The supported pure-Rust harness Miri is located in a separate `miri-safety-workshop` and does not
+cover this border. E2E covers navigation, accurate resumption of blank, downloading both
+variants and offline cache for the new ZIP-a.
 
-CI po scaleniu na `57c24f9`: [34751446523](https://github.com/fettpl/rustcrushcourse/actions/runs/34751446523), wszystkie trzy zadania zakończone sukcesem.
+CI after being merged into `57c24f9`: [34751446523](https://github.com/fettpl/rustcrushcourse/actions/runs/34751446523), all three tasks completed successfully.
 
 
 ## 15 October 2026 A1 source addendum

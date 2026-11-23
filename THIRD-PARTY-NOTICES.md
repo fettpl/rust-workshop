@@ -1,5 +1,7 @@
 # Third-party notices (draft)
 
+[Polski](THIRD-PARTY-NOTICES.pl.md)
+
 This inventory accompanies the mixed-license source-release draft. The license
 split and project credit are approved. The [bounded rights assessment](https://github.com/fettpl/rust-workshop/blob/main/docs/rights-assessment.md)
 records the completed course source review and accepted icon origin; this does

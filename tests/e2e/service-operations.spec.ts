@@ -1,7 +1,8 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import {
   assertArchiveNotices,
   expectedArchivePaths,
@@ -78,7 +79,7 @@ test("navigates, resumes a Service Operations gate, and downloads its authored p
   assertArchiveNotices(files, project.package!);
   for (const file of project.package!.files)
     expect(strFromU8(files[`${project.package!.id}/${file.path}`])).toBe(
-      file.starter,
+      localizedPackageFile(file.path, file.starter, "pl"),
     );
   expect(errors).toEqual([]);
 });

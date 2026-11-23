@@ -1,5 +1,7 @@
 # Scoped Runtime Allocation Evidence for Log Analyzer
 
+[Polski](2026-09-19-runtime-allocation-evidence.pl.md)
+
 ## Objective
 
 Close the current measurement gap in Profile Evidence with an authored,

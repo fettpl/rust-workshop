@@ -1,33 +1,35 @@
-# Współbieżność i wyszukiwanie modułów — plan implementacji
+# Concurrency and module search — implementation plan
 
-**Cel:** Nauczyć uruchamiania i kończenia wątków, przekazywania własności kanałami oraz aktualizacji wspólnego stanu przez Arc/Mutex. Ułatwić wyszukiwanie tematów w rosnącej mapie kursu.
+[Polski](2026-09-12-concurrency.pl.md)
 
-**Architektura:** Trzy moduły danych korzystają z istniejących evaluatorów, zapisów v3 i powtórek. Po shared-ownership następują threads, channels i synchronized-state. Wyszukiwanie filtruje istniejące karty według nazw, opisów i tematów lekcji; nie zmienia numerów modułów ani miejsca nauki. Async i atomics/Loom pozostają odrębnymi etapami pełnej mapy.
+Teach learners to start and join threads, transfer ownership through channels, and update shared state with Arc/Mutex. Make topics easier to find as the course grows.
 
-**Specyfikacja:** Oryginalny brief, późniejsza zmiana profilu odbiorcy oraz części 15–18 `docs/advanced-curriculum.md`. Kontynuacja i commit po dużym etapie są już zatwierdzone przez użytkownika.
+Three content modules use existing evaluators, v3 persistence, and retrieval exercises. The threads, channels, and synchronized-state modules follow shared-ownership. Search filters existing cards by names, descriptions, and lesson topics while preserving module numbering and the learner's place. Async and atomics/Loom have separate stages in the roadmap.
 
-## Kontrakty plików
+This stage follows the original brief, the later update to the learner profile, and parts 15–18 of `docs/advanced-curriculum.md`. The user approved continuation and a commit after the major stage.
 
-1. `src/content/threads.ts`: eksporty `threadsLessons`, `threadsConcepts`, `threadsCompetencies`, `threadsSources`, `threadsReviewExercises`, `threadsModule`. Moduł `threads`, prerequisite `shared-ownership`; lekcje i pojęcia: `thread-join` (po lekcji i pojęciu `weak-links`), `thread-move`, `scoped-threads`. Tematy: spawn i JoinHandle, panika w dziecku jako wynik join, przeniesienie danych i E0373/E0382, scope pożyczający dane bez klonowania. Dwa niezależne zadania testowe na pojęcie i co najmniej jedno bez startera.
-2. `src/content/channels.ts`: eksporty prefiksu `channels`; moduł `channels`, prerequisite `threads`; lekcje i pojęcia `channel-ownership` (po `scoped-threads`), `channel-lifecycle`, `channel-backpressure`. Tematy: mpsc, utrata nadawcy/odbiorcy, opróżnienie bufora przed końcem, wszyscy nadawcy muszą zniknąć, sync_channel, Full/Disconnected i zachowanie niesłanego elementu. Żadnych blokujących starterów, sleep jako synchronizacji, dowodzenia wydajności czasem ani obietnicy kolejności różnych producentów.
-3. `src/content/synchronized-state.ts`: eksporty prefiksu `synchronizedState`; moduł `synchronized-state`, prerequisite `channels`; lekcje i pojęcia `send-sync` (po `channel-backpressure`), `mutex-state`, `mutex-recovery`. Tematy: Rc kontra Arc, Send/Sync i E0277, Arc nie dodaje bezpieczeństwa zawartości; MutexGuard, krytyczna sekcja, release przed callback/join, kontrola przepełnienia bez częściowej zmiany, poison jako ostrzeżenie, jawna polityka odrzucenia lub naprawa invariantu. Brak manualnych unsafe impl i uruchamialnego deadlocka. Testy utrzymują jawne niezmienniki i nie wymagają zwycięstwa określonego wątku.
-4. Root: `src/content/course.ts` i integracja kryteriów; `src/engine/module-search.ts` oraz testy; komponent wyboru modułu i `overview.tsx`/CSS; E2E wyszukiwania, zachowania zaznaczenia, dostępu do świeżych alternatyw i resume. Query pozostaje lokalnym stanem widoku, bez migracji persistence. Wyszukiwanie ignoruje wielkość liter i polskie diakrytyki; słowa muszą pasować razem. Nie indeksuje rozwiązań ani szkiców ucznia.
+## File contracts
 
-## Zasady dowodów
+1. `src/content/threads.ts` exports `threadsLessons`, `threadsConcepts`, `threadsCompetencies`, `threadsSources`, `threadsReviewExercises`, and `threadsModule`. Module `threads` requires `shared-ownership`. Lessons and concepts are `thread-join` (after the `weak-links` lesson and concept), `thread-move`, and `scoped-threads`. Teach spawn and JoinHandle, child panic as a join result, moving data and E0373/E0382, and borrowing data without cloning in a scope. Each concept has two independently tested tasks, including at least one without starter code.
+2. `src/content/channels.ts` uses the `channels` export prefix. Module `channels` requires `threads`. Lessons and concepts are `channel-ownership` (after `scoped-threads`), `channel-lifecycle`, and `channel-backpressure`. Cover mpsc, dropped senders or receivers, draining buffered items before completion, dropping all senders, sync_channel, Full/Disconnected, and recovering the unsent item. Starters must terminate. Tests synchronize explicitly and avoid timing as performance evidence or promises about ordering across producers.
+3. `src/content/synchronized-state.ts` uses the `synchronizedState` export prefix. Module `synchronized-state` requires `channels`. Lessons and concepts are `send-sync` (after `channel-backpressure`), `mutex-state`, and `mutex-recovery`. Cover Rc and Arc, Send/Sync and E0277, the fact that Arc leaves the safety requirements of its contents intact, MutexGuard and critical sections, releasing before invoking a callback or joining, checking overflow before any partial update, and mutex poisoning as a warning with an explicit policy to reject or restore the invariant. Leave manual unsafe impl and executable deadlocks out of the exercises. Tests preserve stated invariants regardless of which thread wins.
+4. The lead integrates criteria in `src/content/course.ts`, implements and tests `src/engine/module-search.ts`, and updates the module picker, `overview.tsx`, and CSS. End-to-end tests cover search, selection behavior, access to fresh alternatives, and Resume. The query is local view state and needs no persistence migration. Search ignores case and Polish diacritics and requires all terms to match. Its index excludes solutions and learner drafts.
 
-- Autorskie programy Rust 2024, standard library, mała stała liczba wątków i ograniczone dane. Nigdy kod z importu/szkicu; bez zewnętrznego Playground do czasu rozstrzygnięcia istniejącej zgody.
-- Predykcja pokazuje konkretny kod albo pełny scenariusz. Dokładny stdout wyłącznie po uporządkowaniu wyników przez join/kanał; wypowiedzi o schedulerze nie są fałszywą gwarancją.
-- Wywołanie callbacku w nowym wątku ma dowód ThreadId, gdy to część kontraktu. Join wszystkich dzieci także po błędzie: nie wracaj wcześnie przez `?` i nie odłączaj pozostałych.
-- Każde kryterium ma dwie niezależne alternatywy, aktywną powtórkę i sensowne testy; odrzucenie startera nie może wynikać z timeoutu.
-- Blank-page bez startera/sygnatury, z dokładnym opisem nazw i typów wymaganego API. Hints: obszar problemu, reguła, dopiero rozwiązanie pokazuje konkretny kod.
+## Evidence rules
 
-## Etapy
+- Use authored Rust 2024 programs with the standard library, a small fixed thread count, and bounded data. Imported code and learner drafts stay outside local execution. External Playground checks await separate approval.
+- Every prediction uses concrete code or a complete scenario. Claim exact stdout only after ordering results with joins or channels. Avoid claiming a particular scheduler order.
+- When the contract requires a callback on a new thread, verify it using ThreadId. Join every child after errors as well, and avoid an early `?` return that would detach the remaining children.
+- Provide two independent alternatives and active retrieval practice with meaningful tests for every criterion. Timeouts do not qualify as starter rejection.
+- Empty-editor tasks have no starter or signature and state the required API names and types. The first hint names the area, the second gives the rule, and the solution shows concrete code.
 
-- [x] Napisać testy wyszukiwania i nowe testy integracji kryteriów; potwierdzić czerwony wynik.
-- [x] Autorzy dostarczają moduły w osobnych plikach, weryfikują autorskie fixture i źródła pierwotne.
-- [x] Zintegrować moduły i wyszukiwanie z istniejącym UI; potwierdzić zielone testy funkcjonalne.
-- [x] Niezależny review treści, kontraktów współbieżności, starterów, podpowiedzi i testów.
-- [x] Lint, TypeScript, Vitest, walidacja treści, Rust, źródła, build, E2E, manualne mobile/klawiatura i offline.
-- [x] Uaktualnić audyt, mapę i raport rzeczywistych wyników; wykonać commit bez push.
+## Stages
 
-Weryfikacja: 110 testów Vitest, 28 E2E, pełne 1079 przypadków Rust i ponowne 44 przypadki zmienionego modułu po końcowym review, 16 odrzuconych mutantów, 143 dostępne źródła. Build i offline v11 przeszły. Szczegóły i ograniczenia: `docs/verification.md`. Plan jest częścią commita tego etapu; nie oznacza zamknięcia celu całego kursu.
+- [x] Write search and criteria integration tests and observe their initial failures.
+- [x] Authors provide modules in separate files and verify authored fixtures against primary sources.
+- [x] Integrate modules and search into the UI and verify the functional tests pass.
+- [x] Independently review content, concurrency contracts, starters, hints, and tests.
+- [x] Run lint, TypeScript, Vitest, content validation, Rust checks, source checks, the build, and E2E. Manually verify mobile, keyboard use, and offline behavior.
+- [x] Update the audit, roadmap, and verification report, then commit locally.
+
+Verification covered 110 Vitest tests, 28 E2E scenarios, all 1079 Rust cases, and another 44 cases in the changed module after final review. Sixteen mutants were rejected and 143 sources were reachable. Build and offline v11 passed. The plan belongs to this stage's commit within the ongoing course. See `docs/verification.md` for details and limits.

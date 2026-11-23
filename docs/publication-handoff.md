@@ -1,5 +1,7 @@
 # Publishing Rust Workshop
 
+[Polski](publication-handoff.pl.md)
+
 The release destination is the independent GitHub repository **fettpl/rust-workshop**. The maintainer chooses when it becomes public. Acceptance includes running the course locally from a fresh anonymous clone. Hosting the web app or publishing an npm or Cargo package would be a separate project.
 
 Keep the dated operator log, provider exports, raw backup, object maps and personal data outside the public repository. The [OSS release plan](oss-release.md), [license scope](licensing.md), [source assessment](rights-assessment.md) and [CI guide](ci-cd.md) describe the release inputs.

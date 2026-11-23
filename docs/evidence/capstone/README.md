@@ -1,5 +1,7 @@
 # Capstone archive evidence
 
+[Polski](README.pl.md)
+
 These are the bounded verifier outputs produced from revision `82e2406`
 (`Strengthen capstone exposure audit`) on 2026-09-18:
 

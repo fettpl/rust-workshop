@@ -1,8 +1,10 @@
 # Scoped provenance inventory
 
+[Polski](oss-provenance.pl.md)
+
 The [finite ledger](oss-provenance.json) records byte SHA256s for exactly the
 Git-tracked files under `src/content/` and `public/`. It covers course/source
-payloads and the five tracked public files; ignored Monaco distributions,
+payloads and tracked public files. Ignored Monaco distributions,
 generated project archives, dependencies, repository history, and other paths
 are outside this inventory. Their existing checks and notices remain separate.
 The [licensing guide](licensing.md) defines the approved MIT/CC BY 4.0 split,
@@ -36,9 +38,10 @@ This records the bounded assessment and acceptance, not exhaustive rights cleara
   294 course files and documents extracted-unit screening and contextual manual
   review. No actionable substantial copied-expression case was identified
   within that historical scope; `course-source-review` is resolved as that
-  assessment record. The current finite ledger has 338 course files and five
-  public files. This is a finite scoped inventory, not exhaustive clearance of
-  all 338 course files. The later existing-lesson-contract correction delta is
+  assessment record. One predecessor checkpoint recorded 338 course files and
+  five public files. The current ledger records 458 course files and six public
+  files. Its coverage is a byte inventory within those paths. The later
+  existing-lesson-contract correction delta is
   documented in the rights assessment. Bounded independent C1 provenance
   review completed. The bounded A10 retry delta is documented in
   [client-retry.md](client-retry.md); it records internal reference reuse and
@@ -56,9 +59,10 @@ This records the bounded assessment and acceptance, not exhaustive rights cleara
   reference was supplied. The icon origin is now `maintainer-reported-ai`, its
   review is `reviewed`, and `icon-rights` is resolved within this bounded scope.
   This does not assert hand-drawn originality or complete rights clearance.
-- `public/manifest.webmanifest` and `public/sw.js` are MIT-associated metadata
-  or software under the existing guide. Their `not-applicable` review disposition
-  means that the illustration/course gate does not apply to these two files;
+- `public/manifest.webmanifest`, `public/manifest.en.webmanifest`, and
+  `public/sw.js` are MIT-associated metadata or software under the existing
+  guide. Their `not-applicable` review disposition means that the illustration
+  and course gates do not apply to these files;
   it is not an external-rights clearance or a whole-project review.
 
 ## Ledger schema and maintenance
@@ -134,9 +138,8 @@ records AI-assisted origin and existing owner credit, and limits its internal
 reference/no-new-vendored-payload observation to this delta. No new license,
 Apache exception, legal clearance or publication permission is introduced.
 
-The candidate entries include newly authored files that remain untracked until
-coordinated staging. The checker intentionally compares Git-tracked coverage;
-its final tracked-coverage result is pending administrator staging and a fresh
-hash check. A private finite classification report lists every changed/new
+The candidate entries included newly authored files that were untracked before
+coordinated staging. The checker intentionally compares Git-tracked coverage.
+The A11 snapshot required staging and a fresh hash check. A private finite classification report lists every changed/new
 covered path and its actual hash. This source-authoring checkpoint is not a
 claim that `--check` or `--release` has passed on an unstaged inventory.

@@ -137,6 +137,21 @@ function forbiddenPattern(
   });
 }
 
+// Exact English equivalents of authored prose answers. Identifiers and
+// predicted program output continue through the original comparison.
+const englishAnswerAliases = new Map<string, string>([
+  ["i32 i ()", "i32 and ()"],
+  ["TaskState i Option<i32>", "TaskState and Option<i32>"],
+  ["Kończy wizytę.", "Ends the visit."],
+  ["kończy wizytę", "ends the visit"],
+  ["zatrzymuje pętlę", "stops the loop"],
+  ["przerywa wizytę", "stops the visit"],
+  ["przerywa pętlę", "breaks out of the loop"],
+  ["Send i 'static.", "Send and 'static."],
+  ["Send i 'static", "Send and 'static"],
+  ["pusta wartość", "unit value"],
+]);
+
 export function evaluate(
   evaluator: Evaluator,
   input: EvaluationInput,
@@ -245,9 +260,14 @@ export function evaluate(
         evaluator.caseSensitive
           ? answer.trim()
           : answer.trim().toLocaleLowerCase();
-      const passed = evaluator.accepted.some(
-        (accepted) => normalize(accepted) === normalize(input.answer!),
-      );
+      const answer = normalize(input.answer);
+      const passed = evaluator.accepted.some((accepted) => {
+        const alias = englishAnswerAliases.get(accepted);
+        return (
+          normalize(accepted) === answer ||
+          (alias !== undefined && normalize(alias) === answer)
+        );
+      });
       return {
         passed,
         evaluator: evaluator.kind,

@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { useLocale } from "./locale-provider";
 
 /** Small, safe formatter for authored prose; never treats content as HTML. */
 export function LearningText({
@@ -8,9 +9,10 @@ export function LearningText({
   children: string;
   className?: string;
 }) {
+  const { courseText } = useLocale();
   return (
     <span className={`learning-text ${className}`}>
-      {children
+      {courseText(children)
         .split(/(`[^`]+`)/g)
         .map((part, index) =>
           part.startsWith("`") && part.endsWith("`") ? (

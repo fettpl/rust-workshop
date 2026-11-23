@@ -1,5 +1,7 @@
 # Initialized Prefix Practice Implementation Plan
 
+[Polski](2026-10-15-initialized-prefix-practice.pl.md)
+
 This plan adds one independently assessed initialization-to-borrow family to
 the existing `unsafe-miri-byte-view` lesson. It preserves every earlier step,
 alias, source relationship, review record, prerequisite, and learner-history

@@ -99,7 +99,8 @@ describe("project archive distribution notices", () => {
           readFileSync(
             join(repositoryRoot, "THIRD-PARTY-NOTICES.md"),
             "utf8",
-          ).replaceAll("](docs/licensing.md)", "](LICENSE-SCOPE.md)"),
+          ).replaceAll("](docs/licensing.md)", "](LICENSE-SCOPE.md)")
+            .replaceAll("](THIRD-PARTY-NOTICES.pl.md)", "](https://github.com/fettpl/rust-workshop/blob/main/THIRD-PARTY-NOTICES.pl.md)"),
         );
         for (const path of ["LICENSE-SCOPE.md", "THIRD-PARTY-NOTICES.md"]) {
           const notice = strFromU8(files[`${project.id}/${path}`]);

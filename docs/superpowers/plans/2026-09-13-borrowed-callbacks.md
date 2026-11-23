@@ -1,5 +1,7 @@
 # Borrowed callbacks implementation plan
 
+[Polski](2026-09-13-borrowed-callbacks.pl.md)
+
 > For agentic workers: use subagent-driven-development; new implementers and reviewers use GPT-5.6-Luna high. Root owns integration and release. The user has already authorized continued course development and milestone commits/PRs/merges.
 
 **Goal:** Teach practical variance and higher-ranked borrowed callback contracts through four independently assessed lessons.
@@ -75,8 +77,8 @@ Cache ruling: v21 was exposed by the previous production server while its HTML s
 
 Final UI copy pass: clarify invariance of the contained type rather than immutability of the value, and fix replace_window empty-range prose (store empty, return the previous view). Rust fixtures unchanged. Final cache v23 carries this copy after the reviewed v22 production build.
 
-Final local evidence:122 lessons/33modules/125concepts/77blanks/249sources/8projects.172 Vitest in37 files, lint/TS, fullRust1397 plus final affected56, sources249HTTP200, productionbuild,47E2E withoutretry, finalcopybuild+1affectedE2E, offlinev23/all8ZIPs andmanualUIkeyboard/consoleclean. No executionoflearner/importRust. Readyforcommit/PR/exactheadCI.
+Final local evidence covers 122 lessons, 33 modules, 125 concepts, 77 blank tasks, 249 sources and eight projects. Vitest passed 172 tests in 37 files. Lint, TypeScript checking and the full 1,397-case Rust run passed, followed by 56 affected Rust cases in the final check. All 249 sources returned HTTP 200. The production build and all 47 E2E tests passed without retries. The final copy edit was followed by a build and the one affected E2E test. Offline checks used cache v23 and covered all eight ZIPs. Manual UI and keyboard checks found an empty console. Only authored Rust was executed. The milestone was ready for a commit, PR and CI on the exact head.
 
-Release: PR #8 merged as57c24f905e94c04ca8629add5eb67eac246749f4 after all three CI checks passed for236a09e (automatic run34750981784; manual run34750956776 also passed). The merge tree exactly matches the tested head. The final documentation commit translates README and records English commit/PR metadata. Local main synchronized before starting the next Cargo feature branch.
+Release: PR #8 merged as 57c24f905e94c04ca8629add5eb67eac246749f4 after all three CI checks passed for 236a09e (automatic run 34750981784; manual run 34750956776 also passed). The merge tree exactly matches the tested head. The final documentation commit translates README and records English commit/PR metadata. Local main synchronized before starting the next Cargo feature branch.
 
-Post-merge main CI34751446523 passed all three jobs for57c24f9.
+Post-merge main CI 34751446523 passed all three jobs for 57c24f9.

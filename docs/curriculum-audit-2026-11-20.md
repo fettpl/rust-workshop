@@ -1,5 +1,7 @@
 # Local curriculum audit, 20 November 2026
 
+[Polski](curriculum-audit-2026-11-20.pl.md)
+
 Baseline: `e4093ef`. This audit followed a learner from choosing a lesson through answering, seeing feedback, trying another task, returning for review, and exporting or restoring progress. It also checked whether different saved histories can produce contradictory grades.
 
 | Area | Coverage and method | Result |

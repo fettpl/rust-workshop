@@ -1,6 +1,8 @@
 # Contributing to Rust Workshop
 
-Thank you for helping improve a Polish, local-first Rust learning workspace.
+[Polski](CONTRIBUTING.pl.md)
+
+Thank you for helping improve a bilingual, local-first Rust learning workspace.
 Contributions are welcome in code, learner content, tests, documentation, and
 focused interface improvements. Please read [AGENTS.md](AGENTS.md) before
 changing the repository; it explains the architecture, evidence boundaries,
@@ -29,7 +31,7 @@ runner described in [docs/runner.md](docs/runner.md).
 ## Good contribution areas
 
 - Improve learner-facing lessons, prompts, hints, explanations, and review
-  tasks. Keep that material in Polish and explain Rust from first principles,
+  tasks. Keep that material in English and Polish and explain Rust from first principles,
   without assuming Java, Python, or another language ecosystem.
 - Add or repair exercises, evaluators, project contracts, and source
   references. Keep the contract observable and support it with real trusted
@@ -46,8 +48,9 @@ explain the compatibility impact in the pull request. Do not rewrite history
 or manufacture independent coding evidence from a reveal, a mock response, an
 import, or a repeated assisted attempt.
 
-Keep learner-facing copy in Polish. Write new contributor documentation,
-commit messages, and pull requests in English. No paid tool or hosted service
+Keep learner-facing copy and repository Markdown in English and Polish.
+Use the default `.md` file for English and a linked `.pl.md` sibling for Polish.
+Write commit messages and pull requests in English. No paid tool or hosted service
 is required to contribute.
 
 ## Validation
@@ -107,7 +110,7 @@ pull request should state:
 - what learner or maintainer problem changes;
 - which files and persistent contracts are affected;
 - which checks ran, including exact failures or skipped prerequisites;
-- whether learner-facing text remains Polish;
+- whether both languages cover all affected learner-facing text;
 - whether a real compiler/runtime check, a controlled mock, or a browser/state
   check provides each important piece of evidence.
 

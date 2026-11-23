@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import {
   courseEvidencePolicy,
   courseEvidenceSummary,
@@ -1489,6 +1489,11 @@ for (const [lessonId, freshId] of [
       .click();
     await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
     await expect(page.locator(".revealed-solution")).toHaveCount(0);
+    await expect.poll(async () => (await savedState(page)).resume).toMatchObject({
+      view: "lesson",
+      lessonId,
+      stepIndex: lesson.steps.indexOf(fresh),
+    });
     await page.reload();
     await expect(page.locator(".task-pane h1")).toHaveText(fresh.title);
     await revealAsyncSolution(page, { lessonId, stepId: freshId });

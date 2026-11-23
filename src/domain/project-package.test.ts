@@ -142,7 +142,8 @@ describe("downloadable project packages", () => {
           readFileSync(
             join(process.cwd(), "THIRD-PARTY-NOTICES.md"),
             "utf8",
-          ).replaceAll("](docs/licensing.md)", "](LICENSE-SCOPE.md)"),
+          ).replaceAll("](docs/licensing.md)", "](LICENSE-SCOPE.md)")
+            .replaceAll("](THIRD-PARTY-NOTICES.pl.md)", "](https://github.com/fettpl/rust-workshop/blob/main/THIRD-PARTY-NOTICES.pl.md)"),
         );
         if (includesApache)
           expect(strFromU8(entries[`${project.id}/LICENSE-APACHE`])).toBe(
@@ -155,6 +156,7 @@ describe("downloadable project packages", () => {
           "utf8",
         );
         const expectedScope = canonicalScope
+          .replaceAll("](licensing.pl.md)", "](https://github.com/fettpl/rust-workshop/blob/main/docs/licensing.pl.md)")
           .replace(
             /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
             "](https://github.com/fettpl/rust-workshop/blob/main/docs/$1$2)",

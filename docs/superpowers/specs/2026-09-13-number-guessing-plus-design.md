@@ -1,5 +1,7 @@
 # Number Guessing+ design
 
+[Polski](2026-09-13-number-guessing-plus-design.pl.md)
+
 The original first portfolio project currently teaches only a result message. This milestone extends that same project into a playable terminal game with a random default secret, explicit state, failure paths, independent transfer and a downloadable Cargo starter/reference. It does not replace or rename any earlier lesson, step, project ID, notes or evidence.
 
 ## Curriculum and compatibility

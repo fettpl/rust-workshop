@@ -1,5 +1,7 @@
 # Durable Log Service capacity change and review
 
+[Polski](capstone-change-review.pl.md)
+
 The M10 extension makes the existing per-stream K problem executable as local
 Rust engineering practice, then asks the learner to revise it after review.
 It follows the [6 October portfolio and practice priorities](curriculum-review-2026-10-06.md)

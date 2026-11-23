@@ -1,5 +1,7 @@
 # MutSlot scoped callback transfer
 
+[Polski](mut-slot-with-mut-transfer-evidence.pl.md)
+
 The existing `unsafe-miri-mut-slot` lesson retains its eight historical steps. It appends `mut-slot-with-mut-model` (exposure only) and `mut-slot-with-mut-transfer`, a primary in the distinct family `unsafe-miri/mut-slot-with-mut-v1`. An optional stop after the historical recall separates the new callback model and task. A narrowly identified ten-step exception requires that boundary and both appended IDs; the general five-to-nine-step guard stays unchanged. The old gate/blank family remains `unsafe-miri/mut-slot-v1`; the concept's two-family calibration and the module criterion's one-task requirement are unchanged.
 
 ## Contract

@@ -15,6 +15,7 @@ import {
   saveState,
   StateConflictError,
 } from "@/persistence/storage";
+import { useLocale } from "./locale-provider";
 type Update = (fn: (state: UserState) => UserState) => void;
 const LearningContext = createContext<{
   state: UserState;
@@ -25,6 +26,7 @@ const LearningContext = createContext<{
   generation: () => number;
 } | null>(null);
 export function LearningProvider({ children }: { children: ReactNode }) {
+  const { t, initializeLocale } = useLocale();
   const [state, setState] = useState<UserState>(createInitialState);
   const [ready, setReady] = useState(false);
   const [storageError, setStorageError] = useState("");
@@ -67,6 +69,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     loadState()
       .then((saved) => {
         if (active) {
+          initializeLocale(saved !== null && saved !== undefined);
           const initial = saved ?? createInitialState();
           current.current = initial;
           setState(initial);
@@ -77,6 +80,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
       .catch(() => {
         if (active) {
           writable.current = false;
+          initializeLocale(true);
           const initial = createInitialState();
           current.current = initial;
           setState(initial);
@@ -90,7 +94,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [initializeLocale]);
   useEffect(() => {
     const beforeUnload = (event: BeforeUnloadEvent) => {
       if (pending.current) {
@@ -145,7 +149,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     return (
       <main className="loading">
         <span className="brand-mark">r.</span>
-        <p>Otwieramy Twój warsztat…</p>
+        <p>{t("Otwieramy Twój warsztat…")}</p>
       </main>
     );
   return (
@@ -154,7 +158,7 @@ export function LearningProvider({ children }: { children: ReactNode }) {
     >
       {storageError && !state.onboarding.completed && (
         <div className="global-alert" role="alert">
-          {storageError}
+          {t(storageError)}
         </div>
       )}
       {children}

@@ -1,5 +1,7 @@
 # Task 4 report: Polish lessons and independent assessment contracts
 
+[Polski](task-4-report.pl.md)
+
 Reviewed base commit: `6adebf2513741d61ff226d1e525a3c75d3bf1a41`
 
 Implemented the bounded capstone content for `capstone-integration`:

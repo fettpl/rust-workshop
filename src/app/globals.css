@@ -731,12 +731,16 @@ button svg {
 }
 .breadcrumb {
   display: flex;
+  min-width: 0;
   gap: 12px;
   align-items: center;
   font-size: 0.84rem;
   color: var(--muted);
 }
 .breadcrumb strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 400;
   color: var(--text);
 }
@@ -745,6 +749,7 @@ button svg {
 }
 .topbar-actions {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 18px;
 }
@@ -2616,6 +2621,12 @@ button svg {
     gap: 8px;
     font-size: 0.78rem;
   }
+  .breadcrumb > .mobile-menu {
+    flex-shrink: 0;
+  }
+  .breadcrumb > span {
+    display: none;
+  }
   .page-heading h1 {
     font-size: 2rem;
   }
@@ -2997,3 +3008,16 @@ button svg {
 .study-session-note { margin: 24px 0; }
 .study-session-note .footnote { margin: 8px 0; }
 .study-session-entry { margin: 24px 0; }
+
+.language-picker {
+  flex: none;
+}
+.language-picker select {
+  min-height: 36px;
+  padding: 5px 8px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.8rem;
+}

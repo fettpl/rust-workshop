@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { courseEvidencePolicy } from "../../src/content/learning-context";
 import { independentCodingTaskIds } from "../../src/engine/learning";
-import { lessons } from "../../src/content/course";
+import { lessons } from "./polish-course.helper";
 import {
   createInitialState,
   createStepProgress,
@@ -212,7 +212,7 @@ test("ownership foundation preserves model evidence, editor state, and Cargo res
   await expect(page.locator(".task-pane")).toContainText(
     "Próba nie wpływa na mastery",
   );
-  await page.getByRole("tab", { name: "Output" }).click();
+  await page.getByRole("tab", { name: "Wyjście" }).click();
   await expect(page.getByLabel("Wynik kompilatora")).toContainText(
     "Kompilator niedostępny",
   );

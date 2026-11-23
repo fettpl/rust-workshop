@@ -1,0 +1,33 @@
+# Pomoc w rodzinach zadań powtórkowych a zaliczanie kryteriów kursu
+
+[English](003-review-assistance-gates.md)
+
+Niezależnie sprawdzone prace utrzymaniowe przyjęto lokalnie na commicie `5b31be08d8701891379183d874b7908c4953ed48` i przetestowanym drzewie `3c532cd30a2ee6caf58513a6e20ab786330c98b3`. Przed rozpoczęciem A12 niezależnie odtworzono i zweryfikowano pełną kopię historii źródeł.
+
+Zwykła powtórka może ujawnić rozwiązanie dla autorskiej rodziny zadań. Kolejna próba główna może wciąż mieć zero podpowiedzi i brak flagi ujawnienia, ponieważ pola te opisują samą próbę. Zaliczenie kryterium kursu i możliwość jego odzyskania powinny uwzględniać tę samą wcześniejszą, rozpoznawalną pomoc co ogólny selektor niezależnych rodzin. Samodzielna próba główna zaliczona przed późniejszą pomocą zachowuje wynik.
+
+Ogólne selektory kryteriów przyjmują opcjonalną funkcję wyszukiwania definicji zadania podczas sprawdzania pomocy. Selektory kursu przekazują istniejącą politykę kursu. Mapa modułów, wybór modułu i obszar lekcji używają selektorów kursu. Walidacja kroku docelowego jest ograniczona do lekcji przekazanych przez wywołującego. Wynik undefined z przekazanej funkcji obowiązuje. Ogólne wywołania bez tej funkcji zachowują wyszukiwanie ograniczone do lekcji, kryteria niewliczane do wyniku oraz dotychczasową nawigację.
+
+Zwykła powtórka może domyślnie wybrać ćwiczenie. Jeśli można ustalić ćwiczenie, nowe zdarzenie ujawnienia rejestruje jego dokładny identyfikator wraz z identyfikatorem sesji. Gdy kroku nie da się ustalić, obowiązuje dotychczasowy klucz sesji. Istniejące zdarzenia, pola sesji powtórki, klucze postępów, zapis przypominania, import i eksport zachowują dotychczasowe działanie. Zmiana dotyczy obliczanego zaliczenia, odzyskiwania i tożsamości nowych zdarzeń ujawnienia.
+
+Test jednostkowy regresji rejestruje rzeczywiste ujawnienia w kursie i kontrolowane sukcesy w zadaniach głównych dotyczących zawężania uprawnień i dopuszczenia konsumującego dowód. Obejmuje aliasy apply i blank, kolejność powtórka–próba oraz próba–powtórka, równe znaczniki czasu, niepowiązane i nieznane identyfikatory powtórek, pomoc w lekcji, zwykłe przypominanie, oba zakresy lekcji, domyślne zachowanie ogólnego mechanizmu oraz pełny cykl zapisu i odczytu. Scenariusz przeglądarkowy otwiera zwykłą powtórkę, rejestruje rzeczywiste ujawnienie, sprawdza trwały identyfikator i wyczerpane kryterium bez możliwości odzyskania oraz weryfikuje wybór modułu przed przeładowaniem i po nim. Zwykłe ćwiczenia pozostają dostępne. Scenariusz nie przesyła kodu uczestnika i oczekuje zera żądań do środowiska wykonawczego. Osobna interakcja z asystentem kompilatora sprawdza ostrzeżenie po jawnym wybraniu podpowiedzi w lekcji.
+
+Zakres obejmuje silnik kryteriów i selektory postępów, funkcje pośrednie kursu, cztery zmienione pliki interfejsu, odpowiednie testy, ten plan i indeks oraz rejestr pochodzenia. Rejestr aktualizuje istniejący skrót kontekstu nauki i rejestruje nowy śledzony test kursu. Przejrzana zmiana standardowej ścieżki ogranicza się do tożsamości kroku zapisywanej przez zdarzenie ujawnienia.
+
+Ponowna kwalifikacja obejmuje semantyczne dowody RED i GREEN, zwykłe wykrywanie i wykonywanie testów jednostkowych, lint, typy, kontrolę treści, audyt źródeł, manifesty, pochodzenie, rzeczywiste porównania stanu i rejestru oraz zachowanie wszystkich 30 plików ZIP i ich składowych. Obejmuje też świeżą kompilację produkcyjną, pełny standardowy zestaw testów przeglądarkowych i formalną weryfikację offline. Przykłady Rust, katalog, generatory i zależności są identyczne bajtowo. Poprzednie wyniki natywne i całego zestawu Rust stanowią kontekst historyczny utrzymania kodu TypeScript. Jeśli standardowe testy jednostkowe nie mogą wykonać profilu dowodu natywnego prefiksu, należy zapisać rzeczywisty zakres pominięć. Regresje zmienionej powierzchni wymagają ponownego uruchomienia. Świeża kwalifikacja natywna i całego zestawu Rust przypada na kolejny etap funkcjonalny.
+
+Lokalna akceptacja wymaga niezależnego przeglądu dokładnego zestawu zmian przygotowanego do commita i nowych wyników, zwykłego lokalnego commita oraz niezależnego odtworzenia archiwum pełnej historii. Po odtworzeniu można oprzeć kolejny plan o zweryfikowany stan.
+
+## Kwalifikacja i akceptacja lokalna
+
+Drzewo zmian przeszło zestaw ukierunkowany obejmujący 189 testów. Lint zakończył się kodem zero z 31 odziedziczonymi ostrzeżeniami. Przeszły również sprawdzanie typów, walidacja treści, audyt źródeł offline, kontrole manifestów i weryfikacja pochodzenia.
+
+Standardowy Vitest odnotował 1945 zaliczeń, jedno pominięcie i zero błędów. W 13 zaliczonych przypadkach rejestratora dowodu natywnego prefiksu wymagano odrębnej autoryzacji, dlatego ich właściwe kontrole nie wykonały się. Pozostałe 1932 zaliczenia obejmowały wszystkie 31 nowych testów kursu. Pominięty przypadek to `initialized-prefix maintained native proof contract awaits the maintained current stable proof` w `src/content/unsafe-miri-initialized-prefix-native.test.ts`.
+
+Rzeczywiste porównania bieżącego rejestru i stanu przeszły. Wszystkie cztery historyczne zestawy danych odpowiadały oczekiwanym zapisom po pełnym cyklu zapisu i odczytu. Normalizacja dotyczyła wyłącznie wygenerowanego znacznika czasu obudowy eksportu. Wszystkie 30 archiwów projektu zachowało tożsamość całych plików i ich składowych.
+
+Świeża kompilacja produkcyjna przeszła lokalną serię 204 scenariuszy przeglądarkowych, każdy w jednej udanej próbie. Formalna weryfikacja offline zakończyła się kodem zero. Rzeczywista powtórka zapisała ustalone identyfikatory ćwiczenia i sesji, pozostawiła flagi lekcji docelowej bez zmian podczas sprawdzania odzyskiwania i nie wysłała żądań do usługi wykonawczej. Mapa i wybór modułu pokazały oczekiwany stan przed przeładowaniem i po nim.
+
+Pierwotna seria 206 scenariuszy przeglądarkowych dała 203 zaliczenia i trzy niepowodzenia. Dwie próby zewnętrznej usługi wykonawczej zwróciły błędy infrastruktury w profilu lokalnym, a istniejąca asercja aktywacji starej pamięci podręcznej nie przeszła. W kolejnym lokalnym uruchomieniu tej samej kompilacji asercja przeszła. Odłożone próby zewnętrzne dotyczą konwersji ze standardowej biblioteki i zagnieżdżonych wzorców w `tests/e2e/core-practice.spec.ts`.
+
+Wyniki Rust i dowodu natywnego prefiksu dla niezmienionych danych są dowodami historycznymi. Ponowne sprawdzenie odpowiedniego zakresu natywnego i zestawu Rust należy do kolejnego etapu. Powyższe kontrole dotyczą przetestowanego drzewa zmian. Ta późniejsza aktualizacja Markdown zapisuje ich wyniki. Osobny przegląd i odtworzenie pełnej historii zamknęły etap utrzymaniowy przed A12.

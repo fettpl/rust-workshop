@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { lessons, modules, reviewExercises } from "../../src/content/course";
+import { lessons, modules, reviewExercises } from "./polish-course.helper";
 import {
   assistanceForLessonStep,
   courseModuleGate,
