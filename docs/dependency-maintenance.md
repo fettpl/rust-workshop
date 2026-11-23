@@ -6,7 +6,7 @@ The application uses Monaco 0.57.0 through its local AMD loader at `/monaco/vs`.
 The package vendors an affected DOMPurify factory in the published editor chunk;
 an npm override alone does not replace those embedded bytes. Asset preparation
 removes the complete reviewed factory and imports the unchanged official
-DOMPurify 3.4.17 UMD AMD singleton. All surrounding Monaco sanitizer hooks and
+DOMPurify 3.4.18 UMD AMD singleton. All surrounding Monaco sanitizer hooks and
 cleanup remain byte-identical. The direct dependency and parent-scoped override
 also repair the package graph. Existing TypeScript is a production dependency
 because the postinstall asset parser needs it, including with development

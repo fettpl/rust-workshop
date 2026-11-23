@@ -80,7 +80,7 @@
     },
     {
       "path": "public/sw.js",
-      "sha256": "41772ab51c5985611e5ecbc7b7885abf59bf2e0e2764b0193d43837128cbb089",
+      "sha256": "7e576b76e04551e59d1a1e0067f865b4c3eb552c0837d44dd2ead9a8b8dba853",
       "group": "public-software"
     },
     {

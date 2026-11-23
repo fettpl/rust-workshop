@@ -117,7 +117,7 @@ describe("served sanitizer security boundary", () => {
     expect(chunk).not.toContain("function GR(");
     expect(
       await readFile(join(root, "monaco/vs/dompurify-fixed.js"), "utf8"),
-    ).toContain("DOMPurify 3.4.17");
+    ).toContain("DOMPurify 3.4.18");
   }, 30_000);
 });
 
