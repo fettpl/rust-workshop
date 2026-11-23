@@ -26,11 +26,11 @@ The direct packages in `package.json` currently report these licenses in
 | Package | Version | License | Upstream |
 | --- | ---: | --- | --- |
 | `@monaco-editor/react` | 4.7.0 | MIT | <https://github.com/suren-atoyan/monaco-react> |
-| `dompurify` | 3.4.17 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
+| `dompurify` | 3.4.18 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
 | `idb` | 8.0.4 | ISC | <https://github.com/jakearchibald/idb> |
 | `lucide-react` | 1.61.0 | ISC | <https://github.com/lucide-icons/lucide> |
 | `monaco-editor` | 0.57.0 | MIT | <https://github.com/microsoft/monaco-editor> |
-| `next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
+| `next` | 16.4.5 | MIT | <https://github.com/vercel/next.js> |
 | `react` | 19.3.1 | MIT | <https://github.com/facebook/react> |
 | `react-dom` | 19.3.1 | MIT | <https://github.com/facebook/react> |
 | `toml-eslint-parser` | 1.0.3 | MIT | <https://github.com/ota-meshi/toml-eslint-parser> |
@@ -42,10 +42,10 @@ The direct packages in `package.json` currently report these licenses in
 | `@types/react` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `@types/react-dom` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `eslint` | 9.39.5 | MIT | <https://github.com/eslint/eslint> |
-| `eslint-config-next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
-| `fake-indexeddb` | 6.2.6 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
+| `eslint-config-next` | 16.4.5 | MIT | <https://github.com/vercel/next.js> |
+| `fake-indexeddb` | 6.2.8 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
 | `fflate` | 0.8.3 | MIT | <https://github.com/101arrowz/fflate> |
-| `prettier` | 3.9.10 | MIT | <https://github.com/prettier/prettier> |
+| `prettier` | 3.10.1 | MIT | <https://github.com/prettier/prettier> |
 | `sharp` | 0.35.5 | Apache-2.0 | <https://github.com/lovell/sharp> |
 | `tailwindcss` | 4.3.3 | MIT | <https://github.com/tailwindlabs/tailwindcss> |
 | `tsx` | 4.23.15 | MIT | <https://github.com/privatenumber/tsx> |
@@ -64,10 +64,10 @@ The locked graph includes packages whose notices need separate preservation:
   distribution containing these assets must retain and verify the same notices;
   setup-file agreement alone does not prove a browser delivered them.
 - The served Monaco AMD chunk replaces its embedded DOMPurify factory with the
-  official 3.4.17 AMD singleton during staged asset generation. Its unchanged
+  official 3.4.18 AMD singleton during staged asset generation. Its unchanged
   license is copied to `public/monaco/DOMPurify-LICENSE`; artifact headers and
   source map are retained. Installed dormant Monaco ESM remains upstream stock.
-- `dompurify` 3.4.17 is `MPL-2.0 OR Apache-2.0`; `marked` is MIT. Both are
+- `dompurify` 3.4.18 is `MPL-2.0 OR Apache-2.0`; `marked` is MIT. Both are
   dependencies of the copied Monaco editor package.
 - `caniuse-lite` 1.0.30001819 is CC BY 4.0. It is pulled into the Next.js
   toolchain and must retain its attribution/license notice where distributed.

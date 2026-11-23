@@ -154,7 +154,7 @@ it.each(["chunk", "version", "artifact", "missing-notice"])(
       await mkdir(join(sanitizerRoot, "dist"), { recursive: true });
       await writeFile(
         join(sanitizerRoot, "package.json"),
-        JSON.stringify({ version: mode === "version" ? "3.4.15" : "3.4.17" }),
+        JSON.stringify({ version: mode === "version" ? "3.4.15" : "3.4.18" }),
       );
       await writeFile(
         join(sanitizerRoot, "dist/purify.min.js"),

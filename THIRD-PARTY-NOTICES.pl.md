@@ -28,11 +28,11 @@ odnotowane w `package-lock.json`.
 | Pakiet | Wersja | Licencja | Źródło |
 | --- | ---: | --- | --- |
 | `@monaco-editor/react` | 4.7.0 | MIT | <https://github.com/suren-atoyan/monaco-react> |
-| `dompurify` | 3.4.17 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
+| `dompurify` | 3.4.18 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
 | `idb` | 8.0.4 | ISC | <https://github.com/jakearchibald/idb> |
 | `lucide-react` | 1.61.0 | ISC | <https://github.com/lucide-icons/lucide> |
 | `monaco-editor` | 0.57.0 | MIT | <https://github.com/microsoft/monaco-editor> |
-| `next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
+| `next` | 16.4.5 | MIT | <https://github.com/vercel/next.js> |
 | `react` | 19.3.1 | MIT | <https://github.com/facebook/react> |
 | `react-dom` | 19.3.1 | MIT | <https://github.com/facebook/react> |
 | `toml-eslint-parser` | 1.0.3 | MIT | <https://github.com/ota-meshi/toml-eslint-parser> |
@@ -44,10 +44,10 @@ odnotowane w `package-lock.json`.
 | `@types/react` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `@types/react-dom` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `eslint` | 9.39.5 | MIT | <https://github.com/eslint/eslint> |
-| `eslint-config-next` | 16.4.3 | MIT | <https://github.com/vercel/next.js> |
-| `fake-indexeddb` | 6.2.6 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
+| `eslint-config-next` | 16.4.5 | MIT | <https://github.com/vercel/next.js> |
+| `fake-indexeddb` | 6.2.8 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
 | `fflate` | 0.8.3 | MIT | <https://github.com/101arrowz/fflate> |
-| `prettier` | 3.9.10 | MIT | <https://github.com/prettier/prettier> |
+| `prettier` | 3.10.1 | MIT | <https://github.com/prettier/prettier> |
 | `sharp` | 0.35.5 | Apache-2.0 | <https://github.com/lovell/sharp> |
 | `tailwindcss` | 4.3.3 | MIT | <https://github.com/tailwindlabs/tailwindcss> |
 | `tsx` | 4.23.15 | MIT | <https://github.com/privatenumber/tsx> |
@@ -68,11 +68,11 @@ zachować osobno.
   zachować i zweryfikować te same informacje. Dostarczenie ich do
   przeglądarki wymaga osobnej kontroli.
 - W udostępnianym pliku Monaco AMD generator zasobów zastępuje wbudowaną
-  fabrykę DOMPurify oficjalną instancją AMD w wersji 3.4.17. Jej licencja
+  fabrykę DOMPurify oficjalną instancją AMD w wersji 3.4.18. Jej licencja
   jest kopiowana bez zmian do `public/monaco/DOMPurify-LICENSE`. Nagłówki
   artefaktu i mapa źródeł są zachowane. Zainstalowany, nieużywany moduł
   Monaco ESM pozostaje w oryginalnej postaci.
-- `dompurify` 3.4.17 podlega `MPL-2.0 OR Apache-2.0`, a `marked`
+- `dompurify` 3.4.18 podlega `MPL-2.0 OR Apache-2.0`, a `marked`
   podlega MIT. Oba są zależnościami kopiowanego pakietu edytora Monaco.
 - `caniuse-lite` 1.0.30001819 podlega CC BY 4.0. Jest zależnością narzędzi
   Next.js. Przy dystrybucji zachowaj informację o autorstwie i licencji.
