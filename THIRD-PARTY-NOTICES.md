@@ -43,7 +43,7 @@ The direct packages in `package.json` currently report these licenses in
 | `@types/react-dom` | 19.3.0 | MIT | <https://github.com/DefinitelyTyped/DefinitelyTyped> |
 | `eslint` | 9.39.5 | MIT | <https://github.com/eslint/eslint> |
 | `eslint-config-next` | 16.4.5 | MIT | <https://github.com/vercel/next.js> |
-| `fake-indexeddb` | 6.2.6 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
+| `fake-indexeddb` | 6.2.8 | Apache-2.0 | <https://github.com/dumbmatter/fakeIndexedDB> |
 | `fflate` | 0.8.3 | MIT | <https://github.com/101arrowz/fflate> |
 | `prettier` | 3.10.1 | MIT | <https://github.com/prettier/prettier> |
 | `sharp` | 0.35.5 | Apache-2.0 | <https://github.com/lovell/sharp> |
