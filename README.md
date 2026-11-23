@@ -240,8 +240,7 @@ archives, and the published audit surface. It does not publish a hosted
 deployment, compiled browser application, `.next` directory, or
 `node_modules` tree.
 
-See [SECURITY.md](SECURITY.md) for the current reporting limitations and the
-required release gate. No private reporting route is claimed until verified.
+For private vulnerability reporting, see the [security policy](SECURITY.md).
 Do not include secrets, private attachments, account or billing information,
 or machine-specific paths in public issues and pull requests.
 

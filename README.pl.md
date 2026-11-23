@@ -259,9 +259,8 @@ Cargo i udostępnianą dokumentację audytu. Zakres pomija wdrożenie
 hostingowe, skompilowaną aplikację przeglądarkową, katalog `.next` i drzewo
 `node_modules`.
 
-[SECURITY.md](SECURITY.pl.md) opisuje aktualne ograniczenia zgłaszania
-i wymagania wydania. Prywatny kanał zgłoszeń wymaga weryfikacji. Nie
-zamieszczaj sekretów, prywatnych załączników, danych konta lub rozliczeń
+Sposób prywatnego zgłaszania podatności opisuje [polityka bezpieczeństwa](SECURITY.pl.md).
+Nie zamieszczaj sekretów, prywatnych załączników, danych konta lub rozliczeń
 ani ścieżek Twojego komputera w publicznych zgłoszeniach i pull requestach.
 
 ## Informacje o projekcie
