@@ -1,9 +1,14 @@
 # Rust Workshop
 
+[Polski](README.pl.md)
+
 Rust Workshop is a local-first, interactive course for people who know the
 basics of programming and are starting Rust from zero. Lessons and the learner
-interface are currently in Polish; this README and the contributor
-documentation are in English. The course explains Rust from first principles.
+interface are available in English and Polish. Use the language control to switch
+without losing your place or progress. A new workshop uses the first supported
+browser language, with Polish as the fallback. An existing workshop keeps Polish
+until you choose another language. Repository documentation is available in both
+languages, with English at the default Markdown paths. The course explains Rust from first principles.
 
 See the [history redaction notice](docs/history-redaction.md) for historical
 presentation changes, frozen receipt hashes and current compatibility limits.
@@ -71,7 +76,7 @@ an existing downstream client while adding typed error categories, then write
 your own regression tests, architecture decision, and review response in the
 downloaded workspace.
 
-The durable log service also includes an optional Polish maintenance-and-recovery
+The durable log service also includes an optional maintenance-and-recovery
 practice. It is a six-step prediction, exposure, and self-rating exercise around
 admission, durable identity, delivery, and `Unknown`; it adds no independent
 credit, new gate, or learner-code execution. Its reference package keeps the
@@ -167,7 +172,7 @@ The main source map is:
 | Remote runner and API route                                | `src/runner/`, `src/app/api/run/`                    |
 | Trusted fixtures, package generation, and verification     | `scripts/`, `tests/`, `scripts/fixtures/`            |
 
-Useful first contributions include clearer Polish explanations, repair and
+Useful first contributions include clearer explanations in English and Polish, repair and
 transfer exercises, source-reference maintenance, project tests, and focused
 UI improvements. Preserve existing lesson, module, concept, review, project,
 and source IDs: saved progress and imported state depend on them.
@@ -241,6 +246,9 @@ Do not include secrets, private attachments, account or billing information,
 or machine-specific paths in public issues and pull requests.
 
 ## Project notes
+
+The [localization guide](docs/localization.md) describes the language editions
+and how to verify them.
 
 The [curriculum roadmap](docs/advanced-curriculum.md) describes the current
 scope and remaining course work. [AGENTS.md](AGENTS.md) contains repository

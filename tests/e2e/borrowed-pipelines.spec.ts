@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 
 test("shows the lifetime diagnostic and resumes an independent iterator draft", async ({
   page,

@@ -1,5 +1,7 @@
 # Curriculum closure | 11 November 2026
 
+[Polski](curriculum-reconciliation.pl.md)
+
 The original brief, October findings, advanced continuation requirements and
 Plans 001–004 are reconciled for the locally authored curriculum. The audience
 starts Rust from zero with basic programming knowledge. The 19 original topic

@@ -1,5 +1,7 @@
 # History redaction and current compatibility
 
+[Polski](history-redaction.pl.md)
+
 Some historical documentation and archived report presentation copies have local
 machine and disposable receipt paths redacted. Historical source, input and
 archive hashes retain their original meaning. These copies are not byte-identical

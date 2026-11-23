@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { courseEvidencePolicy } from "../../src/content/learning-context";
 import { independentCodingTaskIds } from "../../src/engine/learning";
-import { lessons, projects } from "../../src/content/course";
+import { lessons, projects } from "./polish-course.helper";
 import { createInitialState, stepKey } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 import {

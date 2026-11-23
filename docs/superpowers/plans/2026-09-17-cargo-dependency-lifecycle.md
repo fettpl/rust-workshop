@@ -1,5 +1,7 @@
 # Cargo Dependency Lifecycle Implementation Plan
 
+[Polski](2026-09-17-cargo-dependency-lifecycle.pl.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox syntax for tracking.
 
 **Goal:** Teach dependency, feature, compiler-floor and package declarations through four independently assessed TOML lessons and a verified Frame Protocol archive.
@@ -134,5 +136,5 @@ for (const lesson of cargoDependencyLessons) {
 
 - [ ] Generate scoped diffs for completed author tasks and review with Astra xhigh; fix important findings with original authors and scoped re-review. Review final integrated branch once, including AST safety/evidence/UI boundaries.
 - [ ] Run typecheck, lint, full Vitest, content validation, authored Rust, relevant Cargo/manifest stable+MSRV and source audit; build production, run production E2E with zero retries, verify offline and eight deterministic ZIP downloads. Run remaining existing CI suites once on final integration or via exact-head CI and record evidence accurately.
-- [ ] Verify git diff/check, stage only intended work and commit in English. Push branch, open English PR describing final behavior/limitations/tests. Wait for all three CI jobs on exact latest PR head, fix failures if any, then merge per standing user authorization.
+- [ ] Run `git diff --check`, stage only intended work and commit in English. Push branch, open English PR describing final behavior/limitations/tests. Wait for all three CI jobs on exact latest PR head, fix failures if any, then merge per standing user authorization.
 - [ ] Verify remote main merge and post-merge checks; record evidence. Keep broader course goal active; Cargo does not prove complete senior readiness or replace remaining unsafe/GAT/performance/operations/capstone/learner validation work.

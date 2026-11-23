@@ -1,14 +1,19 @@
 # Repository guidance
 
+[Polski](AGENTS.pl.md)
+
 ## Product and language
 
 Rust Workshop is a local-first learning workspace for people with basic
 programming knowledge and no Rust experience. Explain Rust from first
 principles; do not assume knowledge of another language's libraries.
 
-Learner-facing lessons, prompts, feedback, and interface copy are Polish.
-Contributor documentation, commits, pull requests, and agent notes are
-English. Describe only capabilities that exist. Do not invent accounts, cloud
+Learner-facing lessons, prompts, feedback, and interface copy are available in
+English and Polish. A new workshop uses the first supported browser language,
+with Polish as the fallback. An existing workshop retains Polish until the
+learner chooses another language. Maintain both versions of each repository
+Markdown document and link them to each other. Write commits, pull requests,
+and agent notes in English. Describe only capabilities that exist. Do not invent accounts, cloud
 sync, hosting, educational efficacy, professional readiness, or an automatic
 whole-architecture assessment.
 

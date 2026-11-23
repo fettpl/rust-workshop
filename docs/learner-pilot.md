@@ -1,5 +1,7 @@
 # Beginner Rust pilot — combined maintainer protocol and learner cards (CANDIDATE)
 
+[Polski](learner-pilot.pl.md)
+
 **Date:** 2026-10-09 (Europe/Warsaw)
 
 **Status:** candidate maintainer protocol and authored material for adopted Astra packet 005. This document is a source documentation/material artifact; it is not a participant release, scheduler, executor, runtime implementation, or pilot result.
@@ -62,10 +64,11 @@ Allow roughly 35–45 minutes of active learner work, with permission to pause. 
 
 Suggested Polish prompts:
 
-- „Zanim uruchomimy kod, jaki wynik przewidujesz i dlaczego?”
-- „Co według Ciebie robi ta funkcja? Pokaż, co zmienia średnik albo wyrażenie.”
-- „Jaki następny krok wybierzesz? Możesz poprosić o wskazówkę albo zatrzymać się.”
-- „Którą decyzję w swoim programie wybrałeś samodzielnie i dlaczego?”
+- “Before we run the code you predict and why?”
+- “What do you think this function does? Show what changes a semicolon or an
+  expression.”
+- ‘What will you take next step? You can ask for a clue or stop.”
+- “Which decision in your program did you choose and why?”
 
 ### Session 2 — ownership, bounded repair, and transfer
 
@@ -92,30 +95,40 @@ After the packet-005 source implementation and focused verification make the can
 
 The packet-004 authored material is available in accepted M8. A later observation may cover the learner-owned Study Session CLI. For an optional observation, record prior exposure to the public `--min-total N` requirement. Its availability follows documented self-review or external review; an external participant is not a development prerequisite. Durable Log Service K is optional later evidence and outside the beginner time box. Do not describe any of these later observations as covered by Sessions 1–2.
 
-## Learner cards (Polish; runnable when the maintainer confirms availability)
+## Learner cards (runnable when the maintainer confirms availability)
 
-The learner may pause or ask for help. The observer records active learner minutes separately from pause and infrastructure delay. Before execution, the learner states a prediction and why. Exact wording in Polish is not required; meaning is what is scored.
+The learner may pause or ask for help. The observer records active learner minutes separately from pause and infrastructure delay. Before execution, the learner states a prediction and why. Exact wording is not required; meaning is what is scored.
 
-### Karta zadań dla początkującej osoby
+### To-do card for a beginner
 
-**Poziom:** wystarczą podstawy programowania; Rust może być nowy. Zacznij sekcję oznaczoną „dostępna po potwierdzeniu” dopiero po wyraźnym potwierdzeniu osoby prowadzącej.
+**Level:** is enough basic programming; Rust may be new. Start the section marked “accessible
+after confirmation” only after clear confirmation of the host.
 
-#### Sesja 1
+#### Session 1
 
-1. Przejdź przez podstawy pierwszego programu i funkcji.
-2. Wyjaśnij własnymi słowami krótki, nieznany fragment funkcji. Pokaż, co zmienia wyrażenie albo średnik.
-3. Przed wykonaniem przykładu granicznego powiedz lub zapisz przewidywanie.
-4. Wykonaj jedną poprawkę wskazaną przez komunikat kompilatora. Możesz otrzymać najpierw wskazówkę pojęciową, potem wskazówkę o kształcie kodu, a na końcu pełne rozwiązanie.
+1. Go through the basics of the first program and function.
+2. In your own words, explain a short, unknown part of the function. Show what changes
+   an expression or a semicolon.
+3. Before performing a border example, tell or save the prediction.
+4. Complete one amendment as indicated by the compiler message. You can get a conceptual
+   clue first, then a code-shaped clue, and then a full solution at the end.
 
-#### Lokalny program Cargo o opłacie za paczkę — dostępny w zaakceptowanym M8 po potwierdzeniu
+#### Local Cargo program for package payment — available in accepted M8 after confirmation
 
-Rozpocznij dopiero po potwierdzeniu dostępności materiału i Rust/Cargo. Brak narzędzia zapisz jako `nie zaobserwowano: brak narzędzia`.
+Start only after the availability has been confirmed and Rust/Cargo. No tool save as `nie zaobserwowano: brak narzędzia`.
 
-Utwórz osobny lokalny program Cargo obliczający opłatę dla całkowitej wagi paczki: wagi 1–5 kosztują 8, wagi 6–20 kosztują 12, a każda inna waga jest odrzucona w wybrany przez Ciebie sposób. Pokaż wyniki dla `0`, `1`, `5`, `6`, `20`, `21`. Sam wybierz nazwę funkcji i typ zwracany. Nie musisz używać wejścia z terminala, plików, `Result`, struktury ani pętli.
+Create a separate local Cargo program calculating the fee for the total weight of the
+package: scales 1–5 cost 8, scales 6–20 cost 12, and any other weight is rejected in
+your chosen way. Show results for `0`, `1`, `5`, `6`, `20`, `21`. Select the function name
+and return type yourself. You don't have to use the input from terminal, file, `Result`,
+structure or loop.
 
-Użyj co najmniej dwóch własnych sensownych testów: jednego dla granicy `5/6` i jednego dla nieprawidłowej wagi. Zmień chwilowo jedną oczekiwaną wartość, uruchom testy, zobacz prawdziwą porażkę, a następnie ją przywróć. Zapisz komunikat i sposób naprawy. Osoba prowadząca może sprawdzić wyniki poleceń, granice, testy i wyjaśnienie sposobu oznaczania odrzucenia.
+Use at least two of your own sensible tests: one for the border `5/6` and one for the
+incorrect weight. Change one expected value temporarily, run tests, see a real failure,
+and then restore it. Save the message and repair method. The driver may check the
+results of commands, limits, tests and an explanation of how to mark rejection.
 
-Przydatne polecenia:
+Useful commands:
 
 ```text
 cargo new nazwa-projektu
@@ -125,44 +138,65 @@ cargo run
 cargo test
 ```
 
-#### Sesja 2
+#### Session 2
 
-Osoba prowadząca wyda osobne karty `S2-MC-v1`, jedną z mechanicznych kart `S2-SB-WORDS-v1` lub `S2-SB-SUFFIX-v1`, oraz `S2-XFER-v1`. Zapisz, czy wymagania były wcześniej pokazane. Wykonaj osobno przewidywanie, naprawę mechanicznego kontraktu, wyjaśnienie i transfer do nowej dziedziny.
+The driving person will issue separate cards `S2-MC-v1`, one of the mechanical cards `S2-SB-WORDS-v1` or
+`S2-SB-SUFFIX-v1`, and `S2-XFER-v1`. Write down if the requirements were previously shown. Perform separately
+the prediction, repair of the mechanical contract, explanation and transfer to a new
+field.
 
-#### Punkty przerwania w sześciu lekcjach (12 punktów) — dostępne po potwierdzeniu implementacji
+#### Interruption points in six lessons (12 points) — available after confirmation of implementation
 
-Jeśli interfejs pokaże notatkę, możesz zapisać stan i wrócić. Tytuł jest miejscem zatrzymania, a nie wynikiem ani ukończeniem. Notatka nie kończy zadania, nie pomija kroku i nie przyznaje dowodu. Powrót używa istniejącego autosave i wraca do bieżącego zadania.
+If the interface shows a note, you can save the state and return. The title is a place
+of detention, not a result or completion. The note does not finish the task, does not
+skip the step and does not admit evidence. Return uses an existing autosave and returns
+to the current task.
 
-| Lekcja | `afterStepId` stop 1 | Tytuł / następny cel | `afterStepId` stop 2 | Tytuł / następny cel | Pozostały etap |
+| Lesson | `afterStepId` stop 1 | Title / Next Objective | `afterStepId` stop 2 | Title / Next Objective | Other stage |
 | --- | --- | --- | --- | --- | --- |
-| `todo-command-parser` | `parser-explain` | „Zatrzymaj się po wyjaśnieniu parsera”; „Przenieś reguły parsera do kolejnego zadania.” | `parser-add-gate` | „Zatrzymaj się po bramce Add”; „Sprawdź transfer parsera na innych komendach.” | `parser-transfer`, `parser-recall` |
-| `todo-state-invariants` | `state-explain` | „Zatrzymaj się po wyjaśnieniu stanu”; „Przejdź do bramki poprawnej operacji Add i Done.” | `state-add-done-gate` | „Zatrzymaj się po bramce Add i Done”; „Sprawdź bramkę listowania i transfer.” | `state-list-gate`, `state-transfer`, `state-recall` |
-| `todo-session-project` | `session-explain` | „Zatrzymaj się po wyjaśnieniu sesji”; „Uruchom bramkę sesji z błędem pośrodku.” | `session-run-gate` | „Zatrzymaj się po bramce sesji”; „Porównaj sesję zwykłą ze ścisłą.” | `session-strict-gate`, `session-recall`, `session-blank` |
-| `todo-storage-format` | `format-explain` | „Zatrzymaj się po wyjaśnieniu formatu”; „Sprawdź bramkę kodowania i dekodowania.” | `format-gate` | „Zatrzymaj się po bramce formatu”; „Obserwuj zachowanie przy uszkodzonym wierszu.” | `format-observe`, `format-recall` |
-| `todo-file-persistence` | `file-explain` | „Zatrzymaj się po wyjaśnieniu pliku”; „Sprawdź bramkę zapisu i odczytu.” | `file-gate` | „Zatrzymaj się po bramce pliku”; „Obserwuj bezpieczne zastępowanie pliku.” | `file-observe`, `file-recall` |
-| `todo-terminal-cli` | `cli-explain` | „Zatrzymaj się po wyjaśnieniu CLI”; „Sprawdź bramkę wykonania komendy.” | `cli-gate` | „Zatrzymaj się po bramce CLI”; „Przejdź do odczytu wejścia i lokalnej praktyki.” | `cli-recall`, `cli-input-boundary`, `cli-local-practice` |
+| `todo-command-parser` | `parser-explain` | “Stop when parser is explained”; “Move parser rules to the next task.” | `parser-add-gate` | “Stop at gate Add”; “Check the transfer of parser on other commands.” | `parser-transfer`, `parser-recall` |
+| `todo-state-invariants` | `state-explain` | “Stop after state explanation”; “Go to the goal of correct Add and Done operations.” | `state-add-done-gate` | “Stop at gate Add and Done”; “Check the listing gate and transfer.” | `state-list-gate`, `state-transfer`, `state-recall` |
+| `todo-session-project` | `session-explain` | “Stop after explaining the session”; “Start the session goal with a middle error.” | `session-run-gate` | "Stop at session gate"; "Compare the regular session with closeness." | `session-strict-gate`, `session-recall`, `session-blank` |
+| `todo-storage-format` | `format-explain` | “Stop after explanation of the format”; “Check the coding and decoding gateway.” | `format-gate` | “Stop at format gate”; “Watch the behavior at the damaged line.” | `format-observe`, `format-recall` |
+| `todo-file-persistence` | `file-explain` | “Stop when the file is explained”; “Check the recording and reading gate.” | `file-gate` | “Stop at the file gate”; “Watch to replace the file safely.” | `file-observe`, `file-recall` |
+| `todo-terminal-cli` | `cli-explain` | “Stop after explanation CLI’; “Check the execution gate.” | `cli-gate` | ‘Stop at gate CLI’; ‘Go to read the input and local practice.’ | `cli-recall`, `cli-input-boundary`, `cli-local-practice` |
 
-Szacowany czas lekcji jest szacunkiem autora, a nie zaobserwowanym czasem rozwiązania.
+The estimated lesson time is the respect of the author, not the observed solution time.
 
-#### Własny program podsumowujący sesje — dostępny w zaakceptowanym M8 po potwierdzeniu
+#### Own program summarizing sessions — available in accepted M8 after confirmation
 
-Po potwierdzeniu dostępności utwórz osobny lokalny projekt Cargo; nie kopiuj projektu referencyjnego. Program przyjmuje jedną ścieżkę UTF-8. Niepusta linia ma postać `name;minutes` z dokładnie jednym średnikiem; przytnij białe znaki nazwy i pola liczbowego; nazwa nie może być pusta; `minutes` to co najmniej jedna cyfra ASCII `0–9`, a wartość należy do 1–1440. Odrzuć `+5`, `-5`, spacje wewnątrz liczby i cyfry spoza ASCII. Puste linie pomiń. Nazwy Unicode są rozróżniane z wielkością liter. Sortuj według porządku napisów Rust i wypisz `name;total`.
+When you confirm availability, create a separate local Cargo project; do not copy the
+reference project. The program takes one path UTF-8. The blank line is in the form of `name;minutes`
+with exactly one semicolon; cut the white characters of the name and number field; the
+name cannot be empty; `minutes` is at least one digit ASCII `0–9`, and the value belongs to
+1-1440. Reject `+5`, `-5`, spaces inside numbers and digits outside ASCII. Empty lines skip.
+Unicode names are distinguished by the size of letters. Sort by Rust Order and write
+`name;total`.
 
-Błędne rekordy zgłoś na `stderr` z numerem linii, przetwarzaj poprawne dalej i zakończ kodem 2. Złe argumenty, błąd odczytu lub UTF-8 zgłoś na `stderr`, nie wypisuj raportu i zakończ kodem 1. Poprawny plik kończy się kodem 0. Suma nie może cicho zawijać; przepełniony rekord jest błędny, a wcześniejsze sumy pozostają zachowane. Użyj wyłącznie std, bez zewnętrznych zależności. Sieć, znaczniki czasu, wdrożenie i próg wydajności są poza wymaganiami.
+Invalid records report to `stderr` with line number, process them further and end with code
+2. Bad arguments, read error or UTF-8 report on `stderr`, do not write the report and end with
+code 1. The correct file ends with code 0. The sum cannot quietly wrap; the overflowing
+record is incorrect, and the earlier sums remain preserved. Use only std, without
+external dependencies. The network, time tags, implementation and performance threshold
+are beyond requirements.
 
-Pokaż plik poprawny i mieszany, przygotuj własne testy błędnego rekordu, agregowania i kolejności, oraz wyjaśnij decyzję o pożyczaniu lub posiadaniu nazw. Sprawdzenie obejmuje powtórzone i przycięte równoważne nazwy, Unicode, pusty plik, CRLF, granice minut, znaki inne niż ASCII `0–9`, błędne pola, błąd wejścia i przepełnienie.
+Show the correct and mixed file, prepare your own test of wrong record, aggregation and
+order, and explain your decision to borrow or own names. The check includes repeated and
+clipped equivalent names, Unicode, empty file, CRLF, minute limits, characters other than
+ASCII `0–9`, incorrect fields, input error and overflow.
 
-### `S2-MC-v1`, `S2-SB-WORDS-v1`, `S2-SB-SUFFIX-v1` i `S2-XFER-v1` — wydaje prowadzący
+### `S2-MC-v1`, `S2-SB-WORDS-v1`, `S2-SB-SUFFIX-v1` and `S2-XFER-v1` — issued by the host
 
-Przed rozpoczęciem zapisz: `pokazane wcześniej`, `nie pokazano` albo `nie wiadomo`.
+Write down: `pokazane wcześniej`, `nie pokazano` or `nie wiadomo` before you start.
 
-#### `S2-MC-v1` — przewidywanie move/`Copy`
+#### `S2-MC-v1` — predicting a move/`Copy`
 
-Zanim uruchomisz kod, odpowiedz, które z oryginalnych wiązań `text` i `number` pozostaną poprawne przy późniejszym użyciu w `println!`:
+Before you run the code, answer which of the original bonds `text` i `number` will remain
+correct with later use in `println!`:
 
-- oba oryginalne wiązania (`text` i `number`);
-- tylko oryginalne wiązanie liczby całkowitej (`number`);
-- tylko oryginalne wiązanie `String` (`text`).
+- both original bonds (`text` and `number`);
+- only the original total number binding (`number`);
+- only original bond `String` (`text`).
 
 ```rust
 fn main() {
@@ -174,47 +208,76 @@ fn main() {
 }
 ```
 
-Najpierw zapisz przewidywanie. `text_next` jest nowym wiązaniem po przypisaniu; pytanie dotyczy późniejszego użycia oryginalnych `text` i `number`.
+Write down the prediction first. `text_next` is a new attachment after attribution; the question
+concerns later original use `text` and `number`.
 
-#### `S2-SB-WORDS-v1` — naprawa widoku tekstu
+#### `S2-SB-WORDS-v1` — Repair text view
 
-W aplikacji otwórz istniejącą lekcję `shared-borrow-calibration` („Pożyczony widok tekstu”) i zadanie `shared-count-words` („Napraw liczenie części tekstu”). Użyj dostarczonego ciała metody `text.split_whitespace().count()`, startera oraz kodu wywołującego funkcję pokazanego w kodzie początkowym jako materiału bazowego. Napraw wyłącznie granicę funkcji tak, aby kod wywołujący zachował własny `String` po wywołaniu.
+In the application, open an existing lesson `shared-borrow-calibration` (‘Lending Text View’) and a task `shared-count-words`
+(‘Repair Counting Part of the Text’). Use the delivered body method `text.split_whitespace().count()`, starter and
+code calling function shown in the initial code as base material. Fix only the function
+limit so that the calling code keeps its own `String` after calling.
 
-Zachowaj liczenie niepustych części przez białe znaki, w tym pusty tekst, tabulatory, końce linii i wielokrotne odstępy. Po naprawie użyj widocznego przycisku „Uruchom testy” w istniejącym zadaniu. Zapisz osobno wynik, powód naprawy, wyjaśnienie i każdą pomoc od prowadzącego.
+Keep counting blank parts by white characters, including empty text, tabulators, line
+ends and multiple intervals. After repair, use the visible “Start Tests” button in the
+existing task. Save separately the result, reason for repairs, explanation and any help
+from the host.
 
-#### `S2-SB-SUFFIX-v1` — naprawa dwóch widoków tekstu
+#### `S2-SB-SUFFIX-v1` — repairing two views of the text
 
-W aplikacji otwórz istniejącą lekcję `shared-borrow-calibration` („Pożyczony widok tekstu”) i zadanie `shared-has-suffix` („Napraw sprawdzanie końcówki”). Użyj dostarczonego ciała metody `text.ends_with(suffix)`, startera oraz kodu wywołującego funkcję pokazanego w kodzie początkowym jako materiału bazowego. Napraw wyłącznie granicę funkcji tak, aby oba wejścia pozostały read-only widokami, a kod wywołujący mógł użyć `text` i `suffix` po wywołaniu.
+In the application, open an existing lesson `shared-borrow-calibration` ("Lending Text View") and a task `shared-has-suffix`
+("Repair End Checking"). Use the delivered body method `text.ends_with(suffix)`, starter and code calling
+function shown in the initial code as base material. Fix only the function limit so that
+both inputs remain read-only views, and the calling code can use `text` and `suffix` after
+calling.
 
-Zachowaj dokładne sprawdzanie końcówki z istniejącego kontraktu: bez przycinania, zmiany wielkości liter ani normalizacji; pusty suffix pasuje. Po naprawie użyj widocznego przycisku „Uruchom testy” w istniejącym zadaniu. Zapisz osobno wynik, powód naprawy, wyjaśnienie i każdą pomoc od prowadzącego.
+Keep accurate checking of the ending from the existing contract: no clipping, change in
+letter size or normalization; empty suffix fits. After repair, use the visible “Start
+Tests” button in the existing task. Save separately the result, reason for repairs,
+explanation and any help from the host.
 
-#### `S2-XFER-v1` — etykieta zgłoszenia
+#### `S2-XFER-v1` — Notification label
 
-Napisz mały read-only helper, który zwraca `true` wtedy i tylko wtedy, gdy tytuł zawiera podany fragment tekstu. Sprawdzanie jest czułe na wielkość liter; nie przycinaj, nie normalizuj i nie zmieniaj tekstu.
+Write a little read-only helper that returns `true` if and only if the title contains a
+given passage of text. Checking is case-sensitive; do not trim, don't normalize or
+change the text.
 
-- `String::from("INC-42: parser")` z fragmentem `"parser"` daje `true`;
-- ten sam tytuł z fragmentem `"cli"` daje `false`;
-- wywołujący wypisuje własny tytuł po obu sprawdzeniach;
-- co najmniej jedno wywołanie używa literału tekstowego jako fragmentu.
+- `String::from("INC-42: parser")` with fragment `"parser"` give `true`;
+- the same title with passage `"cli"` gives `false`;
+- the caller shall issue his own title after both checks;
+- at least one call uses a textual literal as a fragment.
 
-Sam wybierz nazwę, sygnaturę i organizację kodu. Wybierz `String` albo `&str` na granicy helpera i wyjaśnij, jak wywołujący zachowuje możliwość użycia tytułu. Dokumentacja API jest dozwolona i zapisywana osobno od dodatkowych wskazówek.
+Select the name, signature and code organization yourself. Select `String` or `&str` at the
+helper border and explain how the caller retains the ability to use the title.
+Documentation API is permitted and recorded separately from additional guidance.
 
-### `D-XFER-v1` — karta późniejszego sprawdzenia
+### `D-XFER-v1` — a card of subsequent verification
 
-Wydaje ją prowadzący dopiero po przerwie dłuższej niż 24 godziny od ostatniego kontaktu z pojęciem; dokładne 24:00 nie wystarcza. Zapisz prawdziwy odstęp i ćwiczenia w międzyczasie. Jeśli odstęp wynosi 24 godziny lub mniej, prowadzący zapisze tę próbę jako powtórzenie, a nie sprawdzenie odroczone. Ocena wykonania pozostaje osobna.
+It is issued only after a break longer than 24 hours from the last contact with the
+concept; the exact 24:00 is not enough. Save the real interval and exercise in the
+meantime. If the interval is 24 hours or less, the operator shall record this test as a
+repetition rather than a deferred check. The evaluation of the performance remains
+separate.
 
-Napisz mały read-only helper, który zwraca `true` wtedy i tylko wtedy, gdy tekst zaczyna się od podanego prefiksu; porównanie jest czułe na wielkość liter i nie przycina tekstu.
+Write a little read-only helper that returns `true` when and only if the text starts with
+the given prefix; the comparison is letter sensitive and does not trim the text.
 
-- `String::from("Przerwa: Rust")` z prefiksem `"Przerwa"` daje `true`, a po wywołaniu można nadal wypisać wiadomość;
-- literał `"Status: gotowe"` z prefiksem `"status"` daje `false`;
-- wywołujący używa własnego `String` i literału oraz zachowuje możliwość użycia własnego komunikatu;
-- nie otwieraj poprzedniego rozwiązania.
+- `String::from("Przerwa: Rust")` with prefix `"Przerwa"` gives `true`, and after calling you can still write a message;
+- The letter `"Status: gotowe"` with the prefix `"status"` gives `false`;
+- calling using its own `String` and the letter, and retains the possibility to use its own
+  message;
+- do not open the previous solution.
 
-### Karta późniejszej zmiany `--min-total N` — po zapisanym przeglądzie
+### Post-Amendment Card `--min-total N` — after written review
 
-Podejmij tę zmianę po zapisanej samoocenie lub przeglądzie zewnętrznym pierwszego artefaktu. Wymaganie jest publiczne; nie zakładaj, że jest nieznane. Zapisz, czy wymaganie było wcześniej pokazane: `nie pokazano przed wydaniem`, `pokazano wcześniej` albo `nie wiadomo`.
+Take this change after the written self-assessment or external review of the first
+artifact. The requirement is public; do not assume it is unknown. Write if the
+requirement was shown earlier: `nie pokazano przed wydaniem`, `pokazano wcześniej` either `nie wiadomo`.
 
-Dodaj opcjonalny argument `--min-total N`. Ma filtrować wyłącznie końcowe wypisywane sumy: pozostaw nazwy, których suma jest co najmniej `N`. Dotychczasowe wywołanie bez opcji nadal działa. Nie zmieniaj parsowania, diagnostyki ani kodów wyjścia. Dodaj własne testy i wyjaśnij zmienioną granicę programu.
+Add optional argument `--min-total N`. It is to filter only the final totals written out: leave
+names whose sum is at least `N`. The no-option call to date still works. Do not change
+the parsing, diagnostics or exit codes. Add your own tests and explain the changed
+programme limit.
 
 ## Observation record and narrow rubric
 

@@ -1,5 +1,7 @@
 # Advanced continuation — 15 October 2026 source checkpoint
 
+[Polski](2026-10-15-advanced-continuation.pl.md)
+
 The accepted maintenance base is ordinary main `3c1ee89c3d46b0b1b9e3798a317587464a236e5c`, tree `7638d5f7a07ca24907a15edec7ea7d3627496d18`. The coordinator verified [main run 38733773185](https://github.com/fettpl/rustcrushcourse/actions/runs/38733773185), attempt 1, with all eleven jobs successful before implementation began. This document publishes the independently reviewed Astra requirements and frozen A1 design (SHA256 `047025c8eac852c591b8afb3edee3ba3028b763a3fd6f100c833ba437a16006b`). A1 source is in development; its combined local checks, exact-head review, PR, ordinary merge and resulting-main evidence remain separate acceptance gates. No A1 release identity is claimed.
 
 The current authored A1 registry has 48 modules, 192 lessons, 194 concepts, 1,271 steps and 349 sources. The addition appends only a prediction/model and one primary `prepare_handoff` task inside the existing Send lesson. The original five steps, gate/blank family and recall remain unchanged. Four of the nine calibrated advanced concepts now have two authored primary families; cancellation/commit and the four Miri concepts remain single-family. These counts establish availability, not learner outcomes.

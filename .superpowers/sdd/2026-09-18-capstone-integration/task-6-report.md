@@ -1,5 +1,7 @@
 # Task 6 report — final learner, offline, documentation and release audit
 
+[Polski](task-6-report.pl.md)
+
 Status: bounded integration verified; archive release evidence remains Hold.
 
 The current catalog is 164 lessons in 43 modules, 167 concepts, 119 blank-page

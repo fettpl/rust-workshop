@@ -1,12 +1,15 @@
 # Plan 001: Build a bounded client retry-policy laboratory
 
+[Polski](001-bounded-client-retry.pl.md)
+
 > **For agentic workers:** Use `subagent-driven-development` or `executing-plans` with meaningful test-first checks. The advisor delegates implementation and independently reviews the result. Read this complete plan before editing. The reviewer maintains the index.
 
 **Goal:** Teach implementation of a bounded client policy and preservation of uncertainty across multiple attempts, using an optional local extension of the existing durable-log workspace.
 
 **Architecture:** Add two lessons and a separate client-policy laboratory composed immutably from the accepted durable-log reference. Keep every existing lesson, project, archive and evidence identity unchanged. The browser evaluates small standard-library policy models; an authored Tokio adapter and real loopback tests provide separate native fixture evidence.
 
-**Tech stack:** Existing TypeScript/Vitest/Next.js, Rust 2024, exact MSRV 1.85.0, existing pinned Tokio/SQLite dependencies. No dependency graph changes.
+**Tech stack:** Existing TypeScript/Vitest/Next.js, Rust 2024, exact MSRV 1.85.0, existing pinned Tokio/SQLite dependencies. No
+defendency graph changes.
 
 **Spec:** The contract, boundaries, tasks and verification gates below are the complete feature specification.
 

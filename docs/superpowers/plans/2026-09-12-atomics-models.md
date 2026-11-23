@@ -1,31 +1,33 @@
-# Atomics, porządkowanie pamięci i modele Loom — plan
+# Atomics, memory ordering, and Loom models — plan
 
-**Cel:** rozwinąć zatwierdzoną mapę kursu o atomowe operacje i sprawdzanie małych protokołów współbieżnych; zachować niezależne zadania, powtórki i dowody ograniczeń testów.
+[Polski](2026-09-12-atomics-models.pl.md)
 
-**Architektura:** dwa moduły danych po synchronized-state; istniejący widok projektów udostępnia osobne laboratorium Cargo. Pakiet używa jednego kodu algorytmów i warstwy importów std/Loom sterowanej feature `model`. Przeglądarka nadal wykonuje wyłącznie pojedyncze programy std; uruchomienie prawdziwego Loom należy do pobranego pakietu i developerskiej weryfikacji zaufanych artefaktów.
+Extend the approved curriculum with atomic operations and checks of small concurrent protocols. Keep independent exercises and retrieval practice, and state what the tests establish.
 
-**Podstawa:** oryginalny brief, zaakceptowany profil osoby zaczynającej Rust od zera, `docs/advanced-curriculum.md` część16 i aktywny cel rozwoju do praktyki zaawansowanej. Kontynuacja i commit po dużym etapie są zatwierdzone.
+Two content modules follow synchronized-state. The existing project view provides a separate Cargo lab. One implementation of each algorithm uses an std/Loom import layer controlled by the `model` feature. The browser still runs single programs using std. Loom runs in the downloaded package and during development verification of trusted artifacts.
 
-## Kontrakty i podział pracy
+The stage follows the original brief, the accepted profile of a learner starting with no Rust, part 16 of `docs/advanced-curriculum.md`, and the active development goal for advanced practice. The user approved continuation and a commit after the major stage.
 
-- `src/content/atomic-state.ts`: moduł atomic-state po synchronized-state; lekcje/pojęcia atomic-rmw (po mutex-recovery), atomic-cas, atomic-limits. Eksporty atomicStateLessons/Concepts/Competencies/Sources/ReviewExercises/Module. RMW, stara wartość/wrapping, CAS/retry, ograniczenia atomowości i ABA.
-- `src/content/memory-ordering.ts`: moduł memory-ordering po atomic-state; release-acquire (po atomic-limits), ordering-contracts, loom-evidence. Eksporty prefiksu memoryOrdering. Publikowanie, legalne orderings i granice dowodów modelowych. Testy adaptera nie są nazywane dowodem pełnego memory model.
-- Każdy moduł: trzy pojęcia, sześć niezależnych bramek kodowych, trzy blank-page z precyzyjnym kontraktem bez sygnatury i trzy powtórki. Predykcja ma konkretny program lub scenariusz; brak obietnicy kolejności schedulera i wydajności.
-- Root: laboratorium concurrency-lab z package concurrency-lab-workshop; alias std/Loom, CAS rezerwacji z granicą, jednokrotna publikacja przez konsumowany nieklonowalny Publisher i Subscriber. Test std, model i celowe kontrprzykłady. Model nie używa unsafe ani nieograniczonego oczekiwania; ma najwyżej3wątki. `Cargo.lock` i Loom0.7.2, jawne ograniczenia modelowania.
-- Root: integracja course.ts, gates, reveal, archiwów i weryfikacji Cargo/CI; build, offline i regresje projektu. Stan v3 i wcześniejsze ID zostają zachowane.
+## Contracts and division of work
 
-## Kryteria weryfikacji
+- `src/content/atomic-state.ts` defines the atomic-state module after synchronized-state. Lessons and concepts are atomic-rmw (after mutex-recovery), atomic-cas, and atomic-limits. Exports are atomicStateLessons/Concepts/Competencies/Sources/ReviewExercises/Module. Cover read-modify-write, the previous value and wrapping, CAS and retries, the limits of atomicity, and ABA.
+- `src/content/memory-ordering.ts` defines the memory-ordering module after atomic-state. Lessons and concepts are release-acquire (after atomic-limits), ordering-contracts, and loom-evidence. Use the memoryOrdering export prefix. Cover publication, permitted orderings, and the limits of model evidence. Adapter tests verify adapter behavior.
+- Each module contains three concepts, six independent coding assessments, three empty-editor tasks with precise contracts and no supplied signature, and three retrieval exercises. Prediction questions show a concrete program or scenario. Scheduler order and performance are outside the evidence.
+- The lead implements the concurrency-lab lab with the concurrency-lab-workshop package. Use an std/Loom alias, bounded reservation by CAS, and one-time publication with a consumed, non-cloneable Publisher and a Subscriber. Provide std tests, models, and deliberate counterexamples. The model limits the number of threads to three and avoids unsafe code and unbounded waits. Pin dependencies with `Cargo.lock` and Loom 0.7.2, and explain modeling limitations.
+- The lead integrates course.ts, assessment gates, reveal, archives, and Cargo verification in CI. Verify the build, offline mode, and project regressions. Keep v3 state and existing IDs.
 
-- [x] Test integracji potwierdza nowy pakiet, relacje, ujawnianie pomocy i świeże alternatywy; najpierw wynik czerwony.
-- [x] Autorzy weryfikują wszystkie swoje zaufane fixture Rust2024; root recenzuje kontrakty i testy.
-- [x] Zwykłe testy oraz modele uruchamiają ten sam kod biblioteki. Dwa dobre modele przechodzą, a celowe load/store i Relaxed-publication dają określoną nieudaną asercję, nigdy timeout lub błąd kompilacji jako dowód.
-- [x] Model jawnie wyłącza ograniczenia liczby permutacji/czasu/preempcji; limit liczby kroków jest błędem, nie sukcesem. Dokumentacja opisuje brak pełnej obsługi wszystkich zachowań Relaxed w Loom.
-- [x] Pakiet check/test/fmt/clippy i modelowe warianty; startery wymagają implementacji. Pierwsze fetch pobiera przypięte zależności, dalsze wykonania `--offline --locked`.
-- [x] Lint, typecheck, Vitest, walidacja treści, rustc, audyt źródeł, build, E2E, mobile/klawiatura i offline.
-- [x] Niezależna recenzja, próby wadliwych rozwiązań i poprawki, aktualizacja audytu i wyników, commit bez push.
+## Verification criteria
 
-Żadnego kodu ucznia/importu w lokalnym rustc. Zewnętrzny Playground nadal oczekuje wcześniejszej osobnej zgody. Nie redukować docelowej mapy: async, zaawansowane Cargo/API, HRTB/variance, property/fuzz, wydajność, unsafe/FFI i pełne portfolio pozostają kolejnymi etapami.
+- [x] Start with a failing integration test for the new package, its relationships, help disclosure, and fresh alternatives.
+- [x] Authors verify their trusted Rust 2024 fixtures. The lead reviews contracts and tests.
+- [x] Standard tests and models run the same library code. Both correct models pass. The deliberate load/store and Relaxed publication variants fail specific assertions. Timeout and compilation errors are excluded as evidence of rejection.
+- [x] Disable the permutation, time, and preemption caps explicitly. Treat hitting the step limit as an error. Document the limits of Loom's coverage of Relaxed behavior.
+- [x] Run check/test/fmt/clippy for the package and the model variants. Starters require implementation. Fetch pinned dependencies once, then run `--offline --locked`.
+- [x] Check lint, types, Vitest, content validation, rustc, source availability, build, E2E, mobile, keyboard use, and offline mode.
+- [x] Conduct an independent review, test faulty solutions, correct the findings, update the audit and results, and commit locally.
 
-## Wynik przeglądu
+Local rustc runs are limited to authored cases. An external Playground run requires separate approval. The roadmap still includes async, advanced Cargo/API work, HRTB and variance, property testing and fuzzing, performance, unsafe/FFI, and the full portfolio.
 
-Wzmocniono testy po wykryciu pozornego zaliczania load/store, ignorowania observed i publikacji bez obserwowalnego protokołu. Rozdzielono bramki RMW/flag, transakcji/wersji oraz publikacji/potwierdzenia. Zaktualizowano reguły 15 legalnych par CAS według obecnego std i rzeczywistego rustc. Poprawiono starter Option wykryty przez pełną kompilację; końcowy zakres obu modułów przeszedł 74/74. Przegląd objął 8 wadliwych rozwiązań oraz rzeczywisty model osłabionej biblioteki. Dokładne wyniki i granice: `docs/verification.md`.
+## Review outcome
+
+Tests were strengthened after finding a load/store workaround, a variant that ignored observed, and publication without an observable protocol. The assessment gates distinguish RMW from flags, transactions from versions, and publication from acknowledgment. The rules for 15 valid CAS ordering pairs were updated against the current std and rustc. Full compilation exposed an Option issue in a starter, which was fixed. The final check passed 74/74 cases across both modules. Review covered eight faulty solutions and a real model of a weakened implementation. Details and limits are in `docs/verification.md`.

@@ -1,5 +1,7 @@
 # Frame Protocol maintenance checkpoint
 
+[Polski](frame-protocol-maintenance.pl.md)
+
 The optional `api-frame-protocol-maintenance` lesson follows the four existing
 Public API Workspaces lessons. Its only hard prerequisite is
 `api-compatible-surface`; the later release-matrix module is useful context,

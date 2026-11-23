@@ -18,6 +18,7 @@ import { tsImport } from "tsx/esm/api";
   const browser = await chromium.launch({ headless: true });
   try {
     const context = await browser.newContext({
+      locale: "pl-PL",
       viewport: { width: 1280, height: 900 },
     });
     const page = await context.newPage();
@@ -167,7 +168,7 @@ import { tsImport } from "tsx/esm/api";
       .fill("trwaly serwis");
     await page
       .locator(".module-picker > button")
-      .filter({ hasText: "Capstone: trwały serwis logów" })
+      .filter({ hasText: "Projekt końcowy: usługa trwałego zapisu dziennika" })
       .click();
     await page
       .locator(".lesson-list-item")
@@ -258,7 +259,7 @@ import { tsImport } from "tsx/esm/api";
     }
     await context.setOffline(false);
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const fuzzTitle = "Fuzz evidence: od bajtów do audytowalnej regresji";
+    const fuzzTitle = "Fuzzing: od bajtów do odtwarzalnego testu regresji";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(fuzzTitle);
@@ -483,11 +484,6 @@ import { tsImport } from "tsx/esm/api";
       capstoneSolutionUrl,
     );
     expect(capstoneSolutionBytes.slice(0, 4)).toEqual([80, 75, 3, 4]);
-    const archiveApacheExceptionPackageIds = new Set([
-      "mini-grep-workshop",
-      "frame-protocol-workspace",
-      "durable-log-service-workspace",
-    ]);
     const capstoneAuthoredPaths = [
       "CHANGE-REVIEW.md",
       "CHANGELOG.md",
@@ -544,38 +540,11 @@ import { tsImport } from "tsx/esm/api";
     expect(capstoneCurrentAuthoredPaths).toHaveLength(
       capstoneCurrentAuthoredEntryCount,
     );
-    const readArchiveNoticeBytes = async (projectId) => {
-      const includesApacheNotice = archiveApacheExceptionPackageIds.has(projectId);
-      const scope = (await readFile("docs/licensing.md", "utf8"))
-        .replace(
-          /\]\((rights-assessment\.md|oss-provenance\.md)(#[^)]*)?\)/g,
-          "](https://github.com/fettpl/rust-workshop/blob/main/docs/$1$2)",
-        )
-        .replace(
-          /\]\(\.\.\/(LICENSE|LICENSE-CONTENT|THIRD-PARTY-NOTICES\.md)\)/g,
-          "]($1)",
-        )
-        .replace(
-          /\]\(\.\.\/LICENSE-APACHE\)/g,
-          includesApacheNotice
-            ? "](LICENSE-APACHE)"
-            : "](https://www.apache.org/licenses/LICENSE-2.0.txt)",
-        );
-      const notices = {
-        LICENSE: await readFile("LICENSE"),
-        "LICENSE-CONTENT": await readFile("LICENSE-CONTENT"),
-        "LICENSE-SCOPE.md": Buffer.from(scope),
-        "THIRD-PARTY-NOTICES.md": Buffer.from(
-          (await readFile("THIRD-PARTY-NOTICES.md", "utf8")).replaceAll(
-            "](docs/licensing.md)",
-            "](LICENSE-SCOPE.md)",
-          ),
-        ),
-      };
-      if (includesApacheNotice)
-        notices["LICENSE-APACHE"] = await readFile("LICENSE-APACHE");
-      return notices;
-    };
+    const { readArchiveNotices } = await tsImport("./project-archive.ts", import.meta.url);
+    const readArchiveNoticeBytes = (projectId) => Object.fromEntries(
+      Object.entries(readArchiveNotices(process.cwd(), { id: projectId }, "pl"))
+        .map(([path, contents]) => [path, Buffer.from(contents)]),
+    );
     const assertArchiveNoticeContract = async (files, root, projectId) => {
       const notices = await readArchiveNoticeBytes(projectId);
       const noticePaths = Object.keys(notices);
@@ -771,7 +740,7 @@ import { tsImport } from "tsx/esm/api";
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill("Tokio");
     const tokioModule = page.locator(".module-picker > button").filter({
-      hasText: "Tokio: runtime i odpowiedzialność za zadania",
+      hasText: "Tokio: środowisko wykonawcze i odpowiedzialność za zadania",
     });
     await expect(tokioModule).toHaveCount(1);
     await tokioModule.click();
@@ -818,10 +787,10 @@ import { tsImport } from "tsx/esm/api";
       "Previously unvisited Tokio flow gate, draft and hint resume offline",
     );
     for (const title of [
-      "Tokio: I/O i strumienie",
+      "Tokio: wejście, wyjście i strumienie",
       "Tokio: praca blokująca",
       "Tokio: sieć i serwis",
-      "Publiczne API i workspace Cargo",
+      "Publiczne API i obszar roboczy Cargo",
       "Mini grep: wyszukaj, ogranicz, wyjaśnij wynik",
       "Number Guessing+: od komunikatu do pełnej gry",
       "Pożyczone API: wariancja i HRTB",
@@ -857,10 +826,10 @@ import { tsImport } from "tsx/esm/api";
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
-      .fill("Cargo: zależności, features i pakowanie");
+      .fill("Cargo: zależności, opcje pakietu i pakowanie");
     await page
       .locator(".module-picker > button")
-      .filter({ hasText: "Cargo: zależności, features i pakowanie" })
+      .filter({ hasText: "Cargo: zależności, opcje pakietu i pakowanie" })
       .click();
     // Earlier Frame preview/download exposed the primary manifests. The map
     // must select the independent standalone declaration task instead.
@@ -900,7 +869,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       "Previously unvisited TOML blank resumes and passes locally while offline",
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const gatTitle = "GAT i lending iterators: pożyczone elementy";
+    const gatTitle = "GAT i iteratory pożyczające elementy";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(gatTitle);
@@ -933,10 +902,10 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const asyncLendingTitle =
-      "Async lending: pożyczone futures i granice dispatchu";
+      "Pożyczanie w kodzie asynchronicznym: Future i wybór implementacji";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
-      .fill(asyncLendingTitle);
+      .fill("Async lending: pożyczone futures i granice dispatchu");
     await page
       .locator(".module-picker > button")
       .filter({ hasText: asyncLendingTitle })
@@ -1048,7 +1017,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     // Explicit A2 cancellation path; durable state is inspected before and after reload.
     await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(asyncLendingTitle);
     await page.locator(".module-picker > button").filter({ hasText: asyncLendingTitle }).click();
-    await page.locator(".lesson-list-item").filter({ hasText: "Anulowanie przed commit" }).click();
+    await page.locator(".lesson-list-item").filter({ hasText: "Anulowanie przed zatwierdzeniem operacji" }).click();
     await page.getByLabel("Kroki lekcji").getByRole("button").nth(6).click();
     await expect(page.locator(".task-pane h1")).toHaveText(
       "Zachowaj commit po utracie odpowiedzi",
@@ -1089,10 +1058,10 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     // Initialized-prefix source path: both new lesson panels are inspected
     // before switching to Kod; only durable browser state is asserted offline.
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const unsafeMiriTitle = "Miri i pure-Rust unsafe: inicjalizacja, aliasowanie oraz wariancja";
+    const unsafeMiriTitle = "Miri i unsafe w Rust: inicjalizacja, aliasowanie i wariancja";
     await page.getByRole("searchbox", { name: "Znajdź moduł lub temat" }).fill(unsafeMiriTitle);
     await page.locator(".module-picker > button").filter({ hasText: unsafeMiriTitle }).click();
-    await page.locator(".lesson-list-item").filter({ hasText: "Zbuduj ByteView z jawne inicjalizacją" }).click();
+    await page.locator(".lesson-list-item").filter({ hasText: "Zbuduj ByteView z jawną inicjalizacją" }).click();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByLabel("Kroki lekcji").getByRole("button").nth(7).click();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
@@ -1187,7 +1156,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     const disjointDraft = "// Zakresy zapisane offline bez transferu.\n";
     await disjointEditor.fill(disjointDraft);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
-    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
     await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     await page.getByText("Twój notatnik", { exact: true }).click();
@@ -1281,7 +1250,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     const slotDraft = "// Lazy init zapisany offline bez uruchamiania runnera.\n";
     await slotEditor.fill(slotDraft);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
-    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
     await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     await page.getByText("Twój notatnik", { exact: true }).click();
@@ -1376,7 +1345,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     const mutSlotDraft = "// with_mut draft zachowany offline bez uruchamiania runnera.\n";
     await mutSlotEditor.fill(mutSlotDraft);
     await page.getByRole("button", { name: "Uruchom testy", exact: true }).click();
-    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
     await expect(page.getByText("Kompilator niedostępny", { exact: true })).toBeVisible();
     await page.getByRole("tab", { name: "Zadanie", exact: true }).click();
     await page.getByText("Twój notatnik", { exact: true }).click();
@@ -1438,7 +1407,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     console.log("MutSlot with_mut model/primary, real FnOnce starter, draft, note, help, exact index-9 resume and keyboard work offline; no compiler or transfer credit");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const propertyTitle =
-      "Property testing: kontrakty, generatory i kontrprzykłady";
+      "Testowanie własności: kontrakty, generatory i kontrprzykłady";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(propertyTitle);
@@ -1474,7 +1443,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       "Previously unvisited property-contracts blank and draft resume offline",
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const performanceTitle = "Performance Evidence: workload, pamięć i decyzje";
+    const performanceTitle = "Badanie wydajności: obciążenie, pamięć i decyzje";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(performanceTitle);
@@ -1488,7 +1457,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     const workloadIndex = workloadSteps.findIndex((step) => step.id === "workload-blank");
     expect(workloadIndex).toBeGreaterThanOrEqual(0);
     await page.getByLabel("Kroki lekcji").getByRole("button").nth(workloadIndex).click();
-    await expect(page.locator(".task-pane h1")).toHaveText(workloadSteps[workloadIndex].title);
+    await expect(page.locator(".task-pane h1")).toHaveText("Od podstaw: własne obciążenie testowe");
     const performanceEditor = page.getByRole("textbox", {
       name: "Kod Rust",
       exact: true,
@@ -1512,7 +1481,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       "Previously unvisited performance blank and draft resume offline",
     );
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const ffiTitle = "Unsafe i FFI: kontrakty raw pointerów oraz RAII";
+    const ffiTitle = "Unsafe i FFI: kontrakty surowych wskaźników i RAII";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(ffiTitle);
@@ -1539,7 +1508,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     console.log("Unsafe/FFI gate and draft resume offline");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
     const operationsTitle =
-      "Service Operations: zaufanie, telemetryka i incydenty";
+      "Utrzymanie usługi: zaufanie, telemetria i incydenty";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(operationsTitle);
@@ -1567,7 +1536,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     ).toBeVisible();
     console.log("Service Operations gate and draft resume offline");
     await page.getByRole("button", { name: "Mapa nauki", exact: true }).click();
-    const apiReleaseMatrixTitle = "API Release Matrix: klient, features i MSRV";
+    const apiReleaseMatrixTitle = "Macierz zgodności API: klient, opcje kompilacji i MSRV";
     await page
       .getByRole("searchbox", { name: "Znajdź moduł lub temat" })
       .fill(apiReleaseMatrixTitle);
@@ -1626,7 +1595,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page.getByRole("tab", { name: "Kod", exact: true }).focus();
     await page.keyboard.press("ArrowRight");
     await expect(
-      page.getByRole("tab", { name: "Output", exact: false }),
+      page.getByRole("tab", { name: "Wyjście", exact: false }),
     ).toHaveAttribute("aria-selected", "true");
     await page.keyboard.press("ArrowLeft");
     await expect(
@@ -1637,7 +1606,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
-    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
     await expect(
       page.getByText("Kompilator niedostępny", { exact: true }),
     ).toBeVisible();
@@ -1686,7 +1655,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await page
       .getByRole("button", { name: "Uruchom testy", exact: true })
       .click();
-    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
     await expect(
       page.getByText("Kompilator niedostępny", { exact: true }),
     ).toBeVisible();
@@ -1880,7 +1849,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
       .click();
     await page
       .locator(".lesson-list-item")
-      .filter({ hasText: "Fundamenty własności: odtworzenie, drop i Copy" })
+      .filter({ hasText: "Podstawy własności: odtworzenie wartości, drop i Copy" })
       .click();
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByLabel("Kroki lekcji").getByRole("button").nth(0).click();
@@ -1991,7 +1960,7 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.locator(".task-pane")).toContainText(
       "Próba nie wpływa na mastery",
     );
-    await page.getByRole("tab", { name: "Output", exact: false }).click();
+    await page.getByRole("tab", { name: "Wyjście", exact: false }).click();
     await expect(page.getByLabel("Wynik kompilatora")).toContainText(
       "Kompilator niedostępny",
     );
@@ -2057,6 +2026,32 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false,
     await expect(page.locator(".task-pane")).toContainText(
       "samodzielne zadania kodowe 0/2",
     );
+    const beforeLanguageChange = await readLearningState();
+    await page.getByRole("combobox", { name: "Język", exact: true }).selectOption("en");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByLabel("Lesson notes")).toHaveValue(foundationNote);
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    const stateInEnglish = await readLearningState();
+    expect(stateInEnglish.resume).toEqual(foundationAfter.resume);
+    expect(stateInEnglish.steps).toEqual(foundationAfter.steps);
+    expect(stateInEnglish.events.slice(0, beforeLanguageChange.events.length)).toEqual(beforeLanguageChange.events);
+    // Reloading an open lesson can journal another view; it cannot award evidence.
+    for (const event of stateInEnglish.events.slice(beforeLanguageChange.events.length)) {
+      expect(event).toMatchObject({ kind: "exposure", gate: false, revealed: false,
+        lessonId: "ownership-foundation-transfer", stepId: "ownership-restore-rejection-transfer" });
+    }
+    const offlineEnglishUrl = capstoneStarterUrl.replace("/pl/", "/en/");
+    expect(offlineEnglishUrl).not.toBe(capstoneStarterUrl);
+    const englishZip = await page.evaluate(async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("English archive unavailable offline");
+      return Array.from(new Uint8Array(await response.arrayBuffer()));
+    }, offlineEnglishUrl);
+    const englishFiles = unzipSync(Uint8Array.from(englishZip));
+    expect(Object.keys(englishFiles).sort()).toEqual(Object.keys(unzipSync(Uint8Array.from(capstoneStarterBytes))).sort());
+    await page.getByRole("combobox", { name: "Language", exact: true }).selectOption("pl");
+    await expect(page.locator("html")).toHaveAttribute("lang", "pl");
     await context.setOffline(false);
     console.log(
       "A5 FOUNDATION OFFLINE CHECKPOINT: model exposure, draft/note/panel, exact primary resume and unavailable runner preserve state without independent credit",

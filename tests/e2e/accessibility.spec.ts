@@ -13,7 +13,7 @@ async function freshLessonPage(
   if (typeof baseURL !== "string" || baseURL.length === 0) {
     throw new Error("production accessibility config must provide project.use.baseURL");
   }
-  const context = await browser.newContext({ baseURL, viewport });
+  const context = await browser.newContext({ baseURL, viewport, locale: "pl-PL" });
   const page = await context.newPage();
   await page.goto("/");
   await page.getByRole("button", { name: "Sprawdź punkt startowy" }).click();
@@ -79,7 +79,7 @@ test("mobile workspace tabs resolve tabpanels and expose only the selected panel
       });
       expect(rect, selector).toBe(expected);
     }
-    await page.getByRole("tab", { name: /Output/ }).click();
+    await page.getByRole("tab", { name: /Wyjście/ }).click();
     await expect(page.locator("#workspace-output")).toBeVisible();
     await expect(
       page.locator(".output-content[aria-live='polite']"),
@@ -114,7 +114,7 @@ test("desktop workspace keeps three visible named panels with the hidden tablist
     for (const [panelId, tabLabel] of [
       ["workspace-panel-lesson", "Zadanie"],
       ["workspace-panel-code", "Kod"],
-      ["workspace-panel-output", /Output/],
+      ["workspace-panel-output", /Wyjście/],
     ] as const) {
       const panel = page.locator(`#${panelId}`);
       const tabId = await panel.getAttribute("aria-labelledby");
@@ -205,7 +205,7 @@ test("skip navigation and mobile workspace work with keyboard", async ({
   ).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("ArrowRight");
   await expect(
-    page.getByRole("tab", { name: "Output", exact: true }),
+    page.getByRole("tab", { name: "Wyjście", exact: true }),
   ).toBeFocused();
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
@@ -531,6 +531,7 @@ for (const [viewportName, viewport] of [
     const context = await browser.newContext({
       baseURL,
       viewport,
+      locale: "pl-PL",
       serviceWorkers: "block",
     });
     const page = await context.newPage();

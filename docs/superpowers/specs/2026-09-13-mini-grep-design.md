@@ -1,35 +1,101 @@
-# Mini grep — projekt integracyjny
+# Mini grep — integration project
 
-Zatwierdzony cel całego kursu obejmuje Mini grep z oryginalnego briefu i rozszerzenia opisane w `docs/advanced-curriculum.md`. Ten etap buduje jeden rozwijany projekt biblioteki i CLI, wraz z lekcjami, niezależnymi próbami transferu oraz rzeczywistymi testami procesu. Nie zmienia istniejących identyfikatorów ucznia ani lokalnego zapisu.
+[Polski](2026-09-13-mini-grep-design.pl.md)
 
-## Kontrakt produktu
+The approved goal of the entire course includes Mini grep from the original briefing and
+extension described in `docs/advanced-curriculum.md`. This stage builds one developed library design and CLI,
+along with lessons, independent transfer attempts and actual process tests. Does not
+change existing student identifiers or local records.
 
-`mini-grep [-C N] [--] QUERY PATH...` wyszukuje niepusty literalny podciąg UTF-8, z uwzględnieniem wielkości liter. Obsługuje pliki i katalogi rekurencyjnie. `-C` występuje najwyżej raz przed QUERY; `--` kończy opcje. N zawiera wyłącznie cyfry ASCII bez znaku i oznacza liczbę 0–16. Brak query/ścieżek, nieznana opcja lub konflikt opcji daje błąd użycia. Ścieżki są przyjmowane jako OsString/PathBuf; niepoprawny UTF-8 w query/opcji jest błędem użycia. Nazwy ścieżek w raporcie są jawnie escapowane, aby LF, CR, TAB, dwukropek i ukośnik odwrotny nie rozbijały rekordów; nie należy udawać ich odwracalności dla nie-UTF8 ścieżek, jeśli użyto lossy display.
+## Product contract
 
-Wynik pliku to unia okien kontekstu wokół dopasowanych linii, bez duplikatów i w kolejności numerów. Każdy rekord ma `label:line:text\n`, bez separatorów grup; trafienie oraz kontekst mają ten sam format. Wiele ścieżek zachowuje kolejność argumentów, katalogi są przeglądane depth-first z sortowaniem wpisów według PathBuf. Powtórzony argument ponownie przetwarza plik; nie ma ukrytej deduplikacji. Brak gwarancji identycznego porządku nie-ASCII między systemami operacyjnymi.
+`mini-grep [-C N] [--] QUERY PATH...` searches for a literal void of the lift UTF-8, taking into account the size of the
+letters. Supports files and directories recursively. `-C` occurs at most once before QUERY;
+`--` ends the options. N contains only digits ASCII without a sign and stands for 0–16. No
+query/ścieżek, unknown option or conflict of options gives you an error of use. Paths are accepted
+as OsString/PathBuf; incorrect UTF-8 in query/opcji is an error of use. The names of the paths in the report
+are openly escapated to LF, CR, TAB, a colon and an oblique reverse did not break
+records; do not pretend to be reversible for non-UTF8 paths if you used a lossy display.
 
-LF kończy linię; pojedyncze CR przed LF jest usuwane z tekstu. Samotne CR na EOF pozostaje danymi. Końcowa linia bez LF jest przetwarzana; końcowy LF nie tworzy dodatkowej pustej linii. Niepoprawny UTF-8 lub NUL w treści oznacza błąd pliku binarnego/formatu; pusty plik jest poprawny. Czytanie nie materializuje całego inputu. Błąd odczytu po wcześniejszym trafieniu nadal jest błędem, z oryginalnym io::Error w Error::source.
+The result of the file is a union of context windows around matching lines, without
+duplicates and in order of numbers. Each record has `label:line:text\n`, without group separators; hit
+and context have the same format. Many paths maintain the order of arguments,
+directories are viewed steph-first with sorting entries according to PathBuf. The repeated
+argument reprocesses the file; there is no hidden deduplication. No guarantee of
+identical non-ASCII order between operating systems.
 
-Jawne limity: query 1024 bajty, raw line 65536 bajtów przed LF (wliczając CR), kontekst 16 linii, końcowy UTF-8 stdout 1048576 bajtów, odwiedzone wpisy 4096 (łącznie z korzeniami i katalogami), zagłębienie 32 (korzeń głębokość 0). Granice są włączne, nadmiar odrzucany. Ograniczenie liczby wpisów chroni także bufor sortowania dużego katalogu. Odrzucenie zbyt długiej linii musi następować bez skopiowania całej linii do własnego bufora; przy odrzuceniu wolno obejrzeć maksymalnie jeden dodatkowy bajt. Nie obiecujemy limitu alokacji narzuconego przez dowolną obcą implementację BufRead.
+LF ends the line; individual CR before LF is removed from the text. The solitary CR
+on EOF remains data. The final line without LF is processed; the final line LF does
+not create an additional empty line. Invalid UTF-8 or NUL in content means file error binarnego/formatu;
+an empty file is correct. Reading doesn't materialize the whole input. The error read
+after an earlier hit is still a mistake, with the original io::Error in Error::source.
 
-Program ogranicza zachowaną treść wybranych linii do 1048576 bajtów (tekst plus jeden bajt na każdą linię, także pustą), przekazując pozostały budżet do odczytu kolejnego pliku. Osobny limit 1048576 bajtów obejmuje cały wyrenderowany stdout, wliczając etykiety i numery linii. Są to limity logicznej zawartości, nie obietnica 1 MiB całego heapu: dodatkową pamięć zajmują metadane Vec/ścieżek, surowa linia, kontekst oraz bufor renderowania. Stdout jest publikowany dopiero po poprawnym przetworzeniu wszystkich wejść. Błąd wejścia/polityki/limitu nie pozostawia częściowego stdout. Awaria samego stdout może pozostawić część zapisu; nie jest to transakcja urządzenia. Kody wyjścia: 0 co najmniej jedno dopasowanie, 1 brak dopasowań bez diagnostyki, 2 błędy użycia/IO/formatu/limitu. Stderr opisuje etap i przyczynę; nie parsujemy go do sterowania biblioteką.
+Open limits: query 1024 bytes, raw line 65536 bytes before LF (including CR), context
+of 16 lines, final UTF-8 stdout 1048576 Bytes, visited entries 4096 (including roots and
+catalogues), depth 32 (root depth 0). Borders are turned on, excess discarded. Limiting
+the number of entries also protects a large directory sorting buffer. The rejection of
+too long a line must take place without copying the entire line to its own buffer; when
+rejected, it is allowed to view up to one additional byte. We do not promise the
+allocation limit imposed by any foreign implementation BufRead.
 
-## Ścieżki i granice zagrożeń
+The program limits the preserved content of selected lines to 1048576 bytes (text plus one
+byte per line, also empty), passing the remaining budget to read another file. A
+separate limit 1048576 bytes includes the entire redededed stdout, including labels and line
+numbers. These are limits of logical content, not promise 1 MiB of the whole heatup:
+additional memory occupies metadata Vec/ścieżek, raw line, context and rendering buffer. Stdout
+is only published after correct processing of all inputs. Error wejścia/polityki/limitu leaves no partial
+stdout. The failure of stdout itself may leave a part of the recording; this is not a
+device transaction. Output codes: 0 at least one match, 1 no match without diagnosis, 2
+errors użycia/IO/formatu/limitu. Stderr describes the stage and cause; we do not parse it to control the
+library.
 
-`symlink_metadata` odrzuca dowiązania na napotkanym końcowym komponencie; rekurencja nie schodzi w linki. Odrzucane są pliki specjalne. Nie jest to sandbox ani ochrona przed wyścigiem metadane→open, dowiązaniem w komponencie nadrzędnym czy podmianą katalogu przez inny proces. Pracujemy na lokalnych ścieżkach wybranych przez właściciela, bez podniesionych uprawnień. Dokument threat modelu ma jasno opisać te granice. Zmiana danych podczas odczytu może zmienić wynik; program nie obiecuje snapshotu, zachowuje błędy, limit i poprawność formatu obserwowanych danych.
+## Paths and Hazard Limits
 
-## Architektura i dydaktyka
+`symlink_metadata` rejects the link on the final component encountered; the recursion does not fall
+into the links. Special files are rejected. It is not a sandbox or protection against
+race metadata→open, a link in the parent component or a directory substitution by
+another process. We work on local paths chosen by the owner, without increased
+privileges. The model's threeth document is to clearly describe these boundaries. A
+change in data while reading can change the result; the program does not promise
+snapshot, retains errors, limit and correct format of observed data.
 
-Moduł `mini-grep` po `public-api-workspaces`. Lekcje i pojęcia: `grep-context-selection`, `grep-bounded-input`, `grep-path-policy`, `grep-cli-contract`, w tej kolejności. Pierwszy prerequisite to `api-compatible-surface`; pozostałe tworzą łańcuch. Każda lekcja ma przewidywanie/wykonywany kontrast, wyjaśnienie, primary gate `<id>-gate`, niezależny blank `<id>-blank` bez startera i bez przepisu oraz świeżą kodową powtórkę `review-<id>`. Blank podaje publiczne nazwy i format interop w prozie, nie sygnatury funkcji, listę kroków ani prywatny algorytm.
+## Architecture and didactics
 
-Dwie pierwsze lekcje uczą czystej selekcji i ograniczonego BufRead. Dwie kolejne uczą decyzji polityki ścieżek i kontraktu CLI przy użyciu przenośnych danych/adapterów; rzeczywiste katalogi, linki i procesy weryfikuje pakiet. Nie przedstawiamy jednoplikowego runnera jako dowodu zachowania systemu plików.
+Module `mini-grep` after `public-api-workspaces`. Lessons and concepts: `grep-context-selection`, `grep-bounded-input`, `grep-path-policy`, `grep-cli-contract`, in that order. The first
+prerequisite is `api-compatible-surface`; the others form a chain. Each lesson has przewidywanie/wykonywany contrast, explanation,
+primary gate `<id>-gate`, independent blank `<id>-blank` without starter and without recipe, and a fresh
+code replay `review-<id>`. Blank provides public names and interop format in prose, not a
+function signature, a step list, or a private algorithm.
 
-Projekt `mini-grep`, pakiet `mini-grep-workshop`, Rust 2024 i biblioteka standardowa. Biblioteka oddziela search/input, traversal, render i argumenty, binarka jedynie mapuje wynik na strumienie i kod wyjścia. Starter formatuje się i kompiluje; niezależne testy zatrzymują się na celowych `todo!`. Referencja zawiera testy unit/integration/doc/process, ADR, threat model, instrukcje i przykładowe fixture'y. Reveal oznacza pomoc wyłącznie dla czterech primary gate; blanki i powtórki pozostają niezależne. Pobranie/lokalna lista poleceń nie podnosi mastery.
+The first two lessons teach pure selection and limited BufRead. Two more teach path and
+contract policy decisions CLI using portable danych/adapterów; actual directories, links and
+processes verify the package. We do not present a single-file runner as proof of file
+system behaviour.
 
-## Dowody
+Project `mini-grep`, Package `mini-grep-workshop`, Rust 2024 and Standard Library. The library separates search/input,
+traversal, render and arguments, the binary only maps the result to streams and the
+output code. Starter formatting and compiling; independent tests stop on purpose `todo!`.
+Reference includes tests unit/integration/doc/process, ADR, three model, instructions and sample fixtures. Reveal
+means aid only for four primarygates; blanks and replays remain independent. Pobranie/lokalna The
+command list does not raise the master.
 
-Przed referencją powstają testy i obserwowana porażka startera. Testy granic obejmują małe porcje, EOF, CRLF, Unicode, pusty/duży wzorzec, binarny input, błąd po częściowym odczycie, utratę pierwotnej przyczyny, nakładające okna, limit outputu i konfigurację CLI. Testy katalogów mają deterministyczne fixture'y; Unix symlinki testuje się jawnie. Błąd dostępu nie może być udawany testem chmod uruchomionym jako root.
+## Evidence
 
-Test własności używa niezależnego prostego oracle dla selekcji kontekstu na generowanych małych wejściach. Metamorphic append-invariance dotyczy C=0; przy C>0 nowa linia może stać się kontekstem. Fuzzer libFuzzer obejmuje query i treść oraz sprawdza wynik przeciw niezależnemu oracle. Fuzz jest osobnym narzędziem developera na nightly; aplikacja i główny pakiet pozostają stable/std-only. Root dodaje osobny harness i rzeczywisty ograniczony przebieg, a także kontrolny mutant. Nie nazywamy testu deterministycznego fuzzingiem ani skończonego fuzzowania pełnym dowodem.
+Before the reference, tests and observed starter failure are created. Border tests
+include small portions, EOF, CRLF, Unicode, pusty/duży pattern, binary input, error after
+partial reading, loss of primary cause, imposing windows, output limit and configuration
+CLI. Catalog tests have deterministic fixtures; Unix symlinks are tested openly. Access
+error cannot be faked with a chmod test running as root.
 
-Kontrole wykonują tylko przejrzane autorskie pliki repozytorium i celowe mutacje, nigdy szkice/importy ucznia. Nie wysyłamy kodu do publicznego Playgrounda. Końcowy etap wymaga niezależnych recenzji, lint/typecheck/Vitest, Rust/Tokio/Cargo, źródeł, buildu, E2E, offline oraz commita/pusha z kontrolą dokładnego SHA w CI.
+The property test uses an independent simple Oracle to select context on generated small
+inputs. Metamorphic application-invariance refers to C=0; at C>0 a new line can become
+context. Fuzzer libFuzzer includes queers and content and checks the result against
+independent Oracle. Fuzz is a separate developer tool for nightly; the application and
+main package remain stable/std-only. Root adds a separate harness and a real limited run, as well as
+a control mutant. We don't call it a test of deterministic fuzzing or complete
+fussification of full evidence.
+
+Checks are performed only by the reviewed proprietary repository files and deliberate
+mutations, never szkice/importy A student. We don't send code to public Playground. The final stage
+requires independent reviews, lint/typecheck/Vitest, Rust/Tokio/Cargo, sources, build, E2E, offline and commita/pusha with
+accurate control SHA w CI.

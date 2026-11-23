@@ -1,5 +1,15 @@
 import type { RunResult } from "@/domain/types";
 import { Terminal, CheckCircle2, TriangleAlert } from "lucide-react";
+import { useLocale } from "./locale-provider";
+export const compilerConnectionFailure = {
+  status: "infrastructure-error",
+  stdout: "",
+  stderr:
+    "Nie udało się połączyć z kompilatorem. Kod pozostaje zapisany. Spróbuj ponownie po odzyskaniu połączenia.",
+  diagnostics: [],
+  durationMs: 0,
+} satisfies RunResult;
+
 const statusLabels = {
   success: "Wykonano poprawnie",
   "compile-error": "Błąd kompilacji",
@@ -15,22 +25,32 @@ export function CompilerOutput({
   result?: RunResult;
   pending: boolean;
 }) {
+  const { t } = useLocale();
+  // Older saves use this same synthetic result for failed browser requests.
+  const connectionFailed =
+    result?.status === compilerConnectionFailure.status &&
+    result.durationMs === compilerConnectionFailure.durationMs &&
+    result.stderr === compilerConnectionFailure.stderr &&
+    !result.stdout &&
+    result.diagnostics.length === 0;
   return (
     <section
       id="workspace-output"
       className="compiler-output"
-      aria-label="Wynik kompilatora"
+      aria-label={t("Wynik kompilatora")}
     >
       <header>
         <span>
           <Terminal size={15} />
-          OUTPUT
+          {t("WYJŚCIE")}
         </span>
         {result && <span>{result.durationMs} ms</span>}
       </header>
       <div className="output-content" aria-live="polite">
         {pending ? (
-          <p className="output-empty">Kompilowanie w izolowanym środowisku…</p>
+          <p className="output-empty">
+            {t("Kompilowanie w izolowanym środowisku…")}
+          </p>
         ) : result ? (
           <>
             <p className={`run-status ${result.status}`}>
@@ -39,7 +59,7 @@ export function CompilerOutput({
               ) : (
                 <TriangleAlert size={17} />
               )}{" "}
-              {statusLabels[result.status]}
+              {t(statusLabels[result.status])}
             </p>
             {result.stdout && (
               <>
@@ -47,31 +67,34 @@ export function CompilerOutput({
                 <pre>{result.stdout}</pre>
               </>
             )}
-            {result.stderr && (
+            {connectionFailed ? (
+              <p>{t(compilerConnectionFailure.stderr)}</p>
+            ) : result.stderr ? (
               <>
                 <span className="output-label">
-                  Oryginalny komunikat rustc / stderr
+                  {t("Oryginalny komunikat rustc / stderr")}
                 </span>
                 <pre>{result.stderr}</pre>
               </>
-            )}
+            ) : null}
             {!result.stdout && !result.stderr && (
               <p className="muted">
-                Program zakończył się bez tekstu na wyjściu.
+                {t("Program zakończył się bez tekstu na wyjściu.")}
               </p>
             )}
             {result.tests && (
               <p className="test-count">
-                Testy: {result.tests.passed} poprawnych · {result.tests.failed}{" "}
-                nieudanych
+                {t("Testy: ")}
+                {result.tests.passed} {t("poprawnych · ")}
+                {result.tests.failed} {t("nieudanych")}
               </p>
             )}
           </>
         ) : (
           <div className="output-empty">
             <Terminal size={25} />
-            <p>Najpierw pomyśl. Potem uruchom.</p>
-            <small>Tutaj zobaczysz pełny wynik kompilatora.</small>
+            <p>{t("Najpierw pomyśl. Potem uruchom.")}</p>
+            <small>{t("Tutaj zobaczysz pełny wynik kompilatora.")}</small>
           </div>
         )}
       </div>

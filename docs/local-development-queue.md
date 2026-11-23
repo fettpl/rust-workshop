@@ -1,5 +1,7 @@
 # Local development queue
 
+[Polski](local-development-queue.pl.md)
+
 Date: 2026-10-22; local continuation updated 2026-10-26.
 
 This queue starts from main commit `7c760e3`. The local native-test maintenance

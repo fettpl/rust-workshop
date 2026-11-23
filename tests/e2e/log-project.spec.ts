@@ -1,8 +1,9 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import type { UserState } from "../../src/domain/types";
 import { stepKey } from "../../src/persistence/state";
 import {
@@ -135,7 +136,7 @@ test("switches Cargo projects without leaking solution view, notes or help", asy
   expect(Object.keys(files).sort()).toEqual(expectedArchivePaths(archive));
   assertArchiveNotices(files, archive);
   for (const file of archive.files)
-    expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(file.starter);
+    expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(localizedPackageFile(file.path, file.starter, "pl"));
   await panel
     .getByRole("button", { name: "Pokaż rozwiązanie pakietu" })
     .click();
@@ -149,7 +150,7 @@ test("switches Cargo projects without leaking solution view, notes or help", asy
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
     panel.getByRole("link", { name: "Pobierz pakiet startowy" }),
-  ).toHaveAttribute("href", "/projects/todo-cli-workshop/starter.zip");
+  ).toHaveAttribute("href", "/localized-projects/pl/todo-cli-workshop/starter.zip");
   await expect(
     page.locator(".save-status").filter({ hasText: "Zapisano na tym urządzeniu" }),
   ).toBeVisible();

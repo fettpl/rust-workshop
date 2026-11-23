@@ -1,5 +1,7 @@
 # Plan 004: Preserve file meaning across explicit schema upgrades
 
+[Polski](004-file-schema-evolution.pl.md)
+
 Registered on 2026-11-10. The scope below preserves the original implementation plan. The accepted post-maintenance baseline is commit `205c988ca9ef308d06fc00583481ae27a10e98fe`, tree `3ff20f5805520f19d9d021e2c4672d756611f578`, with 657 tracked source files. Registry, learner state and archive observations were captured before authoring. Implementation and verification below describe the work to be done.
 
 ## Workshop scope

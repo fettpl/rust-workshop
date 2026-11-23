@@ -1,5 +1,7 @@
 # Unsafe Borrowed Memory Soundness Implementation Plan
 
+[Polski](2026-09-20-unsafe-borrowed-memory-soundness.pl.md)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a bounded, executable Rust curriculum milestone for reviewing the soundness of unsafe borrowed-memory abstractions, with independent compile/runtime/Miri evidence and explicit limits on what that evidence proves.
@@ -235,7 +237,8 @@ The matrix forbids treating a stable compile error, timeout, or unrelated failin
 **Files:**
 
 - Test: all files listed above and existing package/content tests.
-- Modify: no source files unless a failed acceptance test identifies a concrete defect.
+- Modify: no source files unless a failed acceptance test identityifies a concrete
+  defect.
 
 - [ ] Run focused fixture/integration/verifier tests.
 - [ ] Run `npm test`, typecheck, lint, build, content checks/audit, CI YAML parse, Playwright listing, and offline verification.

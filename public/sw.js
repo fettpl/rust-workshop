@@ -1,6 +1,6 @@
-const CACHE = 'rust-workshop-v30';
+const CACHE = 'rust-workshop-v31';
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest', '/monaco/LICENSE', '/monaco/ThirdPartyNotices.txt', '/monaco/DOMPurify-LICENSE'])));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['/', '/icon.svg', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest', '/manifest.en.webmanifest', '/monaco/LICENSE', '/monaco/ThirdPartyNotices.txt', '/monaco/DOMPurify-LICENSE'])));
   self.skipWaiting();
 });
 self.addEventListener('activate', event => {
@@ -21,7 +21,7 @@ self.addEventListener('fetch', event => {
     event.respondWith(cacheResponse(event.request, '/').catch(() => caches.open(CACHE).then(cache => cache.match('/'))));
     return;
   }
-  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/monaco/') || url.pathname.startsWith('/icon') || url.pathname.startsWith('/projects/')) {
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/monaco/') || url.pathname.startsWith('/icon') || url.pathname === '/manifest.webmanifest' || url.pathname === '/manifest.en.webmanifest' || (url.pathname.startsWith('/projects/') || url.pathname.startsWith('/localized-projects/'))) {
     event.respondWith(caches.open(CACHE).then(cache => cache.match(event.request)).then(hit => hit || cacheResponse(event.request)));
   }
 });
@@ -30,7 +30,7 @@ self.addEventListener('message', event => {
   const urls = event.data.urls.filter(value => {
     try {
       const url = new URL(value);
-      return url.origin === self.location.origin && (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/monaco/') || url.pathname.startsWith('/projects/'));
+      return url.origin === self.location.origin && (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/monaco/') || (url.pathname.startsWith('/projects/') || url.pathname.startsWith('/localized-projects/')));
     } catch { return false; }
   });
   event.waitUntil(caches.open(CACHE).then(cache => Promise.all(urls.map(url => cache.add(url).catch(() => {})))));

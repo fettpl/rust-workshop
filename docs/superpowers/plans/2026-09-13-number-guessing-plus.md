@@ -1,5 +1,7 @@
 # Number Guessing+ implementation plan
 
+[Polski](2026-09-13-number-guessing-plus.pl.md)
+
 > For agentic workers: use subagent-driven-development with the current user-selected GPT-5.6-Luna high for new delegations and independent reviewers. Root owns integration and release; do not commit from an author task.
 
 **Goal:** Complete the first portfolio project as a playable, tested random-secret CLI while preserving existing learner state.

@@ -1,5 +1,7 @@
 # Tokio TCP and bounded service implementation plan
 
+[Polski](2026-09-13-tokio-network-service.pl.md)
+
 > **For agentic workers:** Use parallel authors and independent review; preserve the existing course architecture and runner boundary.
 
 **Goal:** Turn the current I/O, cancellation and blocking contracts into real TCP practice and a downloadable service with bounded admission and accounted shutdown. This is one stage of the approved full advanced curriculum, not completion of that goal.

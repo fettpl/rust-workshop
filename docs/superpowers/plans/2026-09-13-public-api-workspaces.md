@@ -1,5 +1,7 @@
 # Public API and Cargo workspace implementation plan
 
+[Polski](2026-09-13-public-api-workspaces.pl.md)
+
 > **For agentic workers:** Use independent authors and reviewers, following subagent-driven-development and test-first verification of actual contracts.
 
 **Goal:** Teach evolving a public Rust API without accidentally invalidating clients, and exercise the contract in a real, downloadable Cargo workspace. This advances the full approved curriculum; it does not complete advanced Cargo, public API design or the senior scope.

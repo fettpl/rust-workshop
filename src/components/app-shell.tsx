@@ -27,7 +27,13 @@ import {
 import { useClock } from "./use-clock";
 import { LearningProvider, useLearning } from "./learning-provider";
 import { Onboarding, Diagnostic } from "./onboarding";
-import { Dashboard, CourseMap, ProjectView, UnavailableLesson, useOpenLesson } from "./overview";
+import {
+  Dashboard,
+  CourseMap,
+  ProjectView,
+  UnavailableLesson,
+  useOpenLesson,
+} from "./overview";
 import { LessonWorkspace } from "./lesson-workspace";
 import { ReviewView } from "./review";
 import { Journal, SettingsView } from "./personal";
@@ -39,6 +45,7 @@ import {
   type SaveAnnouncementEvent,
   type SaveStatusAnnouncer,
 } from "./save-status-announcer";
+import { LanguagePicker, useLocale } from "./locale-provider";
 const navItems: { id: View; label: string; icon: typeof Compass }[] = [
   { id: "dashboard", label: "Twój warsztat", icon: Compass },
   { id: "course", label: "Mapa nauki", icon: BookOpen },
@@ -55,6 +62,7 @@ export default function App() {
   );
 }
 function AppShell() {
+  const { t, courseText } = useLocale();
   const now = useClock();
   const { state, update, saveStatus, storageError } = useLearning();
   const [online, setOnline] = useState(true);
@@ -86,7 +94,9 @@ function AppShell() {
       : view;
   const previousNavigation = useRef(navigationKey);
   const openLesson = useOpenLesson();
-  const savedLesson = lessons.find((lesson) => lesson.id === state.resume.lessonId);
+  const savedLesson = lessons.find(
+    (lesson) => lesson.id === state.resume.lessonId,
+  );
   const currentModule =
     modules.find((module) =>
       module.lessonIds.includes(state.resume.lessonId),
@@ -258,19 +268,19 @@ function AppShell() {
       onKeyDown={handleShellKeyDown}
     >
       <a className="skip-link" href="#main-content" inert={menu}>
-        Przejdź do treści
+        {t("Przejdź do treści")}
       </a>
       <aside
         id="mobile-navigation"
         className={`sidebar ${menu ? "mobile-open" : ""}`}
-        aria-label="Nawigacja główna"
+        aria-label={t("Nawigacja główna")}
         ref={sidebarRef}
       >
         <button className="brand" onClick={() => navigate("dashboard")}>
           <span className="brand-mark">r.</span>rust
           <span className="brand-light">workshop</span>
         </button>
-        <p className="sidebar-label">PRZESTRZEŃ DO NAUKI</p>
+        <p className="sidebar-label">{t("PRZESTRZEŃ DO NAUKI")}</p>
         <nav>
           {navItems.map((item) => (
             <button
@@ -281,7 +291,7 @@ function AppShell() {
               onClick={() => navigate(item.id)}
             >
               <item.icon size={18} />
-              {item.label}
+              {t(item.label)}
               {item.id === "review" && due > 0 && (
                 <span className="count">{due}</span>
               )}
@@ -289,15 +299,16 @@ function AppShell() {
           ))}
         </nav>
         <div className="sidebar-course">
-          <span className="sidebar-label">TERAZ ODKRYWASZ</span>
+          <span className="sidebar-label">{t("TERAZ ODKRYWASZ")}</span>
           <button onClick={() => navigate("course")} className="sidebar-module">
             <span className="module-glyph" aria-hidden="true">
               ↳
             </span>
             <span>
-              {currentModule.title}
+              {courseText(currentModule.title)}
               <small>
-                Lekcje: {currentLessons.length} · Twój bieżący moduł
+                {t("Lekcje: ")}
+                {currentLessons.length} {t("· Twój bieżący moduł")}
               </small>
             </span>
             <ArrowUpRight size={16} />
@@ -313,7 +324,7 @@ function AppShell() {
                 }}
               >
                 <span>{String(index + 1).padStart(2, "0")}</span>
-                {lesson.title}
+                {courseText(lesson.title)}
               </button>
             ))}
           </div>
@@ -321,19 +332,19 @@ function AppShell() {
         <div className="sidebar-bottom">
           <div className="local-note">
             <span className="status-dot" />
-            Twoje dane, Twoje urządzenie
+            {t("Twoje dane, Twoje urządzenie")}
           </div>
           <button className="nav-item" onClick={() => navigate("settings")}>
             <Settings size={18} />
-            Ustawienia i postęp
+            {t("Ustawienia i postęp")}
           </button>
           <div className="profile">
             <span className="avatar">
-              {(state.onboarding.name || "Ty").slice(0, 1).toUpperCase()}
+              {(state.onboarding.name || t("Ty")).slice(0, 1).toUpperCase()}
             </span>
             <span>
-              {state.onboarding.name || "Twój profil"}
-              <small>Uczysz się we własnym tempie</small>
+              {state.onboarding.name || t("Twój profil")}
+              <small>{t("Uczysz się we własnym tempie")}</small>
             </span>
           </div>
         </div>
@@ -344,7 +355,7 @@ function AppShell() {
         aria-live="polite"
         aria-atomic="true"
       >
-        {liveMessage}
+        {t(liveMessage)}
       </span>
       <div className="app-main">
         <header className="topbar">
@@ -352,33 +363,34 @@ function AppShell() {
             <button
               ref={menuTriggerRef}
               className="icon-button mobile-menu"
-              aria-label={menu ? "Zamknij nawigację" : "Otwórz nawigację"}
+              aria-label={menu ? t("Zamknij nawigację") : t("Otwórz nawigację")}
               aria-controls="mobile-navigation"
               aria-expanded={menu}
               onClick={() => (menu ? closeMenu("toggle") : setMenu(true))}
             >
               <Menu size={20} aria-hidden="true" />
             </button>
-            <span>Warsztat</span>
+            <span>{t("Warsztat")}</span>
             <span className="breadcrumb-slash">/</span>
             <strong>
               {view === "lesson"
-                ? currentModule.title
-                : (navItems.find((n) => n.id === view)?.label ?? "Ustawienia")}
+                ? courseText(currentModule.title)
+                : t(navItems.find((n) => n.id === view)?.label ?? "Ustawienia")}
             </strong>
           </div>
           <div className="topbar-actions">
+            <LanguagePicker inert={menu} />
             <span className="save-status" aria-hidden="true">
               <Check size={13} />
-              {saveStatus}
+              {t(saveStatus)}
             </span>
             <button
               className="icon-button"
               inert={menu}
               aria-label={
                 state.settings.theme === "light"
-                  ? "Włącz ciemny motyw"
-                  : "Włącz jasny motyw"
+                  ? t("Włącz ciemny motyw")
+                  : t("Włącz jasny motyw")
               }
               onClick={() =>
                 update((s) => ({
@@ -413,21 +425,22 @@ function AppShell() {
                 ) : (
                   <PanelLeftClose size={17} />
                 )}
-                <span>{focus ? "Wyjdź ze skupienia" : "Skupienie"}</span>
+                <span>{focus ? t("Wyjdź ze skupienia") : t("Skupienie")}</span>
               </button>
             )}
           </div>
         </header>
         {storageError && (
           <div role="alert" className="global-alert">
-            {storageError}
+            {t(storageError)}
           </div>
         )}
         {!online && (
           <div role="status" className="offline-banner">
             <WifiOff size={16} />
-            Tryb offline. Możesz uczyć się i edytować kod. Kompilator wymaga
-            połączenia.
+            {t(
+              "Tryb offline. Możesz uczyć się i edytować kod. Kompilator wymaga połączenia.",
+            )}
           </div>
         )}
         <main

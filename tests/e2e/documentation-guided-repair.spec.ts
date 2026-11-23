@@ -4,7 +4,7 @@ import {
   lessons,
   modules,
   reviewExercises,
-} from "../../src/content/course";
+} from "./polish-course.helper";
 import { courseEvidenceSummary } from "../../src/content/learning-context";
 import { gateRecovery } from "../../src/engine/learning";
 import {
@@ -838,7 +838,7 @@ test("keeps the authored snapshot readable offline and exposes mobile keyboard p
     page.getByRole("tab", { name: "Kod", exact: true }),
   ).toBeFocused();
   await page.keyboard.press("ArrowRight");
-  await expect(page.getByRole("tab", { name: /Output/ })).toBeFocused();
+  await expect(page.getByRole("tab", { name: /Wyjście/ })).toBeFocused();
   await taskTab.focus();
   await page.keyboard.press("Enter");
   await expect(taskTab).toHaveAttribute("aria-selected", "true");
@@ -910,7 +910,7 @@ test("keeps the authored snapshot readable offline and exposes mobile keyboard p
   await expect(diagnosticEditor).toHaveAttribute("readonly", "");
   await expect(diagnosticEditor).toHaveValue(typeObserve.code!);
   await page.getByRole("button", { name: "Uruchom", exact: true }).click();
-  const outputTab = page.getByRole("tab", { name: /Output/ });
+  const outputTab = page.getByRole("tab", { name: /Wyjście/ });
   await outputTab.focus();
   await page.keyboard.press("Enter");
   await expect(outputTab).toHaveAttribute("aria-selected", "true");

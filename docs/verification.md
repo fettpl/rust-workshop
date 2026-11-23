@@ -2,6 +2,8 @@ Current authored foundation source checkpoint — 2 November 2026: 48 modules, 1
 
 ## A1 prepared Send handoff source checkpoint — 15 October 2026
 
+[Polski](verification.pl.md)
+
 Accepted maintenance base: ordinary main `3c1ee89c3d46b0b1b9e3798a317587464a236e5c`, tree `7638d5f7a07ca24907a15edec7ea7d3627496d18`. The coordinator confirmed [main run 38733773185](https://github.com/fettpl/rustcrushcourse/actions/runs/38733773185), attempt 1, all eleven jobs successful before source edits. This is maintenance release evidence, not A1 acceptance.
 
 The current authored source appends `async-lending-send-boundary-handoff-model` and `async-lending-send-boundary-prepared-handoff` after the five existing Send steps. `prepare_handoff` formats borrowed records synchronously into owned strings before returning a boxed Send + 'static future that waits on a supplied pause. The new primary family is `async-lending/send-prepared-handoff-v1`; the old gate and blank remain `async-lending/send-boundary-v1`, and ordinary review remains recall-only. No concept/module/lesson/review is added. The registry has 48 modules, 192 lessons, 194 concepts, 1,271 steps, 349 sources and 194 ordinary reviews. Module criteria still require one independent contract each; concept confirmation requires two clean eligible families, and delayed eligibility remains strictly more than 24 hours after the relevant preceding contact/rating.
@@ -148,74 +150,170 @@ The capstone verifier has bounded subprocess commands and writes one JSON report
 
 ### Historical Dependency Assurance
 
-Etap `dependency-assurance` ma cztery polskie lekcje, osiem evidence gates, cztery zadania blank-page i cztery kodowe retrievals. Pure-Rust contracts są deterministyczne: diagnozują duplicate package/version/source, egzekwują registry plus MIT/Apache-2.0, oceniają advisory exception przez wstrzyknięte `as_of_ymd` oraz zatrzymują release przy pustym artefakcie, braku external consumera lub `publish = true`.
+Stage `dependency-assurance` has four Polish lessons, eight evidence gates, four blank-page tasks and four
+code retrievals. Pure-Rust contracts are deterministic: they diagnose duplicate package/version/source,
+enforce the register plus MIT/Apache-2.0, evaluate the advisory perception by injected `as_of_ymd`, and
+stop the release at an empty artefact, lack of external consumer or `publish = true`.
 
-`content:supply-chain -- --fetch` regeneruje autorski ZIP, rozpakowuje wyłącznie solution, sprawdza `deny.toml`, policy, exception ledger, duplicate evidence, pinned `cargo-deny` snapshot i release evidence manifest (w tym SHA-256 rzeczywistych `Cargo.toml`/`Cargo.lock`), a następnie wykonuje offline/locked `cargo metadata`, `cargo tree`, workspace check i `fixtures/external-consumer` po wygenerowaniu jego lockfile. Weryfikator odrzuca argumenty poza `--fetch`/`--msrv`, nie przyjmuje ścieżek ani kodu ucznia i nie uruchamia sieciowego cargo-deny. Snapshot ma `execution_status = unsupported/infrastructure`, więc decyzja pozostaje `hold-until-local-verifier`; ten etap nie twierdzi, że ma aktualną bazę advisory, kompletny SBOM, ocenę prawną ani publikację crate.
+`content:supply-chain -- --fetch` regenerates the author ZIP, unwraps solution only, checks `deny.toml`, police, acceptance
+ledger, duplicate evidence, pinned `cargo-deny` snapshot and release evidence manifest (including
+SHA-256 real `Cargo.toml`/`Cargo.lock`) and then performs offline/locked `cargo metadata`, `cargo tree`, workspace check and `fixtures/external-consumer` after
+generating his lockfile. The verifier rejects arguments beyond `--fetch`/`--msrv`, does not
+accept paths or student code and does not run network cargo-dena. Snapshot has `execution_status = unsupported/infrastructure`so
+the decision remains `hold-until-local-verifier`; this stage does not claim to have a current database of
+advisors, complete SBOM, legal assessment or publication of the Crate.
 
 ### Historical preceding-stage controls
 
 | Sprawdzenie                   | Wynik                                                                                                                                                                                                                                                                                                                                       |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Vitest                        | Historical preceding-stage result: 382 tests in 65 files after the Dependency Assurance integration; the current Task 6 focused checks are recorded below.                                                                                                                                                                                  |
-| Stable i dokładny Rust 1.85.0 | Historical Service Operations result: `content:operations -- --msrv` regenerated and compared both ZIPs, then passed fmt, locked/offline check, tests, Clippy and six controlled mutants on exact 1.85.0.                                                                                                                                   |
-| TypeScript i ESLint           | Brak błędów; dwa wcześniejsze ostrzeżenia w borrowed-hrtb.ts                                                                                                                                                                                                                                                                                |
-| Curriculum i źródła           | Historical preceding-stage snapshot: 169 lessons, 172 concepts, 7 traces and 314 sources; its then-current catalog row recorded 171 lessons, 174 concepts, 7 traces and 314 sources. The current integrated catalog is recorded at the top of this document.                                                                                |
-| Autorskie przypadki Rust      | Service Operations ma 20 stałych pure-Rust evaluator cases (16 lesson gates/recall i 4 review), a FFI package verifier pozostaje osobnym native Cargo check; focused content tests przechodzą                                                                                                                                               |
-| Niezależne recenzje           | Implementacja Luna high; wcześniejsze milestone reviews Astra medium: APPROVED. Bieżący review granicy profilu i kontrolowanego mutanta jest osobnym follow-upem.                                                                                                                                                                           |
+| Stable and accurate Rust 1.85.0 | Historical Service Operations result: `content:operations -- --msrv` regenerated and compared both ZIPs, then passed fmt, locked/offline check, tests, Clippy and six controlled mutants on exact 1.85.0.                                                                                                                                   |
+| TypeScript i ESLint           | No errors; two previous warnings in borrowed-hrtb.ts                                                                                                                                                                                                                                                                                |
+| Curriculum and sources           | Historical preceding-stage snapshot: 169 lessons, 172 concepts, 7 traces and 314 sources; its then-current catalog row recorded 171 lessons, 174 concepts, 7 traces and 314 sources. The current integrated catalog is recorded at the top of this document.                                                                                |
+| Rust's Authorial Cases      | Service Operations has 20 pure-Rust evaluator cases (16 lessons gates/recall and 4 reviews), FFI package verifier remains a separate native Cargo check; focused content tests pass                                                                                                                                               |
+| Independent Reviews           | Implementation of Luna high; earlier milstone reviews Astra medium: APPROVED. The current review of the profile boundary and controlled mutant is a separate follow-up.                                                                                                                                                                           |
 | Build                         | Pass                                                                                                                                                                                                                                                                                                                                        |
 | Offline                       | Historical cache v27 result; the current Task 6 offline run must include all twelve prior packages, Miri Safety, both capstone ZIPs byte-for-byte, and capstone draft/note resume.                                                                                                                                                          |
-| Performance Evidence Cargo    | Pass na stable i exact Rust 1.85.0: przypięty Criterion 0.5.1, formatowanie, testy kontraktu wyniku, benchmark offline/locked i uruchomienie bez uniwersalnego progu czasowego                                                                                                                                                              |
+| Performance Evidence Cargo    | Pass on stable and exact Rust 1.85.0: fastened Criterion 0.5.1, formatting, performance contract tests, benchmark offline/locked and commissioning without a universal time threshold                                                                                                                                                              |
 | Profile Evidence Cargo        | `content:profiles` sprawdza 20-file Log Analyzer archive, manifest, source-model contract, controlled mutant, fmt, locked/offline targets and tests; `content:allocations` osobno weryfikuje authored runtime probe; `--msrv` uses exact Rust 1.85.0                                                                                        |
 | External profile evidence     | Dedicated CI job runs fresh Valgrind Callgrind and DHAT modes on Linux, refuses stale fixtures, and uploads the two reports for seven days                                                                                                                                                                                                  |
 | Miri Safety Cargo/Miri        | `content:miri -- --stable --fetch` and `--msrv --fetch` select explicit safe-package compilers, validate the authored archive and controlled mutant, compile three negative fixtures to metadata, then invoke only pinned `nightly-2026-08-08` Miri. Each UB result must contain its own fixture filename and category-specific diagnostic. |
 | Dependency Assurance          | `content:supply-chain -- --fetch` passes archive freshness, authored policy/ledger structure checks, pinned offline cargo-deny snapshot checks, locked/offline workspace Cargo checks, and an extracted external consumer; `publish = false` is required while cargo-deny remains unsupported/infrastructure.                               |
-| Ręczny UI                     | Mapa → kryterium → Monaco; czytelny prompt i starter. Klawiaturowe otwarcie blanku prowadzi do pustego edytora; brak błędów konsoli                                                                                                                                                                                                         |
+| Manual UI                     | Map → criterion → Monaco; readable prompt and starter. Key open blank leads to an empty editor; no console errors                                                                                                                                                                                                         |
 
 ### Historical evidence scope
 
-Stały harness obejmuje dokładnie 14 nowych kontraktów fixture: osiem zadań gate/blank (cztery główne bramki i cztery blanki), dwa dodatkowe recall w lekcjach kontrprzykładów oraz cztery niezależne review. Każde rozwiązanie referencyjne, poprawny wariant i mutant kompilują się osobno przez Rust 2024. Poprawne odpowiedzi muszą wykonać niepusty zestaw testów. Mutant musi się skompilować, a następnie zakończyć statusem 101 z rzeczywistą nieudaną asercją. Timeout, sygnał procesu i błąd kompilacji nie zastępują dowodu. Produkcyjny evaluator otrzymuje faktyczny raport Rust.
+The constant harness includes exactly 14 new fixture contracts: eight tasks gate/blank (four
+main goals and four blanks), two additional recall in counter-example lessons and four
+independent reviews. Each reference solution, correct variant and mutant compile
+separately by Rust 2024. Correct answers must be performed by an empty set of tests. The
+mutant must compile and then finish with status 101 with a real failed Assertion.
+Timeout, process signal and compilation error do not replace evidence. The production
+evaluator receives the actual Rust report.
 
-Property Contracts dodaje osobny, zaufany pakiet Cargo z biblioteką std-only i Proptest 1.11.0 jako dev-dependency. Weryfikator nie przyjmuje kodu ani ścieżek z zewnątrz: buduje wyłącznie autorskie archiwum, sprawdza lockfile, przechodzi rozwiązanie i replay `property_contracts.txt`, odrzuca starter z `todo!` oraz uruchamia dwa kontrolowane mutanty: ignorujący malformed przy aktywnym filtrze i zachowujący białe znaki parsera. Stable i exact Rust 1.85.0 są obsługiwane przez osobne tryby polecenia. Własności obejmują zadeklarowaną domenę generatora; nie są dowodem wszystkich danych, pełnego fuzzingu ani gotowości produkcyjnej.
+Property Contracts adds a separate, trusted Cargo package with the library std-only and
+Proptest 1.11.0 as dev-dependency. The verifier does not accept code or tracks from
+outside: it builds only the original archive, checks lockfile, passes the solution and
+replay `property_contracts.txt`, rejects the starter from `todo!`, and launches two controlled mutants: ignoring
+malformed with an active filter and retaining white parser characters. Stable and Exact
+Rust 1.85.0 are supported by separate command modes. Properties include the declared
+generator domain; they are not proof of all data, full fuzzing or production readiness.
 
-Performance Evidence dodaje cztery lekcje, osiem bramek, cztery blanki i cztery powtórki. Stałe fixture obejmują 16 zadań lekcji i cztery review; poprawne warianty i mutanty kompilują się osobno przez Rust 2024, a wynik zależy od asercji i raportu testów. Żaden evaluator nie używa `Instant`, `SystemTime`, `elapsed` ani `sleep`, więc zegar ścienny nie jest kryterium zaliczenia.
+Performance Evidence adds four lessons, eight goals, four blanks and four replays. Fixed
+fixtures include 16 lesson tasks and four reviews; correct variants and mutants compile
+separately by Rust 2024, and the result depends on the Assertion and Test Report. No
+Evaluator Uses `Instant`, `SystemTime`, `elapsed` neither `sleep`, so a wall clock is not a pass criterion.
 
-Log Analyzer ma dev-only Criterion 0.5.1 oraz `tests/performance_contract.rs`, który porównuje kształt wyniku ścieżki bazowej i pożyczanej ścieżki dla małych, mieszanych i kończących się bez LF danych. `content:performance -- --fetch` pobiera przypięty lockfile, a potem sprawdza `fmt`, `check --all-targets`, kontrakt i uruchomienie benchmarku offline/locked. Benchmark zapewnia wykonywalny punkt porównania dla jednego workloadu; milestone nie ustanawia progu czasu, profilu CPU/heap, licznika alokacji ani uniwersalnej tezy o szybkości.
+Log Analyzer has dev-only Criterion 0.5.1 and `tests/performance_contract.rs`, which compares the shape of the base path result
+and the borrowed path for small, mixed and ending without LF data. `content:performance -- --fetch` takes a fastened
+lockfile and then checks `fmt`, `check --all-targets`, contract and launch benchmark offline/locked. Benchmark provides
+an executable comparison point for one workload; milstone does not set the time
+threshold, profile CPU/heap, allocation counter or universal thesis of speed.
 
 Profile Evidence adds four lessons, eight gates, four blank-page tasks and four coding retrievals. The authored Log Analyzer package now contains `tests/source_model_contract.rs`, `PROFILE-MANIFEST.json`, `PERFORMANCE.md`, `ALLOCATION-MANIFEST.json` and the allocation counter/probe in a 20-file archive. The fixed contract generates 512 INFO records before the parser call and checks source-level assumptions against the API and constants; `content:allocations` separately verifies runtime calls using strict result reports. `content:profiles` regenerates and compares both served archives, validates the manifest, runs formatting, locked/offline all-target checks, the authored source-model contract, and a controlled mutant that replaces the parser buffer capacity with the setup value. The verifier requires the mutant to terminate normally with the named Rust test failure; compiler errors, signals and tool failures are not accepted. It never accepts checked-in profile output as evidence.
 
 `content:profiles -- --profile=callgrind` and `--profile=dhat` require the installed Valgrind executable, run the authored source-model test binary, and require exactly one fresh non-empty report. The dedicated CI job installs Valgrind when needed, runs both modes on the Linux runner, and uploads the reports as seven-day artifacts. The external report covers the whole Rust test process, including the harness, workload construction, parser call, assertions and teardown; it cannot attribute samples exclusively to `analyze_reader`. The baseline/candidate contract checks summary equality only, so it does not compare profiler samples or allocation counts. The separate runtime probe is bounded to its named process and workloads and does not claim a platform-independent timing threshold or universal speed result.
 
-Unsafe/FFI ma cztery lekcje, osiem bramek, cztery blanki i cztery niezależne powtórki. Pure-Rust authored fixtures sprawdzają politykę null/zero, granicę `split_at_mut`, walidację tagu i zarezerwowanych flag oraz pojedynczy release w RAII. Dziesiąty pakiet `ffi-buffer-workshop` zawiera checked-in C header/source, `build.rs`, opaque ABI declarations, checked Rust wrapper, native integration tests and `SAFETY.md`. `content:ffi` regeneruje i porównuje starter/solution ZIP, rozpakowuje wyłącznie authored solution, uruchamia `cargo fmt`, `cargo check --all-targets --offline --locked`, `cargo test --offline --locked` i Clippy. CI odpala verifier osobno przed generycznym `content:cargo` w stable i MSRV jobs. Nie uruchamiamy Miri na tym pakiecie: kompilowany C i allocator są częścią kontraktu fixture. Wspierany pure-Rust harness Miri znajduje się teraz w pakiecie `miri-safety-workshop` i obejmuje ograniczony zestaw fixture’ów ByteView/Slot/MutSlot; nie wykonuje się kodu ucznia/importu ani zewnętrznego Playground.
+Unsafe/FFI has four lessons, eight goals, four blanks and four independent replays. Pure-Rust
+authorized fixes check politics null/zero, border `split_at_mut`, tag validation and reserved flags and
+single release in RAII. The tenth package `ffi-buffer-workshop` includes checked-in C header/source, `build.rs`, opaque ABI
+declarations, checked Rust wrapper, native integration tests and `SAFETY.md`. `content:ffi` regenerates
+and compares starter/solution ZIP, unwraps only authorized solution, launches `cargo fmt`, `cargo check --all-targets --offline --locked`, `cargo test --offline --locked` and
+Clippy. CI fires the verifier separately before generic `content:cargo` in stable and MSRV jobs.
+We do not run Miri on this package: the compiled C and allocator are part of the fixture
+contract. Supported pure-Rust harness Miri is now included in the package `miri-safety-workshop` and
+includes a limited set of fixtures ByteView/Slot/MutSlot; no code ucznia/importu or external Playground are
+executed.
 
-Service Operations ma cztery lekcje, osiem bramek, cztery blanki i cztery niezależne powtórki. Pure-Rust fixtures sprawdzają kolejność trust/proof/limit, allowlistę źródeł i correlation ID bez payloadu, readiness przed drain, dokładnie jeden terminal event oraz rozdzielenie timeoutu od completion. Jedenasty pakiet `service-operations-workshop` zawiera przypięte Tokio 1.53.1, `src/operations.rs`, contract tests, controlled mutants, `THREAT_MODEL.md` i `RUNBOOK.md`. `content:operations` ma pre-hook regenerujący oba ZIP-y i odrzuca stalenie przez porównanie bajtów; stable oraz exact Rust 1.85.0 uruchamiają `fmt`, locked/offline `check`, testy, Clippy i sześć kontrolowanych mutantów przed generycznym `content:cargo`. E2E i offline sprawdzają nawigację, dokładne wznowienie, pobranie startera i cache. Fixture nie jest produkcyjnym backendem telemetrycznym, nie uwierzytelnia źródeł poza przykładową allowlistą i nie twierdzi, że można bezpiecznie przerwać arbitralną pracę blocking.
+Service Operations has four lessons, eight goals, four blanks and four independent
+replays. Pure-Rust fixtures check order trust/proof/limit, allowlist of sources and correlation ID
+without payload, readiness before drag, exactly one event terminal and timeout
+separation from completion. The eleventh package `service-operations-workshop` contains clipped Tokio 1.53.1, `src/operations.rs`,
+contract tests, controlled mutants, `THREAT_MODEL.md` and `RUNBOOK.md`. `content:operations` has a pre-hook regenerating both
+ZIP-y and rejects constant byte comparison; table and exact Rust 1.85.0 run `fmt`, locked/offline
+`check`, tests, Clippy and six controlled mutants before generic `content:cargo`. E2E and offline
+check navigation, accurate resumption, starter download and cache. Fixture is not a
+production telemetric backend, it does not authenticate sources beyond an example
+allowlist and does not claim that arbitrary blocking work can be safely discontinued.
 
-Miri Safety ma cztery lekcje, osiem bramek, cztery blanki i cztery niezależne powtórki. Pure-Rust fixtures uczą kontraktu `ByteView`, granic rozłącznego podziału, stanu `Slot<T>` z `MaybeUninit` i krótkiego reborrow `MutSlot`, a projekt `miri-safety-workshop` dodaje trzy osobne programy UB: out-of-bounds, use-after-free i aliasing. `content:miri` akceptuje wyłącznie autorskie archiwum i dwa jawne tryby safe-package compiler (`--stable` lub `--msrv`); oba sprawdzają stable/MSRV Cargo, po czym używają przypiętego nightly tylko przez Miri. Negatywne fixture'y kompilują się do metadata i nie są uruchamiane natywnie. Matcher wymaga nazwy właściwego pliku oraz diagnostyki właściwej dla danego przypadku, więc ogólny błąd Miri nie zastępuje dowodu.
+Miri Safety has four lessons, eight goals, four blanks and four independent replays.
+Pure-Rust fixtures teach contract `ByteView`, boundaries of separate division, state `Slot<T>` with
+`MaybeUninit` and short reborrow `MutSlot`, and project `miri-safety-workshop` adds three separate programs UB:
+out-of-bounds, use-after-free and aliasing. `content:miri` accepts only the original archive and
+two public safe-package compiler modes (`--stable` or `--msrv`); both check stable/MSRV Cargo, after which
+they use nightly only by Miri. Negative fixtures compile to metadata and are not run
+natively. Matcher requires the name of the correct file and a case-specific diagnostic,
+so Miri's general error does not replace evidence.
 
-Historyczny zestaw GAT obejmował producentów z testami kolejności, pustych elementów, tożsamości danych, lokalnych typów bez Copy/Clone, granic szerokości, dodatniego limitu prefiksów, nakładania i zachowania mutacji. Obserwatory Drop potwierdzały zatrzymanie zajętych wartości aż do zniszczenia właściciela. Regresje odrzucały błędną arytmetykę konstruktora, odwrócenie wnętrza wierszy, ignorowanie limitu, bufor pomocniczy i przedwczesne niszczenie.
+The historical set GAT included producers with order tests, empty elements, data
+identities, local types without Copy/Clone, width limits, positive limit of prefixes,
+application and mutation behaviour. Drop observers confirmed the retention of occupied
+values until the owner was destroyed. The regressions rejected the wrong arithmetic of
+the constructor, reversed the inside of the lines, ignored the limit, ancillary buffer
+and premature destruction.
 
-Historyczny zestaw GAT obejmował też konsumentów z klientami ze slice oraz własnymi opakowaniami AsRef/AsMut, lokalnymi rekordami i nieklonowalnymi raportami pożyczającymi osobny kontekst callbacku. Testy sprawdzały kolejność zaakceptowanych raportów i kontynuację po odrzuconym raporcie. Adaptery miały sprawdzaną leniwą konstrukcję, dokładne odpytywanie, częściowe zużycie, puste elementy, odczyty posiadanych raportów po zakończeniu pożyczek i terminalność dla źródła None → Some. Zadanie od pustej kartki nie wymagało niezadeklarowanych derive; prywatny układ adaptera pozostawał dowolny.
+The historical set GAT also included consumers with slice customers and their own
+packaging AsRef/AsMut, local records, and non-cloneable reports lending a separate callback
+context. The tests checked the order of accepted reports and continued after the
+rejected report. Adapters had a checked lazy design, accurate querying, partial wear,
+empty items, readings of their reports after the loans were completed and terminality
+for the None → Some source. The task of an empty card did not require undeclared derive;
+the personal adapter layout remained any.
 
-Historyczna weryfikacja GAT sprawdzała arytmetykę nasycającą ordinali przez przegląd kodu; testy nie osiągały usize::MAX odpytań. Próby szerokości usize::MAX dotyczyły innej, rzeczywiście wykonanej granicy. Obserwacje kompilatora pokazywały E0499, ograniczenie konkretnej projekcji HRTB (E0597) i niezgodność pokazanego GAT API z dyn (E0038), wraz z poprawnymi kontrastami. Nie wynikało z tego, że każdy HRTB wymaga static lub że zwykły iterator nie może zwracać zewnętrznie pożyczonych slice.
+Historical verification GAT checked ordinal saturating arithmetic by code review; the
+tests did not reach::MAX queries. Tests of width are:MAX concerned another, actually
+made border. The compiler's observations showed E0499, the limitation of a particular
+projection HRTB (E0597) and the incompatibility shown GAT API with dyn (E0038), along with
+correct contrasts. It did not appear that each HRTB requires static or that the ordinary
+iterator could not return externally borrowed slices.
 
 The integration checks four criteria: reveal does not grant independence, blanks remain fresh, export/import preserves evidence, and the earlier draft and note resume. Implementation and tests used GPT-5.6-Luna high; earlier milestone reviews used GPT-6-Astra medium and their APPROVED status is historical. The current follow-up covers the profile boundary and mutant validation. E2E supplies mocked runner responses and does not prove Rust semantics. Only fixed authored sources run locally, never learner drafts or imported code. No new POST was sent to the public Playground.
 
 ### Historical environment disruption
 
-Pierwszy E2E zatrzymał się w istniejącej kontroli Axe scenariusza Tokio. Ślad obejmuje przerwę 17:52:14–18:07:12, a dziennik zasilania potwierdza uśpienie 17:52:12–18:07:13 (901 sekund). Dwa przypadki Rust zgłosiły ETIMEDOUT. Nie zmieniano implementacji, limitów ani retry. Dotknięte kontrole przeszły bez zmian; pełne powtórzenie używa tymczasowego caffeinate -i na macOS.
+The first E2E stopped in the existing control of Axe's Tokio script. The trail includes
+a break of 17:52:14–18:07:12, and the power log confirms sleep of 17:52:12–18:07:13 (901
+seconds). Two cases of Rust reported ETIMEDOUT. Implementation, limits and retras were not
+changed. The affected controls have passed unchanged; the full repetition uses temporary
+caffeinate -and per macOS.
 
 ### Historical CI and release
 
-Etap GAT jest zapisany w commicie `4c7e499` i PR #10, scalonym jako `054a12de`. Lokalna weryfikacja i trzy zadania CI przeszły dla dokładnego head `2b6500e`, a post-merge workflow `35248633175` przeszedł dla `main@054a12de`. Stable uruchamia pełny zestaw, workspace-msrv dodatkowo trzy zestawy GAT na dokładnym Rust 1.85.0, a mini-grep-fuzz zachowuje zakres. Krok MSRV dodaje do PATH rzeczywisty katalog z rustup which: samo rustup run może nadal wybrać systemowy kompilator. Property Contracts ma osobny krok `content:property` w stable oraz workspace-msrv, z dokładnie tym samym ograniczeniem do autorskiego pakietu. Service Operations ma osobny krok `content:operations -- --fetch` w obu jobach przed generycznym `content:cargo`; MSRV używa dokładnego Rust 1.85.0.
+Stage GAT is recorded in the commission `4c7e499` and PR #10, integrated as `054a12de`. Local
+verification and three tasks CI passed for the exact head `2b6500e`, and post-merge workflow
+`35248633175` passed for `main@054a12de`. Stable launches a full set, workspace-msrv additionally three sets
+GAT on the exact Rust 1.85.0, and mini-grep-fuzz retains range. Step MSRV adds to PATH the
+actual directory with rustup which: self rustup run can still choose a system compiler.
+Property Contracts has a separate step `content:property` in table and workspace-msrv, with exactly
+the same limitation to the original package. Service Operations has a separate step `content:operations -- --fetch`
+in both jobs before generic `content:cargo`; MSRV uses the exact Rust 1.85.0.
 
-Cargo scalono w [PR #9](https://github.com/fettpl/rustcrushcourse/pull/9) jako 2a68786. Trzy zadania przeszły dla [head 520ed98](https://github.com/fettpl/rustcrushcourse/actions/runs/35234913384) i [main](https://github.com/fettpl/rustcrushcourse/actions/runs/35235866279). GAT scalono następnie w [PR #10](https://github.com/fettpl/rustcrushcourse/pull/10) jako `054a12de` z tested head `2b6500e`; po scaleniu uruchomiono osobny workflow `35248633175` na `main`. Drzewo scalenia było identyczne z testowanym head. Historyczny raport w wersji 2a68786 tego pliku opisuje Cargo, 216 testów Vitest, 1397 przypadków Rust, 50 E2E i offline v24.
+Cargo was integrated in [PR #9](https://github.com/fettpl/rustcrushcourse/pull/9) as 2a68786. The three tasks passed for [head 520ed98](https://github.com/fettpl/rustcrushcourse/actions/runs/35234913384) and [main](https://github.com/fettpl/rustcrushcourse/actions/runs/35235866279). GAT was then
+merged in [PR #10](https://github.com/fettpl/rustcrushcourse/pull/10) as `054a12de` with tested head `2b6500e`; after the merge a separate workflow `35248633175` was
+launched on `main`. The merge tree was identical to the tested head. Historical report
+version 2a68786 of this file describes Cargo, 216 Vitest tests, 1397 Rust cases, 50 E2E
+and offline v24.
 
-Performance Evidence jest zintegrowane z `main` w commitcie `b8043d2`; wcześniejsze prace obejmują commity `a2473d4`, `1fef3c2`, `c969662` i `d092232`. Stable i workspace-msrv pobierają Criterion przed generycznym `content:cargo`; job MSRV dodaje do PATH katalog narzędzi z `rustup which`, a następnie uruchamia Performance Evidence fixtures na dokładnym Rust 1.85.0. Ten przebieg nie zmienia schematu postępu v3 ani nie udaje numerycznego progu benchmarku.
+Performance Evidence is integrated with `main` in the commit `b8043d2`; earlier works include
+commits `a2473d4`, `1fef3c2`, `c969662` and `d092232`. Stable and workspace-msrv download Criteria before
+generic `content:cargo`; job MSRV adds to the PATH tool directory from `rustup which`, then launches Performance
+Evidence fixtures on the exact Rust 1.85.0. This course does not change the v3 progress
+pattern nor does it pretend to be a numerical benchmark threshold.
 
-Pożyczone API i angielskie README scalono w [PR #8](https://github.com/fettpl/rustcrushcourse/pull/8) jako 57c24f9, po sukcesie [CI head](https://github.com/fettpl/rustcrushcourse/actions/runs/34750981784) i [CI main](https://github.com/fettpl/rustcrushcourse/actions/runs/34832213874). Number Guessing+ scalono w [PR #7](https://github.com/fettpl/rustcrushcourse/pull/7), Mini grep w [PR #2](https://github.com/fettpl/rustcrushcourse/pull/2), wcześniejszy etap w [PR #1](https://github.com/fettpl/rustcrushcourse/pull/1). Zasady i ograniczenia ochrony gałęzi opisuje [CI/CD](ci-cd.md). Hosting nadal nie został wybrany.
+Borrowed API and English README were merged in [PR #8](https://github.com/fettpl/rustcrushcourse/pull/8) as 57c24f9, after success [CI head](https://github.com/fettpl/rustcrushcourse/actions/runs/34750981784) and [CI main](https://github.com/fettpl/rustcrushcourse/actions/runs/34832213874).
+Number Guessing+ was integrated into [PR #7](https://github.com/fettpl/rustcrushcourse/pull/7), Mini grep in [PR #2](https://github.com/fettpl/rustcrushcourse/pull/2), an earlier stage in [PR #1](https://github.com/fettpl/rustcrushcourse/pull/1). The rules
+and restrictions on the protection of branches are described [CI/CD](ci-cd.md). Hosting still hasn't
+been selected.
 
 ### Historical reproduction and remaining scope
 
-Polecenia pełnej weryfikacji, instalacji narzędzi i projektów opisuje angielskie README, a dokładny zestaw MSRV znajduje się w .github/workflows/ci.yml. `npm run content:performance -- --fetch` trzeba wykonać przed offline `content:cargo`; wariant `--msrv` sprawdza ten sam pakiet przez exact Rust 1.85.0. E2E wymaga produkcyjnego serwera na 127.0.0.1:3002 i konfiguracji .github/playwright.production.config.ts z zerem retry. Offline uruchamia npm run test:offline, w tym wznowienie blanku Performance Evidence. Na macOS długi zestaw można poprzedzić caffeinate -i.
+The commands for full verification, tool and project installation describe English README,
+and the exact set MSRV is in .github/workflows/ci.yml. `npm run content:performance -- --fetch` must be performed before offline `content:cargo`; variant `--msrv`
+checks the same package by actual Rust 1.85.0. E2E requires a production server at 127.0.0.1:3002
+and configuration .github/playwright.production.config.ts with zero retry. Offline launches an e.g. run test:offline,
+including resumption of Performance Evidence blank. On macOS a long set can be preceded
+by caffeinate -i.
 
 Remaining scope includes version conflicts, dependency security and publication, unsafe abstraction variance, full property/fuzz coverage, RSS/retained-memory attribution, system operations and capstone release evidence. The capstone has bounded learner integration, but release remains Hold until two fresh, reviewed stable/MSRV JSON reports and a manual advisory/license review are complete. Miri Safety provides a limited supported pure-Rust fixture set and does not replace a full threat model or prove that every unsafe program is defined. The limited Unsafe/FFI wrapper does not prove that foreign code is trustworthy. The Log Analyzer benchmark and allocation probe are executable evidence for named workloads; neither establishes a regression time threshold or universal speed claim. Migration history and material provenance need further work. A learner pilot and manual screen-reader review are still required. Lesson availability and green tests do not guarantee professional readiness.
 

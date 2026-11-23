@@ -1,5 +1,7 @@
 # File schema evolution
 
+[Polski](file-schema-evolution.pl.md)
+
 This optional extension follows Todo I/O. It separates reading a supported file,
 normalizing its meaning and explicitly upgrading it on disk. The browser
 normalization exercise uses validated decoded values. The native package

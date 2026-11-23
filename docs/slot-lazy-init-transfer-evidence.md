@@ -1,5 +1,7 @@
 # Slot lazy initialization: contract and evidence boundary
 
+[Polski](slot-lazy-init-transfer-evidence.pl.md)
+
 Source checkpoint: 24 October 2026 (UTC). This is a separate local curriculum
 feature after completed local OSS preparation. The maintainer authorized course
 continuation while public release waits for Actions and its other external

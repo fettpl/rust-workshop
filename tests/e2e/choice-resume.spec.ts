@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { concepts, lessons, reviewExercises } from "../../src/content/course";
+import { concepts, lessons, reviewExercises } from "./polish-course.helper";
 
 test("keeps reordered choices and selected meaning through reload", async ({
   page,

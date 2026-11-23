@@ -1,3 +1,4 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
@@ -44,7 +45,7 @@ test("downloads the Cargo starter, separates reference help and preserves it aft
   assertArchiveNotices(contents, archive);
   for (const file of archive.files)
     expect(strFromU8(contents[`${archive.id}/${file.path}`])).toBe(
-      file.starter,
+      localizedPackageFile(file.path, file.starter, "pl"),
     );
   const readState = () =>
     page.evaluate(

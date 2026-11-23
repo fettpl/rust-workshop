@@ -1,5 +1,7 @@
 # Ownership foundation transfer contracts
 
+[Polski](ownership-foundation-transfer-evidence.pl.md)
+
 The `ownership-foundation-transfer` lesson is appended after the complete
 historical Data Modeling sequence, including nested patterns. Its six steps
 join a supplementary prediction with five primary coding contracts. Existing

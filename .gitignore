@@ -13,3 +13,5 @@ public/projects/
 *.rmeta
 *.rlib
 target/
+
+/public/localized-projects/

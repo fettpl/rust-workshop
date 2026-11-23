@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { modules } from "../../src/content/course";
+import { modules } from "./polish-course.helper";
 
 test("searches lesson topics, keeps module identity and selection, and clears with the keyboard", async ({
   page,

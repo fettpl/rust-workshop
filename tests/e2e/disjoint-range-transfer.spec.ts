@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import { stepKey } from "../../src/persistence/state";
 
 type PersistedState = {

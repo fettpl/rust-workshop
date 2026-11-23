@@ -13,6 +13,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     ...devices['Desktop Chrome'],
+    locale: 'pl-PL',
   },
   webServer: {
     command: 'npm run dev',

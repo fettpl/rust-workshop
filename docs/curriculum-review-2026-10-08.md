@@ -1,5 +1,7 @@
 # Curriculum review — 8 October 2026
 
+[Polski](curriculum-review-2026-10-08.pl.md)
+
 This review records the current shared-borrow milestone and the adopted Astra curriculum review. It is an English engineering record for a Polish learner audience that assumes basic programming and starts Rust from zero. The course remains local-first; deployment and hosting are future options.
 
 ## Source boundary and inventory

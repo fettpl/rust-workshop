@@ -1,5 +1,7 @@
 # Log Analyzer and testing implementation plan
 
+[Polski](2026-09-12-log-analyzer-testing.pl.md)
+
 **Goal:** Teach executable testing contracts and deliver a streaming Log Analyzer with a downloadable Cargo workshop.
 
 **Architecture:** Add two data-driven modules to the existing lesson, evidence and review engines. Keep browser exercises self-contained. Package a standard-library-only Rust 2024 library and CLI for terminal tests, doc tests, rustfmt and Clippy. Local checklist completion and downloads remain exposure, not independent mastery.

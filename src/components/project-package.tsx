@@ -13,8 +13,11 @@ import { revealCourseProjectPackageVariant } from "@/content/learning-context";
 import { lessons } from "@/content/course";
 import { useLearning } from "./learning-provider";
 import { Eyebrow } from "./ui";
+import { localizedPackageMarkdown } from "@/i18n/package-markdown";
+import { useLocale } from "./locale-provider";
 
 export function ProjectPackage({ project }: { project: Package }) {
+  const { t, locale, courseText } = useLocale();
   const { state, update } = useLearning();
   const [variant, setVariant] = useState<PackageVariant>("starter");
   const previewRefs = useMemo(
@@ -49,12 +52,14 @@ export function ProjectPackage({ project }: { project: Package }) {
       if (!active) return;
       registration.active?.postMessage({
         type: "CACHE_RESOURCES",
-        urls: (["starter", "solution"] as const).map(
-          (variant) =>
-            new URL(
-              packageDownloadPath(project, variant),
-              window.location.origin,
-            ).href,
+        urls: (["pl", "en"] as const).flatMap((locale) =>
+          (["starter", "solution"] as const).map(
+            (variant) =>
+              new URL(
+                packageDownloadPath(project, variant, locale),
+                window.location.origin,
+              ).href,
+          ),
         ),
       });
     });
@@ -89,34 +94,34 @@ export function ProjectPackage({ project }: { project: Package }) {
     return (
       <section
         className="project-package"
-        aria-label="Pakiet Cargo"
+        aria-label={t("Pakiet Cargo")}
         aria-busy="true"
       >
-        <p>Otwieranie pakietu…</p>
+        <p>{t("Otwieranie pakietu…")}</p>
       </section>
     );
   return (
-    <section className="project-package" aria-label="Pakiet Cargo">
-      <Eyebrow>OD EDYTORA DO TERMINALA</Eyebrow>
-      <h2>{project.title}</h2>
-      <p>{project.description}</p>
+    <section className="project-package" aria-label={t("Pakiet Cargo")}>
+      <Eyebrow>{t("OD EDYTORA DO TERMINALA")}</Eyebrow>
+      <h2>{courseText(project.title)}</h2>
+      <p>{courseText(project.description)}</p>
       <ol>
         {project.instructions.map((instruction) => (
-          <li key={instruction}>{instruction}</li>
+          <li key={courseText(instruction)}>{courseText(instruction)}</li>
         ))}
       </ol>
       <p className="muted">
-        Pakiet zawiera pliki ćwiczenia. Swoje rozwiązania z edytora możesz
-        przenieść do nich po rozpakowaniu. Pobranie plików ani uruchomienie
-        Cargo poza aplikacją nie zalicza automatycznie lekcji.
+        {t(
+          "Pakiet zawiera pliki ćwiczenia. Swoje rozwiązania z edytora możesz przenieść do nich po rozpakowaniu. Pobranie plików ani uruchomienie Cargo poza aplikacją nie zalicza automatycznie lekcji.",
+        )}
       </p>
-      <div className="package-variants" aria-label="Wariant pakietu">
+      <div className="package-variants" aria-label={t("Wariant pakietu")}>
         <button
           className="secondary"
           aria-pressed={variant === "starter"}
           onClick={() => showVariant("starter")}
         >
-          Pliki startowe
+          {t("Pliki startowe")}
         </button>
         <button
           className="secondary"
@@ -124,20 +129,24 @@ export function ProjectPackage({ project }: { project: Package }) {
           onClick={() => showVariant("solution")}
         >
           <Eye size={17} />
-          Pokaż rozwiązanie pakietu
+          {t("Pokaż rozwiązanie pakietu")}
         </button>
       </div>
       <p className="package-help-note">
         {project.starterRevealStepRefs?.length
-          ? "Podgląd lub pobranie plików startowych zapisuje pomoc w zadaniach, których rozwiązania zawiera starter. Rozwiązanie pakietu zapisuje także pomoc w powiązanych zadaniach Rust."
-          : "Podgląd rozwiązania zapisuje użycie pomocy w powiązanych lekcjach."}{" "}
-        Wcześniejsze samodzielne wyniki pozostają zachowane.
+          ? t(
+              "Podgląd lub pobranie plików startowych zapisuje pomoc w zadaniach, których rozwiązania zawiera starter. Rozwiązanie pakietu zapisuje także pomoc w powiązanych zadaniach Rust.",
+            )
+          : t(
+              "Podgląd rozwiązania zapisuje użycie pomocy w powiązanych lekcjach.",
+            )}{" "}
+        {t("Wcześniejsze samodzielne wyniki pozostają zachowane.")}
       </p>
       <div className="package-file-header">
         <label>
-          Plik w pakiecie
+          {t("Plik w pakiecie")}
           <select
-            aria-label="Plik w pakiecie"
+            aria-label={t("Plik w pakiecie")}
             value={file.path}
             onChange={(event) => setPath(event.target.value)}
           >
@@ -150,29 +159,35 @@ export function ProjectPackage({ project }: { project: Package }) {
         </label>
         <a
           className="primary"
-          href={packageDownloadPath(project, variant)}
+          href={packageDownloadPath(project, variant, locale)}
           download={`${project.id}-${variant}.zip`}
           onClick={() => expose(variant)}
         >
           <Download size={17} />
           {variant === "starter"
-            ? "Pobierz pakiet startowy"
-            : "Pobierz rozwiązanie"}
+            ? t("Pobierz pakiet startowy")
+            : t("Pobierz rozwiązanie")}
         </a>
       </div>
       <div className="package-file-caption">
         <FileCode size={16} />
         <strong>{file.path}</strong>
         <span>
-          {variant === "starter" ? "Plik startowy" : "Rozwiązanie referencyjne"}
+          {variant === "starter"
+            ? t("Plik startowy")
+            : t("Rozwiązanie referencyjne")}
         </span>
       </div>
       <pre
         className="package-file-content"
         tabIndex={0}
-        aria-label="Zawartość pliku"
+        aria-label={t("Zawartość pliku")}
       >
-        <code>{content}</code>
+        <code>
+          {file.path.endsWith(".md")
+            ? localizedPackageMarkdown(content, locale)
+            : content}
+        </code>
       </pre>
     </section>
   );

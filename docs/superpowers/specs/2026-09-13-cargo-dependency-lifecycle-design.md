@@ -1,5 +1,7 @@
 # Cargo dependency lifecycle and manifest exercises
 
+[Polski](2026-09-13-cargo-dependency-lifecycle-design.pl.md)
+
 The course has a real two-member workspace but does not yet teach the full path from registry dependency declarations through feature selection and locked builds to an inspected crate archive. This milestone adds four lessons and extends the existing Frame Protocol project. It is part of the user's authorized continuous advanced-course goal. It does not complete the remaining unsafe, GAT, performance, production operations, capstone or learner-pilot requirements.
 
 ## Product and integration
@@ -108,11 +110,12 @@ false`, and this exact effective dependency:
 serde = { version = "1.0.229", default-features = false }
 ```
 
-Polish prompt: „Uzupełnij korzeń Frame Protocol o jedną zależność rejestrową
-`serde`: wymagaj `1.0.229` i wyłącz domyślne features. Zachowaj dwóch
-członków, resolver `3`, Rust `1.85.0` i `publish = false`. Wynik sprawdza
-deklarację; dostępność crate i wybór wersji sprawdzisz później lokalnym Cargo.”
-The complete expected root is `workspaceManifest` in `src/content/projects/frame-protocol.ts`, extended with the dependency table above. Content authors may read the completed manifest through the exported project's `package.files` entry for `Cargo.toml`; do not duplicate a different baseline.
+Polish prompt: “Complete root Frame Protocol by one registered relationship `serde`: require `1.0.229` and
+disable default features. Keep two members, resolver `3`, Rust `1.85.0` and `publish = false`. The result
+checks the declaration; availability of the crate and selection of the version you will
+check later on local Cargo.’ The complete expected root is `workspaceManifest` in `src/content/projects/frame-protocol.ts`, extended with the
+dependency table above. Content authors may read the completed manifest through the
+exported project's `package.files` entry for `Cargo.toml`; do not duplicate a different baseline.
 
 **Fresh `cargo-dependency-contract-blank`** — standalone
 `catalog-tool/Cargo.toml`, deliberately distinguishing normal and dev scope:
@@ -134,11 +137,12 @@ wire_serde = { package = "serde", version = "1.0.229", default-features = false 
 wire_serde = { package = "serde", version = "1.0.229", default-features = false, features = ["alloc"] }
 ```
 
-Polish prompt: „Utwórz standalone package `catalog-tool`. Zwykły kod ma używać
-aliasu `wire_serde` do rejestrowego `serde` bez domyślnych features; testy mogą
-mieć osobną deklarację w `[dev-dependencies]`. Nie przenoś zależności testowej
-do normalnego zakresu i nie edytuj lockfile.” The contract requires the same alias in both scopes, the same registry version and disabled defaults, an empty normal feature set and alloc in the dev scope; it rejects a
-path/git source or a dependency in only the wrong scope.
+Polish prompt: “Create a Standalone Package `catalog-tool`. The usual code is to use an alias `wire_serde`
+for the registered `serde` without default features; tests may have a separate declaration
+in `[dev-dependencies]`. Do not transfer the test relationship to the normal range and don't edit
+lockfile.’ The contract requires the same alias in both telescopes, the same register
+version and disabled defaults, an empty normal feature set and alloc in the dev view; it
+rejects a path/git source or a remote in only the crow scope.
 
 **Fresh `cargo-dependency-contract-review`** — standalone
 `telemetry/Cargo.toml`:
@@ -157,11 +161,10 @@ publish = false
 serde_wire = { package = "serde", version = "^1.0.229", default-features = false }
 ```
 
-Polish prompt: „Powtórz bez workspace: alias `serde_wire` ma wskazywać
-registry package `serde`, wymagać `^1.0.229` i nie włączać domyślnych
-features. Wyjaśnij, że `Cargo.toml` podaje wymaganie, a `Cargo.lock` wybór dla
-konkretnego grafu.” `"1.0.229"` and `"^1.0.229"` are accepted as equivalent
-Cargo requirements here.
+Polish prompt: “Repeat without workspace: alias `serde_wire` is to indicate the register package
+`serde`, require `^1.0.229` and do not include default features. Explain that `Cargo.toml` provides a
+requirement, and `Cargo.lock` a choice for a particular graph.” `"1.0.229"` and `"^1.0.229"` are accepted as
+equivalent Cargo requirements here.
 
 ### `cargo-resolver-feature-unification`
 
@@ -179,11 +182,9 @@ format = ["dep:serde", "serde/alloc", "serde/derive"]
 serde = { workspace = true, optional = true }
 ```
 
-Polish prompt: „Dodaj opt-in `format` i opcjonalne, workspaceowe `serde`.
-`format` ma jawnie włączyć `dep:serde`, `serde/alloc` i `serde/derive`;
-`default` i `diagnostics` pozostają puste.” The evaluator treats feature arrays
-as sets and rejects missing `alloc`, `derive`, optionality or workspace
-inheritance.
+Polish prompt: “Add opt-in `format` and optional, workspace `serde`. `format` is to openly turn on
+`dep:serde`, `serde/alloc` and `serde/derive`; `default` and `diagnostics` remain empty.” The Evaluator treats feature array arrays
+as sets and rejects missing `alloc`, `derive`, optionality or workspace inheritance.
 
 **Fresh `cargo-resolver-feature-unification-blank`** — file
 `crates/packet-cli/Cargo.toml`, a client transfer contract with two forwarded
@@ -206,11 +207,10 @@ format = ["packet-lib/format"]
 packet-lib = { path = "../packet-lib" }
 ```
 
-Polish prompt: „Klient `packet-cli` ma domyślnie nie włączać niczego i ma
-przekazywać dokładnie dwa lokalne features biblioteki: `diagnostics` oraz
-`format`. Nie dodawaj serde bezpośrednio do klienta.” The contract requires
-both forwarding entries, empty default and one local path dependency, with no
-direct registry dependency.
+Polish prompt: “The client `packet-cli` is to default on nothing and to pass exactly two local
+features of the library: `diagnostics` and `format`. Do not add heart directly to the customer.” The
+contract requires both forwarding entries,empty default and one local path defaultcy,
+with no direct district defaultcy.
 
 **Fresh `cargo-resolver-feature-unification-review`** — file
 `crates/telemetry-cli/Cargo.toml`, alias-forwarding variant:
@@ -232,11 +232,11 @@ diagnostics = ["telemetry_core/diagnostics"]
 telemetry_core = { package = "telemetry-lib", path = "../telemetry-lib" }
 ```
 
-Polish prompt: „Przekaż z klienta dwa features biblioteki przez alias
-zależności `telemetry_core`: `json` i `diagnostics`; `default` ma być pusty.
-Rozróżnij alias pakietu od nazw features. Ten wariant nie wprowadza składni
-weak dependency `?/`; nie używaj jej bez osobnego kontraktu.” No weak
-dependency feature form is silently accepted by this review.
+Polish prompt: “Transmit two features of the library from the client by alias
+dependencies `telemetry_core`: `json` and `diagnostics`; `default` is to be empty. Distinguish the alias of the package
+from the features names. This variant does not introduce the syntax weak maturity `?/`;
+do not use it without a separate contract.” No weak maturity feature forms is strongly
+accepted by this review.
 
 ### `cargo-lock-msrv-policy`
 
@@ -250,12 +250,11 @@ false`, and the real dependency declaration:
 serde = { version = "1.0.229", default-features = false }
 ```
 
-Polish prompt: „Ustaw prawdziwy compiler floor Rust `1.85.0` i resolver `3`;
-zachowaj bezdomyślne wymaganie `serde 1.0.229` oraz `publish = false`. Nie
-twórz tabeli udającej politykę CI i nie zmieniaj ręcznie `Cargo.lock`.” The
-automatic contract checks real Cargo fields only. The explanation says that
-explicit `cargo update` may change the lockfile, while later `--locked` checks
-refuse a required change; it never claims those commands ran.
+Polish prompt: “Set up a real compiler floor Rust `1.85.0` and resolver `3`; keep the default
+requirement `serde 1.0.229` and `publish = false`. Do not create a table pretending to be politics CI and do not
+change manually `Cargo.lock`.” The automatic contract checks real Cargo fields only. The
+exploration says that exploit `cargo update` may change the lockfile, while later `--locked` checks refuse
+a required change; it never claims these commands wounds.
 
 **Fresh `cargo-lock-msrv-policy-blank`** — file
 `crates/release-lib/Cargo.toml`, member-inheritance variant:
@@ -279,11 +278,12 @@ default = []
 serde = { workspace = true, optional = true }
 ```
 
-Polish prompt: „Manifest członka ma odziedziczyć `rust-version` i metadane z
-korzenia. Nie dodawaj lokalnego `rust-version` ani lokalnej wersji, która
-nadpisze dziedziczenie; zależność `serde` ma używać `workspace = true` i
-pozostać opcjonalna.” The contract requires every listed inheritance key,
-requires `package.rust-version.workspace = true` and `package.version.workspace = true`; a scalar override fails these nested-path assertions. Do not require the whole rust-version/version path to be absent, because the inheritance tables live there. No arbitrary metadata policy table earns credit.
+Polish prompt: “The member’s Manifesto is to inherit `rust-version` And root metadata. Don't add
+local `rust-version` neither the local version that overwrites inheritance; dependence `serde` is to
+use `workspace = true` and remain optional.” The contract requires every listed inheritance key,
+requirements `package.rust-version.workspace = true` and `package.version.workspace = true`; a scalar override fails these nested-path assists. Do not
+require the whole rust-version/version path to be absent, because the inheritance tables live there. No
+arbitrators metadata policy table earns credit.
 
 **Fresh `cargo-lock-msrv-policy-review`** — standalone `stable-floor/Cargo.toml`:
 
@@ -301,10 +301,9 @@ publish = false
 serde = { version = "^1.0.229", default-features = false }
 ```
 
-Polish prompt: „Odtwórz samodzielny pakiet z `rust-version = "1.85.0"` i
-bezdomyślnym `serde ^1.0.229`. W wyjaśnieniu wskaż, że jawne `cargo update`
-może zmienić lockfile, a polecenie z `--locked` ma odmówić wymaganej zmiany;
-nie zapisuj tych twierdzeń w sztucznej tabeli metadata.”
+Polish prompt: « Play a self-contained package with `rust-version = "1.85.0"` and undefault `serde ^1.0.229`. In the
+explanation, indicate that public `cargo update` can change lockfile and command from `--locked` is to
+refuse the required change; do not write these claims in an artificial metadata table.’
 
 ### `cargo-package-rehearsal`
 
@@ -336,13 +335,11 @@ include = ["Cargo.toml", "README.md", "src/**", "tests/**"]
 path = "src/lib.rs"
 ```
 
-Polish prompt: „Przygotuj `signal-kit` do lokalnego rehearsal. Ustaw wszystkie
-podane metadane, `publish = false` i jawny target biblioteki. Przez `include`
-włącz tylko `Cargo.toml`, README, `src/**` i `tests/**`; nazwany plik
-generowany `build/generated/signal.rs` ma pozostać poza archiwum, bo nie pasuje
-do listy include. Później sprawdź listę przez `cargo package --list`.” The
-contract requires this include set and no exclude; it does not claim that the
-named file or archive exists.
+Polish prompt: “Prepare `signal-kit` for local rehearsal. Set all given metadata, `publish = false` and the
+public target library. By `include` enable only `Cargo.toml`, README, `src/**` and `tests/**`; the named file
+generated `build/generated/signal.rs` is to remain outside the archive because it does not fit the include list.
+Later check the list by `cargo package --list`.’ The contract requires this include set and no exclusive;
+it does not claim that the named file or archive exists.
 
 **Fresh `cargo-package-rehearsal-review`** — standalone
 `archive-note/Cargo.toml`, exclude policy without include:
@@ -364,11 +361,10 @@ exclude = ["fixtures/large.bin", "build/generated/**", "notes/**"]
 path = "src/lib.rs"
 ```
 
-Polish prompt: „Odtwórz manifest `archive-note` z metadanymi, `publish =
-false` i bez `include`. Wyklucz przez `exclude` duży fixture, wygenerowane
-pliki buildu i notatki. Wyjaśnij, że `cargo package -p archive-note --list`
-dopiero pokaże faktyczną listę.” The contract requires `exclude` and absence
-of `include`, so both policies cannot be hidden in one answer.
+Polish prompt: « Play a manifesto `archive-note` with metadata, `publish = false` and without `include`. Exclude by `exclude`
+large fixture, generated build files and notes. Explain that `cargo package -p archive-note --list` only show the actual
+list.” The contract requirements `exclude` and absence of `include`, so both politicians can not be
+hidden in one answer.
 
 The only Cargo output claims for these contracts are procedures or authored
 verification assertions: dependency existence/resolution, feature union,

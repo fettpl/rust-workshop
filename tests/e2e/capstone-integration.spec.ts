@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
 import { projectFiles } from "../../src/domain/project-package";
-import { lessons, modules, projects } from "../../src/content/course";
+import { lessons, modules, projects } from "./polish-course.helper";
 import { reviewSessionKey } from "../../src/engine/review-session";
 import { createStepProgress } from "../../src/persistence/state";
 import type { ReviewSession, UserState } from "../../src/domain/types";
@@ -108,7 +108,7 @@ test("capstone search, mocked gate attempt, resume and package exposure", async 
   const capstoneModule = modules.find(
     (item) => item.id === "capstone-integration",
   )!;
-  const capstoneTitle = "Capstone: trwały serwis logów";
+  const capstoneTitle = "Projekt końcowy: usługa trwałego zapisu dziennika";
   expect(capstoneModule).toBeTruthy();
   const lesson = lessons.find(
     (item) => item.id === "capstone-domain-boundary",

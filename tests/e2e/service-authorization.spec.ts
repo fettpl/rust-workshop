@@ -1,3 +1,4 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Page } from "@playwright/test";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
@@ -7,7 +8,7 @@ import {
   modules,
   projects,
   reviewExercises,
-} from "../../src/content/course";
+} from "./polish-course.helper";
 import type { LessonStep, UserState } from "../../src/domain/types";
 import {
   assistanceForLessonStep,
@@ -505,8 +506,8 @@ test("authorization_downloads_exact_starter_and_solution", async ({ page }) => {
     const bytes = await readFile((await download.path())!);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(
       variant === "starter"
-        ? "66f92280d6fecc21e998f99ee8c893c2e7d3b5878ac56509223c320059938256"
-        : "1132516e6f7d8d099ff346970ff0bc93742e312ae0595c0e2b5c60437f3181a3",
+        ? "0baba6928d18e492fb969897a098c58e293a742e68df002d9f0c2f6dca9e5234"
+        : "121359855306e1972ca05342302ca5ea7e18a781da29dba0ff85cec81511f486",
     );
     const files = unzipSync(bytes);
     expect(Object.keys(files)).toHaveLength(14);
@@ -514,7 +515,7 @@ test("authorization_downloads_exact_starter_and_solution", async ({ page }) => {
     assertArchiveNotices(files, archive);
     for (const file of archive.files)
       expect(strFromU8(files[`${archive.id}/${file.path}`])).toBe(
-        variant === "solution" ? (file.solution ?? file.starter) : file.starter,
+        localizedPackageFile(file.path, variant === "solution" ? (file.solution ?? file.starter) : file.starter, "pl"),
       );
     const after = await savedState(page);
     const expected = revealProjectPackageVariant(
@@ -642,7 +643,7 @@ test("authorization_keyboard_390_and_source_exposure", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(task).toHaveAttribute("aria-selected", "true");
   expect(await page.locator(".task-prompt").innerText()).toMatch(/test double/);
-  const output = page.getByRole("tab", { name: "Output", exact: true });
+  const output = page.getByRole("tab", { name: "Wyjście", exact: true });
   await output.focus();
   await page.keyboard.press("Enter");
   await expect(output).toHaveAttribute("aria-selected", "true");

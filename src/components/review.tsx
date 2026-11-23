@@ -5,7 +5,7 @@ import { ArrowRight, Eye, Clock, Check, RotateCcw } from "lucide-react";
 import { useClock } from "./use-clock";
 import { useLearning } from "./learning-provider";
 import { useSuppliedSolutionExposure } from "./use-supplied-solution-exposure";
-import { CompilerOutput } from "./compiler-output";
+import { CompilerOutput, compilerConnectionFailure } from "./compiler-output";
 import { LearningText } from "./learning-text";
 import { concepts, lessons } from "@/content/course";
 import { rateReview } from "@/engine/learning";
@@ -41,6 +41,7 @@ import {
   OwnershipPolicyNote,
   OwnershipEvidenceCount,
 } from "./ui";
+import { useLocale } from "./locale-provider";
 
 const CodeEditor = dynamic(() => import("./code-editor"), { ssr: false });
 
@@ -53,6 +54,7 @@ function RatingButtons({
   disabled: boolean;
   onRate: (rating: ReviewRating) => void;
 }) {
+  const { t } = useLocale();
   const ratings = [
     ["again", "Again · Jeszcze raz"],
     ["hard", "Hard · Trudne"],
@@ -68,7 +70,7 @@ function RatingButtons({
           disabled={disabled}
           onClick={() => onRate(rating)}
         >
-          {label}
+          {t(label)}
         </button>
       ))}
     </div>
@@ -100,6 +102,7 @@ const ownershipConceptIds = new Set(
 );
 
 export function ReviewView() {
+  const { t, locale, courseText } = useLocale();
   const clock = useClock();
   const { state, update, generation } = useLearning();
   const [pending, setPending] = useState(false);
@@ -139,7 +142,9 @@ export function ReviewView() {
   const { executable, editable } = stepInteraction(step);
   const code = progress.code ?? step?.code ?? "";
   const suppliedCodeRef = useSuppliedSolutionExposure<HTMLElement>(
-    step, "code", executable || isManifest ? code : step?.code,
+    step,
+    "code",
+    executable || isManifest ? code : step?.code,
     mode === "challenge" && !unavailable,
   );
   const lastAttempt = progress.attempts.at(-1);
@@ -364,14 +369,7 @@ export function ReviewView() {
       });
       output = await response.json();
     } catch {
-      output = {
-        status: "infrastructure-error",
-        stdout: "",
-        stderr:
-          "Nie udało się połączyć z kompilatorem. Kod pozostaje zapisany. Spróbuj ponownie po odzyskaniu połączenia.",
-        diagnostics: [],
-        durationMs: 0,
-      };
+      output = compilerConnectionFailure;
     }
     setPending(false);
     if (generation() !== requestGeneration) return;
@@ -478,8 +476,12 @@ export function ReviewView() {
     let applied = false;
     update((s) => {
       const currentSession = s.reviewSession;
-      if (!currentSession || currentSession.sessionId !== session?.sessionId ||
-          reviewSessionRated(s, currentSession)) return s;
+      if (
+        !currentSession ||
+        currentSession.sessionId !== session?.sessionId ||
+        reviewSessionRated(s, currentSession)
+      )
+        return s;
       if (isPracticeProbe) {
         if (
           !currentSession ||
@@ -500,17 +502,17 @@ export function ReviewView() {
 
   const durationLabel =
     reviewPurpose === "practice-probe"
-      ? "Krótka decyzja — cel 1–3 min"
+      ? t("Krótka decyzja — cel 1–3 min")
       : reviewPurpose === "extended"
-        ? "Dłuższe odtworzenie kontraktu"
-        : "Czas zależy od zadania";
+        ? t("Dłuższe odtworzenie kontraktu")
+        : t("Czas zależy od zadania");
 
   return (
     <div className="review-page">
       <div className="section-heading spread">
         <div>
-          <Eyebrow>POWTÓRKI / AKTYWNE ODTWARZANIE</Eyebrow>
-          <h1>Co zostało w pamięci?</h1>
+          <Eyebrow>{t("POWTÓRKI / AKTYWNE ODTWARZANIE")}</Eyebrow>
+          <h1>{t("Co zostało w pamięci?")}</h1>
         </div>
         <span className="session-chip">
           <Clock size={15} />
@@ -518,7 +520,9 @@ export function ReviewView() {
         </span>
       </div>
       <p className="lede">
-        Najpierw przywołaj zasadę. Potem sprawdź ją na małym, nowym przykładzie.
+        {t(
+          "Najpierw przywołaj zasadę. Potem sprawdź ją na małym, nowym przykładzie.",
+        )}
       </p>
       {session ? (
         <section className="review-session" ref={suppliedCodeRef}>
@@ -528,25 +532,25 @@ export function ReviewView() {
               disabled={pending}
               onClick={returnToQueue}
             >
-              ← Do kolejki
+              {t("← Do kolejki")}
             </button>
           )}
           {unavailable ? (
             <div className="empty-review" role="status">
-              <h2>Ta powtórka nie jest dostępna w tej wersji.</h2>
+              <h2>{t("Ta powtórka nie jest dostępna w tej wersji.")}</h2>
               <p>
-                Zachowaliśmy Twój zapis, ale ta przypięta wersja zadania nie
-                jest już dostępna. Możesz wrócić do kolejki i wybrać bieżące
-                ćwiczenie.
+                {t(
+                  "Zachowaliśmy Twój zapis, ale ta przypięta wersja zadania nie jest już dostępna. Możesz wrócić do kolejki i wybrać bieżące ćwiczenie.",
+                )}
               </p>
               <button className="primary" onClick={returnToQueue}>
-                Do kolejki
+                {t("Do kolejki")}
               </button>
             </div>
           ) : (
             <>
               <div className="section-heading spread">
-                <h2>{concept.title}</h2>
+                <h2>{courseText(concept.title)}</h2>
                 <MasteryBadge
                   level={courseMastery(state, concept.id).level}
                   scope={
@@ -575,13 +579,21 @@ export function ReviewView() {
                   />
                   <p className="footnote">
                     {ownershipScope
-                      ? "Odtworzenie po czasie wymaga dwóch wcześniejszych samodzielnych zadań kodowych i ponad 24 godzin bez kontaktu z pojęciem. Ta powtórka nie dodaje kolejnego zadania do tego licznika."
-                      : "Dla tego kontraktu liczą się tylko opisane rodziny primary. Gate i blank mogą dzielić rodzinę; pomoc lub wyczerpanie rodziny nie tworzy nowego wariantu. Ta powtórka pozostaje osobnym recall i nie dodaje rodziny primary."}
+                      ? t(
+                          "Odtworzenie po czasie wymaga dwóch wcześniejszych samodzielnych zadań kodowych i ponad 24 godzin bez kontaktu z pojęciem. Ta powtórka nie dodaje kolejnego zadania do tego licznika.",
+                        )
+                      : t(
+                          "Dla tego kontraktu liczą się tylko opisane rodziny primary. Gate i blank mogą dzielić rodzinę; pomoc lub wyczerpanie rodziny nie tworzy nowego wariantu. Ta powtórka pozostaje osobnym recall i nie dodaje rodziny primary.",
+                        )}
                   </p>
                 </>
               )}
               {rated && (
-                <p role="status">Ta powtórka ma już zapisaną ocenę. Wróć do kolejki, aby rozpocząć nowe ćwiczenie.</p>
+                <p role="status">
+                  {t(
+                    "Ta powtórka ma już zapisaną ocenę. Wróć do kolejki, aby rozpocząć nowe ćwiczenie.",
+                  )}
+                </p>
               )}
               <div className="segmented">
                 <button
@@ -589,19 +601,19 @@ export function ReviewView() {
                   disabled={pending || completed}
                   onClick={() => chooseMode("challenge")}
                 >
-                  Mały eksperyment
+                  {t("Mały eksperyment")}
                 </button>
                 <button
                   className={mode === "card" ? "selected" : ""}
                   disabled={pending || completed}
                   onClick={() => chooseMode("card")}
                 >
-                  Karta przypomnienia
+                  {t("Karta przypomnienia")}
                 </button>
               </div>
               {mode === "challenge" && step ? (
                 <>
-                  <h3>{step.title}</h3>
+                  <h3>{courseText(step.title)}</h3>
                   <LearningText>{step.prompt}</LearningText>
                   {step.code && !executable && !isManifest && (
                     <pre className="code-sample">{step.code}</pre>
@@ -628,12 +640,12 @@ export function ReviewView() {
                           }
                         >
                           {isManifest
-                            ? "Sprawdź manifest"
+                            ? t("Sprawdź manifest")
                             : pending
-                              ? "Kompilowanie…"
+                              ? t("Kompilowanie…")
                               : evaluator?.kind === "tests"
-                                ? "Uruchom testy"
-                                : "Uruchom kod"}
+                                ? t("Uruchom testy")
+                                : t("Uruchom kod")}
                           <ArrowRight size={16} />
                         </button>
                         {codePassed && !isPracticeProbe && (
@@ -641,14 +653,14 @@ export function ReviewView() {
                             className="secondary"
                             onClick={finishChallenge}
                           >
-                            Zakończ powtórkę
+                            {t("Zakończ powtórkę")}
                             <Check size={16} />
                           </button>
                         )}
                       </div>
                       {executionMessage && (
                         <p className="feedback" role="status">
-                          {executionMessage}
+                          {t(executionMessage)}
                         </p>
                       )}
                       {lastAttempt && (
@@ -656,23 +668,23 @@ export function ReviewView() {
                           className={`feedback ${lastAttempt.passed ? "passed" : ""}`}
                           role="status"
                         >
-                          {lastAttempt.feedback}
+                          {t(courseText(lastAttempt.feedback))}
                         </p>
                       )}
                       {isManifest ? (
                         <p className="footnote">
-                          {step.editorFile ?? "Cargo.toml"} · TOML 1.0 ·
-                          sprawdzenie deklaracji
+                          {step.editorFile ?? "Cargo.toml"}{" "}
+                          {t("· TOML 1.0 · sprawdzenie deklaracji")}
                         </p>
                       ) : (
                         <CompilerOutput result={result} pending={pending} />
                       )}
                       {lastRun?.code !== undefined && lastRun.code !== code && (
                         <p className="footnote" role="status">
-                          Output pochodzi z poprzedniej wersji kodu.{" "}
+                          {t("Wynik pochodzi z poprzedniej wersji kodu.")}{" "}
                           {completed
-                            ? "Nową próbę możesz rozpocząć z kolejki."
-                            : "Uruchom ponownie po zmianach."}
+                            ? t("Nową próbę możesz rozpocząć z kolejki.")
+                            : t("Uruchom ponownie po zmianach.")}
                         </p>
                       )}
                       {lastAttempt && step.explanation && (
@@ -682,18 +694,19 @@ export function ReviewView() {
                       )}
                       {awaitingProbeRating && (
                         <div className="retrieval-reveal">
-                          <h4>Oceń tę powtórkę</h4>
+                          <h4>{t("Oceń tę powtórkę")}</h4>
                           <RatingButtons disabled={pending} onRate={rate} />
                           <p className="footnote">
-                            Bez oceny termin poprzedniej powtórki pozostaje bez
-                            zmian.
+                            {t(
+                              "Bez oceny termin poprzedniej powtórki pozostaje bez zmian.",
+                            )}
                           </p>
                         </div>
                       )}
                     </>
                   ) : step.choices ? (
                     <fieldset>
-                      <legend>Twoja decyzja</legend>
+                      <legend>{t("Twoja decyzja")}</legend>
                       {choicesForStep(step, `review/${concept.id}`).map(
                         (choice) => (
                           <label className="choice" key={choice.id}>
@@ -704,14 +717,14 @@ export function ReviewView() {
                               checked={progress.answer === choice.id}
                               onChange={() => patch({ answer: choice.id })}
                             />
-                            {choice.label}
+                            {courseText(choice.label)}
                           </label>
                         ),
                       )}
                     </fieldset>
                   ) : (
                     <label>
-                      Odpowiedz z pamięci
+                      {t("Odpowiedz z pamięci")}
                       <textarea
                         value={progress.answer}
                         disabled={pending || completed}
@@ -724,13 +737,17 @@ export function ReviewView() {
                       {evaluator?.kind === "rubric" ? (
                         <>
                           <details className="rubric">
-                            <summary>Porównaj z kryteriami</summary>
+                            <summary>{t("Porównaj z kryteriami")}</summary>
                             <p>
-                              Zaznacz punkty, które wyjaśniasz w swojej
-                              odpowiedzi. Możesz ją jeszcze uzupełnić.
+                              {t(
+                                "Zaznacz punkty, które wyjaśniasz w swojej odpowiedzi. Możesz ją jeszcze uzupełnić.",
+                              )}
                             </p>
                             {evaluator.criteria.map((criterion) => (
-                              <label className="check-label" key={criterion}>
+                              <label
+                                className="check-label"
+                                key={courseText(criterion)}
+                              >
                                 <input
                                   type="checkbox"
                                   checked={progress.rubricChecks.includes(
@@ -747,13 +764,14 @@ export function ReviewView() {
                                     })
                                   }
                                 />
-                                {criterion}
+                                {courseText(criterion)}
                               </label>
                             ))}
                           </details>
                           <p>
-                            Oceń, jak łatwo udało Ci się to wyjaśnić. Ta
-                            samoocena ustala termin kolejnej powtórki.
+                            {t(
+                              "Oceń, jak łatwo udało Ci się to wyjaśnić. Ta samoocena ustala termin kolejnej powtórki.",
+                            )}
                           </p>
                           <RatingButtons
                             disabled={
@@ -772,13 +790,13 @@ export function ReviewView() {
                           }
                           onClick={() => check()}
                         >
-                          Sprawdź
+                          {t("Sprawdź")}
                           <Check size={17} />
                         </button>
                       )}
                       {progress.attempts.at(-1) && (
                         <p className="feedback" role="status">
-                          {progress.attempts.at(-1)?.feedback}
+                          {t(courseText(progress.attempts.at(-1)?.feedback))}
                         </p>
                       )}
                       {lastAttempt && step.explanation && (
@@ -791,7 +809,7 @@ export function ReviewView() {
                         disabled={pending || completed}
                         onClick={revealReminder}
                       >
-                        Potrzebuję przypomnienia
+                        {t("Potrzebuję przypomnienia")}
                         <Eye size={16} />
                       </button>
                     </>
@@ -803,12 +821,12 @@ export function ReviewView() {
                     <LearningText>{concept.reviewPrompt}</LearningText>
                   </h3>
                   <label>
-                    Przypomnij własnymi słowami
+                    {t("Przypomnij własnymi słowami")}
                     <textarea
                       value={progress.answer}
                       disabled={pending || completed}
                       onChange={(e) => patch({ answer: e.target.value })}
-                      placeholder="Zanim odsłonisz odpowiedź…"
+                      placeholder={t("Zanim odsłonisz odpowiedź…")}
                     />
                   </label>
                   {!progress.revealed ? (
@@ -818,21 +836,22 @@ export function ReviewView() {
                       onClick={() => patch({ revealed: true })}
                     >
                       <Eye size={16} />
-                      Odsłoń odpowiedź
+                      {t("Odsłoń odpowiedź")}
                     </button>
                   ) : (
                     <div className="retrieval-reveal">
                       <p>
                         <LearningText>{concept.reviewAnswer}</LearningText>
                       </p>
-                      <h4>Odróżnij od…</h4>
+                      <h4>{t("Odróżnij od…")}</h4>
                       <p>
                         <LearningText>{concept.distinguish}</LearningText>
                       </p>
                       {isPracticeProbe ? (
                         <p className="footnote" role="status">
-                          Wróć do Małego eksperymentu, aby uruchomić kod i
-                          ocenić tę powtórkę.
+                          {t(
+                            "Wróć do Małego eksperymentu, aby uruchomić kod i ocenić tę powtórkę.",
+                          )}
                         </p>
                       ) : (
                         <>
@@ -841,8 +860,9 @@ export function ReviewView() {
                             onRate={rate}
                           />
                           <p className="footnote">
-                            Samoocena ustala termin powtórki. Nie jest dowodem
-                            opanowania umiejętności.
+                            {t(
+                              "Samoocena ustala termin powtórki. Nie jest dowodem opanowania umiejętności.",
+                            )}
                           </p>
                         </>
                       )}
@@ -857,7 +877,7 @@ export function ReviewView() {
         <>
           <section className="review-queue">
             <div className="section-heading spread">
-              <h2>Na teraz</h2>
+              <h2>{t("Na teraz")}</h2>
               <span className="count">{due.length}</span>
             </div>
             {due.length ? (
@@ -871,8 +891,8 @@ export function ReviewView() {
                   >
                     <RotateCcw size={19} />
                     <span>
-                      <strong>{c.title}</strong>
-                      <small>{item.reason}</small>
+                      <strong>{courseText(c.title)}</strong>
+                      <small>{t(courseText(item.reason))}</small>
                     </span>
                     <ArrowRight size={18} />
                   </button>
@@ -883,24 +903,27 @@ export function ReviewView() {
                 <span className="round-icon">
                   <Check size={22} />
                 </span>
-                <h3>Na dziś nic nie czeka.</h3>
+                <h3>{t("Na dziś nic nie czeka.")}</h3>
                 <p>
-                  Nowe pojęcia wrócą po przerwie. Nie musisz powtarzać
-                  wszystkiego od razu.
+                  {t(
+                    "Nowe pojęcia wrócą po przerwie. Nie musisz powtarzać wszystkiego od razu.",
+                  )}
                 </p>
               </div>
             )}
           </section>
           {upcoming.length > 0 && (
             <section className="upcoming">
-              <h2>Po przerwie</h2>
+              <h2>{t("Po przerwie")}</h2>
               {upcoming.map((item) => (
                 <div key={item.conceptId}>
                   <span>
-                    {concepts.find((c) => c.id === item.conceptId)?.title}
+                    {courseText(
+                      concepts.find((c) => c.id === item.conceptId)?.title,
+                    )}
                   </span>
                   <time>
-                    {new Date(item.dueAt).toLocaleString("pl-PL", {
+                    {new Date(item.dueAt).toLocaleString(locale, {
                       dateStyle: "medium",
                       timeStyle: "short",
                     })}
@@ -910,7 +933,7 @@ export function ReviewView() {
             </section>
           )}
           <section className="practice-now">
-            <Eyebrow>MOŻESZ TEŻ POĆWICZYĆ TERAZ</Eyebrow>
+            <Eyebrow>{t("MOŻESZ TEŻ POĆWICZYĆ TERAZ")}</Eyebrow>
             <div className="concept-grid">
               {concepts.map((c) => {
                 const hasShort =
@@ -921,14 +944,14 @@ export function ReviewView() {
                       className="review-concept"
                       onClick={() => start(c.id, "practice", "short")}
                     >
-                      {c.title} · krótka decyzja
+                      {courseText(c.title)} {t("· krótka decyzja")}
                       <ArrowUpRightIcon />
                     </button>
                     <button
                       className="text-button"
                       onClick={() => start(c.id, "practice", "extended")}
                     >
-                      Dłuższe odtworzenie kontraktu
+                      {t("Dłuższe odtworzenie kontraktu")}
                     </button>
                   </div>
                 ) : (
@@ -937,18 +960,16 @@ export function ReviewView() {
                     key={c.id}
                     onClick={() => start(c.id, "practice")}
                   >
-                    {c.title}
+                    {courseText(c.title)}
                     <ArrowUpRightIcon />
                   </button>
                 );
               })}
             </div>
             <p className="footnote">
-              Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź
-              po czasie może potwierdzić odtworzenie. Dla ownership potrzebne są
-              dwa wcześniejsze zadania kodowe i ponad 24 godziny bez kontaktu z
-              pojęciem. Liczba rodzin primary zależy od opisu danego kontraktu;
-              sama powtórka nie tworzy nowej rodziny.
+              {t(
+                "Natychmiastowa powtórka pomaga ćwiczyć. Dopiero poprawna odpowiedź po czasie może potwierdzić odtworzenie. Dla ownership potrzebne są dwa wcześniejsze zadania kodowe i ponad 24 godziny bez kontaktu z pojęciem. Liczba rodzin primary zależy od opisu danego kontraktu; sama powtórka nie tworzy nowej rodziny.",
+              )}
             </p>
           </section>
         </>

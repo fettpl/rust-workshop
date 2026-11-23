@@ -1,5 +1,7 @@
 # Rust runner boundary
 
+[Polski](runner.pl.md)
+
 The application never invokes `rustc`, `cargo`, a shell, or another local child process for learner code. `POST /api/run` validates a small JSON request and sends it to an isolated remote runner. The default adapter is `PlaygroundRunner`, which calls the fixed official endpoint `https://play.rust-lang.org/execute`. A deployment can set `RUST_RUNNER_URL` to a fixed HTTPS endpoint and use `RemoteRunner`; the URL is read from server configuration and is never accepted from the browser request.
 
 The adapter sends the current Rust Playground execute shape as one JSON object containing `channel: "stable"`, `mode: "debug"`, `edition: "2024"`, `crateType`, `tests`, `backtrace`, and `code`. Run mode uses a binary crate. Test mode uses a library crate with `tests: true` and appends curriculum test fixtures supplied by the client inside a `#[cfg(test)]` module. Test counts are returned only when the upstream test summary contains numeric passed and failed counts; the adapter does not infer a pass from an exit status alone.

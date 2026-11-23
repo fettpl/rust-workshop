@@ -1,5 +1,7 @@
 # Monaco sanitizer dependency maintenance
 
+[Polski](dependency-maintenance.pl.md)
+
 The application uses Monaco 0.57.0 through its local AMD loader at `/monaco/vs`.
 The package vendors an affected DOMPurify factory in the published editor chunk;
 an npm override alone does not replace those embedded bytes. Asset preparation

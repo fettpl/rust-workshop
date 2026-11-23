@@ -1,5 +1,7 @@
 # Task 5 report — restricted archive verification and release evidence
 
+[Polski](task-5-report.pl.md)
+
 Status: IMPLEMENTED; focused validation passed. A fresh full archive run was
 started with loopback permission, but the parent workflow interrupted it before
 the fresh-per-mutant pass completed. No fresh pass report is claimed below.

@@ -1,5 +1,7 @@
 # Tokio integration research
 
+[Polski](2026-09-12-tokio-integration-research.pl.md)
+
 Date: 2026-09-12
 Scope: read-only repository inspection and primary-source research. No code was sent to the public Playground, and no learner or imported code was executed locally.
 

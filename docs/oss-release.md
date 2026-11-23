@@ -1,5 +1,7 @@
 # OSS readiness and public release plan
 
+[Polski](oss-release.pl.md)
+
 The approved publication target is the independent repository `fettpl/rust-workshop`.
 The operational sequence and retirement criteria are maintained in the
 [publication handoff](publication-handoff.md). This document records the

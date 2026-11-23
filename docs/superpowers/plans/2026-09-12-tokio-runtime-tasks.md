@@ -1,32 +1,34 @@
-# Tokio: runtime i odpowiedzialność za zadania
+# Tokio runtime and responsibility for tasks
 
-Punkt wyjścia: async foundations zostało zapisane w f2b052c, oba przebiegi GitHub CI zakończyły się sukcesem, a PR #1 został scalony w 64667e4. Poprzednia tura stanowiła zweryfikowany postęp. Kurs pozostaje niekompletny względem pełnej mapy mid/senior.
+[Polski](2026-09-12-tokio-runtime-tasks.pl.md)
 
-## Zakres zatwierdzonego etapu
+The async foundations stage was committed at f2b052c. Both GitHub CI runs passed, and PR #1 merged at 64667e4. The previous stage was verified. The full intermediate and senior curriculum remains in progress.
 
-Cztery lekcje po async-foundations: tokio-runtime-entry, tokio-spawn-join, tokio-task-boundaries, tokio-join-outcomes. Moduł tokio-runtime-tasks obejmuje rzeczywisty current-thread runtime, uruchamianie niezależnych zadań, granicę Send/static i odpowiedzialność za wynik każdego JoinHandle. Każde pojęcie ma dwie różne bramki, jedną od pustej kartki, i kodową powtórkę. Nie zastępujemy Tokio ręcznym poll ani std::thread. Kanały bounded, backpressure, timeout/select, cancellation i graceful shutdown pozostają osobnym wymaganym etapem; oneshot w testach służy jawnemu potwierdzeniu zdarzeń.
+## Approved scope
 
-Projekt kontynuuje zaakceptowaną mapę, z wykorzystaniem brainstorming i writing-plans. Wybieramy oddzielną weryfikację Cargo dla danych repozytorium; rozszerzanie lokalnego runnera o kod ucznia lub arbitralny Cargo.toml nie należy do tego projektu.
+Four lessons follow async-foundations: tokio-runtime-entry, tokio-spawn-join, tokio-task-boundaries, and tokio-join-outcomes. The tokio-runtime-tasks module uses the actual current-thread runtime and covers spawning independent tasks, Send and 'static requirements, and responsibility for each JoinHandle result. Each concept has two distinct coding assessments, including one that starts from an empty editor, and a coding retrieval exercise. Use Tokio for the runtime and spawned tasks. The later stage covers bounded channels, backpressure, timeout/select, cancellation, and graceful shutdown. Tests acknowledge events explicitly with oneshot.
 
-## Podział pracy i kontrakty
+The project continues the approved roadmap using brainstorming and writing-plans. Use a separate Cargo verifier for repository-authored data. Learner code and arbitrary Cargo.toml inputs stay outside the local runner.
 
-- Agent GPT-5.6-Terra xHigh: cztery lekcje, koncepcje, kompetencje, źródła, powtórki i moduł w src/content/tokio-runtime-tasks.ts; może dzielić własne pliki danych. Root recenzuje wszystkie kontrakty i rozwiązania.
-- Root: metadane trustedFixtureTarget, walidacja, oddzielny statyczny profil Cargo i weryfikator z testami, rejestracja modułu, E2E/offline, dokumentacja oraz commit.
-- Weryfikacja używa edition 2024 i tokio = "=1.53.1" z macros, rt, sync oraz zatwierdzonego Cargo.lock. Brak czasu ściennego, sieci, tokio-util i niekontrolowanych zależności w przykładach tego etapu.
-- LessonStep może oznaczyć trustedFixtureTarget = cargo-tokio-runtime-1.53.1. To informacja wyłącznie dla weryfikacji autora. RunRequest zachowuje code/mode/tests; żadna zależność, ścieżka czy manifest nie pochodzi z żądania przeglądarki.
-- Domyślny weryfikator rustc musi jawnie rozdzielić przypadki std i Tokio, odrzucając nieznane cele. Nowy weryfikator importuje wyłącznie zaufaną treść repozytorium; obejmuje kod widoczny, oczekiwane błędy, startery z testami, rozwiązania, zadania blank i powtórki. Brak testów, timeout, błąd zależności i błąd infrastruktury nie są dowodem odrzucenia złego rozwiązania.
-- Testy rozróżniają task identity i własność wyników, nie opierają poprawności na kolejności schedulera, sleep, limicie yield ani samym timeout. Lokalne Future mogą pożyczać i być !Send; wymagania Send/static pochodzą z konkretnego API spawn.
-- Jeden błąd join nie może ukryć wyniku drugiego zadania. Drop JoinHandle odłącza zadanie; zakończenie obserwujemy przez jawny kanał potwierdzenia i nie nazywamy go anulowaniem.
+## Responsibilities and contracts
 
-## Weryfikacja i granice
+- Agent GPT-5.6-Terra xHigh authors four lessons, concepts, competencies, sources, retrieval exercises, and the module in src/content/tokio-runtime-tasks.ts, with the option to split its own data files. The lead reviews all contracts and solutions.
+- The lead owns trustedFixtureTarget metadata, validation, the separate static Cargo profile and verifier with tests, module registration, E2E/offline coverage, documentation, and the commit.
+- Verification uses edition 2024 and tokio = "=1.53.1" with macros, rt, sync, and an approved Cargo.lock. Examples for this stage exclude wall-clock time, network use, tokio-util, and uncontrolled dependencies.
+- LessonStep may specify trustedFixtureTarget = cargo-tokio-runtime-1.53.1 for author verification. RunRequest retains code/mode/tests. Browser requests provide no dependencies, paths, or manifests.
+- The default rustc verifier distinguishes std and Tokio cases and rejects unknown targets. The new verifier imports trusted repository content only, covering visible code, expected errors, starters with tests, solutions, empty-editor tasks, and retrieval practice. Missing tests, timeouts, dependency errors, and infrastructure failures are outside the evidence of rejection.
+- Tests distinguish task identity and ownership of task results. They avoid relying on scheduler order, sleeps, a fixed number of yields, or timeout alone. A local Future may borrow data and be !Send. The spawn API defines its own Send and 'static bounds.
+- A failed join must leave other task results observable. Dropping a JoinHandle detaches its task. Observe completion through an explicit acknowledgment channel.
 
-- [x] Najpierw testy rozdziału celów, walidacji Tokio i kompletności czterech kryteriów.
-- [x] Stały profil Cargo, Cargo.lock oraz wykonanie wszystkich zaufanych przykładów Tokio offline/locked po kontrolowanym fetch.
-- [x] Recenzja bramek, błędów kompilatora, własności i niezależnych powtórek; testy celowo wadliwych implementacji.
-- [x] Lint, typy, Vitest, treść, źródła, dotychczasowe przykłady Rust, build i odpowiednie regresje.
-- [x] Nowe lekcje w przeglądarce, błędy/wskazówki, reveal/blank, resume/mobile i offline.
-- [x] Aktualizacja audytu całego pierwotnego briefu i mapy pozostającego zakresu, commit po domknięciu etapu.
+## Verification and limits
 
-Publiczny GET /meta/crates sprawdzony 12 września 2026 potwierdził Tokio 1.53.1 i tokio-util 0.7.19. Nie dowodzi to kontraktu features ani stałości prelude. Zewnętrzne wysłanie przykładów do Playgrounda nadal nie zostało autoryzowane; testy przeglądarkowe używają kontrolowanych odpowiedzi runnera. Szkice i importy ucznia nigdy nie trafiają do lokalnych poleceń Cargo/rustc.
+- [x] Start with tests for independent coding assessments, Tokio validation, and coverage of all four criteria.
+- [x] Establish the fixed Cargo profile and Cargo.lock. Fetch dependencies under control, then run all trusted Tokio cases offline and locked.
+- [x] Review coding assessments, compiler diagnostics, properties, and independent retrieval exercises. Test deliberate faults.
+- [x] Run lint, types, Vitest, content checks, source checks, existing Rust examples, build, and relevant regressions.
+- [x] Verify new lessons in the browser, including errors and hints, reveal and empty-editor tasks, Resume and mobile, and offline use.
+- [x] Update the original requirements audit and remaining roadmap, then commit the verified stage.
 
-Wynik etapu: 90 lekcji / 25 modułów / 93 pojęcia / 167 źródeł / 45 blank-page. Vitest 137/137, rustc 1207/1207, Cargo Tokio 50/50, dziewięć kompilujących się mutantów odrzuconych przez asercje, E2E 34/34 plus ponowna kontrola dwóch scenariuszy Tokio z axe przy 390 px. Build i offline v14 przeszły; szczegóły i ograniczenia w docs/verification.md. Pełny cel zaawansowanego kursu pozostaje otwarty.
+The public GET /meta/crates response on 12 September 2026 listed Tokio 1.53.1 and tokio-util 0.7.19. That observation covered crate versions. Feature flags and prelude stability require separate evidence. Browser tests used controlled runner responses while external Playground submission awaited approval. Local Cargo and rustc received no learner drafts or imports.
+
+The stage had 90 lessons, 25 modules, 93 concepts, 167 sources, and 45 empty-editor tasks. Vitest passed 137/137, rustc 1207/1207, Cargo Tokio 50/50, and E2E 34/34. Assertions rejected nine compiling mutants. Two Tokio scenarios were checked again with axe at 390 px. The production build and offline v14 passed. Details and limits are in docs/verification.md. The rest of the advanced curriculum remains open.

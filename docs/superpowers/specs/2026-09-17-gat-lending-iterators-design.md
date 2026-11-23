@@ -1,5 +1,7 @@
 # GAT and lending iterators
 
+[Polski](2026-09-17-gat-lending-iterators-design.pl.md)
+
 This milestone adds a focused, safe-Rust introduction to generic associated
 types (GATs) through lending producers. It follows the existing practical
 variance/HRTB module and the basic iterator module. The learner already knows
@@ -157,24 +159,19 @@ it with the corresponding returned view.
 
 Source-free Polish prompt contract:
 
-> Od pustej kartki zaprojektuj `PresentValueLender<T>`, który przejmuje
-> `Vec<Option<T>>` przez konstruktor `new` przyjmujący ten wektor i zwracający
-> `PresentValueLender<T>`, a następnie implementuje pokazany trait
-> `LendingIterator`.
-> W odpowiedzi zdefiniuj także pełny trait `LendingIterator` z rodzinnym
-> `Item<'a>` i wymaganym `where Self: 'a`; zadanie nie dostarcza ukrytej
-> deklaracji ani typu bazowego poza biblioteką standardową.
-> Metoda traitu `next` pożycza odbiorcę mutowalnie na wybrany lifetime `'a`
-> i zwraca `Option<Self::Item<'a>>` powiązane z tą samą pożyczką.
-> `Item<'a>` ma być `&'a mut T`. Odwiedzaj elementy od lewej do prawej,
-> pomijaj każde `None`, a dla `Some(value)` oddaj pożyczkę do samego
-> `value`; nie przenoś wartości, nie klonuj ich i nie zmieniaj kolejności.
-> Puste wejście oraz wejście zawierające wyłącznie wakaty od razu się kończy.
-> Po pierwszym wyczerpaniu każde następne `next` także zwraca `None`. Zmiany
-> wykonane przez odbiorcę mają pozostać w przejętym stanie. Napisz sam typ,
-> prywatny stan pozycji, implementację `next` i konstruktor na podstawie
-> tego opisu; nie otrzymujesz startera ani podpisu funkcji poza kontraktem
-> konstruktora podanym powyżej.
+> Design from an empty card `PresentValueLender<T>`who takes over `Vec<Option<T>>` by constructor `new` accepting this
+> vector and returning `PresentValueLender<T>`and then implements the shown trait `LendingIterator`. In response, also
+> define a full train `LendingIterator` family `Item<'a>` and required `where Self: 'a`; the task does not provide a
+> hidden declaration or base type outside the standard library. Trait method `next` borrows
+> the recipient mutatis mutandis on the selected lifetime `'a` and returns `Option<Self::Item<'a>>` the same
+> loan. `Item<'a>` I want it. `&'a mut T`. Visit items from left to right, skip each `None`and for `Some(value)`
+> donate the loan to yourself `value`; don't move the value, don't clone it, and don't
+> change the order. The empty entrance and the entrance containing only vacancyes
+> immediately ends. After the first exhaustion, each next `next` also returns `None`. The
+> changes made by the recipient are to remain in the taken-up state. Write the same
+> type, private position, implementation `next` and constructor based on this description;
+> you do not receive a starter or signature of the function outside the designer's
+> contract given above.
 
 The hidden client must use local non-`'static` text or records and verify that
 vacancies do not create output positions, occupied values are mutable, all
@@ -279,23 +276,18 @@ the trait's minimum contract.
 
 Source-free Polish prompt contract:
 
-> Zaimplementuj od pustej kartki `GrowingPrefixesMut<'data, T>` z
-> konstruktorem `new` przyjmującym `&'data mut [T]` oraz `maximum: usize` i
-> zwracającym ten typ, implementacją `LendingIterator` i
-> `Item<'a> = &'a mut [T]`.
-> Zdefiniuj również pełny trait `LendingIterator` w rozwiązaniu, włącznie z
-> generycznym `Item<'a>` i `where Self: 'a`; nie ma ukrytej deklaracji poza
-> biblioteką standardową. Metoda traitu `next` pożycza odbiorcę mutowalnie
-> na lifetime `'a` i zwraca `Option<Self::Item<'a>>` związane z tą pożyczką.
-> Przy pierwszym `next` oddaj prefiks długości 1, potem prefiksy długości 2, aż do długości równej
-> `maximum` albo długości danych — wybierz mniejszą granicę. Dla
-> `maximum == 0`, pustych danych lub po oddaniu najdłuższego prefiksu od razu
-> zwracaj `None`; późniejsze `next` też mają zwracać `None`. Każdy prefiks
-> zaczyna się w pozycji zero, więc kolejne wywołania mogą dotykać tych samych
-> elementów; pożyczkę trzeba zakończyć przed kolejnym `next`. Nie używaj
-> `unsafe`, `Copy`, `Clone` ani gotowego iteratora okien. Zdefiniuj prywatny
-> stan, pełny podpis typu, implementację traitu i konstruktor na podstawie
-> opisu.
+> Implement from an empty sheet `GrowingPrefixesMut<'data, T>` with constructor `new` receiving `&'data mut [T]` and `maximum: usize` and
+> returning this type, implementation `LendingIterator` i `Item<'a> = &'a mut [T]`. Define a full train as well `LendingIterator` in
+> solution, including generic `Item<'a>` i `where Self: 'a`; there is no hidden declaration outside the
+> standard library. Trait method `next` borrows the recipient mutatis mutandis on lifetime
+> `'a` and returns `Option<Self::Item<'a>>` related to this loan. On the first `next` give the prefix of
+> length 1, then the prefix of length 2 up to length equal to `maximum` or length of data —
+> choose a smaller limit. For `maximum == 0`, empty data or after giving the longest prefix
+> immediately return `None`; later `next` They're supposed to return `None`. Each prefix
+> starts in position zero, so subsequent calls can touch the same elements; a loan must
+> be completed before another `next`. Do not use `unsafe`, `Copy`, `Clone` or a finished window
+> iterator. Define a private state, full signature type, Trait implementation and
+> constructor based on description.
 
 This differs from the primary in growth from the front, a maximum-length
 boundary, and a termination rule rather than fixed-width sliding windows. It
@@ -381,24 +373,19 @@ contract.
 
 Source-free Polish prompt contract:
 
-> Napisz od pustej kartki generyczną funkcję `visit_until` z typami `L`, `T`
-> i `F`, argumentami `lender: &mut L` oraz `visit: F`, wynikiem `usize`,
-> boundem `L: SliceLender<T>` i callbackiem `F: FnMut(&mut [T]) -> bool`.
-> W rozwiązaniu zdefiniuj pełny trait `SliceLender<T>` z `Item<'a>`
-> ograniczonym przez `AsRef<[T]> + AsMut<[T]>` oraz `where Self: 'a`; zadanie
-> nie dostarcza ukrytego traitu ani implementacji źródła. Metoda traitu
-> `next` pożycza odbiorcę mutowalnie na lifetime `'a` i zwraca
-> `Option<Self::Item<'a>>` związane z tą samą pożyczką.
-> Pobieraj elementy przez `next` w kolejności. Dla każdego `Some(item)` wywołaj
-> callback dokładnie raz z `item.as_mut()`; zwiększ wynik o jeden niezależnie
-> od wartości bool. `true` oznacza „zwiedzaj dalej”, a pierwsze `false`
-> oznacza „zatrzymaj się natychmiast”: po tym callbacku nie wolno już pytać
-> źródła o kolejny element. Gdy źródło kończy się wcześniej, zwróć
-> liczbę rzeczywiście odwiedzonych elementów. Zmiany callbacku pozostają w
-> danych. Jeśli tę samą funkcję wywołasz ponownie z tym samym źródłem,
-> ma rozpocząć od następnego elementu po tym, który wywołał stop; nie resetuj
-> ani nie przepytuj elementu zatrzymującego. Nie dodawaj `Clone`, `'static`
-> ani innych boundów i nie przechowuj pożyczonego itemu po callbacku.
+> Write from an empty generic sheet function `visit_until` with types `L`, `T` and `F`, arguments
+> `lender: &mut L` and `visit: F`, result `usize`, bounce `L: SliceLender<T>` and callback `F: FnMut(&mut [T]) -> bool`. In the solution, define a full
+> trait `SliceLender<T>` with `Item<'a>` limited by `AsRef<[T]> + AsMut<[T]>` and `where Self: 'a`; the task does not provide hidden trait
+> or source implementation. The Traitu `next` method borrows the receiver mutatis mutandis
+> on lifetime `'a` and returns `Option<Self::Item<'a>>` related to the same loan. Download items by `next` in
+> order. For each `Some(item)` call callback exactly once with `item.as_mut()`; increase the score by one
+> regardless of the bool value. `true` means ‘sightsee’ and the first `false` means ‘stop
+> immediately’: after this callback, you are no longer allowed to ask the source for
+> another element. When the source ends earlier, return the number of items actually
+> visited. Callback changes remain in the data. If you call the same function again with
+> the same source, it is to start with the next item after the stop; do not reset or
+> question the stopping item. Do not add `Clone`, `'static`, or other bounces, and do not store
+> the borrowed item after callback.
 
 The hidden tests check stop on first, middle, last, and no stop; exact source
 poll count; exact callback count; mutation of the stopping item; resumption
@@ -510,27 +497,20 @@ contain that borrow.
 
 Source-free Polish prompt contract:
 
-> Zaimplementuj od pustej kartki `NonEmptySummaries<L, T>` z prywatnym
-> źródłem `L: SliceLender<T>`, konstruktorem `new` przyjmującym `source: L` i
-> zwracającym `NonEmptySummaries<L, T>`, oraz implementacją zwykłego
-> `Iterator<Item = WindowSummary>`. Zdefiniuj w rozwiązaniu pełny
-> `SliceLender<T>` z rodzinnym `Item<'a>` ograniczonym przez
-> `AsRef<[T]> + AsMut<[T]>` i z warunkiem `where Self: 'a`. Metoda tego
-> traitu `next` pożycza odbiorcę mutowalnie na lifetime `'a` i zwraca
-> `Option<Self::Item<'a>>` związane z tą samą pożyczką. Zdefiniuj także
-> `WindowSummary` z polami `index` i `len`, oboma typu `usize`; zadanie nie
-> dostarcza ukrytych deklaracji poza biblioteką standardową.
-> Konstrukcja adaptera nie może wywołać `source.next()`. W jego `next`
-> odpytuj źródło tak długo, aż znajdziesz niepusty item albo źródło zwróci
-> `None`. Pusty item zużyj, zwiększ jego ordinal źródłowy przez
-> `saturating_add(1)` i pomiń. Dla
-> niepustego itemu oddaj posiadany `WindowSummary { index, len }`, gdzie
-> `index` jest ordinalem wszystkich wcześniejszych wartości `Some`, także
-> pustych, a `len` to długość itemu. Jedno wywołanie adaptera może więc
-> wykonać kilka polli źródła, ale nie może wykonać żadnej pracy po znalezieniu
-> wyniku. Po `None` ustaw stan terminalny: kolejne `next` nie mogą już pytać
-> źródła. Nie zwracaj pożyczonego slice, nie używaj `Clone` ani `'static` i
-> zakończ każdą pożyczkę przed zwróceniem raportu.
+> Implementing from an empty page `NonEmptySummaries<L, T>` with a private source `L: SliceLender<T>`, a designer `new`
+> accepting `source: L` and returning `NonEmptySummaries<L, T>`, and a regular implementation `Iterator<Item = WindowSummary>`. Define in a full
+> solution `SliceLender<T>` with family `Item<'a>` limited by `AsRef<[T]> + AsMut<[T]>` and with the condition `where Self: 'a`. The method of
+> this trait `next` borrows the recipient mutatis mutandis on lifetime `'a` and returns
+> `Option<Self::Item<'a>>` related to the same loan. Define also `WindowSummary` with fields `index` and `len`, both types
+> `usize`; the task does not provide hidden declarations outside the standard library. The
+> design of the adapter must not cause `source.next()`. In his `next` question the source until you
+> find an empty item or the source returns `None`. Empty item use, increase its source
+> ordinal by `saturating_add(1)` and skip. For an empty item give it held `WindowSummary { index, len }`, where `index` is the
+> ordinal of all earlier values `Some`, also blank, and `len` is the length of the item.
+> One call of the adapter can therefore perform several fields of the source, but it
+> cannot do any work after finding the result. After `None` set the terminal state:
+> another `next` can no longer ask the source. Do not return the borrowed slice, do not
+> use `Clone` or `'static` and terminate any loan before returning the report.
 
 This differs from the primary by filtering empty items and allowing several
 source polls in one adapter poll. Hidden tests use source lengths such as

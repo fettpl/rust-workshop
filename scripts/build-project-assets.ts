@@ -1,22 +1,21 @@
 /** Packages only reviewed repository fixtures; never accepts learner files or paths. */
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { projects } from "../src/content/course";
+import { packageDownloadPath } from "../src/domain/project-package";
 import { buildProjectArchive } from "./project-archive";
 
-const outputs = projects.flatMap((project) => {
-  if (!project.package) return [];
+for (const project of projects) {
   const archive = project.package;
-  return (["starter", "solution"] as const).map((variant) => ({
-    archive,
-    variant,
-    bytes: buildProjectArchive(archive, variant),
-  }));
-});
-
-for (const { archive, variant, bytes } of outputs) {
-  const directory = join(process.cwd(), "public", "projects", archive.id);
-  mkdirSync(directory, { recursive: true });
-  writeFileSync(join(directory, `${variant}.zip`), bytes);
-  console.log(`${archive.id}/${variant}.zip: ${bytes.length} bytes`);
+  if (!archive) continue;
+  for (const variant of ["starter", "solution"] as const) {
+    for (const locale of [undefined, "pl", "en"] as const) {
+      const url = packageDownloadPath(archive, variant, locale);
+      const target = join(process.cwd(), "public", url);
+      const bytes = buildProjectArchive(archive, variant, { locale });
+      mkdirSync(dirname(target), { recursive: true });
+      writeFileSync(target, bytes);
+      console.log(`${url}: ${bytes.length} bytes`);
+    }
+  }
 }

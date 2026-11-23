@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { concepts, lessons, reviewExercises } from "../../src/content/course";
+import { concepts, lessons, reviewExercises } from "./polish-course.helper";
 import type { LessonStep, UserState } from "../../src/domain/types";
 import { reviewSessionKey } from "../../src/engine/review-session";
 import {

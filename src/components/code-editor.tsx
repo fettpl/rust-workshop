@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Editor, { loader, type BeforeMount } from "@monaco-editor/react";
+import { useLocale } from "./locale-provider";
 loader.config({ paths: { vs: "/monaco/vs" } });
 
 const LIGHT_THEME = "rust-workshop-light";
@@ -123,6 +124,8 @@ export default function CodeEditor({
   accessible?: boolean;
   language?: "rust" | "toml";
 }) {
+  const { t } = useLocale();
+  const label = t(language === "toml" ? "Kod TOML" : "Kod Rust");
   const [fallback, setFallback] = useState(false);
   const [fallbackCause, setFallbackCause] = useState<FallbackCause | null>(
     null,
@@ -159,7 +162,7 @@ export default function CodeEditor({
     <textarea
       ref={textareaRef}
       className="code-textarea"
-      aria-label={language === "toml" ? "Kod TOML" : "Kod Rust"}
+      aria-label={label}
       value={code}
       readOnly={readOnly}
       spellCheck={false}
@@ -174,7 +177,7 @@ export default function CodeEditor({
       aria-live="polite"
       aria-atomic="true"
     >
-      {fallbackCause === "automatic" ? AUTOMATIC_FALLBACK_MESSAGE : ""}
+      {fallbackCause === "automatic" ? t(AUTOMATIC_FALLBACK_MESSAGE) : ""}
     </div>
   );
 
@@ -201,12 +204,12 @@ export default function CodeEditor({
         }}
         loading={
           <div className="editor-loading">
-            Wczytywanie edytora…{" "}
+            {t("Wczytywanie edytora…")}{" "}
             <button
               ref={loadingButtonRef}
               onClick={() => transitionToFallback("manual")}
             >
-              Otwórz prosty edytor
+              {t("Otwórz prosty edytor")}
             </button>
           </div>
         }
@@ -221,7 +224,7 @@ export default function CodeEditor({
           wordWrap: "on",
           automaticLayout: true,
           tabSize: 4,
-          ariaLabel: language === "toml" ? "Kod TOML" : "Kod Rust",
+          ariaLabel: label,
           accessibilitySupport: "on",
           tabFocusMode: true,
           renderLineHighlight: "none",

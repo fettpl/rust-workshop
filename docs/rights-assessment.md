@@ -1,5 +1,7 @@
 # Bounded course and icon rights assessment
 
+[Polski](rights-assessment.pl.md)
+
 This assessment records a bounded source/copying review of the course and a
 traced origin for the project icon. It does not establish exclusive copyright in
 every generated fragment, exhaustive third-party clearance, or permission to

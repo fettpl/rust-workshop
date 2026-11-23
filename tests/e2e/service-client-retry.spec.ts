@@ -1,7 +1,8 @@
+import { localizedPackageFile } from "../../src/i18n/package-markdown";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { strFromU8, unzipSync } from "fflate";
-import { lessons, projects } from "../../src/content/course";
+import { lessons, projects } from "./polish-course.helper";
 import { createInitialState } from "../../src/persistence/state";
 import type { UserState } from "../../src/domain/types";
 import { assertArchiveNotices, expectedArchivePaths } from "./archive-notices.helper";
@@ -133,6 +134,6 @@ test("resumes bounded retry work, keeps a draft/self-rating ungated, and downloa
     assertArchiveNotices(files, project.package!);
     const fileVariant = variant === "startowy" ? "starter" : "solution";
     for (const file of project.package!.files)
-      expect(strFromU8(files[`${project.package!.id}/${file.path}`])).toBe(file[fileVariant]);
+      expect(strFromU8(files[`${project.package!.id}/${file.path}`])).toBe(localizedPackageFile(file.path, file[fileVariant] ?? file.starter, "pl"));
   }
 });

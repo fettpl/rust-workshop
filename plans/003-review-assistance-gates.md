@@ -1,5 +1,7 @@
 # Review-family assistance in counted course gates
 
+[Polski](003-review-assistance-gates.pl.md)
+
 The independently reviewed maintenance was accepted locally at feature commit `5b31be08d8701891379183d874b7908c4953ed48`, tested tree `3c532cd30a2ee6caf58513a6e20ab786330c98b3`. The complete source-history backup was independently restored and verified before A12 began.
 
 An ordinary review can expose a solution for an authored task family. A later primary attempt may still have zero hints and no reveal flag because those fields describe the attempt itself. The counted course gate and recovery should consult the same earlier identifiable assistance that the global independent-family selector already uses. A clean primary recorded before later assistance keeps its credit.

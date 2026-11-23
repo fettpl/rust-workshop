@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { lessons, modules } from "../../src/content/course";
+import { lessons, modules } from "./polish-course.helper";
 import {
   createInitialState,
   createStepProgress,
@@ -175,7 +175,7 @@ for (const lessonId of freshIds) {
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("Mocked core practice UI result");
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole("tab", { name: /^Output/ }).click();
+    await page.getByRole("tab", { name: /^Wyjście/ }).click();
     const beforeReload = await saved(page);
     expect(beforeReload.resume).toMatchObject({
       lessonId,
@@ -186,14 +186,14 @@ for (const lessonId of freshIds) {
     expect(beforeReload.bookmarks).toContain(lessonId);
     expect(beforeReload.steps[stepKey(lessonId, step.id)].code).toBe(draft);
     await page.reload();
-    await expect(page.getByRole("tab", { name: /^Output/ })).toHaveAttribute(
+    await expect(page.getByRole("tab", { name: /^Wyjście/ })).toHaveAttribute(
       "aria-selected",
       "true",
     );
     await expect(
       page.getByRole("region", { name: "Wynik kompilatora" }),
     ).toContainText("Mocked core practice UI result");
-    const outputTab = page.getByRole("tab", { name: /^Output/ });
+    const outputTab = page.getByRole("tab", { name: /^Wyjście/ });
     await outputTab.focus();
     await page.keyboard.press("ArrowLeft");
     await expect(
@@ -417,7 +417,7 @@ test("nested patterns: mocked repair persists UI state and recovers a fresh tran
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("Mocked nested pattern result");
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("tab", { name: /^Output/ }).click();
+  await page.getByRole("tab", { name: /^Wyjście/ }).click();
   const beforeReload = await saved(page);
   expect(beforeReload.resume).toMatchObject({
     lessonId: lesson.id,
@@ -428,14 +428,14 @@ test("nested patterns: mocked repair persists UI state and recovers a fresh tran
   expect(beforeReload.bookmarks).toContain(lesson.id);
   expect(beforeReload.steps[stepKey(lesson.id, repair.id)].code).toBe(draft);
   await page.reload();
-  await expect(page.getByRole("tab", { name: /^Output/ })).toHaveAttribute(
+  await expect(page.getByRole("tab", { name: /^Wyjście/ })).toHaveAttribute(
     "aria-selected",
     "true",
   );
   await expect(
     page.getByRole("region", { name: "Wynik kompilatora" }),
   ).toContainText("Mocked nested pattern result");
-  const outputTab = page.getByRole("tab", { name: /^Output/ });
+  const outputTab = page.getByRole("tab", { name: /^Wyjście/ });
   await outputTab.focus();
   await page.keyboard.press("ArrowLeft");
   await expect(page.getByRole("tab", { name: "Kod", exact: true })).toBeFocused();

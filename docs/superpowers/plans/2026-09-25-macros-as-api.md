@@ -1,5 +1,7 @@
 # Macros as APIs Implementation Plan
 
+[Polski](2026-09-25-macros-as-api.pl.md)
+
 > For agentic workers: implement task by task with TDD, focused review, and frequent English commits. All implementation, tests, documentation changes and Git operations use GPT-5.6-Luna high. GPT-6-Astra medium owns planning and qualitative review.
 
 **Goal:** Add three Polish declarative-macro lessons and trustworthy stable/MSRV evidence that their external-client contract works.

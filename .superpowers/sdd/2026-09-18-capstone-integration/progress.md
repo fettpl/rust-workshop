@@ -1,5 +1,7 @@
 # SDD ledger — plan: docs/superpowers/plans/2026-09-18-capstone-integration.md
 
+[Polski](progress.pl.md)
+
 Task 1: fix round 1/5 (5 addressed, 0 open; commits 7e120aa..ed4c990)
 Task 1: complete (commits 00d5963..ed4c990, review clean)
 Task 2: complete (commit ffda2cd, review clean)

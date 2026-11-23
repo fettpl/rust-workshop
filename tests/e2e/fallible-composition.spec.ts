@@ -4,7 +4,7 @@ import {
   lessons,
   modules,
   reviewExercises,
-} from "../../src/content/course";
+} from "./polish-course.helper";
 import { courseEvidenceSummary } from "../../src/content/learning-context";
 import {
   createInitialState,

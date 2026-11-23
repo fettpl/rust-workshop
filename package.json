@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:offline": "node scripts/verify-offline.mjs",
-    "content:check": "node --import tsx scripts/validate-content.ts",
+    "content:check": "node --import tsx scripts/validate-content.ts && node --import tsx scripts/course-text-inventory.ts",
     "content:rust": "node --import tsx scripts/verify-rust.ts",
     "postinstall": "node scripts/setup-assets.mjs",
     "content:audit": "node --import tsx scripts/audit-sources.ts",

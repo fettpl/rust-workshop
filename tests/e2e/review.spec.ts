@@ -540,7 +540,7 @@ test("keeps compiler output, code, and successful review evidence across reload"
     solution,
   );
   await expect(
-    page.getByText(/Output pochodzi z poprzedniej wersji/),
+    page.getByText(/Wynik pochodzi z poprzedniej wersji/),
   ).toBeVisible();
   await expect(page.getByText(/E0382/)).toBeVisible();
 

@@ -1,5 +1,7 @@
 # Curriculum review 6 October 2026
 
+[Polski](curriculum-review-2026-10-06.pl.md)
+
 <a id="current-task5-curriculum-snapshot-8-october-2026"></a>
 
 ## Current local Task 5 curriculum snapshot — 8 October 2026

@@ -1,5 +1,7 @@
 # Security policy (release draft)
 
+[Polski](SECURITY.pl.md)
+
 ## Reporting a vulnerability
 
 A private vulnerability-reporting channel has not yet been verified for this
