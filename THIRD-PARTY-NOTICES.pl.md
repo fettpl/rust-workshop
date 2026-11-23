@@ -30,7 +30,7 @@ odnotowane w `package-lock.json`.
 | `@monaco-editor/react` | 4.7.0 | MIT | <https://github.com/suren-atoyan/monaco-react> |
 | `dompurify` | 3.4.18 | MPL-2.0 OR Apache-2.0 | <https://github.com/cure53/DOMPurify> |
 | `idb` | 8.0.4 | ISC | <https://github.com/jakearchibald/idb> |
-| `lucide-react` | 1.61.0 | ISC | <https://github.com/lucide-icons/lucide> |
+| `lucide-react` | 1.77.0 | ISC | <https://github.com/lucide-icons/lucide> |
 | `monaco-editor` | 0.57.0 | MIT | <https://github.com/microsoft/monaco-editor> |
 | `next` | 16.4.5 | MIT | <https://github.com/vercel/next.js> |
 | `react` | 19.3.1 | MIT | <https://github.com/facebook/react> |
