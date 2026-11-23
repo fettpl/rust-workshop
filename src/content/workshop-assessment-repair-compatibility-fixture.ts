@@ -1,3 +1,4 @@
+import { propertyContractsRustixRestoration } from "./property-contracts-rustix-compatibility-fixture";
 import capstoneProcessPathDelta from "./fixtures/capstone-process-path-delta.json";
 import repositoryLinksDelta from "./fixtures/oss-repository-links-delta.json";
 import answerCaseDelta from "./fixtures/answer-case-delta.json";
@@ -108,9 +109,11 @@ function restorePath(
     replacements.set(object, copy);
     return copy;
   }
-  if (!matches(current, successor) || !matches(before, predecessor))
-    return object;
-  return replaceField(object, key, before, replacements);
+  if (!matches(current, successor)) return object;
+  // A fixture may derive its predecessor from the exact captured successor.
+  const historical = typeof before === "function" ? before(current) : before;
+  if (!matches(historical, predecessor)) return object;
+  return replaceField(object, key, historical, replacements);
 }
 
 function removeIndex<T>(array: T[], index: number): T[] {
@@ -423,8 +426,15 @@ export function restoreCurriculumRecoveryRegistry<T extends object>(
   matches: (value: unknown, expected: string) => boolean,
   entries: readonly RegistryRestoration[] = [...multiArchivesRegistries, ...projectArchivesRegistries, ...crossModuleRegistries, ...allVariantsRegistries, ...remainingRegistries, ...practiceRegistries, ...curriculumRecoveryDelta.registries],
 ): T {
+  const restorations: readonly RegistryRestoration[] = [
+    propertyContractsRustixRestoration,
+    ...capstoneProcessRegistries,
+    ...repositoryLinkRegistries,
+    ...answerCaseDelta.registries,
+    ...entries,
+  ];
   let result = registry;
-  for (const entry of [...capstoneProcessRegistries, ...repositoryLinkRegistries, ...answerCaseDelta.registries, ...entries].filter(
+  for (const entry of restorations.filter(
     (item) =>
       item.registry === name ||
       (name === "reviewExercisesById" && item.registry === "reviewExercises"),
