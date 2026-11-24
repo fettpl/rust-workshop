@@ -99,6 +99,7 @@ jobs:
           retention-days: 7
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run typecheck:native
       - run: npm run content:packages
       - name: Install pinned cargo-audit
         run: bash scripts/install-cargo-audit.sh
