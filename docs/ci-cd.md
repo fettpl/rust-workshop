@@ -182,10 +182,17 @@ npm ci
 cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
 npm run lint
 npm run typecheck
+npm run typecheck:native
 npm run content:check
 npm run content:packages
 npm test
 ```
+
+Both type checks generate Next.js route types and check the same project.
+`typecheck` uses TypeScript 6, which also supplies the compiler API for the
+Monaco asset setup and ESLint. `typecheck:native` invokes the pinned TypeScript
+7 compiler through its development dependency alias. The `verify` job runs
+both checks.
 
 The fetch only prepares the locked dependency cache. Native checks that consume
 it remain `--offline --locked`; a successful fetch is not behavioral evidence.

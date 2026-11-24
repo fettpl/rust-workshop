@@ -11,7 +11,9 @@
     "start": "next start --hostname 127.0.0.1",
     "lint": "eslint .",
     "pretypecheck": "next typegen",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
+    "pretypecheck:native": "npm run pretypecheck",
+    "typecheck:native": "node node_modules/typescript-native/bin/tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:offline": "node scripts/verify-offline.mjs",
@@ -95,6 +97,7 @@
     "prettier": "^3.10.1",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
+    "typescript-native": "npm:typescript@7.0.2",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
   },

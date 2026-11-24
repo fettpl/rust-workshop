@@ -196,10 +196,17 @@ npm ci
 cargo fetch --locked --manifest-path scripts/fixtures/tokio-runtime-1.54.1/Cargo.toml
 npm run lint
 npm run typecheck
+npm run typecheck:native
 npm run content:check
 npm run content:packages
 npm test
 ```
+
+Oba polecenia generują typy tras Next.js i sprawdzają ten sam projekt.
+`typecheck` używa TypeScript 6, którego API kompilatora służy również do
+przygotowania plików Monaco i pracy ESLint. `typecheck:native` wywołuje
+przypięty kompilator TypeScript 7 przez alias zależności deweloperskiej.
+Zadanie `verify` uruchamia obie kontrole.
 
 Pobranie przygotowuje pamięć przypiętych zależności. Kontrole natywne
 używają `--offline --locked`. Zachowanie programu sprawdza późniejsze
