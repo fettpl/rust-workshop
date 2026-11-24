@@ -66,6 +66,13 @@ locally with the pinned tool on `PATH`, run `npm run content:packages` and
 `npm run audit:rustsec`. CI retains `test-results/rustsec-audit/report.json`
 in the `rustsec-audit-report` artifact. [RustSec Advisory Database](https://github.com/RustSec/advisory-db) · [cargo-audit 0.23.0](https://github.com/RustSec/rustsec/releases/tag/cargo-audit/v0.23.0)
 
+The **Audit shipped Rust dependencies** workflow scans `main` every Monday
+at 04:17 UTC and supports manual dispatch on `main` from the Actions tab.
+It uses the same checksum-pinned installer and scanner as `verify`, generates
+the download archives, and runs on a single Linux runner. The run fails if
+the audit fails and retains the report whenever the audit step runs. Required
+PR checks still include the RustSec scan in `verify`.
+
 `workspace-msrv` uses the exact Rust `1.85.0` `cargo`, `rustc`, and `rustdoc`
 paths for the Frame Protocol workspace, Number Guessing+, manifests, API and
 macro contracts, and the evidence assessment suites. Durable Log Service and

@@ -69,6 +69,14 @@ i wykonaj `npm run content:packages` oraz `npm run audit:rustsec`.
 CI zachowuje `test-results/rustsec-audit/report.json` w artefakcie
 `rustsec-audit-report`. [Baza RustSec](https://github.com/RustSec/advisory-db) · [cargo-audit 0.23.0](https://github.com/RustSec/rustsec/releases/tag/cargo-audit/v0.23.0)
 
+Workflow **Audit shipped Rust dependencies** skanuje `main` w każdy
+poniedziałek o 04:17 UTC. Można go też uruchomić ręcznie dla `main` z karty
+Actions. Korzysta z tego samego instalatora z weryfikacją sumy kontrolnej
+i skanera co `verify`. Generuje archiwa do pobrania i działa na jednej
+maszynie z Linuksem. Błąd audytu powoduje błąd przebiegu, a raport jest
+zachowywany, jeśli uruchomiono krok audytu. Skan RustSec w zadaniu `verify`
+pozostaje wymagany dla PR-ów.
+
 `workspace-msrv` używa dokładnych ścieżek `cargo`, `rustc` i `rustdoc`
 z Rust `1.85.0` dla obszaru roboczego Frame Protocol, Number Guessing+,
 manifestów, kontraktów API i makr oraz testów wyników oceny. Durable Log
