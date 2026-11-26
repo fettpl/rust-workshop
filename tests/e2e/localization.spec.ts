@@ -136,6 +136,41 @@ test("searches localized topics and keeps Polish for a legacy profile", async ({
   await expect(polishBrowser).toBeVisible();
 });
 
+test("localizes the ownership lesson phase and its navigation across language changes", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Check your starting point" }).click();
+  await page.getByRole("button", { name: "Continue to the lessons" }).click();
+  await page.getByRole("button", { name: "Learning map" }).click();
+  await page
+    .getByRole("button", { name: /Ownership: who is responsible for a value/ })
+    .click();
+  await page.getByRole("button", { name: /Borrow before duplicating/ }).click();
+
+  const phase = page.locator(".task-pane > .eyebrow");
+  const englishSteps = page.getByRole("navigation", { name: "Lesson steps" });
+  await expect(phase).toHaveText("STEP 1 OF 6 · Predict");
+  const remainingPhases = ["Trace", "Fix", "Modify", "Explain", "Apply"];
+  for (const [index, label] of remainingPhases.entries()) {
+    await englishSteps
+      .getByRole("button", { name: new RegExp(`${label}$`) })
+      .click();
+    await expect(phase).toHaveText(`STEP ${index + 2} OF 6 · ${label}`);
+  }
+
+  await page.getByRole("combobox", { name: "Language" }).selectOption("pl");
+  await expect(phase).toHaveText("KROK 6 Z 6 · Zastosuj");
+  await page
+    .getByRole("navigation", { name: "Kroki lekcji" })
+    .getByRole("button", { name: /Napraw$/ })
+    .click();
+  await expect(phase).toHaveText("KROK 3 Z 6 · Napraw");
+
+  await page.getByRole("combobox", { name: "Język" }).selectOption("en");
+  await expect(phase).toHaveText("STEP 3 OF 6 · Fix");
+});
+
 test("localizes Monaco accessibility and connection feedback while preserving raw compiler text", async ({
   page,
 }) => {

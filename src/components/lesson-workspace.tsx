@@ -552,7 +552,7 @@ export function LessonWorkspace({
           <Eyebrow>
             {t("KROK ")}
             {index + 1} {t("Z ")}
-            {lesson.steps.length} · {kindLabels[step.kind]}
+            {lesson.steps.length} · {t(kindLabels[step.kind])}
           </Eyebrow>
           <h1>{courseText(step.title)}</h1>
           {lesson.sessionStops?.length ? (
