@@ -302,7 +302,7 @@ export function Diagnostic({
               {busy
                 ? t("Sprawdzanie…")
                 : task.tests
-                  ? "Uruchom testy"
+                  ? t("Uruchom testy")
                   : t("Sprawdź")}
               <Check size={16} />
             </button>

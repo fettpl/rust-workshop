@@ -82,6 +82,30 @@ async function openSettings(page: Page): Promise<void> {
     .dispatchEvent("click");
 }
 
+test("localizes the first Rust test action when switching languages", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await completeOnboarding(page);
+  for (const answer of ["12", "age >= 18", "bool"]) {
+    await answerDiagnostic(page, answer);
+    await page.getByRole("button", { name: "Dalej" }).click();
+  }
+
+  await expect(
+    page.getByRole("heading", { name: "Napisz małą funkcję" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Uruchom testy" }),
+  ).toBeVisible();
+
+  await page.getByRole("combobox", { name: "Język" }).selectOption("en");
+  await expect(
+    page.getByRole("heading", { name: "Write a small function" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Run tests" })).toBeVisible();
+});
+
 test("keeps onboarding, lesson work, settings, notes, and exports across reloads", async ({
   page,
 }) => {
